@@ -4,7 +4,7 @@ These tasks exist before business modules can safely scale.
 
 | Task | Scope | References | Status |
 | --- | --- | --- | --- |
-| TASK-FND-001 | Bootstrap Laravel 13 + Inertia + React TS + Tailwind 4 + shadcn | ADR-0001 | TODO |
+| TASK-FND-001 | Bootstrap Laravel 13 + Inertia + React TS + Tailwind 4 + shadcn | ADR-0001 | DONE |
 | TASK-FND-002 | Enforce module/layer namespaces and architecture tests | NFR-14 | TODO |
 | TASK-FND-003 | MySQL 8 baseline, property scope, ULID, migrations | NFR-16, NFR-19, ADR-0002/0005 | TODO |
 | TASK-FND-004 | Auth, session security, RBAC and scoped policies | NFR-05/06/22 | TODO |
@@ -24,6 +24,18 @@ These tasks exist before business modules can safely scale.
 | TASK-FND-018 | approval/maker-checker engine | NFR-06 | TODO |
 | TASK-FND-019 | retention/privacy/export policy mechanisms | NFR-07/08/24/29 | TODO |
 | TASK-FND-020 | external integration adapter conventions | NFR-25/28 | TODO |
+
+## TASK-FND-001 acceptance evidence
+
+- Completed: 2026-09-30.
+- Traceability: `TASK-FND-001`, `ADR-0001`; no business `FR-*` or `BR-*` behavior is implemented by this bootstrap task.
+- Runtime: Laravel 13 / PHP 8.3 baseline with Inertia middleware and an Inertia-rendered smoke page.
+- Frontend: React + strict TypeScript, Tailwind CSS 4 semantic tokens, a locally owned shadcn/ui-compatible button primitive, TanStack Query provider, and TanStack Table dependency.
+- Deployment constraint: client-side Inertia rendering is the default; SSR is disabled so the shared-hosting profile does not require a permanent Node process (`ADR-0003`, `ADR-0008`).
+- Security/scope: no authentication, property-owned data, PII, financial behavior, mutation endpoint, or external integration was introduced.
+- Database: MySQL is the application default; schema/property scope/ULID work remains explicitly owned by `TASK-FND-003`.
+- Automated evidence: `composer validate --strict`, `vendor/bin/pint --test`, `php artisan test`, `npm run typecheck`, and `npm run build` pass.
+- Rollback: remove the scaffold/runtime files and restore the documentation-only repository; no database or external state was changed.
 
 ## NFR coverage
 

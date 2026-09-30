@@ -28,9 +28,27 @@
     --color-warning: var(--warning);
     --color-danger: var(--danger);
     --color-info: var(--info);
+    --color-room-occupancy-vacant: var(--room-occupancy-vacant);
+    --color-room-occupancy-occupied: var(--room-occupancy-occupied);
+    --color-room-housekeeping-dirty: var(--room-housekeeping-dirty);
+    --color-room-housekeeping-clean: var(--room-housekeeping-clean);
+    --color-room-housekeeping-inspected: var(--room-housekeeping-inspected);
+    --color-room-sellability-sellable: var(--room-sellability-sellable);
+    --color-room-sellability-ooo: var(--room-sellability-ooo);
+    --color-room-sellability-oos: var(--room-sellability-oos);
+    --color-room-service-dnd: var(--room-service-dnd);
+    --color-room-service-double-lock: var(--room-service-double-lock);
+    --color-chart-1: var(--chart-1);
+    --color-chart-2: var(--chart-2);
+    --color-chart-3: var(--chart-3);
+    --color-chart-4: var(--chart-4);
+    --color-chart-5: var(--chart-5);
     --radius-sm: calc(var(--radius) - 0.25rem);
     --radius-md: calc(var(--radius) - 0.125rem);
     --radius-lg: var(--radius);
+    --shadow-panel: 0 1px 2px 0 oklch(0.208 0.042 265.755 / 8%);
+    --shadow-overlay: 0 16px 40px -12px oklch(0.208 0.042 265.755 / 25%);
+    --spacing-touch: 2.75rem;
 }
 
 :root {
@@ -53,6 +71,21 @@
     --warning: oklch(0.555 0.135 66.442);
     --danger: oklch(0.505 0.213 27.518);
     --info: oklch(0.443 0.161 257.101);
+    --room-occupancy-vacant: oklch(0.627 0.194 149.214);
+    --room-occupancy-occupied: oklch(0.546 0.245 262.881);
+    --room-housekeeping-dirty: oklch(0.646 0.222 41.116);
+    --room-housekeeping-clean: oklch(0.623 0.188 259.815);
+    --room-housekeeping-inspected: oklch(0.527 0.154 150.069);
+    --room-sellability-sellable: oklch(0.527 0.154 150.069);
+    --room-sellability-ooo: oklch(0.505 0.213 27.518);
+    --room-sellability-oos: oklch(0.551 0.027 264.364);
+    --room-service-dnd: oklch(0.681 0.162 75.834);
+    --room-service-double-lock: oklch(0.457 0.24 277.023);
+    --chart-1: oklch(0.546 0.245 262.881);
+    --chart-2: oklch(0.627 0.194 149.214);
+    --chart-3: oklch(0.681 0.162 75.834);
+    --chart-4: oklch(0.558 0.288 302.321);
+    --chart-5: oklch(0.585 0.233 16.241);
     --radius: 0.5rem;
 }
 

@@ -7,7 +7,7 @@ namespace Tests\Feature;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
 
-class ExampleTest extends TestCase
+final class FoundationSmokeTest extends TestCase
 {
     public function test_the_foundation_page_is_served_through_inertia(): void
     {

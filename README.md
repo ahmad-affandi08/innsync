@@ -1,6 +1,6 @@
-# InnSYnc AI Agent Blueprint
+# InnSYnc
 
-This package turns the InnSYnc PRD into a development constitution for a Laravel 13 Domain-Driven Design modular monolith.
+InnSYnc is a hotel operating system implemented as a Laravel 13 DDD modular monolith. The repository is governed by [AGENTS.md](AGENTS.md) and the executable product, architecture, design, task, and engineering contracts under `docs/`.
 
 ## Target stack
 
@@ -14,9 +14,31 @@ This package turns the InnSYnc PRD into a development constitution for a Laravel
 - TanStack Table
 - Deployment target: Niagahoster/Hostinger-style shared web hosting unless an ADR explicitly changes the infrastructure profile.
 
-## How to install in the repository
+## Current implementation status
 
-Place `AGENTS.md`, `CLAUDE.md`, and the whole `docs/` directory at the repository root. An AI agent must begin at `AGENTS.md`.
+- `TASK-FND-001`: DONE — approved application stack bootstrapped.
+- Next task: `TASK-FND-002` — module/layer namespaces and architecture tests.
+- Business modules have not started.
+
+## Local setup
+
+Requirements: PHP 8.3+, Composer 2, Node.js with npm, and MySQL 8.
+
+```bash
+composer run setup
+cp .env.example .env # only when setup did not create it
+```
+
+Configure the MySQL credentials in `.env`. Database foundation and migrations are owned by `TASK-FND-003`; do not invent or deploy business schema before that task is complete.
+
+Useful verification commands:
+
+```bash
+composer test
+vendor/bin/pint --test
+npm run typecheck
+npm run build
+```
 
 ## Documentation domains
 
@@ -27,4 +49,4 @@ Place `AGENTS.md`, `CLAUDE.md`, and the whole `docs/` directory at the repositor
 - `docs/DESIGN`: UI/UX and frontend interaction contract.
 - `docs/SKILL`: repeatable agent operating procedures by specialty.
 
-The package intentionally favors explicit constraints over cleverness. Changes to business rules or architecture happen through documented change control, not opportunistic refactoring.
+Changes to business rules or architecture happen through documented change control. Protected PRD, RULES, and accepted ADR documents must not be edited without an approved Change Request.
