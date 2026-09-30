@@ -6,7 +6,7 @@ These tasks exist before business modules can safely scale.
 | --- | --- | --- | --- |
 | TASK-FND-001 | Bootstrap Laravel 13 + Inertia + React TS + Tailwind 4 + shadcn | ADR-0001 | DONE |
 | TASK-FND-002 | Enforce module/layer namespaces and architecture tests | NFR-14 | DONE |
-| TASK-FND-003 | MySQL 8 baseline, property scope, ULID, migrations | NFR-16, NFR-19, ADR-0002/0005 | TODO |
+| TASK-FND-003 | MySQL 8 baseline, property scope, ULID, migrations | NFR-16, NFR-19, ADR-0002/0005 | DONE |
 | TASK-FND-004 | Auth, session security, RBAC and scoped policies | NFR-05/06/22 | TODO |
 | TASK-FND-005 | Audit trail + security log + correlation IDs | NFR-10/20/29 | TODO |
 | TASK-FND-006 | Idempotency middleware/application service + table | NFR-18 | TODO |
@@ -49,6 +49,19 @@ These tasks exist before business modules can safely scale.
 - Database/migration: no schema or migration changed; ULID and property-scope migrations remain owned by `TASK-FND-003`.
 - Automated evidence: the Architecture suite contains positive and negative fixtures for namespace, layer, framework, cross-context, strict-types, grouped-import, and fully-qualified-reference enforcement. Full PHPUnit, Pint, Composer validation, TypeScript typecheck, and production build pass.
 - Rollback: restore the prior user record namespace and remove the architecture suite/script; no database or external state was changed.
+
+## TASK-FND-003 acceptance evidence
+
+- Completed: 2026-10-01.
+- Traceability: `TASK-FND-003`, `NFR-16`, `NFR-19`, `ADR-0002`, and `ADR-0005`; no business `FR-*` or `BR-*` behavior is introduced.
+- Database baseline: all application and framework tables run on MySQL 8 with InnoDB, `utf8mb4`, and `utf8mb4_0900_ai_ci`; the development database migration completed successfully.
+- Identity: aggregate roots use lowercase ULID values stored as `CHAR(26)`; users and properties no longer depend on auto-incrementing domain identifiers.
+- Property scope: a request-scoped property context, fail-closed Eloquent global scope, automatic property assignment, immutable `property_id`, and write/delete scope checks prevent accidental cross-property access.
+- Concurrency: the reusable `lock_version` implementation performs compare-and-swap updates and raises an explicit conflict when a stale record attempts to save.
+- Scope boundary: users remain global; property membership, authentication, RBAC, and policy resolution remain owned by `TASK-FND-004`. No property, timezone, or currency seed/default business policy was guessed.
+- Migration safety: destructive test migration is hard-guarded to the dedicated `innsync_test` database. Foreign keys and rollback order were verified against MySQL.
+- Automated evidence: 26 PHPUnit tests with 66 assertions pass, including real MySQL migration/rollback, engine/collation/ULID checks, tenant isolation, cross-property write rejection, and stale-write conflict. Composer validation, Pint, TypeScript typecheck, and the production frontend build also pass.
+- Rollback: roll back batch 1 only while the baseline contains no retained application data, or restore from backup after data exists; the migration removes the newly created baseline tables in dependency-safe order.
 
 ## NFR coverage
 

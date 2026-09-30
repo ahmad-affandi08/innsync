@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace App\Modules\IdentityAccess\Infrastructure\Persistence\Eloquent;
 
+use App\Shared\Infrastructure\Persistence\Eloquent\UsesOptimisticLocking;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Attributes\UseFactory;
+use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -18,7 +20,12 @@ use Illuminate\Notifications\Notifiable;
 final class UserRecord extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable;
+    use HasFactory, HasUlids, Notifiable, UsesOptimisticLocking;
+
+    /** @var array<string, mixed> */
+    protected $attributes = [
+        'lock_version' => 0,
+    ];
 
     /**
      * @return array<string, string>
@@ -28,6 +35,7 @@ final class UserRecord extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'lock_version' => 'integer',
         ];
     }
 }

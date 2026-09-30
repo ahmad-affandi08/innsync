@@ -49,6 +49,7 @@
             "@php artisan test"
         ],
         "test:architecture": "@php artisan test --testsuite=Architecture",
+        "test:integration": "@php artisan test --testsuite=Integration",
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
             "@php artisan package:discover --ansi"

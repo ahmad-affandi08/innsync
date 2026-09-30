@@ -18,7 +18,8 @@ InnSYnc is a hotel operating system implemented as a Laravel 13 DDD modular mono
 
 - `TASK-FND-001`: DONE — approved application stack bootstrapped.
 - `TASK-FND-002`: DONE — module/layer namespaces and architecture boundaries enforced.
-- Next task: `TASK-FND-003` — MySQL 8, property scope, ULID, and migration baseline.
+- `TASK-FND-003`: DONE — MySQL 8, property scope, ULID, and optimistic-locking baseline implemented.
+- Next task: `TASK-FND-004` — authentication, session security, RBAC, and scoped policies.
 - Business modules have not started.
 
 ## Local setup
@@ -30,13 +31,14 @@ composer run setup
 cp .env.example .env # only when setup did not create it
 ```
 
-Configure the MySQL credentials in `.env`. Database foundation and migrations are owned by `TASK-FND-003`; do not invent or deploy business schema before that task is complete.
+Configure the MySQL credentials in `.env`, create an empty database, then run `php artisan migrate`. The test suite uses the isolated `innsync_test` database and refuses to reset any other database.
 
 Useful verification commands:
 
 ```bash
 composer test
 composer test:architecture
+composer test:integration
 vendor/bin/pint --test
 npm run typecheck
 npm run build
