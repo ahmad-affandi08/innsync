@@ -1,0 +1,46 @@
+# Dashboard Manajemen — Task Contract
+
+**Bounded context:** Reporting & Dashboard
+**Critical note:** Read models/KPIs only; every metric traceable to source.
+
+## Candidate aggregates / read models
+
+- `DashboardProjection`
+- `RoomBoardProjection`
+- `AlertProjection`
+
+## Requirement backlog
+
+| Task ID | FR | Priority | Requirement | Status |
+| --- | --- | --- | --- | --- |
+| TASK-DSH-001 | FR-DSH-001 | Wajib | Menampilkan kartu okupansi hari berjalan: jumlah kamar terisi, jumlah kamar tersedia, jumlah tamu menginap, kedatangan hari ini, keberangkatan hari ini, dan reservasi masuk. Angka bersumber dari Front Office dan Housekeeping. | TODO |
+| TASK-DSH-002 | FR-DSH-002 | Wajib | Menampilkan room board dengan dimensi status yang terpisah: occupancy (vacant/occupied), housekeeping (dirty/clean/inspected), sellability (sellable/OOO/OOS), serta service flag seperti DND/Double Lock. Complimentary ditampilkan sebagai atribut tarif/folio, bukan status kebersihan kamar. | TODO |
+| TASK-DSH-003 | FR-DSH-003 | Wajib | Papan kamar bersifat template: administrator dapat menambah, mengubah, menonaktifkan kamar, menetapkan tipe, lantai, gedung, dan kapasitas tanpa bantuan pengembang. | TODO |
+| TASK-DSH-004 | FR-DSH-004 | Wajib | Menampilkan pendapatan hari berjalan per outlet (Kamar, Restoran, Bar, Spa, Gift Shop, dan outlet tambahan yang dibuat pengguna) beserta total dan perbandingan terhadap hari, minggu, serta bulan sebelumnya. | TODO |
+| TASK-DSH-005 | FR-DSH-005 | Wajib | Daftar outlet bersifat dapat diperluas; penambahan outlet baru otomatis muncul sebagai kolom pendapatan dan kategori pada laporan. | TODO |
+| TASK-DSH-006 | FR-DSH-006 | Wajib | Menampilkan ringkasan pengeluaran: pembayaran kepada pemasok dan vendor yang telah dibayar, hutang berjalan, serta daftar jatuh tempo dalam 7 dan 30 hari ke depan. | TODO |
+| TASK-DSH-007 | FR-DSH-007 | Wajib | Menampilkan peringatan stok minimum per department (Bar, Kitchen, Housekeeping, Maintenance, Galley, Reception) berdasarkan kartu stok dan hasil stock opname. | TODO |
+| TASK-DSH-008 | FR-DSH-008 | Wajib | Menampilkan ringkasan kepegawaian hari berjalan: jumlah staf bertugas per shift per department, staf libur, staf ijin dengan keterangan, dan staf tanpa keterangan (alpha). | TODO |
+| TASK-DSH-009 | FR-DSH-009 | Wajib | Menampilkan ringkasan pekerjaan pemeliharaan: work order berjalan, selesai hari ini, melewati batas waktu, dan kamar berstatus Out of Order. | TODO |
+| TASK-DSH-010 | FR-DSH-010 | Sebaiknya | Menampilkan performa produk: sepuluh menu terlaris dan paling tidak laku, serta performa tipe kamar berdasarkan okupansi dan ADR pada periode terpilih. | TODO |
+| TASK-DSH-011 | FR-DSH-011 | Sebaiknya | Menampilkan distribusi jam transaksi per outlet dalam bentuk grafik batang per jam untuk membantu penjadwalan staf. | TODO |
+| TASK-DSH-012 | FR-DSH-012 | Sebaiknya | Menampilkan heatmap kedatangan tamu (check-in) berdasarkan jam dan hari dalam seminggu. | TODO |
+| TASK-DSH-013 | FR-DSH-013 | Wajib | Menampilkan lini masa kewajiban pajak: pajak kamar, pajak restoran dan outlet lain, nilai terkumpul berjalan, tanggal jatuh tempo pelaporan, dan status pelaporan. | TODO |
+| TASK-DSH-014 | FR-DSH-014 | Wajib | Menampilkan akumulasi service charge yang terkumpul dari kamar dan outlet beserta estimasi porsi yang akan didistribusikan kepada karyawan. | TODO |
+| TASK-DSH-015 | FR-DSH-015 | Wajib | Menyediakan penyaring periode (hari ini, kemarin, 7 hari, bulan berjalan, rentang khusus) yang berlaku serentak pada seluruh kartu. | TODO |
+| TASK-DSH-016 | FR-DSH-016 | Wajib | Setiap kartu dapat diklik untuk menelusuri hingga daftar transaksi atau dokumen sumbernya. | TODO |
+| TASK-DSH-017 | FR-DSH-017 | Bisa | Susunan kartu dapat diatur per pengguna (urutan dan tampil/sembunyi) dan tersimpan pada profil pengguna. | TODO |
+| TASK-DSH-018 | FR-DSH-018 | Sebaiknya | Data diperbarui otomatis paling lambat setiap 60 detik tanpa memuat ulang halaman, dengan penanda waktu pembaruan terakhir. | TODO |
+| TASK-DSH-019 | FR-DSH-019 | Bisa | Tersedia mode layar televisi (tampilan besar tanpa navigasi) untuk dipasang di ruang manajemen. | TODO |
+| TASK-DSH-020 | FR-DSH-020 | Wajib | Menyediakan pusat exception/alert untuk kondisi yang membutuhkan tindakan: reservasi berpotensi oversold, folio belum settle, pembayaran berstatus unknown, stok negatif atau kritis, work order lewat SLA, dan kegagalan sinkronisasi. | TODO |
+| TASK-DSH-021 | FR-DSH-021 | Wajib | Setiap KPI menampilkan definisi, business date/periode, waktu data terakhir diperbarui, serta drill-down ke data sumber agar tidak terjadi perbedaan interpretasi antar department. | TODO |
+| TASK-DSH-022 | FR-DSH-022 | Wajib | Dashboard menerapkan cakupan data berdasarkan property, outlet, department, dan role; pengguna hanya melihat angka yang diizinkan tanpa mengubah sumber data. | TODO |
+
+## Required engineering checks
+
+- Identify aggregate owner and state transition before coding.
+- Enforce property scope and server-side authorization.
+- Define transaction/idempotency/concurrency behavior where mutation is critical.
+- Emit audit evidence for sensitive/state-changing operations.
+- Add happy, negative, conflict/retry, and permission tests as applicable.
+- Update traceability/evidence before marking DONE.
