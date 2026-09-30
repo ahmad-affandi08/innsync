@@ -10,17 +10,17 @@ use Tests\TestCase;
 
 final class FoundationSmokeTest extends TestCase
 {
-    public function test_the_foundation_page_is_served_through_inertia(): void
+    public function test_guests_are_sent_to_the_inertia_login_page(): void
     {
         $this->withoutVite();
 
-        $response = $this->get('/');
+        $this->get('/')->assertRedirect('/login');
+        $response = $this->get('/login');
 
         $response
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
-                ->component('foundation/pages/welcome')
-                ->where('appVersion', '0.1.0-dev')
+                ->component('identity-access/pages/login')
                 ->where('app.name', 'InnSYnc'));
     }
 

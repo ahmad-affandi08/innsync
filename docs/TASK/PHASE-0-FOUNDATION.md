@@ -7,7 +7,7 @@ These tasks exist before business modules can safely scale.
 | TASK-FND-001 | Bootstrap Laravel 13 + Inertia + React TS + Tailwind 4 + shadcn | ADR-0001 | DONE |
 | TASK-FND-002 | Enforce module/layer namespaces and architecture tests | NFR-14 | DONE |
 | TASK-FND-003 | MySQL 8 baseline, property scope, ULID, migrations | NFR-16, NFR-19, ADR-0002/0005 | DONE |
-| TASK-FND-004 | Auth, session security, RBAC and scoped policies | NFR-05/06/22 | TODO |
+| TASK-FND-004 | Auth, session security, RBAC and scoped policies | NFR-05/06/22 | DONE |
 | TASK-FND-005 | Audit trail + security log + correlation IDs | NFR-10/20/29 | TODO |
 | TASK-FND-006 | Idempotency middleware/application service + table | NFR-18 | TODO |
 | TASK-FND-007 | Transactional outbox + database queue + cron drain | NFR-17/25, ADR-0007 | TODO |
@@ -62,6 +62,21 @@ These tasks exist before business modules can safely scale.
 - Migration safety: destructive test migration is hard-guarded to the dedicated `innsync_test` database. Foreign keys and rollback order were verified against MySQL.
 - Automated evidence: 26 PHPUnit tests with 66 assertions pass, including real MySQL migration/rollback, engine/collation/ULID checks, tenant isolation, cross-property write rejection, and stale-write conflict. Composer validation, Pint, TypeScript typecheck, and the production frontend build also pass.
 - Rollback: roll back batch 1 only while the baseline contains no retained application data, or restore from backup after data exists; the migration removes the newly created baseline tables in dependency-safe order.
+
+## TASK-FND-004 acceptance evidence
+
+- Completed: 2026-10-01.
+- Traceability: `TASK-FND-004`, `NFR-05`, `NFR-06`, `NFR-22`, `BR-004`, `ADR-0002`, and `ADR-0005`; no business `FR-*` workflow is introduced.
+- Authentication: generic credential failures avoid account enumeration; persistent failed-attempt lockout and hashed per-identity/IP rate-limit keys limit brute-force attempts. Password changes enforce a 12-character mixed-case/number/symbol policy and revoke other sessions.
+- MFA: standards-compatible TOTP and one-time recovery codes are supported. Secrets and recovery-code hashes are encrypted at rest, and every active role with `requires_mfa` forces setup/challenge before application access.
+- Authorization: least-privilege permission codes are feature/action-specific. Role grants are property-owned and can be narrowed to exact property, outlet, or department scope; property-level grants are hierarchical only inside their own property.
+- Property isolation: users must select an authorized active property. Request middleware resolves a fail-closed property context, while server-side permission middleware rejects missing privileges and cross-property/resource-scope access.
+- Session security: database sessions retain the framework idle timeout, encrypted HttpOnly/SameSite cookies, production-default secure cookies, CSRF-protected web routes, password-hash session invalidation, active-device listing, owner-scoped revocation, and recent-password confirmation for sensitive actions.
+- UI evidence: accessible Inertia pages cover login, MFA enrollment/challenge/recovery display, property selection, password confirmation/change, session listing/revocation, authentication redirects, validation errors, empty property access, and processing states.
+- Schema: users gained account-lock/MFA/security timestamps; `roles`, `permissions`, `role_permissions`, and `user_role_assignments` use ULIDs, property scope, foreign keys, composite indexes, uniqueness, optimistic locking, and MySQL CHECK constraints. Migration batch 2 completed on the development database.
+- Policy boundary: no default account, role, permission, or managerial policy is seeded. Resource ownership checks for future outlet/department records remain mandatory in their owning module policies. `BR-004` approval workflows remain owned by `TASK-FND-018`; audit/security-event persistence remains owned by `TASK-FND-005`.
+- Automated evidence: the full PHPUnit suite passes with 45 tests and 146 assertions, covering RFC 6238 vectors, lockout across IP addresses, login throttling, encrypted MFA storage, strong passwords, recent-password enforcement, inactive-session revocation, session ownership, database constraints, cross-property and exact-scope denial, and server-side permission middleware. Composer validation, Pint, route/config cache, TypeScript typecheck, and production build also pass.
+- Rollback: roll back migration batch 2 only before identity assignments are relied upon. After role/assignment data exists, deploy a forward migration or restore a verified backup rather than dropping authorization state.
 
 ## NFR coverage
 

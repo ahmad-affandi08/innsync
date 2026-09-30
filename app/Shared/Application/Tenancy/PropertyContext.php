@@ -16,6 +16,11 @@ final class PropertyContext
         $this->activePropertyId = $propertyId;
     }
 
+    public function activateFromString(string $propertyId): void
+    {
+        $this->activate(PropertyId::fromString($propertyId));
+    }
+
     public function clear(): void
     {
         $this->activePropertyId = null;

@@ -22,8 +22,12 @@ final class UserRecord extends Authenticatable
     /** @use HasFactory<UserFactory> */
     use HasFactory, HasUlids, Notifiable, UsesOptimisticLocking;
 
+    protected $table = 'users';
+
     /** @var array<string, mixed> */
     protected $attributes = [
+        'is_active' => true,
+        'failed_login_attempts' => 0,
         'lock_version' => 0,
     ];
 
@@ -35,6 +39,14 @@ final class UserRecord extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'is_active' => 'boolean',
+            'failed_login_attempts' => 'integer',
+            'locked_until' => 'immutable_datetime',
+            'last_login_at' => 'immutable_datetime',
+            'password_changed_at' => 'immutable_datetime',
+            'two_factor_secret' => 'encrypted',
+            'two_factor_recovery_codes' => 'encrypted:array',
+            'two_factor_confirmed_at' => 'immutable_datetime',
             'lock_version' => 'integer',
         ];
     }

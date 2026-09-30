@@ -1,13 +1,15 @@
-import { Head } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 import { CheckCircle2 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 
 type WelcomePageProps = {
     appVersion: string;
+    userName: string;
+    activePropertyId: string;
 };
 
-export default function WelcomePage({ appVersion }: WelcomePageProps) {
+export default function WelcomePage({ activePropertyId, appVersion, userName }: WelcomePageProps) {
     return (
         <>
             <Head title="Engineering Foundation" />
@@ -19,11 +21,10 @@ export default function WelcomePage({ appVersion }: WelcomePageProps) {
                             InnSYnc
                         </p>
                         <h1 className="mt-1 text-2xl font-semibold tracking-tight sm:text-3xl">
-                            Engineering foundation is ready
+                            Welcome, {userName}
                         </h1>
                         <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
-                            Laravel, Inertia, React, TypeScript, Tailwind, shadcn/ui,
-                            and TanStack are connected as the approved application stack.
+                            Your authenticated session and property scope are active.
                         </p>
                     </header>
 
@@ -42,12 +43,17 @@ export default function WelcomePage({ appVersion }: WelcomePageProps) {
                                     <dt className="text-muted-foreground">Version</dt>
                                     <dd className="font-medium">{appVersion}</dd>
                                 </div>
+                                <div>
+                                    <dt className="text-muted-foreground">Property scope</dt>
+                                    <dd className="font-mono text-xs font-medium">{activePropertyId}</dd>
+                                </div>
                             </dl>
                         </div>
 
-                        <Button type="button" variant="outline" disabled>
-                            Business modules pending
-                        </Button>
+                        <div className="flex gap-2">
+                            <Button asChild variant="outline"><Link href="/account/sessions">Sessions</Link></Button>
+                            <Button onClick={() => router.post('/logout')} type="button" variant="outline">Sign out</Button>
+                        </div>
                     </div>
                 </section>
             </main>
