@@ -5,7 +5,7 @@ These tasks exist before business modules can safely scale.
 | Task | Scope | References | Status |
 | --- | --- | --- | --- |
 | TASK-FND-001 | Bootstrap Laravel 13 + Inertia + React TS + Tailwind 4 + shadcn | ADR-0001 | DONE |
-| TASK-FND-002 | Enforce module/layer namespaces and architecture tests | NFR-14 | TODO |
+| TASK-FND-002 | Enforce module/layer namespaces and architecture tests | NFR-14 | DONE |
 | TASK-FND-003 | MySQL 8 baseline, property scope, ULID, migrations | NFR-16, NFR-19, ADR-0002/0005 | TODO |
 | TASK-FND-004 | Auth, session security, RBAC and scoped policies | NFR-05/06/22 | TODO |
 | TASK-FND-005 | Audit trail + security log + correlation IDs | NFR-10/20/29 | TODO |
@@ -36,6 +36,19 @@ These tasks exist before business modules can safely scale.
 - Database: MySQL is the application default; schema/property scope/ULID work remains explicitly owned by `TASK-FND-003`.
 - Automated evidence: `composer validate --strict`, `vendor/bin/pint --test`, `php artisan test`, `npm run typecheck`, and `npm run build` pass.
 - Rollback: remove the scaffold/runtime files and restore the documentation-only repository; no database or external state was changed.
+
+## TASK-FND-002 acceptance evidence
+
+- Completed: 2026-10-01.
+- Traceability: `TASK-FND-002`, `NFR-14`, `ADR-0001`; no business `FR-*` or `BR-*` behavior is changed.
+- Boundaries: approved bounded-context names and `Domain`, `Application`, `Infrastructure`, and `Presentation` module layers are enforced against filesystem namespaces.
+- Dependency direction: Domain and Application are framework-independent; outward-layer dependencies, invalid Shared dependencies, and cross-context Infrastructure access are rejected.
+- Structure: the stock Laravel user persistence record now resides in `IdentityAccess/Infrastructure`; the generic root `app/Models` location is no longer used.
+- Security/scope: authentication behavior, permissions, property scope, PII, and session policy remain owned by `TASK-FND-004`; this task changes placement only.
+- Transaction/idempotency/concurrency: no mutation workflow or transaction boundary was introduced.
+- Database/migration: no schema or migration changed; ULID and property-scope migrations remain owned by `TASK-FND-003`.
+- Automated evidence: the Architecture suite contains positive and negative fixtures for namespace, layer, framework, cross-context, strict-types, grouped-import, and fully-qualified-reference enforcement. Full PHPUnit, Pint, Composer validation, TypeScript typecheck, and production build pass.
+- Rollback: restore the prior user record namespace and remove the architecture suite/script; no database or external state was changed.
 
 ## NFR coverage
 

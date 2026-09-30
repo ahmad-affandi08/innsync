@@ -17,7 +17,8 @@ InnSYnc is a hotel operating system implemented as a Laravel 13 DDD modular mono
 ## Current implementation status
 
 - `TASK-FND-001`: DONE — approved application stack bootstrapped.
-- Next task: `TASK-FND-002` — module/layer namespaces and architecture tests.
+- `TASK-FND-002`: DONE — module/layer namespaces and architecture boundaries enforced.
+- Next task: `TASK-FND-003` — MySQL 8, property scope, ULID, and migration baseline.
 - Business modules have not started.
 
 ## Local setup
@@ -35,6 +36,7 @@ Useful verification commands:
 
 ```bash
 composer test
+composer test:architecture
 vendor/bin/pint --test
 npm run typecheck
 npm run build
