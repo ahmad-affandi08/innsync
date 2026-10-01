@@ -10,7 +10,7 @@ export function currentReturnPath(): string {
 }
 
 type RunOptions = {
-    method?: 'POST' | 'PUT' | 'DELETE'
+    method?: 'GET' | 'POST' | 'PUT' | 'DELETE'
     body?: unknown
     /** Inertia props to reload afterwards so the screen shows the server's truth. */
     reload?: string[]

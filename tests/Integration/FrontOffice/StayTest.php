@@ -280,9 +280,11 @@ final class StayTest extends TestCase
         self::assertSame('closed', DB::table('folios')->where('reservation_id', $reservationId)->value('status'));
         self::assertSame('2026-12-30', substr((string) DB::table('stored_files')->where('id', $file->id)->value('expires_at'), 0, 10));
         self::assertSame(1, DB::table('outbox_messages')->where('event_type', 'frontoffice.stay.checked_out')->count());
-        // The room is free again and the stay can no longer change.
+        // The room is free again but housekeeping has not made it ready; the stay can no longer change.
         $next = $this->arriving();
-        $this->checkIn($next, $this->roomIds[0]);
+        $this->assertRefused(409, fn () => $this->checkIn($next, $this->roomIds[0]));
+        self::assertSame('dirty', DB::table('housekeeping_rooms')->where('room_id', $this->roomIds[0])->value('status'));
+        $this->checkIn($next, $this->roomIds[1]);
         $this->assertRefused(409, fn () => $this->stays()->checkOut($this->property(), $this->managerId, $stay['id'], 2));
         $this->expectException(QueryException::class);
         DB::table('stays')->where('id', $stay['id'])->update(['adults' => 1]);

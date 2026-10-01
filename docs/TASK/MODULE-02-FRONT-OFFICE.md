@@ -16,7 +16,7 @@
 
 | Task ID | FR | Priority | Requirement | Status |
 | --- | --- | --- | --- | --- |
-| TASK-FO-001 | FR-FO-001 | Wajib | Menampilkan rak kamar interaktif yang tersambung dengan data okupansi dan status kamar; klik pada nomor kamar membuka data tamu atau formulir check-in. | TODO |
+| TASK-FO-001 | FR-FO-001 | Wajib | Menampilkan rak kamar interaktif yang tersambung dengan data okupansi dan status kamar; klik pada nomor kamar membuka data tamu atau formulir check-in. | REVIEW |
 | TASK-FO-002 | FR-FO-002 | Wajib | Menyediakan kalender ketersediaan per tipe kamar dengan horizon minimal 365 hari dan dapat dikonfigurasi, lengkap dengan jumlah kamar tersisa, allotment/hold, dan penanda pembatasan penjualan per tanggal. | REVIEW |
 | TASK-FO-003 | FR-FO-003 | Wajib | Membuat reservasi dengan sumber pemesanan (langsung, telepon, OTA, korporat, walk-in), status (tentatif, terkonfirmasi, dijamin deposit), dan catatan khusus. | IN_PROGRESS |
 | TASK-FO-004 | FR-FO-004 | Wajib | Menandai reservasi yang tidak datang (no-show) dan pembatalan dengan alasan, serta menerapkan aturan denda bila dikonfigurasi. | IN_PROGRESS |

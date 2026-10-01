@@ -16,6 +16,8 @@ use App\Modules\FrontOffice\Domain\Stays\IdType;
 use App\Modules\FrontOffice\Domain\Stays\Stay;
 use App\Modules\FrontOffice\Domain\Stays\StayRuleViolation;
 use App\Modules\FrontOffice\Domain\Stays\StayStatus;
+use App\Modules\Housekeeping\Application\RoomHandover;
+use App\Modules\Housekeeping\Application\RoomReadiness;
 use App\Modules\Property\Application\Catalog\RoomCatalogReader;
 use App\Modules\Property\Application\Settings\BusinessDateProvider;
 use App\Shared\Application\Audit\AuditEntry;
@@ -79,6 +81,8 @@ final readonly class StayService
         private InventoryRepository $inventory,
         private RoomBlockRepository $blocks,
         private RoomCatalogReader $rooms,
+        private RoomReadiness $readiness,
+        private RoomHandover $handover,
         private FolioRepository $folioStore,
         private FolioService $folios,
         private BusinessDateProvider $businessDate,
@@ -100,9 +104,10 @@ final readonly class StayService
     // ---- reads ----
 
     /**
-     * Rooms the guest of this reservation can be given today: active, of the booked type, free and not blocked.
+     * Rooms the guest of this reservation can be given today: active, of the booked type, free and not blocked. A room that
+     * housekeeping has not made ready is listed but marked, because the front desk may want to know when it will be.
      *
-     * @return list<array{id: string, number: string, floor: ?string}>
+     * @return list<array{id: string, number: string, floor: ?string, ready: bool}>
      */
     public function availableRooms(PropertyId $property, string $actorId, string $reservationId): array
     {
@@ -110,13 +115,14 @@ final readonly class StayService
         $reservation = $this->reservations->find($property, strtolower($reservationId)) ?? throw Refusal::notFound('Reservation not found.');
         $today = $this->businessDate->current($property);
         $result = [];
+        $statuses = $this->readiness->statuses($property);
 
         foreach ($this->rooms->activeRooms($property) as $room) {
             if ($room->roomTypeId !== $reservation->roomTypeId || $this->isUnavailable($property, $room->id, $today, $reservation)) {
                 continue;
             }
 
-            $result[] = ['id' => $room->id, 'number' => $room->number, 'floor' => $room->floor];
+            $result[] = ['id' => $room->id, 'number' => $room->number, 'floor' => $room->floor, 'ready' => ($statuses[$room->id] ?? 'ready') === 'ready'];
         }
 
         usort($result, static fn (array $a, array $b): int => strnatcmp($a['number'], $b['number']));
@@ -327,6 +333,7 @@ final readonly class StayService
                 $this->files->setExpiryOnce($property, $stay->idPhotoFileId, $this->retention->expiryFor($property, self::RETENTION_CATEGORY, $anchor));
             }
 
+            $this->handover->vacated($property, $stay->roomId, $stay->id, $actor);
             $kind = $stay->departureKind($today);
             $this->audit->record(new AuditEntry(
                 $property->toString(), $actor, 'stay.checked_out', 'stay', $stay->id,
@@ -362,6 +369,10 @@ final readonly class StayService
 
         if ($this->isUnavailable($property, $roomId, $today, $reservation)) {
             throw Refusal::stateConflict('This room is occupied or out of service.');
+        }
+
+        if (! $this->readiness->isReady($property, $roomId)) {
+            throw Refusal::stateConflict('Housekeeping has not made this room ready.');
         }
 
         $type = $this->rooms->type($property, $reservation->roomTypeId);

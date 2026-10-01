@@ -24,7 +24,7 @@
 | TASK-DSH-020 | FR-DSH-020 | Dashboard Manajemen | Wajib | TODO |
 | TASK-DSH-021 | FR-DSH-021 | Dashboard Manajemen | Wajib | TODO |
 | TASK-DSH-022 | FR-DSH-022 | Dashboard Manajemen | Wajib | TODO |
-| TASK-FO-001 | FR-FO-001 | Front Office | Wajib | TODO |
+| TASK-FO-001 | FR-FO-001 | Front Office | Wajib | REVIEW |
 | TASK-FO-002 | FR-FO-002 | Front Office | Wajib | REVIEW |
 | TASK-FO-003 | FR-FO-003 | Front Office | Wajib | IN_PROGRESS |
 | TASK-FO-004 | FR-FO-004 | Front Office | Wajib | IN_PROGRESS |
@@ -68,13 +68,13 @@
 | TASK-FO-042 | FR-FO-042 | Front Office | Wajib | TODO |
 | TASK-FO-043 | FR-FO-043 | Front Office | Wajib | TODO |
 | TASK-FO-044 | FR-FO-044 | Front Office | Wajib | TODO |
-| TASK-HK-001 | FR-HK-001 | Housekeeping | Wajib | TODO |
-| TASK-HK-002 | FR-HK-002 | Housekeeping | Wajib | TODO |
-| TASK-HK-003 | FR-HK-003 | Housekeeping | Sebaiknya | TODO |
-| TASK-HK-004 | FR-HK-004 | Housekeeping | Wajib | TODO |
+| TASK-HK-001 | FR-HK-001 | Housekeeping | Wajib | REVIEW |
+| TASK-HK-002 | FR-HK-002 | Housekeeping | Wajib | REVIEW |
+| TASK-HK-003 | FR-HK-003 | Housekeeping | Sebaiknya | REVIEW |
+| TASK-HK-004 | FR-HK-004 | Housekeeping | Wajib | REVIEW |
 | TASK-HK-005 | FR-HK-005 | Housekeeping | Wajib | TODO |
 | TASK-HK-006 | FR-HK-006 | Housekeeping | Sebaiknya | TODO |
-| TASK-HK-007 | FR-HK-007 | Housekeeping | Wajib | TODO |
+| TASK-HK-007 | FR-HK-007 | Housekeeping | Wajib | REVIEW |
 | TASK-HK-008 | FR-HK-008 | Housekeeping | Wajib | TODO |
 | TASK-HK-009 | FR-HK-009 | Housekeeping | Wajib | TODO |
 | TASK-HK-010 | FR-HK-010 | Housekeeping | Wajib | TODO |
@@ -85,7 +85,7 @@
 | TASK-HK-015 | FR-HK-015 | Housekeeping | Sebaiknya | TODO |
 | TASK-HK-016 | FR-HK-016 | Housekeeping | Wajib | TODO |
 | TASK-HK-017 | FR-HK-017 | Housekeeping | Wajib | TODO |
-| TASK-HK-018 | FR-HK-018 | Housekeeping | Wajib | TODO |
+| TASK-HK-018 | FR-HK-018 | Housekeeping | Wajib | REVIEW |
 | TASK-HK-019 | FR-HK-019 | Housekeeping | Sebaiknya | TODO |
 | TASK-HK-020 | FR-HK-020 | Housekeeping | Wajib | TODO |
 | TASK-HK-021 | FR-HK-021 | Housekeeping | Wajib | TODO |

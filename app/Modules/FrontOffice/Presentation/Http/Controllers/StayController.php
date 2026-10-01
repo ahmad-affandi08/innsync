@@ -46,6 +46,7 @@ final readonly class StayController
             'reservation' => $this->summary($reservation->toArray()),
             'rooms' => $this->stays->availableRooms($property, $actor, $id),
             'stay' => $this->stays->forReservation($property, $actor, $id),
+            'preselect' => preg_match('/^[0-9A-Za-z]{26}$/D', (string) $request->query('room_id')) === 1 ? strtolower((string) $request->query('room_id')) : null,
         ]);
     }
 

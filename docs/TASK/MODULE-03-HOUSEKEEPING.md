@@ -15,13 +15,13 @@
 
 | Task ID | FR | Priority | Requirement | Status |
 | --- | --- | --- | --- | --- |
-| TASK-HK-001 | FR-HK-001 | Wajib | Menampilkan papan status kamar yang sama dengan dashboard dan Front Office; setiap perubahan berlaku serentak untuk seluruh modul. | TODO |
-| TASK-HK-002 | FR-HK-002 | Wajib | Supervisor membagi kamar kepada room attendant; setiap staf menerima tautan pribadi di ponsel berisi daftar kamar dan tugasnya. | TODO |
-| TASK-HK-003 | FR-HK-003 | Sebaiknya | Sistem menyusun urutan prioritas pembersihan secara otomatis: kamar keberangkatan, kamar kotor kosong, permintaan tamu, lalu kamar menginap. | TODO |
-| TASK-HK-004 | FR-HK-004 | Wajib | Room attendant mengubah status kamar langsung dari ponsel dengan maksimal tiga ketukan, termasuk penanda mulai dan selesai membersihkan untuk mengukur durasi. | TODO |
+| TASK-HK-001 | FR-HK-001 | Wajib | Menampilkan papan status kamar yang sama dengan dashboard dan Front Office; setiap perubahan berlaku serentak untuk seluruh modul. | REVIEW |
+| TASK-HK-002 | FR-HK-002 | Wajib | Supervisor membagi kamar kepada room attendant; setiap staf menerima tautan pribadi di ponsel berisi daftar kamar dan tugasnya. | REVIEW |
+| TASK-HK-003 | FR-HK-003 | Sebaiknya | Sistem menyusun urutan prioritas pembersihan secara otomatis: kamar keberangkatan, kamar kotor kosong, permintaan tamu, lalu kamar menginap. | REVIEW |
+| TASK-HK-004 | FR-HK-004 | Wajib | Room attendant mengubah status kamar langsung dari ponsel dengan maksimal tiga ketukan, termasuk penanda mulai dan selesai membersihkan untuk mengukur durasi. | REVIEW |
 | TASK-HK-005 | FR-HK-005 | Wajib | Menyediakan daftar periksa SOP tugas harian, mingguan, dan bulanan per kamar dan per area umum, disusun oleh manajemen sebagai template. | TODO |
 | TASK-HK-006 | FR-HK-006 | Sebaiknya | Daftar periksa dapat mewajibkan lampiran foto pada butir tertentu sebagai bukti pengerjaan. | TODO |
-| TASK-HK-007 | FR-HK-007 | Wajib | Supervisor melakukan inspeksi kamar dan menyetujui perubahan status menjadi siap dijual; kamar tanpa inspeksi dapat dikonfigurasi tetap masuk status bersih namun belum siap. | TODO |
+| TASK-HK-007 | FR-HK-007 | Wajib | Supervisor melakukan inspeksi kamar dan menyetujui perubahan status menjadi siap dijual; kamar tanpa inspeksi dapat dikonfigurasi tetap masuk status bersih namun belum siap. | REVIEW |
 | TASK-HK-008 | FR-HK-008 | Wajib | Room attendant membuat laporan kerusakan dengan cara memilih kamar atau lokasi, menulis keterangan, dan melampirkan foto; laporan langsung menjadi work order pada modul Maintenance. | TODO |
 | TASK-HK-009 | FR-HK-009 | Wajib | Mencatat pemakaian linen dan perlengkapan: sprei, handuk, sarung bantal, sabun, dan amenitas lain, per kamar dan per hari. | TODO |
 | TASK-HK-010 | FR-HK-010 | Wajib | Mencatat sirkulasi linen mengikuti alur gudang ke luar gudang, ke laundry, dan kembali ke gudang; setiap perpindahan wajib diinput saat pengambilan maupun penyimpanan. | TODO |
@@ -32,7 +32,7 @@
 | TASK-HK-015 | FR-HK-015 | Sebaiknya | Menerbitkan laporan produktivitas: jumlah kamar dibersihkan per staf, rata-rata durasi per kamar, dan persentase penyelesaian SOP. | TODO |
 | TASK-HK-016 | FR-HK-016 | Wajib | Mendeteksi room status discrepancy antara Front Office dan Housekeeping (misalnya kamar menurut FO vacant tetapi menurut HK occupied/berisi barang) dan mewajibkan resolusi supervisor sebelum kamar dijual. | TODO |
 | TASK-HK-017 | FR-HK-017 | Wajib | Mencatat service flag DND, refused service, make-up-room, dan privacy request dengan waktu mulai/selesai tanpa mengubah occupancy status kamar. | TODO |
-| TASK-HK-018 | FR-HK-018 | Wajib | Inspeksi supervisor dapat menghasilkan status rework dengan daftar temuan; kamar hanya menjadi ready setelah seluruh temuan wajib diselesaikan atau di-waive oleh peran berwenang. | TODO |
+| TASK-HK-018 | FR-HK-018 | Wajib | Inspeksi supervisor dapat menghasilkan status rework dengan daftar temuan; kamar hanya menjadi ready setelah seluruh temuan wajib diselesaikan atau di-waive oleh peran berwenang. | REVIEW |
 | TASK-HK-019 | FR-HK-019 | Sebaiknya | Mengelola par level linen dan amenitas per tipe kamar/area sehingga kebutuhan replenishment dan selisih konsumsi dapat dihitung per shift. | TODO |
 | TASK-HK-020 | FR-HK-020 | Wajib | Staf Housekeeping memindai barcode kantong laundry lalu memilih kamar untuk membuka order guest laundry. | TODO |
 | TASK-HK-021 | FR-HK-021 | Wajib | Staf mencatat rincian per item sebelum dikirim ke laundry: jenis pakaian (baju, celana, dan seterusnya), merek atau tanpa merek, jumlah, catatan kondisi, tanggal pengambilan, dan tanggal janji kembali kepada tamu. | TODO |

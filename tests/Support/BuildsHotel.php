@@ -11,6 +11,7 @@ use App\Modules\FrontOffice\Application\Reservations\ReservationRequest;
 use App\Modules\FrontOffice\Application\Reservations\ReservationService;
 use App\Modules\FrontOffice\Application\Stays\StayService;
 use App\Modules\FrontOffice\Domain\Reservations\Reservation;
+use App\Modules\Housekeeping\Application\HousekeepingService;
 use App\Modules\IdentityAccess\Application\Approval\ApprovalPolicyAdmin;
 use App\Modules\IdentityAccess\Infrastructure\Persistence\Eloquent\UserRecord;
 use App\Modules\Property\Application\Catalog\RoomCatalogService;
@@ -44,6 +45,15 @@ trait BuildsHotel
     /** May view stays and the identity details of guests. */
     private string $auditorId;
 
+    /** Housekeeping: supervisor (manage, inspect, view, settings), two attendants, and a chief who may inspect and waive. */
+    private string $hkSupervisorId;
+
+    private string $attendantId;
+
+    private string $attendant2Id;
+
+    private string $hkChiefId;
+
     private string $typeId;
 
     private string $planId;
@@ -65,12 +75,20 @@ trait BuildsHotel
         $viewer = UserRecord::factory()->create();
         $supervisor = UserRecord::factory()->create();
         $auditor = UserRecord::factory()->create();
+        $hkSupervisor = UserRecord::factory()->create();
+        $attendant = UserRecord::factory()->create();
+        $attendant2 = UserRecord::factory()->create();
+        $hkChief = UserRecord::factory()->create();
         $this->grant($admin, self::PROPERTY, [
             RoomCatalogService::MANAGE_PERMISSION, RatePlanService::MANAGE_PERMISSION, ChargeSchemeService::MANAGE_PERMISSION, PropertySettingsService::MANAGE_PERMISSION,
             InventoryAdminService::OVERBOOKING_PERMISSION, InventoryAdminService::BLOCK_PERMISSION, InventoryAdminService::HOLD_PERMISSION, ApprovalPolicyAdmin::MANAGE_PERMISSION,
         ]);
         $this->grant($manager, self::PROPERTY, [ReservationService::MANAGE_PERMISSION, StayService::MANAGE_PERMISSION, NightAuditService::RUN_PERMISSION, FolioService::MANAGE_PERMISSION, FolioService::CORRECT_PERMISSION, FolioService::REFUND_PERMISSION]);
         $this->grant($viewer, self::PROPERTY, [ReservationService::VIEW_PERMISSION, FolioService::VIEW_PERMISSION, StayService::VIEW_PERMISSION, NightAuditService::VIEW_PERMISSION]);
+        $this->grant($hkSupervisor, self::PROPERTY, [HousekeepingService::MANAGE_PERMISSION, HousekeepingService::INSPECT_PERMISSION, HousekeepingService::VIEW_PERMISSION, HousekeepingService::SETTINGS_PERMISSION]);
+        $this->grant($attendant, self::PROPERTY, [HousekeepingService::PERFORM_PERMISSION]);
+        $this->grant($attendant2, self::PROPERTY, [HousekeepingService::PERFORM_PERMISSION]);
+        $this->grant($hkChief, self::PROPERTY, [HousekeepingService::INSPECT_PERMISSION, HousekeepingService::WAIVE_PERMISSION]);
         $this->grant($auditor, self::PROPERTY, [StayService::VIEW_PERMISSION, StayService::IDENTITY_PERMISSION]);
         $this->grant($supervisor, self::PROPERTY, ['front-office.folio.approve', NightAuditService::RUN_PERMISSION, NightAuditService::WAIVE_PERMISSION]);
         $this->adminId = strtolower((string) $admin->getKey());
@@ -78,6 +96,10 @@ trait BuildsHotel
         $this->viewerId = strtolower((string) $viewer->getKey());
         $this->supervisorId = strtolower((string) $supervisor->getKey());
         $this->auditorId = strtolower((string) $auditor->getKey());
+        $this->hkSupervisorId = strtolower((string) $hkSupervisor->getKey());
+        $this->attendantId = strtolower((string) $attendant->getKey());
+        $this->attendant2Id = strtolower((string) $attendant2->getKey());
+        $this->hkChiefId = strtolower((string) $hkChief->getKey());
         app(PropertyContext::class)->activateFromString(self::PROPERTY);
 
         $catalog = app(RoomCatalogService::class);

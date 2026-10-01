@@ -7,18 +7,15 @@ import { PageHeader } from '@/components/ui/page-header';
 import { useTranslation } from '@/shared/i18n/i18n';
 
 const LINKS = [
-    { href: '/front-office/room-board', label: 'fo.board.nav' },
-    { href: '/front-office/availability', label: 'fo.nav.availability' },
-    { href: '/front-office/reservations', label: 'fo.nav.reservations' },
-    { href: '/front-office/stays', label: 'fo.nav.stays' },
-    { href: '/front-office/inventory', label: 'fo.nav.inventory' },
-    { href: '/front-office/night-audit', label: 'fo.nav.audit' },
+    { href: '/housekeeping', label: 'hk.nav.board' },
+    { href: '/housekeeping/my-rooms', label: 'hk.nav.mine' },
+    { href: '/front-office/room-board', label: 'hk.nav.frontdesk' },
 ] as const;
 
 type Props = { title: string; description: string; children: ReactNode; wide?: boolean };
 
-/** Common frame of the Front Office pages. */
-export function FrontOfficeShell({ children, description, title, wide = false }: Props) {
+/** Common frame of the Housekeeping pages. */
+export function HousekeepingShell({ children, description, title, wide = false }: Props) {
     const { t } = useTranslation();
     const path = new URL(usePage().url, 'http://x').pathname;
 
@@ -32,9 +29,9 @@ export function FrontOfficeShell({ children, description, title, wide = false }:
                         description={description}
                         title={title}
                     />
-                    <nav aria-label={t('fo.nav.label')} className="flex flex-wrap gap-2 text-sm">
+                    <nav aria-label={t('hk.nav.label')} className="flex flex-wrap gap-2 text-sm">
                         {LINKS.map((link) => (
-                            <Link aria-current={path.startsWith(link.href) ? 'page' : undefined} className="rounded-md border border-border px-3 py-1.5 hover:bg-surface-muted aria-[current=page]:bg-surface-muted aria-[current=page]:font-medium" href={link.href} key={link.href}>{t(link.label)}</Link>
+                            <Link aria-current={path === link.href ? 'page' : undefined} className="rounded-md border border-border px-3 py-1.5 hover:bg-surface-muted aria-[current=page]:bg-surface-muted aria-[current=page]:font-medium" href={link.href} key={link.href}>{t(link.label)}</Link>
                         ))}
                     </nav>
                     {children}

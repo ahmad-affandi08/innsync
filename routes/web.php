@@ -7,7 +7,9 @@ use App\Modules\FrontOffice\Presentation\Http\Controllers\FolioController;
 use App\Modules\FrontOffice\Presentation\Http\Controllers\InventoryController;
 use App\Modules\FrontOffice\Presentation\Http\Controllers\NightAuditController;
 use App\Modules\FrontOffice\Presentation\Http\Controllers\ReservationController;
+use App\Modules\FrontOffice\Presentation\Http\Controllers\RoomBoardController;
 use App\Modules\FrontOffice\Presentation\Http\Controllers\StayController;
+use App\Modules\Housekeeping\Presentation\Http\Controllers\HousekeepingController;
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\ApprovalController;
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\ApprovalPolicyController;
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\AuthenticatedSessionController;
@@ -175,6 +177,8 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
     Route::post('/reservations/{id}/guest-lookup', [StayController::class, 'lookup'])->where('id', $id)->middleware('throttle:bookings')->name('front-office.check-in.lookup');
     Route::post('/reservations/{id}/check-in', [StayController::class, 'checkIn'])->where('id', $id)->middleware(['idempotent', 'throttle:bookings'])->name('front-office.check-in.store');
 
+    Route::get('/room-board', RoomBoardController::class)->name('front-office.room-board');
+
     // Night audit closes the business date (FR-FO-028, BR-001). Running it needs a recent password confirmation and an Idempotency-Key.
     Route::get('/night-audit', [NightAuditController::class, 'index'])->name('front-office.night-audit');
     Route::get('/night-audit/{date}', [NightAuditController::class, 'show'])->where('date', '\d{4}-\d{2}-\d{2}')->name('front-office.night-audit.show');
@@ -201,4 +205,22 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
         Route::post('/holds/{id}/release', [InventoryController::class, 'releaseHold'])->where('id', $id)->name('front-office.holds.release');
         Route::post('/overbooking/{typeId}', [InventoryController::class, 'allowance'])->where('typeId', $id)->name('front-office.overbooking.set');
     });
+});
+
+// Housekeeping (FR-HK-001 to FR-HK-004, FR-HK-007, FR-HK-018): the status of rooms, work for attendants, inspection by supervisors.
+// Permissions are enforced in the application service.
+Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix('housekeeping')->group(function (): void {
+    $id = '[0-9A-Za-z]{26}';
+    Route::get('/', [HousekeepingController::class, 'board'])->name('housekeeping.board');
+    Route::get('/my-rooms', [HousekeepingController::class, 'myRooms'])->name('housekeeping.my-rooms');
+    Route::get('/rooms/{id}', [HousekeepingController::class, 'room'])->where('id', $id)->name('housekeeping.rooms.show');
+    Route::post('/tasks', [HousekeepingController::class, 'requestService'])->name('housekeeping.tasks.store');
+    Route::post('/tasks/{id}/assign', [HousekeepingController::class, 'assign'])->where('id', $id)->name('housekeeping.tasks.assign');
+    Route::post('/tasks/{id}/cancel', [HousekeepingController::class, 'cancel'])->where('id', $id)->name('housekeeping.tasks.cancel');
+    Route::post('/tasks/{id}/start', [HousekeepingController::class, 'start'])->where('id', $id)->name('housekeeping.tasks.start');
+    Route::post('/tasks/{id}/finish', [HousekeepingController::class, 'finish'])->where('id', $id)->name('housekeeping.tasks.finish');
+    Route::post('/rooms/{id}/inspections', [HousekeepingController::class, 'inspect'])->where('id', $id)->name('housekeeping.rooms.inspect');
+    Route::post('/findings/{id}/resolve', [HousekeepingController::class, 'resolveFinding'])->where('id', $id)->name('housekeeping.findings.resolve');
+    Route::post('/findings/{id}/waive', [HousekeepingController::class, 'waiveFinding'])->where('id', $id)->name('housekeeping.findings.waive');
+    Route::post('/settings', [HousekeepingController::class, 'settings'])->name('housekeeping.settings');
 });

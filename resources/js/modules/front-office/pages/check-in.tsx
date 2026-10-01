@@ -15,14 +15,14 @@ import { useFormatters, useTranslation } from '@/shared/i18n/i18n';
 import { useErrorStateCopy } from '@/shared/i18n/use-ui-copy';
 
 type Reservation = { id: string; number: string; status: string; guest_name: string; arrival: string; departure: string; adults: number; children: number };
-type Room = { id: string; number: string; floor: string | null };
+type Room = { id: string; number: string; floor: string | null; ready: boolean };
 type Match = { guest_id: string; full_name: string; stays: number; last_stay: string | null };
 type Done = { id: string; room_number: string; warnings: string[] };
 
 const ID_TYPES = ['ktp', 'passport', 'sim', 'kitas', 'other'] as const;
 const WARNINGS = ['id_expired', 'id_expires_during_stay', 'visa_missing'] as const;
 
-export default function CheckInPage({ reservation: r, rooms, stay }: { reservation: Reservation; rooms: Room[]; stay: { id: string } | null }) {
+export default function CheckInPage({ preselect, reservation: r, rooms, stay }: { preselect: string | null; reservation: Reservation; rooms: Room[]; stay: { id: string } | null }) {
     const { t } = useTranslation();
     const format = useFormatters();
     const errorCopy = useErrorStateCopy();
@@ -30,7 +30,7 @@ export default function CheckInPage({ reservation: r, rooms, stay }: { reservati
     const lookup = useServerAction();
     const [intent, setIntent] = useState(() => newIdempotencyKey());
     const [form, setForm] = useState({
-        roomId: rooms[0]?.id ?? '', fullName: r.guest_name, nationality: 'ID', idType: 'ktp', idNumber: '', idValidUntil: '', visa: '', address: '', adults: String(r.adults), children: String(r.children),
+        roomId: rooms.find((x) => x.id === preselect && x.ready)?.id ?? rooms.find((x) => x.ready)?.id ?? '', fullName: r.guest_name, nationality: 'ID', idType: 'ktp', idNumber: '', idValidUntil: '', visa: '', address: '', adults: String(r.adults), children: String(r.children),
     });
     const [matches, setMatches] = useState<Match[] | null>(null);
     const [done, setDone] = useState<Done | null>(null);
@@ -80,7 +80,7 @@ export default function CheckInPage({ reservation: r, rooms, stay }: { reservati
                     {action.error !== null ? <div className="sm:col-span-2"><ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /></div> : null}
                     <FormField error={action.fieldError('room_id')} hint={rooms.length === 0 ? t('fo.checkin.noRooms') : undefined} label={t('fo.checkin.room')}>
                         <Select onChange={(e) => set({ roomId: e.target.value })} value={form.roomId}>
-                            {rooms.map((room) => <option key={room.id} value={room.id}>{room.number}{room.floor !== null ? ` · ${room.floor}` : ''}</option>)}
+                            {rooms.map((room) => <option disabled={!room.ready} key={room.id} value={room.id}>{room.number}{room.floor !== null ? ` · ${room.floor}` : ''}{room.ready ? '' : ` (${t('fo.checkin.notReady')})`}</option>)}
                         </Select>
                     </FormField>
                     <FormField error={action.fieldError('full_name')} label={t('fo.checkin.fullName')}><Input autoComplete="off" maxLength={150} onChange={(e) => set({ fullName: e.target.value })} required value={form.fullName} /></FormField>
@@ -107,7 +107,7 @@ export default function CheckInPage({ reservation: r, rooms, stay }: { reservati
                         <FormField error={action.fieldError('children')} label={t('fo.checkin.children')}><Input min={0} onChange={(e) => set({ children: e.target.value })} type="number" value={form.children} /></FormField>
                     </div>
                     <div className="sm:col-span-2"><FormField error={action.fieldError('address')} label={t('fo.checkin.address')}><Textarea maxLength={500} onChange={(e) => set({ address: e.target.value })} required rows={2} value={form.address} /></FormField></div>
-                    <div className="sm:col-span-2"><Button disabled={rooms.length === 0} loading={action.busy} type="submit">{t('fo.checkin.submit')}</Button></div>
+                    <div className="sm:col-span-2"><Button disabled={form.roomId === ''} loading={action.busy} type="submit">{t('fo.checkin.submit')}</Button></div>
                 </form>
             )}
         </FrontOfficeShell>
