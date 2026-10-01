@@ -38,6 +38,13 @@ use App\Shared\Application\Idempotency\IdempotencyContext;
 use App\Shared\Application\Idempotency\IdempotencyStore;
 use App\Shared\Application\Idempotency\IdempotentExecutor;
 use App\Shared\Application\Identifiers\IdentifierGenerator;
+use App\Shared\Application\Integration\CircuitStore;
+use App\Shared\Application\Integration\InnSyncWebhookProtocol;
+use App\Shared\Application\Integration\ProviderRegistry;
+use App\Shared\Application\Integration\UnknownOutcomeRepository;
+use App\Shared\Application\Integration\WebhookProtocol;
+use App\Shared\Application\Integration\WebhookReceiptStore;
+use App\Shared\Application\Integration\WebhookReceiver;
 use App\Shared\Application\Localization\LocaleNegotiator;
 use App\Shared\Application\Observability\CorrelationId;
 use App\Shared\Application\Observability\Health\AlertNotifier;
@@ -72,6 +79,10 @@ use App\Shared\Infrastructure\Files\EncryptedDiskFileStorage;
 use App\Shared\Infrastructure\Files\FinfoContentInspector;
 use App\Shared\Infrastructure\Idempotency\DatabaseIdempotencyStore;
 use App\Shared\Infrastructure\Identifiers\UlidIdentifierGenerator;
+use App\Shared\Infrastructure\Integration\ConfiguredProviderRegistry;
+use App\Shared\Infrastructure\Integration\DatabaseCircuitStore;
+use App\Shared\Infrastructure\Integration\DatabaseUnknownOutcomeRepository;
+use App\Shared\Infrastructure\Integration\DatabaseWebhookReceiptStore;
 use App\Shared\Infrastructure\Observability\Health\ConfiguredHealthCheckRegistry;
 use App\Shared\Infrastructure\Observability\Health\DatabaseAlertStore;
 use App\Shared\Infrastructure\Observability\Health\LogAlertNotifier;
@@ -173,6 +184,24 @@ class AppServiceProvider extends ServiceProvider
             $app->make(PropertyContext::class),
             array_map('intval', (array) config('retention.request_due_hours')),
         ));
+        $this->app->bind(ProviderRegistry::class, ConfiguredProviderRegistry::class);
+        $this->app->bind(CircuitStore::class, DatabaseCircuitStore::class);
+        $this->app->bind(UnknownOutcomeRepository::class, DatabaseUnknownOutcomeRepository::class);
+        $this->app->bind(WebhookReceiptStore::class, DatabaseWebhookReceiptStore::class);
+        $this->app->bind(WebhookProtocol::class, static fn (): WebhookProtocol => new InnSyncWebhookProtocol((int) config('integrations.webhooks.tolerance_seconds')));
+        $this->app->bind(WebhookReceiver::class, static fn ($app): WebhookReceiver => new WebhookReceiver(
+            $app->make(ProviderRegistry::class),
+            $app->make(WebhookProtocol::class),
+            static fn (string $class): WebhookProtocol => $app->make($class),
+            $app->make(WebhookReceiptStore::class),
+            $app->make(OutboxPublisher::class),
+            $app->make(TransactionRunner::class),
+            $app->make(SecurityLog::class),
+            $app->make(IdentifierGenerator::class),
+            $app->make(Clock::class),
+            $app->make(PropertyContext::class),
+            (int) config('integrations.webhooks.max_body_bytes'),
+        ));
         $this->app->bind(SyncExceptionRepository::class, DatabaseSyncExceptionRepository::class);
         $this->app->bind(DeviceStatusRepository::class, DatabaseDeviceStatusRepository::class);
         $this->app->bind(UnexpectedFailureReporter::class, ReportingFailureReporter::class);
@@ -210,6 +239,9 @@ class AppServiceProvider extends ServiceProvider
 
         RateLimiter::for('sync', static fn (Request $request): Limit => Limit::perMinute(60)
             ->by((string) $request->user()?->getAuthIdentifier().'|'.$request->ip()));
+
+        RateLimiter::for('webhooks', static fn (Request $request): Limit => Limit::perMinute(120)
+            ->by((string) $request->route('provider').'|'.$request->ip()));
 
         RateLimiter::for('health', static fn (Request $request): Limit => Limit::perMinute(60)
             ->by((string) $request->ip()));

@@ -1,6 +1,7 @@
 <?php
 
 use App\Shared\Application\Observability\Health\HealthCheck;
+use App\Shared\Infrastructure\Integration\IntegrationHealthCheck;
 use App\Shared\Infrastructure\Offline\SyncBacklogCheck;
 use App\Shared\Infrastructure\Privacy\PrivacyRequestsCheck;
 
@@ -33,5 +34,6 @@ return [
     'checks' => [
         SyncBacklogCheck::class,
         PrivacyRequestsCheck::class,
+        IntegrationHealthCheck::class,
     ],
 ];

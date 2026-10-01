@@ -15,6 +15,7 @@ Release notes for every release (NFR-14). Newest first. Each entry names the tas
 - TASK-FND-016 (ADR-0003, ADR-0008): shared-hosting release profile for Git deployment on Niagahoster: verified production artifact published to a generated `release` branch, host release and rollback script with backup-first and preflight-on-new-code, `deploy:preflight` and `deploy:smoke` commands, release workflow, contingency (standby) procedure, and a deployment runbook.
 - TASK-FND-018 (NFR-06, BR-004): maker-checker approval engine: module contract (`ApprovalGate`), versioned per-property policies with amount bands and scope, no self-approval, distinct approvers, single-use consumption bound to the payload, immutable decision evidence with audit and security events, approver inbox in English and Indonesian, and currency-aware money display.
 - TASK-FND-019 (NFR-07, NFR-08, NFR-24, NFR-29): retention catalogue with an Indonesian baseline, daily erasure of expired files with tombstones, legal holds, consent ledger, data subject request register with deadlines, sensitive export issuing and personal data access audit; backup sets kept default to 35.
+- TASK-FND-020 (NFR-25, NFR-28, NFR-18): external integration conventions: single call executor with timeouts, idempotency key and circuit breaker, honest unknown outcomes with manual reconciliation and a health signal, signed idempotent webhook receiver with secret rotation, contract versioning policy and browser/device matrix.
 
 ### Known limitations
 
@@ -23,5 +24,6 @@ Release notes for every release (NFR-14). Newest first. Each entry names the tas
 - Offline operation (TASK-FND-017) has no concrete POS or Housekeeping operations yet, and real iOS/Android devices have not been tested (PRD Q-14 is open).
 - PHP static analysis (Larastan) is approved but not installed yet; it could not be downloaded in the build sandbox.
 - Retention periods and data subject deadlines are an Indonesian baseline from the owner's instruction and need confirmation by counsel (docs/OPERATIONS/INDONESIA-COMPLIANCE-BASELINE.md); no module stores personal data yet.
+- No external provider is configured or chosen yet (PRD Q-04, Q-07, Q-08, Q-16); the integration machinery has only been exercised with test providers, and Safari, Firefox and real mobile devices have not been tested.
 - No business module uses the approval engine yet (TASK-FND-018); mandatory actions, thresholds and approver chains per property are still to be configured by owners, and rounding rules are PRD Q-13.
 - Production release is blocked on the open hosting items D4, D5 and D6 in `docs/OPERATIONS/DEPLOYMENT-RUNBOOK.md`; nothing has been run against the real Niagahoster plan.

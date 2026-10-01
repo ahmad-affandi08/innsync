@@ -37,6 +37,7 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
         then: function (): void {
             Route::middleware('throttle:health')->group(base_path('routes/health.php'));
+            Route::middleware(['api', 'throttle:webhooks'])->prefix('api')->group(base_path('routes/webhooks.php'));
         },
     )
     ->withCommands([
