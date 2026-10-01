@@ -13,4 +13,7 @@ use App\Shared\Domain\Tenancy\PropertyId;
 interface PermissionChecker
 {
     public function allowsInProperty(string $actorId, string $permission, PropertyId $property): bool;
+
+    /** Like `allowsInProperty`, but for a resource scope (`outlet` or `department`) inside the property. */
+    public function allowsInScope(string $actorId, string $permission, PropertyId $property, string $scopeType, string $scopeId): bool;
 }

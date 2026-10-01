@@ -3,6 +3,7 @@ import { useMemo } from 'react';
 
 import { loaders } from '@/locales';
 import type { MessageKey } from '@/locales/en/index';
+import { formatMinorUnits } from '@/shared/money/money';
 import { calendarDateIn, formatDate, formatInstant, fromEpochSeconds } from '@/shared/time/time';
 import {
     createTranslator,
@@ -86,6 +87,8 @@ export function useFormatters() {
             date: (isoDate: string, style?: 'short' | 'medium' | 'long') => formatDate(isoDate, locale, style),
             calendarDateOf: (value: Date | string | number) => calendarDateIn(value, timeZone),
             number: (value: number) => new Intl.NumberFormat(locale).format(value),
+            /** Integer minor units + ISO currency, as sent by the server (ADR-0006). */
+            money: (amountMinor: number, currency: string) => formatMinorUnits(amountMinor, currency, locale),
         }),
         [locale, timeZone],
     );

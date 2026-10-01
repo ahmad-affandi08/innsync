@@ -6,6 +6,7 @@ namespace App\Modules\IdentityAccess\Application\Security;
 
 enum IdentityAccessSecurityEvent: string
 {
+    case ApprovalDenied = 'identity.approval.denied';
     case Authentication = 'identity.authentication';
     case Authorization = 'identity.authorization';
     case Logout = 'identity.logout';

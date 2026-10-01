@@ -17,4 +17,9 @@ final readonly class ScopedPermissionChecker implements PermissionChecker
     {
         return $this->authorizer->allows($actorId, $permission, $property->toString(), 'property', null);
     }
+
+    public function allowsInScope(string $actorId, string $permission, PropertyId $property, string $scopeType, string $scopeId): bool
+    {
+        return $this->authorizer->allows($actorId, $permission, $property->toString(), $scopeType, $scopeId);
+    }
 }

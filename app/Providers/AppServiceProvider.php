@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Modules\IdentityAccess\Application\Approval\ApprovalPolicyRepository;
+use App\Modules\IdentityAccess\Application\Approval\ApprovalRepository;
+use App\Modules\IdentityAccess\Application\Approval\ApprovalService;
 use App\Modules\IdentityAccess\Application\Ports\CredentialAuthenticator;
 use App\Modules\IdentityAccess\Application\Ports\MfaStore;
 use App\Modules\IdentityAccess\Application\Ports\OneTimePassword;
@@ -11,6 +14,9 @@ use App\Modules\IdentityAccess\Application\Ports\PermissionGrantReader;
 use App\Modules\IdentityAccess\Application\Ports\UserAccessReader;
 use App\Modules\IdentityAccess\Application\Ports\UserPasswordUpdater;
 use App\Modules\IdentityAccess\Application\Ports\UserSessionRepository;
+use App\Modules\IdentityAccess\Infrastructure\Approval\ConfiguredApprovalSubjects;
+use App\Modules\IdentityAccess\Infrastructure\Approval\DatabaseApprovalPolicyRepository;
+use App\Modules\IdentityAccess\Infrastructure\Approval\DatabaseApprovalRepository;
 use App\Modules\IdentityAccess\Infrastructure\Authentication\EloquentCredentialAuthenticator;
 use App\Modules\IdentityAccess\Infrastructure\Authentication\EloquentUserPasswordUpdater;
 use App\Modules\IdentityAccess\Infrastructure\Authorization\EloquentPermissionGrantReader;
@@ -21,6 +27,8 @@ use App\Modules\IdentityAccess\Infrastructure\Mfa\TotpOneTimePassword;
 use App\Modules\IdentityAccess\Infrastructure\Sessions\DatabaseUserSessionRepository;
 use App\Modules\Property\Application\Ports\PropertyTimeZoneReader;
 use App\Modules\Property\Infrastructure\Time\EloquentPropertyTimeZoneReader;
+use App\Shared\Application\Approval\ApprovalGate;
+use App\Shared\Application\Approval\ApprovalSubjects;
 use App\Shared\Application\Audit\AuditWriter;
 use App\Shared\Application\Files\ContentInspector;
 use App\Shared\Application\Files\PrivateFileStorage;
@@ -28,6 +36,7 @@ use App\Shared\Application\Files\StoredFileRepository;
 use App\Shared\Application\Idempotency\IdempotencyContext;
 use App\Shared\Application\Idempotency\IdempotencyStore;
 use App\Shared\Application\Idempotency\IdempotentExecutor;
+use App\Shared\Application\Identifiers\IdentifierGenerator;
 use App\Shared\Application\Localization\LocaleNegotiator;
 use App\Shared\Application\Observability\CorrelationId;
 use App\Shared\Application\Observability\Health\AlertNotifier;
@@ -54,6 +63,7 @@ use App\Shared\Infrastructure\Files\DatabaseStoredFileRepository;
 use App\Shared\Infrastructure\Files\EncryptedDiskFileStorage;
 use App\Shared\Infrastructure\Files\FinfoContentInspector;
 use App\Shared\Infrastructure\Idempotency\DatabaseIdempotencyStore;
+use App\Shared\Infrastructure\Identifiers\UlidIdentifierGenerator;
 use App\Shared\Infrastructure\Observability\Health\ConfiguredHealthCheckRegistry;
 use App\Shared\Infrastructure\Observability\Health\DatabaseAlertStore;
 use App\Shared\Infrastructure\Observability\Health\LogAlertNotifier;
@@ -96,6 +106,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(StoredFileRepository::class, DatabaseStoredFileRepository::class);
         $this->app->bind(ContentInspector::class, FinfoContentInspector::class);
         $this->app->bind(Clock::class, SystemClock::class);
+        $this->app->bind(IdentifierGenerator::class, UlidIdentifierGenerator::class);
         $this->app->bind(HealthCheckRegistry::class, ConfiguredHealthCheckRegistry::class);
         $this->app->bind(AlertStore::class, DatabaseAlertStore::class);
         $this->app->bind(AlertNotifier::class, LogAlertNotifier::class);
@@ -128,6 +139,10 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(UserSessionRepository::class, DatabaseUserSessionRepository::class);
         $this->app->bind(PropertyTimeZoneReader::class, EloquentPropertyTimeZoneReader::class);
         $this->app->bind(PermissionChecker::class, ScopedPermissionChecker::class);
+        $this->app->bind(ApprovalRepository::class, DatabaseApprovalRepository::class);
+        $this->app->bind(ApprovalPolicyRepository::class, DatabaseApprovalPolicyRepository::class);
+        $this->app->bind(ApprovalSubjects::class, ConfiguredApprovalSubjects::class);
+        $this->app->bind(ApprovalGate::class, ApprovalService::class);
         $this->app->bind(SyncExceptionRepository::class, DatabaseSyncExceptionRepository::class);
         $this->app->bind(DeviceStatusRepository::class, DatabaseDeviceStatusRepository::class);
         $this->app->bind(UnexpectedFailureReporter::class, ReportingFailureReporter::class);
@@ -159,6 +174,9 @@ class AppServiceProvider extends ServiceProvider
             ->mixedCase()
             ->numbers()
             ->symbols());
+
+        RateLimiter::for('approvals', static fn (Request $request): Limit => Limit::perMinute(30)
+            ->by((string) $request->user()?->getAuthIdentifier().'|'.$request->ip()));
 
         RateLimiter::for('sync', static fn (Request $request): Limit => Limit::perMinute(60)
             ->by((string) $request->user()?->getAuthIdentifier().'|'.$request->ip()));

@@ -20,7 +20,7 @@ trait SignsInToProperty
     }
 
     /** @param list<string> $permissions */
-    private function grant(UserRecord $user, string $propertyId, array $permissions): void
+    private function grant(UserRecord $user, string $propertyId, array $permissions, string $scopeType = 'property', ?string $scopeId = null): void
     {
         $roleId = strtolower((string) Str::ulid());
 
@@ -42,7 +42,7 @@ trait SignsInToProperty
 
         DB::table('user_role_assignments')->insert([
             'id' => strtolower((string) Str::ulid()), 'property_id' => $propertyId, 'user_id' => $user->getKey(), 'role_id' => $roleId,
-            'scope_type' => 'property', 'scope_id' => $propertyId, 'is_active' => true, 'lock_version' => 0,
+            'scope_type' => $scopeType, 'scope_id' => $scopeId ?? $propertyId, 'is_active' => true, 'lock_version' => 0,
             'created_at' => now(), 'updated_at' => now(),
         ]);
     }

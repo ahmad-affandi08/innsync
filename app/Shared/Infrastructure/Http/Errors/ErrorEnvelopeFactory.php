@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Shared\Infrastructure\Http\Errors;
 
 use App\Shared\Application\Concurrency\OptimisticLockConflict;
+use App\Shared\Application\Errors\ExpectedFailure;
 use App\Shared\Application\Files\FileAccessDenied;
 use App\Shared\Application\Files\FileRejected;
 use App\Shared\Application\Files\StoredFileNotFound;
@@ -32,11 +33,13 @@ final class ErrorEnvelopeFactory
         StoredFileNotFound::class,
         MissingPropertyContext::class,
         PropertyScopeViolation::class,
+        ExpectedFailure::class,
     ];
 
     public function make(Throwable $e): ErrorEnvelope
     {
         return match (true) {
+            $e instanceof ExpectedFailure => self::expected($e),
             $e instanceof ValidationException => new ErrorEnvelope(
                 422, 'validation_failed', __('errors.validation_failed'),
                 fields: self::fields($e),
@@ -75,6 +78,27 @@ final class ErrorEnvelopeFactory
             array_map(static fn (mixed $v): string => implode(',', (array) $v), $e->getHeaders()),
             array_flip(['Retry-After', 'Allow', 'WWW-Authenticate']),
         );
+    }
+
+    private static function expected(ExpectedFailure $failure): ErrorEnvelope
+    {
+        $message = __('errors.'.$failure->messageKey());
+
+        if ($failure->status() === 409 && $failure->conflict() !== null) {
+            return new ErrorEnvelope(409, 'conflict', $message, conflict: $failure->conflict());
+        }
+
+        if ($failure->status() === 422) {
+            $fields = [];
+
+            foreach ($failure->invalidFields() as $field) {
+                $fields[$field] = [__('validation.required', ['attribute' => __("validation.attributes.{$field}") === "validation.attributes.{$field}" ? $field : __("validation.attributes.{$field}")])];
+            }
+
+            return new ErrorEnvelope(422, 'validation_failed', $message, fields: $fields === [] ? null : $fields);
+        }
+
+        return new ErrorEnvelope($failure->status(), $failure->errorCode(), $message);
     }
 
     private static function conflict(string $reason, string $action, string $message, bool $retryable = false): ErrorEnvelope

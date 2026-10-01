@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Modules\IdentityAccess\Presentation\Http\Controllers\ApprovalController;
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\AuthenticatedSessionController;
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\MfaController;
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\PasswordConfirmationController;
@@ -85,3 +86,18 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property', 'throttl
 Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])
     ->get('/offline-check', fn () => Inertia::render('foundation/pages/offline-check'))
     ->name('offline.check');
+
+// Maker-checker approval (TASK-FND-018, NFR-06, BR-004). Deciding is sensitive: it needs a recent password
+// confirmation (NFR-22). Requests are opened by modules through the ApprovalGate contract, not from the browser.
+Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix('approvals')->group(function (): void {
+    Route::get('/', [ApprovalController::class, 'index'])->name('approvals.index');
+    // The screen sends people here when the confirmation window has lapsed; they return to the inbox afterwards.
+    Route::get('/confirm', fn () => redirect()->route('approvals.index'))->middleware('password.confirm')->name('approvals.confirm');
+    Route::get('/{id}', [ApprovalController::class, 'show'])->where('id', '[0-9A-Za-z]{26}')->name('approvals.show');
+    Route::post('/{id}/approve', [ApprovalController::class, 'approve'])
+        ->middleware(['password.confirm', 'throttle:approvals'])->where('id', '[0-9A-Za-z]{26}')->name('approvals.approve');
+    Route::post('/{id}/reject', [ApprovalController::class, 'reject'])
+        ->middleware(['password.confirm', 'throttle:approvals'])->where('id', '[0-9A-Za-z]{26}')->name('approvals.reject');
+    Route::post('/{id}/cancel', [ApprovalController::class, 'cancel'])
+        ->middleware('throttle:approvals')->where('id', '[0-9A-Za-z]{26}')->name('approvals.cancel');
+});
