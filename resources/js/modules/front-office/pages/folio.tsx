@@ -150,6 +150,8 @@ export default function FolioPage({ approvals, folio, reservation }: { approvals
                 <div><dt className="text-xs text-muted-foreground">{t('fo.folio.payments')}</dt><dd className="text-lg">{money(folio.payments_minor)}</dd></div>
             </dl>
 
+            <div><Button asChild size="sm" variant="outline"><a href={`/front-office/folios/${folio.id}/bill`}>{t('fo.bill.open')}</a></Button></div>
+
             {open && (
                 <div className="flex flex-wrap gap-2">
                     <Button onClick={() => { action.clear(); setCharge({ code: '', description: '', amount: '', nett: false }); }} size="sm" type="button">{t('fo.folio.addCharge')}</Button>

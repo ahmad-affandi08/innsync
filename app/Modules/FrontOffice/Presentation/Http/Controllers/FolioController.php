@@ -31,6 +31,12 @@ final readonly class FolioController
         ]);
     }
 
+    /** The printable bill (FR-FO-021). */
+    public function bill(Request $request, string $id): Response
+    {
+        return Inertia::render('front-office/pages/bill', ['bill' => $this->folios->bill($this->property->current(), $this->actor($request), $id), 'folio_id' => $id]);
+    }
+
     public function open(Request $request, string $id): JsonResponse
     {
         $data = $request->validate(['label' => ['nullable', 'string', 'max:60'], 'window' => ['nullable', 'integer', 'min:1', 'max:20']]);

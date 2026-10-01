@@ -9,6 +9,8 @@ use App\Modules\FrontOffice\Domain\Folios\Folio;
 use App\Modules\FrontOffice\Domain\Folios\FolioRuleViolation;
 use App\Modules\FrontOffice\Domain\Folios\PaymentMethod;
 use App\Modules\FrontOffice\Domain\Folios\Posting;
+use App\Modules\Property\Application\Catalog\RoomCatalogReader;
+use App\Modules\Property\Application\Ports\PropertyProfileReader;
 use App\Modules\Property\Application\Rates\ChargeCalculator;
 use App\Modules\Property\Application\Settings\BusinessDateProvider;
 use App\Shared\Application\Approval\ApprovalGate;
@@ -66,6 +68,8 @@ final readonly class FolioService
         private OutboxPublisher $outbox,
         private Clock $clock,
         private PropertyContext $property,
+        private RoomCatalogReader $rooms,
+        private PropertyProfileReader $profile,
     ) {}
 
     // ---- reads ----
@@ -77,6 +81,65 @@ final readonly class FolioService
         $folio = $this->folios->find($property, strtolower($folioId)) ?? throw Refusal::notFound('Folio not found.');
 
         return $this->describe($property, $folio);
+    }
+
+    /**
+     * The guest's bill as printed (FR-FO-021): every posting by outlet and by date, then the payments, then what is still owed.
+     * Reversals appear as their own negative lines, so a printed bill never hides a correction.
+     *
+     * @return array<string, mixed>
+     */
+    public function bill(PropertyId $property, string $actorId, string $folioId): array
+    {
+        $this->authorize($property, $actorId, self::VIEW_PERMISSION);
+        $folio = $this->folios->find($property, strtolower($folioId)) ?? throw Refusal::notFound('Folio not found.');
+        $reservation = $this->reservations->find($property, $folio->reservationId) ?? throw Refusal::notFound('Reservation not found.');
+        $outlets = [];
+        $payments = [];
+        $totals = ['base' => 0, 'service_charge' => 0, 'tax' => 0, 'total' => 0, 'paid' => 0];
+
+        foreach ($this->folios->postings($property, $folio->id) as $p) {
+            $isMoney = $p->base->amountMinor === 0 && $p->serviceCharge->amountMinor === 0 && $p->tax->amountMinor === 0 && $p->method !== null;
+
+            if ($isMoney) {
+                $payments[] = ['date' => $p->businessDate->toString(), 'type' => $p->type->value, 'method' => $p->method->value, 'reference' => $p->methodReference, 'purpose' => $p->purpose, 'amount_minor' => -$p->total->amountMinor];
+                $totals['paid'] += -$p->total->amountMinor;
+
+                continue;
+            }
+
+            $outlet = match ($p->source) {
+                'night_audit' => 'rooms',
+                'laundry' => 'laundry',
+                'policy' => 'fees',
+                default => 'other',
+            };
+            $outlets[$outlet] ??= ['outlet' => $outlet, 'lines' => [], 'total_minor' => 0];
+            $outlets[$outlet]['lines'][] = [
+                'date' => $p->businessDate->toString(), 'description' => $p->description, 'reversal' => $p->reversesId !== null,
+                'base_minor' => $p->base->amountMinor, 'service_charge_minor' => $p->serviceCharge->amountMinor, 'tax_minor' => $p->tax->amountMinor, 'total_minor' => $p->total->amountMinor,
+            ];
+            $outlets[$outlet]['total_minor'] += $p->total->amountMinor;
+            $totals['base'] += $p->base->amountMinor;
+            $totals['service_charge'] += $p->serviceCharge->amountMinor;
+            $totals['tax'] += $p->tax->amountMinor;
+            $totals['total'] += $p->total->amountMinor;
+        }
+
+        $order = ['rooms', 'laundry', 'fees', 'other'];
+        usort($outlets, static fn (array $a, array $b): int => array_search($a['outlet'], $order, true) <=> array_search($b['outlet'], $order, true));
+        $room = $reservation->roomId === null ? null : $this->rooms->room($property, $reservation->roomId)?->number;
+
+        return [
+            'hotel' => $this->profile->nameOf($property),
+            'currency' => $folio->currency,
+            'folio' => ['number' => $folio->number, 'label' => $folio->label, 'window' => $folio->window],
+            'reservation' => ['number' => $reservation->number, 'guest_name' => $reservation->guestName, 'arrival' => $reservation->stay->arrival->toString(), 'departure' => $reservation->stay->departure->toString(), 'room' => $room],
+            'outlets' => $outlets,
+            'payments' => $payments,
+            'totals' => [...$totals, 'balance_minor' => $totals['total'] - $totals['paid']],
+            'printed_at' => $this->clock->nowUtc()->format('Y-m-d\TH:i:s\Z'),
+        ];
     }
 
     /** @return list<array<string, mixed>> */

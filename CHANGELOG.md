@@ -24,6 +24,7 @@ Release notes for every release (NFR-14). Newest first. Each entry names the tas
 - Cutover tooling: `import:room-master` with per-row errors, dry run, control totals, and an immutable batch record; a Phase 1 gate flow test that reconciles reservation, check-in, laundry charge, payment, check-out and night audit against the ledger; a data migration and cutover runbook.
 - TASK-FO-018, TASK-FO-019 (BR-002, BR-003): moving an in-house guest to another room (the folio goes with the guest, the old room goes dirty, a different room type moves the inventory, the agreed price is kept, every move recorded with its reason) and extending a stay (only the added nights are priced, with today's rates, as a new fact charged by night audit; availability and room blocks are checked).
 - TASK-FO-009 (partly TASK-FO-003, TASK-FO-004; BR-002, BR-004): booking policies per rate plan and booking source, effective-dated and versioned; a reservation keeps the policy, deposit and due date it was given; guarantee needs the deposit held (or an override with a reason); a late cancellation or no-show posts one base-only fee to the folio unless a privileged person waives it; fee preview before deciding. No policy is assumed.
+- TASK-FO-021, TASK-FO-043, TASK-FO-044 (BR-001, BR-002, BR-009): printable guest bill by outlet and date with payments and the balance due; arrivals, departures and in-house report for a business date (or expected, for a later one) with a purpose-gated export; occupancy, ADR and RevPAR per day, month and year from the closed days.
 
 ### Known limitations
 

@@ -67,7 +67,7 @@ final class ReportingHttpTest extends TestCase
         $this->get('/dashboard?preset=forever')->assertStatus(422);
         $this->get('/dashboard?from=2026-10-09&to=2026-10-01')->assertStatus(422);
 
-        $this->get('/reports')->assertInertia(fn (Assert $p) => $p->component('reporting/pages/reports')->has('reports', 5)->where('context.business_date', '2026-10-01'));
+        $this->get('/reports')->assertInertia(fn (Assert $p) => $p->component('reporting/pages/reports')->has('reports', 7)->where('context.business_date', '2026-10-01'));
     }
 
     public function test_reports_state_their_basis_and_exports_download_as_csv(): void
@@ -90,6 +90,35 @@ final class ReportingHttpTest extends TestCase
         $this->get('/reports/flash/export')->assertOk();
         $this->get('/reports/payments/export')->assertOk();
         self::assertSame(3, DB::table('audit_entries')->where('action', 'report.exported')->count());
+    }
+
+    public function test_the_movement_and_performance_reports_open_and_export(): void
+    {
+        $this->get('/reports/movements')->assertInertia(fn (Assert $p) => $p->component('reporting/pages/movements')->where('report.date', '2026-10-01')->where('report.expected', false)->where('report.totals.in_house', 1)->where('report.in_house.0.guest', 'John Smith')->where('may_export', true));
+        $this->get('/reports/movements?date=2026-10-03')->assertInertia(fn (Assert $p) => $p->where('report.expected', true)->where('report.totals.departures', 1));
+        $this->get('/reports/movements?date=2026-13-45')->assertStatus(422);
+        $this->get('/reports/movements/export')->assertStatus(302);
+
+        $csv = $this->get('/reports/movements/export?date=2026-10-01&purpose='.urlencode('Briefing'))->assertOk();
+        self::assertStringContainsString('attachment; filename="movements-2026-10-01.csv"', (string) $csv->headers->get('Content-Disposition'));
+        self::assertStringContainsString('John Smith', $csv->getContent());
+
+        $this->get('/reports/performance?by=month&year=2026')->assertInertia(fn (Assert $p) => $p->component('reporting/pages/performance')->where('report.by', 'month')->has('report.rows', 10));
+        $this->get('/reports/performance')->assertInertia(fn (Assert $p) => $p->where('report.by', 'day')->where('report.meta.period.preset', 'month'));
+        $this->get('/reports/performance?by=week')->assertStatus(422);
+        $this->get('/reports/performance/export?by=year')->assertOk()->assertHeader('Content-Disposition', 'attachment; filename="performance-year-2026.csv"');
+    }
+
+    public function test_the_bill_page_groups_charges_by_outlet_and_date_and_shows_what_is_owed(): void
+    {
+        $folio = DB::table('folios')->value('id');
+        $this->postJson("/front-office/folios/{$folio}/charges", ['code' => 'MINIBAR', 'description' => 'Minibar', 'amount_minor' => 10_000_000, 'prices_include_charges' => false], ['Idempotency-Key' => 'bill-charge-0000001'])->assertOk();
+        $this->postJson("/front-office/folios/{$folio}/payments", ['payment_method' => 'cash', 'amount_minor' => 5_000_000, 'purpose' => 'deposit'], ['Idempotency-Key' => 'bill-pay-000000001'])->assertOk();
+
+        $this->get("/front-office/folios/{$folio}/bill")->assertInertia(fn (Assert $p) => $p->component('front-office/pages/bill')
+            ->where('bill.reservation.guest_name', 'Budi')->where('bill.reservation.room', '101')->where('bill.hotel', 'A')->where('bill.currency', 'IDR')
+            ->where('bill.outlets.0.outlet', 'other')->where('bill.outlets.0.lines.0.total_minor', 12_100_000)
+            ->where('bill.payments.0.amount_minor', 5_000_000)->where('bill.totals.total', 12_100_000)->where('bill.totals.paid', 5_000_000)->where('bill.totals.balance_minor', 7_100_000));
     }
 
     public function test_people_without_the_permissions_see_nothing(): void

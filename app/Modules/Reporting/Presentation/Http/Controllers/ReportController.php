@@ -31,6 +31,45 @@ final readonly class ReportController
         return Inertia::render('reporting/pages/flash', ['report' => $this->reports->flash($this->property->current(), $this->actor($request), $preset, $from, $to), 'context' => $this->reports->context($this->property->current(), $this->actor($request))]);
     }
 
+    public function movements(Request $request): Response
+    {
+        $data = $request->validate(['date' => ['nullable', 'string', 'size:10']]);
+        $property = $this->property->current();
+
+        return Inertia::render('reporting/pages/movements', [
+            'report' => $this->reports->movements($property, $this->actor($request), $data['date'] ?? null),
+            'context' => $this->reports->context($property, $this->actor($request)),
+            'may_export' => $this->mayExport($request),
+        ]);
+    }
+
+    public function performance(Request $request): Response
+    {
+        $data = $request->validate(['by' => ['nullable', 'string', 'max:5'], 'year' => ['nullable', 'integer', 'min:2000', 'max:2100']]);
+        [$preset, $from, $to] = $this->range($request);
+        $property = $this->property->current();
+
+        return Inertia::render('reporting/pages/performance', [
+            'report' => $this->reports->performance($property, $this->actor($request), $data['by'] ?? 'day', $preset, $from, $to, isset($data['year']) ? (int) $data['year'] : null),
+            'context' => $this->reports->context($property, $this->actor($request)),
+        ]);
+    }
+
+    public function exportMovements(Request $request): HttpResponse
+    {
+        $data = $request->validate(['date' => ['nullable', 'string', 'size:10'], 'purpose' => ['required', 'string', 'max:300']]);
+
+        return $this->download($this->reports->exportMovements($this->property->current(), $this->actor($request), $data['date'] ?? null, $data['purpose']));
+    }
+
+    public function exportPerformance(Request $request): HttpResponse
+    {
+        $data = $request->validate(['by' => ['nullable', 'string', 'max:5'], 'year' => ['nullable', 'integer', 'min:2000', 'max:2100']]);
+        [$preset, $from, $to] = $this->range($request);
+
+        return $this->download($this->reports->exportPerformance($this->property->current(), $this->actor($request), $data['by'] ?? 'day', $preset, $from, $to, isset($data['year']) ? (int) $data['year'] : null));
+    }
+
     public function payments(Request $request): Response
     {
         [$preset, $from, $to] = $this->range($request);

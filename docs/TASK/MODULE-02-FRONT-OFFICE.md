@@ -36,7 +36,7 @@
 | TASK-FO-018 | FR-FO-018 | Wajib | Mendukung perpindahan kamar (room move) dengan pemindahan seluruh saldo folio dan pencatatan alasan. | REVIEW |
 | TASK-FO-019 | FR-FO-019 | Wajib | Mendukung perpanjangan masa menginap (Stay Over) dan check-out dipercepat dengan penyesuaian tagihan otomatis. | REVIEW |
 | TASK-FO-020 | FR-FO-020 | Wajib | Setiap stay memiliki minimal satu folio dan dapat memiliki beberapa folio/window untuk routing tagihan. Folio menampung room charge, pajak, service charge, charge outlet, koreksi, dan pembayaran secara terurut dan dapat ditelusuri. | IN_PROGRESS |
-| TASK-FO-021 | FR-FO-021 | Wajib | Mencetak rincian tagihan (bill print out) yang menampilkan seluruh transaksi terperinci per outlet dan per tanggal. | TODO |
+| TASK-FO-021 | FR-FO-021 | Wajib | Mencetak rincian tagihan (bill print out) yang menampilkan seluruh transaksi terperinci per outlet dan per tanggal. | REVIEW |
 | TASK-FO-022 | FR-FO-022 | Sebaiknya | Mendukung pemisahan tagihan (split bill) menjadi beberapa folio, misalnya folio perusahaan dan folio pribadi tamu. | TODO |
 | TASK-FO-023 | FR-FO-023 | Sebaiknya | Mendukung pemindahan item tagihan antar folio atau antar kamar dengan pencatatan alasan. | TODO |
 | TASK-FO-024 | FR-FO-024 | Wajib | Menerima pembayaran melalui tunai, QRIS, kartu melalui EDC, transfer bank, dan pembayaran daring dari kanal pemesanan. | REVIEW |
@@ -58,8 +58,8 @@
 | TASK-FO-040 | FR-FO-040 | Wajib | Menerbitkan laporan registrasi tamu harian sesuai kolom di atas dengan penyaring tanggal dan kewarganegaraan. | REVIEW |
 | TASK-FO-041 | FR-FO-041 | Wajib | Menerbitkan berkas laporan tamu warga negara asing dalam format yang siap disampaikan kepada instansi terkait. | IN_PROGRESS |
 | TASK-FO-042 | FR-FO-042 | Wajib | Menerbitkan laporan pendapatan kamar per metode pembayaran: tunai, QRIS, transfer bank, kartu, dan pembayaran kanal daring. | REVIEW |
-| TASK-FO-043 | FR-FO-043 | Wajib | Menerbitkan laporan kedatangan, keberangkatan, dan tamu menginap untuk keperluan operasional harian. | TODO |
-| TASK-FO-044 | FR-FO-044 | Wajib | Menerbitkan laporan okupansi, ADR, dan RevPAR per hari, bulan, dan tahun berjalan. | TODO |
+| TASK-FO-043 | FR-FO-043 | Wajib | Menerbitkan laporan kedatangan, keberangkatan, dan tamu menginap untuk keperluan operasional harian. | REVIEW |
+| TASK-FO-044 | FR-FO-044 | Wajib | Menerbitkan laporan okupansi, ADR, dan RevPAR per hari, bulan, dan tahun berjalan. | REVIEW |
 
 ## Required engineering checks
 

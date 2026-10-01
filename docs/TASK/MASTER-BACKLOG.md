@@ -44,7 +44,7 @@
 | TASK-FO-018 | FR-FO-018 | Front Office | Wajib | REVIEW |
 | TASK-FO-019 | FR-FO-019 | Front Office | Wajib | REVIEW |
 | TASK-FO-020 | FR-FO-020 | Front Office | Wajib | IN_PROGRESS |
-| TASK-FO-021 | FR-FO-021 | Front Office | Wajib | TODO |
+| TASK-FO-021 | FR-FO-021 | Front Office | Wajib | REVIEW |
 | TASK-FO-022 | FR-FO-022 | Front Office | Sebaiknya | TODO |
 | TASK-FO-023 | FR-FO-023 | Front Office | Sebaiknya | TODO |
 | TASK-FO-024 | FR-FO-024 | Front Office | Wajib | REVIEW |
@@ -66,8 +66,8 @@
 | TASK-FO-040 | FR-FO-040 | Front Office | Wajib | REVIEW |
 | TASK-FO-041 | FR-FO-041 | Front Office | Wajib | IN_PROGRESS |
 | TASK-FO-042 | FR-FO-042 | Front Office | Wajib | REVIEW |
-| TASK-FO-043 | FR-FO-043 | Front Office | Wajib | TODO |
-| TASK-FO-044 | FR-FO-044 | Front Office | Wajib | TODO |
+| TASK-FO-043 | FR-FO-043 | Front Office | Wajib | REVIEW |
+| TASK-FO-044 | FR-FO-044 | Front Office | Wajib | REVIEW |
 | TASK-HK-001 | FR-HK-001 | Housekeeping | Wajib | REVIEW |
 | TASK-HK-002 | FR-HK-002 | Housekeeping | Wajib | REVIEW |
 | TASK-HK-003 | FR-HK-003 | Housekeeping | Sebaiknya | REVIEW |

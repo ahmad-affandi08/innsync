@@ -57,6 +57,15 @@ interface ReportQueries
      */
     public function paymentsByMethod(PropertyId $property, ReportPeriod $period): array;
 
+    /**
+     * The day's movements for the front desk (FR-FO-043): who arrives, who leaves, who sleeps in the house. For a day up to the
+     * current business date the lists are what happened; for a later day they are what is expected. The lists carry guest
+     * names and room numbers, never identity details.
+     *
+     * @return array{arrivals: list<array<string, mixed>>, departures: list<array<string, mixed>>, in_house: list<array<string, mixed>>}
+     */
+    public function movementLists(PropertyId $property, BusinessDate $date, BusinessDate $today): array;
+
     /** Closed days of the period with their stored night audit report. @return list<array{business_date: string, report: array<string, mixed>}> */
     public function closedDays(PropertyId $property, ReportPeriod $period): array;
 

@@ -19,6 +19,7 @@ use App\Shared\Application\Tenancy\PropertyContext;
 use App\Shared\Application\Tenancy\PropertyScopeViolation;
 use App\Shared\Application\Time\Clock;
 use App\Shared\Domain\Tenancy\PropertyId;
+use App\Shared\Domain\Time\BusinessDate;
 use App\Shared\Domain\Time\CalendarDate;
 use InvalidArgumentException;
 
@@ -40,7 +41,9 @@ final readonly class ReportService
     public const IDENTITY_PERMISSION = 'front-office.guest-identity.view';
 
     public const CATALOGUE = [
+        ['code' => 'movements', 'group' => 'front_office', 'permission' => self::VIEW_PERMISSION],
         ['code' => 'flash', 'group' => 'management', 'permission' => self::VIEW_PERMISSION],
+        ['code' => 'performance', 'group' => 'management', 'permission' => self::VIEW_PERMISSION],
         ['code' => 'payments', 'group' => 'front_office', 'permission' => self::VIEW_PERMISSION],
         ['code' => 'registrations', 'group' => 'front_office', 'permission' => self::GUESTS_PERMISSION],
         ['code' => 'foreign_guests', 'group' => 'front_office', 'permission' => self::GUESTS_PERMISSION],
@@ -107,6 +110,156 @@ final readonly class ReportService
             'totals' => $totals,
             'costs_note' => 'Operating costs are not part of this report: no cost data exists yet.',
         ];
+    }
+
+    /**
+     * Arrivals, departures and the guests in the house for one business date (FR-FO-043). For a day up to today they show what
+     * happened (and, for in house, who slept there); for a later day, what is expected.
+     *
+     * @return array<string, mixed>
+     */
+    public function movements(PropertyId $property, string $actorId, ?string $date): array
+    {
+        $this->authorize($property, $actorId, self::VIEW_PERMISSION);
+        $today = $this->businessDate->current($property);
+
+        try {
+            $day = $date === null || $date === '' ? $today : BusinessDate::fromString($date);
+        } catch (InvalidArgumentException) {
+            throw Refusal::invalid('Give a valid date.', ['date']);
+        }
+
+        if ($day->isBefore($today->addDays(-92)) || $day->isAfter($today->addDays(92))) {
+            throw Refusal::invalid('Choose a date within 92 days of the business date.', ['date']);
+        }
+
+        $lists = $this->queries->movementLists($property, $day, $today);
+
+        return [
+            'meta' => $this->meta('movements', $property, ReportPeriod::custom($day, $day), [], ['reservations and stays (arrival, departure and in-house lists)']),
+            'date' => $day->toString(),
+            'expected' => $day->isAfter($today),
+            ...$lists,
+            'totals' => [
+                'arrivals' => count($lists['arrivals']), 'departures' => count($lists['departures']), 'in_house' => count($lists['in_house']),
+                'guests_in_house' => array_sum(array_map(static fn (array $r): int => $r['adults'] + $r['children'], $lists['in_house'])),
+            ],
+        ];
+    }
+
+    /**
+     * The movement lists as a spreadsheet. They carry guest names, so this is a personal data export: it needs the export
+     * privilege and a stated purpose, and is recorded without the data.
+     *
+     * @return array{filename: string, contents: string}
+     */
+    public function exportMovements(PropertyId $property, string $actorId, ?string $date, string $purpose): array
+    {
+        $this->authorize($property, $actorId, self::GUESTS_EXPORT_PERMISSION);
+
+        if (trim($purpose) === '' || mb_strlen($purpose) > 300) {
+            throw Refusal::invalid('State why this is exported, at most 300 characters.', ['purpose']);
+        }
+
+        $report = $this->movements($property, $actorId, $date);
+        $rows = [];
+
+        foreach (['arrivals' => 'Arrival', 'departures' => 'Departure', 'in_house' => 'In house'] as $key => $label) {
+            foreach ($report[$key] as $r) {
+                $rows[] = [$label, $r['reservation'], $r['guest'], $r['room'] ?? '', $r['adults'], $r['children'], $r['status'], $r['room_type'] ?? '', $r['departure'] ?? $r['expected_departure'] ?? '', $r['balance_minor'] ?? ''];
+            }
+        }
+
+        $contents = CsvWriter::build(['List', 'Reservation', 'Guest', 'Room', 'Adults', 'Children', 'Status', 'Room type', 'Departure', 'Folio balance (minor units)'], $rows);
+        $this->recordExport($property, $actorId, 'movements', $report['meta'], count($rows), trim($purpose), true);
+
+        return ['filename' => sprintf('movements-%s.csv', $report['date']), 'contents' => $contents];
+    }
+
+    /**
+     * Occupancy, ADR and RevPAR per day, month or year from the closed days (FR-FO-044). Room revenue is the room base price
+     * before service charge and tax; occupancy is occupied over sellable room nights; ADR is room revenue over room nights sold;
+     * RevPAR is room revenue over sellable room nights. A day that night audit has not closed is not in the figures, and each row
+     * says how many of its days were closed.
+     *
+     * @return array<string, mixed>
+     */
+    public function performance(PropertyId $property, string $actorId, string $by, ?string $preset, ?string $from, ?string $to, ?int $year): array
+    {
+        $this->authorize($property, $actorId, self::VIEW_PERMISSION);
+        $today = $this->businessDate->current($property);
+
+        if (! in_array($by, ['day', 'month', 'year'], true)) {
+            throw Refusal::invalid('Choose day, month or year.', ['by']);
+        }
+
+        $thisYear = (int) substr($today->toString(), 0, 4);
+        $year ??= $thisYear;
+
+        if ($year < 2000 || $year > $thisYear + 1) {
+            throw Refusal::invalid('Choose a year from 2000.', ['year']);
+        }
+
+        $rows = [];
+
+        if ($by === 'day') {
+            $period = $this->period($property, $preset === null || $preset === '' ? 'month' : $preset, $from, $to);
+
+            foreach ($this->queries->closedDays($property, $period) as $day) {
+                $rows[] = self::performanceRow($day['business_date'], [$day], 1);
+            }
+        } elseif ($by === 'month') {
+            $period = ReportPeriod::custom(BusinessDate::fromString($year.'-01-01'), self::earlier($today, BusinessDate::fromString($year.'-12-31')));
+            $perMonth = [];
+
+            foreach ($this->queries->closedDays($property, $period) as $day) {
+                $perMonth[substr($day['business_date'], 0, 7)][] = $day;
+            }
+
+            for ($m = 1; $m <= 12; $m++) {
+                $key = sprintf('%04d-%02d', $year, $m);
+                $first = BusinessDate::fromString($key.'-01');
+
+                if ($first->isAfter($today)) {
+                    break;
+                }
+
+                $last = BusinessDate::fromString($key.'-'.(new \DateTimeImmutable($key.'-01'))->format('t'));
+                $rows[] = self::performanceRow($key, $perMonth[$key] ?? [], $first->daysUntil($last->isAfter($today) ? $today : $last) + 1);
+            }
+        } else {
+            foreach ([$year - 1, $year] as $y) {
+                $first = BusinessDate::fromString($y.'-01-01');
+
+                if ($first->isAfter($today)) {
+                    continue;
+                }
+
+                $last = BusinessDate::fromString($y.'-12-31');
+                $end = $last->isAfter($today) ? $today : $last;
+                $rows[] = self::performanceRow((string) $y, $this->queries->closedDays($property, ReportPeriod::custom($first, $end)), $first->daysUntil($end) + 1);
+            }
+        }
+
+        return [
+            'meta' => $this->meta('performance', $property, $by === 'day' ? $period : ReportPeriod::custom($today, $today), ['by' => $by] + ($by === 'day' ? [] : ['year' => $year]), ['night_audits (closed business days)']),
+            'by' => $by,
+            'year' => $year,
+            'rows' => $rows,
+        ];
+    }
+
+    /** @return array{filename: string, contents: string} */
+    public function exportPerformance(PropertyId $property, string $actorId, string $by, ?string $preset, ?string $from, ?string $to, ?int $year): array
+    {
+        $report = $this->performance($property, $actorId, $by, $preset, $from, $to, $year);
+        $contents = CsvWriter::build(
+            ['Period', 'Days closed', 'Days in period', 'Sellable room nights', 'Occupied room nights', 'Room nights sold', 'Occupancy (basis points)', 'Room revenue base (minor units)', 'ADR (minor units)', 'RevPAR (minor units)'],
+            array_map(static fn (array $r): array => [$r['label'], $r['days_closed'], $r['days_in_period'], $r['sellable_nights'], $r['occupied_nights'], $r['room_nights'], $r['occupancy_bp'], $r['room_revenue_minor'], $r['adr_minor'], $r['revpar_minor']], $report['rows']),
+        );
+        $this->recordExport($property, $actorId, 'performance', $report['meta'], count($report['rows']), null, false);
+
+        return ['filename' => sprintf('performance-%s-%s.csv', $by, $report['by'] === 'day' ? $report['meta']['period']['from'].'-'.$report['meta']['period']['to'] : $report['year']), 'contents' => $contents];
     }
 
     /** @return array<string, mixed> */
@@ -295,6 +448,37 @@ final readonly class ReportService
         } catch (InvalidArgumentException $e) {
             throw Refusal::invalid($e->getMessage(), ['from', 'to', 'preset']);
         }
+    }
+
+    /**
+     * @param  list<array{business_date: string, report: array<string, mixed>}>  $days  closed days of the row
+     * @return array<string, mixed>
+     */
+    private static function performanceRow(string $label, array $days, int $daysInPeriod): array
+    {
+        $sellable = 0;
+        $occupied = 0;
+        $sold = 0;
+        $revenue = 0;
+
+        foreach ($days as $day) {
+            $r = $day['report'];
+            $sellable += (int) ($r['rooms_sellable'] ?? $r['rooms_total']);
+            $occupied += (int) $r['in_house'];
+            $sold += (int) $r['room_nights_charged'];
+            $revenue += (int) $r['revenue']['room']['base'];
+        }
+
+        return [
+            'label' => $label, 'days_closed' => count($days), 'days_in_period' => $daysInPeriod, 'sellable_nights' => $sellable, 'occupied_nights' => $occupied, 'room_nights' => $sold,
+            'occupancy_bp' => $sellable === 0 ? 0 : intdiv($occupied * 10_000, $sellable), 'room_revenue_minor' => $revenue,
+            'adr_minor' => $sold === 0 ? 0 : intdiv($revenue, $sold), 'revpar_minor' => $sellable === 0 ? 0 : intdiv($revenue, $sellable),
+        ];
+    }
+
+    private static function earlier(BusinessDate $a, BusinessDate $b): BusinessDate
+    {
+        return $a->isBefore($b) ? $a : $b;
     }
 
     private static function mask(string $value): string

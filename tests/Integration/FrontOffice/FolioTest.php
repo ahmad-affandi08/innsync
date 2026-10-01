@@ -11,6 +11,7 @@ use App\Modules\FrontOffice\Application\Reservations\ReservationService;
 use App\Modules\IdentityAccess\Application\Approval\ApprovalPolicyAdmin;
 use App\Modules\IdentityAccess\Application\Approval\ApprovalService;
 use App\Modules\IdentityAccess\Infrastructure\Persistence\Eloquent\UserRecord;
+use App\Modules\Property\Application\Rates\ChargeSchemeService;
 use App\Shared\Application\Approval\ApprovalNotUsable;
 use App\Shared\Application\Approval\ApprovalRequestInput;
 use App\Shared\Application\Approval\MissingApprovalPolicy;
@@ -412,5 +413,27 @@ final class FolioTest extends TestCase
         } catch (ApprovalNotUsable) {
             $this->addToAssertionCount(1);
         }
+    }
+
+    public function test_the_bill_lists_charges_by_outlet_then_payments_and_what_is_still_owed(): void
+    {
+        app(ChargeSchemeService::class)->define($this->property(), $this->adminId, 'laundry', '2026-10-01', '10', '10', true, 'Regional regulation');
+        $this->folios()->charge($this->property(), $this->managerId, $this->folioId, 'MINIBAR', 'Minibar', 10_000_000, false);
+        $this->folios()->postGuestCharge($this->property(), $this->managerId, $this->reservationId, 'laundry', 'LAUNDRY', 'Guest laundry LDY-1', 50_000_000, 'laundry', 'ldy:1');
+        $this->folios()->pay($this->property(), $this->managerId, $this->folioId, 'qris', 20_000_000, 'QR-9', 'deposit');
+
+        $bill = $this->folios()->bill($this->property(), $this->viewerId, $this->folioId);
+
+        self::assertSame(['IDR', 'Budi Santoso'], [$bill['currency'], $bill['reservation']['guest_name']]);
+        self::assertSame(['laundry', 'other'], array_column($bill['outlets'], 'outlet'), 'outlets in a fixed order');
+        self::assertSame(['Guest laundry LDY-1'], array_column($bill['outlets'][0]['lines'], 'description'));
+        self::assertSame(12_100_000, $bill['outlets'][1]['total_minor']);
+        self::assertSame([20_000_000, 'qris', 'QR-9'], [$bill['payments'][0]['amount_minor'], $bill['payments'][0]['method'], $bill['payments'][0]['reference']]);
+        self::assertSame($bill['totals']['total'] - 20_000_000, $bill['totals']['balance_minor']);
+        self::assertSame($this->balance(), $bill['totals']['balance_minor'], 'the printed balance is the folio balance');
+        self::assertSame($bill['totals']['base'] + $bill['totals']['service_charge'] + $bill['totals']['tax'], $bill['totals']['total']);
+
+        $this->expect(fn () => $this->folios()->bill($this->property(), $this->dashOnlyId, $this->folioId), 403);
+        $this->expect(fn () => $this->folios()->bill($this->property(), $this->viewerId, '01arz3ndektsv4rrffq69g5fax'), 404);
     }
 }

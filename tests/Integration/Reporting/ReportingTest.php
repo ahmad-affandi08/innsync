@@ -10,6 +10,7 @@ use App\Modules\FrontOffice\Application\Inventory\InventoryAdminService;
 use App\Modules\FrontOffice\Application\NightAudit\NightAuditService;
 use App\Modules\FrontOffice\Application\Stays\CheckInRequest;
 use App\Modules\FrontOffice\Application\Stays\StayService;
+use App\Modules\IdentityAccess\Infrastructure\Persistence\Eloquent\UserRecord;
 use App\Modules\Reporting\Application\DashboardService;
 use App\Modules\Reporting\Application\ReportService;
 use App\Shared\Application\Errors\Refusal;
@@ -318,8 +319,101 @@ final class ReportingTest extends TestCase
 
     public function test_the_report_centre_lists_only_what_the_person_may_open(): void
     {
-        self::assertSame(['flash', 'payments', 'registrations', 'foreign_guests', 'audit'], array_column($this->reports()->catalogue($this->property(), $this->analystId), 'code'));
+        self::assertSame(['movements', 'flash', 'performance', 'payments', 'registrations', 'foreign_guests', 'audit'], array_column($this->reports()->catalogue($this->property(), $this->analystId), 'code'));
         self::assertSame(['registrations', 'foreign_guests'], array_column($this->reports()->catalogue($this->property(), $this->registrarId), 'code'));
         self::assertSame([], $this->reports()->catalogue($this->property(), $this->viewerId));
+    }
+
+    public function test_the_movement_lists_show_arrivals_departures_and_the_house_for_a_day_and_for_plans(): void
+    {
+        $this->operate();
+        $r = $this->reports()->movements($this->property(), $this->analystId, null);
+
+        self::assertSame(['2026-10-01', false], [$r['date'], $r['expected']]);
+        self::assertSame(['arrivals' => 3, 'departures' => 0, 'in_house' => 2, 'guests_in_house' => 6], $r['totals']);
+        $statuses = array_column($r['arrivals'], 'status');
+        sort($statuses);
+        self::assertSame(['checked_in', 'checked_in', 'confirmed'], $statuses);
+        self::assertSame(['101', '102'], array_column($r['in_house'], 'room'));
+        self::assertArrayNotHasKey('id_number', $r['in_house'][0]);
+
+        $planned = $this->reports()->movements($this->property(), $this->analystId, '2026-10-03');
+        self::assertTrue($planned['expected']);
+        self::assertSame(['102'], array_column($planned['departures'], 'room'), 'the guest due out on the 3rd');
+        self::assertSame(['101'], array_column($planned['in_house'], 'room'), 'only the guest who stays past the 3rd');
+        self::assertSame(0, $planned['totals']['arrivals']);
+
+        $this->assertRefused(422, fn () => $this->reports()->movements($this->property(), $this->analystId, '2027-10-03'));
+        $this->assertRefused(422, fn () => $this->reports()->movements($this->property(), $this->analystId, 'tomorrow'));
+        $this->assertRefused(403, fn () => $this->reports()->movements($this->property(), $this->dashOnlyId, null));
+    }
+
+    public function test_a_past_day_keeps_its_departures_and_house_after_the_day_is_closed(): void
+    {
+        $this->operate();
+        $this->closeDay();
+        $this->clock->advance('+11 hours');
+        $this->closeDay();
+        // Now 2026-10-03: John is due out and still owes his stay.
+        $past = $this->reports()->movements($this->property(), $this->analystId, '2026-10-01');
+
+        self::assertSame(['101', '102'], array_column($past['in_house'], 'room'));
+        self::assertSame(3, $past['totals']['arrivals']);
+        $today = $this->reports()->movements($this->property(), $this->analystId, '2026-10-03');
+        self::assertSame(['102'], array_column($today['departures'], 'room'));
+        self::assertGreaterThan(0, $today['departures'][0]['balance_minor']);
+    }
+
+    public function test_the_movement_export_needs_the_privilege_and_a_purpose_and_is_recorded_without_names(): void
+    {
+        $this->operate();
+        $exporter = UserRecord::factory()->create();
+        $this->grant($exporter, self::PROPERTY, [ReportService::VIEW_PERMISSION, ReportService::GUESTS_EXPORT_PERMISSION]);
+        $actor = strtolower((string) $exporter->getKey());
+
+        $this->assertRefused(403, fn () => $this->reports()->exportMovements($this->property(), $this->analystId, null, 'Briefing'));
+        $this->assertRefused(422, fn () => $this->reports()->exportMovements($this->property(), $actor, null, ' '));
+
+        $file = $this->reports()->exportMovements($this->property(), $actor, '2026-10-01', 'Morning briefing');
+        self::assertSame('movements-2026-10-01.csv', $file['filename']);
+        self::assertStringContainsString('Arrival', $file['contents']);
+        self::assertStringContainsString("'=HYPERLINK", $file['contents'], 'a guest name that looks like a formula is neutralized');
+        $entry = DB::table('audit_entries')->where('action', 'report.exported')->latest('occurred_at')->first();
+        self::assertStringContainsString('movements', (string) $entry->after_state);
+        self::assertStringNotContainsString('Budi', (string) $entry->after_state);
+        self::assertSame('Morning briefing', $entry->reason);
+    }
+
+    public function test_occupancy_adr_and_revpar_per_day_month_and_year_come_from_closed_days(): void
+    {
+        $this->operate();
+        $this->closeDay();
+
+        $day = $this->reports()->performance($this->property(), $this->analystId, 'day', 'yesterday', null, null, null);
+        self::assertSame('performance', $day['meta']['report']);
+        self::assertCount(1, $day['rows']);
+        self::assertSame(
+            ['2026-10-01', 1, 2, 2, 2, 10_000, 200_000_000, 100_000_000, 100_000_000],
+            array_values(array_intersect_key($day['rows'][0], array_flip(['label', 'days_closed', 'sellable_nights', 'occupied_nights', 'room_nights', 'occupancy_bp', 'room_revenue_minor', 'adr_minor', 'revpar_minor']))),
+        );
+
+        $month = $this->reports()->performance($this->property(), $this->analystId, 'month', null, null, null, 2026);
+        self::assertCount(10, $month['rows'], 'January to the month of the business date');
+        $october = $month['rows'][9];
+        self::assertSame(['2026-10', 1, 2, 10_000, 200_000_000], [$october['label'], $october['days_closed'], $october['days_in_period'], $october['occupancy_bp'], $october['room_revenue_minor']]);
+        self::assertSame([0, 31], [$month['rows'][0]['days_closed'], $month['rows'][0]['days_in_period']]);
+        self::assertSame(0, $month['rows'][0]['occupancy_bp']);
+
+        $year = $this->reports()->performance($this->property(), $this->analystId, 'year', null, null, null, null);
+        self::assertSame(['2025', '2026'], array_column($year['rows'], 'label'));
+        self::assertSame([0, 200_000_000], [$year['rows'][0]['room_revenue_minor'], $year['rows'][1]['room_revenue_minor']]);
+
+        $this->assertRefused(422, fn () => $this->reports()->performance($this->property(), $this->analystId, 'week', null, null, null, null));
+        $this->assertRefused(422, fn () => $this->reports()->performance($this->property(), $this->analystId, 'month', null, null, null, 1999));
+        $this->assertRefused(403, fn () => $this->reports()->performance($this->property(), $this->dashOnlyId, 'day', null, null, null, null));
+
+        $csv = $this->reports()->exportPerformance($this->property(), $this->analystId, 'day', 'yesterday', null, null, null);
+        self::assertStringContainsString('"2026-10-01","1","1","2","2","2","10000","200000000","100000000","100000000"', $csv['contents']);
+        self::assertNotNull(DB::table('audit_entries')->where('action', 'report.exported')->first());
     }
 }

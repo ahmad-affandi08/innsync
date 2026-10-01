@@ -165,6 +165,43 @@ final readonly class DatabaseReportQueries implements ReportQueries
         return $result;
     }
 
+    public function movementLists(PropertyId $property, BusinessDate $date, BusinessDate $today): array
+    {
+        $pid = $property->toString();
+        $day = $date->toString();
+        $balance = DB::table('folios')->selectRaw('reservation_id, SUM(balance_minor) as balance')->where('property_id', $pid)->groupBy('reservation_id');
+
+        $arrivals = DB::table('reservations as r')->join('room_types as t', 't.id', '=', 'r.room_type_id')->leftJoin('rooms', 'rooms.id', '=', 'r.room_id')
+            ->where('r.property_id', $pid)->where('r.arrival_date', $day)->whereIn('r.status', ['tentative', 'confirmed', 'guaranteed', 'checked_in', 'completed'])
+            ->orderBy('r.guest_name')->get(['r.number', 'r.guest_name', 'r.status', 'r.source', 'r.adults', 'r.children', 'r.departure_date', 't.code as room_type', 'rooms.number as room'])
+            ->map(static fn ($r): array => [
+                'reservation' => $r->number, 'guest' => $r->guest_name, 'status' => $r->status, 'source' => $r->source, 'adults' => (int) $r->adults, 'children' => (int) $r->children,
+                'room_type' => $r->room_type, 'room' => $r->room, 'departure' => substr((string) $r->departure_date, 0, 10),
+            ])->all();
+
+        $stays = static fn () => DB::table('stays as s')->join('reservations as r', 'r.id', '=', 's.reservation_id')->join('rooms', 'rooms.id', '=', 's.room_id')->join('guests as g', 'g.id', '=', 's.guest_id')
+            ->leftJoinSub($balance, 'b', 'b.reservation_id', '=', 's.reservation_id')->where('s.property_id', $pid);
+        $columns = ['rooms.number as room', 'r.number as reservation', 'g.full_name as guest_name', 's.adults', 's.children', 's.status', 's.checked_in_business_date', 's.expected_departure', 's.checked_out_business_date', 'b.balance'];
+        $shape = static fn ($r): array => [
+            'room' => $r->room, 'reservation' => $r->reservation, 'guest' => $r->guest_name, 'adults' => (int) $r->adults, 'children' => (int) $r->children, 'status' => $r->status,
+            'checked_in' => substr((string) $r->checked_in_business_date, 0, 10), 'expected_departure' => substr((string) $r->expected_departure, 0, 10),
+            'checked_out' => $r->checked_out_business_date === null ? null : substr((string) $r->checked_out_business_date, 0, 10), 'balance_minor' => (int) ($r->balance ?? 0),
+        ];
+
+        $departures = $stays()->where(static fn ($q) => $q->where(static fn ($w) => $w->where('s.status', 'in_house')->where('s.expected_departure', $day))->orWhere('s.checked_out_business_date', $day))
+            ->orderBy('rooms.number')->get($columns)->map($shape)->all();
+
+        $inHouse = $stays();
+
+        if ($date->isAfter($today)) {
+            $inHouse->where('s.status', 'in_house')->where('s.expected_departure', '>', $day);
+        } else {
+            $inHouse->where('s.checked_in_business_date', '<=', $day)->where(static fn ($q) => $q->whereNull('s.checked_out_business_date')->orWhere('s.checked_out_business_date', '>', $day));
+        }
+
+        return ['arrivals' => $arrivals, 'departures' => $departures, 'in_house' => $inHouse->orderBy('rooms.number')->get($columns)->map($shape)->all()];
+    }
+
     public function closedDays(PropertyId $property, ReportPeriod $period): array
     {
         return DB::table('night_audits')->where('property_id', $property->toString())->whereBetween('business_date', [$period->from->toString(), $period->to->toString()])->orderBy('business_date')->get()
