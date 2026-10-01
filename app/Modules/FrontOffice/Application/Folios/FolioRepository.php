@@ -38,6 +38,9 @@ interface FolioRepository
 
     public function hasPayments(PropertyId $property, string $folioId): bool;
 
+    /** Deposits held for a reservation: deposit payments that were not reversed, less money paid back. */
+    public function depositHeldMinor(PropertyId $property, string $reservationId): int;
+
     /** @return bool false when the lock version no longer matches */
     public function close(PropertyId $property, Folio $folio, string $actorId, DateTimeImmutable $at): bool;
 

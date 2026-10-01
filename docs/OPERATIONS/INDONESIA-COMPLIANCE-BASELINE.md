@@ -50,6 +50,16 @@ Applied by the owner's instruction to follow Indonesian business practice. These
 - Night audit may be started from a configurable earliest local time, default **23:00**, and has no latest time; the clock never starts it. The choice follows the common Indonesian hotel practice of auditing around midnight; the General Manager confirms or changes it per property.
 - Check-in and check-out standard times default to **14:00** and **12:00** and are property settings.
 
+## Booking policy (deposit, guarantee, cancellation, no-show) — suggested starting point (`FR-FO-009`)
+
+Booking policy is a commercial decision of the hotel, not a legal one; Indonesian hotels commonly sell on these terms. The system **assumes nothing**: with no policy defined there is no deposit and no fee. The owner enters the policy on the booking policy screen (`/property/policies`), per rate plan and booking source, effective-dated and versioned; a reservation keeps the policy it was given. A suggested starting point to confirm or change:
+
+- **Guarantee and deposit.** A guaranteed booking holds a deposit of the **first night** (including service charge and tax, because it is money received), due when the booking is made or a few days before arrival. A corporate booking with a letter of guarantee can be guaranteed without a deposit by a person with the override privilege and a reason.
+- **Free cancellation.** Until **1 to 3 days before arrival** (so a cancellation on the day before is already late); a longer window for peak periods or groups is a separate policy for that rate plan.
+- **Late cancellation and no-show.** A fee of **the first night** for a late cancellation and **the first night or all nights** for a no-show, on the room price **before** service charge and tax. Whether a fee carries tax or service charge is a Finance and tax-advisor decision (`Q-13`): the system adds none.
+- **Waiving.** A person with the waive privilege may waive a fee with the reason recorded (force majeure, regular guests).
+- OTA bookings usually follow the channel's own terms: define a policy for the `ota` source rather than the hotel's own.
+
 ## Not decided here
 
 - The format of the foreign-guest report (`Q-09`) and whether electronic registration is accepted as the official procedure (`Q-17`) depend on the local authority and need a Front Office answer.

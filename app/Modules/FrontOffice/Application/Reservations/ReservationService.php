@@ -8,10 +8,13 @@ use App\Modules\FrontOffice\Application\BookingRefused;
 use App\Modules\FrontOffice\Application\Inventory\AvailabilityService;
 use App\Modules\FrontOffice\Application\Inventory\InventoryRepository;
 use App\Modules\FrontOffice\Domain\Reservations\BookingSource;
+use App\Modules\FrontOffice\Domain\Reservations\PolicySnapshot;
 use App\Modules\FrontOffice\Domain\Reservations\Reservation;
 use App\Modules\FrontOffice\Domain\Reservations\ReservationRuleViolation;
 use App\Modules\FrontOffice\Domain\Reservations\ReservationStatus;
+use App\Modules\FrontOffice\Domain\Stays\StayRuleViolation;
 use App\Modules\Property\Application\Catalog\RoomCatalogReader;
+use App\Modules\Property\Application\Policies\BookingPolicyReader;
 use App\Modules\Property\Application\Rates\RatePlanReader;
 use App\Modules\Property\Application\Rates\RateQuoter;
 use App\Modules\Property\Application\Rates\StayQuote;
@@ -54,6 +57,10 @@ final readonly class ReservationService
 
     public const OVERBOOKING_PERMISSION = 'front-office.overbooking.override';
 
+    public const WAIVE_PENALTY_PERMISSION = 'front-office.penalty.waive';
+
+    public const GUARANTEE_OVERRIDE_PERMISSION = 'front-office.guarantee.override';
+
     public function __construct(
         private ReservationRepository $reservations,
         private InventoryRepository $inventory,
@@ -73,6 +80,9 @@ final readonly class ReservationService
         private PiiAccessAudit $piiAccess,
         private Clock $clock,
         private PropertyContext $property,
+        private BookingPolicyReader $policies,
+        private PenaltyPoster $penalties,
+        private DepositLedger $deposits,
     ) {}
 
     public function create(PropertyId $property, string $actorId, ReservationRequest $request, IdempotencyKey $key): Reservation
@@ -96,16 +106,107 @@ final readonly class ReservationService
         return $this->change($property, $actorId, $id, $expectedLockVersion, 'reservation.confirmed', null, static fn (Reservation $r): Reservation => $r->confirm());
     }
 
-    public function cancel(PropertyId $property, string $actorId, string $id, string $reason, int $expectedLockVersion): Reservation
-    {
-        return $this->change($property, $actorId, $id, $expectedLockVersion, 'reservation.cancelled', $reason, static fn (Reservation $r): Reservation => $r->cancel($reason));
-    }
-
-    public function noShow(PropertyId $property, string $actorId, string $id, string $reason, int $expectedLockVersion): Reservation
+    /** A cancellation can cost a fee under the policy the reservation was given; a person with the privilege may waive it, with the reason recorded. */
+    public function cancel(PropertyId $property, string $actorId, string $id, string $reason, int $expectedLockVersion, bool $waivePenalty = false): Reservation
     {
         $today = $this->businessDate->current($property);
 
-        return $this->change($property, $actorId, $id, $expectedLockVersion, 'reservation.no_show', $reason, static fn (Reservation $r): Reservation => $r->noShow($reason, $today));
+        return $this->change(
+            $property, $actorId, $id, $expectedLockVersion, 'reservation.cancelled', $reason, static fn (Reservation $r): Reservation => $r->cancel($reason),
+            fn (Reservation $before): array => $this->penaltyFor($before, 'cancel', $today), $waivePenalty,
+        );
+    }
+
+    public function noShow(PropertyId $property, string $actorId, string $id, string $reason, int $expectedLockVersion, bool $waivePenalty = false): Reservation
+    {
+        $today = $this->businessDate->current($property);
+
+        return $this->change(
+            $property, $actorId, $id, $expectedLockVersion, 'reservation.no_show', $reason, static fn (Reservation $r): Reservation => $r->noShow($reason, $today),
+            fn (Reservation $before): array => $this->penaltyFor($before, 'no_show', $today), $waivePenalty,
+        );
+    }
+
+    /** Confirmed becomes guaranteed once the deposit the policy asked for is held. Without a policy deposit it needs the override privilege and a reason. */
+    public function guarantee(PropertyId $property, string $actorId, string $id, int $expectedLockVersion, ?string $reason = null): Reservation
+    {
+        $this->authorize($property, $actorId, self::MANAGE_PERMISSION);
+        $before = $this->reservations->find($property, strtolower($id)) ?? throw Refusal::notFound('Reservation not found.');
+        $held = $this->deposits->heldMinor($property, $before->id);
+
+        if ($before->depositRequiredMinor > 0 && $held < $before->depositRequiredMinor) {
+            throw Refusal::stateConflict(sprintf('The deposit is not complete: %d of %d held.', $held, $before->depositRequiredMinor));
+        }
+
+        if ($before->depositRequiredMinor === 0) {
+            if (! $this->permissions->allowsInProperty($actorId, self::GUARANTEE_OVERRIDE_PERMISSION, $property)) {
+                throw Refusal::forbidden('This booking has no deposit to guarantee it; guaranteeing it needs the override privilege.');
+            }
+
+            if ($reason === null || trim($reason) === '' || mb_strlen($reason) > 500) {
+                throw Refusal::invalid('Say why it is guaranteed without a deposit.', ['reason']);
+            }
+        }
+
+        return $this->change($property, $actorId, $id, $expectedLockVersion, 'reservation.guaranteed', $reason, static fn (Reservation $r): Reservation => $r->guarantee());
+    }
+
+    /**
+     * What cancelling or marking no-show would cost under the policy the reservation was given, for the screen to show before
+     * the person decides.
+     *
+     * @return array{amount_minor: int, free: bool, free_until: ?string, currency: string, may_waive: bool}
+     */
+    public function penaltyPreview(PropertyId $property, string $actorId, string $id, string $kind): array
+    {
+        $this->authorize($property, $actorId, self::MANAGE_PERMISSION);
+        $reservation = $this->reservations->find($property, strtolower($id)) ?? throw Refusal::notFound('Reservation not found.');
+
+        if (! in_array($kind, ['cancel', 'no_show'], true)) {
+            throw Refusal::invalid('Choose cancel or no_show.', ['kind']);
+        }
+
+        $penalty = $this->penaltyFor($reservation, $kind, $this->businessDate->current($property));
+        $snapshot = PolicySnapshot::fromArray($reservation->policy);
+
+        return [
+            'amount_minor' => $penalty['amount_minor'], 'free' => $penalty['free'], 'currency' => $reservation->total->currency,
+            'free_until' => $snapshot?->freeCancellationUntil($reservation->stay->arrival)->toString(),
+            'may_waive' => $this->permissions->allowsInProperty($actorId, self::WAIVE_PENALTY_PERMISSION, $property),
+        ];
+    }
+
+    /**
+     * The policy a reservation was given and where it stands: deposit required, due and held, the last free cancellation date and
+     * the penalties. Nothing here is read from the current policy.
+     *
+     * @return array<string, mixed>|null null when no policy applied
+     */
+    public function policyView(PropertyId $property, string $actorId, string $id): ?array
+    {
+        $this->authorize($property, $actorId, self::VIEW_PERMISSION);
+        $reservation = $this->reservations->find($property, strtolower($id)) ?? throw Refusal::notFound('Reservation not found.');
+        $snapshot = PolicySnapshot::fromArray($reservation->policy);
+
+        if ($snapshot === null) {
+            return null;
+        }
+
+        $held = $this->deposits->heldMinor($property, $reservation->id);
+        $data = $snapshot->toArray();
+
+        return [
+            'guarantee_required' => $snapshot->guaranteeRequired(),
+            'deposit_required_minor' => $reservation->depositRequiredMinor,
+            'deposit_due_date' => $reservation->depositDueDate?->toString(),
+            'deposit_held_minor' => $held,
+            'deposit_complete' => $reservation->depositRequiredMinor === 0 || $held >= $reservation->depositRequiredMinor,
+            'free_cancellation_until' => $snapshot->freeCancellationUntil($reservation->stay->arrival)->toString(),
+            'cancellation_penalty' => $data['cancellation']['penalty'],
+            'no_show_penalty' => $data['no_show']['penalty'],
+            'currency' => $reservation->total->currency,
+            'may_guarantee' => $reservation->status->value === 'confirmed' && ($reservation->depositRequiredMinor === 0 || $held >= $reservation->depositRequiredMinor),
+        ];
     }
 
     /**
@@ -244,6 +345,10 @@ final readonly class ReservationService
         }
 
         $now = $this->clock->nowUtc();
+        $policy = $this->policies->policyFor($property, $request->ratePlanId, $source->value, $today);
+        $snapshot = PolicySnapshot::fromArray($policy);
+        $snapshotNights = $this->snapshot($quote, $request)['nights'];
+        $depositRequired = $snapshot?->depositRequiredMinor($snapshotNights, $quote->total()->amountMinor) ?? 0;
 
         try {
             $reservation = new Reservation(
@@ -268,6 +373,9 @@ final readonly class ReservationService
                 null,
                 $actorId,
                 0,
+                $policy,
+                $depositRequired,
+                $snapshot?->depositDueDate($stay->arrival, $today),
             );
         } catch (ReservationRuleViolation $e) {
             throw Refusal::invalid($e->getMessage(), ['guest_name', 'guest_phone', 'guest_email', 'adults', 'children', 'notes']);
@@ -280,8 +388,11 @@ final readonly class ReservationService
         return $reservation;
     }
 
-    /** @param \Closure(Reservation): Reservation $transition */
-    private function change(PropertyId $property, string $actorId, string $id, int $expectedLockVersion, string $action, ?string $reason, \Closure $transition): Reservation
+    /**
+     * @param  \Closure(Reservation): Reservation  $transition
+     * @param  (\Closure(Reservation): array{amount_minor: int, free: bool, kind: string})|null  $penaltyOf  the fee this change triggers, worked out before it happens
+     */
+    private function change(PropertyId $property, string $actorId, string $id, int $expectedLockVersion, string $action, ?string $reason, \Closure $transition, ?\Closure $penaltyOf = null, bool $waivePenalty = false): Reservation
     {
         $this->authorize($property, $actorId, self::MANAGE_PERMISSION);
         $before = $this->reservations->find($property, strtolower($id)) ?? throw Refusal::notFound('Reservation not found.');
@@ -294,9 +405,17 @@ final readonly class ReservationService
             $after = $transition($before);
         } catch (ReservationRuleViolation $e) {
             throw $e->reasonCode === ReservationRuleViolation::REASON_REQUIRED ? Refusal::invalid($e->getMessage(), ['reason']) : Refusal::stateConflict($e->getMessage());
+        } catch (StayRuleViolation $e) {
+            throw Refusal::stateConflict($e->getMessage());
         }
 
-        $this->transactions->run(function () use ($property, $actorId, $before, $after, $expectedLockVersion, $action, $reason): void {
+        $penalty = $penaltyOf === null ? null : $penaltyOf($before);
+
+        if ($waivePenalty && ! $this->permissions->allowsInProperty($actorId, self::WAIVE_PENALTY_PERMISSION, $property)) {
+            throw Refusal::forbidden('This person may not waive a cancellation fee.');
+        }
+
+        $this->transactions->run(function () use ($property, $actorId, $before, $after, $expectedLockVersion, $action, $reason, $penalty, $waivePenalty): void {
             // Releasing inventory changes availability, so it takes the same lock as selling it.
             $this->inventory->lockRoomType($property, $before->roomTypeId);
 
@@ -304,11 +423,38 @@ final readonly class ReservationService
                 throw Refusal::stateConflict('This reservation changed after you opened it.');
             }
 
-            $this->audit->record(new AuditEntry($property->toString(), strtolower($actorId), $action, 'reservation', $before->id, $before->auditView(), $after->auditView(), $reason));
+            $charged = $penalty !== null && $penalty['amount_minor'] > 0 && ! $waivePenalty;
+
+            if ($charged) {
+                $this->penalties->post($property, $actorId, $before->id, $penalty['amount_minor'], ($action === 'reservation.no_show' ? 'No-show fee ' : 'Cancellation fee ').$before->number, $before->id.':'.$action);
+            }
+
+            $this->audit->record(new AuditEntry(
+                $property->toString(), strtolower($actorId), $action, 'reservation', $before->id, $before->auditView(),
+                [...$after->auditView(), ...($penalty === null || $penalty['amount_minor'] === 0 ? [] : ['penalty_minor' => $penalty['amount_minor'], 'penalty_charged' => $charged])], $reason,
+            ));
             $this->announce($property, 'frontoffice.'.$action, $after, strtolower($actorId));
         });
 
         return $this->reservations->find($property, $before->id) ?? $after;
+    }
+
+    /**
+     * What breaking the booking costs now, under the policy the reservation was given.
+     *
+     * @return array{amount_minor: int, free: bool, kind: string}
+     */
+    private function penaltyFor(Reservation $reservation, string $kind, BusinessDate $today): array
+    {
+        $snapshot = PolicySnapshot::fromArray($reservation->policy);
+
+        if ($snapshot === null) {
+            return ['amount_minor' => 0, 'free' => true, 'kind' => 'none'];
+        }
+
+        return $kind === 'cancel'
+            ? $snapshot->cancellationPenalty($today, $reservation->stay->arrival, $reservation->bookedNights())
+            : $snapshot->noShowPenalty($reservation->bookedNights());
     }
 
     /** @return array<string, mixed> */
@@ -350,7 +496,7 @@ final readonly class ReservationService
 
     private function withoutContact(Reservation $r): Reservation
     {
-        return new Reservation($r->id, $r->number, $r->status, $r->source, $r->guestName, null, null, $r->stay, $r->adults, $r->children, $r->roomTypeId, $r->ratePlanId, $r->roomId, $r->notes, $r->total, $r->priceSnapshot, $r->oversold, $r->oversellReason, $r->statusReason, $r->createdBy, $r->lockVersion);
+        return new Reservation($r->id, $r->number, $r->status, $r->source, $r->guestName, null, null, $r->stay, $r->adults, $r->children, $r->roomTypeId, $r->ratePlanId, $r->roomId, $r->notes, $r->total, $r->priceSnapshot, $r->oversold, $r->oversellReason, $r->statusReason, $r->createdBy, $r->lockVersion, $r->policy, $r->depositRequiredMinor, $r->depositDueDate);
     }
 
     private function mayViewContact(PropertyId $property, string $actorId): bool

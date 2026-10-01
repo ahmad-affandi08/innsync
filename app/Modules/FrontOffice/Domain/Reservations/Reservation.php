@@ -41,6 +41,10 @@ final readonly class Reservation
         public ?string $statusReason,
         public string $createdBy,
         public int $lockVersion,
+        /** @var array<string, mixed>|null the booking policy in force when the reservation was made */
+        public ?array $policy = null,
+        public int $depositRequiredMinor = 0,
+        public ?BusinessDate $depositDueDate = null,
     ) {
         if (trim($guestName) === '' || mb_strlen($guestName) > 150) {
             throw ReservationRuleViolation::invalidGuest('A guest name of at most 150 characters is required.');
@@ -70,6 +74,16 @@ final readonly class Reservation
         }
 
         return $this->with(ReservationStatus::Confirmed, null);
+    }
+
+    /** Confirmed becomes guaranteed once the deposit the policy asked for is in. The check of the money is the caller's. */
+    public function guarantee(): self
+    {
+        if ($this->status !== ReservationStatus::Confirmed) {
+            throw ReservationRuleViolation::notExpected($this->status);
+        }
+
+        return $this->with(ReservationStatus::Guaranteed, null);
     }
 
     public function cancel(string $reason): self
@@ -122,6 +136,12 @@ final readonly class Reservation
         return $this->with(ReservationStatus::Completed, null);
     }
 
+    /** @return list<array<string, mixed>> the priced nights as booked */
+    public function bookedNights(): array
+    {
+        return $this->priceSnapshot['nights'] ?? [];
+    }
+
     private function assertExpected(): void
     {
         if (! $this->status->isExpected()) {
@@ -143,7 +163,7 @@ final readonly class Reservation
         return new self(
             $this->id, $this->number, $status, $this->source, $this->guestName, $this->guestPhone, $this->guestEmail, $this->stay, $this->adults, $this->children,
             $this->roomTypeId, $this->ratePlanId, $roomId ?? $this->roomId, $this->notes, $this->total, $this->priceSnapshot, $this->oversold, $this->oversellReason,
-            $reason ?? $this->statusReason, $this->createdBy, $this->lockVersion,
+            $reason ?? $this->statusReason, $this->createdBy, $this->lockVersion, $this->policy, $this->depositRequiredMinor, $this->depositDueDate,
         );
     }
 
@@ -174,6 +194,9 @@ final readonly class Reservation
             'oversell_reason' => $this->oversellReason,
             'status_reason' => $this->statusReason,
             'lock_version' => $this->lockVersion,
+            'deposit_required_minor' => $this->depositRequiredMinor,
+            'deposit_due_date' => $this->depositDueDate?->toString(),
+            'has_policy' => $this->policy !== null,
         ];
     }
 

@@ -20,6 +20,7 @@ use App\Modules\IdentityAccess\Presentation\Http\Controllers\PropertySelectionCo
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\ReconfirmController;
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\UserSessionController;
 use App\Modules\Laundry\Presentation\Http\Controllers\LaundryController;
+use App\Modules\Property\Presentation\Http\Controllers\BookingPolicyController;
 use App\Modules\Property\Presentation\Http\Controllers\ChargeSchemeController;
 use App\Modules\Property\Presentation\Http\Controllers\PropertySettingsController;
 use App\Modules\Property\Presentation\Http\Controllers\RatePlanController;
@@ -155,6 +156,8 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
         Route::post('/tax', [ChargeSchemeController::class, 'define'])->name('property.tax.define');
     });
     Route::get('/tax', [ChargeSchemeController::class, 'index'])->name('property.tax');
+    Route::get('/policies', [BookingPolicyController::class, 'index'])->name('property.policies');
+    Route::post('/policies', [BookingPolicyController::class, 'define'])->middleware('password.confirm')->name('property.policies.store');
 });
 
 // Front Office: availability, reservations, room blocks and holds (FR-FO-002 to FR-FO-007). Permissions are enforced in the
@@ -167,6 +170,8 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
     Route::post('/reservations', [ReservationController::class, 'store'])->middleware(['idempotent', 'throttle:bookings'])->name('front-office.reservations.store');
     Route::get('/reservations/{id}', [ReservationController::class, 'show'])->where('id', $id)->name('front-office.reservations.show');
     Route::post('/reservations/{id}/confirm', [ReservationController::class, 'confirm'])->where('id', $id)->name('front-office.reservations.confirm');
+    Route::get('/reservations/{id}/penalty', [ReservationController::class, 'penalty'])->where('id', $id)->name('front-office.reservations.penalty');
+    Route::post('/reservations/{id}/guarantee', [ReservationController::class, 'guarantee'])->where('id', $id)->name('front-office.reservations.guarantee');
     Route::post('/reservations/{id}/cancel', [ReservationController::class, 'cancel'])->where('id', $id)->name('front-office.reservations.cancel');
     Route::post('/reservations/{id}/no-show', [ReservationController::class, 'noShow'])->where('id', $id)->name('front-office.reservations.no-show');
 

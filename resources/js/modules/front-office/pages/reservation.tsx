@@ -23,16 +23,25 @@ type Reservation = {
 type Lookups = { types: { id: string; code: string; name: string }[]; plans: { id: string; code: string; name: string; inclusions: string | null }[] };
 type FolioRow = { id: string; number: string; window: number; label: string; status: string; balance_minor: number; currency: string };
 type Kind = 'confirm' | 'cancel' | 'noShow';
+type Fee = { kind: string; value: number };
+type Policy = {
+    guarantee_required: boolean; deposit_required_minor: number; deposit_due_date: string | null; deposit_held_minor: number; deposit_complete: boolean; free_cancellation_until: string;
+    cancellation_penalty: Fee; no_show_penalty: Fee; currency: string; may_guarantee: boolean;
+};
+type Penalty = { amount_minor: number; free: boolean; currency: string; may_waive: boolean };
 
 const PATH = { confirm: 'confirm', cancel: 'cancel', noShow: 'no-show' } as const;
 
-export default function ReservationPage({ folios, lookups, reservation: r }: { folios: FolioRow[]; lookups: Lookups; reservation: Reservation }) {
+export default function ReservationPage({ folios, lookups, policy, reservation: r }: { folios: FolioRow[]; lookups: Lookups; policy: Policy | null; reservation: Reservation }) {
     const { t } = useTranslation();
     const format = useFormatters();
     const errorCopy = useErrorStateCopy();
     const action = useServerAction();
     const [kind, setKind] = useState<Kind | null>(null);
     const [reason, setReason] = useState('');
+    const [penalty, setPenalty] = useState<Penalty | null>(null);
+    const [waive, setWaive] = useState(false);
+    const preview = useServerAction();
     const type = lookups.types.find((x) => x.id === r.room_type_id);
     const plan = lookups.plans.find((x) => x.id === r.rate_plan_id);
     async function openFolio() {
@@ -46,11 +55,30 @@ export default function ReservationPage({ folios, lookups, reservation: r }: { f
         action.clear();
         setKind(null);
         setReason('');
+        setPenalty(null);
+        setWaive(false);
     }
+
+    async function begin(next: Kind) {
+        action.clear();
+        setPenalty(null);
+        setWaive(false);
+        setKind(next);
+        if (next !== 'confirm') {
+            const done = await preview.run<{ penalty: Penalty }>(`/front-office/reservations/${r.id}/penalty?kind=${next === 'cancel' ? 'cancel' : 'no_show'}`, { method: 'GET' });
+            if (done !== null) setPenalty(done.penalty);
+        }
+    }
+
+    async function guarantee() {
+        await action.run(`/front-office/reservations/${r.id}/guarantee`, { body: { lock_version: r.lock_version }, reload: ['reservation', 'policy'] });
+    }
+
+    const fee = (f: Fee, currency: string) => (f.kind === 'percent' ? t('fo.res.fee.percent', { value: (f.value / 100).toString() }) : f.kind === 'fixed' ? t('fo.res.fee.fixed', { amount: format.money(f.value, currency) }) : t(`fo.res.fee.${f.kind}` as 'fo.res.fee.none'));
 
     async function apply() {
         if (kind === null) return;
-        const done = await action.run(`/front-office/reservations/${r.id}/${PATH[kind]}`, { body: kind === 'confirm' ? { lock_version: r.lock_version } : { lock_version: r.lock_version, reason }, reload: ['reservation'] });
+        const done = await action.run(`/front-office/reservations/${r.id}/${PATH[kind]}`, { body: kind === 'confirm' ? { lock_version: r.lock_version } : { lock_version: r.lock_version, reason, waive_penalty: waive }, reload: ['reservation', 'folios'] });
         if (done !== null) close();
     }
 
@@ -79,6 +107,24 @@ export default function ReservationPage({ folios, lookups, reservation: r }: { f
                 <dt className="text-muted-foreground">{t('fo.res.total')}</dt><dd className="font-medium">{format.money(r.total_minor, r.currency)}</dd>
             </dl>
             {r.guest_phone === null && r.guest_email === null ? <p className="text-xs text-muted-foreground">{t('fo.res.contactHidden')}</p> : null}
+
+            <section aria-labelledby="pol-h" className="flex flex-col gap-2">
+                <h2 className="text-lg font-semibold" id="pol-h">{t('fo.res.policy')}</h2>
+                {policy === null ? <p className="text-sm text-muted-foreground">{t('fo.res.policyNone')}</p> : (
+                    <ul className="flex flex-col gap-1 text-sm">
+                        {policy.deposit_required_minor > 0 && policy.deposit_due_date !== null ? <li data-testid="deposit-line">{t('fo.res.depositLine', { held: format.money(policy.deposit_held_minor, policy.currency), required: format.money(policy.deposit_required_minor, policy.currency), date: format.date(policy.deposit_due_date) })}</li> : null}
+                        <li>{t('fo.res.freeUntil', { date: format.date(policy.free_cancellation_until) })}</li>
+                        <li>{t('fo.res.feeCancel', { fee: fee(policy.cancellation_penalty, policy.currency) })}</li>
+                        <li>{t('fo.res.feeNoShow', { fee: fee(policy.no_show_penalty, policy.currency) })}</li>
+                    </ul>
+                )}
+                {r.status === 'confirmed' ? (
+                    <div className="flex flex-wrap items-center gap-2">
+                        <Button disabled={action.busy || policy?.may_guarantee === false} onClick={() => void guarantee()} size="sm" type="button" variant="outline">{t('fo.res.guarantee')}</Button>
+                        {policy !== null && policy.deposit_required_minor > 0 && !policy.deposit_complete ? <span className="text-xs text-muted-foreground">{t('fo.res.guaranteeNeedsDeposit')}</span> : null}
+                    </div>
+                ) : null}
+            </section>
 
             <section aria-labelledby="snap-h" className="flex flex-col gap-2">
                 <h2 className="text-lg font-semibold" id="snap-h">{t('fo.res.snapshot')}</h2>
@@ -115,9 +161,9 @@ export default function ReservationPage({ folios, lookups, reservation: r }: { f
             {expected && (
                 <div className="flex flex-wrap gap-2">
                     {r.status !== 'tentative' && <Button asChild><Link href={`/front-office/reservations/${r.id}/check-in`}>{t('fo.checkin.action')}</Link></Button>}
-                    {r.status === 'tentative' && <Button onClick={() => { action.clear(); setKind('confirm'); }} type="button">{t('fo.action.confirm')}</Button>}
-                    <Button onClick={() => { action.clear(); setKind('cancel'); }} type="button" variant="outline">{t('fo.action.cancel')}</Button>
-                    <Button onClick={() => { action.clear(); setKind('noShow'); }} type="button" variant="outline">{t('fo.action.noShow')}</Button>
+                    {r.status === 'tentative' && <Button onClick={() => void begin('confirm')} type="button">{t('fo.action.confirm')}</Button>}
+                    <Button onClick={() => void begin('cancel')} type="button" variant="outline">{t('fo.action.cancel')}</Button>
+                    <Button onClick={() => void begin('noShow')} type="button" variant="outline">{t('fo.action.noShow')}</Button>
                 </div>
             )}
 
@@ -134,6 +180,11 @@ export default function ReservationPage({ folios, lookups, reservation: r }: { f
             >
                 <div className="flex flex-col gap-3">
                     {action.error !== null ? <ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /> : null}
+                    {kind !== 'confirm' && penalty !== null && (penalty.amount_minor > 0
+                        ? <Alert title={t('fo.res.penaltyDue', { amount: format.money(penalty.amount_minor, penalty.currency) })} tone="warning">
+                            {penalty.may_waive ? <label className="mt-1 flex items-center gap-2 text-sm"><input checked={waive} onChange={(e) => setWaive(e.target.checked)} type="checkbox" />{t('fo.res.penaltyWaive')}</label> : null}
+                        </Alert>
+                        : <p className="text-xs text-muted-foreground">{t('fo.res.penaltyFree')}</p>)}
                     {kind !== 'confirm' && <FormField error={action.fieldError('reason')} label={t('fo.action.reason')}><Input maxLength={500} onChange={(e) => setReason(e.target.value)} value={reason} /></FormField>}
                 </div>
             </ConfirmDialog>

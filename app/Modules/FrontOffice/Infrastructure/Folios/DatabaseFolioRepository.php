@@ -108,6 +108,17 @@ final readonly class DatabaseFolioRepository implements FolioRepository
         return DB::table('folio_postings')->where('property_id', $property->toString())->where('folio_id', $folioId)->where('entry_type', 'payment')->exists();
     }
 
+    public function depositHeldMinor(PropertyId $property, string $reservationId): int
+    {
+        $base = DB::table('folio_postings as p')->join('folios as f', 'f.id', '=', 'p.folio_id')->where('p.property_id', $property->toString())->where('f.reservation_id', $reservationId);
+
+        $paid = (int) (clone $base)->where('p.entry_type', 'payment')->where('p.payment_purpose', 'deposit')
+            ->whereNotExists(static fn ($q) => $q->selectRaw('1')->from('folio_postings as r')->whereColumn('r.reverses_id', 'p.id'))->sum(DB::raw('-p.total_minor'));
+        $paidBack = (int) (clone $base)->where('p.entry_type', 'refund')->sum('p.total_minor');
+
+        return max(0, $paid - $paidBack);
+    }
+
     public function close(PropertyId $property, Folio $folio, string $actorId, DateTimeImmutable $at): bool
     {
         return DB::table('folios')->where('property_id', $property->toString())->where('id', $folio->id)->where('lock_version', $folio->lockVersion)->where('status', 'open')->update([

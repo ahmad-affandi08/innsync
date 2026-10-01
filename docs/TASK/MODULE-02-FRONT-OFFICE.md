@@ -18,13 +18,13 @@
 | --- | --- | --- | --- | --- |
 | TASK-FO-001 | FR-FO-001 | Wajib | Menampilkan rak kamar interaktif yang tersambung dengan data okupansi dan status kamar; klik pada nomor kamar membuka data tamu atau formulir check-in. | REVIEW |
 | TASK-FO-002 | FR-FO-002 | Wajib | Menyediakan kalender ketersediaan per tipe kamar dengan horizon minimal 365 hari dan dapat dikonfigurasi, lengkap dengan jumlah kamar tersisa, allotment/hold, dan penanda pembatasan penjualan per tanggal. | REVIEW |
-| TASK-FO-003 | FR-FO-003 | Wajib | Membuat reservasi dengan sumber pemesanan (langsung, telepon, OTA, korporat, walk-in), status (tentatif, terkonfirmasi, dijamin deposit), dan catatan khusus. | IN_PROGRESS |
-| TASK-FO-004 | FR-FO-004 | Wajib | Menandai reservasi yang tidak datang (no-show) dan pembatalan dengan alasan, serta menerapkan aturan denda bila dikonfigurasi. | IN_PROGRESS |
+| TASK-FO-003 | FR-FO-003 | Wajib | Membuat reservasi dengan sumber pemesanan (langsung, telepon, OTA, korporat, walk-in), status (tentatif, terkonfirmasi, dijamin deposit), dan catatan khusus. | REVIEW |
+| TASK-FO-004 | FR-FO-004 | Wajib | Menandai reservasi yang tidak datang (no-show) dan pembatalan dengan alasan, serta menerapkan aturan denda bila dikonfigurasi. | REVIEW |
 | TASK-FO-005 | FR-FO-005 | Wajib | Menandai kamar sebagai Out of Order atau Out of Service dengan rentang tanggal sehingga tidak muncul sebagai kamar yang dapat dijual. | REVIEW |
 | TASK-FO-006 | FR-FO-006 | Sebaiknya | Mendukung pemesanan grup sederhana: satu pemesan dengan beberapa kamar, satu master folio, dan opsi pemisahan tagihan per kamar. | TODO |
 | TASK-FO-007 | FR-FO-007 | Wajib | Mengelola inventory kamar per tipe dengan aturan overbooking yang dapat dikonfigurasi. Sistem tidak boleh menjual melebihi batas yang disetujui dan wajib memperingatkan pengguna sebelum menerima reservasi yang berpotensi oversold. | REVIEW |
 | TASK-FO-008 | FR-FO-008 | Wajib | Mengelola rate plan, seasonal rate, corporate rate, package, inclusions, minimum stay, closed-to-arrival/departure, serta tanggal efektif tanpa mengubah histori reservasi lama. | REVIEW |
-| TASK-FO-009 | FR-FO-009 | Wajib | Mendukung kebijakan guarantee, deposit due date, cancellation, no-show, dan penalty per rate plan/sumber reservasi serta menyimpan policy snapshot pada saat reservasi dibuat. | TODO |
+| TASK-FO-009 | FR-FO-009 | Wajib | Mendukung kebijakan guarantee, deposit due date, cancellation, no-show, dan penalty per rate plan/sumber reservasi serta menyimpan policy snapshot pada saat reservasi dibuat. | REVIEW |
 | TASK-FO-010 | FR-FO-010 | Wajib | Formulir check-in memuat: nama tamu, kewarganegaraan, jenis dan nomor identitas (paspor atau KTP), tanggal berlaku identitas, nomor visa bila diperlukan, jumlah tamu (dewasa dan anak), serta alamat sesuai identitas. | REVIEW |
 | TASK-FO-011 | FR-FO-011 | Wajib | Sistem mengunggah dan menampilkan foto identitas yang diambil langsung dari kamera perangkat resepsionis atau tablet, dan melampirkannya pada data tamu. | REVIEW |
 | TASK-FO-012 | FR-FO-012 | Wajib | Pemilihan lama menginap menampilkan blok tanggal menginap secara visual serta menghitung otomatis harga per malam sesuai tarif kamar yang bersangkutan. | TODO |

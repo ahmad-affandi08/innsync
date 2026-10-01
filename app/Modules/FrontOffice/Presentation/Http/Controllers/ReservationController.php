@@ -45,6 +45,7 @@ final readonly class ReservationController
             'reservation' => $this->reservations->find($property, $actor, $id)->toArray(),
             'lookups' => $this->reservations->lookups($property, $actor),
             'folios' => $this->folioSummaries($property, $actor, $id),
+            'policy' => $this->reservations->policyView($property, $actor, $id),
         ]);
     }
 
@@ -87,16 +88,30 @@ final readonly class ReservationController
 
     public function cancel(Request $request, string $id): JsonResponse
     {
-        $data = $request->validate(['lock_version' => ['required', 'integer', 'min:0'], 'reason' => ['required', 'string', 'max:500']]);
+        $data = $request->validate(['lock_version' => ['required', 'integer', 'min:0'], 'reason' => ['required', 'string', 'max:500'], 'waive_penalty' => ['nullable', 'boolean']]);
 
-        return $this->json(['reservation' => $this->summary($this->reservations->cancel($this->property->current(), $this->actor($request), $id, $data['reason'], (int) $data['lock_version'])->toArray())]);
+        return $this->json(['reservation' => $this->summary($this->reservations->cancel($this->property->current(), $this->actor($request), $id, $data['reason'], (int) $data['lock_version'], (bool) ($data['waive_penalty'] ?? false))->toArray())]);
     }
 
     public function noShow(Request $request, string $id): JsonResponse
     {
-        $data = $request->validate(['lock_version' => ['required', 'integer', 'min:0'], 'reason' => ['required', 'string', 'max:500']]);
+        $data = $request->validate(['lock_version' => ['required', 'integer', 'min:0'], 'reason' => ['required', 'string', 'max:500'], 'waive_penalty' => ['nullable', 'boolean']]);
 
-        return $this->json(['reservation' => $this->summary($this->reservations->noShow($this->property->current(), $this->actor($request), $id, $data['reason'], (int) $data['lock_version'])->toArray())]);
+        return $this->json(['reservation' => $this->summary($this->reservations->noShow($this->property->current(), $this->actor($request), $id, $data['reason'], (int) $data['lock_version'], (bool) ($data['waive_penalty'] ?? false))->toArray())]);
+    }
+
+    public function penalty(Request $request, string $id): JsonResponse
+    {
+        $data = $request->validate(['kind' => ['required', 'string', 'max:10']]);
+
+        return $this->json(['penalty' => $this->reservations->penaltyPreview($this->property->current(), $this->actor($request), $id, $data['kind'])]);
+    }
+
+    public function guarantee(Request $request, string $id): JsonResponse
+    {
+        $data = $request->validate(['lock_version' => ['required', 'integer', 'min:0'], 'reason' => ['nullable', 'string', 'max:500']]);
+
+        return $this->json(['reservation' => $this->summary($this->reservations->guarantee($this->property->current(), $this->actor($request), $id, (int) $data['lock_version'], $data['reason'] ?? null)->toArray())]);
     }
 
     /**

@@ -26,7 +26,8 @@ final readonly class DatabaseReservationRepository implements ReservationReposit
             'arrival_date' => $r->stay->arrival->toString(), 'departure_date' => $r->stay->departure->toString(), 'adults' => $r->adults, 'children' => $r->children,
             'room_type_id' => $r->roomTypeId, 'rate_plan_id' => $r->ratePlanId, 'room_id' => $r->roomId, 'notes' => $r->notes, 'currency_code' => $currency,
             'total_base_minor' => $baseMinor, 'total_service_charge_minor' => $serviceChargeMinor, 'total_tax_minor' => $taxMinor, 'total_minor' => $r->total->amountMinor,
-            'price_snapshot' => json_encode($r->priceSnapshot, JSON_THROW_ON_ERROR), 'oversold' => $r->oversold, 'oversell_reason' => $r->oversellReason,
+            'price_snapshot' => json_encode($r->priceSnapshot, JSON_THROW_ON_ERROR), 'policy_snapshot' => $r->policy === null ? null : json_encode($r->policy, JSON_THROW_ON_ERROR),
+            'deposit_required_minor' => $r->depositRequiredMinor, 'deposit_due_date' => $r->depositDueDate?->toString(), 'oversold' => $r->oversold, 'oversell_reason' => $r->oversellReason,
             'created_by' => $r->createdBy, 'lock_version' => 0, 'created_at' => $at, 'updated_at' => $at,
         ]);
 
@@ -139,6 +140,8 @@ final readonly class DatabaseReservationRepository implements ReservationReposit
             (int) $r->adults, (int) $r->children, $r->room_type_id, $r->rate_plan_id, $r->room_id, $r->notes,
             Money::ofMinor((int) $r->total_minor, $r->currency_code), json_decode((string) $r->price_snapshot, true, 512, JSON_THROW_ON_ERROR),
             (bool) $r->oversold, $r->oversell_reason, $r->status_reason, $r->created_by, (int) $r->lock_version,
+            $r->policy_snapshot === null ? null : json_decode((string) $r->policy_snapshot, true, 512, JSON_THROW_ON_ERROR), (int) $r->deposit_required_minor,
+            $r->deposit_due_date === null ? null : BusinessDate::fromString(substr((string) $r->deposit_due_date, 0, 10)),
         );
     }
 }
