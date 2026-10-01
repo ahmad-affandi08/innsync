@@ -197,7 +197,7 @@ final class StayTest extends TestCase
                 'expected_departure' => '2026-10-03', 'created_at' => now(), 'updated_at' => now(),
             ]);
         } finally {
-            foreach (['room_id' => $this->roomIds[1], 'checked_in_by' => $this->adminId] as $column => $value) {
+            foreach (['checked_in_by' => $this->adminId, 'checked_in_business_date' => '2026-09-30'] as $column => $value) {
                 try {
                     DB::table('stays')->where('id', $stay->id)->update([$column => $value]);
                     self::fail("Check-in fact {$column} changed.");

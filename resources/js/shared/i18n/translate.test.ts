@@ -108,6 +108,7 @@ describe('dictionaries', () => {
             'fo.stay.title',
             'fo.nav.audit',
             'ldy.nav.label',
+            'fo.stay.moveRow',
             'rpt.dash.now',
             'rpt.card.revenue.laundry',
             'rpt.card.revenue.net',

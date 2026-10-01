@@ -58,6 +58,48 @@ final readonly class DatabaseReservationRepository implements ReservationReposit
         return true;
     }
 
+    public function changeRoom(PropertyId $property, string $id, string $roomId, DateTimeImmutable $at): void
+    {
+        DB::table('reservations')->where('property_id', $property->toString())->where('id', $id)->update(['room_id' => $roomId, 'updated_at' => $at]);
+    }
+
+    public function shiftNights(PropertyId $property, string $id, BusinessDate $from, string $roomTypeId): int
+    {
+        return DB::table('reservation_nights')->where('property_id', $property->toString())->where('reservation_id', $id)->where('is_active', true)->where('night', '>=', $from->toString())
+            ->update(['room_type_id' => $roomTypeId]);
+    }
+
+    public function addExtension(PropertyId $property, string $amendmentId, string $reservationId, BusinessDate $oldDeparture, BusinessDate $newDeparture, string $roomTypeId, array $nights, string $reason, BusinessDate $businessDate, string $actorId, DateTimeImmutable $at): void
+    {
+        $base = array_sum(array_column($nights, 'base_minor'));
+        $serviceCharge = array_sum(array_column($nights, 'service_charge_minor'));
+        $tax = array_sum(array_column($nights, 'tax_minor'));
+
+        DB::table('reservation_amendments')->insert([
+            'id' => $amendmentId, 'property_id' => $property->toString(), 'reservation_id' => $reservationId, 'kind' => 'extension', 'old_departure' => $oldDeparture->toString(),
+            'new_departure' => $newDeparture->toString(), 'nights' => json_encode($nights, JSON_THROW_ON_ERROR), 'added_base_minor' => $base, 'added_service_charge_minor' => $serviceCharge,
+            'added_tax_minor' => $tax, 'added_total_minor' => $base + $serviceCharge + $tax, 'business_date' => $businessDate->toString(), 'reason' => $reason, 'created_by' => $actorId, 'created_at' => $at,
+        ]);
+        DB::table('reservations')->where('property_id', $property->toString())->where('id', $reservationId)->update(['departure_date' => $newDeparture->toString(), 'updated_at' => $at]);
+
+        DB::table('reservation_nights')->insert(array_map(static fn (array $n): array => [
+            'reservation_id' => $reservationId, 'property_id' => $property->toString(), 'room_type_id' => $roomTypeId, 'night' => $n['date'], 'is_active' => true,
+        ], $nights));
+    }
+
+    public function extensionNights(PropertyId $property, string $reservationId): array
+    {
+        $nights = [];
+
+        foreach (DB::table('reservation_amendments')->where('property_id', $property->toString())->where('reservation_id', $reservationId)->orderBy('created_at')->orderBy('id')->pluck('nights') as $json) {
+            foreach (json_decode((string) $json, true, 512, JSON_THROW_ON_ERROR) as $night) {
+                $nights[] = $night;
+            }
+        }
+
+        return $nights;
+    }
+
     public function search(PropertyId $property, array $filters, int $limit, int $offset): array
     {
         $query = DB::table('reservations')->where('property_id', $property->toString());

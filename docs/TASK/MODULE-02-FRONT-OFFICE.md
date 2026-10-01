@@ -33,8 +33,8 @@
 | TASK-FO-015 | FR-FO-015 | Sebaiknya | Sistem mendeteksi tamu berulang berdasarkan nomor identitas dan mengisi otomatis data profil beserta riwayat menginap dan preferensinya. | IN_PROGRESS |
 | TASK-FO-016 | FR-FO-016 | Wajib | Setelah check-in, status kamar otomatis berubah menjadi terisi dan seluruh permintaan tamu yang tercatat muncul pada kartu kamar tersebut. | IN_PROGRESS |
 | TASK-FO-017 | FR-FO-017 | Sebaiknya | Sistem mencetak atau mengirim kartu registrasi elektronik untuk ditandatangani tamu, termasuk tanda tangan digital pada tablet. | TODO |
-| TASK-FO-018 | FR-FO-018 | Wajib | Mendukung perpindahan kamar (room move) dengan pemindahan seluruh saldo folio dan pencatatan alasan. | TODO |
-| TASK-FO-019 | FR-FO-019 | Wajib | Mendukung perpanjangan masa menginap (Stay Over) dan check-out dipercepat dengan penyesuaian tagihan otomatis. | TODO |
+| TASK-FO-018 | FR-FO-018 | Wajib | Mendukung perpindahan kamar (room move) dengan pemindahan seluruh saldo folio dan pencatatan alasan. | REVIEW |
+| TASK-FO-019 | FR-FO-019 | Wajib | Mendukung perpanjangan masa menginap (Stay Over) dan check-out dipercepat dengan penyesuaian tagihan otomatis. | REVIEW |
 | TASK-FO-020 | FR-FO-020 | Wajib | Setiap stay memiliki minimal satu folio dan dapat memiliki beberapa folio/window untuk routing tagihan. Folio menampung room charge, pajak, service charge, charge outlet, koreksi, dan pembayaran secara terurut dan dapat ditelusuri. | IN_PROGRESS |
 | TASK-FO-021 | FR-FO-021 | Wajib | Mencetak rincian tagihan (bill print out) yang menampilkan seluruh transaksi terperinci per outlet dan per tanggal. | TODO |
 | TASK-FO-022 | FR-FO-022 | Sebaiknya | Mendukung pemisahan tagihan (split bill) menjadi beberapa folio, misalnya folio perusahaan dan folio pribadi tamu. | TODO |

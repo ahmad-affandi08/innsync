@@ -6,6 +6,7 @@ namespace App\Modules\FrontOffice\Application\Reservations;
 
 use App\Modules\FrontOffice\Domain\Reservations\Reservation;
 use App\Shared\Domain\Tenancy\PropertyId;
+use App\Shared\Domain\Time\BusinessDate;
 use DateTimeImmutable;
 
 interface ReservationRepository
@@ -27,6 +28,22 @@ interface ReservationRepository
      * @return list<Reservation>
      */
     public function search(PropertyId $property, array $filters, int $limit, int $offset): array;
+
+    /** Records the room the guest is in now (a move after check-in). */
+    public function changeRoom(PropertyId $property, string $id, string $roomId, DateTimeImmutable $at): void;
+
+    /** Gives the nights of this reservation from `$from` (inclusive) that still hold inventory to another room type; returns how many. */
+    public function shiftNights(PropertyId $property, string $id, BusinessDate $from, string $roomTypeId): int;
+
+    /**
+     * Stores an extension: the priced nights as a fact, the new departure date, and one inventory row per added night.
+     *
+     * @param  list<array<string, mixed>>  $nights  priced nights in the format of the price snapshot
+     */
+    public function addExtension(PropertyId $property, string $amendmentId, string $reservationId, BusinessDate $oldDeparture, BusinessDate $newDeparture, string $roomTypeId, array $nights, string $reason, BusinessDate $businessDate, string $actorId, DateTimeImmutable $at): void;
+
+    /** Nights added by extensions, in the format of the price snapshot, oldest first. @return list<array<string, mixed>> */
+    public function extensionNights(PropertyId $property, string $reservationId): array;
 
     /** Nights of this reservation that still hold inventory (arrival-ordered). @return list<string> */
     public function activeNights(PropertyId $property, string $id): array;

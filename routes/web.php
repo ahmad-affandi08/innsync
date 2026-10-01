@@ -175,6 +175,10 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
     Route::get('/stays/{id}', [StayController::class, 'show'])->where('id', $id)->name('front-office.stays.show');
     Route::get('/stays/{id}/id-photo', [StayController::class, 'photo'])->where('id', $id)->name('front-office.stays.photo');
     Route::post('/stays/{id}/id-photo', [StayController::class, 'attachPhoto'])->where('id', $id)->middleware('throttle:bookings')->name('front-office.stays.photo.store');
+    Route::get('/stays/{id}/move-options', [StayController::class, 'moveOptions'])->where('id', $id)->name('front-office.stays.move-options');
+    Route::post('/stays/{id}/move', [StayController::class, 'move'])->where('id', $id)->name('front-office.stays.move');
+    Route::get('/stays/{id}/extension-quote', [StayController::class, 'extensionQuote'])->where('id', $id)->name('front-office.stays.extension-quote');
+    Route::post('/stays/{id}/extend', [StayController::class, 'extend'])->where('id', $id)->name('front-office.stays.extend');
     Route::post('/stays/{id}/check-out', [StayController::class, 'checkOut'])->where('id', $id)->name('front-office.stays.check-out');
     Route::get('/reservations/{id}/check-in', [StayController::class, 'checkInForm'])->where('id', $id)->name('front-office.check-in');
     Route::post('/reservations/{id}/guest-lookup', [StayController::class, 'lookup'])->where('id', $id)->middleware('throttle:bookings')->name('front-office.check-in.lookup');

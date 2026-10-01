@@ -70,6 +70,36 @@ final readonly class DatabaseStayRepository implements StayRepository
         ]) === 1;
     }
 
+    public function moveRoom(PropertyId $property, string $stayId, string $toRoomId, int $expectedLockVersion): bool
+    {
+        try {
+            return DB::transaction(static fn (): bool => DB::table('stays')->where('property_id', $property->toString())->where('id', $stayId)->where('lock_version', $expectedLockVersion)->where('status', 'in_house')
+                ->update(['room_id' => $toRoomId, 'lock_version' => $expectedLockVersion + 1]) === 1);
+        } catch (UniqueConstraintViolationException) {
+            return false;
+        }
+    }
+
+    public function addRoomMove(PropertyId $property, string $id, string $stayId, string $fromRoomId, string $toRoomId, string $fromTypeId, string $toTypeId, BusinessDate $date, string $reason, string $actorId, DateTimeImmutable $at): void
+    {
+        DB::table('stay_room_moves')->insert([
+            'id' => $id, 'property_id' => $property->toString(), 'stay_id' => $stayId, 'from_room_id' => $fromRoomId, 'to_room_id' => $toRoomId, 'from_type_id' => $fromTypeId, 'to_type_id' => $toTypeId,
+            'business_date' => $date->toString(), 'reason' => $reason, 'moved_by' => $actorId, 'moved_at' => $at,
+        ]);
+    }
+
+    public function roomMoves(PropertyId $property, string $stayId): array
+    {
+        return DB::table('stay_room_moves')->where('property_id', $property->toString())->where('stay_id', $stayId)->orderBy('moved_at')->orderBy('id')->get()
+            ->map(static fn ($m): array => ['id' => $m->id, 'from_room_id' => $m->from_room_id, 'to_room_id' => $m->to_room_id, 'reason' => $m->reason, 'business_date' => substr((string) $m->business_date, 0, 10), 'moved_at' => (string) $m->moved_at])->all();
+    }
+
+    public function extend(PropertyId $property, string $stayId, BusinessDate $newDeparture, int $expectedLockVersion): bool
+    {
+        return DB::table('stays')->where('property_id', $property->toString())->where('id', $stayId)->where('lock_version', $expectedLockVersion)->where('status', 'in_house')
+            ->update(['expected_departure' => $newDeparture->toString(), 'lock_version' => $expectedLockVersion + 1]) === 1;
+    }
+
     public function attachIdPhoto(PropertyId $property, string $stayId, string $fileId, int $expectedLockVersion): bool
     {
         return DB::table('stays')->where('property_id', $property->toString())->where('id', $stayId)->where('lock_version', $expectedLockVersion)->where('status', 'in_house')->update([

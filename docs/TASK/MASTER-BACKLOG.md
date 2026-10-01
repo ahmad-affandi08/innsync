@@ -41,8 +41,8 @@
 | TASK-FO-015 | FR-FO-015 | Front Office | Sebaiknya | IN_PROGRESS |
 | TASK-FO-016 | FR-FO-016 | Front Office | Wajib | IN_PROGRESS |
 | TASK-FO-017 | FR-FO-017 | Front Office | Sebaiknya | TODO |
-| TASK-FO-018 | FR-FO-018 | Front Office | Wajib | TODO |
-| TASK-FO-019 | FR-FO-019 | Front Office | Wajib | TODO |
+| TASK-FO-018 | FR-FO-018 | Front Office | Wajib | REVIEW |
+| TASK-FO-019 | FR-FO-019 | Front Office | Wajib | REVIEW |
 | TASK-FO-020 | FR-FO-020 | Front Office | Wajib | IN_PROGRESS |
 | TASK-FO-021 | FR-FO-021 | Front Office | Wajib | TODO |
 | TASK-FO-022 | FR-FO-022 | Front Office | Sebaiknya | TODO |

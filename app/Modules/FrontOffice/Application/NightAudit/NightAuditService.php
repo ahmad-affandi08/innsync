@@ -275,7 +275,8 @@ final readonly class NightAuditService
     {
         $reservation = $this->reservations->find($property, $stay->reservationId);
 
-        foreach ($reservation->priceSnapshot['nights'] ?? [] as $night) {
+        // The booked nights, then any nights added later by an extension, each with the price it was given the day it was added.
+        foreach ([...($reservation->priceSnapshot['nights'] ?? []), ...$this->reservations->extensionNights($property, $stay->reservationId)] as $night) {
             if (($night['date'] ?? null) === $date->toString()) {
                 return $night;
             }

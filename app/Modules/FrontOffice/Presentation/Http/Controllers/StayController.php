@@ -6,7 +6,9 @@ namespace App\Modules\FrontOffice\Presentation\Http\Controllers;
 
 use App\Modules\FrontOffice\Application\Reservations\ReservationService;
 use App\Modules\FrontOffice\Application\Stays\CheckInRequest;
+use App\Modules\FrontOffice\Application\Stays\StayAmendmentService;
 use App\Modules\FrontOffice\Application\Stays\StayService;
+use App\Shared\Application\Errors\Refusal;
 use App\Shared\Application\Idempotency\IdempotencyKey;
 use App\Shared\Application\Tenancy\PropertyContext;
 use Illuminate\Http\JsonResponse;
@@ -18,7 +20,7 @@ use Inertia\Response;
 /** Check-in, the guests in the house and check-out. Rules, permissions and privacy live in `StayService`. */
 final readonly class StayController
 {
-    public function __construct(private StayService $stays, private ReservationService $reservations, private PropertyContext $property) {}
+    public function __construct(private StayService $stays, private StayAmendmentService $amendments, private ReservationService $reservations, private PropertyContext $property) {}
 
     public function index(Request $request): Response
     {
@@ -31,7 +33,7 @@ final readonly class StayController
         $stay = $this->stays->view($property, $this->actor($request), $id);
 
         return Inertia::render('front-office/pages/stay', [
-            'stay' => $stay,
+            'stay' => [...$stay, 'moves' => $this->amendmentMoves($property, $request, $id)],
             'reservation' => $this->summary($this->reservations->find($property, $this->actor($request), $stay['reservation_id'])->toArray()),
         ]);
     }
@@ -79,6 +81,32 @@ final readonly class StayController
         return $this->json(['stay' => $stay], 201);
     }
 
+    public function moveOptions(Request $request, string $id): JsonResponse
+    {
+        return $this->json(['rooms' => $this->amendments->moveOptions($this->property->current(), $this->actor($request), $id)]);
+    }
+
+    public function move(Request $request, string $id): JsonResponse
+    {
+        $data = $request->validate(['room_id' => ['required', 'string', 'size:26'], 'reason' => ['required', 'string', 'max:300'], 'lock_version' => ['required', 'integer', 'min:0']]);
+
+        return $this->json(['stay' => $this->amendments->moveRoom($this->property->current(), $this->actor($request), $id, $data['room_id'], $data['reason'], (int) $data['lock_version'])]);
+    }
+
+    public function extensionQuote(Request $request, string $id): JsonResponse
+    {
+        $data = $request->validate(['departure' => ['required', 'string', 'size:10']]);
+
+        return $this->json(['quote' => $this->amendments->quoteExtension($this->property->current(), $this->actor($request), $id, $data['departure'])]);
+    }
+
+    public function extend(Request $request, string $id): JsonResponse
+    {
+        $data = $request->validate(['departure' => ['required', 'string', 'size:10'], 'reason' => ['required', 'string', 'max:300'], 'lock_version' => ['required', 'integer', 'min:0']]);
+
+        return $this->json(['stay' => $this->amendments->extend($this->property->current(), $this->actor($request), $id, $data['departure'], $data['reason'], (int) $data['lock_version'])]);
+    }
+
     public function attachPhoto(Request $request, string $id): JsonResponse
     {
         $request->validate(['photo' => ['required', 'file', 'max:5120']]);
@@ -105,6 +133,16 @@ final readonly class StayController
         $data = $request->validate(['lock_version' => ['required', 'integer', 'min:0']]);
 
         return $this->json(['stay' => $this->stays->checkOut($this->property->current(), $this->actor($request), $id, (int) $data['lock_version'])]);
+    }
+
+    /** @return list<array<string, mixed>> */
+    private function amendmentMoves(mixed $property, Request $request, string $id): array
+    {
+        try {
+            return $this->amendments->moves($property, $this->actor($request), $id);
+        } catch (Refusal) {
+            return [];
+        }
     }
 
     /**
