@@ -7,6 +7,7 @@ return [
     'conflict_idempotency_in_progress' => 'Permintaan awal masih diproses. Coba lagi sebentar lagi.',
     'conflict_approval_required' => 'Tindakan ini memerlukan persetujuan terlebih dahulu. Ajukan, lalu minta penyetuju memutuskan.',
     'conflict_night_audit' => 'Night audit belum dapat dijalankan, atau masih ada pemeriksaan yang perlu keputusan. Tinjau pemeriksaan lalu coba lagi.',
+    'conflict_cashier' => 'Shift kasir tidak mengizinkan hal itu: buka shift Anda dahulu, tutup shift yang sedang terbuka, atau segarkan dan tinjau.',
     'conflict_booking' => 'Tidak ada kamar tipe ini yang dapat dijual untuk malam tersebut, atau pemesanan memerlukan keputusan. Tinjau tanggal dan tipe kamar.',
     'conflict_state' => 'Data ini berubah atau statusnya tidak mengizinkan tindakan itu. Muat ulang dan tinjau.',
     'conflict_privacy_state' => 'Tindakan ini bertentangan dengan keadaan terkini catatan privasi. Muat ulang dan tinjau.',

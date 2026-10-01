@@ -13,6 +13,7 @@ return [
     'conflict_idempotency_in_progress' => 'The original request is still being processed. Retry shortly.',
     'conflict_approval_required' => 'This action needs an approval first. Request one, and ask an approver to decide.',
     'conflict_night_audit' => 'Night audit cannot run yet, or some checks still need a decision. Review the checks and try again.',
+    'conflict_cashier' => 'The cashier shift does not allow that: open your shift first, close the one that is open, or refresh and review it.',
     'conflict_booking' => 'No room of this type can be sold for those nights, or the booking needs a decision. Review the dates and the room type.',
     'conflict_state' => 'This record changed or its state does not allow that. Refresh and review it.',
     'conflict_privacy_state' => 'This action conflicts with the current state of the privacy record. Refresh and review it.',

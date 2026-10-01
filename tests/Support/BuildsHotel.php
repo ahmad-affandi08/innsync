@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
+use App\Modules\FrontOffice\Application\Cashier\CashierService;
 use App\Modules\FrontOffice\Application\Folios\FolioService;
 use App\Modules\FrontOffice\Application\Inventory\InventoryAdminService;
 use App\Modules\FrontOffice\Application\NightAudit\NightAuditService;
@@ -71,6 +72,13 @@ trait BuildsHotel
 
     private string $dashOnlyId;
 
+    /** Cashier shifts: two cashiers who can also take payments and refunds, and a cashier supervisor (review, close for others, the require-a-shift switch). */
+    private string $cashierId;
+
+    private string $cashier2Id;
+
+    private string $cashSupervisorId;
+
     private string $typeId;
 
     private string $planId;
@@ -102,6 +110,9 @@ trait BuildsHotel
         $dashOnly = UserRecord::factory()->create();
         $launderer = UserRecord::factory()->create();
         $laundryManager = UserRecord::factory()->create();
+        $cashier = UserRecord::factory()->create();
+        $cashier2 = UserRecord::factory()->create();
+        $cashSupervisor = UserRecord::factory()->create();
         $this->grant($admin, self::PROPERTY, [
             RoomCatalogService::MANAGE_PERMISSION, RatePlanService::MANAGE_PERMISSION, ChargeSchemeService::MANAGE_PERMISSION, PropertySettingsService::MANAGE_PERMISSION,
             InventoryAdminService::OVERBOOKING_PERMISSION, InventoryAdminService::BLOCK_PERMISSION, InventoryAdminService::HOLD_PERMISSION, ApprovalPolicyAdmin::MANAGE_PERMISSION,
@@ -115,6 +126,9 @@ trait BuildsHotel
         $this->grant($analyst, self::PROPERTY, [DashboardService::VIEW_PERMISSION, DashboardService::REVENUE_PERMISSION, ReportService::VIEW_PERMISSION, ReportService::GUESTS_PERMISSION, ReportService::AUDIT_PERMISSION]);
         $this->grant($registrar, self::PROPERTY, [ReportService::GUESTS_PERMISSION, ReportService::GUESTS_EXPORT_PERMISSION, ReportService::IDENTITY_PERMISSION]);
         $this->grant($dashOnly, self::PROPERTY, [DashboardService::VIEW_PERMISSION]);
+        $this->grant($cashier, self::PROPERTY, [CashierService::OPERATE_PERMISSION, FolioService::MANAGE_PERMISSION, FolioService::REFUND_PERMISSION, FolioService::CORRECT_PERMISSION]);
+        $this->grant($cashier2, self::PROPERTY, [CashierService::OPERATE_PERMISSION, FolioService::MANAGE_PERMISSION]);
+        $this->grant($cashSupervisor, self::PROPERTY, [CashierService::VIEW_PERMISSION, CashierService::MANAGE_PERMISSION, CashierService::SETTINGS_PERMISSION]);
         $this->grant($clerk, self::PROPERTY, [LaundryService::INTAKE_PERMISSION, LaundryService::DELIVER_PERMISSION]);
         $this->grant($launderer, self::PROPERTY, [LaundryService::PROCESS_PERMISSION]);
         $this->grant($laundryManager, self::PROPERTY, [LaundryService::PRICES_PERMISSION, LaundryService::CANCEL_PERMISSION, LaundryService::VIEW_PERMISSION]);
@@ -135,6 +149,9 @@ trait BuildsHotel
         $this->analystId = strtolower((string) $analyst->getKey());
         $this->registrarId = strtolower((string) $registrar->getKey());
         $this->dashOnlyId = strtolower((string) $dashOnly->getKey());
+        $this->cashierId = strtolower((string) $cashier->getKey());
+        $this->cashier2Id = strtolower((string) $cashier2->getKey());
+        $this->cashSupervisorId = strtolower((string) $cashSupervisor->getKey());
         app(PropertyContext::class)->activateFromString(self::PROPERTY);
 
         $catalog = app(RoomCatalogService::class);

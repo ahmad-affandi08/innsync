@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\FrontOffice\Application\Folios;
 
+use App\Modules\FrontOffice\Application\Cashier\ShiftAttribution;
 use App\Modules\FrontOffice\Application\Reservations\ReservationRepository;
 use App\Modules\FrontOffice\Domain\Folios\Folio;
 use App\Modules\FrontOffice\Domain\Folios\FolioRuleViolation;
@@ -70,6 +71,7 @@ final readonly class FolioService
         private PropertyContext $property,
         private RoomCatalogReader $rooms,
         private PropertyProfileReader $profile,
+        private ShiftAttribution $shifts,
     ) {}
 
     // ---- reads ----
@@ -273,6 +275,7 @@ final readonly class FolioService
         $this->authorize($property, $actorId, self::MANAGE_PERMISSION);
         $paymentMethod = PaymentMethod::tryFrom($method) ?? throw Refusal::invalid('Choose cash, QRIS, card, bank transfer or online.', ['payment_method']);
         $folio = $this->folios->find($property, strtolower($folioId)) ?? throw Refusal::notFound('Folio not found.');
+        $this->shifts->assertMayHandleMoney($property, $actorId);
 
         return $this->postAndRecord($property, $actorId, $folio->id, 'folio.payment.posted', fn ($date, $now): Posting => Posting::payment(
             $this->ledger->newId(), strtoupper($method), 'Payment by '.str_replace('_', ' ', $method), Money::ofMinor($amountMinor, $folio->currency), $paymentMethod, $reference, $purpose,
@@ -349,6 +352,10 @@ final readonly class FolioService
         $settled = $folio->statusFor($this->folios->hasPayments($property, $folio->id)) === 'settled';
         $sensitive = $original->movesMoney() || $settled;
 
+        if ($original->movesMoney()) {
+            $this->shifts->assertMayHandleMoney($property, $actorId);
+        }
+
         return $this->transactions->run(function () use ($property, $actorId, $original, $folio, $reason, $approvalId, $sensitive): array {
             $approval = null;
 
@@ -388,6 +395,7 @@ final readonly class FolioService
         $this->authorize($property, $actorId, self::REFUND_PERMISSION);
         $paymentMethod = PaymentMethod::tryFrom($method) ?? throw Refusal::invalid('Choose a payment method.', ['payment_method']);
         $folio = $this->folios->find($property, strtolower($folioId)) ?? throw Refusal::notFound('Folio not found.');
+        $this->shifts->assertMayHandleMoney($property, $actorId);
 
         return $this->transactions->run(function () use ($property, $actorId, $folio, $paymentMethod, $method, $amountMinor, $reference, $reason, $approvalId): array {
             $approval = $this->consumeApproval($property, $actorId, self::REFUND_SUBJECT, $folio->id, ['folio_id' => $folio->id, 'method' => $method, 'amount_minor' => $amountMinor], $amountMinor, $approvalId);
@@ -430,6 +438,10 @@ final readonly class FolioService
             $posting = $result['posting'];
 
             if (! $result['replayed']) {
+                if ($posting->movesMoney()) {
+                    $this->shifts->attribute($property, $actorId, $posting->id);
+                }
+
                 $this->audit->record(new AuditEntry(
                     $property->toString(), strtolower($actorId), $action, 'folio', $folioId,
                     $original === null ? null : ['posting' => $original->toArray()],

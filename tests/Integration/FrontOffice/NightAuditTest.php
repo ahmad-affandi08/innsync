@@ -245,7 +245,7 @@ final class NightAuditTest extends TestCase
 
         $this->assertRefused('blocked', fn () => $this->closeDay());
         $preview = $this->audit()->preview($this->property(), $this->managerId);
-        self::assertSame(['pending_arrivals' => 1, 'overdue_departures' => 0, 'in_house_without_open_folio' => 0, 'same_day_stays' => 0], array_column($preview['gates'], 'count', 'code'));
+        self::assertSame(['pending_arrivals' => 1, 'overdue_departures' => 0, 'in_house_without_open_folio' => 0, 'same_day_stays' => 0, 'open_cashier_shifts' => 0], array_column($preview['gates'], 'count', 'code'));
         self::assertFalse($preview['may_waive']);
 
         try {

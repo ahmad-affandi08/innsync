@@ -59,7 +59,7 @@
 | TASK-FO-033 | FR-FO-033 | Front Office | Wajib | TODO |
 | TASK-FO-034 | FR-FO-034 | Front Office | Sebaiknya | TODO |
 | TASK-FO-035 | FR-FO-035 | Front Office | Sebaiknya | TODO |
-| TASK-FO-036 | FR-FO-036 | Front Office | Wajib | TODO |
+| TASK-FO-036 | FR-FO-036 | Front Office | Wajib | REVIEW |
 | TASK-FO-037 | FR-FO-037 | Front Office | Sebaiknya | TODO |
 | TASK-FO-038 | FR-FO-038 | Front Office | Wajib | TODO |
 | TASK-FO-039 | FR-FO-039 | Front Office | Wajib | TODO |

@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Modules\FrontOffice\Application\Cashier\CashierRepository;
+use App\Modules\FrontOffice\Application\Cashier\CashierService;
+use App\Modules\FrontOffice\Application\Cashier\ShiftAttribution;
 use App\Modules\FrontOffice\Application\Charging\GuestCharging;
 use App\Modules\FrontOffice\Application\Charging\GuestChargingService;
 use App\Modules\FrontOffice\Application\Folios\FolioPenaltyPoster;
@@ -18,6 +21,7 @@ use App\Modules\FrontOffice\Application\Reservations\ReservationRepository;
 use App\Modules\FrontOffice\Application\Stays\GuestRepository;
 use App\Modules\FrontOffice\Application\Stays\StayOccupancyReader;
 use App\Modules\FrontOffice\Application\Stays\StayRepository;
+use App\Modules\FrontOffice\Infrastructure\Cashier\DatabaseCashierRepository;
 use App\Modules\FrontOffice\Infrastructure\Folios\DatabaseFolioRepository;
 use App\Modules\FrontOffice\Infrastructure\Inventory\DatabaseInventoryHoldRepository;
 use App\Modules\FrontOffice\Infrastructure\Inventory\DatabaseInventoryRepository;
@@ -236,6 +240,8 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(UserSessionRepository::class, DatabaseUserSessionRepository::class);
         $this->app->bind(PropertyTimeZoneReader::class, EloquentPropertyTimeZoneReader::class);
         $this->app->bind(PropertyProfileReader::class, EloquentPropertyProfileReader::class);
+        $this->app->bind(CashierRepository::class, DatabaseCashierRepository::class);
+        $this->app->bind(ShiftAttribution::class, CashierService::class);
         $this->app->bind(StaffDirectory::class, DatabaseStaffDirectory::class);
         $this->app->bind(PermissionChecker::class, ScopedPermissionChecker::class);
         $this->app->bind(ApprovalRepository::class, DatabaseApprovalRepository::class);

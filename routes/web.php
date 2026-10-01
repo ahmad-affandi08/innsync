@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Modules\FrontOffice\Presentation\Http\Controllers\AvailabilityController;
+use App\Modules\FrontOffice\Presentation\Http\Controllers\CashierController;
 use App\Modules\FrontOffice\Presentation\Http\Controllers\FolioController;
 use App\Modules\FrontOffice\Presentation\Http\Controllers\InventoryController;
 use App\Modules\FrontOffice\Presentation\Http\Controllers\NightAuditController;
@@ -209,6 +210,15 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
         Route::post('/postings/{id}/reverse', [FolioController::class, 'reverse'])->where('id', $id)->name('front-office.postings.reverse');
         Route::post('/folios/{id}/refund', [FolioController::class, 'refund'])->where('id', $id)->name('front-office.folios.refund');
     });
+
+    // Cashier shifts (FR-FO-036): own shift, review of all shifts, and the property switch that requires an open shift to take money.
+    Route::get('/cashier', [CashierController::class, 'mine'])->name('front-office.cashier');
+    Route::get('/cashier/shifts', [CashierController::class, 'index'])->name('front-office.cashier.shifts');
+    Route::get('/cashier/shifts/{id}', [CashierController::class, 'show'])->where('id', $id)->name('front-office.cashier.shifts.show');
+    Route::post('/cashier/shifts', [CashierController::class, 'open'])->name('front-office.cashier.open');
+    Route::post('/cashier/shifts/{id}/drops', [CashierController::class, 'drop'])->where('id', $id)->middleware('idempotent')->name('front-office.cashier.drop');
+    Route::post('/cashier/shifts/{id}/close', [CashierController::class, 'close'])->where('id', $id)->name('front-office.cashier.close');
+    Route::post('/cashier/settings', [CashierController::class, 'settings'])->middleware('password.confirm')->name('front-office.cashier.settings');
 
     Route::get('/inventory', [InventoryController::class, 'index'])->name('front-office.inventory');
     Route::middleware('password.confirm')->group(function () use ($id): void {
