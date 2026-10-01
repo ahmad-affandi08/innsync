@@ -11,7 +11,7 @@ These tasks exist before business modules can safely scale.
 | TASK-FND-005 | Audit trail + security log + correlation IDs | NFR-10/20/29 | DONE |
 | TASK-FND-006 | Idempotency middleware/application service + table | NFR-18 | DONE |
 | TASK-FND-007 | Transactional outbox + database queue + cron drain | NFR-17/25, ADR-0007 | DONE |
-| TASK-FND-008 | Private file storage and authorized download | NFR-07/08/24 | TODO |
+| TASK-FND-008 | Private file storage and authorized download | NFR-07/08/24 | DONE |
 | TASK-FND-009 | Error envelope, validation, conflict semantics | NFR-19 | TODO |
 | TASK-FND-010 | Observability, health endpoint, critical alerts | NFR-20 | TODO |
 | TASK-FND-011 | Backup/restore and DR runbook | NFR-11/21/30 | TODO |
@@ -118,6 +118,18 @@ These tasks exist before business modules can safely scale.
 - Schema: migration `0001_01_01_000007_create_outbox_tables` (batch 5 ran on development database).
 - Automated evidence: full PHPUnit suite passes with 87 tests and 295 assertions, including unit, console, and pipeline integration tests. Pint passes; composer validate, config cache, and route cache pass.
 - Rollback: roll back the migration only while no pending/dead-letter messages exist; otherwise use a forward migration to avoid losing unpublished messages.
+
+## TASK-FND-008 acceptance evidence
+
+- Completed: 2026-10-01.
+- Traceability: `TASK-FND-008`, `NFR-07`, `NFR-08`, `NFR-24`, `BR-009`, `ADR-0002`, and `ADR-0005`; no business `FR-*` workflow is introduced. Concrete uploads (`FR-FO-011`, HR, work-order evidence) remain owned by their module tasks.
+- Storage: dedicated `private_files` local disk under `storage/app/private-files` (no `url`, not served, not in `filesystem.links`, outside `public/`). Blobs are encrypted with the application encrypter, written under a random 256-bit key with fan-out directories; client names never reach the path.
+- Upload: `StoreFile` takes a module-declared `FilePolicy` (explicit MIME allow-list, size ceiling, sensitivity). MIME is detected from bytes via `finfo`, never from the claimed name/header; empty, oversized, wrong-type, and already-expired uploads are rejected before anything is written. Display names are sanitized. If the metadata transaction fails, the unrecorded blob is discarded. Caller must authorize the attach action first.
+- Download: `DownloadFile` requires a module-supplied `FileAccessPolicy` (object-level authorization, IDOR defense), property-scoped lookup (cross-property reads fail closed), expiry check, and SHA-256 integrity verification. Every success writes a `file.downloaded` audit entry; denials and expired access write `file.download-denied` security events; integrity failures write `file.integrity-failed`. Expired and foreign files surface as not-found. `StoredFileResponse` builds attachment responses with `nosniff`, sandbox CSP, `no-store`, and no permanent public URL.
+- Retention boundary: Q-15 is unresolved, so no retention period or purge job was guessed. `expires_at` is nullable (null = no decision) and blocks download once reached; policies for sensitive exports can set `requiresExpiry` so the owning task must supply one. Physical deletion after retention is owned by `TASK-FND-019`.
+- Schema: `stored_files` (ULID, property FK, unique storage key, check constraints, UTC microsecond timestamps, owner/purpose/expiry indexes) is append-only via update/delete triggers, consistent with the audit tables. Migration batch 6 ran on the development database.
+- Automated evidence: full PHPUnit suite passes with 99 tests and 331 assertions, including encryption-at-rest, random naming, byte-sniffed MIME rejection, size/empty/expiry rejection, orphan cleanup, authorized and denied download, audit and security events, expiry, cross-property isolation, tamper/missing-blob detection, append-only metadata, and private-disk configuration. Pint, architecture tests, Composer validation, config cache, and route cache pass.
+- Rollback: drop `stored_files` only before any file is recorded; afterward use a forward migration, since blobs without metadata are unreadable and metadata is audit evidence.
 
 ## NFR coverage
 
