@@ -24,6 +24,8 @@ use App\Modules\Property\Presentation\Http\Controllers\ChargeSchemeController;
 use App\Modules\Property\Presentation\Http\Controllers\PropertySettingsController;
 use App\Modules\Property\Presentation\Http\Controllers\RatePlanController;
 use App\Modules\Property\Presentation\Http\Controllers\RoomCatalogController;
+use App\Modules\Reporting\Presentation\Http\Controllers\DashboardController;
+use App\Modules\Reporting\Presentation\Http\Controllers\ReportController;
 use App\Shared\Infrastructure\Localization\SetLocaleController;
 use App\Shared\Infrastructure\Offline\SyncController;
 use Illuminate\Http\Request;
@@ -242,4 +244,22 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
     Route::post('/orders/{id}/ready', [LaundryController::class, 'ready'])->where('id', $id)->name('laundry.orders.ready');
     Route::post('/orders/{id}/deliver', [LaundryController::class, 'deliver'])->where('id', $id)->name('laundry.orders.deliver');
     Route::post('/orders/{id}/cancel', [LaundryController::class, 'cancel'])->where('id', $id)->name('laundry.orders.cancel');
+});
+
+// Dashboard and reports (FR-DSH-*, FR-RPT-*, FR-FO-040 to -042): read-only. Permissions are enforced in the application services;
+// an export of personal data needs a stated purpose.
+Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->group(function (): void {
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::prefix('reports')->group(function (): void {
+        Route::get('/', [ReportController::class, 'index'])->name('reports');
+        Route::get('/flash', [ReportController::class, 'flash'])->name('reports.flash');
+        Route::get('/flash/export', [ReportController::class, 'exportFlash'])->name('reports.flash.export');
+        Route::get('/payments', [ReportController::class, 'payments'])->name('reports.payments');
+        Route::get('/payments/export', [ReportController::class, 'exportPayments'])->name('reports.payments.export');
+        Route::get('/registrations', [ReportController::class, 'registrations'])->name('reports.registrations');
+        Route::get('/registrations/export', [ReportController::class, 'exportRegistrations'])->name('reports.registrations.export');
+        Route::get('/foreign-guests', [ReportController::class, 'foreignGuests'])->name('reports.foreign');
+        Route::get('/foreign-guests/export', [ReportController::class, 'exportForeignGuests'])->name('reports.foreign.export');
+        Route::get('/audit', [ReportController::class, 'audit'])->name('reports.audit');
+    });
 });

@@ -55,9 +55,9 @@
 | TASK-FO-037 | FR-FO-037 | Sebaiknya | Mengelola early check-in, late check-out, day-use, dan biaya terkait berdasarkan kebijakan/rate plan yang dapat dikonfigurasi. | TODO |
 | TASK-FO-038 | FR-FO-038 | Wajib | Late charge setelah folio ditutup harus menggunakan alur khusus yang menaut ke stay/folio asal dan tidak mengubah laporan hari lama tanpa adjustment. | TODO |
 | TASK-FO-039 | FR-FO-039 | Wajib | Koreksi nama tamu, identitas, room move, dan routing finansial setelah check-in disimpan sebagai perubahan ter-audit; perubahan data kritis dapat memerlukan approval. | TODO |
-| TASK-FO-040 | FR-FO-040 | Wajib | Menerbitkan laporan registrasi tamu harian sesuai kolom di atas dengan penyaring tanggal dan kewarganegaraan. | TODO |
-| TASK-FO-041 | FR-FO-041 | Wajib | Menerbitkan berkas laporan tamu warga negara asing dalam format yang siap disampaikan kepada instansi terkait. | TODO |
-| TASK-FO-042 | FR-FO-042 | Wajib | Menerbitkan laporan pendapatan kamar per metode pembayaran: tunai, QRIS, transfer bank, kartu, dan pembayaran kanal daring. | TODO |
+| TASK-FO-040 | FR-FO-040 | Wajib | Menerbitkan laporan registrasi tamu harian sesuai kolom di atas dengan penyaring tanggal dan kewarganegaraan. | REVIEW |
+| TASK-FO-041 | FR-FO-041 | Wajib | Menerbitkan berkas laporan tamu warga negara asing dalam format yang siap disampaikan kepada instansi terkait. | IN_PROGRESS |
+| TASK-FO-042 | FR-FO-042 | Wajib | Menerbitkan laporan pendapatan kamar per metode pembayaran: tunai, QRIS, transfer bank, kartu, dan pembayaran kanal daring. | REVIEW |
 | TASK-FO-043 | FR-FO-043 | Wajib | Menerbitkan laporan kedatangan, keberangkatan, dan tamu menginap untuk keperluan operasional harian. | TODO |
 | TASK-FO-044 | FR-FO-044 | Wajib | Menerbitkan laporan okupansi, ADR, dan RevPAR per hari, bulan, dan tahun berjalan. | TODO |
 

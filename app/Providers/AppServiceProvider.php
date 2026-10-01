@@ -79,6 +79,8 @@ use App\Modules\Property\Infrastructure\Rates\DatabasePropertyCurrencyReader;
 use App\Modules\Property\Infrastructure\Rates\DatabaseRatePlanRepository;
 use App\Modules\Property\Infrastructure\Settings\DatabasePropertySettingsRepository;
 use App\Modules\Property\Infrastructure\Time\EloquentPropertyTimeZoneReader;
+use App\Modules\Reporting\Application\ReportQueries;
+use App\Modules\Reporting\Infrastructure\DatabaseReportQueries;
 use App\Shared\Application\Approval\ApprovalGate;
 use App\Shared\Application\Approval\ApprovalSubjects;
 use App\Shared\Application\Audit\AuditTrail;
@@ -268,6 +270,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(RoomHandover::class, HousekeepingService::class);
         $this->app->bind(GuestCharging::class, GuestChargingService::class);
         $this->app->bind(LaundryRepository::class, DatabaseLaundryRepository::class);
+        $this->app->bind(ReportQueries::class, DatabaseReportQueries::class);
         $this->app->bind(LaundryLiability::class, LaundryService::class);
         $this->app->bind(NightAuditRepository::class, DatabaseNightAuditRepository::class);
         $this->app->bind(StayRepository::class, DatabaseStayRepository::class);

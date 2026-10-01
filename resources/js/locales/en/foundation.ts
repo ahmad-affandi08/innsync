@@ -7,4 +7,5 @@ export const foundation = {
     'foundation.welcome.version': 'Version',
     'foundation.welcome.propertyScope': 'Property scope',
     'foundation.welcome.sessions': 'Sessions',
+    'foundation.welcome.modules': 'Modules',
 } as const

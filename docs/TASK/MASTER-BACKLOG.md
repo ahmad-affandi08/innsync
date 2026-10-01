@@ -2,10 +2,10 @@
 
 | Task | Reference | Area | Priority/Category | Status |
 | --- | --- | --- | --- | --- |
-| TASK-DSH-001 | FR-DSH-001 | Dashboard Manajemen | Wajib | TODO |
-| TASK-DSH-002 | FR-DSH-002 | Dashboard Manajemen | Wajib | TODO |
+| TASK-DSH-001 | FR-DSH-001 | Dashboard Manajemen | Wajib | REVIEW |
+| TASK-DSH-002 | FR-DSH-002 | Dashboard Manajemen | Wajib | IN_PROGRESS |
 | TASK-DSH-003 | FR-DSH-003 | Dashboard Manajemen | Wajib | TODO |
-| TASK-DSH-004 | FR-DSH-004 | Dashboard Manajemen | Wajib | TODO |
+| TASK-DSH-004 | FR-DSH-004 | Dashboard Manajemen | Wajib | IN_PROGRESS |
 | TASK-DSH-005 | FR-DSH-005 | Dashboard Manajemen | Wajib | TODO |
 | TASK-DSH-006 | FR-DSH-006 | Dashboard Manajemen | Wajib | TODO |
 | TASK-DSH-007 | FR-DSH-007 | Dashboard Manajemen | Wajib | TODO |
@@ -16,14 +16,14 @@
 | TASK-DSH-012 | FR-DSH-012 | Dashboard Manajemen | Sebaiknya | TODO |
 | TASK-DSH-013 | FR-DSH-013 | Dashboard Manajemen | Wajib | TODO |
 | TASK-DSH-014 | FR-DSH-014 | Dashboard Manajemen | Wajib | TODO |
-| TASK-DSH-015 | FR-DSH-015 | Dashboard Manajemen | Wajib | TODO |
-| TASK-DSH-016 | FR-DSH-016 | Dashboard Manajemen | Wajib | TODO |
+| TASK-DSH-015 | FR-DSH-015 | Dashboard Manajemen | Wajib | REVIEW |
+| TASK-DSH-016 | FR-DSH-016 | Dashboard Manajemen | Wajib | IN_PROGRESS |
 | TASK-DSH-017 | FR-DSH-017 | Dashboard Manajemen | Bisa | TODO |
-| TASK-DSH-018 | FR-DSH-018 | Dashboard Manajemen | Sebaiknya | TODO |
+| TASK-DSH-018 | FR-DSH-018 | Dashboard Manajemen | Sebaiknya | REVIEW |
 | TASK-DSH-019 | FR-DSH-019 | Dashboard Manajemen | Bisa | TODO |
-| TASK-DSH-020 | FR-DSH-020 | Dashboard Manajemen | Wajib | TODO |
-| TASK-DSH-021 | FR-DSH-021 | Dashboard Manajemen | Wajib | TODO |
-| TASK-DSH-022 | FR-DSH-022 | Dashboard Manajemen | Wajib | TODO |
+| TASK-DSH-020 | FR-DSH-020 | Dashboard Manajemen | Wajib | IN_PROGRESS |
+| TASK-DSH-021 | FR-DSH-021 | Dashboard Manajemen | Wajib | REVIEW |
+| TASK-DSH-022 | FR-DSH-022 | Dashboard Manajemen | Wajib | IN_PROGRESS |
 | TASK-FO-001 | FR-FO-001 | Front Office | Wajib | REVIEW |
 | TASK-FO-002 | FR-FO-002 | Front Office | Wajib | REVIEW |
 | TASK-FO-003 | FR-FO-003 | Front Office | Wajib | IN_PROGRESS |
@@ -63,9 +63,9 @@
 | TASK-FO-037 | FR-FO-037 | Front Office | Sebaiknya | TODO |
 | TASK-FO-038 | FR-FO-038 | Front Office | Wajib | TODO |
 | TASK-FO-039 | FR-FO-039 | Front Office | Wajib | TODO |
-| TASK-FO-040 | FR-FO-040 | Front Office | Wajib | TODO |
-| TASK-FO-041 | FR-FO-041 | Front Office | Wajib | TODO |
-| TASK-FO-042 | FR-FO-042 | Front Office | Wajib | TODO |
+| TASK-FO-040 | FR-FO-040 | Front Office | Wajib | REVIEW |
+| TASK-FO-041 | FR-FO-041 | Front Office | Wajib | IN_PROGRESS |
+| TASK-FO-042 | FR-FO-042 | Front Office | Wajib | REVIEW |
 | TASK-FO-043 | FR-FO-043 | Front Office | Wajib | TODO |
 | TASK-FO-044 | FR-FO-044 | Front Office | Wajib | TODO |
 | TASK-HK-001 | FR-HK-001 | Housekeeping | Wajib | REVIEW |
@@ -244,16 +244,16 @@
 | TASK-FIN-035 | FR-FIN-035 | Finance | Wajib | TODO |
 | TASK-FIN-036 | FR-FIN-036 | Finance | Wajib | TODO |
 | TASK-FIN-037 | FR-FIN-037 | Finance | Wajib | TODO |
-| TASK-RPT-001 | FR-RPT-001 | Reporting & Analytics | Wajib | TODO |
-| TASK-RPT-002 | FR-RPT-002 | Reporting & Analytics | Wajib | TODO |
-| TASK-RPT-003 | FR-RPT-003 | Reporting & Analytics | Wajib | TODO |
+| TASK-RPT-001 | FR-RPT-001 | Reporting & Analytics | Wajib | REVIEW |
+| TASK-RPT-002 | FR-RPT-002 | Reporting & Analytics | Wajib | IN_PROGRESS |
+| TASK-RPT-003 | FR-RPT-003 | Reporting & Analytics | Wajib | IN_PROGRESS |
 | TASK-RPT-004 | FR-RPT-004 | Reporting & Analytics | Sebaiknya | TODO |
-| TASK-RPT-005 | FR-RPT-005 | Reporting & Analytics | Wajib | TODO |
+| TASK-RPT-005 | FR-RPT-005 | Reporting & Analytics | Wajib | IN_PROGRESS |
 | TASK-RPT-006 | FR-RPT-006 | Reporting & Analytics | Sebaiknya | TODO |
-| TASK-RPT-007 | FR-RPT-007 | Reporting & Analytics | Wajib | TODO |
+| TASK-RPT-007 | FR-RPT-007 | Reporting & Analytics | Wajib | REVIEW |
 | TASK-RPT-008 | FR-RPT-008 | Reporting & Analytics | Bisa | TODO |
-| TASK-RPT-009 | FR-RPT-009 | Reporting & Analytics | Wajib | TODO |
-| TASK-RPT-010 | FR-RPT-010 | Reporting & Analytics | Wajib | TODO |
+| TASK-RPT-009 | FR-RPT-009 | Reporting & Analytics | Wajib | REVIEW |
+| TASK-RPT-010 | FR-RPT-010 | Reporting & Analytics | Wajib | REVIEW |
 | TASK-RPT-011 | FR-RPT-011 | Reporting & Analytics | Sebaiknya | TODO |
 | TASK-GST-001 | FR-GST-001 | Guest Self-Service | Wajib | TODO |
 | TASK-GST-002 | FR-GST-002 | Guest Self-Service | Wajib | TODO |

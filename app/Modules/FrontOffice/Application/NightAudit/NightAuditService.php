@@ -6,6 +6,7 @@ namespace App\Modules\FrontOffice\Application\NightAudit;
 
 use App\Modules\FrontOffice\Application\Folios\FolioLedger;
 use App\Modules\FrontOffice\Application\Folios\FolioRepository;
+use App\Modules\FrontOffice\Application\Inventory\RoomBlockRepository;
 use App\Modules\FrontOffice\Application\Reservations\ReservationRepository;
 use App\Modules\FrontOffice\Application\Stays\StayRepository;
 use App\Modules\FrontOffice\Domain\Folios\Folio;
@@ -68,6 +69,7 @@ final readonly class NightAuditService
         private FolioRepository $folios,
         private FolioLedger $ledger,
         private RoomCatalogReader $rooms,
+        private RoomBlockRepository $blocks,
         private BusinessDateProvider $businessDate,
         private BusinessDateAdvancer $advancer,
         private PropertySettingsService $settings,
@@ -195,15 +197,22 @@ final readonly class NightAuditService
         }
 
         $totals = $this->audits->dayTotals($property, $today);
-        $roomsTotal = count($this->rooms->activeRooms($property));
+        // Occupancy is rooms in the house over rooms that could be sold: out of order and out of service rooms are not counted
+        // (the same definition the dashboard states, FR-DSH-021).
+        $activeRooms = $this->rooms->activeRooms($property);
+        $roomsTotal = count($activeRooms);
+        $roomsBlocked = count(array_filter($activeRooms, fn ($room): bool => $this->blocks->overlapping($property, $room->id, $today->toString(), $today->toString()) !== []));
+        $roomsSellable = max(0, $roomsTotal - $roomsBlocked);
         $next = $this->advancer->advance($property, $today, $actor);
         $report = [
             'business_date' => $today->toString(),
             'next_business_date' => $next->toString(),
             'currency' => $this->currencies->currencyOf($property),
             'rooms_total' => $roomsTotal,
+            'rooms_blocked' => $roomsBlocked,
+            'rooms_sellable' => $roomsSellable,
             'in_house' => count($inHouse),
-            'occupancy_bp' => $roomsTotal === 0 ? 0 : intdiv(count($inHouse) * 10_000, $roomsTotal),
+            'occupancy_bp' => $roomsSellable === 0 ? 0 : intdiv(count($inHouse) * 10_000, $roomsSellable),
             'room_nights_charged' => $charged,
             'room_nights_skipped' => $skipped,
             'arrivals' => $totals['arrivals'],

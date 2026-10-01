@@ -5,6 +5,7 @@ import { laundry } from './laundry.ts'
 import { offline } from './offline.ts'
 import { property } from './property.ts'
 import { rates } from './rates.ts'
+import { reporting } from './reporting.ts'
 
 /** Must define every key of the English source dictionary; the type enforces it at compile time. */
 export const id: Record<MessageKey, string> = {
@@ -14,6 +15,7 @@ export const id: Record<MessageKey, string> = {
     ...housekeeping,
     ...laundry,
     ...rates,
+    ...reporting,
     'common.language.label': 'Bahasa',
     'common.language.id': 'Bahasa Indonesia',
     'common.language.en': 'English',
@@ -34,6 +36,7 @@ export const id: Record<MessageKey, string> = {
     'foundation.welcome.version': 'Versi',
     'foundation.welcome.propertyScope': 'Lingkup properti',
     'foundation.welcome.sessions': 'Sesi',
+    'foundation.welcome.modules': 'Modul',
 
     'identity.login.title': 'Masuk',
     'identity.login.description': 'Gunakan akun staf Anda. Percobaan gagal berulang akan mengunci akun untuk sementara.',

@@ -19,6 +19,8 @@ use App\Modules\Property\Application\Catalog\RoomCatalogService;
 use App\Modules\Property\Application\Rates\ChargeSchemeService;
 use App\Modules\Property\Application\Rates\RatePlanService;
 use App\Modules\Property\Application\Settings\PropertySettingsService;
+use App\Modules\Reporting\Application\DashboardService;
+use App\Modules\Reporting\Application\ReportService;
 use App\Shared\Application\Idempotency\IdempotencyKey;
 use App\Shared\Application\Tenancy\PropertyContext;
 use App\Shared\Application\Time\Clock;
@@ -62,6 +64,13 @@ trait BuildsHotel
 
     private string $laundryManagerId;
 
+    /** Reporting: an analyst (dashboard with revenue, reports, audit; identity masked), a registrar (guest reports and export, identity in clear), and a dashboard-only viewer. */
+    private string $analystId;
+
+    private string $registrarId;
+
+    private string $dashOnlyId;
+
     private string $typeId;
 
     private string $planId;
@@ -88,6 +97,9 @@ trait BuildsHotel
         $attendant2 = UserRecord::factory()->create();
         $hkChief = UserRecord::factory()->create();
         $clerk = UserRecord::factory()->create();
+        $analyst = UserRecord::factory()->create();
+        $registrar = UserRecord::factory()->create();
+        $dashOnly = UserRecord::factory()->create();
         $launderer = UserRecord::factory()->create();
         $laundryManager = UserRecord::factory()->create();
         $this->grant($admin, self::PROPERTY, [
@@ -100,6 +112,9 @@ trait BuildsHotel
         $this->grant($attendant, self::PROPERTY, [HousekeepingService::PERFORM_PERMISSION]);
         $this->grant($attendant2, self::PROPERTY, [HousekeepingService::PERFORM_PERMISSION]);
         $this->grant($hkChief, self::PROPERTY, [HousekeepingService::INSPECT_PERMISSION, HousekeepingService::WAIVE_PERMISSION]);
+        $this->grant($analyst, self::PROPERTY, [DashboardService::VIEW_PERMISSION, DashboardService::REVENUE_PERMISSION, ReportService::VIEW_PERMISSION, ReportService::GUESTS_PERMISSION, ReportService::AUDIT_PERMISSION]);
+        $this->grant($registrar, self::PROPERTY, [ReportService::GUESTS_PERMISSION, ReportService::GUESTS_EXPORT_PERMISSION, ReportService::IDENTITY_PERMISSION]);
+        $this->grant($dashOnly, self::PROPERTY, [DashboardService::VIEW_PERMISSION]);
         $this->grant($clerk, self::PROPERTY, [LaundryService::INTAKE_PERMISSION, LaundryService::DELIVER_PERMISSION]);
         $this->grant($launderer, self::PROPERTY, [LaundryService::PROCESS_PERMISSION]);
         $this->grant($laundryManager, self::PROPERTY, [LaundryService::PRICES_PERMISSION, LaundryService::CANCEL_PERMISSION, LaundryService::VIEW_PERMISSION]);
@@ -117,6 +132,9 @@ trait BuildsHotel
         $this->clerkId = strtolower((string) $clerk->getKey());
         $this->laundererId = strtolower((string) $launderer->getKey());
         $this->laundryManagerId = strtolower((string) $laundryManager->getKey());
+        $this->analystId = strtolower((string) $analyst->getKey());
+        $this->registrarId = strtolower((string) $registrar->getKey());
+        $this->dashOnlyId = strtolower((string) $dashOnly->getKey());
         app(PropertyContext::class)->activateFromString(self::PROPERTY);
 
         $catalog = app(RoomCatalogService::class);

@@ -5,6 +5,16 @@ import { Button } from '@/components/ui/button';
 import { LanguageSwitcher } from '@/components/ui/language-switcher';
 import { useTranslation } from '@/shared/i18n/i18n';
 
+const MODULES = [
+    { href: '/dashboard', label: 'rpt.nav.dashboard' },
+    { href: '/front-office/room-board', label: 'fo.nav.label' },
+    { href: '/housekeeping', label: 'hk.nav.label' },
+    { href: '/laundry', label: 'ldy.nav.label' },
+    { href: '/reports', label: 'rpt.nav.reports' },
+    { href: '/property/rooms', label: 'property.nav.label' },
+    { href: '/approvals', label: 'identity.approvals.title' },
+] as const;
+
 type WelcomePageProps = {
     appVersion: string;
     userName: string;
@@ -34,6 +44,12 @@ export default function WelcomePage({ activePropertyId, appVersion, userName }: 
                             {t('foundation.welcome.description')}
                         </p>
                     </header>
+
+                    <nav aria-label={t('foundation.welcome.modules')} className="flex flex-wrap gap-2 border-b border-border px-6 py-4 text-sm sm:px-8">
+                        {MODULES.map((m) => (
+                            <Link className="rounded-md border border-border px-3 py-1.5 hover:bg-surface-muted" href={m.href} key={m.href}>{t(m.label)}</Link>
+                        ))}
+                    </nav>
 
                     <div className="grid gap-6 px-6 py-6 sm:grid-cols-[1fr_auto] sm:items-end sm:px-8">
                         <div>
