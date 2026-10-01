@@ -7,10 +7,11 @@
 // fails closed instead of silently skipping approval. Declare an action mandatory when the PRD requires approval
 // for it (for example FR-FBS-005 void/cancel, FR-FIN-018 payments above threshold).
 //
-// The foundation declares no business subjects: which actions need approval, and at what amount, is business
-// policy that owners confirm per module task.
+// Which actions need approval, and at what amount, is business policy: owners configure the chain per property.
 return [
     'subjects' => [
-        // 'fnb.bill.void' => ['mandatory' => true],
+        // FR-FO-029: a refund, a payment reversal, or any correction of a settled folio needs authorization.
+        'front-office.folio.reversal' => ['mandatory' => true],
+        'front-office.folio.refund' => ['mandatory' => true],
     ],
 ];

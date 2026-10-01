@@ -1,4 +1,4 @@
-import { Link } from '@inertiajs/react';
+import { Link, router } from '@inertiajs/react';
 import { useState } from 'react';
 
 import { Alert } from '@/components/ui/alert';
@@ -21,11 +21,12 @@ type Reservation = {
     price_snapshot: { nights: { date: string; base_minor: number; service_charge_minor: number; tax_minor: number; total_minor: number }[] };
 };
 type Lookups = { types: { id: string; code: string; name: string }[]; plans: { id: string; code: string; name: string; inclusions: string | null }[] };
+type FolioRow = { id: string; number: string; window: number; label: string; status: string; balance_minor: number; currency: string };
 type Kind = 'confirm' | 'cancel' | 'noShow';
 
 const PATH = { confirm: 'confirm', cancel: 'cancel', noShow: 'no-show' } as const;
 
-export default function ReservationPage({ lookups, reservation: r }: { lookups: Lookups; reservation: Reservation }) {
+export default function ReservationPage({ folios, lookups, reservation: r }: { folios: FolioRow[]; lookups: Lookups; reservation: Reservation }) {
     const { t } = useTranslation();
     const format = useFormatters();
     const errorCopy = useErrorStateCopy();
@@ -34,6 +35,11 @@ export default function ReservationPage({ lookups, reservation: r }: { lookups: 
     const [reason, setReason] = useState('');
     const type = lookups.types.find((x) => x.id === r.room_type_id);
     const plan = lookups.plans.find((x) => x.id === r.rate_plan_id);
+    async function openFolio() {
+        const done = await action.run<{ folio: { id: string } }>(`/front-office/reservations/${r.id}/folios`, { body: { label: 'Guest', window: folios.length + 1 } });
+        if (done !== null) router.visit(`/front-office/folios/${done.folio.id}`);
+    }
+
     const expected = r.status === 'tentative' || r.status === 'confirmed' || r.status === 'guaranteed';
 
     function close() {
@@ -85,6 +91,21 @@ export default function ReservationPage({ lookups, reservation: r }: { lookups: 
                         ))}</tbody>
                     </table>
                 </div>
+            </section>
+
+            <section aria-labelledby="folio-h" className="flex flex-col gap-2">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                    <h2 className="text-lg font-semibold" id="folio-h">{t('fo.folio.postings')}</h2>
+                    {r.status !== 'cancelled' && r.status !== 'no_show' ? <Button disabled={action.busy} onClick={() => void openFolio()} size="sm" type="button" variant="outline">{t('fo.folio.open')}</Button> : null}
+                </div>
+                {folios.length === 0 ? <p className="text-sm text-muted-foreground">{t('fo.folio.none')}</p> : (
+                    <ul className="divide-y divide-border border-y border-border text-sm">{folios.map((f) => (
+                        <li className="flex flex-wrap items-center justify-between gap-2 py-2" key={f.id}>
+                            <Link className="font-medium underline-offset-2 hover:underline" href={`/front-office/folios/${f.id}`}>{t('fo.folio.openLink', { number: f.number })}</Link>
+                            <span className="text-xs text-muted-foreground">{t('fo.folio.windowLabel', { n: f.window, label: f.label })} · {t(`fo.folio.status.${f.status}` as 'fo.folio.status.open')} · {format.money(f.balance_minor, f.currency)}</span>
+                        </li>
+                    ))}</ul>
+                )}
             </section>
 
             {expected && (

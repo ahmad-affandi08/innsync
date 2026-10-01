@@ -11,6 +11,7 @@ return [
     'conflict_optimistic_lock' => 'This record was changed by someone else. Refresh and review before retrying.',
     'conflict_idempotency_mismatch' => 'This request key was already used for a different request.',
     'conflict_idempotency_in_progress' => 'The original request is still being processed. Retry shortly.',
+    'conflict_approval_required' => 'This action needs an approval first. Request one, and ask an approver to decide.',
     'conflict_booking' => 'No room of this type can be sold for those nights, or the booking needs a decision. Review the dates and the room type.',
     'conflict_state' => 'This record changed or its state does not allow that. Refresh and review it.',
     'conflict_privacy_state' => 'This action conflicts with the current state of the privacy record. Refresh and review it.',

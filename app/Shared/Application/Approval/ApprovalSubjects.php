@@ -11,4 +11,7 @@ interface ApprovalSubjects
 
     /** A mandatory subject fails closed when no policy applies (FR-FBS-005 void and cancel, FR-FIN-018 payments...). */
     public function isMandatory(string $subjectType): bool;
+
+    /** Every declared subject with whether it is mandatory. @return array<string, bool> */
+    public function all(): array;
 }

@@ -19,4 +19,15 @@ final class ConfiguredApprovalSubjects implements ApprovalSubjects
 
         return (bool) ($subjects[$subjectType]['mandatory'] ?? false);
     }
+
+    public function all(): array
+    {
+        $result = [];
+
+        foreach ((array) config('approvals.subjects') as $subject => $definition) {
+            $result[(string) $subject] = (bool) ($definition['mandatory'] ?? false);
+        }
+
+        return $result;
+    }
 }

@@ -38,4 +38,7 @@ interface ApprovalGate
     public function consume(PropertyId $property, string $requestId, string $subjectType, string $subjectRef, array $payload, string $actorId): ApprovalView;
 
     public function find(PropertyId $property, string $requestId): ?ApprovalView;
+
+    /** The person's own recent requests, newest first, so a screen can offer the approved one for use. @return list<ApprovalView> */
+    public function requestedBy(PropertyId $property, string $makerId, int $limit = 100): array;
 }

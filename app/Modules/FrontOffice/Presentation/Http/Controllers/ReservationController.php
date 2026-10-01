@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\Modules\FrontOffice\Presentation\Http\Controllers;
 
+use App\Modules\FrontOffice\Application\Folios\FolioService;
 use App\Modules\FrontOffice\Application\Reservations\ReservationRequest;
 use App\Modules\FrontOffice\Application\Reservations\ReservationService;
+use App\Shared\Application\Errors\Refusal;
 use App\Shared\Application\Idempotency\IdempotencyKey;
 use App\Shared\Application\Tenancy\PropertyContext;
 use Illuminate\Http\JsonResponse;
@@ -16,7 +18,7 @@ use Inertia\Response;
 /** Reservation screens and actions. Every rule lives in `ReservationService`; this maps input and output. */
 final readonly class ReservationController
 {
-    public function __construct(private ReservationService $reservations, private PropertyContext $property) {}
+    public function __construct(private ReservationService $reservations, private FolioService $folios, private PropertyContext $property) {}
 
     public function index(Request $request): Response
     {
@@ -42,6 +44,7 @@ final readonly class ReservationController
         return Inertia::render('front-office/pages/reservation', [
             'reservation' => $this->reservations->find($property, $actor, $id)->toArray(),
             'lookups' => $this->reservations->lookups($property, $actor),
+            'folios' => $this->folioSummaries($property, $actor, $id),
         ]);
     }
 
@@ -94,6 +97,24 @@ final readonly class ReservationController
         $data = $request->validate(['lock_version' => ['required', 'integer', 'min:0'], 'reason' => ['required', 'string', 'max:500']]);
 
         return $this->json(['reservation' => $this->summary($this->reservations->noShow($this->property->current(), $this->actor($request), $id, $data['reason'], (int) $data['lock_version'])->toArray())]);
+    }
+
+    /**
+     * The folios of a reservation without their lines. A person who may not see folios simply gets none.
+     *
+     * @return list<array<string, mixed>>
+     */
+    private function folioSummaries(mixed $property, string $actor, string $reservationId): array
+    {
+        try {
+            return array_map(static function (array $folio): array {
+                unset($folio['postings']);
+
+                return $folio;
+            }, $this->folios->forReservation($property, $actor, $reservationId));
+        } catch (Refusal) {
+            return [];
+        }
     }
 
     /**

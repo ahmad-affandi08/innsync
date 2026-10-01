@@ -220,7 +220,7 @@ final readonly class ApprovalService implements ApprovalGate
     }
 
     /** @return list<ApprovalView> the person's own requests, newest first */
-    public function requestedBy(PropertyId $property, string $userId, int $limit = 50): array
+    public function requestedBy(PropertyId $property, string $userId, int $limit = 100): array
     {
         $this->assertProperty($property);
 

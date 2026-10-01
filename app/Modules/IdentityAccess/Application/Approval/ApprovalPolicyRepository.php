@@ -17,5 +17,8 @@ interface ApprovalPolicyRepository
     /** Adds the next version and marks the previous one superseded, atomically. */
     public function replace(PropertyId $property, string $subjectType, int $band, ApprovalPolicy $policy, string $actorId, string $reason): void;
 
+    /** Every active (not superseded) policy of the property. @return list<ApprovalPolicy> */
+    public function current(PropertyId $property): array;
+
     public function latestVersion(PropertyId $property, string $subjectType, int $band): int;
 }

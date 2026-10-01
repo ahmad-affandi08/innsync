@@ -60,6 +60,13 @@ final class DatabaseApprovalPolicyRepository implements ApprovalPolicyRepository
         ]);
     }
 
+    public function current(PropertyId $property): array
+    {
+        return DB::table('approval_policies')->where('property_id', $property->toString())->whereNull('superseded_at')
+            ->orderBy('subject_type')->orderBy('band_min_amount_minor')->get()
+            ->map(fn ($row): ApprovalPolicy => $this->hydrate($row))->all();
+    }
+
     public function latestVersion(PropertyId $property, string $subjectType, int $band): int
     {
         return (int) DB::table('approval_policies')

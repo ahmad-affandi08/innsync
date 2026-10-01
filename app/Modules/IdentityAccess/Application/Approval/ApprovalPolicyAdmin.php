@@ -39,6 +39,37 @@ final readonly class ApprovalPolicyAdmin
         private IdentifierGenerator $ids,
     ) {}
 
+    /**
+     * Every declared approval subject with whether it is mandatory and the property's current policies for it.
+     *
+     * @return list<array{subject: string, mandatory: bool, policies: list<array<string, mixed>>}>
+     */
+    public function overview(PropertyId $propertyId, string $actorId): array
+    {
+        $current = $this->property->current();
+
+        if (! $current->equals($propertyId)) {
+            throw PropertyScopeViolation::mismatched($current->toString(), $propertyId->toString());
+        }
+
+        if (! $this->permissions->allowsInProperty($actorId, self::MANAGE_PERMISSION, $propertyId)) {
+            throw new NotAnEligibleApprover('This person may not manage approval policies.');
+        }
+
+        $policies = $this->policies->current($propertyId);
+        $rows = [];
+
+        foreach ($this->subjects->all() as $subject => $mandatory) {
+            $rows[] = [
+                'subject' => $subject,
+                'mandatory' => $mandatory,
+                'policies' => array_values(array_map(fn (ApprovalPolicy $p): array => $this->describe($p) + ['id' => $p->id], array_filter($policies, static fn (ApprovalPolicy $p): bool => $p->subjectType === $subject))),
+            ];
+        }
+
+        return $rows;
+    }
+
     /** @param list<array{permission: string, approvals_required?: int}> $steps */
     public function define(PropertyId $propertyId, string $actorId, string $subjectType, int $bandMinAmountMinor, array $steps, string $reason): ApprovalPolicy
     {

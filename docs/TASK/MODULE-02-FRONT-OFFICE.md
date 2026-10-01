@@ -35,16 +35,16 @@
 | TASK-FO-017 | FR-FO-017 | Sebaiknya | Sistem mencetak atau mengirim kartu registrasi elektronik untuk ditandatangani tamu, termasuk tanda tangan digital pada tablet. | TODO |
 | TASK-FO-018 | FR-FO-018 | Wajib | Mendukung perpindahan kamar (room move) dengan pemindahan seluruh saldo folio dan pencatatan alasan. | TODO |
 | TASK-FO-019 | FR-FO-019 | Wajib | Mendukung perpanjangan masa menginap (Stay Over) dan check-out dipercepat dengan penyesuaian tagihan otomatis. | TODO |
-| TASK-FO-020 | FR-FO-020 | Wajib | Setiap stay memiliki minimal satu folio dan dapat memiliki beberapa folio/window untuk routing tagihan. Folio menampung room charge, pajak, service charge, charge outlet, koreksi, dan pembayaran secara terurut dan dapat ditelusuri. | TODO |
+| TASK-FO-020 | FR-FO-020 | Wajib | Setiap stay memiliki minimal satu folio dan dapat memiliki beberapa folio/window untuk routing tagihan. Folio menampung room charge, pajak, service charge, charge outlet, koreksi, dan pembayaran secara terurut dan dapat ditelusuri. | IN_PROGRESS |
 | TASK-FO-021 | FR-FO-021 | Wajib | Mencetak rincian tagihan (bill print out) yang menampilkan seluruh transaksi terperinci per outlet dan per tanggal. | TODO |
 | TASK-FO-022 | FR-FO-022 | Sebaiknya | Mendukung pemisahan tagihan (split bill) menjadi beberapa folio, misalnya folio perusahaan dan folio pribadi tamu. | TODO |
 | TASK-FO-023 | FR-FO-023 | Sebaiknya | Mendukung pemindahan item tagihan antar folio atau antar kamar dengan pencatatan alasan. | TODO |
-| TASK-FO-024 | FR-FO-024 | Wajib | Menerima pembayaran melalui tunai, QRIS, kartu melalui EDC, transfer bank, dan pembayaran daring dari kanal pemesanan. | TODO |
-| TASK-FO-025 | FR-FO-025 | Wajib | Mencatat deposit di muka dan mengurangkannya secara otomatis pada saat penyelesaian tagihan, termasuk pengembalian sisa deposit. | TODO |
+| TASK-FO-024 | FR-FO-024 | Wajib | Menerima pembayaran melalui tunai, QRIS, kartu melalui EDC, transfer bank, dan pembayaran daring dari kanal pemesanan. | REVIEW |
+| TASK-FO-025 | FR-FO-025 | Wajib | Mencatat deposit di muka dan mengurangkannya secara otomatis pada saat penyelesaian tagihan, termasuk pengembalian sisa deposit. | REVIEW |
 | TASK-FO-026 | FR-FO-026 | Bisa | Mencatat pembayaran dengan mata uang asing beserta kurs yang berlaku bila fitur diaktifkan. | TODO |
 | TASK-FO-027 | FR-FO-027 | Wajib | Membukukan pendapatan kamar secara otomatis ke modul Finance beserta pemisahan nilai dasar, pajak, dan service charge. | TODO |
 | TASK-FO-028 | FR-FO-028 | Wajib | Menjalankan night audit berdasarkan business date properti: melakukan pre-check transaksi tertunda, membukukan room charge, mengunci hari yang selesai, memindahkan business date, dan menghasilkan laporan. Proses harus aman dijalankan ulang tanpa posting ganda. | TODO |
-| TASK-FO-029 | FR-FO-029 | Wajib | Pembayaran, refund, reversal, dan koreksi folio memiliki status dan referensi yang jelas. Refund atau reversal setelah settlement memerlukan otorisasi, alasan, jejak audit, dan tidak boleh menghapus transaksi asal. | TODO |
+| TASK-FO-029 | FR-FO-029 | Wajib | Pembayaran, refund, reversal, dan koreksi folio memiliki status dan referensi yang jelas. Refund atau reversal setelah settlement memerlukan otorisasi, alasan, jejak audit, dan tidak boleh menghapus transaksi asal. | REVIEW |
 | TASK-FO-030 | FR-FO-030 | Wajib | Mencatat permintaan tamu (guest request) dengan template bebas isi dan meneruskannya otomatis ke Housekeeping, Restoran, atau Maintenance sesuai kategori, lengkap dengan status penyelesaian. | TODO |
 | TASK-FO-031 | FR-FO-031 | Wajib | Mencatat komentar dan keluhan tamu beserta tingkat keparahan, penanggung jawab tindak lanjut, dan bukti penyelesaian. | TODO |
 | TASK-FO-032 | FR-FO-032 | Wajib | Menampilkan SOP tugas harian, mingguan, dan bulanan resepsionis pada ponsel atau tablet, dengan isi template yang disusun oleh manajemen. | TODO |

@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Modules\FrontOffice\Application\Folios\FolioRepository;
 use App\Modules\FrontOffice\Application\Inventory\InventoryHoldRepository;
 use App\Modules\FrontOffice\Application\Inventory\InventoryRepository;
 use App\Modules\FrontOffice\Application\Inventory\RoomBlockRepository;
 use App\Modules\FrontOffice\Application\Reservations\ReservationRepository;
+use App\Modules\FrontOffice\Infrastructure\Folios\DatabaseFolioRepository;
 use App\Modules\FrontOffice\Infrastructure\Inventory\DatabaseInventoryHoldRepository;
 use App\Modules\FrontOffice\Infrastructure\Inventory\DatabaseInventoryRepository;
 use App\Modules\FrontOffice\Infrastructure\Inventory\DatabaseRoomBlockRepository;
@@ -37,7 +39,9 @@ use App\Modules\Property\Application\Catalog\RoomCatalogReader;
 use App\Modules\Property\Application\Catalog\RoomCatalogRepository;
 use App\Modules\Property\Application\Catalog\RoomCatalogService;
 use App\Modules\Property\Application\Ports\PropertyTimeZoneReader;
+use App\Modules\Property\Application\Rates\ChargeCalculator;
 use App\Modules\Property\Application\Rates\ChargeSchemeRepository;
+use App\Modules\Property\Application\Rates\ChargeSchemeService;
 use App\Modules\Property\Application\Rates\PropertyCurrencyReader;
 use App\Modules\Property\Application\Rates\RatePlanReader;
 use App\Modules\Property\Application\Rates\RatePlanRepository;
@@ -221,12 +225,14 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(ChargeSchemeRepository::class, DatabaseChargeSchemeRepository::class);
         $this->app->bind(PropertyCurrencyReader::class, DatabasePropertyCurrencyReader::class);
         $this->app->bind(RateQuoter::class, RateQuoteService::class);
+        $this->app->bind(ChargeCalculator::class, ChargeSchemeService::class);
         $this->app->bind(RatePlanReader::class, RatePlanService::class);
         $this->app->bind(RestrictionCalendar::class, RateQuoteService::class);
         $this->app->bind(InventoryRepository::class, DatabaseInventoryRepository::class);
         $this->app->bind(RoomBlockRepository::class, DatabaseRoomBlockRepository::class);
         $this->app->bind(InventoryHoldRepository::class, DatabaseInventoryHoldRepository::class);
         $this->app->bind(ReservationRepository::class, DatabaseReservationRepository::class);
+        $this->app->bind(FolioRepository::class, DatabaseFolioRepository::class);
         $this->app->bind(DocumentNumbers::class, DatabaseDocumentNumbers::class);
         $this->app->bind(ProviderRegistry::class, ConfiguredProviderRegistry::class);
         $this->app->bind(CircuitStore::class, DatabaseCircuitStore::class);

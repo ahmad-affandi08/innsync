@@ -15,6 +15,8 @@ use App\Shared\Application\Tenancy\PropertyContext;
 use App\Shared\Application\Tenancy\PropertyScopeViolation;
 use App\Shared\Application\Time\Clock;
 use App\Shared\Application\Transactions\TransactionRunner;
+use App\Shared\Domain\Money\ChargeScheme;
+use App\Shared\Domain\Money\Money;
 use App\Shared\Domain\Money\MoneyError;
 use App\Shared\Domain\Money\Percentage;
 use App\Shared\Domain\Tenancy\PropertyId;
@@ -26,7 +28,7 @@ use InvalidArgumentException;
  * the property owns; nothing is assumed here. After go-live a new scheme cannot start before the business date, so a day
  * already posted is never recalculated (BR-003).
  */
-final readonly class ChargeSchemeService
+final readonly class ChargeSchemeService implements ChargeCalculator
 {
     public const MANAGE_PERMISSION = 'property.tax.manage';
 
@@ -35,6 +37,7 @@ final readonly class ChargeSchemeService
     public function __construct(
         private ChargeSchemeRepository $schemes,
         private PropertySettingsService $settings,
+        private PropertyCurrencyReader $currency,
         private PermissionChecker $permissions,
         private TransactionRunner $transactions,
         private AuditTrail $audit,
@@ -55,6 +58,29 @@ final readonly class ChargeSchemeService
         }
 
         return null;
+    }
+
+    public function breakdown(PropertyId $property, string $scope, BusinessDate $date, int $quotedMinor, bool $pricesIncludeCharges): array
+    {
+        $config = $this->schemeFor($property, $scope, $date) ?? throw Refusal::invalid('Service charge and tax are not configured for this date, so this cannot be priced.', ['amount']);
+        $rounding = $this->settings->get($property)->rounding;
+
+        try {
+            $parts = (new ChargeScheme($config->serviceCharge, $config->tax, $config->taxOnServiceCharge, $pricesIncludeCharges, $rounding))->calculate(Money::ofMinor($quotedMinor, $this->currency->currencyOf($property)));
+        } catch (MoneyError $e) {
+            throw Refusal::invalid($e->getMessage(), ['amount']);
+        }
+
+        return [
+            'base_minor' => $parts->base->amountMinor,
+            'service_charge_minor' => $parts->serviceCharge->amountMinor,
+            'tax_minor' => $parts->tax->amountMinor,
+            'total_minor' => $parts->total->amountMinor,
+            'scheme' => [
+                'scope' => $scope, 'service_charge_bp' => $config->serviceCharge->basisPoints, 'tax_bp' => $config->tax->basisPoints, 'tax_on_service_charge' => $config->taxOnServiceCharge,
+                'prices_include_charges' => $pricesIncludeCharges, 'rounding_increment_minor' => $rounding->incrementMinor, 'rounding_mode' => $rounding->mode->value,
+            ],
+        ];
     }
 
     /** @return list<ChargeSchemeConfig> */

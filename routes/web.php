@@ -3,9 +3,11 @@
 declare(strict_types=1);
 
 use App\Modules\FrontOffice\Presentation\Http\Controllers\AvailabilityController;
+use App\Modules\FrontOffice\Presentation\Http\Controllers\FolioController;
 use App\Modules\FrontOffice\Presentation\Http\Controllers\InventoryController;
 use App\Modules\FrontOffice\Presentation\Http\Controllers\ReservationController;
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\ApprovalController;
+use App\Modules\IdentityAccess\Presentation\Http\Controllers\ApprovalPolicyController;
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\AuthenticatedSessionController;
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\MfaController;
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\PasswordConfirmationController;
@@ -102,6 +104,8 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'password.confirm'])
 // confirmation (NFR-22). Requests are opened by modules through the ApprovalGate contract, not from the browser.
 Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix('approvals')->group(function (): void {
     Route::get('/', [ApprovalController::class, 'index'])->name('approvals.index');
+    Route::get('/policies', [ApprovalPolicyController::class, 'index'])->name('approvals.policies');
+    Route::post('/policies', [ApprovalPolicyController::class, 'define'])->middleware('password.confirm')->name('approvals.policies.define');
     // The screen sends people here when the confirmation window has lapsed; they return to the inbox afterwards.
     Route::get('/confirm', fn () => redirect()->route('approvals.index'))->middleware('password.confirm')->name('approvals.confirm');
     Route::get('/{id}', [ApprovalController::class, 'show'])->where('id', '[0-9A-Za-z]{26}')->name('approvals.show');
@@ -158,6 +162,19 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
     Route::post('/reservations/{id}/confirm', [ReservationController::class, 'confirm'])->where('id', $id)->name('front-office.reservations.confirm');
     Route::post('/reservations/{id}/cancel', [ReservationController::class, 'cancel'])->where('id', $id)->name('front-office.reservations.cancel');
     Route::post('/reservations/{id}/no-show', [ReservationController::class, 'noShow'])->where('id', $id)->name('front-office.reservations.no-show');
+
+    // Folios (FR-FO-020, -024, -025, -029). Money that leaves or is corrected needs a recent password confirmation and, by policy, an approval.
+    Route::post('/reservations/{id}/folios', [FolioController::class, 'open'])->where('id', $id)->name('front-office.folios.open');
+    Route::get('/folios/{id}', [FolioController::class, 'show'])->where('id', $id)->name('front-office.folios.show');
+    Route::post('/folios/{id}/charges', [FolioController::class, 'charge'])->where('id', $id)->middleware(['idempotent', 'throttle:bookings'])->name('front-office.folios.charge');
+    Route::post('/folios/{id}/payments', [FolioController::class, 'pay'])->where('id', $id)->middleware(['idempotent', 'throttle:bookings'])->name('front-office.folios.pay');
+    Route::post('/postings/{id}/reversal-request', [FolioController::class, 'requestReversal'])->where('id', $id)->middleware('idempotent')->name('front-office.postings.reversal-request');
+    Route::post('/folios/{id}/refund-request', [FolioController::class, 'requestRefund'])->where('id', $id)->middleware('idempotent')->name('front-office.folios.refund-request');
+    Route::middleware('password.confirm')->group(function () use ($id): void {
+        Route::post('/folios/{id}/close', [FolioController::class, 'close'])->where('id', $id)->name('front-office.folios.close');
+        Route::post('/postings/{id}/reverse', [FolioController::class, 'reverse'])->where('id', $id)->name('front-office.postings.reverse');
+        Route::post('/folios/{id}/refund', [FolioController::class, 'refund'])->where('id', $id)->name('front-office.folios.refund');
+    });
 
     Route::get('/inventory', [InventoryController::class, 'index'])->name('front-office.inventory');
     Route::middleware('password.confirm')->group(function () use ($id): void {

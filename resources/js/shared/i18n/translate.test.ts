@@ -94,6 +94,14 @@ describe('dictionaries', () => {
             'fo.source.walk_in',
             'fo.res.total',
             'fo.res.status',
+            'fo.folio.col.seq',
+            'fo.folio.col.date',
+            'fo.folio.col.service',
+            'fo.folio.method.qris',
+            'fo.folio.windowLabel',
+            'fo.folio.title',
+            'fo.folio.openLink',
+            'fo.folio.approvalRow',
         ])
         const identical = (Object.keys(en) as (keyof typeof en)[]).filter(
             (key) => en[key] === id[key] && !allowedSame.has(key),
