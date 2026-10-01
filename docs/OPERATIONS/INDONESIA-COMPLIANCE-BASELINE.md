@@ -34,8 +34,23 @@ Backups: `NFR-11` backups contain data that was already erased from the live sys
 
 The register records when a request was received and when it is due and what was decided. A deletion that conflicts with a statutory retention floor is **refused with the legal basis recorded** (the data is restricted and kept for the statutory period), never silently ignored. The data protection authority (Lembaga PDP) had not been established when this was written; the runbook says to record the notification channel once it exists.
 
+## Money, tax and rounding (PRD `Q-05`, `Q-13`; `BR-002`, ADR-0006) — baseline for Phase 1
+
+Applied by the owner's instruction to follow Indonesian business practice. These are engineering defaults stored as **property configuration** (effective-dated, snapshotted on every posting), not constants in code.
+
+- **Currency and minor unit.** IDR follows ISO 4217 with two minor digits, so the system stores sen (`150000` is Rp 1.500). In practice rupiah has no coins: amounts are whole rupiah and are shown without decimals (`Rp 1.500`); a stray sen would still be shown.
+- **Rounding.** Every computed line (service charge, tax, discount, proration) is rounded **half away from zero to the whole rupiah** (increment 100 sen) at the line, never on the total. A reversal or correction is always the exact negative of the original. The increment and mode are property settings.
+- **Order of calculation.** Service charge on the base price; regional tax on **base plus service charge** (the usual practice for hotel and restaurant tax under regional regulations; configurable per outlet because regional regulations differ). Rates are exact basis points, not floats.
+- **Price display.** Both "++" (service charge and tax added) and "nett" (included) prices are supported per rate plan or outlet. For a nett price the base is derived from the total, the service charge from the base, and the **tax line absorbs the rounding difference**, so the parts always add up to the quoted total.
+- **Rates are data.** The regional tax rate (PB1) is set by each regional regulation under UU 1/2022 (HKPD), with a statutory ceiling of 10 percent (confirm), and the service-charge scheme is a property decision; both are configured per property or outlet with an effective date, never hard-coded. Service charge is recorded separately from property revenue and distributed under the labour regulations and internal policy (`FR-HR`, `FR-FIN` tasks); the allocation formula (`Q-06`) stays open.
+
+## Business date and night audit (PRD `Q-11`; `BR-001`)
+
+- The business date is stored per property and **advances only through night audit**, never from the clock. It may lag the calendar date until the audit completes (an audit run at 01:00 closes the previous business date).
+- Night audit may be started from a configurable earliest local time, default **23:00**, and has no latest time; the clock never starts it. The choice follows the common Indonesian hotel practice of auditing around midnight; the General Manager confirms or changes it per property.
+- Check-in and check-out standard times default to **14:00** and **12:00** and are property settings.
+
 ## Not decided here
 
-- Tax rates and rounding (`Q-05`, `Q-13`): hotel and restaurant tax (PB1) is a regional tax set by each regional regulation under UU 1/2022 (the statutory ceiling is 10 percent); the rate and the service-charge scheme are property data, not constants in code. Rounding rules are decided when the Finance tasks start and are recorded in the same way.
 - The format of the foreign-guest report (`Q-09`) and whether electronic registration is accepted as the official procedure (`Q-17`) depend on the local authority and need a Front Office answer.
-- Business-date cut-off (`Q-11`) is an operating decision, not a legal one.
+- The service-charge allocation formula (`Q-06`), accounting software (`Q-07`), door locks (`Q-08`), laundry pricing (`Q-10`), rate plans required at go-live (`Q-12`), payment gateway (`Q-04`, `Q-16`) and accounting mapping (`Q-18`) are business choices, not legal ones, and stay open until their tasks start.

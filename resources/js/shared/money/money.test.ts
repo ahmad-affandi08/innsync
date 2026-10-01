@@ -5,7 +5,7 @@ import { currencyExponent, formatMinorUnits, MoneyFormatError } from './money.ts
 
 describe('money display', () => {
     it('uses the currency exponent, not a fixed two decimals', () => {
-        // ISO 4217 gives IDR two minor digits (sen), so 150000 minor is Rp 1.500,00, not Rp 150.000.
+        // ISO 4217 gives IDR two minor digits (sen), so 150000 minor is Rp 1.500, not Rp 150.000.
         assert.equal(currencyExponent('IDR'), 2)
         assert.equal(currencyExponent('USD'), 2)
         assert.equal(currencyExponent('JPY'), 0)
@@ -13,8 +13,11 @@ describe('money display', () => {
     })
 
     it('formats minor units per locale', () => {
-        assert.match(formatMinorUnits(150000, 'IDR', 'id'), /^Rp\s?1\.500,00$/)
-        assert.match(formatMinorUnits(150000, 'IDR', 'en'), /IDR\s?1,500\.00/)
+        // Whole rupiah are shown without decimals; a stray sen is never hidden.
+        assert.match(formatMinorUnits(150000, 'IDR', 'id'), /^Rp\s?1\.500$/)
+        assert.match(formatMinorUnits(150000, 'IDR', 'en'), /^IDR\s?1,500$/)
+        assert.match(formatMinorUnits(150050, 'IDR', 'id'), /^Rp\s?1\.500,50$/)
+        assert.match(formatMinorUnits(-150000, 'IDR', 'id'), /^-Rp\s?1\.500$/)
         assert.match(formatMinorUnits(12345, 'USD', 'en'), /^\$123\.45$/)
         assert.match(formatMinorUnits(5, 'USD', 'en'), /^\$0\.05$/)
         assert.match(formatMinorUnits(-12345, 'USD', 'en'), /^-\$123\.45$/)

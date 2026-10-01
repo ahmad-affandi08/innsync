@@ -16,6 +16,9 @@ export function currencyExponent(currency: string): number {
     return new Intl.NumberFormat('en', { style: 'currency', currency }).resolvedOptions().maximumFractionDigits ?? 2
 }
 
+/** Rupiah has no coins in practice: amounts are whole rupiah and shown without decimals (docs/OPERATIONS/INDONESIA-COMPLIANCE-BASELINE.md). */
+const WHOLE_UNIT_CURRENCIES: readonly string[] = ['IDR']
+
 export function formatMinorUnits(amountMinor: number, currency: string, locale: string): string {
     if (!Number.isSafeInteger(amountMinor)) {
         throw new MoneyFormatError('An amount must be an integer number of minor units.')
@@ -28,7 +31,12 @@ export function formatMinorUnits(amountMinor: number, currency: string, locale: 
     const fraction = absolute % 10 ** exponent
 
     // Whole and fractional parts are formatted separately so large amounts never pass through a float division.
-    const formatter = new Intl.NumberFormat(locale, { style: 'currency', currency })
+    const trimmed = fraction === 0 && WHOLE_UNIT_CURRENCIES.includes(currency)
+    const formatter = new Intl.NumberFormat(locale, {
+        style: 'currency',
+        currency,
+        ...(trimmed ? { minimumFractionDigits: 0, maximumFractionDigits: 0 } : {}),
+    })
     const decimal = exponent === 0 ? '' : `.${String(fraction).padStart(exponent, '0')}`
 
     return formatter.format(`${sign < 0 ? '-' : ''}${whole}${decimal}` as unknown as number)
