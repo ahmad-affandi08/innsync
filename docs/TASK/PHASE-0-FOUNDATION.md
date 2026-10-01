@@ -9,7 +9,7 @@ These tasks exist before business modules can safely scale.
 | TASK-FND-003 | MySQL 8 baseline, property scope, ULID, migrations | NFR-16, NFR-19, ADR-0002/0005 | DONE |
 | TASK-FND-004 | Auth, session security, RBAC and scoped policies | NFR-05/06/22 | DONE |
 | TASK-FND-005 | Audit trail + security log + correlation IDs | NFR-10/20/29 | DONE |
-| TASK-FND-006 | Idempotency middleware/application service + table | NFR-18 | TODO |
+| TASK-FND-006 | Idempotency middleware/application service + table | NFR-18 | DONE |
 | TASK-FND-007 | Transactional outbox + database queue + cron drain | NFR-17/25, ADR-0007 | TODO |
 | TASK-FND-008 | Private file storage and authorized download | NFR-07/08/24 | TODO |
 | TASK-FND-009 | Error envelope, validation, conflict semantics | NFR-19 | TODO |
@@ -91,6 +91,21 @@ These tasks exist before business modules can safely scale.
 - NFR boundary: this task implements the structured-log, audit/security-log, and trace/correlation portions of `NFR-20`. Health checks, metrics, and alert thresholds remain explicitly owned by `TASK-FND-010`.
 - Automated evidence: the full PHPUnit suite passes with 60 tests and 192 assertions, including correlation propagation on normal/error responses, secret redaction/rejection, stable checksums, configurable/indefinite retention, atomic rollback, cross-property rejection, DB constraints/triggers, real authentication events, and permission-denial events. Composer validation, Pint, route/config cache, TypeScript typecheck, and production build also pass.
 - Rollback: roll back migration batch 3 only before audit/security evidence is relied upon. Once evidence exists, retain it and use a forward migration; dropping these tables destroys compliance evidence and is not an operational rollback.
+
+## TASK-FND-006 acceptance evidence
+
+- Completed: 2026-10-01.
+- Traceability: `TASK-FND-006`, `NFR-18`, `NFR-20`, `BR-005`, `BR-010`, `ADR-0002`, and `ADR-0005`; no business `FR-*` workflow is introduced.
+- Application contract: the transport-neutral `IdempotentExecutor` claims a key, executes the caller's authorized mutation, and stores its logical result in one bounded MySQL transaction. Exceptions roll back both the claim and business writes so a safe retry can execute again.
+- Retry behavior: the first successful request returns a new result; an equivalent retry returns the stored result without invoking the operation again. Canonical payload hashing treats associative key order as equivalent, while changed payloads and changed actors fail closed with an explicit conflict.
+- Scope and authorization boundary: every record is property-owned and requires the matching active property context. Key uniqueness spans property, operation, and keyed hash; the original actor remains bound to the key. Calling use cases must complete server-side authorization before entering the executor.
+- Data minimization: raw keys and request payloads are never persisted. Keys and request fingerprints use HMAC-SHA-256 with a separately configurable stable secret; replay results are encrypted with the application encrypter. Application/security logs receive only the key hash and non-sensitive conflict metadata.
+- HTTP adapter: route middleware requires a 16–128 character safe `Idempotency-Key` header, exposes the validated key only through a request-scoped application context, and clears it after the request. Correlation ID remains a tracing identifier and is never silently substituted for an idempotency key.
+- Concurrency and observability: a MySQL unique constraint is the final duplicate defense and replay reads use `SELECT ... FOR UPDATE`. Bounded transaction deadlock retry is enabled. Original/replay correlation IDs, replay count, and replay time are retained; actor/payload conflicts and unreadable stored results create persistent security events without exposing the key or payload.
+- Schema: `idempotency_operations` uses ULID identity, property/actor foreign keys, explicit completion consistency checks, encrypted versioned results, UTC microsecond timestamps, and indexes for property/time, actor/time, correlation, completion, and the unique operation key. Migration batch 4 completed on the development database.
+- Lifecycle boundary: no expiry or purge duration was guessed. Completed keys remain durable so an old retry cannot silently recreate a financial/stock operation; any future cleanup policy requires an explicit safety decision. Standard conflict/error response envelopes remain owned by `TASK-FND-009`, and concrete offline/import/webhook/payment use cases remain owned by their feature tasks.
+- Automated evidence: the full PHPUnit suite passes with 73 tests and 229 assertions, including middleware validation/context cleanup, canonical fingerprints, encrypted result replay, single-effect retry, payload/actor conflict, atomic rollback/retry, missing and cross-property context denial, operation/property key isolation, database uniqueness, tampered stored-result safety, and security-event persistence. Composer validation, Pint, architecture tests, route/config cache, TypeScript typecheck, and production build also pass.
+- Rollback: roll back migration batch 4 only before business operations rely on stored keys. After use, dropping the table removes duplicate-detection memory and can permit repeated posting; retain records and use a forward migration instead.
 
 ## NFR coverage
 

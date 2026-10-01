@@ -6,6 +6,7 @@ use App\Modules\IdentityAccess\Presentation\Http\Middleware\EnsureMfaVerified;
 use App\Modules\IdentityAccess\Presentation\Http\Middleware\RequirePermission;
 use App\Modules\IdentityAccess\Presentation\Http\Middleware\ResolvePropertyContext;
 use App\Shared\Application\Observability\CorrelationId;
+use App\Shared\Infrastructure\Idempotency\RequireIdempotencyKey;
 use App\Shared\Infrastructure\Observability\AssignCorrelationId;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -23,6 +24,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->alias([
             'active' => EnsureActiveUser::class,
+            'idempotent' => RequireIdempotencyKey::class,
             'mfa' => EnsureMfaVerified::class,
             'permission' => RequirePermission::class,
             'property' => ResolvePropertyContext::class,
