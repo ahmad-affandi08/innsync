@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Shared\Infrastructure\Files;
+namespace App\Shared\Infrastructure\Time;
 
-use App\Shared\Application\Files\Clock;
+use App\Shared\Application\Time\Clock;
 use Carbon\CarbonImmutable;
 use DateTimeImmutable;
 

@@ -19,13 +19,15 @@ use App\Modules\IdentityAccess\Infrastructure\Mfa\EloquentMfaStore;
 use App\Modules\IdentityAccess\Infrastructure\Mfa\TotpOneTimePassword;
 use App\Modules\IdentityAccess\Infrastructure\Sessions\DatabaseUserSessionRepository;
 use App\Shared\Application\Audit\AuditWriter;
-use App\Shared\Application\Files\Clock;
 use App\Shared\Application\Files\ContentInspector;
 use App\Shared\Application\Files\PrivateFileStorage;
 use App\Shared\Application\Files\StoredFileRepository;
 use App\Shared\Application\Idempotency\IdempotencyContext;
 use App\Shared\Application\Idempotency\IdempotencyStore;
 use App\Shared\Application\Observability\CorrelationId;
+use App\Shared\Application\Observability\Health\AlertNotifier;
+use App\Shared\Application\Observability\Health\AlertStore;
+use App\Shared\Application\Observability\Health\HealthCheckRegistry;
 use App\Shared\Application\Outbox\OutboxConsumerRegistry;
 use App\Shared\Application\Outbox\OutboxMessageStore;
 use App\Shared\Application\Outbox\OutboxPublisher;
@@ -33,13 +35,16 @@ use App\Shared\Application\Outbox\OutboxQueue;
 use App\Shared\Application\Outbox\ProcessedOutboxMessageStore;
 use App\Shared\Application\Security\SecurityEventWriter;
 use App\Shared\Application\Tenancy\PropertyContext;
+use App\Shared\Application\Time\Clock;
 use App\Shared\Application\Transactions\TransactionRunner;
 use App\Shared\Infrastructure\Audit\DatabaseAuditWriter;
 use App\Shared\Infrastructure\Files\DatabaseStoredFileRepository;
 use App\Shared\Infrastructure\Files\EncryptedDiskFileStorage;
 use App\Shared\Infrastructure\Files\FinfoContentInspector;
-use App\Shared\Infrastructure\Files\SystemClock;
 use App\Shared\Infrastructure\Idempotency\DatabaseIdempotencyStore;
+use App\Shared\Infrastructure\Observability\Health\ConfiguredHealthCheckRegistry;
+use App\Shared\Infrastructure\Observability\Health\DatabaseAlertStore;
+use App\Shared\Infrastructure\Observability\Health\LogAlertNotifier;
 use App\Shared\Infrastructure\Observability\LaravelCorrelationId;
 use App\Shared\Infrastructure\Outbox\ConfiguredOutboxConsumerRegistry;
 use App\Shared\Infrastructure\Outbox\DatabaseOutboxMessageStore;
@@ -47,6 +52,7 @@ use App\Shared\Infrastructure\Outbox\DatabaseOutboxPublisher;
 use App\Shared\Infrastructure\Outbox\DatabaseOutboxQueue;
 use App\Shared\Infrastructure\Outbox\DatabaseProcessedOutboxMessageStore;
 use App\Shared\Infrastructure\Security\DatabaseSecurityEventWriter;
+use App\Shared\Infrastructure\Time\SystemClock;
 use App\Shared\Infrastructure\Transactions\MySqlTransactionRunner;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
@@ -70,6 +76,9 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(StoredFileRepository::class, DatabaseStoredFileRepository::class);
         $this->app->bind(ContentInspector::class, FinfoContentInspector::class);
         $this->app->bind(Clock::class, SystemClock::class);
+        $this->app->bind(HealthCheckRegistry::class, ConfiguredHealthCheckRegistry::class);
+        $this->app->bind(AlertStore::class, DatabaseAlertStore::class);
+        $this->app->bind(AlertNotifier::class, LogAlertNotifier::class);
         $this->app->bind(OutboxPublisher::class, DatabaseOutboxPublisher::class);
         $this->app->bind(OutboxMessageStore::class, DatabaseOutboxMessageStore::class);
         $this->app->bind(OutboxQueue::class, DatabaseOutboxQueue::class);
@@ -109,6 +118,9 @@ class AppServiceProvider extends ServiceProvider
             ->mixedCase()
             ->numbers()
             ->symbols());
+
+        RateLimiter::for('health', static fn (Request $request): Limit => Limit::perMinute(60)
+            ->by((string) $request->ip()));
 
         RateLimiter::for('login', static fn (Request $request): Limit => Limit::perMinute(
             (int) config('identity_access.login_rate_limit_per_minute'),

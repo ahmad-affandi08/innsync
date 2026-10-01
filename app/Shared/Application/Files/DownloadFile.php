@@ -9,6 +9,7 @@ use App\Shared\Application\Audit\AuditTrail;
 use App\Shared\Application\Security\SecurityEvent;
 use App\Shared\Application\Security\SecurityEventOutcome;
 use App\Shared\Application\Security\SecurityLog;
+use App\Shared\Application\Time\Clock;
 use App\Shared\Application\Transactions\TransactionRunner;
 use App\Shared\Domain\Tenancy\PropertyId;
 

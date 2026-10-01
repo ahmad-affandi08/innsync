@@ -10,22 +10,33 @@ use App\Shared\Infrastructure\Http\Errors\ErrorEnvelopeFactory;
 use App\Shared\Infrastructure\Http\Errors\RenderErrorEnvelope;
 use App\Shared\Infrastructure\Idempotency\RequireIdempotencyKey;
 use App\Shared\Infrastructure\Observability\AssignCorrelationId;
+use App\Shared\Infrastructure\Observability\Health\ErrorRate;
+use App\Shared\Infrastructure\Observability\Health\HealthAlertsCommand;
+use App\Shared\Infrastructure\Observability\Health\HealthCheckCommand;
+use App\Shared\Infrastructure\Observability\Health\HeartbeatCommand;
 use App\Shared\Infrastructure\Outbox\DrainOutboxCommand;
 use App\Shared\Infrastructure\Outbox\RetryDeadLetterCommand;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
         web: __DIR__.'/../routes/web.php',
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
+        then: function (): void {
+            Route::middleware('throttle:health')->group(base_path('routes/health.php'));
+        },
     )
     ->withCommands([
         DrainOutboxCommand::class,
         RetryDeadLetterCommand::class,
+        HealthCheckCommand::class,
+        HealthAlertsCommand::class,
+        HeartbeatCommand::class,
     ])
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->prepend(AssignCorrelationId::class);
@@ -48,6 +59,11 @@ return Application::configure(basePath: dirname(__DIR__))
         );
 
         $exceptions->dontReport(ErrorEnvelopeFactory::EXPECTED);
+
+        // Runs for reported (unexpected) exceptions only; returns nothing so normal logging continues.
+        $exceptions->reportable(function (Throwable $e): void {
+            app(ErrorRate::class)->record();
+        });
 
         $exceptions->render(
             fn (Throwable $e, Request $request) => app(RenderErrorEnvelope::class)($e, $request),

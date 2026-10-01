@@ -6,6 +6,7 @@ namespace App\Shared\Application\Files;
 
 use App\Shared\Application\Audit\AuditEntry;
 use App\Shared\Application\Audit\AuditTrail;
+use App\Shared\Application\Time\Clock;
 use App\Shared\Application\Transactions\TransactionRunner;
 use Throwable;
 

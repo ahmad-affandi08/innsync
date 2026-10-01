@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Shared\Application\Files;
+namespace App\Shared\Application\Time;
 
 use DateTimeImmutable;
 

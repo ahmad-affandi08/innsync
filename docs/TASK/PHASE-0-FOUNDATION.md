@@ -13,7 +13,7 @@ These tasks exist before business modules can safely scale.
 | TASK-FND-007 | Transactional outbox + database queue + cron drain | NFR-17/25, ADR-0007 | DONE |
 | TASK-FND-008 | Private file storage and authorized download | NFR-07/08/24 | DONE |
 | TASK-FND-009 | Error envelope, validation, conflict semantics | NFR-19 | DONE |
-| TASK-FND-010 | Observability, health endpoint, critical alerts | NFR-20 | TODO |
+| TASK-FND-010 | Observability, health endpoint, critical alerts | NFR-20 | DONE |
 | TASK-FND-011 | Backup/restore and DR runbook | NFR-11/21/30 | TODO |
 | TASK-FND-012 | Frontend query/table conventions and shared UI primitives | NFR-01/12/27 | TODO |
 | TASK-FND-013 | i18n framework ID/EN | NFR-12 | TODO |
@@ -143,6 +143,19 @@ These tasks exist before business modules can safely scale.
 - Frontend: `resources/js/shared/lib/api-error.ts` provides the typed envelope, guard, and `isConflict`. Rendering conflict/error UI states remains owned by `TASK-FND-012` and module screens.
 - Automated evidence: full PHPUnit suite passes with 114 tests and 468 assertions (new `ErrorEnvelopeTest`: all mappings, no-leak, conflict reason/action, validation fields, HTTP status/headers, Inertia redirect, reporting exclusion). Pint, TypeScript typecheck, production build, config cache, and route cache pass.
 - Rollback: remove the `render`/`dontReport` registration in `bootstrap/app.php`; no database or external state changed.
+
+## TASK-FND-010 acceptance evidence
+
+- Completed: 2026-10-01.
+- Traceability: `TASK-FND-010`, `NFR-20`, `NFR-23`, `NFR-25`, `ADR-0003`, `ADR-0008`; no business `FR-*` workflow is introduced.
+- Health contract: `HealthCheck` port (`name`, `check` returning ok/degraded/down with a safe summary and non-sensitive numeric context). Built-in checks: database, scheduler heartbeat, failed jobs, outbox backlog/dead letters, storage capacity/writability, and unexpected-error rate. Other tasks plug in `payment unknown`, `sync backlog`, `backup failure`, night-audit, and provider-degradation checks through `config/observability.php` `checks`. A check that throws becomes `down` and never breaks the run.
+- Endpoints: liveness `/up` stays framework-provided. `GET /health` is a stateless readiness probe (no session/cookies, `no-store`, rate limited) returning only overall status; 503 only when `down`. `GET /health/details` returns per-check detail only with the `HEALTH_TOKEN` bearer secret (constant-time compare); it is 404 when no secret is configured, and failed attempts become `health.details-denied` security events.
+- Alerts: `EvaluateAlerts` keeps one open alert per key (`operational_alerts`, unique open key) and notifies on raise, escalation, and resolution only, so a persistent fault does not repeat every tick. Delivery is a structured log line (critical for `down`, warning for `degraded`) carrying the correlation context. Scheduler runs `health:heartbeat` every minute and `health:alerts` every five minutes without overlap; `health:check [--json]` exits non-zero when any check is down.
+- Error rate: reported (unexpected) exceptions are counted per minute bucket; expected conflicts, denials, and rejections are excluded by the `dontReport` list from `TASK-FND-009`. Recording failures are swallowed so observability cannot cause a second error.
+- Shared-hosting fit: no daemon, no new package or service; everything runs from the existing cron and database/cache stores. The shared `Clock` port moved to `App\Shared\Application\Time`.
+- Operational thresholds are env-tunable defaults, not hotel policy. Boundaries left open on purpose: pushing alerts to e-mail/chat needs an approved provider and recipients (`TASK-FND-020`); database size/quota is hosting-specific and not guessed; backup, payment, sync, and night-audit signals are owned by `TASK-FND-011`, `TASK-FND-017`, and their module tasks.
+- Automated evidence: full PHPUnit suite passes with 130 tests and 584 assertions (new `HealthAlertingTest` and `HealthEndpointTest`: alert lifecycle and dedupe, throwing check, each built-in threshold, heartbeat staleness, error-rate counting, commands, probe secrecy/secret/rate limit/security event). Pint, TypeScript typecheck, config cache, and route cache pass; migration batch 7 ran on the development database.
+- Rollback: remove the routes/commands/schedule entries and drop `operational_alerts`; alert rows are operational data and may be dropped.
 
 ## NFR coverage
 

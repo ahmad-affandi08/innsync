@@ -23,3 +23,9 @@ Schedule::command('queue:work', [
 ])
     ->everyMinute()
     ->withoutOverlapping(2);
+
+Schedule::command('health:heartbeat')->everyMinute();
+
+Schedule::command('health:alerts')
+    ->everyFiveMinutes()
+    ->withoutOverlapping(10);
