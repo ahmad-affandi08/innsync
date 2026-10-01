@@ -18,4 +18,4 @@ Release notes for every release (NFR-14). Newest first. Each entry names the tas
 - Backup point-in-time recovery (RPO of 15 minutes, NFR-11) is not met and needs an owner decision (TASK-FND-011).
 - The business date rollover rule is undecided (PRD Q-11); night audit (TASK-FO-028) is not started.
 - PHP static analysis (Larastan) is approved but not installed yet; it could not be downloaded in the build sandbox.
-- Production release is blocked on the open hosting items D4, D5, D6, D8 and D9 in `docs/OPERATIONS/DEPLOYMENT-RUNBOOK.md`; nothing has been run against the real Niagahoster plan.
+- Production release is blocked on the open hosting items D4, D5 and D6 in `docs/OPERATIONS/DEPLOYMENT-RUNBOOK.md`; nothing has been run against the real Niagahoster plan.
