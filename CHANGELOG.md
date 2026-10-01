@@ -36,6 +36,7 @@ Release notes for every release (NFR-14). Newest first. Each entry names the tas
 - TASK-HK-009, TASK-HK-010, TASK-HK-011, TASK-LDY-007 (BR-003, BR-008): hotel linen and amenities with items by code, circulation between the store, the floors, the laundry and the discard pile only through counted transfers (one person sends, a different person counts), in-transit balances, a shortage recorded as a loss or damage with a reason, and an append-only log of what was used per room and day; events tell Inventory what moved.
 - TASK-HK-005 (BR-008): daily, weekly and monthly housekeeping checklists per room and per public area, written by management as versioned templates, ticked item by item with who, when and a note (a ticked item cannot be undone), progress per room or area, completion figures per run and per person, and events for Human Resource.
 - TASK-HK-015 (BR-008): housekeeping productivity report with rooms cleaned and average time per room for each person and kind of task, inspections passed the first time, and checklist completion, behind its own permission, with CSV export and the report basis shown.
+- TASK-LDY-010 (BR-001, BR-002): guest laundry report per day with orders and pieces handed over, express orders, orders ready, the average time to ready, orders ready by the promised time, what was charged to folios, orders with a difference and cancelled orders; CSV export and print. Cost per kilogram is stated as not available (no weight or cost data).
 
 ### Known limitations
 

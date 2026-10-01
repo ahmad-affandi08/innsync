@@ -271,4 +271,20 @@ final readonly class DatabaseReportQueries implements ReportQueries
             'checklists' => ['items' => $items, 'completed' => $runs->isEmpty() ? 0 : DB::table('hk_checklist_completions')->whereIn('run_id', $runs->pluck('id')->all())->count(), 'runs' => $runs->count()],
         ];
     }
+
+    public function laundryOrders(PropertyId $property, DateTimeImmutable $fromUtc, DateTimeImmutable $toUtc): array
+    {
+        $pid = $property->toString();
+        $pieces = DB::table('laundry_order_lines')->selectRaw('order_id, SUM(quantity) as pieces')->where('property_id', $pid)->groupBy('order_id');
+
+        return DB::table('laundry_orders as o')->leftJoinSub($pieces, 'l', 'l.order_id', '=', 'o.id')->where('o.property_id', $pid)
+            ->where(static fn ($q) => $q->where(static fn ($c) => $c->where('o.created_at', '>=', $fromUtc)->where('o.created_at', '<', $toUtc))
+                ->orWhere(static fn ($c) => $c->where('o.ready_at', '>=', $fromUtc)->where('o.ready_at', '<', $toUtc)))
+            ->orderBy('o.created_at')
+            ->get(['o.created_at', 'o.ready_at', 'o.promised_at', 'o.status', 'o.express', 'o.charged_minor', 'o.has_discrepancy', 'l.pieces'])
+            ->map(static fn ($r): array => [
+                'created_at' => (string) $r->created_at, 'ready_at' => $r->ready_at === null ? null : (string) $r->ready_at, 'promised_at' => (string) $r->promised_at, 'status' => (string) $r->status,
+                'express' => (bool) $r->express, 'pieces' => (int) $r->pieces, 'charged_minor' => $r->charged_minor === null ? null : (int) $r->charged_minor, 'has_discrepancy' => (bool) $r->has_discrepancy,
+            ])->all();
+    }
 }

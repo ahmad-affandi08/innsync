@@ -101,7 +101,7 @@
 | TASK-LDY-007 | FR-LDY-007 | Laundry | Wajib | REVIEW |
 | TASK-LDY-008 | FR-LDY-008 | Laundry | Sebaiknya | TODO |
 | TASK-LDY-009 | FR-LDY-009 | Laundry | Wajib | TODO |
-| TASK-LDY-010 | FR-LDY-010 | Laundry | Sebaiknya | TODO |
+| TASK-LDY-010 | FR-LDY-010 | Laundry | Sebaiknya | REVIEW |
 | TASK-LDY-011 | FR-LDY-011 | Laundry | Wajib | IN_PROGRESS |
 | TASK-LDY-012 | FR-LDY-012 | Laundry | Wajib | IN_PROGRESS |
 | TASK-FBS-001 | FR-FBS-001 | F&B Service | Wajib | TODO |

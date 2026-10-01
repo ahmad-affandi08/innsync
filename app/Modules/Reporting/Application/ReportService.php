@@ -47,6 +47,7 @@ final readonly class ReportService
         ['code' => 'flash', 'group' => 'management', 'permission' => self::VIEW_PERMISSION],
         ['code' => 'performance', 'group' => 'management', 'permission' => self::VIEW_PERMISSION],
         ['code' => 'payments', 'group' => 'front_office', 'permission' => self::VIEW_PERMISSION],
+        ['code' => 'laundry', 'group' => 'laundry', 'permission' => self::VIEW_PERMISSION],
         ['code' => 'housekeeping', 'group' => 'housekeeping', 'permission' => self::HOUSEKEEPING_PERMISSION],
         ['code' => 'registrations', 'group' => 'front_office', 'permission' => self::GUESTS_PERMISSION],
         ['code' => 'foreign_guests', 'group' => 'front_office', 'permission' => self::GUESTS_PERMISSION],
@@ -301,6 +302,88 @@ final readonly class ReportService
         $this->recordExport($property, $actorId, 'housekeeping', $report['meta'], count($report['staff']), null, false);
 
         return ['filename' => sprintf('housekeeping-%s-%s.csv', $report['meta']['period']['from'], $report['meta']['period']['to']), 'contents' => $contents];
+    }
+
+    /**
+     * Guest laundry volume and speed (FR-LDY-010) per calendar date of the property: orders and pieces handed over, orders that
+     * became ready with the average time from hand-over to ready, how many were ready by the promised time, and what was charged to
+     * folios for them. Cost per kilogram is not here: weight and laundry costs are not recorded.
+     *
+     * @return array<string, mixed>
+     */
+    public function laundry(PropertyId $property, string $actorId, ?string $preset, ?string $from, ?string $to): array
+    {
+        $this->authorize($property, $actorId, self::VIEW_PERMISSION);
+        $zone = $this->zones->forProperty($property) ?? throw Refusal::notFound('Property not found.');
+        $period = $this->period($property, $preset, $from, $to);
+        $start = $zone->utcAt(CalendarDate::fromString($period->from->toString()));
+        $end = $zone->utcAt(CalendarDate::fromString($period->to->next()->toString()));
+        $days = [];
+        $blank = static fn (): array => ['received' => 0, 'pieces' => 0, 'express' => 0, 'ready' => 0, 'on_time' => 0, 'seconds' => 0, 'charged_minor' => 0, 'discrepancies' => 0, 'cancelled' => 0];
+        $utc = static fn (string $v): \DateTimeImmutable => new \DateTimeImmutable($v, new \DateTimeZone('UTC'));
+
+        foreach ($this->queries->laundryOrders($property, $start, $end) as $o) {
+            $created = $utc($o['created_at']);
+
+            if ($created >= $start && $created < $end) {
+                $day = $zone->calendarDateAt($created)->toString();
+                $days[$day] ??= $blank();
+                $days[$day]['received']++;
+                $days[$day]['pieces'] += $o['pieces'];
+                $days[$day]['express'] += $o['express'] ? 1 : 0;
+                $days[$day]['discrepancies'] += $o['has_discrepancy'] ? 1 : 0;
+                $days[$day]['cancelled'] += $o['status'] === 'cancelled' ? 1 : 0;
+            }
+
+            if ($o['ready_at'] !== null) {
+                $ready = $utc($o['ready_at']);
+
+                if ($ready >= $start && $ready < $end) {
+                    $day = $zone->calendarDateAt($ready)->toString();
+                    $days[$day] ??= $blank();
+                    $days[$day]['ready']++;
+                    $days[$day]['on_time'] += $ready <= $utc($o['promised_at']) ? 1 : 0;
+                    $days[$day]['seconds'] += max(0, $ready->getTimestamp() - $created->getTimestamp());
+                    $days[$day]['charged_minor'] += $o['charged_minor'] ?? 0;
+                }
+            }
+        }
+
+        ksort($days);
+        $rows = [];
+        $total = $blank();
+
+        foreach ($days as $date => $d) {
+            $rows[] = ['date' => $date, ...$d, 'average_seconds' => $d['ready'] === 0 ? null : intdiv($d['seconds'], $d['ready'])];
+
+            foreach ($d as $k => $v) {
+                $total[$k] += $v;
+            }
+        }
+
+        return [
+            'meta' => $this->meta('laundry', $property, $period, [], ['laundry_orders (by the calendar date of the property when handed over and when ready)']),
+            'rows' => array_map(static function (array $r): array {
+                unset($r['seconds']);
+
+                return $r;
+            }, $rows),
+            'totals' => [...array_diff_key($total, ['seconds' => 0]), 'average_seconds' => $total['ready'] === 0 ? null : intdiv($total['seconds'], $total['ready']), 'on_time_percent' => $total['ready'] === 0 ? null : intdiv($total['on_time'] * 100, $total['ready'])],
+            'cost_note' => 'Cost per kilogram is not part of this report: the weight of laundry and laundry costs are not recorded.',
+        ];
+    }
+
+    /** @return array{filename: string, contents: string} */
+    public function exportLaundry(PropertyId $property, string $actorId, ?string $preset, ?string $from, ?string $to): array
+    {
+        $report = $this->laundry($property, $actorId, $preset, $from, $to);
+        $contents = CsvWriter::build(
+            ['Date', 'Orders received', 'Pieces', 'Express', 'Orders ready', 'Ready on time', 'Average seconds to ready', 'Charged (minor units)', 'With a difference', 'Cancelled'],
+            array_map(static fn (array $r): array => [$r['date'], $r['received'], $r['pieces'], $r['express'], $r['ready'], $r['on_time'], $r['average_seconds'], $r['charged_minor'], $r['discrepancies'], $r['cancelled']], $report['rows']),
+        );
+        $this->recordExport($property, $actorId, 'laundry', $report['meta'], count($report['rows']), null, false);
+
+        return ['filename' => sprintf('laundry-%s-%s.csv', $report['meta']['period']['from'], $report['meta']['period']['to']), 'contents' => $contents];
     }
 
     /** @return array<string, mixed> */

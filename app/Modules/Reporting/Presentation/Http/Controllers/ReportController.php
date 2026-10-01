@@ -84,6 +84,20 @@ final readonly class ReportController
         return $this->download($this->reports->exportHousekeeping($this->property->current(), $this->actor($request), $preset, $from, $to));
     }
 
+    public function laundry(Request $request): Response
+    {
+        [$preset, $from, $to] = $this->range($request);
+
+        return Inertia::render('reporting/pages/laundry', ['report' => $this->reports->laundry($this->property->current(), $this->actor($request), $preset, $from, $to), 'context' => $this->reports->context($this->property->current(), $this->actor($request))]);
+    }
+
+    public function exportLaundry(Request $request): HttpResponse
+    {
+        [$preset, $from, $to] = $this->range($request);
+
+        return $this->download($this->reports->exportLaundry($this->property->current(), $this->actor($request), $preset, $from, $to));
+    }
+
     public function payments(Request $request): Response
     {
         [$preset, $from, $to] = $this->range($request);

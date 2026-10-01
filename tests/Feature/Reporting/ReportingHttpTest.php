@@ -67,7 +67,7 @@ final class ReportingHttpTest extends TestCase
         $this->get('/dashboard?preset=forever')->assertStatus(422);
         $this->get('/dashboard?from=2026-10-09&to=2026-10-01')->assertStatus(422);
 
-        $this->get('/reports')->assertInertia(fn (Assert $p) => $p->component('reporting/pages/reports')->has('reports', 8)->where('context.business_date', '2026-10-01'));
+        $this->get('/reports')->assertInertia(fn (Assert $p) => $p->component('reporting/pages/reports')->has('reports', 9)->where('context.business_date', '2026-10-01'));
     }
 
     public function test_reports_state_their_basis_and_exports_download_as_csv(): void
@@ -98,6 +98,13 @@ final class ReportingHttpTest extends TestCase
         $this->get('/reports/housekeeping?from=2026-10-09&to=2026-10-01')->assertStatus(422);
         $response = $this->get('/reports/housekeeping/export')->assertOk();
         self::assertStringContainsString('attachment; filename="housekeeping-2026-10-01-2026-10-01.csv"', (string) $response->headers->get('Content-Disposition'));
+    }
+
+    public function test_the_laundry_report_opens_and_exports(): void
+    {
+        $this->get('/reports/laundry')->assertInertia(fn (Assert $p) => $p->component('reporting/pages/laundry')->where('report.meta.report', 'laundry')->has('report.rows', 0)->where('report.totals.received', 0)->where('report.totals.average_seconds', null)->where('context.currency', 'IDR'));
+        $this->get('/reports/laundry?from=2026-10-09&to=2026-10-01')->assertStatus(422);
+        $this->get('/reports/laundry/export')->assertOk();
     }
 
     public function test_the_movement_and_performance_reports_open_and_export(): void

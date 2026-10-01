@@ -11,6 +11,7 @@ use App\Modules\FrontOffice\Application\Stays\StayService;
 use App\Modules\Laundry\Application\LaundryRequest;
 use App\Modules\Laundry\Application\LaundryService;
 use App\Modules\Property\Application\Rates\ChargeSchemeService;
+use App\Modules\Reporting\Application\ReportService;
 use App\Shared\Application\Errors\Refusal;
 use App\Shared\Application\Idempotency\IdempotencyKey;
 use App\Shared\Application\Tenancy\PropertyContext;
@@ -361,5 +362,33 @@ final class LaundryTest extends TestCase
         }
 
         self::assertSame($order['id'], (string) DB::table('laundry_orders')->value('id'));
+    }
+
+    public function test_the_laundry_report_counts_orders_pieces_time_to_ready_and_charges_per_day(): void
+    {
+        $this->configureLaundryScheme();
+        $first = $this->handOver('BAG-0101');
+        $second = $this->handOver('BAG-0102', null, true, '09:00', $this->roomIds[0]);
+        $this->clock->advance('+2 hours');
+        $first = $this->toIroned($first);
+        $first = $this->laundry()->markReady($this->property(), $this->laundererId, $first['id'], $first['lock_version']);
+        $this->clock->advance('+1 day +8 hours');
+        $second = $this->toIroned($second);
+        $second = $this->laundry()->markReady($this->property(), $this->laundererId, $second['id'], $second['lock_version']);
+
+        $report = app(ReportService::class)->laundry($this->property(), $this->analystId, 'custom', '2026-10-01', '2026-10-03');
+        self::assertSame(['2026-10-01', '2026-10-02'], array_column($report['rows'], 'date'));
+        self::assertSame([2, 12, 1, 2, 1], [$report['totals']['received'], $report['totals']['pieces'], $report['totals']['express'], $report['totals']['ready'], $report['totals']['on_time']]);
+        self::assertSame(50, $report['totals']['on_time_percent']);
+        self::assertSame((int) $first['charged_minor'] + (int) $second['charged_minor'], $report['totals']['charged_minor']);
+        self::assertSame([2, 1], [$report['rows'][0]['received'], $report['rows'][0]['ready']]);
+        self::assertSame(7200, $report['rows'][0]['average_seconds']);
+        self::assertSame([0, 1], [$report['rows'][1]['received'], $report['rows'][1]['ready']]);
+        self::assertStringContainsString('weight', $report['cost_note']);
+
+        $export = app(ReportService::class)->exportLaundry($this->property(), $this->analystId, 'custom', '2026-10-01', '2026-10-03');
+        self::assertStringContainsString('Orders ready', $export['contents']);
+        self::assertSame(1, DB::table('audit_entries')->where('action', 'report.exported')->count());
+        $this->assertRefused(403, fn () => app(ReportService::class)->laundry($this->property(), $this->clerkId, 'today', null, null));
     }
 }

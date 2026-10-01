@@ -82,4 +82,12 @@ interface ReportQueries
      * @return array{staff: list<array{user_id: string, rooms: int, seconds: int}>, kinds: list<array{kind: string, rooms: int, seconds: int}>, inspections: array{passed: int, rework: int}, checklists: array{items: int, completed: int, runs: int}}
      */
     public function housekeepingProductivity(PropertyId $property, DateTimeImmutable $fromUtc, DateTimeImmutable $toUtc, ReportPeriod $period): array;
+
+    /**
+     * Guest laundry orders that were handed over or became ready between the two instants (FR-LDY-010), one row per order, with
+     * the pieces handed over. Instants are UTC; the caller places them on the property's calendar.
+     *
+     * @return list<array{created_at: string, ready_at: ?string, promised_at: string, status: string, express: bool, pieces: int, charged_minor: ?int, has_discrepancy: bool}>
+     */
+    public function laundryOrders(PropertyId $property, DateTimeImmutable $fromUtc, DateTimeImmutable $toUtc): array;
 }
