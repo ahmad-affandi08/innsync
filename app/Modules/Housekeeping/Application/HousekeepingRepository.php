@@ -71,4 +71,21 @@ interface HousekeepingRepository
 
     /** @return list<array{id: string, inspector_id: string, result: string, notes: ?string, inspected_at: string}> newest first */
     public function inspectionsOf(PropertyId $property, string $roomId, int $limit): array;
+
+    // ---- service flags (FR-HK-017) ----
+
+    /** @return bool false when the room already has an open flag of this kind */
+    public function addFlag(PropertyId $property, string $id, string $roomId, string $kind, ?string $note, string $actorId, DateTimeImmutable $at, bool $instant): bool;
+
+    /** @return array<string, mixed>|null */
+    public function findFlag(PropertyId $property, string $id): ?array;
+
+    /** @return bool false when the flag changed or was already ended */
+    public function endFlag(PropertyId $property, string $id, int $expectedLockVersion, string $actorId, DateTimeImmutable $at): bool;
+
+    /** Flags not yet ended, by room id. @return array<string, list<array<string, mixed>>> */
+    public function openFlags(PropertyId $property): array;
+
+    /** @return list<array<string, mixed>> newest first */
+    public function flagHistory(PropertyId $property, string $roomId, int $limit): array;
 }

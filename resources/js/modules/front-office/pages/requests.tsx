@@ -16,7 +16,7 @@ import { useFormatters, useTranslation } from '@/shared/i18n/i18n';
 import { useErrorStateCopy } from '@/shared/i18n/use-ui-copy';
 
 type Req = {
-    id: string; number: string; room: string; category: string; priority: string; title: string; detail: string | null; status: string; recorded_status: string; housekeeping_state: string | null;
+    due_at: string | null; id: string; number: string; room: string; category: string; priority: string; title: string; detail: string | null; status: string; recorded_status: string; housekeeping_state: string | null;
     resolution: string | null; created_at: string; lock_version: number;
 };
 type Props = {
@@ -34,7 +34,7 @@ export default function RequestsPage({ filters, in_house: inHouse, queue }: Prop
     const action = useServerAction();
     const [status, setStatus] = useState(filters.status);
     const [category, setCategory] = useState(filters.category);
-    const [form, setForm] = useState<{ stay: string; category: string; title: string; detail: string; urgent: boolean } | null>(null);
+    const [form, setForm] = useState<{ stay: string; category: string; title: string; detail: string; urgent: boolean; due: string } | null>(null);
     const [finish, setFinish] = useState<{ req: Req; kind: 'complete' | 'cancel'; text: string } | null>(null);
     const [intent, setIntent] = useState(() => newIdempotencyKey());
     const reload = ['queue', 'in_house'];
@@ -47,7 +47,7 @@ export default function RequestsPage({ filters, in_house: inHouse, queue }: Prop
 
     async function save() {
         if (form === null) return;
-        const done = await action.run('/front-office/requests', { idempotencyKey: intent, body: { stay_id: form.stay, category: form.category, title: form.title, detail: form.detail.trim() || null, urgent: form.urgent }, reload });
+        const done = await action.run('/front-office/requests', { idempotencyKey: intent, body: { stay_id: form.stay, category: form.category, title: form.title, detail: form.detail.trim() || null, urgent: form.urgent, due_in_minutes: form.due === '' ? null : Number(form.due) }, reload });
         if (done !== null) { setIntent(newIdempotencyKey()); closeAll(); }
     }
 
@@ -82,7 +82,7 @@ export default function RequestsPage({ filters, in_house: inHouse, queue }: Prop
                     </FormField>
                     <Button size="sm" type="submit" variant="outline">{t('fo.req.filter.apply')}</Button>
                 </form>
-                {queue.may_manage ? <Button onClick={() => { action.clear(); setForm({ stay: '', category: 'housekeeping', title: '', detail: '', urgent: false }); }} size="sm" type="button">{t('fo.req.new')}</Button> : null}
+                {queue.may_manage ? <Button onClick={() => { action.clear(); setForm({ stay: '', category: 'housekeeping', title: '', detail: '', urgent: false, due: '' }); }} size="sm" type="button">{t('fo.req.new')}</Button> : null}
             </div>
             {form === null && finish === null ? error : null}
 
@@ -97,7 +97,7 @@ export default function RequestsPage({ filters, in_house: inHouse, queue }: Prop
                                     <StatusBadge label={t(`fo.req.status.${r.status}` as 'fo.req.status.open')} tone={tone[r.status] ?? 'neutral'} />
                                 </span>
                             </div>
-                            <p>{r.title}</p>
+                            <p>{r.title}{r.due_at !== null ? ` · ${t('fo.req.dueBy', { time: format.instant(r.due_at) })}` : ''}</p>
                             {r.detail !== null ? <p className="text-xs text-muted-foreground">{r.detail}</p> : null}
                             <p className="text-xs text-muted-foreground">{format.instant(r.created_at)}{r.housekeeping_state !== null ? ` · ${t('fo.req.hk', { state: t(`fo.req.status.${r.housekeeping_state}` as 'fo.req.status.open') })}` : ''}{r.resolution !== null ? ` · ${r.resolution}` : ''}</p>
                             {queue.may_manage && (r.recorded_status === 'open' || r.recorded_status === 'in_progress') ? (
@@ -132,6 +132,12 @@ export default function RequestsPage({ filters, in_house: inHouse, queue }: Prop
                         </FormField>
                         <FormField error={action.fieldError('title')} label={t('fo.req.titleLabel')}><Input maxLength={120} onChange={(e) => setForm({ ...form, title: e.target.value })} value={form.title} /></FormField>
                         <FormField error={action.fieldError('detail')} label={t('fo.req.detail')}><Input maxLength={500} onChange={(e) => setForm({ ...form, detail: e.target.value })} value={form.detail} /></FormField>
+                        <FormField error={action.fieldError('due_in_minutes')} label={t('fo.req.due')}>
+                            <Select onChange={(e) => setForm({ ...form, due: e.target.value })} value={form.due}>
+                                <option value="">{t('fo.req.due.none')}</option>
+                                {['15', '30', '60', '120'].map((m) => <option key={m} value={m}>{t(`fo.req.due.${m}` as 'fo.req.due.15')}</option>)}
+                            </Select>
+                        </FormField>
                         <label className="flex items-center gap-2 text-sm"><input checked={form.urgent} onChange={(e) => setForm({ ...form, urgent: e.target.checked })} type="checkbox" />{t('fo.req.urgent')}</label>
                     </div>
                 )}

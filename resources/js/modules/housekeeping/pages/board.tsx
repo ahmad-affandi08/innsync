@@ -9,14 +9,16 @@ import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
 import { StatusBadge } from '@/components/ui/status-badge';
+import { FlagsPanel, RequestsList, type RoomFlag, type RoomRequest } from '@/modules/housekeeping/components/room-annotations';
 import { HousekeepingShell } from '@/modules/housekeeping/components/housekeeping-shell';
 import { useServerAction } from '@/shared/api/use-server-action';
 import { useFormatters, useTranslation } from '@/shared/i18n/i18n';
 import { useErrorStateCopy } from '@/shared/i18n/use-ui-copy';
 
 type Task = { id: string; kind: string; status: string; assigned_to: string | null; assigned_name: string | null; lock_version: number };
-type Room = { room_id: string; number: string; floor: string | null; status: string; occupied: boolean; expected_departure: string | null; task: Task | null };
-type Board = { rooms: Room[]; staff: { id: string; name: string }[]; inspection_required: boolean; may: { manage: boolean; inspect: boolean; waive: boolean; settings: boolean } };
+type Room = { room_id: string; number: string; floor: string | null; status: string; occupied: boolean; expected_departure: string | null; task: Task | null; requests: RoomRequest[]; flags: RoomFlag[] };
+type Discrepancy = { room_id: string; number: string; rule: string; task_id: string | null; task_lock_version: number | null };
+type Board = { rooms: Room[]; discrepancies: Discrepancy[]; flag_kinds: string[]; staff: { id: string; name: string }[]; inspection_required: boolean; may: { manage: boolean; inspect: boolean; waive: boolean; settings: boolean } };
 type Finding = { id: string; description: string; mandatory: boolean };
 type RoomDetail = { room_id: string; number: string; status: string; open_findings: Finding[] };
 
@@ -47,6 +49,19 @@ export default function HousekeepingBoardPage({ board }: { board: Board }) {
 
     async function cancel(task: Task) {
         await action.run(`/housekeeping/tasks/${task.id}/cancel`, { body: { reason: 'Cancelled by the supervisor', lock_version: task.lock_version }, reload });
+    }
+
+    async function raiseFlag(room: Room, kind: string, note: string) {
+        await action.run('/housekeeping/flags', { body: { room_id: room.room_id, kind, note: note.trim() || null }, reload });
+    }
+
+    async function endFlag(flag: RoomFlag) {
+        await action.run(`/housekeeping/flags/${flag.id}/end`, { body: { lock_version: flag.lock_version }, reload });
+    }
+
+    async function cancelDiscrepancy(d: Discrepancy) {
+        if (d.task_id === null || d.task_lock_version === null) return;
+        await action.run(`/housekeeping/tasks/${d.task_id}/cancel`, { body: { reason: 'Front desk and housekeeping disagreed about this room', lock_version: d.task_lock_version }, reload });
     }
 
     async function createRequest() {
@@ -82,6 +97,15 @@ export default function HousekeepingBoardPage({ board }: { board: Board }) {
             {action.error !== null && request === null && inspecting === null ? <ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /> : null}
             {board.staff.length === 0 && board.may.manage ? <Alert title={t('hk.board.noStaff')} tone="warning" /> : null}
 
+            {board.discrepancies.length > 0 ? (
+                <section aria-labelledby="disc-h" className="flex flex-col gap-2" data-testid="discrepancies">
+                    <h2 className="text-lg font-semibold" id="disc-h">{t('hk.disc.title')}</h2>
+                    {board.discrepancies.map((d) => (
+                        <Alert actions={board.may.manage && d.task_id !== null ? <Button disabled={action.busy} onClick={() => void cancelDiscrepancy(d)} size="sm" type="button" variant="outline">{t('hk.disc.cancel')}</Button> : undefined} key={d.room_id} title={t(`hk.disc.rule.${d.rule}` as 'hk.disc.rule.occupied_with_vacant_task', { room: d.number })} tone="warning" />
+                    ))}
+                </section>
+            ) : null}
+
             {board.rooms.length === 0 ? <EmptyState title={t('hk.board.empty')} /> : (
                 <div className="overflow-x-auto">
                     <table className="w-full text-left text-sm">
@@ -92,6 +116,12 @@ export default function HousekeepingBoardPage({ board }: { board: Board }) {
                                 <td><StatusBadge label={t(`hk.status.${r.status}` as 'hk.status.dirty')} tone={statusTone[r.status] ?? 'neutral'} /></td>
                                 <td>{r.occupied && r.expected_departure !== null ? t('hk.board.occupied', { date: format.date(r.expected_departure) }) : t('hk.board.vacant')}</td>
                                 <td>
+                                    {r.requests.length > 0 || r.flags.length > 0 || r.occupied ? (
+                                        <div className="mb-2 flex flex-col gap-1">
+                                            <RequestsList requests={r.requests} />
+                                            {r.occupied ? <FlagsPanel busy={action.busy} flags={r.flags} kinds={board.flag_kinds} onEnd={(f) => void endFlag(f)} onRaise={(k, n) => void raiseFlag(r, k, n)} /> : null}
+                                        </div>
+                                    ) : null}
                                     {r.task === null ? '—' : (
                                         <div className="flex flex-col gap-1">
                                             <span>{t(`hk.kind.${r.task.kind}` as 'hk.kind.departure')} · {t(`hk.task.${r.task.status}` as 'hk.task.open')}{r.task.assigned_name !== null ? ` · ${r.task.assigned_name}` : ''}</span>

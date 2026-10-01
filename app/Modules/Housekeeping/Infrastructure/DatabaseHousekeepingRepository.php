@@ -197,4 +197,55 @@ final readonly class DatabaseHousekeepingRepository implements HousekeepingRepos
             $r->started_at === null ? null : new DateTimeImmutable((string) $r->started_at, $utc), $r->finished_at === null ? null : new DateTimeImmutable((string) $r->finished_at, $utc), (int) $r->lock_version,
         );
     }
+
+    public function addFlag(PropertyId $property, string $id, string $roomId, string $kind, ?string $note, string $actorId, DateTimeImmutable $at, bool $instant): bool
+    {
+        try {
+            DB::table('room_service_flags')->insert([
+                'id' => $id, 'property_id' => $property->toString(), 'room_id' => $roomId, 'kind' => $kind, 'note' => $note, 'started_at' => $at, 'started_by' => $actorId,
+                'ended_at' => $instant ? $at : null, 'ended_by' => $instant ? $actorId : null, 'lock_version' => 0,
+            ]);
+        } catch (UniqueConstraintViolationException) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function findFlag(PropertyId $property, string $id): ?array
+    {
+        $row = DB::table('room_service_flags')->where('property_id', $property->toString())->where('id', $id)->first();
+
+        return $row === null ? null : self::flag($row);
+    }
+
+    public function endFlag(PropertyId $property, string $id, int $expectedLockVersion, string $actorId, DateTimeImmutable $at): bool
+    {
+        return DB::table('room_service_flags')->where('property_id', $property->toString())->where('id', $id)->whereNull('ended_at')->where('lock_version', $expectedLockVersion)
+            ->update(['ended_at' => $at, 'ended_by' => $actorId, 'lock_version' => $expectedLockVersion + 1]) === 1;
+    }
+
+    public function openFlags(PropertyId $property): array
+    {
+        $result = [];
+
+        foreach (DB::table('room_service_flags')->where('property_id', $property->toString())->whereNull('ended_at')->orderBy('started_at')->get() as $row) {
+            $result[$row->room_id][] = self::flag($row);
+        }
+
+        return $result;
+    }
+
+    public function flagHistory(PropertyId $property, string $roomId, int $limit): array
+    {
+        return DB::table('room_service_flags')->where('property_id', $property->toString())->where('room_id', $roomId)->orderByDesc('started_at')->orderByDesc('id')->limit($limit)->get()->map(static fn ($r): array => self::flag($r))->all();
+    }
+
+    /** @return array<string, mixed> */
+    private static function flag(object $r): array
+    {
+        $utc = static fn (mixed $v): ?string => $v === null ? null : (new DateTimeImmutable((string) $v, new DateTimeZone('UTC')))->format('Y-m-d\TH:i:s\Z');
+
+        return ['id' => $r->id, 'room_id' => $r->room_id, 'kind' => $r->kind, 'note' => $r->note, 'started_at' => $utc($r->started_at), 'started_by' => $r->started_by, 'ended_at' => $utc($r->ended_at), 'ended_by' => $r->ended_by, 'lock_version' => (int) $r->lock_version];
+    }
 }

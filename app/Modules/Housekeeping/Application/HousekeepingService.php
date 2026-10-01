@@ -47,9 +47,12 @@ final readonly class HousekeepingService implements GuestServiceRequests, RoomHa
 
     public const SETTINGS_PERMISSION = 'housekeeping.settings.manage';
 
+    public const FLAG_KINDS = ['dnd', 'refused_service', 'make_up_room', 'privacy'];
+
     public function __construct(
         private HousekeepingRepository $repository,
         private OccupancyReader $occupancy,
+        private RoomGuestRequests $guestRequests,
         private RoomCatalogReader $rooms,
         private StaffDirectory $staff,
         private PermissionChecker $permissions,
@@ -77,7 +80,7 @@ final readonly class HousekeepingService implements GuestServiceRequests, RoomHa
      * Every active room with its housekeeping state, whether a guest is in it, and its unfinished task, most urgent first.
      * Occupancy comes from Front Office and is shown next to the housekeeping state, never merged with it.
      *
-     * @return array{rooms: list<array<string, mixed>>, staff: list<array{id: string, name: string}>, inspection_required: bool, may: array<string, bool>}
+     * @return array{rooms: list<array<string, mixed>>, discrepancies: list<array<string, mixed>>, flag_kinds: list<string>, staff: list<array{id: string, name: string}>, inspection_required: bool, may: array<string, bool>}
      */
     public function board(PropertyId $property, string $actorId): array
     {
@@ -91,10 +94,19 @@ final readonly class HousekeepingService implements GuestServiceRequests, RoomHa
         }
 
         $names = $this->staff->namesOf($property, array_values(array_filter(array_map(static fn (array $r): ?string => $r['task']->assignedTo, $tasks))));
+        $requests = $this->requestsByRoom($property);
+        $flags = $this->repository->openFlags($property);
         $rows = [];
+        $discrepancies = [];
 
         foreach ($this->rooms->activeRooms($property) as $room) {
             $task = $tasks[$room->id] ?? null;
+            $found = $this->discrepancy($room->number, isset($occupied[$room->id]), $task['task'] ?? null);
+
+            if ($found !== null) {
+                $discrepancies[] = ['room_id' => $room->id, 'number' => $room->number, 'rule' => $found, 'task_id' => $task['task']->id ?? null, 'task_lock_version' => $task['task']->lockVersion ?? null];
+            }
+
             $rows[] = [
                 'room_id' => $room->id,
                 'number' => $room->number,
@@ -103,6 +115,8 @@ final readonly class HousekeepingService implements GuestServiceRequests, RoomHa
                 'occupied' => isset($occupied[$room->id]),
                 'expected_departure' => $occupied[$room->id]['expected_departure'] ?? null,
                 'task' => $task === null ? null : $this->describe($task['task'], $task['priority'], $names),
+                'requests' => $requests[$room->id] ?? [],
+                'flags' => array_map(static fn (array $f): array => ['id' => $f['id'], 'kind' => $f['kind'], 'note' => $f['note'], 'started_at' => $f['started_at'], 'lock_version' => $f['lock_version']], $flags[$room->id] ?? []),
             ];
         }
 
@@ -115,6 +129,8 @@ final readonly class HousekeepingService implements GuestServiceRequests, RoomHa
 
         return [
             'rooms' => $rows,
+            'discrepancies' => $discrepancies,
+            'flag_kinds' => self::FLAG_KINDS,
             'staff' => $this->staff->withPermission($property, self::PERFORM_PERMISSION),
             'inspection_required' => $this->repository->settings($property)['inspection_required'],
             'may' => [
@@ -136,6 +152,8 @@ final readonly class HousekeepingService implements GuestServiceRequests, RoomHa
     {
         $this->authorize($property, $actorId, self::PERFORM_PERMISSION);
         $result = [];
+        $requests = $this->requestsByRoom($property);
+        $flags = $this->repository->openFlags($property);
 
         foreach ($this->repository->tasksOf($property, strtolower($actorId)) as $row) {
             $room = $this->rooms->room($property, $row['task']->roomId);
@@ -143,6 +161,8 @@ final readonly class HousekeepingService implements GuestServiceRequests, RoomHa
                 ...$this->describe($row['task'], $row['priority'], []),
                 'room_number' => $room?->number,
                 'floor' => $room?->floor,
+                'requests' => $requests[$row['task']->roomId] ?? [],
+                'flags' => array_map(static fn (array $f): array => ['id' => $f['id'], 'kind' => $f['kind'], 'note' => $f['note'], 'started_at' => $f['started_at'], 'lock_version' => $f['lock_version']], $flags[$row['task']->roomId] ?? []),
                 'findings' => $row['task']->kind === TaskKind::Rework ? $this->repository->openFindings($property, $row['task']->roomId) : [],
             ];
         }
@@ -225,6 +245,117 @@ final readonly class HousekeepingService implements GuestServiceRequests, RoomHa
         });
     }
 
+    // ---- service flags (FR-HK-017) ----
+
+    /**
+     * Records a service flag on a room with a guest in it: do not disturb, refused service, make-up room or a privacy request, with
+     * the time it started. None of them changes occupancy or the cleaning status. A make-up request also asks housekeeping to service
+     * the room. Refused service is a moment: it starts and ends at once.
+     *
+     * @return array<string, mixed>
+     */
+    public function raiseFlag(PropertyId $property, string $actorId, string $roomId, string $kind, ?string $note): array
+    {
+        $this->authorizeAny($property, $actorId, [self::PERFORM_PERMISSION, self::MANAGE_PERMISSION]);
+        $note = $note === null || trim($note) === '' ? null : trim($note);
+
+        if (! in_array($kind, self::FLAG_KINDS, true) || ($note !== null && mb_strlen($note) > 200)) {
+            throw Refusal::invalid('Choose do not disturb, refused service, make-up room or privacy, with a note of at most 200 characters.', ['kind', 'note']);
+        }
+
+        $room = $this->rooms->room($property, strtolower($roomId)) ?? throw Refusal::notFound('Room not found.');
+
+        if (! isset($this->occupancy->occupiedRooms($property)[$room->id])) {
+            throw Refusal::stateConflict('Service flags are for rooms with a guest in them.');
+        }
+
+        $actor = strtolower($actorId);
+        $id = $this->ids->next();
+
+        $this->transactions->run(function () use ($property, $actor, $room, $kind, $note, $id): void {
+            $now = $this->clock->nowUtc();
+
+            if (! $this->repository->addFlag($property, $id, $room->id, $kind, $note, $actor, $now, $kind === 'refused_service')) {
+                throw Refusal::stateConflict('This room already has that flag.');
+            }
+
+            if ($kind === 'make_up_room') {
+                $this->openForGuestRequest($property, $actor, $room->id, 'Make-up room requested by the guest');
+            }
+
+            $this->audit->record(new AuditEntry($property->toString(), $actor, 'housekeeping.flag.raised', 'housekeeping_room', $room->id, null, ['kind' => $kind], $note));
+            $this->outbox->publish(new OutboxEvent($property, 'housekeeping.room.flag_raised', $id, 1, ['flag_id' => $id, 'room_id' => $room->id, 'kind' => $kind, 'actor_id' => $actor]));
+        });
+
+        return $this->repository->findFlag($property, $id) ?? throw Refusal::notFound('Flag not found.');
+    }
+
+    /** @return array<string, mixed> */
+    public function endFlag(PropertyId $property, string $actorId, string $flagId, int $expectedLockVersion): array
+    {
+        $this->authorizeAny($property, $actorId, [self::PERFORM_PERMISSION, self::MANAGE_PERMISSION]);
+        $actor = strtolower($actorId);
+
+        $this->transactions->run(function () use ($property, $actor, $flagId, $expectedLockVersion): void {
+            $flag = $this->repository->findFlag($property, strtolower($flagId)) ?? throw Refusal::notFound('Flag not found.');
+
+            if ($flag['ended_at'] !== null) {
+                throw Refusal::stateConflict('This flag has already ended.');
+            }
+
+            if (! $this->repository->endFlag($property, $flag['id'], $expectedLockVersion, $actor, $this->clock->nowUtc())) {
+                throw Refusal::stateConflict('This flag changed after you opened it.');
+            }
+
+            $this->audit->record(new AuditEntry($property->toString(), $actor, 'housekeeping.flag.ended', 'housekeeping_room', $flag['room_id'], ['kind' => $flag['kind']], ['kind' => $flag['kind'], 'ended' => true]));
+            $this->outbox->publish(new OutboxEvent($property, 'housekeeping.room.flag_ended', $flag['id'], 1, ['flag_id' => $flag['id'], 'room_id' => $flag['room_id'], 'kind' => $flag['kind'], 'actor_id' => $actor]));
+        });
+
+        return $this->repository->findFlag($property, strtolower($flagId)) ?? throw Refusal::notFound('Flag not found.');
+    }
+
+    /** @return list<array<string, mixed>> the flags of the room, newest first, for the room screen */
+    public function flagHistory(PropertyId $property, string $actorId, string $roomId): array
+    {
+        $this->authorizeAny($property, $actorId, [self::VIEW_PERMISSION, self::MANAGE_PERMISSION, self::INSPECT_PERMISSION, self::PERFORM_PERMISSION]);
+
+        return $this->repository->flagHistory($property, strtolower($roomId), 30);
+    }
+
+    /**
+     * Where Front Office and housekeeping disagree about a room (FR-HK-016): a room with a guest that housekeeping works on as
+     * vacant, or a vacant room housekeeping treats as occupied. Nothing is changed: the supervisor sees it and cancels or opens the task.
+     */
+    private function discrepancy(string $number, bool $occupied, ?HousekeepingTask $task): ?string
+    {
+        if ($task === null) {
+            return null;
+        }
+
+        if ($occupied && in_array($task->kind, [TaskKind::Departure, TaskKind::Vacant], true)) {
+            return 'occupied_with_vacant_task';
+        }
+
+        if (! $occupied && $task->kind === TaskKind::Stayover) {
+            return 'vacant_with_stayover_task';
+        }
+
+        return null;
+    }
+
+    /** @return array<string, list<array<string, mixed>>> open guest requests by room, with whether each is overdue */
+    private function requestsByRoom(PropertyId $property): array
+    {
+        $now = $this->clock->nowUtc()->format('Y-m-d\TH:i:s\Z');
+        $result = [];
+
+        foreach ($this->guestRequests->openFor($property) as $roomId => $list) {
+            $result[$roomId] = array_map(static fn (array $r): array => [...$r, 'overdue' => $r['due_at'] !== null && $r['due_at'] < $now], $list);
+        }
+
+        return $result;
+    }
+
     public function openForGuestRequest(PropertyId $property, string $actorId, string $roomId, string $reason): string
     {
         $current = $this->property->current();
@@ -303,6 +434,13 @@ final readonly class HousekeepingService implements GuestServiceRequests, RoomHa
             $before = $this->repository->findTask($property, strtolower($taskId)) ?? throw Refusal::notFound('Task not found.');
             $now = $this->clock->nowUtc();
             $state = $this->repository->lockRoom($property, $before->roomId, $now);
+
+            foreach ($this->repository->openFlags($property)[$before->roomId] ?? [] as $flag) {
+                if (in_array($flag['kind'], ['dnd', 'privacy'], true)) {
+                    throw Refusal::stateConflict($flag['kind'] === 'dnd' ? 'The guest asked not to be disturbed: the room is not entered until the flag is ended.' : 'The guest asked for privacy: the room is not entered until the flag is ended.');
+                }
+            }
+
             $after = $this->transition(static fn () => $before->start($actor, $now));
             $after = $this->save($property, $after, $expectedLockVersion, null, $now);
             $this->move($property, $before->roomId, $state['status'], CleaningStatus::Cleaning, $actor, null, $before->id, 'housekeeping.task.started');

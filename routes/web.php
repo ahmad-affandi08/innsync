@@ -278,6 +278,9 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
     Route::get('/my-rooms', [HousekeepingController::class, 'myRooms'])->name('housekeeping.my-rooms');
     Route::get('/rooms/{id}', [HousekeepingController::class, 'room'])->where('id', $id)->name('housekeeping.rooms.show');
     Route::post('/tasks', [HousekeepingController::class, 'requestService'])->name('housekeeping.tasks.store');
+    Route::post('/flags', [HousekeepingController::class, 'raiseFlag'])->name('housekeeping.flags.store');
+    Route::post('/flags/{id}/end', [HousekeepingController::class, 'endFlag'])->where('id', $id)->name('housekeeping.flags.end');
+    Route::get('/rooms/{id}/flags', [HousekeepingController::class, 'flagHistory'])->where('id', $id)->name('housekeeping.rooms.flags');
     Route::post('/tasks/{id}/assign', [HousekeepingController::class, 'assign'])->where('id', $id)->name('housekeeping.tasks.assign');
     Route::post('/tasks/{id}/cancel', [HousekeepingController::class, 'cancel'])->where('id', $id)->name('housekeeping.tasks.cancel');
     Route::post('/tasks/{id}/start', [HousekeepingController::class, 'start'])->where('id', $id)->name('housekeeping.tasks.start');

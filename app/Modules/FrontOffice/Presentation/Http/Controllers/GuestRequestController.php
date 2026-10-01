@@ -34,10 +34,10 @@ final readonly class GuestRequestController
     {
         $data = $request->validate([
             'stay_id' => ['required', 'string', 'size:26'], 'category' => ['required', 'string', 'max:20'], 'title' => ['required', 'string', 'max:120'],
-            'detail' => ['nullable', 'string', 'max:500'], 'urgent' => ['nullable', 'boolean'],
+            'detail' => ['nullable', 'string', 'max:500'], 'urgent' => ['nullable', 'boolean'], 'due_in_minutes' => ['nullable', 'integer', 'min:5', 'max:1440'],
         ]);
 
-        return $this->json(['request' => $this->requests->open($this->property->current(), $this->actor($request), $data['stay_id'], $data['category'], $data['title'], $data['detail'] ?? null, (bool) ($data['urgent'] ?? false), ($key = (string) $request->header('Idempotency-Key')) === '' ? null : 'req:'.$key)], 201);
+        return $this->json(['request' => $this->requests->open($this->property->current(), $this->actor($request), $data['stay_id'], $data['category'], $data['title'], $data['detail'] ?? null, (bool) ($data['urgent'] ?? false), ($key = (string) $request->header('Idempotency-Key')) === '' ? null : 'req:'.$key, isset($data['due_in_minutes']) ? (int) $data['due_in_minutes'] : null)], 201);
     }
 
     public function start(Request $request, string $id): JsonResponse

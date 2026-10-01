@@ -682,4 +682,11 @@ export const frontOffice = {
     'fo.corr.rowMeta': '{time} · {name} · {reason}',
     'fo.corr.approvedTag': 'disetujui',
     'fo.corr.identityLocked': 'Data identitas hanya dapat dikoreksi oleh orang yang boleh melihat identitas.',
+    'fo.req.due': 'Harus selesai dalam',
+    'fo.req.due.none': 'Tanpa batas waktu',
+    'fo.req.due.15': '15 menit',
+    'fo.req.due.30': '30 menit',
+    'fo.req.due.60': '1 jam',
+    'fo.req.due.120': '2 jam',
+    'fo.req.dueBy': 'sebelum {time}',
 } as const

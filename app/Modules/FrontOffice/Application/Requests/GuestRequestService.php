@@ -54,7 +54,7 @@ final readonly class GuestRequestService
     ) {}
 
     /** @return array<string, mixed> */
-    public function open(PropertyId $property, string $actorId, string $stayId, string $category, string $title, ?string $detail, bool $urgent, ?string $clientKey = null): array
+    public function open(PropertyId $property, string $actorId, string $stayId, string $category, string $title, ?string $detail, bool $urgent, ?string $clientKey = null, ?int $dueInMinutes = null): array
     {
         $this->authorize($property, $actorId, [self::MANAGE_PERMISSION]);
         $actor = strtolower($actorId);
@@ -65,6 +65,10 @@ final readonly class GuestRequestService
             throw Refusal::invalid('Say what the guest asks for in at most 120 characters, with details of at most 500.', ['title', 'detail']);
         }
 
+        if ($dueInMinutes !== null && ($dueInMinutes < 5 || $dueInMinutes > 1440)) {
+            throw Refusal::invalid('The time to do it in is 5 minutes to 24 hours.', ['due_in_minutes']);
+        }
+
         if (! in_array($category, self::CATEGORIES, true)) {
             throw Refusal::invalid('Choose housekeeping, food and beverage, maintenance, front office or other.', ['category']);
         }
@@ -72,7 +76,7 @@ final readonly class GuestRequestService
         $id = $this->ids->next();
         $existing = null;
 
-        $this->transactions->run(function () use ($property, $actor, $stayId, $category, $title, $detail, $urgent, $id, $clientKey, &$existing): void {
+        $this->transactions->run(function () use ($property, $actor, $stayId, $category, $title, $detail, $urgent, $id, $clientKey, $dueInMinutes, &$existing): void {
             // The same attempt sent again is the same request.
             if ($clientKey !== null && ($existing = $this->requests->findByKey($property, $clientKey)) !== null) {
                 return;
@@ -86,9 +90,9 @@ final readonly class GuestRequestService
 
             $number = $this->numbers->next($property, 'REQ');
             $task = $category === 'housekeeping' ? $this->housekeeping->openForGuestRequest($property, $actor, $stay->roomId, 'Guest request '.$number.': '.$title) : null;
-            $this->requests->add($property, $id, $number, $stay->id, $stay->reservationId, $stay->roomId, $category, $urgent ? 'urgent' : 'normal', $title, $detail, $task, $clientKey, $actor, $this->clock->nowUtc());
+            $this->requests->add($property, $id, $number, $stay->id, $stay->reservationId, $stay->roomId, $category, $urgent ? 'urgent' : 'normal', $title, $detail, $dueInMinutes === null ? null : $this->clock->nowUtc()->modify('+'.$dueInMinutes.' minutes'), $task, $clientKey, $actor, $this->clock->nowUtc());
 
-            $this->audit->record(new AuditEntry($property->toString(), $actor, 'guest_request.opened', 'guest_request', $id, null, ['number' => $number, 'category' => $category, 'priority' => $urgent ? 'urgent' : 'normal', 'room_id' => $stay->roomId, 'housekeeping_task' => $task]));
+            $this->audit->record(new AuditEntry($property->toString(), $actor, 'guest_request.opened', 'guest_request', $id, null, ['number' => $number, 'category' => $category, 'priority' => $urgent ? 'urgent' : 'normal', 'room_id' => $stay->roomId, 'housekeeping_task' => $task, 'due_in_minutes' => $dueInMinutes]));
             $this->outbox->publish(new OutboxEvent($property, 'frontoffice.guest_request.opened', $id, 1, ['request_id' => $id, 'number' => $number, 'category' => $category, 'priority' => $urgent ? 'urgent' : 'normal', 'room_id' => $stay->roomId, 'stay_id' => $stay->id, 'actor_id' => $actor]));
         });
 

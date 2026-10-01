@@ -9,7 +9,7 @@ use DateTimeImmutable;
 
 interface GuestRequestRepository
 {
-    public function add(PropertyId $property, string $id, string $number, string $stayId, string $reservationId, string $roomId, string $category, string $priority, string $title, ?string $detail, ?string $hkTaskId, ?string $clientKey, string $actorId, DateTimeImmutable $at): void;
+    public function add(PropertyId $property, string $id, string $number, string $stayId, string $reservationId, string $roomId, string $category, string $priority, string $title, ?string $detail, ?DateTimeImmutable $dueAt, ?string $hkTaskId, ?string $clientKey, string $actorId, DateTimeImmutable $at): void;
 
     /** @return array<string, mixed>|null */
     public function findByKey(PropertyId $property, string $clientKey): ?array;

@@ -40,6 +40,25 @@ final readonly class HousekeepingController
         return $this->json(['task' => $this->housekeeping->requestService($this->property->current(), $this->actor($request), $data['room_id'], $data['kind'], $data['reason'], $data['assigned_to'] ?? null)], 201);
     }
 
+    public function raiseFlag(Request $request): JsonResponse
+    {
+        $data = $request->validate(['room_id' => ['required', 'string', 'size:26'], 'kind' => ['required', 'string', 'max:16'], 'note' => ['nullable', 'string', 'max:200']]);
+
+        return $this->json(['flag' => $this->housekeeping->raiseFlag($this->property->current(), $this->actor($request), $data['room_id'], $data['kind'], $data['note'] ?? null)], 201);
+    }
+
+    public function endFlag(Request $request, string $id): JsonResponse
+    {
+        $data = $request->validate(['lock_version' => ['required', 'integer', 'min:0']]);
+
+        return $this->json(['flag' => $this->housekeeping->endFlag($this->property->current(), $this->actor($request), $id, (int) $data['lock_version'])]);
+    }
+
+    public function flagHistory(Request $request, string $id): JsonResponse
+    {
+        return $this->json(['flags' => $this->housekeeping->flagHistory($this->property->current(), $this->actor($request), $id)]);
+    }
+
     public function assign(Request $request, string $id): JsonResponse
     {
         $data = $request->validate(['assigned_to' => ['required', 'string', 'size:26'], 'lock_version' => ['required', 'integer', 'min:0']]);

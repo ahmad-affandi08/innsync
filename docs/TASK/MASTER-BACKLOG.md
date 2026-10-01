@@ -80,11 +80,11 @@
 | TASK-HK-010 | FR-HK-010 | Housekeeping | Wajib | TODO |
 | TASK-HK-011 | FR-HK-011 | Housekeeping | Sebaiknya | TODO |
 | TASK-HK-012 | FR-HK-012 | Housekeeping | Sebaiknya | TODO |
-| TASK-HK-013 | FR-HK-013 | Housekeeping | Wajib | TODO |
+| TASK-HK-013 | FR-HK-013 | Housekeeping | Wajib | REVIEW |
 | TASK-HK-014 | FR-HK-014 | Housekeeping | Wajib | TODO |
 | TASK-HK-015 | FR-HK-015 | Housekeeping | Sebaiknya | TODO |
-| TASK-HK-016 | FR-HK-016 | Housekeeping | Wajib | TODO |
-| TASK-HK-017 | FR-HK-017 | Housekeeping | Wajib | TODO |
+| TASK-HK-016 | FR-HK-016 | Housekeeping | Wajib | REVIEW |
+| TASK-HK-017 | FR-HK-017 | Housekeeping | Wajib | REVIEW |
 | TASK-HK-018 | FR-HK-018 | Housekeeping | Wajib | REVIEW |
 | TASK-HK-019 | FR-HK-019 | Housekeeping | Sebaiknya | TODO |
 | TASK-HK-020 | FR-HK-020 | Housekeeping | Wajib | REVIEW |

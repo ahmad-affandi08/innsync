@@ -6,12 +6,13 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { HousekeepingShell } from '@/modules/housekeeping/components/housekeeping-shell';
+import { FlagsPanel, RequestsList, type RoomFlag, type RoomRequest } from '@/modules/housekeeping/components/room-annotations';
 import { useServerAction } from '@/shared/api/use-server-action';
 import { useTranslation } from '@/shared/i18n/i18n';
 import { useErrorStateCopy } from '@/shared/i18n/use-ui-copy';
 
 type Finding = { id: string; description: string; mandatory: boolean };
-type Task = { id: string; room_number: string | null; floor: string | null; kind: string; status: string; lock_version: number; findings: Finding[] };
+type Task = { id: string; room_id: string; requests: RoomRequest[]; flags: RoomFlag[]; room_number: string | null; floor: string | null; kind: string; status: string; lock_version: number; findings: Finding[] };
 
 /** The attendant's phone screen: large targets, one action per room. Start and Finish are two taps from the list. */
 export default function MyRoomsPage({ tasks }: { tasks: Task[] }) {
@@ -28,6 +29,14 @@ export default function MyRoomsPage({ tasks }: { tasks: Task[] }) {
     async function finish(task: Task) {
         const done = await action.run<{ task: { duration_seconds: number } }>(`/housekeeping/tasks/${task.id}/finish`, { body: { lock_version: task.lock_version }, reload: ['tasks'] });
         if (done !== null) setFinished({ room: task.room_number ?? '', minutes: Math.max(1, Math.round(done.task.duration_seconds / 60)) });
+    }
+
+    async function endFlag(flag: RoomFlag) {
+        await action.run(`/housekeeping/flags/${flag.id}/end`, { body: { lock_version: flag.lock_version }, reload: ['tasks'] });
+    }
+
+    async function raiseFlag(task: Task, kind: string, note: string) {
+        await action.run('/housekeeping/flags', { body: { room_id: task.room_id, kind, note: note.trim() || null }, reload: ['tasks'] });
     }
 
     async function fixed(finding: Finding) {
@@ -50,6 +59,8 @@ export default function MyRoomsPage({ tasks }: { tasks: Task[] }) {
                                     <StatusBadge label={t(`hk.task.${task.status}` as 'hk.task.open')} tone={task.status === 'in_progress' ? 'info' : 'neutral'} />
                                 </div>
                             </div>
+                            <RequestsList requests={task.requests} />
+                            <FlagsPanel busy={action.busy} flags={task.flags} kinds={['dnd', 'refused_service', 'make_up_room', 'privacy']} onEnd={(f) => void endFlag(f)} onRaise={(k, n) => void raiseFlag(task, k, n)} />
                             {task.findings.length > 0 && (
                                 <div className="flex flex-col gap-2">
                                     <p className="text-sm font-medium">{t('hk.mine.findings')}</p>

@@ -682,4 +682,11 @@ export const frontOffice = {
     'fo.corr.rowMeta': '{time} · {name} · {reason}',
     'fo.corr.approvedTag': 'approved',
     'fo.corr.identityLocked': 'Identity details can only be corrected by someone who may see identity.',
+    'fo.req.due': 'To be done within',
+    'fo.req.due.none': 'No deadline',
+    'fo.req.due.15': '15 minutes',
+    'fo.req.due.30': '30 minutes',
+    'fo.req.due.60': '1 hour',
+    'fo.req.due.120': '2 hours',
+    'fo.req.dueBy': 'by {time}',
 } as const
