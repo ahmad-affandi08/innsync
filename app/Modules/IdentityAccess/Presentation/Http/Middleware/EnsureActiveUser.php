@@ -4,20 +4,34 @@ declare(strict_types=1);
 
 namespace App\Modules\IdentityAccess\Presentation\Http\Middleware;
 
+use App\Modules\IdentityAccess\Application\Security\IdentityAccessSecurityEvent;
+use App\Shared\Application\Security\SecurityEvent;
+use App\Shared\Application\Security\SecurityEventOutcome;
+use App\Shared\Application\Security\SecurityLog;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
 
-final class EnsureActiveUser
+final readonly class EnsureActiveUser
 {
+    public function __construct(private SecurityLog $securityLog) {}
+
     /** @param Closure(Request): Response $next */
     public function handle(Request $request, Closure $next): Response
     {
         if ($request->user()?->is_active !== true) {
+            $actorId = $request->user()?->getAuthIdentifier();
             Auth::guard('web')->logout();
             $request->session()->invalidate();
             $request->session()->regenerateToken();
+
+            $this->securityLog->record(new SecurityEvent(
+                IdentityAccessSecurityEvent::Authentication->value,
+                SecurityEventOutcome::Denied,
+                is_string($actorId) ? $actorId : null,
+                metadata: ['reason_code' => 'inactive_session_user'],
+            ));
 
             return redirect()->route('login')->withErrors([
                 'email' => 'Your account is not available.',

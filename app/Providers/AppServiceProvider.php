@@ -18,7 +18,13 @@ use App\Modules\IdentityAccess\Infrastructure\Authorization\EloquentUserAccessRe
 use App\Modules\IdentityAccess\Infrastructure\Mfa\EloquentMfaStore;
 use App\Modules\IdentityAccess\Infrastructure\Mfa\TotpOneTimePassword;
 use App\Modules\IdentityAccess\Infrastructure\Sessions\DatabaseUserSessionRepository;
+use App\Shared\Application\Audit\AuditWriter;
+use App\Shared\Application\Observability\CorrelationId;
+use App\Shared\Application\Security\SecurityEventWriter;
 use App\Shared\Application\Tenancy\PropertyContext;
+use App\Shared\Infrastructure\Audit\DatabaseAuditWriter;
+use App\Shared\Infrastructure\Observability\LaravelCorrelationId;
+use App\Shared\Infrastructure\Security\DatabaseSecurityEventWriter;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
@@ -33,6 +39,9 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->scoped(PropertyContext::class, static fn (): PropertyContext => new PropertyContext);
+        $this->app->scoped(CorrelationId::class, LaravelCorrelationId::class);
+        $this->app->bind(AuditWriter::class, DatabaseAuditWriter::class);
+        $this->app->bind(SecurityEventWriter::class, DatabaseSecurityEventWriter::class);
         $this->app->bind(CredentialAuthenticator::class, EloquentCredentialAuthenticator::class);
         $this->app->bind(UserAccessReader::class, EloquentUserAccessReader::class);
         $this->app->bind(UserPasswordUpdater::class, EloquentUserPasswordUpdater::class);

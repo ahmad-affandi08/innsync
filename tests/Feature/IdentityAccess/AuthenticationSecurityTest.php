@@ -43,6 +43,14 @@ final class AuthenticationSecurityTest extends TestCase
 
         $this->assertAuthenticatedAs($user);
         $this->assertNotNull(session('auth.password_confirmed_at'));
+        $this->assertDatabaseHas('security_events', [
+            'actor_id' => $user->getKey(),
+            'event_type' => 'identity.authentication',
+            'outcome' => 'success',
+        ]);
+        $event = DB::table('security_events')->firstOrFail();
+        self::assertNotNull($event->source_ip_hash);
+        self::assertSame(64, strlen($event->source_ip_hash));
     }
 
     public function test_repeated_failures_lock_the_account_even_from_another_ip(): void
@@ -65,6 +73,13 @@ final class AuthenticationSecurityTest extends TestCase
         ])->assertSessionHasErrors('email');
 
         $this->assertGuest();
+        self::assertSame(
+            4,
+            DB::table('security_events')
+                ->where('event_type', 'identity.authentication')
+                ->whereIn('outcome', ['failure', 'denied'])
+                ->count(),
+        );
     }
 
     public function test_login_endpoint_is_rate_limited(): void
@@ -156,6 +171,12 @@ final class AuthenticationSecurityTest extends TestCase
 
         $this->get('/_test/allowed')->assertOk();
         $this->get('/_test/denied')->assertForbidden();
+        $this->assertDatabaseHas('security_events', [
+            'property_id' => self::PROPERTY_A,
+            'actor_id' => $user->getKey(),
+            'event_type' => 'identity.authorization',
+            'outcome' => 'denied',
+        ]);
     }
 
     public function test_strong_password_change_revokes_other_sessions(): void

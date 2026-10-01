@@ -8,7 +8,7 @@ These tasks exist before business modules can safely scale.
 | TASK-FND-002 | Enforce module/layer namespaces and architecture tests | NFR-14 | DONE |
 | TASK-FND-003 | MySQL 8 baseline, property scope, ULID, migrations | NFR-16, NFR-19, ADR-0002/0005 | DONE |
 | TASK-FND-004 | Auth, session security, RBAC and scoped policies | NFR-05/06/22 | DONE |
-| TASK-FND-005 | Audit trail + security log + correlation IDs | NFR-10/20/29 | TODO |
+| TASK-FND-005 | Audit trail + security log + correlation IDs | NFR-10/20/29 | DONE |
 | TASK-FND-006 | Idempotency middleware/application service + table | NFR-18 | TODO |
 | TASK-FND-007 | Transactional outbox + database queue + cron drain | NFR-17/25, ADR-0007 | TODO |
 | TASK-FND-008 | Private file storage and authorized download | NFR-07/08/24 | TODO |
@@ -77,6 +77,20 @@ These tasks exist before business modules can safely scale.
 - Policy boundary: no default account, role, permission, or managerial policy is seeded. Resource ownership checks for future outlet/department records remain mandatory in their owning module policies. `BR-004` approval workflows remain owned by `TASK-FND-018`; audit/security-event persistence remains owned by `TASK-FND-005`.
 - Automated evidence: the full PHPUnit suite passes with 45 tests and 146 assertions, covering RFC 6238 vectors, lockout across IP addresses, login throttling, encrypted MFA storage, strong passwords, recent-password enforcement, inactive-session revocation, session ownership, database constraints, cross-property and exact-scope denial, and server-side permission middleware. Composer validation, Pint, route/config cache, TypeScript typecheck, and production build also pass.
 - Rollback: roll back migration batch 2 only before identity assignments are relied upon. After role/assignment data exists, deploy a forward migration or restore a verified backup rather than dropping authorization state.
+
+## TASK-FND-005 acceptance evidence
+
+- Completed: 2026-10-01.
+- Traceability: `TASK-FND-005`, `NFR-10`, `NFR-20`, `NFR-29`, `BR-009`, `ADR-0002`, and `ADR-0005`; no business `FR-*` workflow is introduced.
+- Audit evidence: application-layer `AuditTrail` records actor, action, aggregate, property, before/after state, reason, approval reference, UTC timestamp, correlation ID, retention floor, and payload checksum. Property-owned writes fail closed without the matching property context and participate in the caller's database transaction.
+- Security evidence: authentication, account denial, MFA, password confirmation/change, logout, property selection, session revocation, and permission denial emit separate security events. Source IPs are stored only as keyed hashes; credentials, tokens, recovery codes, card data, and unmasked identity-document fields are rejected from audit/security payloads.
+- Immutability: MySQL `BEFORE UPDATE` and `BEFORE DELETE` triggers reject changes to `audit_entries` and `security_events`; no product deletion endpoint or Eloquent mutation model exists. Foreign keys restrict deletion of referenced actors/properties so historical attribution cannot be silently nulled.
+- Correlation and logging: every HTTP request receives or validates a ULID correlation ID, returns it in `X-Correlation-ID`, adds it to Laravel Context for automatic queue propagation, and carries it into JSON application logs and persisted evidence. Invalid inbound IDs are replaced. Structured log processors recursively redact sensitive context keys.
+- Retention boundary: `Q-15` remains unresolved, so no retention duration was guessed. Blank retention configuration records an indefinite retention floor; positive environment-configured days are supported and invalid/non-positive values fail closed. No purge mechanism is included until an approved policy exists.
+- Schema: immutable ULID-keyed evidence tables use InnoDB/`utf8mb4`, UTC microsecond timestamps, JSON snapshots/metadata, checksums, outcome/state constraints, required foreign keys, and property/actor/aggregate/event/correlation/retention indexes. Migration batch 3 completed on the development database.
+- NFR boundary: this task implements the structured-log, audit/security-log, and trace/correlation portions of `NFR-20`. Health checks, metrics, and alert thresholds remain explicitly owned by `TASK-FND-010`.
+- Automated evidence: the full PHPUnit suite passes with 60 tests and 192 assertions, including correlation propagation on normal/error responses, secret redaction/rejection, stable checksums, configurable/indefinite retention, atomic rollback, cross-property rejection, DB constraints/triggers, real authentication events, and permission-denial events. Composer validation, Pint, route/config cache, TypeScript typecheck, and production build also pass.
+- Rollback: roll back migration batch 3 only before audit/security evidence is relied upon. Once evidence exists, retain it and use a forward migration; dropping these tables destroys compliance evidence and is not an operational rollback.
 
 ## NFR coverage
 

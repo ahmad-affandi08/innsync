@@ -6,6 +6,10 @@ namespace App\Modules\IdentityAccess\Presentation\Http\Controllers;
 
 use App\Modules\IdentityAccess\Application\DTOs\UserSession;
 use App\Modules\IdentityAccess\Application\Ports\UserSessionRepository;
+use App\Modules\IdentityAccess\Application\Security\IdentityAccessSecurityEvent;
+use App\Shared\Application\Security\SecurityEvent;
+use App\Shared\Application\Security\SecurityEventOutcome;
+use App\Shared\Application\Security\SecurityLog;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
@@ -36,14 +40,29 @@ final class UserSessionController
         Request $request,
         string $sessionId,
         UserSessionRepository $sessions,
+        SecurityLog $securityLog,
     ): RedirectResponse {
         if (hash_equals($request->session()->getId(), $sessionId)) {
+            $securityLog->record(new SecurityEvent(
+                IdentityAccessSecurityEvent::SessionRevocation->value,
+                SecurityEventOutcome::Denied,
+                (string) $request->user()->getAuthIdentifier(),
+                metadata: ['reason_code' => 'current_session'],
+            ));
+
             throw ValidationException::withMessages([
                 'session' => 'Use sign out to end the current session.',
             ]);
         }
 
-        $sessions->revoke((string) $request->user()->getAuthIdentifier(), $sessionId);
+        $userId = (string) $request->user()->getAuthIdentifier();
+        $revoked = $sessions->revoke($userId, $sessionId);
+        $securityLog->record(new SecurityEvent(
+            IdentityAccessSecurityEvent::SessionRevocation->value,
+            $revoked ? SecurityEventOutcome::Success : SecurityEventOutcome::Denied,
+            $userId,
+            metadata: ['scope' => 'single'],
+        ));
 
         return back();
     }
@@ -51,11 +70,19 @@ final class UserSessionController
     public function destroyOthers(
         Request $request,
         UserSessionRepository $sessions,
+        SecurityLog $securityLog,
     ): RedirectResponse {
-        $sessions->revokeAllExcept(
-            (string) $request->user()->getAuthIdentifier(),
+        $userId = (string) $request->user()->getAuthIdentifier();
+        $revoked = $sessions->revokeAllExcept(
+            $userId,
             $request->session()->getId(),
         );
+        $securityLog->record(new SecurityEvent(
+            IdentityAccessSecurityEvent::SessionRevocation->value,
+            SecurityEventOutcome::Success,
+            $userId,
+            metadata: ['scope' => 'others', 'revoked_count' => $revoked],
+        ));
 
         return back();
     }

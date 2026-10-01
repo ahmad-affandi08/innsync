@@ -5,7 +5,11 @@ declare(strict_types=1);
 namespace App\Modules\IdentityAccess\Presentation\Http\Controllers;
 
 use App\Modules\IdentityAccess\Application\Commands\AuthenticateCredentials;
+use App\Modules\IdentityAccess\Application\Security\IdentityAccessSecurityEvent;
 use App\Modules\IdentityAccess\Presentation\Http\Requests\LoginRequest;
+use App\Shared\Application\Security\SecurityEvent;
+use App\Shared\Application\Security\SecurityEventOutcome;
+use App\Shared\Application\Security\SecurityLog;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -48,11 +52,19 @@ final class AuthenticatedSessionController
         return redirect()->route('properties.select');
     }
 
-    public function destroy(Request $request): RedirectResponse
+    public function destroy(Request $request, SecurityLog $securityLog): RedirectResponse
     {
+        $userId = (string) $request->user()->getAuthIdentifier();
+
         Auth::guard('web')->logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
+
+        $securityLog->record(new SecurityEvent(
+            IdentityAccessSecurityEvent::Logout->value,
+            SecurityEventOutcome::Success,
+            $userId,
+        ));
 
         return redirect()->route('login');
     }

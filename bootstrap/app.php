@@ -5,6 +5,8 @@ use App\Modules\IdentityAccess\Presentation\Http\Middleware\EnsureActiveUser;
 use App\Modules\IdentityAccess\Presentation\Http\Middleware\EnsureMfaVerified;
 use App\Modules\IdentityAccess\Presentation\Http\Middleware\RequirePermission;
 use App\Modules\IdentityAccess\Presentation\Http\Middleware\ResolvePropertyContext;
+use App\Shared\Application\Observability\CorrelationId;
+use App\Shared\Infrastructure\Observability\AssignCorrelationId;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -17,6 +19,8 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->prepend(AssignCorrelationId::class);
+
         $middleware->alias([
             'active' => EnsureActiveUser::class,
             'mfa' => EnsureMfaVerified::class,
@@ -32,4 +36,13 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request) => $request->is('api/*') || $request->expectsJson(),
         );
+
+        $exceptions->respond(function ($response) {
+            $response->headers->set(
+                'X-Correlation-ID',
+                app(CorrelationId::class)->current(),
+            );
+
+            return $response;
+        });
     })->create();

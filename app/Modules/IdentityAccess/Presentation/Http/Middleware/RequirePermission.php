@@ -5,6 +5,10 @@ declare(strict_types=1);
 namespace App\Modules\IdentityAccess\Presentation\Http\Middleware;
 
 use App\Modules\IdentityAccess\Application\Authorization\ScopedAuthorizer;
+use App\Modules\IdentityAccess\Application\Security\IdentityAccessSecurityEvent;
+use App\Shared\Application\Security\SecurityEvent;
+use App\Shared\Application\Security\SecurityEventOutcome;
+use App\Shared\Application\Security\SecurityLog;
 use App\Shared\Application\Tenancy\PropertyContext;
 use Closure;
 use Illuminate\Contracts\Routing\UrlRoutable;
@@ -16,6 +20,7 @@ final readonly class RequirePermission
     public function __construct(
         private ScopedAuthorizer $authorizer,
         private PropertyContext $propertyContext,
+        private SecurityLog $securityLog,
     ) {}
 
     /** @param Closure(Request): Response $next */
@@ -39,7 +44,21 @@ final readonly class RequirePermission
             $scopeId,
         );
 
-        abort_unless($allowed, 403);
+        if (! $allowed) {
+            $this->securityLog->record(new SecurityEvent(
+                IdentityAccessSecurityEvent::Authorization->value,
+                SecurityEventOutcome::Denied,
+                (string) $request->user()->getAuthIdentifier(),
+                $this->propertyContext->current()->toString(),
+                [
+                    'permission' => $permission,
+                    'scope_type' => $scopeType,
+                    'scope_id' => $scopeId,
+                ],
+            ));
+
+            abort(403);
+        }
 
         return $next($request);
     }

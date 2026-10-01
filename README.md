@@ -20,7 +20,8 @@ InnSYnc is a hotel operating system implemented as a Laravel 13 DDD modular mono
 - `TASK-FND-002`: DONE — module/layer namespaces and architecture boundaries enforced.
 - `TASK-FND-003`: DONE — MySQL 8, property scope, ULID, and optimistic-locking baseline implemented.
 - `TASK-FND-004`: DONE — authentication, MFA, session security, scoped RBAC, and server-side authorization implemented.
-- Next task: `TASK-FND-005` — audit trail, security log, and correlation IDs.
+- `TASK-FND-005`: DONE — immutable audit trail, security events, structured logs, and correlation IDs implemented.
+- Next task: `TASK-FND-006` — idempotency middleware/application service and persistence.
 - Business modules have not started.
 
 ## Local setup
