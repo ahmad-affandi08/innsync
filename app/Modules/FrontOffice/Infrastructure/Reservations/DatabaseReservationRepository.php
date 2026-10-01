@@ -45,7 +45,7 @@ final readonly class DatabaseReservationRepository implements ReservationReposit
     public function saveStatus(PropertyId $property, Reservation $r, int $expectedLockVersion, string $actorId, DateTimeImmutable $at): bool
     {
         $updated = DB::table('reservations')->where('property_id', $property->toString())->where('id', $r->id)->where('lock_version', $expectedLockVersion)->update([
-            'status' => $r->status->value, 'status_reason' => $r->statusReason, 'status_changed_at' => $at, 'status_changed_by' => $actorId,
+            'status' => $r->status->value, 'room_id' => $r->roomId, 'status_reason' => $r->statusReason, 'status_changed_at' => $at, 'status_changed_by' => $actorId,
             'lock_version' => $expectedLockVersion + 1, 'updated_at' => $at,
         ]);
 

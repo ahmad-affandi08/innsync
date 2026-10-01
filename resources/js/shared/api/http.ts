@@ -84,7 +84,10 @@ export async function apiRequest<T>(path: string, options: ApiRequestOptions = {
         'X-Requested-With': 'XMLHttpRequest',
     }
 
-    if (options.body !== undefined) {
+    // A file upload is sent as multipart; the browser sets the boundary, so no Content-Type header is added for it.
+    const isForm = typeof FormData !== 'undefined' && options.body instanceof FormData
+
+    if (options.body !== undefined && !isForm) {
         headers['Content-Type'] = 'application/json'
     }
 
@@ -107,7 +110,7 @@ export async function apiRequest<T>(path: string, options: ApiRequestOptions = {
         response = await (options.fetchImpl ?? fetch)(buildUrl(path, options.query), {
             method,
             headers,
-            body: options.body === undefined ? undefined : JSON.stringify(options.body),
+            body: options.body === undefined ? undefined : isForm ? (options.body as FormData) : JSON.stringify(options.body),
             credentials: 'same-origin',
             signal: options.signal,
         })

@@ -6,6 +6,7 @@ use App\Modules\FrontOffice\Presentation\Http\Controllers\AvailabilityController
 use App\Modules\FrontOffice\Presentation\Http\Controllers\FolioController;
 use App\Modules\FrontOffice\Presentation\Http\Controllers\InventoryController;
 use App\Modules\FrontOffice\Presentation\Http\Controllers\ReservationController;
+use App\Modules\FrontOffice\Presentation\Http\Controllers\StayController;
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\ApprovalController;
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\ApprovalPolicyController;
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\AuthenticatedSessionController;
@@ -162,6 +163,16 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
     Route::post('/reservations/{id}/confirm', [ReservationController::class, 'confirm'])->where('id', $id)->name('front-office.reservations.confirm');
     Route::post('/reservations/{id}/cancel', [ReservationController::class, 'cancel'])->where('id', $id)->name('front-office.reservations.cancel');
     Route::post('/reservations/{id}/no-show', [ReservationController::class, 'noShow'])->where('id', $id)->name('front-office.reservations.no-show');
+
+    // Check-in, in-house guests and check-out (FR-FO-010 to FR-FO-016). The identity photo is served only through the audited download.
+    Route::get('/stays', [StayController::class, 'index'])->name('front-office.stays');
+    Route::get('/stays/{id}', [StayController::class, 'show'])->where('id', $id)->name('front-office.stays.show');
+    Route::get('/stays/{id}/id-photo', [StayController::class, 'photo'])->where('id', $id)->name('front-office.stays.photo');
+    Route::post('/stays/{id}/id-photo', [StayController::class, 'attachPhoto'])->where('id', $id)->middleware('throttle:bookings')->name('front-office.stays.photo.store');
+    Route::post('/stays/{id}/check-out', [StayController::class, 'checkOut'])->where('id', $id)->name('front-office.stays.check-out');
+    Route::get('/reservations/{id}/check-in', [StayController::class, 'checkInForm'])->where('id', $id)->name('front-office.check-in');
+    Route::post('/reservations/{id}/guest-lookup', [StayController::class, 'lookup'])->where('id', $id)->middleware('throttle:bookings')->name('front-office.check-in.lookup');
+    Route::post('/reservations/{id}/check-in', [StayController::class, 'checkIn'])->where('id', $id)->middleware(['idempotent', 'throttle:bookings'])->name('front-office.check-in.store');
 
     // Folios (FR-FO-020, -024, -025, -029). Money that leaves or is corrected needs a recent password confirmation and, by policy, an approval.
     Route::post('/reservations/{id}/folios', [FolioController::class, 'open'])->where('id', $id)->name('front-office.folios.open');

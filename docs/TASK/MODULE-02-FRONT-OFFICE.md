@@ -25,13 +25,13 @@
 | TASK-FO-007 | FR-FO-007 | Wajib | Mengelola inventory kamar per tipe dengan aturan overbooking yang dapat dikonfigurasi. Sistem tidak boleh menjual melebihi batas yang disetujui dan wajib memperingatkan pengguna sebelum menerima reservasi yang berpotensi oversold. | REVIEW |
 | TASK-FO-008 | FR-FO-008 | Wajib | Mengelola rate plan, seasonal rate, corporate rate, package, inclusions, minimum stay, closed-to-arrival/departure, serta tanggal efektif tanpa mengubah histori reservasi lama. | REVIEW |
 | TASK-FO-009 | FR-FO-009 | Wajib | Mendukung kebijakan guarantee, deposit due date, cancellation, no-show, dan penalty per rate plan/sumber reservasi serta menyimpan policy snapshot pada saat reservasi dibuat. | TODO |
-| TASK-FO-010 | FR-FO-010 | Wajib | Formulir check-in memuat: nama tamu, kewarganegaraan, jenis dan nomor identitas (paspor atau KTP), tanggal berlaku identitas, nomor visa bila diperlukan, jumlah tamu (dewasa dan anak), serta alamat sesuai identitas. | TODO |
-| TASK-FO-011 | FR-FO-011 | Wajib | Sistem mengunggah dan menampilkan foto identitas yang diambil langsung dari kamera perangkat resepsionis atau tablet, dan melampirkannya pada data tamu. | TODO |
+| TASK-FO-010 | FR-FO-010 | Wajib | Formulir check-in memuat: nama tamu, kewarganegaraan, jenis dan nomor identitas (paspor atau KTP), tanggal berlaku identitas, nomor visa bila diperlukan, jumlah tamu (dewasa dan anak), serta alamat sesuai identitas. | REVIEW |
+| TASK-FO-011 | FR-FO-011 | Wajib | Sistem mengunggah dan menampilkan foto identitas yang diambil langsung dari kamera perangkat resepsionis atau tablet, dan melampirkannya pada data tamu. | REVIEW |
 | TASK-FO-012 | FR-FO-012 | Wajib | Pemilihan lama menginap menampilkan blok tanggal menginap secara visual serta menghitung otomatis harga per malam sesuai tarif kamar yang bersangkutan. | TODO |
 | TASK-FO-013 | FR-FO-013 | Wajib | Harga kamar dapat diubah kapan pun oleh pengguna berwenang; setiap perubahan mencatat nilai lama, nilai baru, alasan, dan pelaku. Perubahan melebihi ambang diskon yang ditetapkan memerlukan persetujuan Manager on Duty. | TODO |
-| TASK-FO-014 | FR-FO-014 | Sebaiknya | Sistem memperingatkan bila identitas tamu telah kedaluwarsa atau akan kedaluwarsa selama masa menginap. | TODO |
-| TASK-FO-015 | FR-FO-015 | Sebaiknya | Sistem mendeteksi tamu berulang berdasarkan nomor identitas dan mengisi otomatis data profil beserta riwayat menginap dan preferensinya. | TODO |
-| TASK-FO-016 | FR-FO-016 | Wajib | Setelah check-in, status kamar otomatis berubah menjadi terisi dan seluruh permintaan tamu yang tercatat muncul pada kartu kamar tersebut. | TODO |
+| TASK-FO-014 | FR-FO-014 | Sebaiknya | Sistem memperingatkan bila identitas tamu telah kedaluwarsa atau akan kedaluwarsa selama masa menginap. | REVIEW |
+| TASK-FO-015 | FR-FO-015 | Sebaiknya | Sistem mendeteksi tamu berulang berdasarkan nomor identitas dan mengisi otomatis data profil beserta riwayat menginap dan preferensinya. | IN_PROGRESS |
+| TASK-FO-016 | FR-FO-016 | Wajib | Setelah check-in, status kamar otomatis berubah menjadi terisi dan seluruh permintaan tamu yang tercatat muncul pada kartu kamar tersebut. | IN_PROGRESS |
 | TASK-FO-017 | FR-FO-017 | Sebaiknya | Sistem mencetak atau mengirim kartu registrasi elektronik untuk ditandatangani tamu, termasuk tanda tangan digital pada tablet. | TODO |
 | TASK-FO-018 | FR-FO-018 | Wajib | Mendukung perpindahan kamar (room move) dengan pemindahan seluruh saldo folio dan pencatatan alasan. | TODO |
 | TASK-FO-019 | FR-FO-019 | Wajib | Mendukung perpanjangan masa menginap (Stay Over) dan check-out dipercepat dengan penyesuaian tagihan otomatis. | TODO |

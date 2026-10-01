@@ -92,4 +92,15 @@ describe('helpers', () => {
         assert.equal(buildUrl('/a?x=1', { y: 2 }), '/a?x=1&y=2')
         assert.equal(buildUrl('/a'), '/a')
     })
+
+    it('sends a FormData body as multipart without a JSON content type', async () => {
+        const calls: { url: string; init: RequestInit }[] = []
+        const form = new FormData()
+        form.set('photo', new Blob(['x'], { type: 'image/png' }), 'x.png')
+
+        await apiRequest('/api/upload', { method: 'POST', body: form, fetchImpl: respond(200, { ok: true }, calls), cookies: '' })
+
+        assert.equal(calls[0]?.init.body, form)
+        assert.equal((calls[0]?.init.headers as Record<string, string>)['Content-Type'], undefined)
+    })
 })

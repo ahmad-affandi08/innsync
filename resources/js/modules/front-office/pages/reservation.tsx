@@ -108,8 +108,13 @@ export default function ReservationPage({ folios, lookups, reservation: r }: { f
                 )}
             </section>
 
+            {r.status === 'checked_in' || r.status === 'completed' ? (
+                <div><Button asChild variant="outline"><Link href={`/front-office/reservations/${r.id}/check-in`}>{t('fo.checkin.goToStay')}</Link></Button></div>
+            ) : null}
+
             {expected && (
                 <div className="flex flex-wrap gap-2">
+                    {r.status !== 'tentative' && <Button asChild><Link href={`/front-office/reservations/${r.id}/check-in`}>{t('fo.checkin.action')}</Link></Button>}
                     {r.status === 'tentative' && <Button onClick={() => { action.clear(); setKind('confirm'); }} type="button">{t('fo.action.confirm')}</Button>}
                     <Button onClick={() => { action.clear(); setKind('cancel'); }} type="button" variant="outline">{t('fo.action.cancel')}</Button>
                     <Button onClick={() => { action.clear(); setKind('noShow'); }} type="button" variant="outline">{t('fo.action.noShow')}</Button>

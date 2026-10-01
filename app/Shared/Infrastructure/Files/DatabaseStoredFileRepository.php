@@ -53,6 +53,18 @@ final readonly class DatabaseStoredFileRepository implements StoredFileRepositor
         ]);
     }
 
+    public function setExpiryOnce(PropertyId $propertyId, string $fileId, DateTimeImmutable $expiresAt): bool
+    {
+        $this->assertActive($propertyId);
+
+        return DB::table('stored_files')
+            ->where('property_id', $propertyId->toString())
+            ->where('id', $fileId)
+            ->whereNull('expires_at')
+            ->whereNull('erased_at')
+            ->update(['expires_at' => $expiresAt]) === 1;
+    }
+
     public function find(PropertyId $propertyId, string $fileId): StoredFile
     {
         $this->assertActive($propertyId);

@@ -102,6 +102,10 @@ describe('dictionaries', () => {
             'fo.folio.title',
             'fo.folio.openLink',
             'fo.folio.approvalRow',
+            'fo.checkin.title',
+            'fo.checkin.idType.ktp',
+            'fo.checkin.idType.kitas',
+            'fo.stay.title',
         ])
         const identical = (Object.keys(en) as (keyof typeof en)[]).filter(
             (key) => en[key] === id[key] && !allowedSame.has(key),

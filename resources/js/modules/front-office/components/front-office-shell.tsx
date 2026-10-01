@@ -9,6 +9,7 @@ import { useTranslation } from '@/shared/i18n/i18n';
 const LINKS = [
     { href: '/front-office/availability', label: 'fo.nav.availability' },
     { href: '/front-office/reservations', label: 'fo.nav.reservations' },
+    { href: '/front-office/stays', label: 'fo.nav.stays' },
     { href: '/front-office/inventory', label: 'fo.nav.inventory' },
 ] as const;
 

@@ -8,6 +8,7 @@ use App\Modules\FrontOffice\Application\Folios\FolioService;
 use App\Modules\FrontOffice\Application\Inventory\InventoryAdminService;
 use App\Modules\FrontOffice\Application\Reservations\ReservationRequest;
 use App\Modules\FrontOffice\Application\Reservations\ReservationService;
+use App\Modules\FrontOffice\Application\Stays\StayService;
 use App\Modules\FrontOffice\Domain\Reservations\Reservation;
 use App\Modules\IdentityAccess\Application\Approval\ApprovalPolicyAdmin;
 use App\Modules\IdentityAccess\Infrastructure\Persistence\Eloquent\UserRecord;
@@ -39,6 +40,9 @@ trait BuildsHotel
 
     private string $supervisorId;
 
+    /** May view stays and the identity details of guests. */
+    private string $auditorId;
+
     private string $typeId;
 
     private string $planId;
@@ -59,17 +63,20 @@ trait BuildsHotel
         $manager = UserRecord::factory()->create();
         $viewer = UserRecord::factory()->create();
         $supervisor = UserRecord::factory()->create();
+        $auditor = UserRecord::factory()->create();
         $this->grant($admin, self::PROPERTY, [
             RoomCatalogService::MANAGE_PERMISSION, RatePlanService::MANAGE_PERMISSION, ChargeSchemeService::MANAGE_PERMISSION, PropertySettingsService::MANAGE_PERMISSION,
             InventoryAdminService::OVERBOOKING_PERMISSION, InventoryAdminService::BLOCK_PERMISSION, InventoryAdminService::HOLD_PERMISSION, ApprovalPolicyAdmin::MANAGE_PERMISSION,
         ]);
-        $this->grant($manager, self::PROPERTY, [ReservationService::MANAGE_PERMISSION, FolioService::MANAGE_PERMISSION, FolioService::CORRECT_PERMISSION, FolioService::REFUND_PERMISSION]);
-        $this->grant($viewer, self::PROPERTY, [ReservationService::VIEW_PERMISSION, FolioService::VIEW_PERMISSION]);
+        $this->grant($manager, self::PROPERTY, [ReservationService::MANAGE_PERMISSION, StayService::MANAGE_PERMISSION, FolioService::MANAGE_PERMISSION, FolioService::CORRECT_PERMISSION, FolioService::REFUND_PERMISSION]);
+        $this->grant($viewer, self::PROPERTY, [ReservationService::VIEW_PERMISSION, FolioService::VIEW_PERMISSION, StayService::VIEW_PERMISSION]);
+        $this->grant($auditor, self::PROPERTY, [StayService::VIEW_PERMISSION, StayService::IDENTITY_PERMISSION]);
         $this->grant($supervisor, self::PROPERTY, ['front-office.folio.approve']);
         $this->adminId = strtolower((string) $admin->getKey());
         $this->managerId = strtolower((string) $manager->getKey());
         $this->viewerId = strtolower((string) $viewer->getKey());
         $this->supervisorId = strtolower((string) $supervisor->getKey());
+        $this->auditorId = strtolower((string) $auditor->getKey());
         app(PropertyContext::class)->activateFromString(self::PROPERTY);
 
         $catalog = app(RoomCatalogService::class);

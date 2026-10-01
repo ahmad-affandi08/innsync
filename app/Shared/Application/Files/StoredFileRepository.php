@@ -13,6 +13,13 @@ interface StoredFileRepository
 
     public function add(StoredFile $file): void;
 
+    /**
+     * Gives a file its expiry when it has none yet; an expiry already set is never changed.
+     *
+     * @return bool false when the file already had an expiry, was erased, or does not exist
+     */
+    public function setExpiryOnce(PropertyId $propertyId, string $fileId, \DateTimeImmutable $expiresAt): bool;
+
     /** @throws StoredFileNotFound */
     public function find(PropertyId $propertyId, string $fileId): StoredFile;
 }

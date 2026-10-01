@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\FrontOffice\Domain\Reservations;
 
+use App\Modules\FrontOffice\Domain\Stays\StayRuleViolation;
 use App\Shared\Domain\Money\Money;
 use App\Shared\Domain\Time\BusinessDate;
 use App\Shared\Domain\Time\StayDates;
@@ -90,6 +91,37 @@ final readonly class Reservation
         return $this->with(ReservationStatus::NoShow, self::reason($reason));
     }
 
+    /**
+     * Arrival of the guest into a room of the booked type. Only a confirmed or guaranteed reservation, on or after its
+     * arrival date and before its departure date, by the business date (BR-001).
+     */
+    public function checkIn(string $roomId, BusinessDate $businessDate): self
+    {
+        if (! in_array($this->status, [ReservationStatus::Confirmed, ReservationStatus::Guaranteed], true)) {
+            throw StayRuleViolation::notCheckable($this->status->value);
+        }
+
+        if ($businessDate->isBefore($this->stay->arrival)) {
+            throw StayRuleViolation::tooEarly($this->stay->arrival->toString());
+        }
+
+        if (! $businessDate->isBefore($this->stay->departure)) {
+            throw StayRuleViolation::pastDeparture($this->stay->departure->toString());
+        }
+
+        return $this->with(ReservationStatus::CheckedIn, null, $roomId);
+    }
+
+    /** The guest left. Releases whatever inventory the unused nights still held. */
+    public function complete(): self
+    {
+        if ($this->status !== ReservationStatus::CheckedIn) {
+            throw ReservationRuleViolation::notExpected($this->status);
+        }
+
+        return $this->with(ReservationStatus::Completed, null);
+    }
+
     private function assertExpected(): void
     {
         if (! $this->status->isExpected()) {
@@ -106,11 +138,11 @@ final readonly class Reservation
         return trim($reason);
     }
 
-    private function with(ReservationStatus $status, ?string $reason): self
+    private function with(ReservationStatus $status, ?string $reason, ?string $roomId = null): self
     {
         return new self(
             $this->id, $this->number, $status, $this->source, $this->guestName, $this->guestPhone, $this->guestEmail, $this->stay, $this->adults, $this->children,
-            $this->roomTypeId, $this->ratePlanId, $this->roomId, $this->notes, $this->total, $this->priceSnapshot, $this->oversold, $this->oversellReason,
+            $this->roomTypeId, $this->ratePlanId, $roomId ?? $this->roomId, $this->notes, $this->total, $this->priceSnapshot, $this->oversold, $this->oversellReason,
             $reason ?? $this->statusReason, $this->createdBy, $this->lockVersion,
         );
     }
