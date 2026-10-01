@@ -29,3 +29,13 @@ Schedule::command('health:heartbeat')->everyMinute();
 Schedule::command('health:alerts')
     ->everyFiveMinutes()
     ->withoutOverlapping(10);
+
+Schedule::command('backup:run')
+    ->dailyAt((string) config('backup.run_at'))
+    ->withoutOverlapping(180);
+
+if (config('backup.restore_test_database')) {
+    Schedule::command('backup:verify')
+        ->weeklyOn(0, (string) config('backup.verify_at'))
+        ->withoutOverlapping(180);
+}

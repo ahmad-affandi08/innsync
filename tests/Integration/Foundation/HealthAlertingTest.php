@@ -108,7 +108,7 @@ final class HealthAlertingTest extends TestCase
         $report = app(RunHealthChecks::class)->execute();
 
         self::assertEqualsCanonicalizing(
-            ['database', 'scheduler', 'failed_jobs', 'outbox_backlog', 'storage_capacity', 'error_rate'],
+            ['database', 'scheduler', 'failed_jobs', 'outbox_backlog', 'storage_capacity', 'error_rate', 'backup'],
             array_keys($report->results),
         );
         self::assertSame(HealthStatus::Ok, $report->results['database']->status);
@@ -186,7 +186,7 @@ final class HealthAlertingTest extends TestCase
         $this->artisan('health:heartbeat')->assertSuccessful();
         $this->artisan('health:check --json')->assertSuccessful();
         $this->artisan('health:alerts')->assertSuccessful();
-        self::assertSame(0, DB::table('operational_alerts')->count());
+        self::assertSame(0, DB::table('operational_alerts')->where('alert_key', 'failed_jobs')->count());
 
         config(['observability.failed_jobs_down_at' => 1]);
         DB::table('failed_jobs')->insert([

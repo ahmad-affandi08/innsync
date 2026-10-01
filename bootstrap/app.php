@@ -6,6 +6,10 @@ use App\Modules\IdentityAccess\Presentation\Http\Middleware\EnsureMfaVerified;
 use App\Modules\IdentityAccess\Presentation\Http\Middleware\RequirePermission;
 use App\Modules\IdentityAccess\Presentation\Http\Middleware\ResolvePropertyContext;
 use App\Shared\Application\Observability\CorrelationId;
+use App\Shared\Infrastructure\Backup\BackupDecryptCommand;
+use App\Shared\Infrastructure\Backup\BackupKeygenCommand;
+use App\Shared\Infrastructure\Backup\BackupRunCommand;
+use App\Shared\Infrastructure\Backup\BackupVerifyCommand;
 use App\Shared\Infrastructure\Http\Errors\ErrorEnvelopeFactory;
 use App\Shared\Infrastructure\Http\Errors\RenderErrorEnvelope;
 use App\Shared\Infrastructure\Idempotency\RequireIdempotencyKey;
@@ -37,6 +41,10 @@ return Application::configure(basePath: dirname(__DIR__))
         HealthCheckCommand::class,
         HealthAlertsCommand::class,
         HeartbeatCommand::class,
+        BackupRunCommand::class,
+        BackupVerifyCommand::class,
+        BackupKeygenCommand::class,
+        BackupDecryptCommand::class,
     ])
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->prepend(AssignCorrelationId::class);

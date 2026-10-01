@@ -14,7 +14,7 @@ These tasks exist before business modules can safely scale.
 | TASK-FND-008 | Private file storage and authorized download | NFR-07/08/24 | DONE |
 | TASK-FND-009 | Error envelope, validation, conflict semantics | NFR-19 | DONE |
 | TASK-FND-010 | Observability, health endpoint, critical alerts | NFR-20 | DONE |
-| TASK-FND-011 | Backup/restore and DR runbook | NFR-11/21/30 | TODO |
+| TASK-FND-011 | Backup/restore and DR runbook | NFR-11/21/30 | REVIEW |
 | TASK-FND-012 | Frontend query/table conventions and shared UI primitives | NFR-01/12/27 | TODO |
 | TASK-FND-013 | i18n framework ID/EN | NFR-12 | TODO |
 | TASK-FND-014 | business date/timezone primitives | NFR-26 | TODO |
@@ -156,6 +156,19 @@ These tasks exist before business modules can safely scale.
 - Operational thresholds are env-tunable defaults, not hotel policy. Boundaries left open on purpose: pushing alerts to e-mail/chat needs an approved provider and recipients (`TASK-FND-020`); database size/quota is hosting-specific and not guessed; backup, payment, sync, and night-audit signals are owned by `TASK-FND-011`, `TASK-FND-017`, and their module tasks.
 - Automated evidence: full PHPUnit suite passes with 130 tests and 584 assertions (new `HealthAlertingTest` and `HealthEndpointTest`: alert lifecycle and dedupe, throwing check, each built-in threshold, heartbeat staleness, error-rate counting, commands, probe secrecy/secret/rate limit/security event). Pint, TypeScript typecheck, config cache, and route cache pass; migration batch 7 ran on the development database.
 - Rollback: remove the routes/commands/schedule entries and drop `operational_alerts`; alert rows are operational data and may be dropped.
+
+## TASK-FND-011 acceptance evidence
+
+- Status: `REVIEW`, not `DONE`. Backup, restore test, monitoring, and runbook are implemented and verified, but `NFR-11` RPO ≤ 15 minutes is **not** met and needs an owner/infrastructure decision (see runbook "Open decisions"). Completed work: 2026-10-01.
+- Traceability: `TASK-FND-011`, `NFR-11`, `NFR-20`, `NFR-21`, `NFR-23`, `NFR-30`, `ADR-0003`, `ADR-0008`. Runbook: `docs/OPERATIONS/DR-RUNBOOK.md`.
+- Backup: `backup:run` (daily schedule) streams `mysqldump --single-transaction` (routines, triggers, events) and an archive of the private-files directory through libsodium secretstream encryption with a dedicated `BACKUP_ENCRYPTION_KEY` (not `APP_KEY`). No plaintext dump is written to disk; credentials reach child processes only via `MYSQL_PWD`. Sets are 0700/0600 and carry an HMAC-signed manifest (artifact SHA-256, tables, migrations, row counts, file counts).
+- Fail-closed configuration: nothing runs without an absolute, writable destination outside the application tree and a valid 32-byte key; the restore target must be a dedicated `*_restore_test` database different from the live one.
+- Restore evidence: `backup:verify` (weekly when configured) verifies signature and checksums, imports into the scratch database, and checks table set, migration list, append-only row-count windows (`audit_entries`, `security_events`, `stored_files`), and restored file count/bytes. Duration is recorded in `backup_runs` as RTO evidence. `backup:decrypt` verifies a set and decrypts one artifact for manual disaster recovery.
+- Monitoring: health check `backup` (NFR-20 "backup failure") reports overdue/failed backups and stale restore tests; unconfigured backups are `down` in production, `degraded` elsewhere.
+- Real-run evidence (development database): backup of the live schema plus restore into `innsync_restore_test` passed in about 4.6 s; a wrong key is rejected at the manifest signature.
+- Automated evidence: new `BackupCipherTest` (round trip beyond one chunk, empty stream, wrong key, bit flip, truncation, dropped tail, trailing data, key length) and `BackupRestoreTest` (encrypted/signed output, DB+files restore, triggers survive, artifact/manifest tampering, wrong key, unsafe destination/target, pruning, health states, decrypt command). Existing health tests updated for the new check. Integration tests need the `innsync_restore_test` scratch database (created if the test user may; otherwise skipped).
+- Not guessed (unresolved policy): backup retention (Q-15; `BACKUP_KEEP_LAST` unset keeps every set), off-box destination, and PITR. The manual-fallback procedures in the runbook are a draft for owner/operations review; automated reconciliation of fallback transactions is owned by `TASK-FND-017`.
+- Rollback: remove the schedule/commands and drop `backup_runs`; existing backup sets on the destination are independent files and remain restorable with the key.
 
 ## NFR coverage
 

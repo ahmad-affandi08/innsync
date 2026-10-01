@@ -6,6 +6,7 @@ namespace App\Shared\Infrastructure\Observability\Health;
 
 use App\Shared\Application\Observability\Health\HealthCheck;
 use App\Shared\Application\Observability\Health\HealthCheckRegistry;
+use App\Shared\Infrastructure\Backup\BackupCheck;
 use Illuminate\Contracts\Container\Container;
 
 final readonly class ConfiguredHealthCheckRegistry implements HealthCheckRegistry
@@ -21,6 +22,7 @@ final readonly class ConfiguredHealthCheckRegistry implements HealthCheckRegistr
             OutboxBacklogCheck::class,
             StorageCapacityCheck::class,
             ErrorRate::class,
+            BackupCheck::class,
             ...array_values(array_filter((array) config('observability.checks'), 'is_string')),
         ];
 
