@@ -65,6 +65,12 @@ abstract readonly class IsoDate
         return $this->addDays(-1);
     }
 
+    /** ISO weekday: 1 is Monday and 7 is Sunday. Independent of any time zone. */
+    final public function isoWeekday(): int
+    {
+        return (int) $this->midnightUtc->format('N');
+    }
+
     /** Whole days from this date to `$other` (negative when `$other` is earlier). */
     final public function daysUntil(self $other): int
     {

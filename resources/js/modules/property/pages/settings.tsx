@@ -1,4 +1,3 @@
-import { Link } from '@inertiajs/react';
 import { useState } from 'react';
 
 import { Alert } from '@/components/ui/alert';
@@ -73,7 +72,7 @@ export default function SettingsPage({ settings }: { settings: Settings }) {
     }
 
     return (
-        <PropertyShell actions={<Button asChild variant="outline"><Link href="/property/rooms">{t('property.action.rooms')}</Link></Button>} description={t('property.settings.description')} title={t('property.settings.title')}>
+        <PropertyShell description={t('property.settings.description')} title={t('property.settings.title')}>
             {action.error !== null && !goLive ? <ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /> : null}
             {saved ? <Alert title={t('property.settings.saved')} tone="success" /> : null}
 

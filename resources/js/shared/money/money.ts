@@ -41,3 +41,28 @@ export function formatMinorUnits(amountMinor: number, currency: string, locale: 
 
     return formatter.format(`${sign < 0 ? '-' : ''}${whole}${decimal}` as unknown as number)
 }
+
+/**
+ * Reads an amount typed by a person into integer minor units. Only digits and one decimal separator (`.` or `,`) are
+ * accepted: thousands separators are refused because "1.500" means 1500 in Indonesian and 1.5 in English, and a wrong
+ * guess about money is worse than asking again. Returns null when the text is not a clear amount.
+ */
+export function parseMajorToMinor(text: string, currency: string): number | null {
+    const exponent = currencyExponent(currency)
+    const match = /^(\d{1,13})(?:[.,](\d{1,3}))?$/.exec(text.trim())
+
+    if (match === null) {
+        return null
+    }
+
+    const fraction = match[2] ?? ''
+
+    // "1.500" with a currency that has fewer than three decimals is a grouped number, not a fraction.
+    if (fraction.length > exponent) {
+        return null
+    }
+
+    const minor = Number(match[1]) * 10 ** exponent + Number((fraction + '0'.repeat(exponent)).slice(0, exponent) || 0)
+
+    return Number.isSafeInteger(minor) ? minor : null
+}

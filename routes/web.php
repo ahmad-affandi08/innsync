@@ -10,7 +10,9 @@ use App\Modules\IdentityAccess\Presentation\Http\Controllers\PasswordController;
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\PropertySelectionController;
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\ReconfirmController;
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\UserSessionController;
+use App\Modules\Property\Presentation\Http\Controllers\ChargeSchemeController;
 use App\Modules\Property\Presentation\Http\Controllers\PropertySettingsController;
+use App\Modules\Property\Presentation\Http\Controllers\RatePlanController;
 use App\Modules\Property\Presentation\Http\Controllers\RoomCatalogController;
 use App\Shared\Infrastructure\Localization\SetLocaleController;
 use App\Shared\Infrastructure\Offline\SyncController;
@@ -122,4 +124,21 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
     Route::post('/rooms', [RoomCatalogController::class, 'storeRoom'])->name('property.rooms.store');
     Route::put('/rooms/{id}', [RoomCatalogController::class, 'updateRoom'])->where('id', '[0-9A-Za-z]{26}')->name('property.rooms.update');
     Route::post('/rooms/{id}/active', [RoomCatalogController::class, 'roomActive'])->where('id', '[0-9A-Za-z]{26}')->name('property.rooms.active');
+
+    // Rate plans, prices, restrictions (FR-FO-008) and service charge and tax (PRD Q-05). Prices are sensitive: changes need a recent password confirmation.
+    $id = '[0-9A-Za-z]{26}';
+    Route::get('/rates', [RatePlanController::class, 'index'])->name('property.rates');
+    Route::post('/rate-plans/{id}/quote', [RatePlanController::class, 'quote'])->where('id', $id)->name('property.rates.quote');
+    Route::middleware('password.confirm')->group(function () use ($id): void {
+        Route::post('/rate-plans', [RatePlanController::class, 'storePlan'])->name('property.rate-plans.store');
+        Route::put('/rate-plans/{id}', [RatePlanController::class, 'updatePlan'])->where('id', $id)->name('property.rate-plans.update');
+        Route::post('/rate-plans/{id}/active', [RatePlanController::class, 'planActive'])->where('id', $id)->name('property.rate-plans.active');
+        Route::post('/rate-plans/{id}/prices', [RatePlanController::class, 'addPrice'])->where('id', $id)->name('property.rate-prices.add');
+        Route::post('/rate-prices/{id}/reprice', [RatePlanController::class, 'repriceNight'])->where('id', $id)->name('property.rate-prices.reprice');
+        Route::post('/rate-prices/{id}/remove', [RatePlanController::class, 'removePrice'])->where('id', $id)->name('property.rate-prices.remove');
+        Route::post('/rate-plans/{id}/restrictions', [RatePlanController::class, 'addRestriction'])->where('id', $id)->name('property.rate-restrictions.add');
+        Route::post('/rate-restrictions/{id}/remove', [RatePlanController::class, 'removeRestriction'])->where('id', $id)->name('property.rate-restrictions.remove');
+        Route::post('/tax', [ChargeSchemeController::class, 'define'])->name('property.tax.define');
+    });
+    Route::get('/tax', [ChargeSchemeController::class, 'index'])->name('property.tax');
 });

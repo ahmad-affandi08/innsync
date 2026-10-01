@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace App\Shared\Infrastructure\Http\Errors;
 
+use App\Shared\Application\Errors\ExpectedFailure;
 use App\Shared\Application\Observability\CorrelationId;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 use Throwable;
 
 /**
@@ -40,6 +42,16 @@ final readonly class RenderErrorEnvelope
             && ! $e instanceof ValidationException
             && in_array($e::class, ErrorEnvelopeFactory::EXPECTED, true)) {
             return back(303)->withErrors(['error' => $this->factory->make($e)->message]);
+        }
+
+        // A person who opens a screen they may not use sees the framework's own page for that status, not a 500.
+        if ($e instanceof ExpectedFailure) {
+            $status = $e->status();
+            $view = "errors::{$status}";
+
+            return view()->exists($view)
+                ? response()->view($view, ['exception' => new HttpException($status)], $status)
+                : response(__('errors.'.$e->messageKey()), $status);
         }
 
         return null;

@@ -80,6 +80,11 @@ describe('dictionaries', () => {
             'common.language.id',
             'common.language.en',
             'common.field.email',
+            // Terms Indonesian hotels use unchanged.
+            'rates.kind.ota',
+            'rates.quote.service',
+            'rates.quote.total',
+            'tax.serviceCharge',
         ])
         const identical = (Object.keys(en) as (keyof typeof en)[]).filter(
             (key) => en[key] === id[key] && !allowedSame.has(key),

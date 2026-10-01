@@ -1,4 +1,5 @@
 export const property = {
+    'property.nav.label': 'Property configuration',
     'property.rooms.title': 'Rooms and room types',
     'property.rooms.description': 'The room master. Rooms are never deleted; a room that is no longer used is deactivated so its history stays readable.',
     'property.types.heading': 'Room types',

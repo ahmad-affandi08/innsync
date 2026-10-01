@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
 
-import { currencyExponent, formatMinorUnits, MoneyFormatError } from './money.ts'
+import { currencyExponent, formatMinorUnits, MoneyFormatError, parseMajorToMinor } from './money.ts'
 
 describe('money display', () => {
     it('uses the currency exponent, not a fixed two decimals', () => {
@@ -32,5 +32,25 @@ describe('money display', () => {
         assert.throws(() => formatMinorUnits(2 ** 53, 'USD', 'en'), MoneyFormatError)
         assert.throws(() => formatMinorUnits(100, 'usd', 'en'), MoneyFormatError)
         assert.throws(() => formatMinorUnits(100, 'US', 'en'), MoneyFormatError)
+    })
+})
+
+describe('typed amounts', () => {
+    it('reads plain digits and one decimal separator into minor units', () => {
+        assert.equal(parseMajorToMinor('1500000', 'IDR'), 150000000)
+        assert.equal(parseMajorToMinor('1500000,50', 'IDR'), 150000050)
+        assert.equal(parseMajorToMinor('1500000.5', 'IDR'), 150000050)
+        assert.equal(parseMajorToMinor(' 12.34 ', 'USD'), 1234)
+        assert.equal(parseMajorToMinor('12', 'USD'), 1200)
+        assert.equal(parseMajorToMinor('0', 'IDR'), 0)
+        assert.equal(parseMajorToMinor('500', 'JPY'), 500)
+    })
+
+    it('refuses thousands separators and anything ambiguous instead of guessing', () => {
+        for (const bad of ['1.500.000', '1,500,000', '1.500', '1,500', '', 'abc', '-5', '1e3', '12.345', '1 500', '99999999999999']) {
+            assert.equal(parseMajorToMinor(bad, 'USD'), null, bad)
+        }
+        assert.equal(parseMajorToMinor('1.500', 'IDR'), null, 'grouped rupiah is not a fraction')
+        assert.equal(parseMajorToMinor('1.000', 'KWD'), 1000, 'three decimals are real for KWD')
     })
 })

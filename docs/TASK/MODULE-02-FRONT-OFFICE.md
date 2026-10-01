@@ -23,7 +23,7 @@
 | TASK-FO-005 | FR-FO-005 | Wajib | Menandai kamar sebagai Out of Order atau Out of Service dengan rentang tanggal sehingga tidak muncul sebagai kamar yang dapat dijual. | TODO |
 | TASK-FO-006 | FR-FO-006 | Sebaiknya | Mendukung pemesanan grup sederhana: satu pemesan dengan beberapa kamar, satu master folio, dan opsi pemisahan tagihan per kamar. | TODO |
 | TASK-FO-007 | FR-FO-007 | Wajib | Mengelola inventory kamar per tipe dengan aturan overbooking yang dapat dikonfigurasi. Sistem tidak boleh menjual melebihi batas yang disetujui dan wajib memperingatkan pengguna sebelum menerima reservasi yang berpotensi oversold. | TODO |
-| TASK-FO-008 | FR-FO-008 | Wajib | Mengelola rate plan, seasonal rate, corporate rate, package, inclusions, minimum stay, closed-to-arrival/departure, serta tanggal efektif tanpa mengubah histori reservasi lama. | TODO |
+| TASK-FO-008 | FR-FO-008 | Wajib | Mengelola rate plan, seasonal rate, corporate rate, package, inclusions, minimum stay, closed-to-arrival/departure, serta tanggal efektif tanpa mengubah histori reservasi lama. | REVIEW |
 | TASK-FO-009 | FR-FO-009 | Wajib | Mendukung kebijakan guarantee, deposit due date, cancellation, no-show, dan penalty per rate plan/sumber reservasi serta menyimpan policy snapshot pada saat reservasi dibuat. | TODO |
 | TASK-FO-010 | FR-FO-010 | Wajib | Formulir check-in memuat: nama tamu, kewarganegaraan, jenis dan nomor identitas (paspor atau KTP), tanggal berlaku identitas, nomor visa bila diperlukan, jumlah tamu (dewasa dan anak), serta alamat sesuai identitas. | TODO |
 | TASK-FO-011 | FR-FO-011 | Wajib | Sistem mengunggah dan menampilkan foto identitas yang diambil langsung dari kamera perangkat resepsionis atau tablet, dan melampirkannya pada data tamu. | TODO |

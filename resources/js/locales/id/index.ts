@@ -1,11 +1,13 @@
 import type { MessageKey } from '../en/index.ts'
 import { offline } from './offline.ts'
 import { property } from './property.ts'
+import { rates } from './rates.ts'
 
 /** Must define every key of the English source dictionary; the type enforces it at compile time. */
 export const id: Record<MessageKey, string> = {
     ...offline,
     ...property,
+    ...rates,
     'common.language.label': 'Bahasa',
     'common.language.id': 'Bahasa Indonesia',
     'common.language.en': 'English',

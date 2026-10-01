@@ -1,4 +1,5 @@
 export const property = {
+    'property.nav.label': 'Konfigurasi properti',
     'property.rooms.title': 'Kamar dan tipe kamar',
     'property.rooms.description': 'Data induk kamar. Kamar tidak pernah dihapus; kamar yang tidak dipakai lagi dinonaktifkan agar riwayatnya tetap terbaca.',
     'property.types.heading': 'Tipe kamar',
