@@ -22,12 +22,22 @@ use App\Shared\Application\Audit\AuditWriter;
 use App\Shared\Application\Idempotency\IdempotencyContext;
 use App\Shared\Application\Idempotency\IdempotencyStore;
 use App\Shared\Application\Observability\CorrelationId;
+use App\Shared\Application\Outbox\OutboxConsumerRegistry;
+use App\Shared\Application\Outbox\OutboxMessageStore;
+use App\Shared\Application\Outbox\OutboxPublisher;
+use App\Shared\Application\Outbox\OutboxQueue;
+use App\Shared\Application\Outbox\ProcessedOutboxMessageStore;
 use App\Shared\Application\Security\SecurityEventWriter;
 use App\Shared\Application\Tenancy\PropertyContext;
 use App\Shared\Application\Transactions\TransactionRunner;
 use App\Shared\Infrastructure\Audit\DatabaseAuditWriter;
 use App\Shared\Infrastructure\Idempotency\DatabaseIdempotencyStore;
 use App\Shared\Infrastructure\Observability\LaravelCorrelationId;
+use App\Shared\Infrastructure\Outbox\ConfiguredOutboxConsumerRegistry;
+use App\Shared\Infrastructure\Outbox\DatabaseOutboxMessageStore;
+use App\Shared\Infrastructure\Outbox\DatabaseOutboxPublisher;
+use App\Shared\Infrastructure\Outbox\DatabaseOutboxQueue;
+use App\Shared\Infrastructure\Outbox\DatabaseProcessedOutboxMessageStore;
 use App\Shared\Infrastructure\Security\DatabaseSecurityEventWriter;
 use App\Shared\Infrastructure\Transactions\MySqlTransactionRunner;
 use Illuminate\Cache\RateLimiting\Limit;
@@ -48,6 +58,24 @@ class AppServiceProvider extends ServiceProvider
         $this->app->scoped(IdempotencyContext::class, static fn (): IdempotencyContext => new IdempotencyContext);
         $this->app->bind(AuditWriter::class, DatabaseAuditWriter::class);
         $this->app->bind(IdempotencyStore::class, DatabaseIdempotencyStore::class);
+        $this->app->bind(OutboxPublisher::class, DatabaseOutboxPublisher::class);
+        $this->app->bind(OutboxMessageStore::class, DatabaseOutboxMessageStore::class);
+        $this->app->bind(OutboxQueue::class, DatabaseOutboxQueue::class);
+        $this->app->bind(ProcessedOutboxMessageStore::class, DatabaseProcessedOutboxMessageStore::class);
+        $this->app->singleton(OutboxConsumerRegistry::class, function ($app): OutboxConsumerRegistry {
+            $consumerClasses = config('outbox.consumers');
+            $consumers = [];
+
+            if (is_array($consumerClasses)) {
+                foreach ($consumerClasses as $consumerClass) {
+                    if (is_string($consumerClass)) {
+                        $consumers[] = $app->make($consumerClass);
+                    }
+                }
+            }
+
+            return new ConfiguredOutboxConsumerRegistry($consumers);
+        });
         $this->app->bind(SecurityEventWriter::class, DatabaseSecurityEventWriter::class);
         $this->app->bind(TransactionRunner::class, MySqlTransactionRunner::class);
         $this->app->bind(CredentialAuthenticator::class, EloquentCredentialAuthenticator::class);

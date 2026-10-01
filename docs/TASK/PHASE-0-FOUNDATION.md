@@ -10,7 +10,7 @@ These tasks exist before business modules can safely scale.
 | TASK-FND-004 | Auth, session security, RBAC and scoped policies | NFR-05/06/22 | DONE |
 | TASK-FND-005 | Audit trail + security log + correlation IDs | NFR-10/20/29 | DONE |
 | TASK-FND-006 | Idempotency middleware/application service + table | NFR-18 | DONE |
-| TASK-FND-007 | Transactional outbox + database queue + cron drain | NFR-17/25, ADR-0007 | TODO |
+| TASK-FND-007 | Transactional outbox + database queue + cron drain | NFR-17/25, ADR-0007 | DONE |
 | TASK-FND-008 | Private file storage and authorized download | NFR-07/08/24 | TODO |
 | TASK-FND-009 | Error envelope, validation, conflict semantics | NFR-19 | TODO |
 | TASK-FND-010 | Observability, health endpoint, critical alerts | NFR-20 | TODO |
@@ -106,6 +106,18 @@ These tasks exist before business modules can safely scale.
 - Lifecycle boundary: no expiry or purge duration was guessed. Completed keys remain durable so an old retry cannot silently recreate a financial/stock operation; any future cleanup policy requires an explicit safety decision. Standard conflict/error response envelopes remain owned by `TASK-FND-009`, and concrete offline/import/webhook/payment use cases remain owned by their feature tasks.
 - Automated evidence: the full PHPUnit suite passes with 73 tests and 229 assertions, including middleware validation/context cleanup, canonical fingerprints, encrypted result replay, single-effect retry, payload/actor conflict, atomic rollback/retry, missing and cross-property context denial, operation/property key isolation, database uniqueness, tampered stored-result safety, and security-event persistence. Composer validation, Pint, architecture tests, route/config cache, TypeScript typecheck, and production build also pass.
 - Rollback: roll back migration batch 4 only before business operations rely on stored keys. After use, dropping the table removes duplicate-detection memory and can permit repeated posting; retain records and use a forward migration instead.
+
+## TASK-FND-007 acceptance evidence
+
+- Completed: 2026-10-01.
+- Traceability: `TASK-FND-007`, `NFR-17`, `NFR-18`, `NFR-20`, `NFR-25`, `ADR-0002`, `ADR-0005`, and `ADR-0007`; no business `FR-*` workflow is introduced.
+- Publish contract: `OutboxPublisher` persists a versioned `OutboxEvent` inside the caller's `TransactionRunner` transaction. Publishing outside a transaction or under a mismatched property context fails closed. Persisted envelope is encrypted; event data must stay minimal and secret-free.
+- Drain/queue: `outbox:drain` atomically moves pending messages to the database queue (`outbox` queue, bounded batch). Scheduler runs drain plus a bounded `queue:work --stop-when-empty --max-time` every minute with `withoutOverlapping`; no permanent daemon is required (shared-hosting profile).
+- Consumers: registered in `config/outbox.php`. A `(event_id, consumer)` receipt is claimed in the same transaction as the consumer effect, so retries cannot repeat a committed effect. External network delivery stays owned by `TASK-FND-020`.
+- Failure handling: configurable attempts and backoff delays, then dead letter. `outbox:retry {property_id} {event_id}` requeues a reviewed dead letter and records a security event. Unreadable payloads and unhandled messages fail visibly.
+- Schema: migration `0001_01_01_000007_create_outbox_tables` (batch 5 ran on development database).
+- Automated evidence: full PHPUnit suite passes with 87 tests and 295 assertions, including unit, console, and pipeline integration tests. Pint passes; composer validate, config cache, and route cache pass.
+- Rollback: roll back the migration only while no pending/dead-letter messages exist; otherwise use a forward migration to avoid losing unpublished messages.
 
 ## NFR coverage
 
