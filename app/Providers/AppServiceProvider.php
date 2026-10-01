@@ -24,6 +24,7 @@ use App\Shared\Application\Files\PrivateFileStorage;
 use App\Shared\Application\Files\StoredFileRepository;
 use App\Shared\Application\Idempotency\IdempotencyContext;
 use App\Shared\Application\Idempotency\IdempotencyStore;
+use App\Shared\Application\Localization\LocaleNegotiator;
 use App\Shared\Application\Observability\CorrelationId;
 use App\Shared\Application\Observability\Health\AlertNotifier;
 use App\Shared\Application\Observability\Health\AlertStore;
@@ -70,6 +71,10 @@ class AppServiceProvider extends ServiceProvider
         $this->app->scoped(PropertyContext::class, static fn (): PropertyContext => new PropertyContext);
         $this->app->scoped(CorrelationId::class, LaravelCorrelationId::class);
         $this->app->scoped(IdempotencyContext::class, static fn (): IdempotencyContext => new IdempotencyContext);
+        $this->app->singleton(LocaleNegotiator::class, static fn (): LocaleNegotiator => new LocaleNegotiator(
+            array_values(array_map('strval', (array) config('localization.supported'))),
+            (string) config('localization.default'),
+        ));
         $this->app->bind(AuditWriter::class, DatabaseAuditWriter::class);
         $this->app->bind(IdempotencyStore::class, DatabaseIdempotencyStore::class);
         $this->app->bind(PrivateFileStorage::class, EncryptedDiskFileStorage::class);

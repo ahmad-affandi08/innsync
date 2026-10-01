@@ -13,6 +13,7 @@ use App\Shared\Infrastructure\Backup\BackupVerifyCommand;
 use App\Shared\Infrastructure\Http\Errors\ErrorEnvelopeFactory;
 use App\Shared\Infrastructure\Http\Errors\RenderErrorEnvelope;
 use App\Shared\Infrastructure\Idempotency\RequireIdempotencyKey;
+use App\Shared\Infrastructure\Localization\ResolveLocale;
 use App\Shared\Infrastructure\Observability\AssignCorrelationId;
 use App\Shared\Infrastructure\Observability\Health\ErrorRate;
 use App\Shared\Infrastructure\Observability\Health\HealthAlertsCommand;
@@ -58,7 +59,13 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
         $middleware->web(append: [
+            ResolveLocale::class,
             HandleInertiaRequests::class,
+        ]);
+
+        // Token/API clients have no session: they negotiate the language from Accept-Language only.
+        $middleware->api(append: [
+            ResolveLocale::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

@@ -57,8 +57,10 @@ final class MfaController
 
         try {
             $recoveryCodes = $mfa->confirmEnrollment($userId, $request->string('code')->toString());
-        } catch (MfaEnrollmentMissing|MfaVerificationFailed $exception) {
-            throw ValidationException::withMessages(['code' => $exception->getMessage()]);
+        } catch (MfaEnrollmentMissing) {
+            throw ValidationException::withMessages(['code' => __('identity.mfa_enrollment_required')]);
+        } catch (MfaVerificationFailed) {
+            throw ValidationException::withMessages(['code' => __('identity.mfa_code_invalid')]);
         }
 
         $request->session()->regenerate();
@@ -79,8 +81,9 @@ final class MfaController
 
         try {
             $mfa->verifyChallenge($userId, $request->string('code')->toString());
-        } catch (MfaVerificationFailed $exception) {
-            throw ValidationException::withMessages(['code' => $exception->getMessage()]);
+        } catch (MfaVerificationFailed) {
+            // One generic message: it must not reveal whether a second factor is configured.
+            throw ValidationException::withMessages(['code' => __('identity.mfa_code_invalid')]);
         }
 
         $request->session()->regenerate();

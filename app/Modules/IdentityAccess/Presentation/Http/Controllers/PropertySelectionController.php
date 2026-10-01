@@ -49,7 +49,7 @@ final class PropertySelectionController
             ));
 
             throw ValidationException::withMessages([
-                'property_id' => 'You do not have access to this property.',
+                'property_id' => __('identity.property_forbidden'),
             ]);
         }
 

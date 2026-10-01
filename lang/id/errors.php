@@ -1,0 +1,23 @@
+<?php
+
+return [
+    'validation_failed' => 'Data yang dikirim tidak valid.',
+    'conflict_optimistic_lock' => 'Data ini diubah oleh orang lain. Muat ulang dan tinjau sebelum mencoba lagi.',
+    'conflict_idempotency_mismatch' => 'Kunci permintaan ini sudah dipakai untuk permintaan yang berbeda.',
+    'conflict_idempotency_in_progress' => 'Permintaan awal masih diproses. Coba lagi sebentar lagi.',
+    'conflict_unspecified' => 'Permintaan bertentangan dengan kondisi data saat ini.',
+    'file_rejected' => 'Berkas ditolak.',
+    'not_found' => 'Data tidak ditemukan.',
+    'forbidden' => 'Anda tidak diizinkan melakukan tindakan ini.',
+    'property_context_required' => 'Pilih properti untuk melanjutkan.',
+    'unauthenticated' => 'Autentikasi diperlukan.',
+    'session_expired' => 'Sesi berakhir. Muat ulang halaman dan coba lagi.',
+    'bad_request' => 'Permintaan tidak dapat dipahami.',
+    'method_not_allowed' => 'Metode ini tidak diizinkan.',
+    'payload_too_large' => 'Permintaan terlalu besar.',
+    'unprocessable' => 'Permintaan tidak dapat diproses.',
+    'too_many_requests' => 'Terlalu banyak permintaan. Coba lagi nanti.',
+    'unavailable' => 'Layanan sedang tidak tersedia untuk sementara.',
+    'server_error' => 'Terjadi kesalahan yang tidak terduga.',
+    'request_failed' => 'Permintaan gagal.',
+];

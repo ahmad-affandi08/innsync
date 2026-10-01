@@ -35,7 +35,7 @@ final class AuthenticatedSessionController
 
         if ($identity === null || ! Auth::guard('web')->loginUsingId($identity->userId)) {
             throw ValidationException::withMessages([
-                'email' => 'The provided credentials cannot be used to sign in.',
+                'email' => __('identity.login_failed'),
             ]);
         }
 

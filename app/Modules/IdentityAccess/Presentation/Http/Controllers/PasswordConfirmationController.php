@@ -37,7 +37,7 @@ final class PasswordConfirmationController
             ));
 
             throw ValidationException::withMessages([
-                'password' => 'The password is incorrect.',
+                'password' => __('identity.password_incorrect'),
             ]);
         }
 

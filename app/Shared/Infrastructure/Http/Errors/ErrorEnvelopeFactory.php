@@ -38,29 +38,29 @@ final class ErrorEnvelopeFactory
     {
         return match (true) {
             $e instanceof ValidationException => new ErrorEnvelope(
-                422, 'validation_failed', 'The submitted data is invalid.',
+                422, 'validation_failed', __('errors.validation_failed'),
                 fields: self::fields($e),
             ),
             $e instanceof OptimisticLockConflict => self::conflict(
-                'optimistic_lock', 'refresh', 'This record was changed by someone else. Refresh and review before retrying.',
+                'optimistic_lock', 'refresh', __('errors.conflict_optimistic_lock'),
             ),
             $e instanceof IdempotencyConflict => self::conflict(
-                'idempotency_'.$e->reasonCode, 'review', 'This request key was already used for a different request.',
+                'idempotency_'.$e->reasonCode, 'review', __('errors.conflict_idempotency_mismatch'),
             ),
             $e instanceof IdempotencyOperationIncomplete => self::conflict(
-                'idempotency_in_progress', 'retry', 'The original request is still being processed. Retry shortly.', retryable: true,
+                'idempotency_in_progress', 'retry', __('errors.conflict_idempotency_in_progress'), retryable: true,
             ),
-            $e instanceof FileRejected => new ErrorEnvelope(422, 'file_rejected', 'The file was rejected.'),
+            $e instanceof FileRejected => new ErrorEnvelope(422, 'file_rejected', __('errors.file_rejected')),
             $e instanceof StoredFileNotFound,
-            $e instanceof ModelNotFoundException => new ErrorEnvelope(404, 'not_found', 'The resource was not found.'),
+            $e instanceof ModelNotFoundException => new ErrorEnvelope(404, 'not_found', __('errors.not_found')),
             $e instanceof FileAccessDenied,
             $e instanceof AuthorizationException,
-            $e instanceof PropertyScopeViolation => new ErrorEnvelope(403, 'forbidden', 'You are not allowed to perform this action.'),
-            $e instanceof MissingPropertyContext => new ErrorEnvelope(403, 'property_context_required', 'Select a property to continue.'),
-            $e instanceof AuthenticationException => new ErrorEnvelope(401, 'unauthenticated', 'Authentication is required.'),
-            $e instanceof TokenMismatchException => new ErrorEnvelope(419, 'session_expired', 'The session expired. Reload and try again.'),
+            $e instanceof PropertyScopeViolation => new ErrorEnvelope(403, 'forbidden', __('errors.forbidden')),
+            $e instanceof MissingPropertyContext => new ErrorEnvelope(403, 'property_context_required', __('errors.property_context_required')),
+            $e instanceof AuthenticationException => new ErrorEnvelope(401, 'unauthenticated', __('errors.unauthenticated')),
+            $e instanceof TokenMismatchException => new ErrorEnvelope(419, 'session_expired', __('errors.session_expired')),
             $e instanceof HttpExceptionInterface => self::http($e->getStatusCode()),
-            default => new ErrorEnvelope(500, 'server_error', 'An unexpected error occurred.', retryable: true),
+            default => new ErrorEnvelope(500, 'server_error', __('errors.server_error'), retryable: true),
         };
     }
 
@@ -88,20 +88,20 @@ final class ErrorEnvelopeFactory
     private static function http(int $status): ErrorEnvelope
     {
         return match ($status) {
-            400 => new ErrorEnvelope(400, 'bad_request', 'The request is malformed.'),
-            401 => new ErrorEnvelope(401, 'unauthenticated', 'Authentication is required.'),
-            403 => new ErrorEnvelope(403, 'forbidden', 'You are not allowed to perform this action.'),
-            404 => new ErrorEnvelope(404, 'not_found', 'The resource was not found.'),
-            405 => new ErrorEnvelope(405, 'method_not_allowed', 'This method is not allowed.'),
-            409 => self::conflict('unspecified', 'review', 'The request conflicts with the current state.'),
-            413 => new ErrorEnvelope(413, 'payload_too_large', 'The request is too large.'),
-            419 => new ErrorEnvelope(419, 'session_expired', 'The session expired. Reload and try again.'),
-            422 => new ErrorEnvelope(422, 'unprocessable', 'The request could not be processed.'),
-            429 => new ErrorEnvelope(429, 'too_many_requests', 'Too many requests. Retry later.', retryable: true),
-            503 => new ErrorEnvelope(503, 'unavailable', 'The service is temporarily unavailable.', retryable: true),
+            400 => new ErrorEnvelope(400, 'bad_request', __('errors.bad_request')),
+            401 => new ErrorEnvelope(401, 'unauthenticated', __('errors.unauthenticated')),
+            403 => new ErrorEnvelope(403, 'forbidden', __('errors.forbidden')),
+            404 => new ErrorEnvelope(404, 'not_found', __('errors.not_found')),
+            405 => new ErrorEnvelope(405, 'method_not_allowed', __('errors.method_not_allowed')),
+            409 => self::conflict('unspecified', 'review', __('errors.conflict_unspecified')),
+            413 => new ErrorEnvelope(413, 'payload_too_large', __('errors.payload_too_large')),
+            419 => new ErrorEnvelope(419, 'session_expired', __('errors.session_expired')),
+            422 => new ErrorEnvelope(422, 'unprocessable', __('errors.unprocessable')),
+            429 => new ErrorEnvelope(429, 'too_many_requests', __('errors.too_many_requests'), retryable: true),
+            503 => new ErrorEnvelope(503, 'unavailable', __('errors.unavailable'), retryable: true),
             default => $status >= 500
-                ? new ErrorEnvelope($status, 'server_error', 'An unexpected error occurred.', retryable: true)
-                : new ErrorEnvelope($status, 'request_failed', 'The request failed.'),
+                ? new ErrorEnvelope($status, 'server_error', __('errors.server_error'), retryable: true)
+                : new ErrorEnvelope($status, 'request_failed', __('errors.request_failed')),
         };
     }
 

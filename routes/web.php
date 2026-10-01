@@ -8,9 +8,12 @@ use App\Modules\IdentityAccess\Presentation\Http\Controllers\PasswordConfirmatio
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\PasswordController;
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\PropertySelectionController;
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\UserSessionController;
+use App\Shared\Infrastructure\Localization\SetLocaleController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+
+Route::post('/locale', SetLocaleController::class)->middleware('throttle:60,1')->name('locale.update');
 
 Route::middleware('guest')->group(function (): void {
     Route::get('/login', [AuthenticatedSessionController::class, 'create'])->name('login');

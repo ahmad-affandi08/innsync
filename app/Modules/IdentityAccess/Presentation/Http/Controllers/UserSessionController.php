@@ -51,7 +51,7 @@ final class UserSessionController
             ));
 
             throw ValidationException::withMessages([
-                'session' => 'Use sign out to end the current session.',
+                'session' => __('identity.use_sign_out'),
             ]);
         }
 

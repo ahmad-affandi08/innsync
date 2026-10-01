@@ -27,7 +27,7 @@ final class PasswordController
 
         if (! $updated) {
             throw ValidationException::withMessages([
-                'current_password' => 'The current password is incorrect.',
+                'current_password' => __('identity.current_password_incorrect'),
             ]);
         }
 

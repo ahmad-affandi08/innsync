@@ -2,10 +2,13 @@ import { Head, useForm } from '@inertiajs/react';
 import type { FormEvent } from 'react';
 
 import { Button } from '@/components/ui/button';
+import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
 import { AuthShell } from '@/modules/identity-access/components/auth-shell';
+import { useTranslation } from '@/shared/i18n/i18n';
 
 export default function MfaChallengePage() {
+    const { t } = useTranslation();
     const form = useForm({ code: '' });
 
     function submit(event: FormEvent<HTMLFormElement>) {
@@ -15,27 +18,24 @@ export default function MfaChallengePage() {
 
     return (
         <>
-            <Head title="Two-factor verification" />
+            <Head title={t('identity.mfa.challenge.heading')} />
             <AuthShell
-                title="Verify your sign-in"
-                description="Enter the six-digit authenticator code or one unused recovery code."
+                title={t('identity.mfa.challenge.title')}
+                description={t('identity.mfa.challenge.description')}
             >
                 <form className="space-y-5" onSubmit={submit}>
-                    <div>
-                        <label className="text-sm font-medium" htmlFor="code">Verification code</label>
+                    <FormField error={form.errors.code} label={t('identity.mfa.challenge.code')}>
                         <Input
                             autoComplete="one-time-code"
                             autoFocus
-                            id="code"
                             inputMode="numeric"
                             onChange={(event) => form.setData('code', event.target.value)}
                             required
                             value={form.data.code}
                         />
-                        {form.errors.code && <p className="mt-1 text-sm text-danger">{form.errors.code}</p>}
-                    </div>
-                    <Button className="w-full" disabled={form.processing} type="submit">
-                        Verify
+                    </FormField>
+                    <Button className="w-full" loading={form.processing} type="submit">
+                        {t('identity.mfa.challenge.submit')}
                     </Button>
                 </form>
             </AuthShell>
