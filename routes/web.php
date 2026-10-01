@@ -15,6 +15,7 @@ use App\Modules\FrontOffice\Presentation\Http\Controllers\RateChangeController;
 use App\Modules\FrontOffice\Presentation\Http\Controllers\ReservationController;
 use App\Modules\FrontOffice\Presentation\Http\Controllers\RoomBoardController;
 use App\Modules\FrontOffice\Presentation\Http\Controllers\StayController;
+use App\Modules\Housekeeping\Presentation\Http\Controllers\ChecklistController as HousekeepingChecklistController;
 use App\Modules\Housekeeping\Presentation\Http\Controllers\HousekeepingController;
 use App\Modules\Housekeeping\Presentation\Http\Controllers\LinenController;
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\ApprovalController;
@@ -300,6 +301,14 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
     Route::post('/linen/transfers', [LinenController::class, 'send'])->middleware('idempotent')->name('housekeeping.linen.transfers.store');
     Route::post('/linen/transfers/{id}/receive', [LinenController::class, 'receive'])->where('id', $id)->name('housekeeping.linen.transfers.receive');
     Route::post('/linen/transfers/{id}/cancel', [LinenController::class, 'cancel'])->where('id', $id)->name('housekeeping.linen.transfers.cancel');
+
+    // Checklists per room and public area (FR-HK-005).
+    Route::get('/checklists', [HousekeepingChecklistController::class, 'index'])->name('housekeeping.checklists');
+    Route::get('/checklists/templates', [HousekeepingChecklistController::class, 'templates'])->name('housekeeping.checklists.templates');
+    Route::post('/checklists/templates', [HousekeepingChecklistController::class, 'define'])->name('housekeeping.checklists.define');
+    Route::get('/checklists/performance', [HousekeepingChecklistController::class, 'performance'])->name('housekeeping.checklists.performance');
+    Route::get('/checklists/{template}/detail', [HousekeepingChecklistController::class, 'detail'])->where('template', $id)->name('housekeeping.checklists.detail');
+    Route::post('/checklists/{template}/complete', [HousekeepingChecklistController::class, 'complete'])->where('template', $id)->name('housekeeping.checklists.complete');
 });
 
 // Guest laundry (FR-HK-020 to FR-HK-024, FR-LDY-001 to FR-LDY-004, FR-LDY-011): hand-over by housekeeping, counting and processing by

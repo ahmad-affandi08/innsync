@@ -9,6 +9,7 @@ import { useTranslation } from '@/shared/i18n/i18n';
 const LINKS = [
     { href: '/housekeeping', label: 'hk.nav.board' },
     { href: '/housekeeping/my-rooms', label: 'hk.nav.mine' },
+    { href: '/housekeeping/checklists', label: 'hk.nav.checklists' },
     { href: '/housekeeping/linen', label: 'hk.nav.linen' },
     { href: '/front-office/room-board', label: 'hk.nav.frontdesk' },
     { href: '/laundry/new', label: 'hk.nav.laundry' },

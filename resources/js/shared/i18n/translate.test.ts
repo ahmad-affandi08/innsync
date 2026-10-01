@@ -84,6 +84,7 @@ describe('dictionaries', () => {
             'hk.linen.place.laundry',
             'hk.linen.kind.linen',
             'hk.linen.kind.amenity',
+            'hk.cl.perf.run',
             // Terms Indonesian hotels use unchanged.
             'rates.kind.ota',
             'rates.quote.service',

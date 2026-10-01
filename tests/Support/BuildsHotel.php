@@ -19,6 +19,7 @@ use App\Modules\FrontOffice\Application\Routine\SopService;
 use App\Modules\FrontOffice\Application\Stays\GuestCorrectionService;
 use App\Modules\FrontOffice\Application\Stays\StayService;
 use App\Modules\FrontOffice\Domain\Reservations\Reservation;
+use App\Modules\Housekeeping\Application\ChecklistService;
 use App\Modules\Housekeeping\Application\HousekeepingService;
 use App\Modules\Housekeeping\Application\LinenService;
 use App\Modules\IdentityAccess\Application\Approval\ApprovalPolicyAdmin;
@@ -79,6 +80,15 @@ trait BuildsHotel
     private string $linenManager2Id;
 
     private string $linenLaundryId;
+
+    /** Housekeeping checklists (FR-HK-005): a manager of the templates, two people who tick items and one who may only look at the figures. */
+    private string $hkListManagerId;
+
+    private string $hkListStaffId;
+
+    private string $hkListStaff2Id;
+
+    private string $hkListViewerId;
 
     /** Reporting: an analyst (dashboard with revenue, reports, audit; identity masked), a registrar (guest reports and export, identity in clear), and a dashboard-only viewer. */
     private string $analystId;
@@ -176,6 +186,10 @@ trait BuildsHotel
         $logReader = UserRecord::factory()->create();
         $nameCorrector = UserRecord::factory()->create();
         $linenManager = UserRecord::factory()->create();
+        $hkListManager = UserRecord::factory()->create();
+        $hkListStaff = UserRecord::factory()->create();
+        $hkListStaff2 = UserRecord::factory()->create();
+        $hkListViewer = UserRecord::factory()->create();
         $linenManager2 = UserRecord::factory()->create();
         $linenLaundry = UserRecord::factory()->create();
         $identityCorrector = UserRecord::factory()->create();
@@ -208,6 +222,10 @@ trait BuildsHotel
         $this->grant($logReader, self::PROPERTY, [ShiftLogService::READ_PERMISSION]);
         $this->grant($nameCorrector, self::PROPERTY, [GuestCorrectionService::CORRECT_PERMISSION, StayService::VIEW_PERMISSION]);
         $this->grant($identityCorrector, self::PROPERTY, [GuestCorrectionService::CORRECT_PERMISSION, StayService::VIEW_PERMISSION, StayService::IDENTITY_PERMISSION]);
+        $this->grant($hkListManager, self::PROPERTY, [ChecklistService::MANAGE_PERMISSION, ChecklistService::VIEW_PERMISSION]);
+        $this->grant($hkListStaff, self::PROPERTY, [ChecklistService::PERFORM_PERMISSION]);
+        $this->grant($hkListStaff2, self::PROPERTY, [ChecklistService::PERFORM_PERMISSION]);
+        $this->grant($hkListViewer, self::PROPERTY, [ChecklistService::VIEW_PERMISSION]);
         $this->grant($linenManager, self::PROPERTY, [LinenService::MANAGE_PERMISSION]);
         $this->grant($linenManager2, self::PROPERTY, [LinenService::MANAGE_PERMISSION]);
         $this->grant($linenLaundry, self::PROPERTY, [LinenService::LAUNDRY_PERMISSION]);
@@ -248,6 +266,10 @@ trait BuildsHotel
         $this->requestViewerId = strtolower((string) $requestViewer->getKey());
         $this->lateChargerId = strtolower((string) $lateCharger->getKey());
         $this->rateManagerId = strtolower((string) $rateManager->getKey());
+        $this->hkListManagerId = strtolower((string) $hkListManager->getKey());
+        $this->hkListStaffId = strtolower((string) $hkListStaff->getKey());
+        $this->hkListStaff2Id = strtolower((string) $hkListStaff2->getKey());
+        $this->hkListViewerId = strtolower((string) $hkListViewer->getKey());
         $this->linenManagerId = strtolower((string) $linenManager->getKey());
         $this->linenManager2Id = strtolower((string) $linenManager2->getKey());
         $this->linenLaundryId = strtolower((string) $linenLaundry->getKey());

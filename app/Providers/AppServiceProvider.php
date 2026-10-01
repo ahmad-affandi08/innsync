@@ -37,6 +37,7 @@ use App\Modules\FrontOffice\Infrastructure\Reservations\DatabaseReservationRepos
 use App\Modules\FrontOffice\Infrastructure\Routine\DatabaseRoutineRepository;
 use App\Modules\FrontOffice\Infrastructure\Stays\DatabaseGuestRepository;
 use App\Modules\FrontOffice\Infrastructure\Stays\DatabaseStayRepository;
+use App\Modules\Housekeeping\Application\ChecklistRepository;
 use App\Modules\Housekeeping\Application\GuestServiceRequests;
 use App\Modules\Housekeeping\Application\HousekeepingRepository;
 use App\Modules\Housekeeping\Application\HousekeepingService;
@@ -45,6 +46,7 @@ use App\Modules\Housekeeping\Application\OccupancyReader;
 use App\Modules\Housekeeping\Application\RoomGuestRequests;
 use App\Modules\Housekeeping\Application\RoomHandover;
 use App\Modules\Housekeeping\Application\RoomReadiness;
+use App\Modules\Housekeeping\Infrastructure\DatabaseChecklistRepository;
 use App\Modules\Housekeeping\Infrastructure\DatabaseHousekeepingRepository;
 use App\Modules\Housekeeping\Infrastructure\DatabaseLinenRepository;
 use App\Modules\IdentityAccess\Application\Approval\ApprovalPolicyRepository;
@@ -302,6 +304,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(RoomHandover::class, HousekeepingService::class);
         $this->app->bind(GuestServiceRequests::class, HousekeepingService::class);
         $this->app->bind(LinenRepository::class, DatabaseLinenRepository::class);
+        $this->app->bind(ChecklistRepository::class, DatabaseChecklistRepository::class);
         $this->app->bind(RoomGuestRequests::class, GuestRequestsForHousekeeping::class);
         $this->app->bind(GuestCharging::class, GuestChargingService::class);
         $this->app->bind(PenaltyPoster::class, FolioPenaltyPoster::class);
