@@ -38,6 +38,8 @@ final readonly class ReportService
 
     public const AUDIT_PERMISSION = 'reporting.audit.view';
 
+    public const HOUSEKEEPING_PERMISSION = 'reporting.housekeeping.view';
+
     public const IDENTITY_PERMISSION = 'front-office.guest-identity.view';
 
     public const CATALOGUE = [
@@ -45,6 +47,7 @@ final readonly class ReportService
         ['code' => 'flash', 'group' => 'management', 'permission' => self::VIEW_PERMISSION],
         ['code' => 'performance', 'group' => 'management', 'permission' => self::VIEW_PERMISSION],
         ['code' => 'payments', 'group' => 'front_office', 'permission' => self::VIEW_PERMISSION],
+        ['code' => 'housekeeping', 'group' => 'housekeeping', 'permission' => self::HOUSEKEEPING_PERMISSION],
         ['code' => 'registrations', 'group' => 'front_office', 'permission' => self::GUESTS_PERMISSION],
         ['code' => 'foreign_guests', 'group' => 'front_office', 'permission' => self::GUESTS_PERMISSION],
         ['code' => 'audit', 'group' => 'control', 'permission' => self::AUDIT_PERMISSION],
@@ -260,6 +263,44 @@ final readonly class ReportService
         $this->recordExport($property, $actorId, 'performance', $report['meta'], count($report['rows']), null, false);
 
         return ['filename' => sprintf('performance-%s-%s.csv', $by, $report['by'] === 'day' ? $report['meta']['period']['from'].'-'.$report['meta']['period']['to'] : $report['year']), 'contents' => $contents];
+    }
+
+    /**
+     * Housekeeping productivity (FR-HK-015) from the work finished on the clock dates of the period: rooms cleaned and the average
+     * time per room for each person and each kind of task (time is from start to finish of the task), how many inspections passed
+     * the first time, and how much of the checklists started in the period was ticked. It shows people's names, so it has its own
+     * permission.
+     *
+     * @return array<string, mixed>
+     */
+    public function housekeeping(PropertyId $property, string $actorId, ?string $preset, ?string $from, ?string $to): array
+    {
+        $this->authorize($property, $actorId, self::HOUSEKEEPING_PERMISSION);
+        $zone = $this->zones->forProperty($property) ?? throw Refusal::notFound('Property not found.');
+        $period = $this->period($property, $preset, $from, $to);
+        $data = $this->queries->housekeepingProductivity($property, $zone->utcAt(CalendarDate::fromString($period->from->toString())), $zone->utcAt(CalendarDate::fromString($period->to->next()->toString())), $period);
+        $names = $this->staff->namesOf($property, array_column($data['staff'], 'user_id'));
+        $average = static fn (int $seconds, int $rooms): int => $rooms === 0 ? 0 : intdiv($seconds, $rooms);
+        $inspected = $data['inspections']['passed'] + $data['inspections']['rework'];
+
+        return [
+            'meta' => $this->meta('housekeeping', $property, $period, [], ['housekeeping_tasks (finished, by clock date of the property)', 'room_inspections', 'hk_checklist_runs and completions (started in the period)']),
+            'staff' => array_map(static fn (array $r): array => ['user_id' => $r['user_id'], 'name' => $names[$r['user_id']] ?? null, 'rooms' => $r['rooms'], 'average_seconds' => $average($r['seconds'], $r['rooms'])], $data['staff']),
+            'kinds' => array_map(static fn (array $r): array => ['kind' => $r['kind'], 'rooms' => $r['rooms'], 'average_seconds' => $average($r['seconds'], $r['rooms'])], $data['kinds']),
+            'totals' => ['rooms' => array_sum(array_column($data['kinds'], 'rooms')), 'average_seconds' => $average(array_sum(array_column($data['kinds'], 'seconds')), array_sum(array_column($data['kinds'], 'rooms')))],
+            'inspections' => ['inspected' => $inspected, 'passed' => $data['inspections']['passed'], 'first_time_pass_bp' => $inspected === 0 ? null : intdiv($data['inspections']['passed'] * 10_000, $inspected)],
+            'checklists' => ['runs' => $data['checklists']['runs'], 'items' => $data['checklists']['items'], 'completed' => $data['checklists']['completed'], 'percent' => $data['checklists']['items'] === 0 ? null : intdiv($data['checklists']['completed'] * 100, $data['checklists']['items'])],
+        ];
+    }
+
+    /** @return array{filename: string, contents: string} */
+    public function exportHousekeeping(PropertyId $property, string $actorId, ?string $preset, ?string $from, ?string $to): array
+    {
+        $report = $this->housekeeping($property, $actorId, $preset, $from, $to);
+        $contents = CsvWriter::build(['Person', 'Rooms cleaned', 'Average seconds per room'], array_map(static fn (array $r): array => [$r['name'] ?? $r['user_id'], $r['rooms'], $r['average_seconds']], $report['staff']));
+        $this->recordExport($property, $actorId, 'housekeeping', $report['meta'], count($report['staff']), null, false);
+
+        return ['filename' => sprintf('housekeeping-%s-%s.csv', $report['meta']['period']['from'], $report['meta']['period']['to']), 'contents' => $contents];
     }
 
     /** @return array<string, mixed> */

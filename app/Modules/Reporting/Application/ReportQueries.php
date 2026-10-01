@@ -74,4 +74,12 @@ interface ReportQueries
      * @return array{rows: list<array<string, mixed>>, total: int}
      */
     public function auditTrail(PropertyId $property, DateTimeImmutable $fromUtc, DateTimeImmutable $toUtc, array $filters, int $limit, int $offset): array;
+
+    /**
+     * Housekeeping work finished between the two instants (FR-HK-015): rooms cleaned per person, minutes spent, the same per kind of
+     * task, the inspections, and how much of the checklists started in the dates of the period was ticked.
+     *
+     * @return array{staff: list<array{user_id: string, rooms: int, seconds: int}>, kinds: list<array{kind: string, rooms: int, seconds: int}>, inspections: array{passed: int, rework: int}, checklists: array{items: int, completed: int, runs: int}}
+     */
+    public function housekeepingProductivity(PropertyId $property, DateTimeImmutable $fromUtc, DateTimeImmutable $toUtc, ReportPeriod $period): array;
 }

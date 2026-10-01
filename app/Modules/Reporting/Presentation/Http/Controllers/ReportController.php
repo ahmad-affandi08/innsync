@@ -70,6 +70,20 @@ final readonly class ReportController
         return $this->download($this->reports->exportPerformance($this->property->current(), $this->actor($request), $data['by'] ?? 'day', $preset, $from, $to, isset($data['year']) ? (int) $data['year'] : null));
     }
 
+    public function housekeeping(Request $request): Response
+    {
+        [$preset, $from, $to] = $this->range($request);
+
+        return Inertia::render('reporting/pages/housekeeping', ['report' => $this->reports->housekeeping($this->property->current(), $this->actor($request), $preset, $from, $to)]);
+    }
+
+    public function exportHousekeeping(Request $request): HttpResponse
+    {
+        [$preset, $from, $to] = $this->range($request);
+
+        return $this->download($this->reports->exportHousekeeping($this->property->current(), $this->actor($request), $preset, $from, $to));
+    }
+
     public function payments(Request $request): Response
     {
         [$preset, $from, $to] = $this->range($request);

@@ -341,6 +341,8 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->group(
         Route::get('/performance/export', [ReportController::class, 'exportPerformance'])->name('reports.performance.export');
         Route::get('/flash', [ReportController::class, 'flash'])->name('reports.flash');
         Route::get('/flash/export', [ReportController::class, 'exportFlash'])->name('reports.flash.export');
+        Route::get('/housekeeping', [ReportController::class, 'housekeeping'])->name('reports.housekeeping');
+        Route::get('/housekeeping/export', [ReportController::class, 'exportHousekeeping'])->name('reports.housekeeping.export');
         Route::get('/payments', [ReportController::class, 'payments'])->name('reports.payments');
         Route::get('/payments/export', [ReportController::class, 'exportPayments'])->name('reports.payments.export');
         Route::get('/registrations', [ReportController::class, 'registrations'])->name('reports.registrations');

@@ -244,4 +244,31 @@ final readonly class DatabaseReportQueries implements ReportQueries
     {
         return ['base' => 0, 'service_charge' => 0, 'tax' => 0, 'total' => 0];
     }
+
+    public function housekeepingProductivity(PropertyId $property, DateTimeImmutable $fromUtc, DateTimeImmutable $toUtc, ReportPeriod $period): array
+    {
+        $pid = $property->toString();
+        $done = static fn () => DB::table('housekeeping_tasks')->where('property_id', $pid)->where('status', 'done')->where('finished_at', '>=', $fromUtc)->where('finished_at', '<', $toUtc);
+        $seconds = 'SUM(TIMESTAMPDIFF(SECOND, started_at, finished_at))';
+
+        $staff = $done()->whereNotNull('assigned_to')->groupBy('assigned_to')->orderByDesc(DB::raw('COUNT(*)'))
+            ->get(['assigned_to', DB::raw('COUNT(*) as n'), DB::raw($seconds.' as s')])
+            ->map(static fn ($r): array => ['user_id' => (string) $r->assigned_to, 'rooms' => (int) $r->n, 'seconds' => (int) $r->s])->all();
+        $kinds = $done()->groupBy('kind')->orderBy('kind')->get(['kind', DB::raw('COUNT(*) as n'), DB::raw($seconds.' as s')])
+            ->map(static fn ($r): array => ['kind' => (string) $r->kind, 'rooms' => (int) $r->n, 'seconds' => (int) $r->s])->all();
+        $inspections = DB::table('room_inspections')->where('property_id', $pid)->where('inspected_at', '>=', $fromUtc)->where('inspected_at', '<', $toUtc)
+            ->groupBy('result')->pluck(DB::raw('COUNT(*)'), 'result');
+        $runs = DB::table('hk_checklist_runs')->where('property_id', $pid)->where('period_start', '>=', $period->from->toString())->where('period_start', '<=', $period->to->toString())->get(['id', 'items']);
+        $items = 0;
+
+        foreach ($runs as $run) {
+            $items += count(json_decode((string) $run->items, true, 512, JSON_THROW_ON_ERROR));
+        }
+
+        return [
+            'staff' => $staff, 'kinds' => $kinds,
+            'inspections' => ['passed' => (int) ($inspections['passed'] ?? 0), 'rework' => (int) ($inspections['rework'] ?? 0)],
+            'checklists' => ['items' => $items, 'completed' => $runs->isEmpty() ? 0 : DB::table('hk_checklist_completions')->whereIn('run_id', $runs->pluck('id')->all())->count(), 'runs' => $runs->count()],
+        ];
+    }
 }

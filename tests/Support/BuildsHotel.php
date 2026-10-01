@@ -203,7 +203,7 @@ trait BuildsHotel
         $this->grant($attendant, self::PROPERTY, [HousekeepingService::PERFORM_PERMISSION]);
         $this->grant($attendant2, self::PROPERTY, [HousekeepingService::PERFORM_PERMISSION]);
         $this->grant($hkChief, self::PROPERTY, [HousekeepingService::INSPECT_PERMISSION, HousekeepingService::WAIVE_PERMISSION]);
-        $this->grant($analyst, self::PROPERTY, [DashboardService::VIEW_PERMISSION, DashboardService::REVENUE_PERMISSION, ReportService::VIEW_PERMISSION, ReportService::GUESTS_PERMISSION, ReportService::AUDIT_PERMISSION]);
+        $this->grant($analyst, self::PROPERTY, [DashboardService::VIEW_PERMISSION, DashboardService::REVENUE_PERMISSION, ReportService::VIEW_PERMISSION, ReportService::GUESTS_PERMISSION, ReportService::AUDIT_PERMISSION, ReportService::HOUSEKEEPING_PERMISSION]);
         $this->grant($registrar, self::PROPERTY, [ReportService::GUESTS_PERMISSION, ReportService::GUESTS_EXPORT_PERMISSION, ReportService::IDENTITY_PERMISSION]);
         $this->grant($dashOnly, self::PROPERTY, [DashboardService::VIEW_PERMISSION]);
         $this->grant($cashier, self::PROPERTY, [CashierService::OPERATE_PERMISSION, FolioService::MANAGE_PERMISSION, FolioService::REFUND_PERMISSION, FolioService::CORRECT_PERMISSION]);

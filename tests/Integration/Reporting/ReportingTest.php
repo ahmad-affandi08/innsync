@@ -334,7 +334,7 @@ final class ReportingTest extends TestCase
 
     public function test_the_report_centre_lists_only_what_the_person_may_open(): void
     {
-        self::assertSame(['movements', 'flash', 'performance', 'payments', 'registrations', 'foreign_guests', 'audit'], array_column($this->reports()->catalogue($this->property(), $this->analystId), 'code'));
+        self::assertSame(['movements', 'flash', 'performance', 'payments', 'housekeeping', 'registrations', 'foreign_guests', 'audit'], array_column($this->reports()->catalogue($this->property(), $this->analystId), 'code'));
         self::assertSame(['registrations', 'foreign_guests'], array_column($this->reports()->catalogue($this->property(), $this->registrarId), 'code'));
         self::assertSame([], $this->reports()->catalogue($this->property(), $this->viewerId));
     }

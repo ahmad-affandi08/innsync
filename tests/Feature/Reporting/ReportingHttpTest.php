@@ -42,7 +42,7 @@ final class ReportingHttpTest extends TestCase
         $this->signIn(self::A, [
             ReservationService::MANAGE_PERMISSION, FolioService::MANAGE_PERMISSION, StayService::MANAGE_PERMISSION, RoomCatalogService::MANAGE_PERMISSION, RatePlanService::MANAGE_PERMISSION,
             ChargeSchemeService::MANAGE_PERMISSION, PropertySettingsService::MANAGE_PERMISSION, DashboardService::VIEW_PERMISSION, DashboardService::REVENUE_PERMISSION, ReportService::VIEW_PERMISSION,
-            ReportService::GUESTS_PERMISSION, ReportService::GUESTS_EXPORT_PERMISSION, ReportService::AUDIT_PERMISSION, ReportService::IDENTITY_PERMISSION,
+            ReportService::GUESTS_PERMISSION, ReportService::GUESTS_EXPORT_PERMISSION, ReportService::AUDIT_PERMISSION, ReportService::IDENTITY_PERMISSION, ReportService::HOUSEKEEPING_PERMISSION,
         ]);
         $type = $this->postJson('/property/room-types', ['code' => 'DLX', 'name' => 'Deluxe', 'max_adults' => 2, 'max_children' => 1, 'reason' => 'x'])->json('type.id');
         $room = $this->postJson('/property/rooms', ['number' => '101', 'room_type_id' => $type, 'reason' => 'x'])->assertCreated()->json('room.id');
@@ -67,7 +67,7 @@ final class ReportingHttpTest extends TestCase
         $this->get('/dashboard?preset=forever')->assertStatus(422);
         $this->get('/dashboard?from=2026-10-09&to=2026-10-01')->assertStatus(422);
 
-        $this->get('/reports')->assertInertia(fn (Assert $p) => $p->component('reporting/pages/reports')->has('reports', 7)->where('context.business_date', '2026-10-01'));
+        $this->get('/reports')->assertInertia(fn (Assert $p) => $p->component('reporting/pages/reports')->has('reports', 8)->where('context.business_date', '2026-10-01'));
     }
 
     public function test_reports_state_their_basis_and_exports_download_as_csv(): void
@@ -90,6 +90,14 @@ final class ReportingHttpTest extends TestCase
         $this->get('/reports/flash/export')->assertOk();
         $this->get('/reports/payments/export')->assertOk();
         self::assertSame(3, DB::table('audit_entries')->where('action', 'report.exported')->count());
+    }
+
+    public function test_the_housekeeping_productivity_report_opens_and_exports(): void
+    {
+        $this->get('/reports/housekeeping')->assertInertia(fn (Assert $p) => $p->component('reporting/pages/housekeeping')->where('report.meta.report', 'housekeeping')->where('report.totals.rooms', 0)->has('report.staff', 0)->where('report.checklists.percent', null));
+        $this->get('/reports/housekeeping?from=2026-10-09&to=2026-10-01')->assertStatus(422);
+        $response = $this->get('/reports/housekeeping/export')->assertOk();
+        self::assertStringContainsString('attachment; filename="housekeeping-2026-10-01-2026-10-01.csv"', (string) $response->headers->get('Content-Disposition'));
     }
 
     public function test_the_movement_and_performance_reports_open_and_export(): void
