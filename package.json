@@ -5,6 +5,7 @@
     "scripts": {
         "build": "vite build",
         "dev": "vite",
+        "test": "node --experimental-strip-types --disable-warning=ExperimentalWarning --test \"resources/js/**/*.test.ts\"",
         "typecheck": "tsc --noEmit"
     },
     "devDependencies": {
