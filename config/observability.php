@@ -1,6 +1,7 @@
 <?php
 
 use App\Shared\Application\Observability\Health\HealthCheck;
+use App\Shared\Infrastructure\Offline\SyncBacklogCheck;
 
 // Operational thresholds, tunable per hosting plan. They are not hotel business policy.
 return [
@@ -28,5 +29,7 @@ return [
      *
      * @var list<class-string<HealthCheck>>
      */
-    'checks' => [],
+    'checks' => [
+        SyncBacklogCheck::class,
+    ],
 ];

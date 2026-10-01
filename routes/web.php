@@ -9,6 +9,7 @@ use App\Modules\IdentityAccess\Presentation\Http\Controllers\PasswordController;
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\PropertySelectionController;
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\UserSessionController;
 use App\Shared\Infrastructure\Localization\SetLocaleController;
+use App\Shared\Infrastructure\Offline\SyncController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -73,3 +74,14 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->get('/
         'activePropertyId' => (string) $request->session()->get('auth.active_property_id'),
     ]);
 })->name('home');
+
+// Offline queue synchronization (TASK-FND-017): signed in, MFA satisfied, property selected. Each item is
+// authorized again on the server and applied idempotently by its client-generated operation ID.
+Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property', 'throttle:sync'])
+    ->post('/sync/batch', SyncController::class)
+    ->name('sync.batch');
+
+// Field test for the offline queue (TASK-FND-017): staff and IT use it to prove a device can work offline.
+Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])
+    ->get('/offline-check', fn () => Inertia::render('foundation/pages/offline-check'))
+    ->name('offline.check');

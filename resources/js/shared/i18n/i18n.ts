@@ -25,6 +25,8 @@ declare module '@inertiajs/core' {
             locale: Locale;
             /** IANA zone of the active property (NFR-26); null before a property is selected. */
             timeZone: string | null;
+            /** Signed-in user and active property (ULIDs, no personal data); null before a property is selected. */
+            auth: { userId: string; propertyId: string } | null;
         };
     }
 }

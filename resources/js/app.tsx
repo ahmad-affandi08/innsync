@@ -1,12 +1,13 @@
 import '../css/app.css';
 
-import { createInertiaApp } from '@inertiajs/react';
+import { createInertiaApp, type ResolvedComponent } from '@inertiajs/react';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import type { ComponentType } from 'react';
 
 import { createAppQueryClient } from '@/shared/api/query-client';
 import { ensureMessages, localeFromProps } from '@/shared/i18n/i18n';
+import { OfflineProvider } from '@/shared/offline/offline-provider';
 
 const appName = import.meta.env.VITE_APP_NAME ?? 'InnSYnc';
 const pages = import.meta.glob<{ default: ComponentType }>(
@@ -23,9 +24,14 @@ void createInertiaApp({
         await ensureMessages(locale);
         document.documentElement.lang = locale;
 
-        return (
+        const component = (
             await resolvePageComponent(`./modules/${name}.tsx`, pages)
-        ).default;
+        ).default as ResolvedComponent;
+
+        // The same layout component on every page keeps the offline queue mounted across navigation.
+        component.layout ??= OfflineProvider;
+
+        return component;
     },
     strictMode: true,
     withApp: (app) => (

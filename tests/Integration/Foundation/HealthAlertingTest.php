@@ -108,7 +108,7 @@ final class HealthAlertingTest extends TestCase
         $report = app(RunHealthChecks::class)->execute();
 
         self::assertEqualsCanonicalizing(
-            ['database', 'scheduler', 'failed_jobs', 'outbox_backlog', 'storage_capacity', 'error_rate', 'backup'],
+            ['database', 'scheduler', 'failed_jobs', 'outbox_backlog', 'storage_capacity', 'error_rate', 'backup', 'sync_backlog'],
             array_keys($report->results),
         );
         self::assertSame(HealthStatus::Ok, $report->results['database']->status);

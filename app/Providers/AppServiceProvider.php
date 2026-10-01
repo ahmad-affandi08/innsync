@@ -15,6 +15,7 @@ use App\Modules\IdentityAccess\Infrastructure\Authentication\EloquentCredentialA
 use App\Modules\IdentityAccess\Infrastructure\Authentication\EloquentUserPasswordUpdater;
 use App\Modules\IdentityAccess\Infrastructure\Authorization\EloquentPermissionGrantReader;
 use App\Modules\IdentityAccess\Infrastructure\Authorization\EloquentUserAccessReader;
+use App\Modules\IdentityAccess\Infrastructure\Authorization\ScopedPermissionChecker;
 use App\Modules\IdentityAccess\Infrastructure\Mfa\EloquentMfaStore;
 use App\Modules\IdentityAccess\Infrastructure\Mfa\TotpOneTimePassword;
 use App\Modules\IdentityAccess\Infrastructure\Sessions\DatabaseUserSessionRepository;
@@ -26,17 +27,25 @@ use App\Shared\Application\Files\PrivateFileStorage;
 use App\Shared\Application\Files\StoredFileRepository;
 use App\Shared\Application\Idempotency\IdempotencyContext;
 use App\Shared\Application\Idempotency\IdempotencyStore;
+use App\Shared\Application\Idempotency\IdempotentExecutor;
 use App\Shared\Application\Localization\LocaleNegotiator;
 use App\Shared\Application\Observability\CorrelationId;
 use App\Shared\Application\Observability\Health\AlertNotifier;
 use App\Shared\Application\Observability\Health\AlertStore;
 use App\Shared\Application\Observability\Health\HealthCheckRegistry;
+use App\Shared\Application\Offline\DeviceStatusRepository;
+use App\Shared\Application\Offline\OfflineHandlerRegistry;
+use App\Shared\Application\Offline\OfflineSyncProcessor;
+use App\Shared\Application\Offline\SyncExceptionRepository;
+use App\Shared\Application\Offline\UnexpectedFailureReporter;
 use App\Shared\Application\Outbox\OutboxConsumerRegistry;
 use App\Shared\Application\Outbox\OutboxMessageStore;
 use App\Shared\Application\Outbox\OutboxPublisher;
 use App\Shared\Application\Outbox\OutboxQueue;
 use App\Shared\Application\Outbox\ProcessedOutboxMessageStore;
+use App\Shared\Application\Security\PermissionChecker;
 use App\Shared\Application\Security\SecurityEventWriter;
+use App\Shared\Application\Security\SecurityLog;
 use App\Shared\Application\Tenancy\PropertyContext;
 use App\Shared\Application\Time\Clock;
 use App\Shared\Application\Transactions\TransactionRunner;
@@ -49,6 +58,10 @@ use App\Shared\Infrastructure\Observability\Health\ConfiguredHealthCheckRegistry
 use App\Shared\Infrastructure\Observability\Health\DatabaseAlertStore;
 use App\Shared\Infrastructure\Observability\Health\LogAlertNotifier;
 use App\Shared\Infrastructure\Observability\LaravelCorrelationId;
+use App\Shared\Infrastructure\Offline\ConfiguredHandlerRegistry;
+use App\Shared\Infrastructure\Offline\DatabaseDeviceStatusRepository;
+use App\Shared\Infrastructure\Offline\DatabaseSyncExceptionRepository;
+use App\Shared\Infrastructure\Offline\ReportingFailureReporter;
 use App\Shared\Infrastructure\Outbox\ConfiguredOutboxConsumerRegistry;
 use App\Shared\Infrastructure\Outbox\DatabaseOutboxMessageStore;
 use App\Shared\Infrastructure\Outbox\DatabaseOutboxPublisher;
@@ -114,6 +127,26 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(MfaStore::class, EloquentMfaStore::class);
         $this->app->bind(UserSessionRepository::class, DatabaseUserSessionRepository::class);
         $this->app->bind(PropertyTimeZoneReader::class, EloquentPropertyTimeZoneReader::class);
+        $this->app->bind(PermissionChecker::class, ScopedPermissionChecker::class);
+        $this->app->bind(SyncExceptionRepository::class, DatabaseSyncExceptionRepository::class);
+        $this->app->bind(DeviceStatusRepository::class, DatabaseDeviceStatusRepository::class);
+        $this->app->bind(UnexpectedFailureReporter::class, ReportingFailureReporter::class);
+        $this->app->singleton(OfflineHandlerRegistry::class, static fn ($app): OfflineHandlerRegistry => new ConfiguredHandlerRegistry(
+            $app,
+            array_values((array) config('offline.handlers')),
+        ));
+        $this->app->bind(OfflineSyncProcessor::class, static fn ($app): OfflineSyncProcessor => new OfflineSyncProcessor(
+            $app->make(OfflineHandlerRegistry::class),
+            $app->make(IdempotentExecutor::class),
+            $app->make(PermissionChecker::class),
+            $app->make(SyncExceptionRepository::class),
+            $app->make(DeviceStatusRepository::class),
+            $app->make(PropertyContext::class),
+            $app->make(SecurityLog::class),
+            $app->make(UnexpectedFailureReporter::class),
+            $app->make(Clock::class),
+            (int) config('offline.max_payload_bytes'),
+        ));
     }
 
     /**
@@ -126,6 +159,9 @@ class AppServiceProvider extends ServiceProvider
             ->mixedCase()
             ->numbers()
             ->symbols());
+
+        RateLimiter::for('sync', static fn (Request $request): Limit => Limit::perMinute(60)
+            ->by((string) $request->user()?->getAuthIdentifier().'|'.$request->ip()));
 
         RateLimiter::for('health', static fn (Request $request): Limit => Limit::perMinute(60)
             ->by((string) $request->ip()));

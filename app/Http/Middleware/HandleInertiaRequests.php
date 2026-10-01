@@ -28,6 +28,7 @@ final class HandleInertiaRequests extends Middleware
             ...parent::share($request),
             'locale' => app()->getLocale(),
             'timeZone' => fn (): ?string => $this->activeTimeZone($request),
+            'auth' => fn (): ?array => $this->activeIdentity($request),
             'app' => [
                 'name' => (string) config('app.name'),
             ],
@@ -56,5 +57,22 @@ final class HandleInertiaRequests extends Middleware
 
             return null;
         }
+    }
+
+    /**
+     * Opaque identifiers the browser needs to scope its offline queue to the signed-in user and active
+     * property. No name, e-mail or other personal data. The server re-checks both on every synchronization.
+     *
+     * @return array{userId: string, propertyId: string}|null
+     */
+    private function activeIdentity(Request $request): ?array
+    {
+        $propertyId = $request->session()->get('auth.active_property_id');
+
+        if ($request->user() === null || ! is_string($propertyId) || $propertyId === '') {
+            return null;
+        }
+
+        return ['userId' => strtolower((string) $request->user()->getAuthIdentifier()), 'propertyId' => strtolower($propertyId)];
     }
 }
