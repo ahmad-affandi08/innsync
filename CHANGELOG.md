@@ -17,11 +17,12 @@ Release notes for every release (NFR-14). Newest first. Each entry names the tas
 - TASK-FND-019 (NFR-07, NFR-08, NFR-24, NFR-29): retention catalogue with an Indonesian baseline, daily erasure of expired files with tombstones, legal holds, consent ledger, data subject request register with deadlines, sensitive export issuing and personal data access audit; backup sets kept default to 35.
 - TASK-FND-020 (NFR-25, NFR-28, NFR-18): external integration conventions: single call executor with timeouts, idempotency key and circuit breaker, honest unknown outcomes with manual reconciliation and a health signal, signed idempotent webhook receiver with secret rotation, contract versioning policy and browser/device matrix.
 - TASK-FO-010, TASK-FO-011, TASK-FO-014, TASK-FO-015, TASK-FO-016 (BR-009, NFR-07): guest registration and check-in into a free room, encrypted identity details with masking and audited reading, identity photo with retention starting at check-out, returning-guest recognition, document warnings, and check-out that settles folios and completes the reservation.
+- TASK-FO-028 (BR-001, BR-002, BR-005): night audit that checks pending arrivals, overdue departures, folios and same-day stays (waivable only with a reason by a privileged person), posts one room charge per in-house night from the reservation's price snapshot, records an immutable report computed from the ledger, locks the closed day (database trigger) and is the only way the business date moves.
 
 ### Known limitations
 
 - Backup point-in-time recovery (RPO of 15 minutes, NFR-11) is not met and needs an owner decision (TASK-FND-011).
-- The business date rollover rule is undecided (PRD Q-11); night audit (TASK-FO-028) is not started.
+- The business date rollover rule (PRD Q-11) follows the Indonesian baseline in `docs/OPERATIONS/INDONESIA-COMPLIANCE-BASELINE.md` (earliest local start, default 23:00, no latest time) and needs the General Manager's confirmation; night audit (TASK-FO-028) only checks Front Office items, and outlet, laundry and approval items join the checks when those contexts exist.
 - Offline operation (TASK-FND-017) has no concrete POS or Housekeeping operations yet, and real iOS/Android devices have not been tested (PRD Q-14 is open).
 - PHP static analysis (Larastan) is approved but not installed yet; it could not be downloaded in the build sandbox.
 - Retention periods and data subject deadlines are an Indonesian baseline from the owner's instruction and need confirmation by counsel (docs/OPERATIONS/INDONESIA-COMPLIANCE-BASELINE.md); only Front Office guest registration stores personal data so far (encrypted identity fields, photo retention from check-out).

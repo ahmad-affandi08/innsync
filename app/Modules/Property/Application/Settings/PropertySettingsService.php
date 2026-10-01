@@ -21,7 +21,7 @@ use App\Shared\Domain\Time\BusinessDate;
 use InvalidArgumentException;
 
 /** Reads and changes a property's operating settings and sets the business date once at go-live. */
-final readonly class PropertySettingsService implements BusinessDateProvider
+final readonly class PropertySettingsService implements BusinessDateAdvancer, BusinessDateProvider
 {
     public const MANAGE_PERMISSION = 'property.settings.manage';
 
@@ -82,6 +82,26 @@ final readonly class PropertySettingsService implements BusinessDateProvider
         }
 
         return $this->persist($property, $actorId, $current, $next, $expectedLockVersion, 'property.business_date.initialized', $reason);
+    }
+
+    public function advance(PropertyId $property, BusinessDate $expectedCurrent, string $actorId): BusinessDate
+    {
+        $this->assertProperty($property);
+        $current = $this->get($property);
+
+        if ($current->businessDate === null || ! $current->businessDate->equals($expectedCurrent)) {
+            throw Refusal::stateConflict('The business date is no longer the one being closed.');
+        }
+
+        $next = $current->advancedTo($expectedCurrent->next());
+
+        if (! $this->settings->save($property, $next, $current->lockVersion, strtolower($actorId))) {
+            throw Refusal::stateConflict('The settings changed while the business date was being closed.');
+        }
+
+        $this->audit->record(new AuditEntry($property->toString(), strtolower($actorId), 'property.business_date.advanced', 'property_settings', $property->toString(), $current->toArray(), $next->toArray(), 'Night audit'));
+
+        return $expectedCurrent->next();
     }
 
     private function persist(PropertyId $property, string $actorId, PropertySettings $before, PropertySettings $after, int $expectedLockVersion, string $action, string $reason): PropertySettings

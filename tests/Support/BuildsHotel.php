@@ -6,6 +6,7 @@ namespace Tests\Support;
 
 use App\Modules\FrontOffice\Application\Folios\FolioService;
 use App\Modules\FrontOffice\Application\Inventory\InventoryAdminService;
+use App\Modules\FrontOffice\Application\NightAudit\NightAuditService;
 use App\Modules\FrontOffice\Application\Reservations\ReservationRequest;
 use App\Modules\FrontOffice\Application\Reservations\ReservationService;
 use App\Modules\FrontOffice\Application\Stays\StayService;
@@ -68,10 +69,10 @@ trait BuildsHotel
             RoomCatalogService::MANAGE_PERMISSION, RatePlanService::MANAGE_PERMISSION, ChargeSchemeService::MANAGE_PERMISSION, PropertySettingsService::MANAGE_PERMISSION,
             InventoryAdminService::OVERBOOKING_PERMISSION, InventoryAdminService::BLOCK_PERMISSION, InventoryAdminService::HOLD_PERMISSION, ApprovalPolicyAdmin::MANAGE_PERMISSION,
         ]);
-        $this->grant($manager, self::PROPERTY, [ReservationService::MANAGE_PERMISSION, StayService::MANAGE_PERMISSION, FolioService::MANAGE_PERMISSION, FolioService::CORRECT_PERMISSION, FolioService::REFUND_PERMISSION]);
-        $this->grant($viewer, self::PROPERTY, [ReservationService::VIEW_PERMISSION, FolioService::VIEW_PERMISSION, StayService::VIEW_PERMISSION]);
+        $this->grant($manager, self::PROPERTY, [ReservationService::MANAGE_PERMISSION, StayService::MANAGE_PERMISSION, NightAuditService::RUN_PERMISSION, FolioService::MANAGE_PERMISSION, FolioService::CORRECT_PERMISSION, FolioService::REFUND_PERMISSION]);
+        $this->grant($viewer, self::PROPERTY, [ReservationService::VIEW_PERMISSION, FolioService::VIEW_PERMISSION, StayService::VIEW_PERMISSION, NightAuditService::VIEW_PERMISSION]);
         $this->grant($auditor, self::PROPERTY, [StayService::VIEW_PERMISSION, StayService::IDENTITY_PERMISSION]);
-        $this->grant($supervisor, self::PROPERTY, ['front-office.folio.approve']);
+        $this->grant($supervisor, self::PROPERTY, ['front-office.folio.approve', NightAuditService::RUN_PERMISSION, NightAuditService::WAIVE_PERMISSION]);
         $this->adminId = strtolower((string) $admin->getKey());
         $this->managerId = strtolower((string) $manager->getKey());
         $this->viewerId = strtolower((string) $viewer->getKey());

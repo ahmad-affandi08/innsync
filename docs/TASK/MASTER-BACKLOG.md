@@ -51,7 +51,7 @@
 | TASK-FO-025 | FR-FO-025 | Front Office | Wajib | REVIEW |
 | TASK-FO-026 | FR-FO-026 | Front Office | Bisa | TODO |
 | TASK-FO-027 | FR-FO-027 | Front Office | Wajib | TODO |
-| TASK-FO-028 | FR-FO-028 | Front Office | Wajib | TODO |
+| TASK-FO-028 | FR-FO-028 | Front Office | Wajib | REVIEW |
 | TASK-FO-029 | FR-FO-029 | Front Office | Wajib | REVIEW |
 | TASK-FO-030 | FR-FO-030 | Front Office | Wajib | TODO |
 | TASK-FO-031 | FR-FO-031 | Front Office | Wajib | TODO |

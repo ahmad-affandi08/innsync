@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Modules\FrontOffice\Presentation\Http\Controllers\AvailabilityController;
 use App\Modules\FrontOffice\Presentation\Http\Controllers\FolioController;
 use App\Modules\FrontOffice\Presentation\Http\Controllers\InventoryController;
+use App\Modules\FrontOffice\Presentation\Http\Controllers\NightAuditController;
 use App\Modules\FrontOffice\Presentation\Http\Controllers\ReservationController;
 use App\Modules\FrontOffice\Presentation\Http\Controllers\StayController;
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\ApprovalController;
@@ -173,6 +174,11 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
     Route::get('/reservations/{id}/check-in', [StayController::class, 'checkInForm'])->where('id', $id)->name('front-office.check-in');
     Route::post('/reservations/{id}/guest-lookup', [StayController::class, 'lookup'])->where('id', $id)->middleware('throttle:bookings')->name('front-office.check-in.lookup');
     Route::post('/reservations/{id}/check-in', [StayController::class, 'checkIn'])->where('id', $id)->middleware(['idempotent', 'throttle:bookings'])->name('front-office.check-in.store');
+
+    // Night audit closes the business date (FR-FO-028, BR-001). Running it needs a recent password confirmation and an Idempotency-Key.
+    Route::get('/night-audit', [NightAuditController::class, 'index'])->name('front-office.night-audit');
+    Route::get('/night-audit/{date}', [NightAuditController::class, 'show'])->where('date', '\d{4}-\d{2}-\d{2}')->name('front-office.night-audit.show');
+    Route::post('/night-audit', [NightAuditController::class, 'run'])->middleware(['password.confirm', 'idempotent'])->name('front-office.night-audit.run');
 
     // Folios (FR-FO-020, -024, -025, -029). Money that leaves or is corrected needs a recent password confirmation and, by policy, an approval.
     Route::post('/reservations/{id}/folios', [FolioController::class, 'open'])->where('id', $id)->name('front-office.folios.open');

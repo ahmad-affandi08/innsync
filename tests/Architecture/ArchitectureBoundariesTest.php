@@ -24,6 +24,27 @@ final class ArchitectureBoundariesTest extends TestCase
         self::assertSame([], $this->inspector->inspectApplication(dirname(__DIR__, 2).'/app'));
     }
 
+    /** BR-001: the business date moves only through night audit, so nothing else may use the advancer. */
+    public function test_only_night_audit_and_the_property_settings_use_the_business_date_advancer(): void
+    {
+        $users = [];
+
+        foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator(dirname(__DIR__, 2).'/app', \FilesystemIterator::SKIP_DOTS)) as $file) {
+            if ($file->getExtension() === 'php' && str_contains((string) file_get_contents($file->getPathname()), 'BusinessDateAdvancer')) {
+                $users[] = substr($file->getPathname(), strlen(dirname(__DIR__, 2).'/app/'));
+            }
+        }
+
+        sort($users);
+
+        self::assertSame([
+            'Modules/FrontOffice/Application/NightAudit/NightAuditService.php',
+            'Modules/Property/Application/Settings/BusinessDateAdvancer.php',
+            'Modules/Property/Application/Settings/PropertySettingsService.php',
+            'Providers/AppServiceProvider.php',
+        ], $users);
+    }
+
     #[DataProvider('validSourceProvider')]
     public function test_valid_layer_dependencies_are_accepted(string $path, string $source): void
     {

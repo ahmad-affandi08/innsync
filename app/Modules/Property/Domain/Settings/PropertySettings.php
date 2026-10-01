@@ -52,6 +52,16 @@ final readonly class PropertySettings
         return new self($date, $this->checkInTime, $this->checkOutTime, $this->nightAuditEarliest, $this->rounding, $this->availabilityHorizonDays, $this->lockVersion);
     }
 
+    /** One day forward at most, and never backwards (BR-001); the database refuses a move back as well. */
+    public function advancedTo(BusinessDate $date): self
+    {
+        if ($this->businessDate === null || ! $date->equals($this->businessDate->next())) {
+            throw new DomainException('The business date moves exactly one day forward.');
+        }
+
+        return new self($date, $this->checkInTime, $this->checkOutTime, $this->nightAuditEarliest, $this->rounding, $this->availabilityHorizonDays, $this->lockVersion);
+    }
+
     /** @return array<string, mixed> */
     public function toArray(): array
     {
