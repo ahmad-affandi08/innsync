@@ -1,9 +1,11 @@
 import type { MessageKey } from '../en/index.ts'
 import { offline } from './offline.ts'
+import { property } from './property.ts'
 
 /** Must define every key of the English source dictionary; the type enforces it at compile time. */
 export const id: Record<MessageKey, string> = {
     ...offline,
+    ...property,
     'common.language.label': 'Bahasa',
     'common.language.id': 'Bahasa Indonesia',
     'common.language.en': 'English',
@@ -94,8 +96,8 @@ export const id: Record<MessageKey, string> = {
     'identity.approvals.refresh': 'Muat ulang',
 
     'ui.failure.title.validation': 'Periksa kolom yang ditandai',
-    'ui.failure.title.conflict': 'Data ini diubah oleh orang lain',
-    'ui.failure.description.conflict': 'Muat ulang untuk melihat versi terbaru, lalu tinjau sebelum mencoba lagi.',
+    'ui.failure.title.conflict': 'Tindakan ini bertentangan dengan data saat ini',
+    'ui.failure.description.conflict': 'Data diubah orang lain atau statusnya tidak mengizinkan ini. Muat ulang, tinjau, lalu coba lagi.',
     'ui.failure.title.forbidden': 'Anda tidak memiliki izin',
     'ui.failure.description.forbidden': 'Hubungi administrator jika Anda memerlukan akses ini.',
     'ui.failure.title.unauthenticated': 'Silakan masuk',

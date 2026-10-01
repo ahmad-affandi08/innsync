@@ -25,7 +25,15 @@ use App\Modules\IdentityAccess\Infrastructure\Authorization\ScopedPermissionChec
 use App\Modules\IdentityAccess\Infrastructure\Mfa\EloquentMfaStore;
 use App\Modules\IdentityAccess\Infrastructure\Mfa\TotpOneTimePassword;
 use App\Modules\IdentityAccess\Infrastructure\Sessions\DatabaseUserSessionRepository;
+use App\Modules\Property\Application\Catalog\RoomCatalogReader;
+use App\Modules\Property\Application\Catalog\RoomCatalogRepository;
+use App\Modules\Property\Application\Catalog\RoomCatalogService;
 use App\Modules\Property\Application\Ports\PropertyTimeZoneReader;
+use App\Modules\Property\Application\Settings\BusinessDateProvider;
+use App\Modules\Property\Application\Settings\PropertySettingsRepository;
+use App\Modules\Property\Application\Settings\PropertySettingsService;
+use App\Modules\Property\Infrastructure\Catalog\DatabaseRoomCatalogRepository;
+use App\Modules\Property\Infrastructure\Settings\DatabasePropertySettingsRepository;
 use App\Modules\Property\Infrastructure\Time\EloquentPropertyTimeZoneReader;
 use App\Shared\Application\Approval\ApprovalGate;
 use App\Shared\Application\Approval\ApprovalSubjects;
@@ -184,6 +192,10 @@ class AppServiceProvider extends ServiceProvider
             $app->make(PropertyContext::class),
             array_map('intval', (array) config('retention.request_due_hours')),
         ));
+        $this->app->bind(RoomCatalogRepository::class, DatabaseRoomCatalogRepository::class);
+        $this->app->bind(RoomCatalogReader::class, RoomCatalogService::class);
+        $this->app->bind(PropertySettingsRepository::class, DatabasePropertySettingsRepository::class);
+        $this->app->bind(BusinessDateProvider::class, PropertySettingsService::class);
         $this->app->bind(ProviderRegistry::class, ConfiguredProviderRegistry::class);
         $this->app->bind(CircuitStore::class, DatabaseCircuitStore::class);
         $this->app->bind(UnknownOutcomeRepository::class, DatabaseUnknownOutcomeRepository::class);

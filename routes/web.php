@@ -8,7 +8,10 @@ use App\Modules\IdentityAccess\Presentation\Http\Controllers\MfaController;
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\PasswordConfirmationController;
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\PasswordController;
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\PropertySelectionController;
+use App\Modules\IdentityAccess\Presentation\Http\Controllers\ReconfirmController;
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\UserSessionController;
+use App\Modules\Property\Presentation\Http\Controllers\PropertySettingsController;
+use App\Modules\Property\Presentation\Http\Controllers\RoomCatalogController;
 use App\Shared\Infrastructure\Localization\SetLocaleController;
 use App\Shared\Infrastructure\Offline\SyncController;
 use Illuminate\Http\Request;
@@ -87,6 +90,9 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])
     ->get('/offline-check', fn () => Inertia::render('foundation/pages/offline-check'))
     ->name('offline.check');
 
+// After a lapsed password confirmation (HTTP 423) a screen sends the person here and they return to the page they were on.
+Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'password.confirm'])->get('/reconfirm', ReconfirmController::class)->name('reconfirm');
+
 // Maker-checker approval (TASK-FND-018, NFR-06, BR-004). Deciding is sensitive: it needs a recent password
 // confirmation (NFR-22). Requests are opened by modules through the ApprovalGate contract, not from the browser.
 Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix('approvals')->group(function (): void {
@@ -100,4 +106,20 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
         ->middleware(['password.confirm', 'throttle:approvals'])->where('id', '[0-9A-Za-z]{26}')->name('approvals.reject');
     Route::post('/{id}/cancel', [ApprovalController::class, 'cancel'])
         ->middleware('throttle:approvals')->where('id', '[0-9A-Za-z]{26}')->name('approvals.cancel');
+});
+
+// Property configuration (TASK-FO-007 groundwork): settings, business date, room types and rooms.
+// Permissions are enforced in the application services; the middleware only establishes who and where.
+Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix('property')->group(function (): void {
+    Route::get('/settings', [PropertySettingsController::class, 'show'])->name('property.settings');
+    Route::put('/settings', [PropertySettingsController::class, 'update'])->middleware('password.confirm')->name('property.settings.update');
+    Route::post('/settings/business-date', [PropertySettingsController::class, 'initializeBusinessDate'])->middleware('password.confirm')->name('property.business-date.initialize');
+
+    Route::get('/rooms', [RoomCatalogController::class, 'index'])->name('property.rooms');
+    Route::post('/room-types', [RoomCatalogController::class, 'storeType'])->name('property.room-types.store');
+    Route::put('/room-types/{id}', [RoomCatalogController::class, 'updateType'])->where('id', '[0-9A-Za-z]{26}')->name('property.room-types.update');
+    Route::post('/room-types/{id}/active', [RoomCatalogController::class, 'typeActive'])->where('id', '[0-9A-Za-z]{26}')->name('property.room-types.active');
+    Route::post('/rooms', [RoomCatalogController::class, 'storeRoom'])->name('property.rooms.store');
+    Route::put('/rooms/{id}', [RoomCatalogController::class, 'updateRoom'])->where('id', '[0-9A-Za-z]{26}')->name('property.rooms.update');
+    Route::post('/rooms/{id}/active', [RoomCatalogController::class, 'roomActive'])->where('id', '[0-9A-Za-z]{26}')->name('property.rooms.active');
 });

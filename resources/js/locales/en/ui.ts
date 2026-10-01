@@ -1,7 +1,7 @@
 export const ui = {
     'ui.failure.title.validation': 'Check the highlighted fields',
-    'ui.failure.title.conflict': 'This data was changed by someone else',
-    'ui.failure.description.conflict': 'Refresh to see the latest version, then review before trying again.',
+    'ui.failure.title.conflict': 'This conflicts with the current data',
+    'ui.failure.description.conflict': 'It was changed by someone else or its state does not allow this. Refresh, review, then try again.',
     'ui.failure.title.forbidden': 'You do not have permission',
     'ui.failure.description.forbidden': 'Ask an administrator if you need access to this.',
     'ui.failure.title.unauthenticated': 'Please sign in',
