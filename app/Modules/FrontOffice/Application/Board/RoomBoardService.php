@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Modules\FrontOffice\Application\Board;
 
 use App\Modules\FrontOffice\Application\Inventory\RoomBlockRepository;
+use App\Modules\FrontOffice\Application\Requests\GuestRequestRepository;
 use App\Modules\FrontOffice\Application\Reservations\ReservationRepository;
 use App\Modules\FrontOffice\Application\Stays\StayRepository;
 use App\Modules\FrontOffice\Application\Stays\StayService;
@@ -30,6 +31,7 @@ final readonly class RoomBoardService
         private ReservationRepository $reservations,
         private RoomBlockRepository $blocks,
         private RoomReadiness $readiness,
+        private GuestRequestRepository $requests,
         private BusinessDateProvider $businessDate,
         private PermissionChecker $permissions,
         private PropertyContext $property,
@@ -55,6 +57,7 @@ final readonly class RoomBoardService
             $occupied[$stay->roomId] = $stay;
         }
 
+        $openRequests = $this->requests->openCountsByRoom($property);
         $rows = [];
         $counts = ['occupied' => 0, 'vacant_ready' => 0, 'vacant_not_ready' => 0, 'blocked' => 0];
 
@@ -79,6 +82,7 @@ final readonly class RoomBoardService
                 'blocked' => $blocked,
                 'stay_id' => $stay?->id,
                 'expected_departure' => $stay?->expectedDeparture->toString(),
+                'open_requests' => $openRequests[$room->id] ?? 0,
             ];
         }
 

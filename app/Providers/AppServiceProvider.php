@@ -15,6 +15,7 @@ use App\Modules\FrontOffice\Application\Inventory\InventoryHoldRepository;
 use App\Modules\FrontOffice\Application\Inventory\InventoryRepository;
 use App\Modules\FrontOffice\Application\Inventory\RoomBlockRepository;
 use App\Modules\FrontOffice\Application\NightAudit\NightAuditRepository;
+use App\Modules\FrontOffice\Application\Requests\GuestRequestRepository;
 use App\Modules\FrontOffice\Application\Reservations\DepositLedger;
 use App\Modules\FrontOffice\Application\Reservations\PenaltyPoster;
 use App\Modules\FrontOffice\Application\Reservations\ReservationRepository;
@@ -27,9 +28,11 @@ use App\Modules\FrontOffice\Infrastructure\Inventory\DatabaseInventoryHoldReposi
 use App\Modules\FrontOffice\Infrastructure\Inventory\DatabaseInventoryRepository;
 use App\Modules\FrontOffice\Infrastructure\Inventory\DatabaseRoomBlockRepository;
 use App\Modules\FrontOffice\Infrastructure\NightAudit\DatabaseNightAuditRepository;
+use App\Modules\FrontOffice\Infrastructure\Requests\DatabaseGuestRequestRepository;
 use App\Modules\FrontOffice\Infrastructure\Reservations\DatabaseReservationRepository;
 use App\Modules\FrontOffice\Infrastructure\Stays\DatabaseGuestRepository;
 use App\Modules\FrontOffice\Infrastructure\Stays\DatabaseStayRepository;
+use App\Modules\Housekeeping\Application\GuestServiceRequests;
 use App\Modules\Housekeeping\Application\HousekeepingRepository;
 use App\Modules\Housekeeping\Application\HousekeepingService;
 use App\Modules\Housekeeping\Application\OccupancyReader;
@@ -241,6 +244,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(PropertyTimeZoneReader::class, EloquentPropertyTimeZoneReader::class);
         $this->app->bind(PropertyProfileReader::class, EloquentPropertyProfileReader::class);
         $this->app->bind(CashierRepository::class, DatabaseCashierRepository::class);
+        $this->app->bind(GuestRequestRepository::class, DatabaseGuestRequestRepository::class);
         $this->app->bind(ShiftAttribution::class, CashierService::class);
         $this->app->bind(StaffDirectory::class, DatabaseStaffDirectory::class);
         $this->app->bind(PermissionChecker::class, ScopedPermissionChecker::class);
@@ -286,6 +290,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(OccupancyReader::class, StayOccupancyReader::class);
         $this->app->bind(RoomReadiness::class, HousekeepingService::class);
         $this->app->bind(RoomHandover::class, HousekeepingService::class);
+        $this->app->bind(GuestServiceRequests::class, HousekeepingService::class);
         $this->app->bind(GuestCharging::class, GuestChargingService::class);
         $this->app->bind(PenaltyPoster::class, FolioPenaltyPoster::class);
         $this->app->bind(DepositLedger::class, FolioPenaltyPoster::class);

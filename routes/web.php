@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Modules\FrontOffice\Presentation\Http\Controllers\AvailabilityController;
 use App\Modules\FrontOffice\Presentation\Http\Controllers\CashierController;
 use App\Modules\FrontOffice\Presentation\Http\Controllers\FolioController;
+use App\Modules\FrontOffice\Presentation\Http\Controllers\GuestRequestController;
 use App\Modules\FrontOffice\Presentation\Http\Controllers\InventoryController;
 use App\Modules\FrontOffice\Presentation\Http\Controllers\NightAuditController;
 use App\Modules\FrontOffice\Presentation\Http\Controllers\RateChangeController;
@@ -216,6 +217,13 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
         Route::post('/postings/{id}/reverse', [FolioController::class, 'reverse'])->where('id', $id)->name('front-office.postings.reverse');
         Route::post('/folios/{id}/refund', [FolioController::class, 'refund'])->where('id', $id)->name('front-office.folios.refund');
     });
+
+    // Guest requests (FR-FO-030): what in-house guests ask for, by department, and where each one stands.
+    Route::get('/requests', [GuestRequestController::class, 'index'])->name('front-office.requests');
+    Route::post('/requests', [GuestRequestController::class, 'open'])->middleware(['idempotent', 'throttle:bookings'])->name('front-office.requests.store');
+    Route::post('/requests/{id}/start', [GuestRequestController::class, 'start'])->where('id', $id)->name('front-office.requests.start');
+    Route::post('/requests/{id}/complete', [GuestRequestController::class, 'complete'])->where('id', $id)->name('front-office.requests.complete');
+    Route::post('/requests/{id}/cancel', [GuestRequestController::class, 'cancel'])->where('id', $id)->name('front-office.requests.cancel');
 
     // Cashier shifts (FR-FO-036): own shift, review of all shifts, and the property switch that requires an open shift to take money.
     Route::get('/cashier', [CashierController::class, 'mine'])->name('front-office.cashier');

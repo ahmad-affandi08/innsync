@@ -33,7 +33,7 @@ use App\Shared\Domain\Tenancy\PropertyId;
  * supervisor inspects: a pass makes the room ready, a failure lists findings and sends it to rework. A room becomes ready
  * after rework only when every mandatory finding is resolved or waived by someone with the privilege to waive.
  */
-final readonly class HousekeepingService implements RoomHandover, RoomReadiness
+final readonly class HousekeepingService implements GuestServiceRequests, RoomHandover, RoomReadiness
 {
     public const MANAGE_PERMISSION = 'housekeeping.task.manage';
 
@@ -223,6 +223,50 @@ final readonly class HousekeepingService implements RoomHandover, RoomReadiness
 
             return $this->describe($task, $taskKind->priority(), []);
         });
+    }
+
+    public function openForGuestRequest(PropertyId $property, string $actorId, string $roomId, string $reason): string
+    {
+        $current = $this->property->current();
+
+        if (! $current->equals($property)) {
+            throw PropertyScopeViolation::mismatched($current->toString(), $property->toString());
+        }
+
+        $room = $this->rooms->room($property, strtolower($roomId));
+
+        if ($room === null || ! $room->isActive) {
+            throw Refusal::invalid('Choose an active room.', ['room_id']);
+        }
+
+        return $this->transactions->run(function () use ($property, $actorId, $room, $reason): string {
+            $now = $this->clock->nowUtc();
+            $state = $this->repository->lockRoom($property, $room->id, $now);
+            $active = $this->repository->activeTaskOfRoom($property, $room->id);
+
+            if ($active !== null) {
+                return $active->id;
+            }
+
+            $kind = TaskKind::Request;
+            $task = new HousekeepingTask($this->ids->next(), $room->id, $kind, TaskStatus::Open, null, null, null, 0);
+            $this->repository->addTask($property, $task, $kind->priority(), 'guest_request', null, strtolower($actorId), null, $now);
+            $this->move($property, $room->id, $state['status'], CleaningStatus::Dirty, strtolower($actorId), mb_substr(trim($reason), 0, 300), $task->id, 'housekeeping.task.created');
+
+            return $task->id;
+        });
+    }
+
+    public function guestRequestState(PropertyId $property, string $taskId): ?string
+    {
+        $task = $this->repository->findTask($property, strtolower($taskId));
+
+        return $task === null ? null : match ($task->status) {
+            TaskStatus::Open, TaskStatus::Assigned => 'open',
+            TaskStatus::InProgress => 'in_progress',
+            TaskStatus::Done => 'done',
+            TaskStatus::Cancelled => 'cancelled',
+        };
     }
 
     public function assign(PropertyId $property, string $actorId, string $taskId, string $assignee, int $expectedLockVersion): array
