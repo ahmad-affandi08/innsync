@@ -16,7 +16,7 @@ InnSYnc is a hotel operating system implemented as a Laravel 13 DDD modular mono
 
 ## Current implementation status
 
-Foundation tasks `TASK-FND-001` to `TASK-FND-016` are implemented (`TASK-FND-011`, `-015` and `-016` are in review; see below) (see `docs/TASK/PHASE-0-FOUNDATION.md` for status and acceptance evidence per task; `TASK-FND-011` awaits an owner decision on RPO, `-015` awaits PHP static analysis, and `-016` awaits hosting decisions in the deployment runbook). Business modules have not started. Release notes are in [CHANGELOG.md](CHANGELOG.md).
+Foundation tasks `TASK-FND-001` to `TASK-FND-016` are implemented; see `docs/TASK/PHASE-0-FOUNDATION.md` for status and acceptance evidence per task. Three are in review: `TASK-FND-011` awaits an owner decision on RPO, `TASK-FND-015` awaits PHP static analysis (Larastan is approved but not yet installed), and `TASK-FND-016` awaits the hosting decisions listed in the deployment runbook. Business modules have not started. Release notes are in [CHANGELOG.md](CHANGELOG.md).
 
 ## Local setup
 
