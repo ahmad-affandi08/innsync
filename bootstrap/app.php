@@ -10,6 +10,8 @@ use App\Shared\Infrastructure\Backup\BackupDecryptCommand;
 use App\Shared\Infrastructure\Backup\BackupKeygenCommand;
 use App\Shared\Infrastructure\Backup\BackupRunCommand;
 use App\Shared\Infrastructure\Backup\BackupVerifyCommand;
+use App\Shared\Infrastructure\Deployment\PreflightCommand;
+use App\Shared\Infrastructure\Deployment\SmokeCommand;
 use App\Shared\Infrastructure\Http\Errors\ErrorEnvelopeFactory;
 use App\Shared\Infrastructure\Http\Errors\RenderErrorEnvelope;
 use App\Shared\Infrastructure\Idempotency\RequireIdempotencyKey;
@@ -46,6 +48,8 @@ return Application::configure(basePath: dirname(__DIR__))
         BackupVerifyCommand::class,
         BackupKeygenCommand::class,
         BackupDecryptCommand::class,
+        PreflightCommand::class,
+        SmokeCommand::class,
     ])
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->prepend(AssignCorrelationId::class);

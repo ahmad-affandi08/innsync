@@ -11,9 +11,11 @@ Release notes for every release (NFR-14). Newest first. Each entry names the tas
 - TASK-FND-013 (NFR-12): Indonesian and English localization.
 - TASK-FND-014 (NFR-26, BR-001): business date, calendar date and property time zone primitives.
 - TASK-FND-015 (NFR-14): quality gates for formatting, tests, type checking, build and release notes.
+- TASK-FND-016 (ADR-0003, ADR-0008): shared-hosting release profile: verified production artifact, `deploy:preflight` and `deploy:smoke` commands, release workflow, and a deployment runbook.
 
 ### Known limitations
 
 - Backup point-in-time recovery (RPO of 15 minutes, NFR-11) is not met and needs an owner decision (TASK-FND-011).
 - The business date rollover rule is undecided (PRD Q-11); night audit (TASK-FO-028) is not started.
-- No PHP static analysis tool is installed yet; adding one requires an approved dependency.
+- PHP static analysis (Larastan) is approved but not installed yet; it could not be downloaded in the build sandbox.
+- Production release is blocked on hosting decisions D1 to D6 in `docs/OPERATIONS/DEPLOYMENT-RUNBOOK.md`.
