@@ -86,4 +86,7 @@ export const rates = {
     'tax.row.onSc': ' (atas dasar ditambah service charge)',
     'property.action.rates': 'Paket tarif',
     'property.action.tax': 'Service charge dan pajak',
+    'tax.scope': 'Berlaku untuk',
+    'tax.scope.rooms': 'Kamar',
+    'tax.scope.laundry': 'Laundry',
 } as const

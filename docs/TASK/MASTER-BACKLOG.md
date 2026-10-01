@@ -87,23 +87,23 @@
 | TASK-HK-017 | FR-HK-017 | Housekeeping | Wajib | TODO |
 | TASK-HK-018 | FR-HK-018 | Housekeeping | Wajib | REVIEW |
 | TASK-HK-019 | FR-HK-019 | Housekeeping | Sebaiknya | TODO |
-| TASK-HK-020 | FR-HK-020 | Housekeeping | Wajib | TODO |
-| TASK-HK-021 | FR-HK-021 | Housekeeping | Wajib | TODO |
-| TASK-HK-022 | FR-HK-022 | Housekeeping | Wajib | TODO |
-| TASK-HK-023 | FR-HK-023 | Housekeeping | Wajib | TODO |
-| TASK-HK-024 | FR-HK-024 | Housekeeping | Wajib | TODO |
-| TASK-LDY-001 | FR-LDY-001 | Laundry | Wajib | TODO |
-| TASK-LDY-002 | FR-LDY-002 | Laundry | Wajib | TODO |
-| TASK-LDY-003 | FR-LDY-003 | Laundry | Wajib | TODO |
-| TASK-LDY-004 | FR-LDY-004 | Laundry | Wajib | TODO |
+| TASK-HK-020 | FR-HK-020 | Housekeeping | Wajib | REVIEW |
+| TASK-HK-021 | FR-HK-021 | Housekeeping | Wajib | REVIEW |
+| TASK-HK-022 | FR-HK-022 | Housekeeping | Wajib | REVIEW |
+| TASK-HK-023 | FR-HK-023 | Housekeeping | Wajib | REVIEW |
+| TASK-HK-024 | FR-HK-024 | Housekeeping | Wajib | REVIEW |
+| TASK-LDY-001 | FR-LDY-001 | Laundry | Wajib | REVIEW |
+| TASK-LDY-002 | FR-LDY-002 | Laundry | Wajib | REVIEW |
+| TASK-LDY-003 | FR-LDY-003 | Laundry | Wajib | REVIEW |
+| TASK-LDY-004 | FR-LDY-004 | Laundry | Wajib | REVIEW |
 | TASK-LDY-005 | FR-LDY-005 | Laundry | Sebaiknya | TODO |
 | TASK-LDY-006 | FR-LDY-006 | Laundry | Sebaiknya | TODO |
 | TASK-LDY-007 | FR-LDY-007 | Laundry | Wajib | TODO |
 | TASK-LDY-008 | FR-LDY-008 | Laundry | Sebaiknya | TODO |
 | TASK-LDY-009 | FR-LDY-009 | Laundry | Wajib | TODO |
 | TASK-LDY-010 | FR-LDY-010 | Laundry | Sebaiknya | TODO |
-| TASK-LDY-011 | FR-LDY-011 | Laundry | Wajib | TODO |
-| TASK-LDY-012 | FR-LDY-012 | Laundry | Wajib | TODO |
+| TASK-LDY-011 | FR-LDY-011 | Laundry | Wajib | IN_PROGRESS |
+| TASK-LDY-012 | FR-LDY-012 | Laundry | Wajib | IN_PROGRESS |
 | TASK-FBS-001 | FR-FBS-001 | F&B Service | Wajib | TODO |
 | TASK-FBS-002 | FR-FBS-002 | F&B Service | Wajib | TODO |
 | TASK-FBS-003 | FR-FBS-003 | F&B Service | Wajib | TODO |

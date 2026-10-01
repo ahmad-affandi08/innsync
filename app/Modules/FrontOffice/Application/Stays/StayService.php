@@ -18,6 +18,7 @@ use App\Modules\FrontOffice\Domain\Stays\StayRuleViolation;
 use App\Modules\FrontOffice\Domain\Stays\StayStatus;
 use App\Modules\Housekeeping\Application\RoomHandover;
 use App\Modules\Housekeeping\Application\RoomReadiness;
+use App\Modules\Laundry\Application\LaundryLiability;
 use App\Modules\Property\Application\Catalog\RoomCatalogReader;
 use App\Modules\Property\Application\Settings\BusinessDateProvider;
 use App\Shared\Application\Audit\AuditEntry;
@@ -83,6 +84,7 @@ final readonly class StayService
         private RoomCatalogReader $rooms,
         private RoomReadiness $readiness,
         private RoomHandover $handover,
+        private LaundryLiability $laundry,
         private FolioRepository $folioStore,
         private FolioService $folios,
         private BusinessDateProvider $businessDate,
@@ -310,6 +312,10 @@ final readonly class StayService
 
             $today = $this->businessDate->current($property);
             $now = $this->clock->nowUtc();
+
+            if ($this->laundry->activeOrdersOfStay($property, $stay->id) > 0) {
+                throw Refusal::stateConflict('The guest still has laundry that has not been delivered. Deliver or cancel it before checking out.');
+            }
 
             foreach ($this->folioStore->byReservation($property, $reservation->id) as $folio) {
                 if ($folio->balance->amountMinor !== 0) {

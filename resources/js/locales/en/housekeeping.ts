@@ -2,6 +2,7 @@ export const housekeeping = {
     'hk.nav.label': 'Housekeeping',
     'hk.nav.board': 'Rooms and tasks',
     'hk.nav.mine': 'My rooms',
+    'hk.nav.laundry': 'Guest laundry',
     'hk.nav.frontdesk': 'Room board',
     'hk.status.dirty': 'Dirty',
     'hk.status.cleaning': 'Being cleaned',

@@ -14,6 +14,7 @@ use App\Modules\FrontOffice\Domain\Reservations\Reservation;
 use App\Modules\Housekeeping\Application\HousekeepingService;
 use App\Modules\IdentityAccess\Application\Approval\ApprovalPolicyAdmin;
 use App\Modules\IdentityAccess\Infrastructure\Persistence\Eloquent\UserRecord;
+use App\Modules\Laundry\Application\LaundryService;
 use App\Modules\Property\Application\Catalog\RoomCatalogService;
 use App\Modules\Property\Application\Rates\ChargeSchemeService;
 use App\Modules\Property\Application\Rates\RatePlanService;
@@ -54,6 +55,13 @@ trait BuildsHotel
 
     private string $hkChiefId;
 
+    /** Laundry: a clerk (hand over and deliver for housekeeping), a launderer (count and process), a manager (prices, cancel, view). */
+    private string $clerkId;
+
+    private string $laundererId;
+
+    private string $laundryManagerId;
+
     private string $typeId;
 
     private string $planId;
@@ -79,6 +87,9 @@ trait BuildsHotel
         $attendant = UserRecord::factory()->create();
         $attendant2 = UserRecord::factory()->create();
         $hkChief = UserRecord::factory()->create();
+        $clerk = UserRecord::factory()->create();
+        $launderer = UserRecord::factory()->create();
+        $laundryManager = UserRecord::factory()->create();
         $this->grant($admin, self::PROPERTY, [
             RoomCatalogService::MANAGE_PERMISSION, RatePlanService::MANAGE_PERMISSION, ChargeSchemeService::MANAGE_PERMISSION, PropertySettingsService::MANAGE_PERMISSION,
             InventoryAdminService::OVERBOOKING_PERMISSION, InventoryAdminService::BLOCK_PERMISSION, InventoryAdminService::HOLD_PERMISSION, ApprovalPolicyAdmin::MANAGE_PERMISSION,
@@ -89,6 +100,9 @@ trait BuildsHotel
         $this->grant($attendant, self::PROPERTY, [HousekeepingService::PERFORM_PERMISSION]);
         $this->grant($attendant2, self::PROPERTY, [HousekeepingService::PERFORM_PERMISSION]);
         $this->grant($hkChief, self::PROPERTY, [HousekeepingService::INSPECT_PERMISSION, HousekeepingService::WAIVE_PERMISSION]);
+        $this->grant($clerk, self::PROPERTY, [LaundryService::INTAKE_PERMISSION, LaundryService::DELIVER_PERMISSION]);
+        $this->grant($launderer, self::PROPERTY, [LaundryService::PROCESS_PERMISSION]);
+        $this->grant($laundryManager, self::PROPERTY, [LaundryService::PRICES_PERMISSION, LaundryService::CANCEL_PERMISSION, LaundryService::VIEW_PERMISSION]);
         $this->grant($auditor, self::PROPERTY, [StayService::VIEW_PERMISSION, StayService::IDENTITY_PERMISSION]);
         $this->grant($supervisor, self::PROPERTY, ['front-office.folio.approve', NightAuditService::RUN_PERMISSION, NightAuditService::WAIVE_PERMISSION]);
         $this->adminId = strtolower((string) $admin->getKey());
@@ -100,6 +114,9 @@ trait BuildsHotel
         $this->attendantId = strtolower((string) $attendant->getKey());
         $this->attendant2Id = strtolower((string) $attendant2->getKey());
         $this->hkChiefId = strtolower((string) $hkChief->getKey());
+        $this->clerkId = strtolower((string) $clerk->getKey());
+        $this->laundererId = strtolower((string) $launderer->getKey());
+        $this->laundryManagerId = strtolower((string) $laundryManager->getKey());
         app(PropertyContext::class)->activateFromString(self::PROPERTY);
 
         $catalog = app(RoomCatalogService::class);

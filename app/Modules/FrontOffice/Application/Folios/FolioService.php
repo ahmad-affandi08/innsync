@@ -217,6 +217,43 @@ final readonly class FolioService
         ), null);
     }
 
+    /**
+     * A charge raised by another context for a guest (laundry, restaurant): to the first open folio of the reservation, priced
+     * with the service charge and tax of `$scope` in force today, posted once per source reference. It checks no permission:
+     * the calling context authorizes its own use, as `FolioLedger` documents.
+     *
+     * @return array<string, mixed>
+     */
+    public function postGuestCharge(PropertyId $property, string $actorId, string $reservationId, string $scope, string $code, string $description, int $quotedMinor, string $source, string $sourceRef): array
+    {
+        $current = $this->property->current();
+
+        if (! $current->equals($property)) {
+            throw PropertyScopeViolation::mismatched($current->toString(), $property->toString());
+        }
+
+        $folio = null;
+
+        foreach ($this->folios->byReservation($property, strtolower($reservationId)) as $candidate) {
+            if (! $candidate->isClosed) {
+                $folio = $candidate;
+
+                break;
+            }
+        }
+
+        if ($folio === null) {
+            throw Refusal::stateConflict('This guest has no open folio to charge.');
+        }
+
+        $split = $this->charges->breakdown($property, $scope, $this->businessDate->current($property), $quotedMinor, false);
+
+        return $this->postAndRecord($property, $actorId, $folio->id, 'folio.charge.posted', fn ($date, $now): Posting => Posting::charge(
+            $this->ledger->newId(), strtoupper($code), $description, Money::ofMinor($split['base_minor'], $folio->currency), Money::ofMinor($split['service_charge_minor'], $folio->currency), Money::ofMinor($split['tax_minor'], $folio->currency),
+            $date, $now, strtolower($actorId), $source, $sourceRef, $split['scheme'],
+        ), null);
+    }
+
     // ---- corrections ----
 
     /** Opens the approval a reversal of a payment, or of anything on a settled folio, needs. */

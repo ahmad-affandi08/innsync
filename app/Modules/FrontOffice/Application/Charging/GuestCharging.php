@@ -1,0 +1,28 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Modules\FrontOffice\Application\Charging;
+
+use App\Shared\Application\Errors\Refusal;
+use App\Shared\Domain\Tenancy\PropertyId;
+
+/**
+ * How other contexts (laundry, restaurant) find the guest in a room and put a charge on the guest's folio. The caller has
+ * already checked its own permission; Front Office decides the tax, the folio and idempotency (BR-005).
+ */
+interface GuestCharging
+{
+    /** @return array{stay_id: string, reservation_id: string}|null null when nobody is in the room */
+    public function inHouseStayOfRoom(PropertyId $property, string $roomId): ?array;
+
+    /**
+     * Charges `$quotedMinor` (service charge and tax added on top, with the scheme of `$scope` in force today) to the guest's
+     * first open folio. The same `$source` and `$sourceRef` are posted once, however often they are sent.
+     *
+     * @return array{posting_id: string, total_minor: int, currency: string, replayed: bool}
+     *
+     * @throws Refusal when the guest has no open folio or no scheme is configured for the scope
+     */
+    public function charge(PropertyId $property, string $actorId, string $reservationId, string $scope, string $code, string $description, int $quotedMinor, string $source, string $sourceRef): array;
+}

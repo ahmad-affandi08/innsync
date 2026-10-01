@@ -86,4 +86,7 @@ export const rates = {
     'tax.row.onSc': ' (on base plus service charge)',
     'property.action.rates': 'Rate plans',
     'property.action.tax': 'Service charge and tax',
+    'tax.scope': 'Applies to',
+    'tax.scope.rooms': 'Rooms',
+    'tax.scope.laundry': 'Laundry',
 } as const

@@ -34,11 +34,11 @@
 | TASK-HK-017 | FR-HK-017 | Wajib | Mencatat service flag DND, refused service, make-up-room, dan privacy request dengan waktu mulai/selesai tanpa mengubah occupancy status kamar. | TODO |
 | TASK-HK-018 | FR-HK-018 | Wajib | Inspeksi supervisor dapat menghasilkan status rework dengan daftar temuan; kamar hanya menjadi ready setelah seluruh temuan wajib diselesaikan atau di-waive oleh peran berwenang. | REVIEW |
 | TASK-HK-019 | FR-HK-019 | Sebaiknya | Mengelola par level linen dan amenitas per tipe kamar/area sehingga kebutuhan replenishment dan selisih konsumsi dapat dihitung per shift. | TODO |
-| TASK-HK-020 | FR-HK-020 | Wajib | Staf Housekeeping memindai barcode kantong laundry lalu memilih kamar untuk membuka order guest laundry. | TODO |
-| TASK-HK-021 | FR-HK-021 | Wajib | Staf mencatat rincian per item sebelum dikirim ke laundry: jenis pakaian (baju, celana, dan seterusnya), merek atau tanpa merek, jumlah, catatan kondisi, tanggal pengambilan, dan tanggal janji kembali kepada tamu. | TODO |
-| TASK-HK-022 | FR-HK-022 | Wajib | Sistem mengirim order tersebut ke modul Laundry lengkap dengan nomor kamar dan jumlah item, dalam bentuk daftar per item sehingga petugas laundry cukup menandai centang. | TODO |
-| TASK-HK-023 | FR-HK-023 | Wajib | Nilai tagihan laundry otomatis dibentuk berdasarkan daftar harga per item dan diposkan ke folio kamar. | TODO |
-| TASK-HK-024 | FR-HK-024 | Wajib | Setelah laundry selesai, Housekeeping menerima notifikasi untuk mengantarkan kembali ke kamar dan menutup order dengan bukti penerimaan. | TODO |
+| TASK-HK-020 | FR-HK-020 | Wajib | Staf Housekeeping memindai barcode kantong laundry lalu memilih kamar untuk membuka order guest laundry. | REVIEW |
+| TASK-HK-021 | FR-HK-021 | Wajib | Staf mencatat rincian per item sebelum dikirim ke laundry: jenis pakaian (baju, celana, dan seterusnya), merek atau tanpa merek, jumlah, catatan kondisi, tanggal pengambilan, dan tanggal janji kembali kepada tamu. | REVIEW |
+| TASK-HK-022 | FR-HK-022 | Wajib | Sistem mengirim order tersebut ke modul Laundry lengkap dengan nomor kamar dan jumlah item, dalam bentuk daftar per item sehingga petugas laundry cukup menandai centang. | REVIEW |
+| TASK-HK-023 | FR-HK-023 | Wajib | Nilai tagihan laundry otomatis dibentuk berdasarkan daftar harga per item dan diposkan ke folio kamar. | REVIEW |
+| TASK-HK-024 | FR-HK-024 | Wajib | Setelah laundry selesai, Housekeeping menerima notifikasi untuk mengantarkan kembali ke kamar dan menutup order dengan bukti penerimaan. | REVIEW |
 
 ## Required engineering checks
 

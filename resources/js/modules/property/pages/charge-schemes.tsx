@@ -1,3 +1,4 @@
+import { Link } from '@inertiajs/react';
 import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -15,7 +16,7 @@ type Scheme = { id: string; effective_from: string; service_charge_bp: number; t
 
 const percent = (bp: number) => (bp / 100).toString();
 
-export default function ChargeSchemesPage({ schemes }: { schemes: Scheme[] }) {
+export default function ChargeSchemesPage({ schemes, scope, scopes }: { schemes: Scheme[]; scope: string; scopes: string[] }) {
     const { t } = useTranslation();
     const format = useFormatters();
     const errorCopy = useErrorStateCopy();
@@ -24,7 +25,7 @@ export default function ChargeSchemesPage({ schemes }: { schemes: Scheme[] }) {
 
     async function save() {
         if (form === null) return;
-        const done = await action.run('/property/tax', { body: { effective_from: form.from, service_charge_rate: form.sc, tax_rate: form.tax, tax_on_service_charge: form.onSc, reason: form.reason }, reload: ['schemes'] });
+        const done = await action.run('/property/tax', { body: { scope, effective_from: form.from, service_charge_rate: form.sc, tax_rate: form.tax, tax_on_service_charge: form.onSc, reason: form.reason }, reload: ['schemes'] });
         if (done !== null) {
             setForm(null);
         }
@@ -33,6 +34,11 @@ export default function ChargeSchemesPage({ schemes }: { schemes: Scheme[] }) {
     return (
         <PropertyShell description={t('tax.description')} title={t('tax.title')}>
             {form === null && action.error !== null ? <ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /> : null}
+            <nav aria-label={t('tax.scope')} className="flex flex-wrap gap-2 text-sm">
+                {scopes.map((s) => (
+                    <Link aria-current={s === scope ? 'page' : undefined} className="rounded-md border border-border px-3 py-1.5 hover:bg-surface-muted aria-[current=page]:bg-surface-muted aria-[current=page]:font-medium" href={`/property/tax?scope=${s}`} key={s}>{t(`tax.scope.${s}` as 'tax.scope.rooms')}</Link>
+                ))}
+            </nav>
             <section aria-labelledby="tax-h" className="flex flex-col gap-3">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                     <h2 className="text-lg font-semibold" id="tax-h">{t('tax.history')}</h2>

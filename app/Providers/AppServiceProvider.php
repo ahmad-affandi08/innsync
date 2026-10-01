@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Modules\FrontOffice\Application\Charging\GuestCharging;
+use App\Modules\FrontOffice\Application\Charging\GuestChargingService;
 use App\Modules\FrontOffice\Application\Folios\FolioRepository;
 use App\Modules\FrontOffice\Application\Inventory\InventoryHoldRepository;
 use App\Modules\FrontOffice\Application\Inventory\InventoryRepository;
@@ -49,6 +51,10 @@ use App\Modules\IdentityAccess\Infrastructure\Authorization\ScopedPermissionChec
 use App\Modules\IdentityAccess\Infrastructure\Mfa\EloquentMfaStore;
 use App\Modules\IdentityAccess\Infrastructure\Mfa\TotpOneTimePassword;
 use App\Modules\IdentityAccess\Infrastructure\Sessions\DatabaseUserSessionRepository;
+use App\Modules\Laundry\Application\LaundryLiability;
+use App\Modules\Laundry\Application\LaundryRepository;
+use App\Modules\Laundry\Application\LaundryService;
+use App\Modules\Laundry\Infrastructure\DatabaseLaundryRepository;
 use App\Modules\Property\Application\Catalog\RoomCatalogReader;
 use App\Modules\Property\Application\Catalog\RoomCatalogRepository;
 use App\Modules\Property\Application\Catalog\RoomCatalogService;
@@ -260,6 +266,9 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(OccupancyReader::class, StayOccupancyReader::class);
         $this->app->bind(RoomReadiness::class, HousekeepingService::class);
         $this->app->bind(RoomHandover::class, HousekeepingService::class);
+        $this->app->bind(GuestCharging::class, GuestChargingService::class);
+        $this->app->bind(LaundryRepository::class, DatabaseLaundryRepository::class);
+        $this->app->bind(LaundryLiability::class, LaundryService::class);
         $this->app->bind(NightAuditRepository::class, DatabaseNightAuditRepository::class);
         $this->app->bind(StayRepository::class, DatabaseStayRepository::class);
         $this->app->bind(DocumentNumbers::class, DatabaseDocumentNumbers::class);

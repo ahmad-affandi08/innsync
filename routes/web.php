@@ -19,6 +19,7 @@ use App\Modules\IdentityAccess\Presentation\Http\Controllers\PasswordController;
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\PropertySelectionController;
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\ReconfirmController;
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\UserSessionController;
+use App\Modules\Laundry\Presentation\Http\Controllers\LaundryController;
 use App\Modules\Property\Presentation\Http\Controllers\ChargeSchemeController;
 use App\Modules\Property\Presentation\Http\Controllers\PropertySettingsController;
 use App\Modules\Property\Presentation\Http\Controllers\RatePlanController;
@@ -223,4 +224,22 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
     Route::post('/findings/{id}/resolve', [HousekeepingController::class, 'resolveFinding'])->where('id', $id)->name('housekeeping.findings.resolve');
     Route::post('/findings/{id}/waive', [HousekeepingController::class, 'waiveFinding'])->where('id', $id)->name('housekeeping.findings.waive');
     Route::post('/settings', [HousekeepingController::class, 'settings'])->name('housekeeping.settings');
+});
+
+// Guest laundry (FR-HK-020 to FR-HK-024, FR-LDY-001 to FR-LDY-004, FR-LDY-011): hand-over by housekeeping, counting and processing by
+// the laundry, delivery back to the room. Permissions are enforced in the application service.
+Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix('laundry')->group(function (): void {
+    $id = '[0-9A-Za-z]{26}';
+    Route::get('/', [LaundryController::class, 'index'])->name('laundry.queue');
+    Route::get('/new', [LaundryController::class, 'create'])->name('laundry.new');
+    Route::get('/prices', [LaundryController::class, 'prices'])->name('laundry.prices');
+    Route::post('/prices', [LaundryController::class, 'addPrice'])->name('laundry.prices.store');
+    Route::post('/prices/{id}', [LaundryController::class, 'updatePrice'])->where('id', $id)->name('laundry.prices.update');
+    Route::post('/orders', [LaundryController::class, 'store'])->middleware(['idempotent', 'throttle:bookings'])->name('laundry.orders.store');
+    Route::get('/orders/{id}', [LaundryController::class, 'show'])->where('id', $id)->name('laundry.orders.show');
+    Route::post('/orders/{id}/receive', [LaundryController::class, 'receive'])->where('id', $id)->name('laundry.orders.receive');
+    Route::post('/orders/{id}/advance', [LaundryController::class, 'advance'])->where('id', $id)->name('laundry.orders.advance');
+    Route::post('/orders/{id}/ready', [LaundryController::class, 'ready'])->where('id', $id)->name('laundry.orders.ready');
+    Route::post('/orders/{id}/deliver', [LaundryController::class, 'deliver'])->where('id', $id)->name('laundry.orders.deliver');
+    Route::post('/orders/{id}/cancel', [LaundryController::class, 'cancel'])->where('id', $id)->name('laundry.orders.cancel');
 });

@@ -30,6 +30,9 @@ use InvalidArgumentException;
  */
 final readonly class ChargeSchemeService implements ChargeCalculator
 {
+    /** Revenue scopes with their own service charge and tax. `rooms` prices stays; `laundry` prices guest laundry. */
+    public const SCOPES = ['rooms', 'laundry'];
+
     public const MANAGE_PERMISSION = 'property.tax.manage';
 
     public const VIEW_PERMISSION = 'property.tax.view';
