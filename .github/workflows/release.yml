@@ -2,9 +2,9 @@
 #
 # Builds and verifies the production artifact: Composer production dependencies
 # and prebuilt Vite assets, so the shared host needs neither Composer nor Node.
-# It deliberately does NOT deploy: how code reaches the host (SSH/Git or upload)
-# is an open decision (docs/TASK/DEPLOYMENT-NIAGAHOSTER.md). The artifact is
-# uploaded for a person to download, check and release by the runbook.
+# On a tag it also publishes the verified tree to the generated `release` branch,
+# which the shared host pulls with deploy/host-release.sh (owner decision D1:
+# Git deployment). It never connects to the host; a person runs the update.
 #
 # Only tag commits whose CI run is green (docs/OPERATIONS/DEPLOYMENT-RUNBOOK.md).
 name: Release artifact
@@ -55,3 +55,27 @@ jobs:
             build/release/*.sha256
           if-no-files-found: error
           retention-days: 30
+
+  publish-branch:
+    name: Publish to the release branch
+    needs: artifact
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    concurrency:
+      group: release-branch
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: innsync-release
+          path: build/release
+
+      - name: Check the checksum, then publish
+        run: |
+          (cd build/release && sha256sum -c ./*.sha256)
+          scripts/release/publish-release-branch.sh build/release/*.zip

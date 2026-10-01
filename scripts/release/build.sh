@@ -60,6 +60,17 @@ echo "==> Removing everything the host does not need at runtime"
 rm -rf node_modules tests docs scripts .github resources/js resources/css \
     package.json package-lock.json vite.config.ts tsconfig.json components.json \
     phpunit.xml .editorconfig .gitattributes .npmrc .node-version AGENTS.md CLAUDE.md README.md
+# The artifact becomes the `release` branch, so it needs its own ignore rules: vendor/ and
+# public/build must be tracked there, while host-specific files must never be.
+cat > .gitignore <<'GITIGNORE'
+/.env
+/.env.backup
+/.env.production
+/auth.json
+/storage/*.key
+/public/hot
+/public/storage
+GITIGNORE
 # Runtime directories are shipped empty; the host fills them.
 find storage bootstrap/cache -type f ! -name '.gitignore' -delete
 

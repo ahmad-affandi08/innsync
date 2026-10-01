@@ -55,10 +55,12 @@
             "@php artisan config:clear --ansi",
             "@php artisan route:clear --ansi"
         ],
+        "test:deploy": "bash tests/Deploy/host-release-test.sh",
         "quality": [
             "@composer validate --strict",
             "@lint",
             "@test",
+            "@test:deploy",
             "@check:deploy-cache"
         ],
         "test:architecture": "@php artisan test --testsuite=Architecture",

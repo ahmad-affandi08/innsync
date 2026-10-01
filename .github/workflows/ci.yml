@@ -61,10 +61,12 @@ jobs:
           composer --version
           mysqldump --version
 
-      - name: Release scripts parse
+      - name: Release and deploy scripts parse
         run: |
           bash -n scripts/release/build.sh
           bash -n scripts/release/verify.sh
+          bash -n scripts/release/publish-release-branch.sh
+          bash -n deploy/host-release.sh
 
       - name: Cache Composer downloads
         uses: actions/cache@v4

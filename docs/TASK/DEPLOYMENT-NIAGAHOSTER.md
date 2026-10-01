@@ -1,5 +1,12 @@
 # Production Deployment Tasks — Niagahoster/Hostinger
 
+## Owner decisions (2026-10-01)
+
+- Deploy through **Git** on Niagahoster shared hosting, with the **best document-root layout** (application outside the web root, document root on `public/`), **PHP 8.3**, as a **contingency (standby)** instance.
+- Implemented in `TASK-FND-016`; still open: MySQL limits and client tools, off-server backup destination, staging rehearsal, SSH availability, and which domain or subdomain carries the standby. See `docs/OPERATIONS/DEPLOYMENT-RUNBOOK.md`.
+
+## Checklist
+
 - Verify PHP >= 8.3 and extensions required by Laravel 13.
 - Verify MySQL 8 and connection limits appropriate to pilot load.
 - Configure domain document root securely to Laravel `public/`.

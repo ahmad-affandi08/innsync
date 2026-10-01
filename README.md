@@ -40,7 +40,7 @@ These two commands are the quality gates that CI runs on every pull request and 
 
 ## Releasing
 
-`scripts/release/build.sh` builds a verified production artifact (Composer production dependencies and prebuilt assets, no secrets) and `scripts/release/verify.sh` checks it. On the host, `php artisan deploy:preflight` and `php artisan deploy:smoke <url>` gate a release. The procedure, open hosting decisions, and rollback are in [docs/OPERATIONS/DEPLOYMENT-RUNBOOK.md](docs/OPERATIONS/DEPLOYMENT-RUNBOOK.md).
+`scripts/release/build.sh` builds a verified production artifact (Composer production dependencies and prebuilt assets, no secrets), `scripts/release/verify.sh` checks it, and on a `v*` tag CI publishes it to the generated `release` branch. The shared host is a Git clone of that branch and updates with `deploy/host-release.sh` (backup first, preflight on the new code, forward-only migrations, smoke test, rollback of code). `php artisan deploy:preflight` and `php artisan deploy:smoke <url>` gate a release. The procedure, open hosting decisions, and rollback are in [docs/OPERATIONS/DEPLOYMENT-RUNBOOK.md](docs/OPERATIONS/DEPLOYMENT-RUNBOOK.md).
 
 ## Documentation domains
 

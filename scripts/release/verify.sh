@@ -44,7 +44,8 @@ done
 # The artifact must boot in production mode with no dev dependencies installed.
 export APP_ENV=production APP_DEBUG=false APP_KEY="base64:$(php -r 'echo base64_encode(random_bytes(32));')"
 php artisan --version >/dev/null && ok "application boots (production, no dev dependencies)" || fail "application does not boot"
-php artisan list --raw | grep -q '^deploy:preflight' && ok "deploy:preflight is available" || fail "deploy:preflight missing"
+COMMANDS="$(php artisan list --raw)"
+grep -q '^deploy:preflight' <<<"$COMMANDS" && ok "deploy:preflight is available" || fail "deploy:preflight missing"
 php artisan config:cache >/dev/null && php artisan route:cache >/dev/null && ok "config and route cache build" || fail "config/route cache failed"
 php artisan config:clear >/dev/null; php artisan route:clear >/dev/null
 
