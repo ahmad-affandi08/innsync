@@ -131,6 +131,8 @@ describe('dictionaries', () => {
             'fo.fb.filter.status',
             'fo.fb.row',
             'fo.fb.event.line',
+            'fo.sop.tickedBy',
+            'fo.sop.perf.run',
             'policy.scope.plan',
             'policy.depositBasis',
             'fo.res.fee.fixed',

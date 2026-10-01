@@ -20,6 +20,7 @@ use App\Modules\FrontOffice\Application\Requests\GuestRequestRepository;
 use App\Modules\FrontOffice\Application\Reservations\DepositLedger;
 use App\Modules\FrontOffice\Application\Reservations\PenaltyPoster;
 use App\Modules\FrontOffice\Application\Reservations\ReservationRepository;
+use App\Modules\FrontOffice\Application\Routine\RoutineRepository;
 use App\Modules\FrontOffice\Application\Stays\GuestRepository;
 use App\Modules\FrontOffice\Application\Stays\StayOccupancyReader;
 use App\Modules\FrontOffice\Application\Stays\StayRepository;
@@ -32,6 +33,7 @@ use App\Modules\FrontOffice\Infrastructure\Inventory\DatabaseRoomBlockRepository
 use App\Modules\FrontOffice\Infrastructure\NightAudit\DatabaseNightAuditRepository;
 use App\Modules\FrontOffice\Infrastructure\Requests\DatabaseGuestRequestRepository;
 use App\Modules\FrontOffice\Infrastructure\Reservations\DatabaseReservationRepository;
+use App\Modules\FrontOffice\Infrastructure\Routine\DatabaseRoutineRepository;
 use App\Modules\FrontOffice\Infrastructure\Stays\DatabaseGuestRepository;
 use App\Modules\FrontOffice\Infrastructure\Stays\DatabaseStayRepository;
 use App\Modules\Housekeeping\Application\GuestServiceRequests;
@@ -248,6 +250,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(CashierRepository::class, DatabaseCashierRepository::class);
         $this->app->bind(GuestRequestRepository::class, DatabaseGuestRequestRepository::class);
         $this->app->bind(FeedbackRepository::class, DatabaseFeedbackRepository::class);
+        $this->app->bind(RoutineRepository::class, DatabaseRoutineRepository::class);
         $this->app->bind(ShiftAttribution::class, CashierService::class);
         $this->app->bind(StaffDirectory::class, DatabaseStaffDirectory::class);
         $this->app->bind(PermissionChecker::class, ScopedPermissionChecker::class);

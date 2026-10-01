@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 use App\Modules\FrontOffice\Presentation\Http\Controllers\AvailabilityController;
 use App\Modules\FrontOffice\Presentation\Http\Controllers\CashierController;
+use App\Modules\FrontOffice\Presentation\Http\Controllers\ChecklistController;
 use App\Modules\FrontOffice\Presentation\Http\Controllers\FeedbackController;
 use App\Modules\FrontOffice\Presentation\Http\Controllers\FolioController;
 use App\Modules\FrontOffice\Presentation\Http\Controllers\GuestRequestController;
 use App\Modules\FrontOffice\Presentation\Http\Controllers\InventoryController;
+use App\Modules\FrontOffice\Presentation\Http\Controllers\LogbookController;
 use App\Modules\FrontOffice\Presentation\Http\Controllers\NightAuditController;
 use App\Modules\FrontOffice\Presentation\Http\Controllers\RateChangeController;
 use App\Modules\FrontOffice\Presentation\Http\Controllers\ReservationController;
@@ -225,6 +227,16 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
     Route::post('/requests/{id}/start', [GuestRequestController::class, 'start'])->where('id', $id)->name('front-office.requests.start');
     Route::post('/requests/{id}/complete', [GuestRequestController::class, 'complete'])->where('id', $id)->name('front-office.requests.complete');
     Route::post('/requests/{id}/cancel', [GuestRequestController::class, 'cancel'])->where('id', $id)->name('front-office.requests.cancel');
+
+    // Front desk checklists (FR-FO-032, FR-FO-033) and the handover log between shifts (FR-FO-034).
+    Route::get('/checklists', [ChecklistController::class, 'index'])->name('front-office.checklists');
+    Route::get('/checklists/templates', [ChecklistController::class, 'templates'])->name('front-office.checklists.templates');
+    Route::get('/checklists/performance', [ChecklistController::class, 'performance'])->name('front-office.checklists.performance');
+    Route::post('/checklists/templates', [ChecklistController::class, 'define'])->name('front-office.checklists.define');
+    Route::post('/checklists/{template}/items/{item}/complete', [ChecklistController::class, 'complete'])->where(['template' => $id, 'item' => 'i[0-9]{1,2}'])->name('front-office.checklists.complete');
+    Route::get('/logbook', [LogbookController::class, 'index'])->name('front-office.logbook');
+    Route::post('/logbook', [LogbookController::class, 'write'])->middleware('throttle:bookings')->name('front-office.logbook.write');
+    Route::post('/logbook/read', [LogbookController::class, 'read'])->name('front-office.logbook.read');
 
     // Guest comments and complaints (FR-FO-031).
     Route::get('/feedback', [FeedbackController::class, 'index'])->name('front-office.feedback');

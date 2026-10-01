@@ -14,6 +14,8 @@ use App\Modules\FrontOffice\Application\Requests\GuestRequestService;
 use App\Modules\FrontOffice\Application\Reservations\RateChangeService;
 use App\Modules\FrontOffice\Application\Reservations\ReservationRequest;
 use App\Modules\FrontOffice\Application\Reservations\ReservationService;
+use App\Modules\FrontOffice\Application\Routine\ShiftLogService;
+use App\Modules\FrontOffice\Application\Routine\SopService;
 use App\Modules\FrontOffice\Application\Stays\StayService;
 use App\Modules\FrontOffice\Domain\Reservations\Reservation;
 use App\Modules\Housekeeping\Application\HousekeepingService;
@@ -101,6 +103,17 @@ trait BuildsHotel
 
     private string $feedbackViewerId;
 
+    /** Front desk routines (FR-FO-032 to -034): a manager of checklists, two people who tick them, and the shift log's writer and reader. */
+    private string $sopManagerId;
+
+    private string $sopStaffId;
+
+    private string $sopStaff2Id;
+
+    private string $logWriterId;
+
+    private string $logReaderId;
+
     private string $typeId;
 
     private string $planId;
@@ -142,6 +155,11 @@ trait BuildsHotel
         $feedbackStaff = UserRecord::factory()->create();
         $feedbackStaff2 = UserRecord::factory()->create();
         $feedbackViewer = UserRecord::factory()->create();
+        $sopManager = UserRecord::factory()->create();
+        $sopStaff = UserRecord::factory()->create();
+        $sopStaff2 = UserRecord::factory()->create();
+        $logWriter = UserRecord::factory()->create();
+        $logReader = UserRecord::factory()->create();
         $this->grant($admin, self::PROPERTY, [
             RoomCatalogService::MANAGE_PERMISSION, RatePlanService::MANAGE_PERMISSION, ChargeSchemeService::MANAGE_PERMISSION, PropertySettingsService::MANAGE_PERMISSION,
             InventoryAdminService::OVERBOOKING_PERMISSION, InventoryAdminService::BLOCK_PERMISSION, InventoryAdminService::HOLD_PERMISSION, ApprovalPolicyAdmin::MANAGE_PERMISSION,
@@ -164,6 +182,11 @@ trait BuildsHotel
         $this->grant($feedbackStaff, self::PROPERTY, [FeedbackService::MANAGE_PERMISSION]);
         $this->grant($feedbackStaff2, self::PROPERTY, [FeedbackService::MANAGE_PERMISSION]);
         $this->grant($feedbackViewer, self::PROPERTY, [FeedbackService::VIEW_PERMISSION]);
+        $this->grant($sopManager, self::PROPERTY, [SopService::MANAGE_PERMISSION, SopService::VIEW_PERMISSION]);
+        $this->grant($sopStaff, self::PROPERTY, [SopService::PERFORM_PERMISSION, ShiftLogService::WRITE_PERMISSION]);
+        $this->grant($sopStaff2, self::PROPERTY, [SopService::PERFORM_PERMISSION]);
+        $this->grant($logWriter, self::PROPERTY, [ShiftLogService::WRITE_PERMISSION]);
+        $this->grant($logReader, self::PROPERTY, [ShiftLogService::READ_PERMISSION]);
         $this->grant($cashSupervisor, self::PROPERTY, [CashierService::VIEW_PERMISSION, CashierService::MANAGE_PERMISSION, CashierService::SETTINGS_PERMISSION]);
         $this->grant($clerk, self::PROPERTY, [LaundryService::INTAKE_PERMISSION, LaundryService::DELIVER_PERMISSION]);
         $this->grant($launderer, self::PROPERTY, [LaundryService::PROCESS_PERMISSION]);
@@ -187,6 +210,11 @@ trait BuildsHotel
         $this->dashOnlyId = strtolower((string) $dashOnly->getKey());
         $this->cashierId = strtolower((string) $cashier->getKey());
         $this->cashier2Id = strtolower((string) $cashier2->getKey());
+        $this->sopManagerId = strtolower((string) $sopManager->getKey());
+        $this->sopStaffId = strtolower((string) $sopStaff->getKey());
+        $this->sopStaff2Id = strtolower((string) $sopStaff2->getKey());
+        $this->logWriterId = strtolower((string) $logWriter->getKey());
+        $this->logReaderId = strtolower((string) $logReader->getKey());
         $this->feedbackStaffId = strtolower((string) $feedbackStaff->getKey());
         $this->feedbackStaff2Id = strtolower((string) $feedbackStaff2->getKey());
         $this->feedbackViewerId = strtolower((string) $feedbackViewer->getKey());

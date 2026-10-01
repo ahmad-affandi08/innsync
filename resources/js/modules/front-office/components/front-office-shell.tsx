@@ -14,6 +14,8 @@ const LINKS = [
     { href: '/front-office/inventory', label: 'fo.nav.inventory' },
     { href: '/front-office/requests', label: 'fo.req.nav' },
     { href: '/front-office/feedback', label: 'fo.fb.nav' },
+    { href: '/front-office/checklists', label: 'fo.sop.nav' },
+    { href: '/front-office/logbook', label: 'fo.log.nav' },
     { href: '/front-office/cashier', label: 'fo.cash.nav' },
     { href: '/front-office/night-audit', label: 'fo.nav.audit' },
 ] as const;

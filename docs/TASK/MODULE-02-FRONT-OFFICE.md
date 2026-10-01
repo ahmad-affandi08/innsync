@@ -47,9 +47,9 @@
 | TASK-FO-029 | FR-FO-029 | Wajib | Pembayaran, refund, reversal, dan koreksi folio memiliki status dan referensi yang jelas. Refund atau reversal setelah settlement memerlukan otorisasi, alasan, jejak audit, dan tidak boleh menghapus transaksi asal. | REVIEW |
 | TASK-FO-030 | FR-FO-030 | Wajib | Mencatat permintaan tamu (guest request) dengan template bebas isi dan meneruskannya otomatis ke Housekeeping, Restoran, atau Maintenance sesuai kategori, lengkap dengan status penyelesaian. | REVIEW |
 | TASK-FO-031 | FR-FO-031 | Wajib | Mencatat komentar dan keluhan tamu beserta tingkat keparahan, penanggung jawab tindak lanjut, dan bukti penyelesaian. | REVIEW |
-| TASK-FO-032 | FR-FO-032 | Wajib | Menampilkan SOP tugas harian, mingguan, dan bulanan resepsionis pada ponsel atau tablet, dengan isi template yang disusun oleh manajemen. | TODO |
-| TASK-FO-033 | FR-FO-033 | Wajib | Staf menandai tugas selesai; persentase penyelesaian dikirim otomatis ke modul Human Resource sebagai komponen penilaian kinerja. | TODO |
-| TASK-FO-034 | FR-FO-034 | Sebaiknya | Menyediakan buku serah terima shift (log book) yang wajib diisi pada akhir shift dan dibaca pada awal shift berikutnya. | TODO |
+| TASK-FO-032 | FR-FO-032 | Wajib | Menampilkan SOP tugas harian, mingguan, dan bulanan resepsionis pada ponsel atau tablet, dengan isi template yang disusun oleh manajemen. | REVIEW |
+| TASK-FO-033 | FR-FO-033 | Wajib | Staf menandai tugas selesai; persentase penyelesaian dikirim otomatis ke modul Human Resource sebagai komponen penilaian kinerja. | REVIEW |
+| TASK-FO-034 | FR-FO-034 | Sebaiknya | Menyediakan buku serah terima shift (log book) yang wajib diisi pada akhir shift dan dibaca pada awal shift berikutnya. | REVIEW |
 | TASK-FO-035 | FR-FO-035 | Sebaiknya | Mengelola profil perusahaan/agen, credit limit, billing instruction, dan routing charge untuk tamu korporat tanpa mencampur tagihan pribadi. | TODO |
 | TASK-FO-036 | FR-FO-036 | Wajib | Membuka dan menutup shift kasir Front Office dengan opening float, penerimaan per metode, cash drop, saldo sistem, kas fisik, dan selisih beralasan. | REVIEW |
 | TASK-FO-037 | FR-FO-037 | Sebaiknya | Mengelola early check-in, late check-out, day-use, dan biaya terkait berdasarkan kebijakan/rate plan yang dapat dikonfigurasi. | TODO |

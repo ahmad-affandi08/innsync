@@ -30,6 +30,7 @@ Release notes for every release (NFR-14). Newest first. Each entry names the tas
 - TASK-FO-038 (BR-002, BR-003, BR-005): a charge found after a folio was closed goes to a separate folio linked to the original, dated with the current business date, with a reason, so the closed folio and the days already reported stay as they were.
 - TASK-FO-030, TASK-FO-016 (BR-008): guest requests for in-house guests filed under a department, with housekeeping requests joined to the room's housekeeping task, the others announced for their department, a queue with status and urgency, and the open requests shown on each room card.
 - TASK-FO-031 (BR-003): guest comments and complaints with kind, severity, owner, follow-up date, resolution and proof reference, an append-only history, escalation of critical complaints and a dashboard alert while a serious one is open.
+- TASK-FO-032, TASK-FO-033, TASK-FO-034 (BR-001, BR-003): daily, weekly and monthly front desk checklists written by management as versioned templates, ticked by staff with who and when, each ticked item and completed checklist announced for the Human Resource module with the percentage done, a completion report, and a shift log book written at the end of a shift and marked as read by each person.
 
 ### Known limitations
 
