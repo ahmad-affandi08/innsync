@@ -1,0 +1,4 @@
+code,name,max_adults,max_children,sort_order
+STD,Standard,2,1,10
+DLX,Deluxe,2,2,20
+STE,Suite,4,2,30
