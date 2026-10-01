@@ -81,6 +81,7 @@ final readonly class DatabaseStoredFileRepository implements StoredFileRepositor
             $row->expires_at === null ? null : self::utc($row->expires_at),
             $row->uploaded_by,
             self::utc($row->created_at),
+            $row->erased_at === null ? null : self::utc($row->erased_at),
         );
     }
 

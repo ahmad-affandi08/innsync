@@ -39,3 +39,7 @@ if (config('backup.restore_test_database')) {
         ->weeklyOn(0, (string) config('backup.verify_at'))
         ->withoutOverlapping(180);
 }
+
+Schedule::command('retention:purge')
+    ->dailyAt((string) config('retention.purge_at'))
+    ->withoutOverlapping(120);

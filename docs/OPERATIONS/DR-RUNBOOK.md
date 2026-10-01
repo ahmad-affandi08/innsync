@@ -19,7 +19,7 @@ Task: `TASK-FND-011` · NFR-11, NFR-21, NFR-30 · Profile: Niagahoster/Hostinger
 2. `php artisan backup:keygen`, put the value in `BACKUP_ENCRYPTION_KEY`, and **store a second copy offline** (password manager/safe). Without it every backup is unreadable. It is deliberately separate from `APP_KEY`.
 3. Create an empty scratch database named `<something>_restore_test` with the same MySQL user privileges, and set `BACKUP_RESTORE_TEST_DATABASE`. Its tables are wiped on each test; never point it at real data.
 4. Confirm cron runs `php artisan schedule:run` every minute, then run `backup:run` and `backup:verify` once by hand and check `health:check`.
-5. Do not set `BACKUP_KEEP_LAST` until the retention decision exists (PRD Q-15); until then sets accumulate, so watch the `storage_capacity` signal and the destination's free space.
+5. `BACKUP_KEEP_LAST` defaults to 35 daily sets (Indonesia baseline, `docs/OPERATIONS/INDONESIA-COMPLIANCE-BASELINE.md`, to be confirmed by counsel). An empty value keeps every set, in which case watch the `storage_capacity` signal and the destination's free space.
 
 ## Restore procedure (real incident)
 
@@ -56,5 +56,5 @@ At least quarterly, a person other than the author performs the restore procedur
 | --- | --- | --- |
 | Off-box backup destination and its protection/access | Required for "protected separately"; path is only a mount point here | Owner / IT |
 | PITR/binlog capability to reach RPO ≤ 15 min | Daily dump alone cannot meet it; may need a plan change and an ADR | Owner / IT |
-| Backup retention period (PRD Q-15) | No deletion is guessed; `BACKUP_KEEP_LAST` stays unset | Owner / IT |
+| Backup retention period (PRD Q-15) | 35 daily sets by default, an operational choice under the Indonesia baseline | Owner / IT / counsel to confirm |
 | Whether `mysqldump`/`exec` are enabled on the purchased plan | Backup fails visibly (health `down`) if not; verify during deployment rehearsal | IT |

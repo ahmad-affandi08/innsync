@@ -50,6 +50,12 @@ final readonly class EncryptedDiskFileStorage implements PrivateFileStorage
         }
     }
 
+    public function erase(string $storageKey): void
+    {
+        // Not swallowed: a failed erasure must surface so the run reports it and the next run retries.
+        $this->disk()->delete($this->path($storageKey));
+    }
+
     private function disk(): Filesystem
     {
         return $this->disks->disk((string) config('files.disk'));

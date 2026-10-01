@@ -15,8 +15,9 @@ return [
     // Scratch database for restore tests. Must end in `_restore_test`; its tables are wiped each run.
     'restore_test_database' => env('BACKUP_RESTORE_TEST_DATABASE'),
 
-    // Q-15 retention is unresolved: null keeps every backup set; set only after an approved decision.
-    'keep_last' => env('BACKUP_KEEP_LAST') === null ? null : max(1, (int) env('BACKUP_KEEP_LAST')),
+    // Daily sets kept (docs/OPERATIONS/INDONESIA-COMPLIANCE-BASELINE.md): 35 means about five weeks, so personal data
+    // erased from the live system also leaves the backups within that window. Set to an empty value to keep every set.
+    'keep_last' => env('BACKUP_KEEP_LAST', 35) === '' ? null : max(1, (int) env('BACKUP_KEEP_LAST', 35)),
 
     // Schedule (application timezone). Daily full backup per NFR-11; restore test weekly.
     'run_at' => env('BACKUP_RUN_AT', '02:00'),

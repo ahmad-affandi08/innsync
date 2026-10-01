@@ -24,7 +24,14 @@ final readonly class StoredFile
         public ?DateTimeImmutable $expiresAt,
         public string $uploadedBy,
         public DateTimeImmutable $createdAt,
+        public ?DateTimeImmutable $erasedAt = null,
     ) {}
+
+    /** Retention ended and the content was erased; only the metadata remains as evidence. */
+    public function isErased(): bool
+    {
+        return $this->erasedAt !== null;
+    }
 
     public function isExpiredAt(DateTimeImmutable $now): bool
     {

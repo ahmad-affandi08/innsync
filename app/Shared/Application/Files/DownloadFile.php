@@ -38,8 +38,8 @@ final readonly class DownloadFile
     ): FileContent {
         $file = $this->files->find($propertyId, strtolower($fileId));
 
-        if ($file->isExpiredAt($this->clock->nowUtc())) {
-            $this->recordDenial($file, $actorId, 'expired');
+        if ($file->isErased() || $file->isExpiredAt($this->clock->nowUtc())) {
+            $this->recordDenial($file, $actorId, $file->isErased() ? 'erased' : 'expired');
 
             throw StoredFileNotFound::forId($file->id);
         }

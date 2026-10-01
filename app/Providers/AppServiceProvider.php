@@ -29,6 +29,7 @@ use App\Modules\Property\Application\Ports\PropertyTimeZoneReader;
 use App\Modules\Property\Infrastructure\Time\EloquentPropertyTimeZoneReader;
 use App\Shared\Application\Approval\ApprovalGate;
 use App\Shared\Application\Approval\ApprovalSubjects;
+use App\Shared\Application\Audit\AuditTrail;
 use App\Shared\Application\Audit\AuditWriter;
 use App\Shared\Application\Files\ContentInspector;
 use App\Shared\Application\Files\PrivateFileStorage;
@@ -52,6 +53,13 @@ use App\Shared\Application\Outbox\OutboxMessageStore;
 use App\Shared\Application\Outbox\OutboxPublisher;
 use App\Shared\Application\Outbox\OutboxQueue;
 use App\Shared\Application\Outbox\ProcessedOutboxMessageStore;
+use App\Shared\Application\Privacy\ConsentRepository;
+use App\Shared\Application\Privacy\DataSubjectRequestRepository;
+use App\Shared\Application\Privacy\DataSubjectRequests;
+use App\Shared\Application\Retention\ErasableFileRepository;
+use App\Shared\Application\Retention\LegalHoldRepository;
+use App\Shared\Application\Retention\RetentionCatalog;
+use App\Shared\Application\Retention\RetentionOverrides;
 use App\Shared\Application\Security\PermissionChecker;
 use App\Shared\Application\Security\SecurityEventWriter;
 use App\Shared\Application\Security\SecurityLog;
@@ -77,6 +85,12 @@ use App\Shared\Infrastructure\Outbox\DatabaseOutboxMessageStore;
 use App\Shared\Infrastructure\Outbox\DatabaseOutboxPublisher;
 use App\Shared\Infrastructure\Outbox\DatabaseOutboxQueue;
 use App\Shared\Infrastructure\Outbox\DatabaseProcessedOutboxMessageStore;
+use App\Shared\Infrastructure\Privacy\DatabaseConsentRepository;
+use App\Shared\Infrastructure\Privacy\DatabaseDataSubjectRequestRepository;
+use App\Shared\Infrastructure\Retention\ConfiguredRetentionCatalog;
+use App\Shared\Infrastructure\Retention\DatabaseErasableFileRepository;
+use App\Shared\Infrastructure\Retention\DatabaseLegalHoldRepository;
+use App\Shared\Infrastructure\Retention\DatabaseRetentionOverrides;
 use App\Shared\Infrastructure\Security\DatabaseSecurityEventWriter;
 use App\Shared\Infrastructure\Time\SystemClock;
 use App\Shared\Infrastructure\Transactions\MySqlTransactionRunner;
@@ -143,6 +157,22 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(ApprovalPolicyRepository::class, DatabaseApprovalPolicyRepository::class);
         $this->app->bind(ApprovalSubjects::class, ConfiguredApprovalSubjects::class);
         $this->app->bind(ApprovalGate::class, ApprovalService::class);
+        $this->app->bind(RetentionCatalog::class, ConfiguredRetentionCatalog::class);
+        $this->app->bind(RetentionOverrides::class, DatabaseRetentionOverrides::class);
+        $this->app->bind(LegalHoldRepository::class, DatabaseLegalHoldRepository::class);
+        $this->app->bind(ErasableFileRepository::class, DatabaseErasableFileRepository::class);
+        $this->app->bind(ConsentRepository::class, DatabaseConsentRepository::class);
+        $this->app->bind(DataSubjectRequestRepository::class, DatabaseDataSubjectRequestRepository::class);
+        $this->app->bind(DataSubjectRequests::class, static fn ($app): DataSubjectRequests => new DataSubjectRequests(
+            $app->make(DataSubjectRequestRepository::class),
+            $app->make(PermissionChecker::class),
+            $app->make(TransactionRunner::class),
+            $app->make(AuditTrail::class),
+            $app->make(IdentifierGenerator::class),
+            $app->make(Clock::class),
+            $app->make(PropertyContext::class),
+            array_map('intval', (array) config('retention.request_due_hours')),
+        ));
         $this->app->bind(SyncExceptionRepository::class, DatabaseSyncExceptionRepository::class);
         $this->app->bind(DeviceStatusRepository::class, DatabaseDeviceStatusRepository::class);
         $this->app->bind(UnexpectedFailureReporter::class, ReportingFailureReporter::class);

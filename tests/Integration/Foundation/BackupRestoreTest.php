@@ -122,7 +122,7 @@ final class BackupRestoreTest extends TestCase
         $triggers = DB::select("SELECT TRIGGER_NAME FROM information_schema.triggers WHERE trigger_schema = 'innsync_restore_test'");
 
         self::assertNotEmpty($triggers);
-        self::assertContains('stored_files_no_update', array_map(static fn ($t) => $t->TRIGGER_NAME, $triggers));
+        self::assertContains('stored_files_only_tombstone', array_map(static fn ($t) => $t->TRIGGER_NAME, $triggers));
     }
 
     public function test_tampering_with_any_artifact_or_the_manifest_fails_the_restore_test(): void

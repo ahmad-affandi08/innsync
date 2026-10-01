@@ -2,6 +2,7 @@
 
 use App\Shared\Application\Observability\Health\HealthCheck;
 use App\Shared\Infrastructure\Offline\SyncBacklogCheck;
+use App\Shared\Infrastructure\Privacy\PrivacyRequestsCheck;
 
 // Operational thresholds, tunable per hosting plan. They are not hotel business policy.
 return [
@@ -31,5 +32,6 @@ return [
      */
     'checks' => [
         SyncBacklogCheck::class,
+        PrivacyRequestsCheck::class,
     ],
 ];
