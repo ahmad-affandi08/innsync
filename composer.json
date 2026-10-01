@@ -48,6 +48,19 @@
             "@php artisan config:clear --ansi",
             "@php artisan test"
         ],
+        "lint": "pint --test",
+        "check:deploy-cache": [
+            "@php artisan config:cache --ansi",
+            "@php artisan route:cache --ansi",
+            "@php artisan config:clear --ansi",
+            "@php artisan route:clear --ansi"
+        ],
+        "quality": [
+            "@composer validate --strict",
+            "@lint",
+            "@test",
+            "@check:deploy-cache"
+        ],
         "test:architecture": "@php artisan test --testsuite=Architecture",
         "test:integration": "@php artisan test --testsuite=Integration",
         "post-autoload-dump": [

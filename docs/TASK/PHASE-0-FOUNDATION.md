@@ -18,7 +18,7 @@ These tasks exist before business modules can safely scale.
 | TASK-FND-012 | Frontend query/table conventions and shared UI primitives | NFR-01/12/27 | REVIEW |
 | TASK-FND-013 | i18n framework ID/EN | NFR-12 | DONE |
 | TASK-FND-014 | business date/timezone primitives | NFR-26 | DONE |
-| TASK-FND-015 | CI quality gates: Pint, static analysis, test, TS typecheck, build | NFR-14 | TODO |
+| TASK-FND-015 | CI quality gates: Pint, static analysis, test, TS typecheck, build | NFR-14 | REVIEW |
 | TASK-FND-016 | deployment pipeline/profile for shared hosting | ADR-0003/0008 | TODO |
 | TASK-FND-017 | offline operation envelope for POS/HK | NFR-04/18/19 | TODO |
 | TASK-FND-018 | approval/maker-checker engine | NFR-06 | TODO |
@@ -213,6 +213,19 @@ These tasks exist before business modules can safely scale.
 - Browser evidence: against the running application with a seeded user and an `Asia/Jakarta` property, the browser forced to `Pacific/Honolulu` showed the session time as `2:41 PM UTC` before a property was selected and `9:41 PM GMT+7` after selecting it, and the shared `timeZone` prop was `Asia/Jakarta`.
 - Not included: the business-date rollover and storage (`TASK-FO-028`, blocked on `Q-11`); a `business_date` column on any table (added by the owning posting task, which should use `BusinessDateCast`); validation of the zone when a property is created or edited (the Property administration task should use `PropertyTimeZone::fromIdentifier`); the property header/date display (module screens).
 - Rollback: remove `app/Shared/Domain/Time`, `BusinessDateProvider`, `BusinessDateCast`, the Property reader port/adapter and binding, the `timeZone` shared prop, the connection `timezone` setting, and `resources/js/shared/time`; no table or data changed.
+
+## TASK-FND-015 acceptance evidence
+
+- Status: `REVIEW`, not `DONE`. Every gate except PHP static analysis is in place and verified. Static analysis (for example Larastan/PHPStan) needs a new development dependency, which `AGENTS.md` and `docs/RULES/12` require to be approved with a rationale first; it was not added. Until then the architecture suite (layer and dependency rules, strict types) and Pint are the only static checks. Completed work: 2026-10-01.
+- Traceability: `TASK-FND-015`, `NFR-14`, `docs/RULES/11-TESTING-QUALITY-GATES.md`, `docs/RULES/15-DEFINITION-OF-DONE.md` (7, 10).
+- Gates, provider-neutral: `composer quality` (composer validate --strict, Pint, all four PHPUnit suites including architecture and MySQL integration, route and config cache smoke) and `npm run quality` (strict TypeScript, frontend logic tests, production build). `composer lint`, `composer check:deploy-cache`, and `npm test` are available individually. No project dependency was added.
+- CI (`.github/workflows/ci.yml`): backend job (MySQL 8 service, toolchain and extension check, `composer quality`), frontend job (`npm ci`, `npm run quality`), and a separate dependency-audit job (`composer audit --locked`, `npm audit --omit=dev --audit-level=high`) that also runs weekly. It runs on pull requests, pushes to `main`, and manual dispatch; read-only permissions; concurrency cancels superseded runs; only GitHub's own actions are used, no third-party action. Assumption to confirm: GitHub Actions as the CI provider (the docs do not name one); the same two commands run unchanged elsewhere. The workflow file itself has not been executed on GitHub from this environment; its YAML was parsed and the commands it runs were executed locally.
+- Release notes (NFR-14, DoD 10): `CHANGELOG.md` is required to keep an `[Unreleased]` section, and `ReleaseNotesTest` fails when `APP_VERSION` is not semantic or when a non-`-dev` version has no dated section.
+- Gates proven to fail: a mis-formatted PHP file makes `composer lint` exit 1; a TypeScript error and a failing logic test each make the npm gates exit 1; a `1.0.0` version without notes and a missing `[Unreleased]` heading each fail `ReleaseNotesTest`. All changes were reverted.
+- Defect found by verifying on a clean clone: five feature tests rendered Inertia pages and needed the unversioned `public/build/manifest.json`, so they passed only on machines that had built assets and would have failed in the CI backend job, which runs before any frontend build. `Tests\TestCase` now disables Vite for tests; page tests assert server behavior, not compiled assets.
+- Automated evidence on a fresh `git clone` with no `public/build`: `composer install`, `composer quality` (220 tests, 1 intentional skip for the pre-release version, 1241 assertions), `npm ci`, and `npm run quality` (51 tests, build) all pass. `composer audit --locked` reports no advisories and `npm audit` reports 0 vulnerabilities.
+- Not included: PHP static analysis (above); required-status-check and branch-protection settings on the remote (repository administration, not code); the deployment pipeline (`TASK-FND-016`); coverage thresholds (not a release gate per `docs/RULES/11`).
+- Rollback: delete `.github/workflows/ci.yml`, the `quality`, `lint`, and `check:deploy-cache` scripts, `CHANGELOG.md`, `ReleaseNotesTest`, `.node-version`, and the `withoutVite()` call; no runtime or data change.
 
 ## NFR coverage
 

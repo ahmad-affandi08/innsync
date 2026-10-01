@@ -6,7 +6,8 @@
         "build": "vite build",
         "dev": "vite",
         "test": "node --experimental-strip-types --disable-warning=ExperimentalWarning --test \"resources/js/**/*.test.ts\"",
-        "typecheck": "tsc --noEmit"
+        "typecheck": "tsc --noEmit",
+        "quality": "npm run typecheck && npm test && npm run build"
     },
     "devDependencies": {
         "@tailwindcss/vite": "^4.0.0",

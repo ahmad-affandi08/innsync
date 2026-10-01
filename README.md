@@ -16,14 +16,7 @@ InnSYnc is a hotel operating system implemented as a Laravel 13 DDD modular mono
 
 ## Current implementation status
 
-- `TASK-FND-001`: DONE — approved application stack bootstrapped.
-- `TASK-FND-002`: DONE — module/layer namespaces and architecture boundaries enforced.
-- `TASK-FND-003`: DONE — MySQL 8, property scope, ULID, and optimistic-locking baseline implemented.
-- `TASK-FND-004`: DONE — authentication, MFA, session security, scoped RBAC, and server-side authorization implemented.
-- `TASK-FND-005`: DONE — immutable audit trail, security events, structured logs, and correlation IDs implemented.
-- `TASK-FND-006`: DONE — property-scoped idempotency middleware, atomic executor, and encrypted replay persistence implemented.
-- Next task: `TASK-FND-007` — transactional outbox, database queue, and cron drain.
-- Business modules have not started.
+Foundation tasks `TASK-FND-001` to `TASK-FND-014` are implemented (see `docs/TASK/PHASE-0-FOUNDATION.md` for status and acceptance evidence per task; `TASK-FND-011` is in review pending an owner decision on RPO). Business modules have not started. Release notes are in [CHANGELOG.md](CHANGELOG.md).
 
 ## Local setup
 
@@ -39,13 +32,11 @@ Configure the MySQL credentials in `.env`, create an empty database, then run `p
 Useful verification commands:
 
 ```bash
-composer test
-composer test:architecture
-composer test:integration
-vendor/bin/pint --test
-npm run typecheck
-npm run build
+composer quality   # composer validate, Pint, all PHP test suites, route/config cache
+npm run quality    # strict TypeScript, frontend logic tests, production build
 ```
+
+These two commands are the quality gates that CI runs on every pull request and push to `main` (`.github/workflows/ci.yml`); a change cannot merge when either fails. They need a reachable MySQL 8 server with the `innsync_test` database (and `innsync_restore_test` for the backup tests). Individual pieces: `composer test`, `composer test:architecture`, `composer test:integration`, `composer lint`, `npm run typecheck`, `npm test`, `npm run build`.
 
 ## Documentation domains
 

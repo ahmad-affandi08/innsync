@@ -1,0 +1,120 @@
+# Quality gates (TASK-FND-015, NFR-14, docs/RULES/11-TESTING-QUALITY-GATES.md).
+#
+# A change cannot merge when formatting, tests, architecture boundaries,
+# migrations, TypeScript type checking, the production build or the release
+# notes fail. The workflow only calls the repository's own scripts
+# (`composer quality`, `npm run quality`), so the same gates run locally and on
+# any other CI provider. It uses GitHub's own actions and the PHP, Node and
+# MySQL client tools preinstalled on GitHub-hosted runners; no third-party
+# action and no new project dependency.
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+  schedule:
+    # Weekly: dependency advisories change independently of the code.
+    - cron: '17 3 * * 1'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    name: Backend (format, tests, architecture, migrations)
+    if: github.event_name != 'schedule'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: ci-only-password
+          MYSQL_DATABASE: innsync_test
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -pci-only-password"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=20
+    env:
+      DB_HOST: 127.0.0.1
+      DB_PORT: 3306
+      DB_USERNAME: root
+      DB_PASSWORD: ci-only-password
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify the runner toolchain
+        run: |
+          php -v
+          php -r 'exit(version_compare(PHP_VERSION, "8.3.0", ">=") ? 0 : 1);'
+          # Extensions the application and the backup/restore tests rely on.
+          php -r 'foreach (["pdo_mysql","mbstring","openssl","sodium","fileinfo","intl"] as $e) { if (! extension_loaded($e)) { fwrite(STDERR, "missing PHP extension: $e\n"); exit(1); } }'
+          composer --version
+          mysqldump --version
+
+      - name: Cache Composer downloads
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/composer
+          key: composer-${{ hashFiles('composer.lock') }}
+          restore-keys: composer-
+
+      - name: Install PHP dependencies
+        run: composer install --no-interaction --no-progress --prefer-dist
+
+      - name: Scratch databases for the integration suites
+        run: |
+          mysql -h 127.0.0.1 -uroot -pci-only-password -e \
+            "CREATE DATABASE IF NOT EXISTS innsync_restore_test CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci"
+
+      - name: Quality gates (composer validate, Pint, all test suites, route and config cache)
+        env:
+          APP_KEY: base64:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
+        run: composer quality
+
+  frontend:
+    name: Frontend (type check, tests, build)
+    if: github.event_name != 'schedule'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+          cache: npm
+
+      - name: Install JavaScript dependencies
+        run: npm ci
+
+      - name: Quality gates (strict TypeScript, logic tests, production build)
+        run: npm run quality
+
+  dependency-audit:
+    name: Dependency audit
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    # Reported on its own and also run weekly, so a new advisory is noticed without
+    # masking a code failure in the jobs above.
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+
+      - name: PHP packages (locked versions)
+        run: composer audit --locked
+
+      - name: JavaScript packages (runtime dependencies, high severity and above)
+        run: npm audit --omit=dev --audit-level=high
