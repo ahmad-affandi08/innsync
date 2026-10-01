@@ -16,6 +16,9 @@ interface FolioRepository
 
     public function find(PropertyId $property, string $id): ?Folio;
 
+    /** Folios opened for late charges against this folio, oldest first. @return list<Folio> */
+    public function lateFoliosOf(PropertyId $property, string $originFolioId): array;
+
     /** Reads the folio with a row lock (`FOR UPDATE`). Every posting happens under it. Call inside a transaction. */
     public function lock(PropertyId $property, string $id): ?Folio;
 

@@ -486,6 +486,9 @@ final readonly class FolioService
             'charges_minor' => $charges,
             'payments_minor' => $payments,
             'lock_version' => $folio->lockVersion,
+            'origin_folio_id' => $folio->originFolioId,
+            'origin_number' => $folio->originFolioId === null ? null : $this->folios->find($property, $folio->originFolioId)?->number,
+            'late_folios' => array_map(static fn (Folio $f): array => ['id' => $f->id, 'number' => $f->number, 'balance_minor' => $f->balance->amountMinor, 'closed' => $f->isClosed], $this->folios->lateFoliosOf($property, $folio->id)),
             'postings' => array_map(static fn (Posting $p): array => $p->toArray() + ['is_reversed' => isset($reversed[$p->id])], $postings),
         ];
     }

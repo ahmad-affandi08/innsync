@@ -207,6 +207,7 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
     Route::get('/folios/{id}', [FolioController::class, 'show'])->where('id', $id)->name('front-office.folios.show');
     Route::get('/folios/{id}/bill', [FolioController::class, 'bill'])->where('id', $id)->name('front-office.folios.bill');
     Route::post('/folios/{id}/charges', [FolioController::class, 'charge'])->where('id', $id)->middleware(['idempotent', 'throttle:bookings'])->name('front-office.folios.charge');
+    Route::post('/folios/{id}/late-charges', [FolioController::class, 'lateCharge'])->where('id', $id)->middleware(['idempotent', 'throttle:bookings'])->name('front-office.folios.late-charge');
     Route::post('/folios/{id}/payments', [FolioController::class, 'pay'])->where('id', $id)->middleware(['idempotent', 'throttle:bookings'])->name('front-office.folios.pay');
     Route::post('/postings/{id}/reversal-request', [FolioController::class, 'requestReversal'])->where('id', $id)->middleware('idempotent')->name('front-office.postings.reversal-request');
     Route::post('/folios/{id}/refund-request', [FolioController::class, 'requestRefund'])->where('id', $id)->middleware('idempotent')->name('front-office.folios.refund-request');

@@ -6,6 +6,7 @@ namespace Tests\Support;
 
 use App\Modules\FrontOffice\Application\Cashier\CashierService;
 use App\Modules\FrontOffice\Application\Folios\FolioService;
+use App\Modules\FrontOffice\Application\Folios\LateChargeService;
 use App\Modules\FrontOffice\Application\Inventory\InventoryAdminService;
 use App\Modules\FrontOffice\Application\NightAudit\NightAuditService;
 use App\Modules\FrontOffice\Application\Reservations\RateChangeService;
@@ -83,6 +84,9 @@ trait BuildsHotel
     /** Room price changes (FR-FO-013): someone who may change the price of a booked reservation. */
     private string $rateManagerId;
 
+    /** Late charges after a folio is closed (FR-FO-038). */
+    private string $lateChargerId;
+
     private string $typeId;
 
     private string $planId;
@@ -118,6 +122,7 @@ trait BuildsHotel
         $cashier2 = UserRecord::factory()->create();
         $cashSupervisor = UserRecord::factory()->create();
         $rateManager = UserRecord::factory()->create();
+        $lateCharger = UserRecord::factory()->create();
         $this->grant($admin, self::PROPERTY, [
             RoomCatalogService::MANAGE_PERMISSION, RatePlanService::MANAGE_PERMISSION, ChargeSchemeService::MANAGE_PERMISSION, PropertySettingsService::MANAGE_PERMISSION,
             InventoryAdminService::OVERBOOKING_PERMISSION, InventoryAdminService::BLOCK_PERMISSION, InventoryAdminService::HOLD_PERMISSION, ApprovalPolicyAdmin::MANAGE_PERMISSION,
@@ -134,6 +139,7 @@ trait BuildsHotel
         $this->grant($cashier, self::PROPERTY, [CashierService::OPERATE_PERMISSION, FolioService::MANAGE_PERMISSION, FolioService::REFUND_PERMISSION, FolioService::CORRECT_PERMISSION]);
         $this->grant($cashier2, self::PROPERTY, [CashierService::OPERATE_PERMISSION, FolioService::MANAGE_PERMISSION]);
         $this->grant($rateManager, self::PROPERTY, [ReservationService::MANAGE_PERMISSION, RateChangeService::CHANGE_PERMISSION, FolioService::VIEW_PERMISSION]);
+        $this->grant($lateCharger, self::PROPERTY, [LateChargeService::POST_PERMISSION, FolioService::MANAGE_PERMISSION]);
         $this->grant($cashSupervisor, self::PROPERTY, [CashierService::VIEW_PERMISSION, CashierService::MANAGE_PERMISSION, CashierService::SETTINGS_PERMISSION]);
         $this->grant($clerk, self::PROPERTY, [LaundryService::INTAKE_PERMISSION, LaundryService::DELIVER_PERMISSION]);
         $this->grant($launderer, self::PROPERTY, [LaundryService::PROCESS_PERMISSION]);
@@ -157,6 +163,7 @@ trait BuildsHotel
         $this->dashOnlyId = strtolower((string) $dashOnly->getKey());
         $this->cashierId = strtolower((string) $cashier->getKey());
         $this->cashier2Id = strtolower((string) $cashier2->getKey());
+        $this->lateChargerId = strtolower((string) $lateCharger->getKey());
         $this->rateManagerId = strtolower((string) $rateManager->getKey());
         $this->cashSupervisorId = strtolower((string) $cashSupervisor->getKey());
         app(PropertyContext::class)->activateFromString(self::PROPERTY);

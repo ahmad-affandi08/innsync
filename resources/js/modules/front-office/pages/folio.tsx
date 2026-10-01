@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
 import { StatusBadge, type StatusTone } from '@/components/ui/status-badge';
 import { FrontOfficeShell } from '@/modules/front-office/components/front-office-shell';
+import { LateChargeButton } from '@/modules/front-office/components/late-charge';
 import { newIdempotencyKey } from '@/shared/api/http';
 import { useServerAction } from '@/shared/api/use-server-action';
 import { useFormatters, useTranslation } from '@/shared/i18n/i18n';
@@ -22,14 +23,15 @@ type Posting = {
     id: string; seq: number; type: 'charge' | 'payment' | 'refund' | 'reversal'; code: string; description: string; base_minor: number; service_charge_minor: number; tax_minor: number;
     total_minor: number; business_date: string; payment_method: string | null; payment_reference: string | null; reason: string | null; is_reversed: boolean;
 };
-type Folio = { id: string; number: string; reservation_id: string; window: number; label: string; currency: string; status: string; balance_minor: number; charges_minor: number; payments_minor: number; lock_version: number; postings: Posting[] };
+type LateFolio = { id: string; number: string; balance_minor: number; closed: boolean };
+type Folio = { origin_folio_id: string | null; origin_number: string | null; late_folios: LateFolio[]; id: string; number: string; reservation_id: string; window: number; label: string; currency: string; status: string; balance_minor: number; charges_minor: number; payments_minor: number; lock_version: number; postings: Posting[] };
 type Approval = { id: string; subject_type: string; subject_ref: string; status: string; consumed: boolean; amount_minor: number | null; payload: Record<string, unknown> };
 type Reservation = { id: string; number: string; guest_name: string };
 
 const METHODS = ['cash', 'qris', 'card', 'bank_transfer', 'online'] as const;
 const statusTone: Record<string, StatusTone> = { open: 'info', partially_settled: 'warning', settled: 'success', closed: 'neutral' };
 
-export default function FolioPage({ approvals, folio, reservation }: { approvals: Approval[]; folio: Folio; reservation: Reservation }) {
+export default function FolioPage({ approvals, folio, may_late_charge: mayLateCharge, reservation }: { approvals: Approval[]; folio: Folio; may_late_charge: boolean; reservation: Reservation }) {
     const { t } = useTranslation();
     const format = useFormatters();
     const errorCopy = useErrorStateCopy();
@@ -150,7 +152,21 @@ export default function FolioPage({ approvals, folio, reservation }: { approvals
                 <div><dt className="text-xs text-muted-foreground">{t('fo.folio.payments')}</dt><dd className="text-lg">{money(folio.payments_minor)}</dd></div>
             </dl>
 
-            <div><Button asChild size="sm" variant="outline"><a href={`/front-office/folios/${folio.id}/bill`}>{t('fo.bill.open')}</a></Button></div>
+            <div className="flex flex-wrap items-center gap-2">
+                <Button asChild size="sm" variant="outline"><a href={`/front-office/folios/${folio.id}/bill`}>{t('fo.bill.open')}</a></Button>
+                {!open && mayLateCharge && folio.origin_folio_id === null ? <LateChargeButton currency={folio.currency} folioId={folio.id} /> : null}
+            </div>
+            {folio.origin_folio_id !== null ? (
+                <p className="text-sm" data-testid="late-origin">{t('fo.late.origin', { number: folio.origin_number ?? '' })} · <Link className="underline-offset-2 hover:underline" href={`/front-office/folios/${folio.origin_folio_id}`}>{t('fo.late.originLink', { number: folio.origin_number ?? '' })}</Link></p>
+            ) : null}
+            {folio.late_folios.length > 0 ? (
+                <section aria-labelledby="late-h" className="flex flex-col gap-1 text-sm">
+                    <h2 className="text-lg font-semibold" id="late-h">{t('fo.late.list')}</h2>
+                    <ul className="divide-y divide-border border-y border-border" data-testid="late-folios">{folio.late_folios.map((l) => (
+                        <li className="flex flex-wrap justify-between gap-2 py-1" key={l.id}><Link className="font-medium underline-offset-2 hover:underline" href={`/front-office/folios/${l.id}`}>{t('fo.late.row', { number: l.number, status: l.closed ? t('fo.late.closed') : t('fo.late.open') })}</Link><span>{money(l.balance_minor)}</span></li>
+                    ))}</ul>
+                </section>
+            ) : null}
 
             {open && (
                 <div className="flex flex-wrap gap-2">

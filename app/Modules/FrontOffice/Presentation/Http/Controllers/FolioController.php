@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Modules\FrontOffice\Presentation\Http\Controllers;
 
 use App\Modules\FrontOffice\Application\Folios\FolioService;
+use App\Modules\FrontOffice\Application\Folios\LateChargeService;
 use App\Modules\FrontOffice\Application\Reservations\ReservationService;
 use App\Shared\Application\Idempotency\IdempotencyKey;
 use App\Shared\Application\Tenancy\PropertyContext;
@@ -16,7 +17,7 @@ use Inertia\Response;
 /** The folio screen and its actions. Rules, permissions and approvals live in `FolioService`. */
 final readonly class FolioController
 {
-    public function __construct(private FolioService $folios, private ReservationService $reservations, private PropertyContext $property) {}
+    public function __construct(private FolioService $folios, private ReservationService $reservations, private LateChargeService $lateCharges, private PropertyContext $property) {}
 
     public function show(Request $request, string $id): Response
     {
@@ -27,6 +28,7 @@ final readonly class FolioController
         return Inertia::render('front-office/pages/folio', [
             'folio' => $folio,
             'approvals' => $this->folios->approvalsFor($property, $actor, $id),
+            'may_late_charge' => $this->lateCharges->mayPost($property, $actor),
             'reservation' => $this->summary($this->reservations->find($property, $actor, $folio['reservation_id'])->toArray()),
         ]);
     }
@@ -53,6 +55,17 @@ final readonly class FolioController
         $key = (string) $request->header('Idempotency-Key');
 
         return $this->json($this->folios->charge($this->property->current(), $this->actor($request), $id, strtoupper($data['code']), $data['description'], (int) $data['amount_minor'], (bool) $data['prices_include_charges'], $key === '' ? null : 'ui:'.$key));
+    }
+
+    public function lateCharge(Request $request, string $id): JsonResponse
+    {
+        $data = $request->validate([
+            'code' => ['required', 'string', 'max:20'], 'description' => ['required', 'string', 'max:160'], 'amount_minor' => ['required', 'integer', 'min:1'],
+            'prices_include_charges' => ['required', 'boolean'], 'reason' => ['required', 'string', 'max:300'],
+        ]);
+        $key = (string) $request->header('Idempotency-Key');
+
+        return $this->json($this->lateCharges->post($this->property->current(), $this->actor($request), $id, strtoupper($data['code']), $data['description'], (int) $data['amount_minor'], (bool) $data['prices_include_charges'], $data['reason'], $key === '' ? null : 'late:'.$key));
     }
 
     public function pay(Request $request, string $id): JsonResponse

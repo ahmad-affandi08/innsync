@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\FrontOffice;
 
 use App\Modules\FrontOffice\Application\Folios\FolioService;
+use App\Modules\FrontOffice\Application\Folios\LateChargeService;
 use App\Modules\FrontOffice\Application\Reservations\ReservationService;
 use App\Modules\IdentityAccess\Application\Approval\ApprovalPolicyAdmin;
 use App\Modules\Property\Application\Catalog\RoomCatalogService;
@@ -40,7 +41,7 @@ final class FolioHttpTest extends TestCase
 
         $this->createProperty(self::A, 'A');
         $this->signIn(self::A, [
-            ReservationService::MANAGE_PERMISSION, FolioService::MANAGE_PERMISSION, FolioService::CORRECT_PERMISSION, FolioService::REFUND_PERMISSION,
+            ReservationService::MANAGE_PERMISSION, FolioService::MANAGE_PERMISSION, FolioService::CORRECT_PERMISSION, FolioService::REFUND_PERMISSION, LateChargeService::POST_PERMISSION,
             RoomCatalogService::MANAGE_PERMISSION, RatePlanService::MANAGE_PERMISSION, ChargeSchemeService::MANAGE_PERMISSION, PropertySettingsService::MANAGE_PERMISSION, ApprovalPolicyAdmin::MANAGE_PERMISSION,
         ]);
         $type = $this->postJson('/property/room-types', ['code' => 'DLX', 'name' => 'Deluxe', 'max_adults' => 2, 'max_children' => 1, 'reason' => 'x'])->json('type.id');
@@ -126,5 +127,21 @@ final class FolioHttpTest extends TestCase
         $this->postJson("/front-office/folios/{$folio}/refund", ['payment_method' => 'cash', 'amount_minor' => 1, 'reason' => 'x'])->assertStatus(423);
         $this->postJson('/front-office/postings/01arz3ndektsv4rrffq69g5fax/reverse', ['reason' => 'x'])->assertStatus(423);
         $this->postJson("/front-office/folios/{$folio}/payments", ['payment_method' => 'cash', 'amount_minor' => 100, 'purpose' => 'deposit'], ['Idempotency-Key' => 'pay-key-0000000030'])->assertOk();
+    }
+
+    public function test_a_late_charge_after_close_goes_to_a_linked_folio_and_is_shown_on_both(): void
+    {
+        $folio = $this->folio();
+        $this->postJson("/front-office/folios/{$folio}/close", ['lock_version' => 0])->assertOk();
+        $body = ['code' => 'MINIBAR', 'description' => 'Minibar: 2 waters', 'amount_minor' => 5_000_000, 'prices_include_charges' => false, 'reason' => 'Found after check-out'];
+
+        $late = $this->postJson("/front-office/folios/{$folio}/late-charges", $body, ['Idempotency-Key' => 'late-key-000000001'])->assertOk()->assertJsonPath('folio_number', 'FOL-000002')->assertJsonPath('posting.total_minor', 6_050_000)->json('folio_id');
+        $this->postJson("/front-office/folios/{$folio}/late-charges", $body, ['Idempotency-Key' => 'late-key-000000001'])->assertOk()->assertJsonPath('folio_id', $late);
+        self::assertSame(1, DB::table('folio_postings')->where('source', 'late_charge')->count());
+        $this->postJson("/front-office/folios/{$late}/late-charges", $body, ['Idempotency-Key' => 'late-key-000000002'])->assertStatus(409);
+        $this->postJson("/front-office/folios/{$folio}/late-charges", [...$body, 'reason' => ''], ['Idempotency-Key' => 'late-key-000000003'])->assertStatus(422);
+
+        $this->get("/front-office/folios/{$folio}")->assertInertia(fn (Assert $p) => $p->where('may_late_charge', true)->where('folio.status', 'closed')->has('folio.late_folios', 1)->where('folio.late_folios.0.id', $late));
+        $this->get("/front-office/folios/{$late}")->assertInertia(fn (Assert $p) => $p->where('folio.origin_folio_id', $folio)->where('folio.origin_number', 'FOL-000001'));
     }
 }

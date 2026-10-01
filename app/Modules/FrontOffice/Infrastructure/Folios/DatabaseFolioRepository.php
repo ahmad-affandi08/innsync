@@ -25,7 +25,7 @@ final readonly class DatabaseFolioRepository implements FolioRepository
         try {
             DB::table('folios')->insert([
                 'id' => $folio->id, 'property_id' => $property->toString(), 'number' => $folio->number, 'reservation_id' => $folio->reservationId,
-                'window_no' => $folio->window, 'label' => $folio->label, 'currency_code' => $folio->currency, 'status' => 'open', 'balance_minor' => 0,
+                'window_no' => $folio->window, 'label' => $folio->label, 'origin_folio_id' => $folio->originFolioId, 'currency_code' => $folio->currency, 'status' => 'open', 'balance_minor' => 0,
                 'last_seq' => 0, 'created_by' => $actorId, 'lock_version' => 0, 'created_at' => $at, 'updated_at' => $at,
             ]);
         } catch (UniqueConstraintViolationException) {
@@ -40,6 +40,12 @@ final readonly class DatabaseFolioRepository implements FolioRepository
         $row = DB::table('folios')->where('property_id', $property->toString())->where('id', $id)->first();
 
         return $row === null ? null : self::folio($row);
+    }
+
+    public function lateFoliosOf(PropertyId $property, string $originFolioId): array
+    {
+        return DB::table('folios')->where('property_id', $property->toString())->where('origin_folio_id', $originFolioId)->orderBy('created_at')->orderBy('id')->get()
+            ->map(static fn (stdClass $r): Folio => self::folio($r))->all();
     }
 
     public function lock(PropertyId $property, string $id): ?Folio
@@ -133,7 +139,7 @@ final readonly class DatabaseFolioRepository implements FolioRepository
 
     private static function folio(stdClass $r): Folio
     {
-        return new Folio($r->id, $r->number, $r->reservation_id, (int) $r->window_no, $r->label, $r->currency_code, $r->status === 'closed', Money::ofMinor((int) $r->balance_minor, $r->currency_code), (int) $r->last_seq, (int) $r->lock_version);
+        return new Folio($r->id, $r->number, $r->reservation_id, (int) $r->window_no, $r->label, $r->currency_code, $r->status === 'closed', Money::ofMinor((int) $r->balance_minor, $r->currency_code), (int) $r->last_seq, (int) $r->lock_version, $r->origin_folio_id);
     }
 
     private static function posting(stdClass $r): Posting

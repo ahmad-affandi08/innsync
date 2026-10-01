@@ -27,6 +27,7 @@ Release notes for every release (NFR-14). Newest first. Each entry names the tas
 - TASK-FO-021, TASK-FO-043, TASK-FO-044 (BR-001, BR-002, BR-009): printable guest bill by outlet and date with payments and the balance due; arrivals, departures and in-house report for a business date (or expected, for a later one) with a purpose-gated export; occupancy, ADR and RevPAR per day, month and year from the closed days.
 - TASK-FO-036 (BR-003, BR-004): front desk cashier shifts with an opening float, money counted per payment method (payments, refunds and reversed payments), cash drops to the safe, and closing against the counted cash with a reason for any difference; closed shifts are immutable; open shifts are a night audit check; an optional property switch makes an open shift required to take money.
 - TASK-FO-013 (BR-002, BR-004): changing the room price of a booked reservation for the nights not yet charged, as an append-only fact with the old and new price, reason and actor (the booked price stays on record), a discount over the policy threshold needing the Manager on Duty's approval, and night audit charging the changed price.
+- TASK-FO-038 (BR-002, BR-003, BR-005): a charge found after a folio was closed goes to a separate folio linked to the original, dated with the current business date, with a reason, so the closed folio and the days already reported stay as they were.
 
 ### Known limitations
 

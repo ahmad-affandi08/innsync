@@ -23,6 +23,7 @@ final readonly class Folio
         public Money $balance,
         public int $lastSeq,
         public int $lockVersion,
+        public ?string $originFolioId = null,
     ) {}
 
     public function assertOpen(): void
