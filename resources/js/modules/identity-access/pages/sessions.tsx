@@ -54,7 +54,7 @@ export default function SessionsPage({ sessions }: { sessions: Session[] }) {
                                     <p className="mt-1 text-xs text-muted-foreground">
                                         {t('identity.sessions.detail', {
                                             ip: session.ipAddress ?? t('common.unavailable'),
-                                            lastActive: format.dateTime(session.lastActivity),
+                                            lastActive: format.epochSeconds(session.lastActivity),
                                         })}
                                     </p>
                                 </div>

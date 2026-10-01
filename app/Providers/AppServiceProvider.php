@@ -18,6 +18,8 @@ use App\Modules\IdentityAccess\Infrastructure\Authorization\EloquentUserAccessRe
 use App\Modules\IdentityAccess\Infrastructure\Mfa\EloquentMfaStore;
 use App\Modules\IdentityAccess\Infrastructure\Mfa\TotpOneTimePassword;
 use App\Modules\IdentityAccess\Infrastructure\Sessions\DatabaseUserSessionRepository;
+use App\Modules\Property\Application\Ports\PropertyTimeZoneReader;
+use App\Modules\Property\Infrastructure\Time\EloquentPropertyTimeZoneReader;
 use App\Shared\Application\Audit\AuditWriter;
 use App\Shared\Application\Files\ContentInspector;
 use App\Shared\Application\Files\PrivateFileStorage;
@@ -111,6 +113,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(OneTimePassword::class, TotpOneTimePassword::class);
         $this->app->bind(MfaStore::class, EloquentMfaStore::class);
         $this->app->bind(UserSessionRepository::class, DatabaseUserSessionRepository::class);
+        $this->app->bind(PropertyTimeZoneReader::class, EloquentPropertyTimeZoneReader::class);
     }
 
     /**

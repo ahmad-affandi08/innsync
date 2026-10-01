@@ -3,6 +3,7 @@ import { useMemo } from 'react';
 
 import { loaders } from '@/locales';
 import type { MessageKey } from '@/locales/en/index';
+import { calendarDateIn, formatDate, formatInstant, fromEpochSeconds } from '@/shared/time/time';
 import {
     createTranslator,
     FALLBACK_LOCALE,
@@ -22,6 +23,8 @@ declare module '@inertiajs/core' {
     interface InertiaConfig {
         sharedPageProps: {
             locale: Locale;
+            /** IANA zone of the active property (NFR-26); null before a property is selected. */
+            timeZone: string | null;
         };
     }
 }
@@ -62,18 +65,26 @@ export function useTranslation(): Translator<MessageKey> {
     );
 }
 
-/** Locale-aware formatting. Time-zone and business-date rules belong to TASK-FND-014. */
+/**
+ * Locale- and property-zone-aware formatting. Instants are shown on the active
+ * property's wall clock with the zone name; with no property selected they are
+ * shown in an explicit UTC label. Plain dates (business/calendar dates) are
+ * formatted without any zone.
+ */
 export function useFormatters() {
     const { locale } = useTranslation();
+    const timeZone = usePage().props.timeZone ?? null;
 
     return useMemo(
         () => ({
-            dateTime: (epochSeconds: number) =>
-                new Intl.DateTimeFormat(locale, { dateStyle: 'medium', timeStyle: 'short' }).format(
-                    new Date(epochSeconds * 1000),
-                ),
+            timeZone,
+            instant: (value: Date | string | number) => formatInstant(value, { locale, timeZone }),
+            /** Epoch seconds, as sent by session records. */
+            epochSeconds: (seconds: number) => formatInstant(fromEpochSeconds(seconds), { locale, timeZone }),
+            date: (isoDate: string, style?: 'short' | 'medium' | 'long') => formatDate(isoDate, locale, style),
+            calendarDateOf: (value: Date | string | number) => calendarDateIn(value, timeZone),
             number: (value: number) => new Intl.NumberFormat(locale).format(value),
         }),
-        [locale],
+        [locale, timeZone],
     );
 }

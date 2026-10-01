@@ -12,9 +12,13 @@ declare module 'node:assert/strict' {
         deepEqual(actual: unknown, expected: unknown, message?: string): void
         notEqual(actual: unknown, expected: unknown, message?: string): void
         ok(value: unknown, message?: string): void
-        throws(fn: () => unknown, expected?: RegExp | object): void
+        throws(fn: () => unknown, expected?: RegExp | object | (new (...args: never[]) => Error), message?: string): void
+        match(value: string, pattern: RegExp, message?: string): void
         rejects(fn: () => Promise<unknown>, expected?: RegExp | object): Promise<void>
     }
     const assert: Assert
     export default assert
 }
+
+// Only what the logic tests need from Node's global.
+declare const process: { env: Record<string, string | undefined> }
