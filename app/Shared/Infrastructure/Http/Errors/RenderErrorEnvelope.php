@@ -1,0 +1,47 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Shared\Infrastructure\Http\Errors;
+
+use App\Shared\Application\Observability\CorrelationId;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
+use Symfony\Component\HttpFoundation\Response;
+use Throwable;
+
+/**
+ * JSON/API requests get the envelope. Inertia mutations get a redirect back carrying the same
+ * conflict/forbidden message in the `error` bag so forms can show it. Everything else keeps
+ * framework behavior (validation redirects, error pages).
+ */
+final readonly class RenderErrorEnvelope
+{
+    public function __construct(
+        private ErrorEnvelopeFactory $factory,
+        private CorrelationId $correlationId,
+    ) {}
+
+    public function __invoke(Throwable $e, Request $request): ?Response
+    {
+        if ($request->is('api/*') || $request->expectsJson()) {
+            $envelope = $this->factory->make($e);
+
+            return new JsonResponse(
+                $envelope->toArray($this->correlationId->current()),
+                $envelope->status,
+                $this->factory->headers($e),
+            );
+        }
+
+        if ($request->header('X-Inertia') !== null
+            && ! $request->isMethodSafe()
+            && ! $e instanceof ValidationException
+            && in_array($e::class, ErrorEnvelopeFactory::EXPECTED, true)) {
+            return back(303)->withErrors(['error' => $this->factory->make($e)->message]);
+        }
+
+        return null;
+    }
+}

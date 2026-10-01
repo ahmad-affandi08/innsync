@@ -6,6 +6,8 @@ use App\Modules\IdentityAccess\Presentation\Http\Middleware\EnsureMfaVerified;
 use App\Modules\IdentityAccess\Presentation\Http\Middleware\RequirePermission;
 use App\Modules\IdentityAccess\Presentation\Http\Middleware\ResolvePropertyContext;
 use App\Shared\Application\Observability\CorrelationId;
+use App\Shared\Infrastructure\Http\Errors\ErrorEnvelopeFactory;
+use App\Shared\Infrastructure\Http\Errors\RenderErrorEnvelope;
 use App\Shared\Infrastructure\Idempotency\RequireIdempotencyKey;
 use App\Shared\Infrastructure\Observability\AssignCorrelationId;
 use App\Shared\Infrastructure\Outbox\DrainOutboxCommand;
@@ -43,6 +45,12 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request) => $request->is('api/*') || $request->expectsJson(),
+        );
+
+        $exceptions->dontReport(ErrorEnvelopeFactory::EXPECTED);
+
+        $exceptions->render(
+            fn (Throwable $e, Request $request) => app(RenderErrorEnvelope::class)($e, $request),
         );
 
         $exceptions->respond(function ($response) {

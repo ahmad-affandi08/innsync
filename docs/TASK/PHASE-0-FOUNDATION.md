@@ -12,7 +12,7 @@ These tasks exist before business modules can safely scale.
 | TASK-FND-006 | Idempotency middleware/application service + table | NFR-18 | DONE |
 | TASK-FND-007 | Transactional outbox + database queue + cron drain | NFR-17/25, ADR-0007 | DONE |
 | TASK-FND-008 | Private file storage and authorized download | NFR-07/08/24 | DONE |
-| TASK-FND-009 | Error envelope, validation, conflict semantics | NFR-19 | TODO |
+| TASK-FND-009 | Error envelope, validation, conflict semantics | NFR-19 | DONE |
 | TASK-FND-010 | Observability, health endpoint, critical alerts | NFR-20 | TODO |
 | TASK-FND-011 | Backup/restore and DR runbook | NFR-11/21/30 | TODO |
 | TASK-FND-012 | Frontend query/table conventions and shared UI primitives | NFR-01/12/27 | TODO |
@@ -130,6 +130,19 @@ These tasks exist before business modules can safely scale.
 - Schema: `stored_files` (ULID, property FK, unique storage key, check constraints, UTC microsecond timestamps, owner/purpose/expiry indexes) is append-only via update/delete triggers, consistent with the audit tables. Migration batch 6 ran on the development database.
 - Automated evidence: full PHPUnit suite passes with 99 tests and 331 assertions, including encryption-at-rest, random naming, byte-sniffed MIME rejection, size/empty/expiry rejection, orphan cleanup, authorized and denied download, audit and security events, expiry, cross-property isolation, tamper/missing-blob detection, append-only metadata, and private-disk configuration. Pint, architecture tests, Composer validation, config cache, and route cache pass.
 - Rollback: drop `stored_files` only before any file is recorded; afterward use a forward migration, since blobs without metadata are unreadable and metadata is audit evidence.
+
+## TASK-FND-009 acceptance evidence
+
+- Completed: 2026-10-01.
+- Traceability: `TASK-FND-009`, `NFR-19`, `NFR-18`, `NFR-20`, `ADR-0004`; supports the design rule that conflicts are surfaced, not hidden (`docs/DESIGN/05-FORMS-VALIDATION.md`). No business `FR-*` workflow is introduced.
+- Contract: JSON/API requests (`api/*` or `Accept: application/json`) receive `{"error": {code, message, status, retryable, correlation_id, fields?, conflict?}}`. Clients branch on `code` and `conflict.{reason,action}`; `message` is fixed human text (localization is `TASK-FND-013`). `correlation_id` matches the `X-Correlation-ID` header.
+- Conflict semantics: `OptimisticLockConflict`, `IdempotencyConflict` (request/actor mismatch), and an in-flight idempotent operation map to HTTP 409 `conflict` with a reason and a user action (`refresh`, `review`, or `retry`, the latter flagged `retryable`). No last-write-wins path is introduced.
+- Validation: 422 `validation_failed` with per-field messages. Other mapped outcomes: 401, 403 (cross-property and missing-policy collapse to `forbidden`; no property context is `property_context_required`), 404, 405 (with `Allow`), 419, 429 (with `Retry-After`), 5xx.
+- Safety: unexpected errors become a generic 500 envelope; exception messages, record IDs, SQL, and file names never reach the body (asserted by leak tests). Expected outcomes (conflicts, denials, rejected files, scope violations) are excluded from error reporting; real defects are still reported.
+- Web/Inertia: non-JSON requests keep framework behavior (validation redirects, error pages). Inertia mutations hitting an expected domain exception get a 303 redirect back with the message in the `error` bag, preserving the form instead of a raw error modal.
+- Frontend: `resources/js/shared/lib/api-error.ts` provides the typed envelope, guard, and `isConflict`. Rendering conflict/error UI states remains owned by `TASK-FND-012` and module screens.
+- Automated evidence: full PHPUnit suite passes with 114 tests and 468 assertions (new `ErrorEnvelopeTest`: all mappings, no-leak, conflict reason/action, validation fields, HTTP status/headers, Inertia redirect, reporting exclusion). Pint, TypeScript typecheck, production build, config cache, and route cache pass.
+- Rollback: remove the `render`/`dontReport` registration in `bootstrap/app.php`; no database or external state changed.
 
 ## NFR coverage
 
