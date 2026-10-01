@@ -30,7 +30,7 @@ use InvalidArgumentException;
  * restrictions are versioned: a change supersedes the old row and adds a new one, so history stays explainable and a
  * reservation made earlier keeps the price it was given (it snapshots it). Changes to one plan are serialized.
  */
-final readonly class RatePlanService
+final readonly class RatePlanService implements RatePlanReader
 {
     public const MANAGE_PERMISSION = 'property.rates.manage';
 
@@ -49,6 +49,20 @@ final readonly class RatePlanService
     ) {}
 
     // ---- reads ----
+
+    public function activePlans(PropertyId $property): array
+    {
+        $current = $this->property->current();
+
+        if (! $current->equals($property)) {
+            throw PropertyScopeViolation::mismatched($current->toString(), $property->toString());
+        }
+
+        return array_values(array_map(
+            static fn (RatePlan $p): RatePlanView => new RatePlanView($p->id, $p->code, $p->name, $p->kind->value, $p->inclusions, $p->pricesIncludeCharges),
+            array_filter($this->rates->plans($property), static fn (RatePlan $p): bool => $p->isActive),
+        ));
+    }
 
     /** @return list<RatePlan> */
     public function listPlans(PropertyId $property, string $actorId): array

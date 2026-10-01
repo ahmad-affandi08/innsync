@@ -1,4 +1,5 @@
 import type { MessageKey } from '../en/index.ts'
+import { frontOffice } from './frontoffice.ts'
 import { offline } from './offline.ts'
 import { property } from './property.ts'
 import { rates } from './rates.ts'
@@ -7,6 +8,7 @@ import { rates } from './rates.ts'
 export const id: Record<MessageKey, string> = {
     ...offline,
     ...property,
+    ...frontOffice,
     ...rates,
     'common.language.label': 'Bahasa',
     'common.language.id': 'Bahasa Indonesia',

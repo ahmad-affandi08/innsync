@@ -25,12 +25,12 @@
 | TASK-DSH-021 | FR-DSH-021 | Dashboard Manajemen | Wajib | TODO |
 | TASK-DSH-022 | FR-DSH-022 | Dashboard Manajemen | Wajib | TODO |
 | TASK-FO-001 | FR-FO-001 | Front Office | Wajib | TODO |
-| TASK-FO-002 | FR-FO-002 | Front Office | Wajib | TODO |
-| TASK-FO-003 | FR-FO-003 | Front Office | Wajib | TODO |
-| TASK-FO-004 | FR-FO-004 | Front Office | Wajib | TODO |
-| TASK-FO-005 | FR-FO-005 | Front Office | Wajib | TODO |
+| TASK-FO-002 | FR-FO-002 | Front Office | Wajib | REVIEW |
+| TASK-FO-003 | FR-FO-003 | Front Office | Wajib | IN_PROGRESS |
+| TASK-FO-004 | FR-FO-004 | Front Office | Wajib | IN_PROGRESS |
+| TASK-FO-005 | FR-FO-005 | Front Office | Wajib | REVIEW |
 | TASK-FO-006 | FR-FO-006 | Front Office | Sebaiknya | TODO |
-| TASK-FO-007 | FR-FO-007 | Front Office | Wajib | TODO |
+| TASK-FO-007 | FR-FO-007 | Front Office | Wajib | REVIEW |
 | TASK-FO-008 | FR-FO-008 | Front Office | Wajib | REVIEW |
 | TASK-FO-009 | FR-FO-009 | Front Office | Wajib | TODO |
 | TASK-FO-010 | FR-FO-010 | Front Office | Wajib | TODO |

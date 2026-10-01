@@ -21,7 +21,7 @@ use InvalidArgumentException;
  * service charge and tax in force on each night. It fails closed: a missing price, an unconfigured charge scheme or a
  * restriction makes the stay not bookable, with the reason, instead of guessing (BR-002, BR-007).
  */
-final readonly class RateQuoteService implements RateQuoter
+final readonly class RateQuoteService implements RateQuoter, RestrictionCalendar
 {
     public const CHARGE_SCOPE = 'rooms';
 
@@ -33,6 +33,55 @@ final readonly class RateQuoteService implements RateQuoter
         private PropertyCurrencyReader $currency,
         private PropertyContext $property,
     ) {}
+
+    public function flags(PropertyId $property, string $ratePlanId, string $roomTypeId, BusinessDate $from, int $days): array
+    {
+        $current = $this->property->current();
+
+        if (! $current->equals($property)) {
+            throw PropertyScopeViolation::mismatched($current->toString(), $property->toString());
+        }
+
+        $plan = $this->rates->findPlan($property, strtolower($ratePlanId));
+        $type = $this->catalog->findType($property, strtolower($roomTypeId));
+
+        if ($plan === null || $type === null) {
+            return [];
+        }
+
+        $periods = $this->rates->periods($property, $plan->id, $type->id);
+        $restrictions = array_values(array_filter($this->rates->restrictions($property, $plan->id), static fn ($r): bool => $r->appliesToType($type->id)));
+        $flags = [];
+
+        for ($i = 0; $i < $days; $i++) {
+            $date = $from->addDays($i);
+            $flag = ['stop_sell' => false, 'closed_to_arrival' => false, 'closed_to_departure' => false, 'min_stay' => null, 'max_stay' => null, 'has_price' => false];
+
+            foreach ($periods as $period) {
+                if ($period->covers($date)) {
+                    $flag['has_price'] = true;
+
+                    break;
+                }
+            }
+
+            foreach ($restrictions as $r) {
+                if (! $r->covers($date)) {
+                    continue;
+                }
+
+                $flag['stop_sell'] = $flag['stop_sell'] || $r->stopSell;
+                $flag['closed_to_arrival'] = $flag['closed_to_arrival'] || $r->closedToArrival;
+                $flag['closed_to_departure'] = $flag['closed_to_departure'] || $r->closedToDeparture;
+                $flag['min_stay'] = $r->minStay === null ? $flag['min_stay'] : max($flag['min_stay'] ?? 0, $r->minStay);
+                $flag['max_stay'] = $r->maxStay === null ? $flag['max_stay'] : min($flag['max_stay'] ?? PHP_INT_MAX, $r->maxStay);
+            }
+
+            $flags[$date->toString()] = $flag;
+        }
+
+        return $flags;
+    }
 
     /**
      * A quote as plain data for screens (no domain objects). Dates are `YYYY-MM-DD` text; a bad date is a validation error.
@@ -135,7 +184,20 @@ final readonly class RateQuoteService implements RateQuoter
                 continue;
             }
 
-            $nights[] = ['date' => $night, 'quoted' => $period->nightly, 'breakdown' => $breakdown];
+            $nights[] = [
+                'date' => $night,
+                'quoted' => $period->nightly,
+                'breakdown' => $breakdown,
+                // What was in force on this night, so a booking can keep it as a fact.
+                'scheme' => [
+                    'service_charge_bp' => $config->serviceCharge->basisPoints,
+                    'tax_bp' => $config->tax->basisPoints,
+                    'tax_on_service_charge' => $config->taxOnServiceCharge,
+                    'prices_include_charges' => $plan->pricesIncludeCharges,
+                    'rounding_increment_minor' => $rounding->incrementMinor,
+                    'rounding_mode' => $rounding->mode->value,
+                ],
+            ];
         }
 
         if ($unconfigured) {

@@ -85,6 +85,15 @@ describe('dictionaries', () => {
             'rates.quote.service',
             'rates.quote.total',
             'tax.serviceCharge',
+            'fo.nav.label',
+            'fo.availability.marker.stop',
+            'fo.availability.marker.cta',
+            'fo.availability.marker.ctd',
+            'fo.availability.marker.min',
+            'fo.source.ota',
+            'fo.source.walk_in',
+            'fo.res.total',
+            'fo.res.status',
         ])
         const identical = (Object.keys(en) as (keyof typeof en)[]).filter(
             (key) => en[key] === id[key] && !allowedSame.has(key),

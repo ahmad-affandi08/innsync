@@ -14,6 +14,10 @@ type RunOptions = {
     body?: unknown
     /** Inertia props to reload afterwards so the screen shows the server's truth. */
     reload?: string[]
+    /** One key per user intent (NFR-18): reuse it when the same intent is sent again after an interruption. */
+    idempotencyKey?: string
+    /** Called with the failure before it is stored, so a screen can react to a specific refusal (for example open a dialog). */
+    onFailure?: (failure: Failure) => void
 }
 
 /**
@@ -30,7 +34,7 @@ export function useServerAction() {
         setError(null)
 
         try {
-            const result = await apiRequest<T>(path, { method: options.method ?? 'POST', body: options.body })
+            const result = await apiRequest<T>(path, { method: options.method ?? 'POST', body: options.body, idempotencyKey: options.idempotencyKey })
 
             if (options.reload !== undefined) {
                 router.reload({ only: options.reload })
@@ -45,6 +49,7 @@ export function useServerAction() {
             }
 
             setError(caught)
+            options.onFailure?.(toFailure(caught))
 
             if (caught instanceof ApiError && caught.failure.kind === 'conflict' && options.reload !== undefined) {
                 router.reload({ only: options.reload })

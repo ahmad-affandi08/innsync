@@ -44,28 +44,46 @@ final readonly class RoomCatalogService implements RoomCatalogReader
     {
         $this->assertProperty($property);
 
-        return array_values(array_filter($this->catalog->types($property), static fn (RoomType $t): bool => $t->isActive));
+        return array_values(array_map(
+            static fn (RoomType $t): RoomTypeView => self::typeView($t),
+            array_filter($this->catalog->types($property), static fn (RoomType $t): bool => $t->isActive),
+        ));
     }
 
     public function activeRooms(PropertyId $property): array
     {
         $this->assertProperty($property);
 
-        return array_values(array_filter($this->catalog->rooms($property), static fn (Room $r): bool => $r->isActive));
+        return array_values(array_map(
+            static fn (Room $r): RoomView => self::roomView($r),
+            array_filter($this->catalog->rooms($property), static fn (Room $r): bool => $r->isActive),
+        ));
     }
 
-    public function type(PropertyId $property, string $id): ?RoomType
+    public function type(PropertyId $property, string $id): ?RoomTypeView
     {
         $this->assertProperty($property);
+        $type = $this->catalog->findType($property, strtolower($id));
 
-        return $this->catalog->findType($property, strtolower($id));
+        return $type === null ? null : self::typeView($type);
     }
 
-    public function room(PropertyId $property, string $id): ?Room
+    public function room(PropertyId $property, string $id): ?RoomView
     {
         $this->assertProperty($property);
+        $room = $this->catalog->findRoom($property, strtolower($id));
 
-        return $this->catalog->findRoom($property, strtolower($id));
+        return $room === null ? null : self::roomView($room);
+    }
+
+    private static function typeView(RoomType $t): RoomTypeView
+    {
+        return new RoomTypeView($t->id, $t->code->value, $t->name, $t->maxAdults, $t->maxChildren, $t->isActive);
+    }
+
+    private static function roomView(Room $r): RoomView
+    {
+        return new RoomView($r->id, $r->number->value, $r->roomTypeId, $r->floor, $r->isActive);
     }
 
     // ---- reads for the admin screens ----

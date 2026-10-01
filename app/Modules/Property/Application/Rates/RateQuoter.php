@@ -11,4 +11,11 @@ use App\Shared\Domain\Time\StayDates;
 interface RateQuoter
 {
     public function quote(PropertyId $property, string $ratePlanId, string $roomTypeId, StayDates $stay): StayQuote;
+
+    /**
+     * The same quote as plain data for screens. Dates are `YYYY-MM-DD` text; a bad date is a validation error.
+     *
+     * @return array<string, mixed>
+     */
+    public function describe(PropertyId $property, string $ratePlanId, string $roomTypeId, string $arrival, string $departure): array;
 }

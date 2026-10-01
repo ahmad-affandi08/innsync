@@ -50,7 +50,7 @@ final readonly class RatePlanController
 
         return Inertia::render('property/pages/rate-plans', [
             'plans' => array_map(static fn ($p): array => $p->toArray(), $plans),
-            'types' => array_map(static fn ($t): array => $t->toArray(), $this->catalog->activeTypes($property)),
+            'types' => array_map(static fn ($t): array => ['id' => $t->id, 'code' => $t->code, 'name' => $t->name], $this->catalog->activeTypes($property)),
             'selected' => $selected,
         ]);
     }

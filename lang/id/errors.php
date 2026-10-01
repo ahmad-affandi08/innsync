@@ -5,6 +5,7 @@ return [
     'conflict_optimistic_lock' => 'Data ini diubah oleh orang lain. Muat ulang dan tinjau sebelum mencoba lagi.',
     'conflict_idempotency_mismatch' => 'Kunci permintaan ini sudah dipakai untuk permintaan yang berbeda.',
     'conflict_idempotency_in_progress' => 'Permintaan awal masih diproses. Coba lagi sebentar lagi.',
+    'conflict_booking' => 'Tidak ada kamar tipe ini yang dapat dijual untuk malam tersebut, atau pemesanan memerlukan keputusan. Tinjau tanggal dan tipe kamar.',
     'conflict_state' => 'Data ini berubah atau statusnya tidak mengizinkan tindakan itu. Muat ulang dan tinjau.',
     'conflict_privacy_state' => 'Tindakan ini bertentangan dengan keadaan terkini catatan privasi. Muat ulang dan tinjau.',
     'conflict_approval_state' => 'Permintaan persetujuan ini sudah berubah. Muat ulang dan tinjau.',

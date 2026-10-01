@@ -2,6 +2,9 @@
 
 declare(strict_types=1);
 
+use App\Modules\FrontOffice\Presentation\Http\Controllers\AvailabilityController;
+use App\Modules\FrontOffice\Presentation\Http\Controllers\InventoryController;
+use App\Modules\FrontOffice\Presentation\Http\Controllers\ReservationController;
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\ApprovalController;
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\AuthenticatedSessionController;
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\MfaController;
@@ -141,4 +144,27 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
         Route::post('/tax', [ChargeSchemeController::class, 'define'])->name('property.tax.define');
     });
     Route::get('/tax', [ChargeSchemeController::class, 'index'])->name('property.tax');
+});
+
+// Front Office: availability, reservations, room blocks and holds (FR-FO-002 to FR-FO-007). Permissions are enforced in the
+// application services; creating a reservation also needs an Idempotency-Key (NFR-18).
+Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix('front-office')->group(function (): void {
+    $id = '[0-9A-Za-z]{26}';
+    Route::get('/availability', AvailabilityController::class)->name('front-office.availability');
+    Route::get('/reservations', [ReservationController::class, 'index'])->name('front-office.reservations');
+    Route::post('/reservations/quote', [ReservationController::class, 'quote'])->name('front-office.reservations.quote');
+    Route::post('/reservations', [ReservationController::class, 'store'])->middleware(['idempotent', 'throttle:bookings'])->name('front-office.reservations.store');
+    Route::get('/reservations/{id}', [ReservationController::class, 'show'])->where('id', $id)->name('front-office.reservations.show');
+    Route::post('/reservations/{id}/confirm', [ReservationController::class, 'confirm'])->where('id', $id)->name('front-office.reservations.confirm');
+    Route::post('/reservations/{id}/cancel', [ReservationController::class, 'cancel'])->where('id', $id)->name('front-office.reservations.cancel');
+    Route::post('/reservations/{id}/no-show', [ReservationController::class, 'noShow'])->where('id', $id)->name('front-office.reservations.no-show');
+
+    Route::get('/inventory', [InventoryController::class, 'index'])->name('front-office.inventory');
+    Route::middleware('password.confirm')->group(function () use ($id): void {
+        Route::post('/room-blocks', [InventoryController::class, 'block'])->name('front-office.room-blocks.store');
+        Route::post('/room-blocks/{id}/release', [InventoryController::class, 'releaseBlock'])->where('id', $id)->name('front-office.room-blocks.release');
+        Route::post('/holds', [InventoryController::class, 'hold'])->name('front-office.holds.store');
+        Route::post('/holds/{id}/release', [InventoryController::class, 'releaseHold'])->where('id', $id)->name('front-office.holds.release');
+        Route::post('/overbooking/{typeId}', [InventoryController::class, 'allowance'])->where('typeId', $id)->name('front-office.overbooking.set');
+    });
 });

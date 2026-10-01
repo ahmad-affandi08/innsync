@@ -4,6 +4,14 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Modules\FrontOffice\Application\Inventory\InventoryHoldRepository;
+use App\Modules\FrontOffice\Application\Inventory\InventoryRepository;
+use App\Modules\FrontOffice\Application\Inventory\RoomBlockRepository;
+use App\Modules\FrontOffice\Application\Reservations\ReservationRepository;
+use App\Modules\FrontOffice\Infrastructure\Inventory\DatabaseInventoryHoldRepository;
+use App\Modules\FrontOffice\Infrastructure\Inventory\DatabaseInventoryRepository;
+use App\Modules\FrontOffice\Infrastructure\Inventory\DatabaseRoomBlockRepository;
+use App\Modules\FrontOffice\Infrastructure\Reservations\DatabaseReservationRepository;
 use App\Modules\IdentityAccess\Application\Approval\ApprovalPolicyRepository;
 use App\Modules\IdentityAccess\Application\Approval\ApprovalRepository;
 use App\Modules\IdentityAccess\Application\Approval\ApprovalService;
@@ -31,9 +39,12 @@ use App\Modules\Property\Application\Catalog\RoomCatalogService;
 use App\Modules\Property\Application\Ports\PropertyTimeZoneReader;
 use App\Modules\Property\Application\Rates\ChargeSchemeRepository;
 use App\Modules\Property\Application\Rates\PropertyCurrencyReader;
+use App\Modules\Property\Application\Rates\RatePlanReader;
 use App\Modules\Property\Application\Rates\RatePlanRepository;
+use App\Modules\Property\Application\Rates\RatePlanService;
 use App\Modules\Property\Application\Rates\RateQuoter;
 use App\Modules\Property\Application\Rates\RateQuoteService;
+use App\Modules\Property\Application\Rates\RestrictionCalendar;
 use App\Modules\Property\Application\Settings\BusinessDateProvider;
 use App\Modules\Property\Application\Settings\PropertySettingsRepository;
 use App\Modules\Property\Application\Settings\PropertySettingsService;
@@ -47,6 +58,7 @@ use App\Shared\Application\Approval\ApprovalGate;
 use App\Shared\Application\Approval\ApprovalSubjects;
 use App\Shared\Application\Audit\AuditTrail;
 use App\Shared\Application\Audit\AuditWriter;
+use App\Shared\Application\Documents\DocumentNumbers;
 use App\Shared\Application\Files\ContentInspector;
 use App\Shared\Application\Files\PrivateFileStorage;
 use App\Shared\Application\Files\StoredFileRepository;
@@ -90,6 +102,7 @@ use App\Shared\Application\Tenancy\PropertyContext;
 use App\Shared\Application\Time\Clock;
 use App\Shared\Application\Transactions\TransactionRunner;
 use App\Shared\Infrastructure\Audit\DatabaseAuditWriter;
+use App\Shared\Infrastructure\Documents\DatabaseDocumentNumbers;
 use App\Shared\Infrastructure\Files\DatabaseStoredFileRepository;
 use App\Shared\Infrastructure\Files\EncryptedDiskFileStorage;
 use App\Shared\Infrastructure\Files\FinfoContentInspector;
@@ -208,6 +221,13 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(ChargeSchemeRepository::class, DatabaseChargeSchemeRepository::class);
         $this->app->bind(PropertyCurrencyReader::class, DatabasePropertyCurrencyReader::class);
         $this->app->bind(RateQuoter::class, RateQuoteService::class);
+        $this->app->bind(RatePlanReader::class, RatePlanService::class);
+        $this->app->bind(RestrictionCalendar::class, RateQuoteService::class);
+        $this->app->bind(InventoryRepository::class, DatabaseInventoryRepository::class);
+        $this->app->bind(RoomBlockRepository::class, DatabaseRoomBlockRepository::class);
+        $this->app->bind(InventoryHoldRepository::class, DatabaseInventoryHoldRepository::class);
+        $this->app->bind(ReservationRepository::class, DatabaseReservationRepository::class);
+        $this->app->bind(DocumentNumbers::class, DatabaseDocumentNumbers::class);
         $this->app->bind(ProviderRegistry::class, ConfiguredProviderRegistry::class);
         $this->app->bind(CircuitStore::class, DatabaseCircuitStore::class);
         $this->app->bind(UnknownOutcomeRepository::class, DatabaseUnknownOutcomeRepository::class);
@@ -266,6 +286,9 @@ class AppServiceProvider extends ServiceProvider
 
         RateLimiter::for('webhooks', static fn (Request $request): Limit => Limit::perMinute(120)
             ->by((string) $request->route('provider').'|'.$request->ip()));
+
+        RateLimiter::for('bookings', static fn (Request $request): Limit => Limit::perMinute(60)
+            ->by((string) $request->user()?->getAuthIdentifier().'|'.$request->ip()));
 
         RateLimiter::for('health', static fn (Request $request): Limit => Limit::perMinute(60)
             ->by((string) $request->ip()));

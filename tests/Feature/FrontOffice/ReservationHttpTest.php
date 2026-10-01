@@ -1,0 +1,159 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Tests\Feature\FrontOffice;
+
+use App\Modules\FrontOffice\Application\Inventory\InventoryAdminService;
+use App\Modules\FrontOffice\Application\Reservations\ReservationService;
+use App\Modules\Property\Application\Catalog\RoomCatalogService;
+use App\Modules\Property\Application\Rates\ChargeSchemeService;
+use App\Modules\Property\Application\Rates\RatePlanService;
+use App\Modules\Property\Application\Settings\PropertySettingsService;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
+use Inertia\Testing\AssertableInertia as Assert;
+use LogicException;
+use Tests\Support\SignsInToProperty;
+use Tests\TestCase;
+
+final class ReservationHttpTest extends TestCase
+{
+    use RefreshDatabase;
+    use SignsInToProperty;
+
+    private const A = '01arz3ndektsv4rrffq69g5fav';
+
+    private string $typeId;
+
+    private string $planId;
+
+    protected function beforeRefreshingDatabase(): void
+    {
+        if (config('database.default') !== 'mysql' || config('database.connections.mysql.database') !== 'innsync_test') {
+            throw new LogicException('Feature tests may only reset the innsync_test MySQL database.');
+        }
+    }
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->createProperty(self::A, 'A');
+    }
+
+    private function staff(array $extra = []): void
+    {
+        $this->signIn(self::A, [
+            ReservationService::MANAGE_PERMISSION, ReservationService::OVERBOOKING_PERMISSION, InventoryAdminService::BLOCK_PERMISSION, InventoryAdminService::HOLD_PERMISSION, InventoryAdminService::OVERBOOKING_PERMISSION,
+            RoomCatalogService::MANAGE_PERMISSION, RatePlanService::MANAGE_PERMISSION, ChargeSchemeService::MANAGE_PERMISSION, PropertySettingsService::MANAGE_PERMISSION, ...$extra,
+        ]);
+        $this->typeId = $this->postJson('/property/room-types', ['code' => 'DLX', 'name' => 'Deluxe', 'max_adults' => 2, 'max_children' => 1, 'reason' => 'x'])->json('type.id');
+        $this->postJson('/property/rooms', ['number' => '101', 'room_type_id' => $this->typeId, 'reason' => 'x'])->assertCreated();
+        $this->postJson('/property/tax', ['effective_from' => '2026-01-01', 'service_charge_rate' => '10', 'tax_rate' => '10', 'tax_on_service_charge' => true, 'reason' => 'x'])->assertCreated();
+        $this->planId = $this->postJson('/property/rate-plans', ['code' => 'BAR', 'name' => 'BAR', 'kind' => 'public', 'prices_include_charges' => false, 'reason' => 'x'])->json('plan.id');
+        $this->postJson("/property/rate-plans/{$this->planId}/prices", ['room_type_id' => $this->typeId, 'from' => '2026-10-01', 'to' => '2027-12-31', 'weekday_mask' => 127, 'nightly_minor' => 100_000_000, 'reason' => 'x'])->assertCreated();
+        $this->postJson('/property/settings/business-date', ['business_date' => '2026-10-01', 'lock_version' => 0, 'reason' => 'Go-live'])->assertOk();
+    }
+
+    /** @return array<string, mixed> */
+    private function body(array $override = []): array
+    {
+        return ['source' => 'phone', 'guest_name' => 'Budi Santoso', 'guest_phone' => '+62 812 3456', 'guest_email' => 'budi@example.com', 'arrival' => '2026-10-10', 'departure' => '2026-10-12', 'adults' => 2, 'children' => 0, 'room_type_id' => $this->typeId, 'rate_plan_id' => $this->planId, 'status' => 'tentative', ...$override];
+    }
+
+    public function test_a_reservation_is_created_idempotently_through_http_and_hides_contact_details_from_the_response(): void
+    {
+        $this->staff();
+        $headers = ['Idempotency-Key' => 'http-key-0000000001'];
+
+        $first = $this->postJson('/front-office/reservations', $this->body(), $headers)->assertCreated()->assertJsonPath('reservation.status', 'tentative')->assertJsonPath('reservation.total_minor', 242_000_000)->assertJsonMissingPath('reservation.guest_email')->json('reservation');
+        $again = $this->postJson('/front-office/reservations', $this->body(), $headers)->assertCreated()->json('reservation');
+
+        self::assertSame($first['id'], $again['id']);
+        self::assertSame(1, DB::table('reservations')->count());
+        $this->postJson('/front-office/reservations', $this->body(['arrival' => '2026-10-20', 'departure' => '2026-10-21']), $headers)->assertStatus(409);
+        $this->postJson('/front-office/reservations', $this->body())->assertStatus(400); // the key is required
+    }
+
+    public function test_the_quote_shows_prices_and_availability_before_booking_and_pages_render(): void
+    {
+        $this->staff();
+        $this->postJson('/front-office/reservations', $this->body(), ['Idempotency-Key' => 'http-key-0000000002'])->assertCreated();
+
+        $quote = $this->postJson('/front-office/reservations/quote', ['rate_plan_id' => $this->planId, 'room_type_id' => $this->typeId, 'arrival' => '2026-10-10', 'departure' => '2026-10-12'])->assertOk()->json('quote');
+        self::assertSame(['2026-10-10', '2026-10-11'], $quote['availability']['sold_out_nights']);
+        self::assertSame(242_000_000, $quote['total_minor']);
+
+        $this->get('/front-office/availability?from=2026-10-09&days=5')->assertInertia(fn (Assert $p) => $p->component('front-office/pages/availability')->has('calendar.types', 1)->where('calendar.types.0.nights.1.available', 0)->has('plans', 1));
+        $this->get('/front-office/reservations?query=budi')->assertInertia(fn (Assert $p) => $p->component('front-office/pages/reservations')->has('reservations', 1)->has('lookups.types', 1)->where('lookups.business_date', '2026-10-01'));
+        $id = DB::table('reservations')->value('id');
+        $this->get("/front-office/reservations/{$id}")->assertInertia(fn (Assert $p) => $p->component('front-office/pages/reservation')->where('reservation.guest_email', 'budi@example.com')->has('reservation.price_snapshot.nights', 2));
+        $this->get('/front-office/inventory')->assertInertia(fn (Assert $p) => $p->component('front-office/pages/inventory')->has('types', 1)->where('types.0.allowance', 0));
+    }
+
+    public function test_the_last_room_cannot_be_sold_twice_oversell_needs_the_allowance_and_a_reason_over_http(): void
+    {
+        $this->staff();
+        $this->postJson('/front-office/reservations', $this->body(), ['Idempotency-Key' => 'http-key-0000000003'])->assertCreated();
+
+        $this->postJson('/front-office/reservations', $this->body(), ['Idempotency-Key' => 'http-key-0000000004'])->assertStatus(409)->assertJsonPath('error.conflict.reason', 'no_availability');
+
+        $this->postJson("/front-office/overbooking/{$this->typeId}", ['rooms' => 1, 'lock_version' => 0, 'reason' => 'Tolerance'])->assertOk();
+        $this->postJson('/front-office/reservations', $this->body(), ['Idempotency-Key' => 'http-key-0000000005'])->assertStatus(409)->assertJsonPath('error.conflict.reason', 'oversell_warning');
+        $this->postJson('/front-office/reservations', $this->body(['acknowledge_oversell' => true, 'oversell_reason' => '']), ['Idempotency-Key' => 'http-key-0000000006'])->assertStatus(422);
+        $this->postJson('/front-office/reservations', $this->body(['acknowledge_oversell' => true, 'oversell_reason' => 'Likely no-show']), ['Idempotency-Key' => 'http-key-0000000007'])->assertCreated()->assertJsonPath('reservation.oversold', true);
+
+        self::assertSame(2, DB::table('reservations')->count());
+    }
+
+    public function test_confirm_cancel_and_no_show_work_and_refuse_stale_versions_and_missing_reasons(): void
+    {
+        $this->staff();
+        $id = $this->postJson('/front-office/reservations', $this->body(), ['Idempotency-Key' => 'http-key-0000000008'])->json('reservation.id');
+
+        $this->postJson("/front-office/reservations/{$id}/confirm", ['lock_version' => 0])->assertOk()->assertJsonPath('reservation.status', 'confirmed');
+        $this->postJson("/front-office/reservations/{$id}/cancel", ['lock_version' => 0, 'reason' => 'Stale'])->assertStatus(409);
+        $this->postJson("/front-office/reservations/{$id}/cancel", ['lock_version' => 1, 'reason' => ''])->assertStatus(422);
+        $this->postJson("/front-office/reservations/{$id}/no-show", ['lock_version' => 1, 'reason' => 'Too early'])->assertStatus(409);
+        $this->postJson("/front-office/reservations/{$id}/cancel", ['lock_version' => 1, 'reason' => 'Guest called'])->assertOk()->assertJsonPath('reservation.status', 'cancelled');
+
+        $this->postJson('/front-office/reservations', $this->body(), ['Idempotency-Key' => 'http-key-0000000009'])->assertCreated();
+    }
+
+    public function test_blocks_and_holds_over_http_with_oversold_warning_and_password_confirmation(): void
+    {
+        $this->staff();
+        $room = DB::table('rooms')->value('id');
+        $this->postJson('/front-office/reservations', $this->body(), ['Idempotency-Key' => 'http-key-0000000010'])->assertCreated();
+
+        $block = $this->postJson('/front-office/room-blocks', ['room_id' => $room, 'kind' => 'out_of_order', 'from' => '2026-10-10', 'to' => '2026-10-10', 'reason' => 'Leak'])->assertCreated()->assertJsonPath('oversold_nights', ['2026-10-10'])->json('block.id');
+        $this->postJson("/front-office/room-blocks/{$block}/release", ['reason' => 'Fixed'])->assertOk();
+        $this->postJson('/front-office/holds', ['room_type_id' => $this->typeId, 'from' => '2026-11-01', 'to' => '2026-11-02', 'rooms' => 1, 'reason' => 'Group', 'expires_at' => null])->assertCreated();
+
+        $this->withSession(['auth.password_confirmed_at' => time() - 3600]);
+        $this->postJson('/front-office/room-blocks', ['room_id' => $room, 'kind' => 'out_of_order', 'from' => '2026-12-10', 'to' => '2026-12-10', 'reason' => 'Late'])->assertStatus(423);
+    }
+
+    public function test_viewers_see_reservations_without_contact_details_and_cannot_change_anything(): void
+    {
+        $this->staff();
+        $id = $this->postJson('/front-office/reservations', $this->body(), ['Idempotency-Key' => 'http-key-0000000011'])->json('reservation.id');
+        $this->post('/logout');
+        $this->flushSession();
+        $this->signIn(self::A, [ReservationService::VIEW_PERMISSION]);
+
+        $this->get("/front-office/reservations/{$id}")->assertInertia(fn (Assert $p) => $p->where('reservation.guest_phone', null)->where('reservation.guest_email', null)->where('reservation.guest_name', 'Budi Santoso'));
+        $this->postJson("/front-office/reservations/{$id}/cancel", ['lock_version' => 0, 'reason' => 'x'])->assertForbidden();
+        $this->postJson('/front-office/reservations', $this->body(), ['Idempotency-Key' => 'http-key-0000000012'])->assertForbidden();
+        $this->get('/front-office/inventory')->assertForbidden();
+    }
+
+    public function test_people_without_front_office_permissions_are_refused(): void
+    {
+        $this->signIn(self::A, ['housekeeping.task.view']);
+
+        $this->get('/front-office/availability')->assertForbidden();
+        $this->get('/front-office/reservations')->assertForbidden();
+    }
+}

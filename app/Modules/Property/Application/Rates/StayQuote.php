@@ -12,7 +12,7 @@ use App\Shared\Domain\Time\BusinessDate;
 final readonly class StayQuote
 {
     /**
-     * @param  list<array{date: BusinessDate, quoted: Money, breakdown: ChargeBreakdown}>  $nights
+     * @param  list<array{date: BusinessDate, quoted: Money, breakdown: ChargeBreakdown, scheme: array{service_charge_bp: int, tax_bp: int, tax_on_service_charge: bool, prices_include_charges: bool, rounding_increment_minor: int, rounding_mode: string}}>  $nights
      * @param  list<array{code: string, date: ?string, value: ?int}>  $violations
      */
     public function __construct(public string $currency, public array $nights, public array $violations) {}
