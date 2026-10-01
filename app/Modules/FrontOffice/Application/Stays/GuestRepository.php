@@ -15,6 +15,15 @@ interface GuestRepository
 
     public function find(PropertyId $property, string $id): ?GuestProfile;
 
+    /** Replaces the registration details of a guest (a correction, FR-FO-039). The identity details stay protected at rest. */
+    public function replace(PropertyId $property, GuestProfile $guest, DateTimeImmutable $at): void;
+
+    /** Keeps what a correction changed: the field and its value before and after, sealed. @param array{id: string, guest_id: string, stay_id: string, field: string, old: ?string, new: ?string, reason: string, approval_id: ?string} $correction */
+    public function addCorrection(PropertyId $property, array $correction, string $actorId, DateTimeImmutable $at): void;
+
+    /** @return list<array{field: string, old: ?string, new: ?string, reason: string, approval_id: ?string, created_by: string, created_at: string}> oldest first */
+    public function corrections(PropertyId $property, string $stayId): array;
+
     /**
      * Earlier registrations with the same identity document (FR-FO-015), most recent first. Names only, no document details.
      *

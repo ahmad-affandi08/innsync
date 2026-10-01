@@ -6,6 +6,7 @@ namespace App\Modules\FrontOffice\Presentation\Http\Controllers;
 
 use App\Modules\FrontOffice\Application\Reservations\ReservationService;
 use App\Modules\FrontOffice\Application\Stays\CheckInRequest;
+use App\Modules\FrontOffice\Application\Stays\GuestCorrectionService;
 use App\Modules\FrontOffice\Application\Stays\StayAmendmentService;
 use App\Modules\FrontOffice\Application\Stays\StayService;
 use App\Shared\Application\Errors\Refusal;
@@ -20,7 +21,7 @@ use Inertia\Response;
 /** Check-in, the guests in the house and check-out. Rules, permissions and privacy live in `StayService`. */
 final readonly class StayController
 {
-    public function __construct(private StayService $stays, private StayAmendmentService $amendments, private ReservationService $reservations, private PropertyContext $property) {}
+    public function __construct(private StayService $stays, private StayAmendmentService $amendments, private GuestCorrectionService $corrections, private ReservationService $reservations, private PropertyContext $property) {}
 
     public function index(Request $request): Response
     {
@@ -34,6 +35,7 @@ final readonly class StayController
 
         return Inertia::render('front-office/pages/stay', [
             'stay' => [...$stay, 'moves' => $this->amendmentMoves($property, $request, $id)],
+            'corrections' => $this->corrections->history($property, $this->actor($request), $id),
             'reservation' => $this->summary($this->reservations->find($property, $this->actor($request), $stay['reservation_id'])->toArray()),
         ]);
     }
@@ -126,6 +128,35 @@ final readonly class StayController
             'Cache-Control' => 'no-store, private',
             'X-Content-Type-Options' => 'nosniff',
         ]);
+    }
+
+    public function correct(Request $request, string $id): JsonResponse
+    {
+        $data = $this->correctionInput($request);
+        $history = $this->corrections->correct($this->property->current(), $this->actor($request), $id, $data['changes'], $data['reason'], $data['approval_id'] ?? null);
+
+        return response()->json(['corrections' => $history])->header('Cache-Control', 'no-store');
+    }
+
+    public function correctionApproval(Request $request, string $id): JsonResponse
+    {
+        $data = $this->correctionInput($request);
+        $approval = $this->corrections->requestApproval($this->property->current(), $this->actor($request), $id, $data['changes'], $data['reason'], IdempotencyKey::fromString((string) $request->header('Idempotency-Key')));
+
+        return response()->json(['approval' => $approval->toArray()], 201)->header('Cache-Control', 'no-store');
+    }
+
+    /** @return array{changes: array<string, ?string>, reason: string, approval_id?: ?string} */
+    private function correctionInput(Request $request): array
+    {
+        $data = $request->validate([
+            'changes' => ['required', 'array', 'min:1', 'max:7'], 'changes.full_name' => ['sometimes', 'nullable', 'string', 'max:150'], 'changes.nationality' => ['sometimes', 'nullable', 'string', 'max:2'],
+            'changes.id_type' => ['sometimes', 'nullable', 'string', 'max:12'], 'changes.id_number' => ['sometimes', 'nullable', 'string', 'max:40'], 'changes.id_valid_until' => ['sometimes', 'nullable', 'string', 'size:10'],
+            'changes.visa_number' => ['sometimes', 'nullable', 'string', 'max:40'], 'changes.address' => ['sometimes', 'nullable', 'string', 'max:500'],
+            'reason' => ['required', 'string', 'max:300'], 'approval_id' => ['nullable', 'string', 'size:26'],
+        ]);
+
+        return $data;
     }
 
     public function checkOut(Request $request, string $id): JsonResponse

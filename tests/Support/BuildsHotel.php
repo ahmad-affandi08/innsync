@@ -16,6 +16,7 @@ use App\Modules\FrontOffice\Application\Reservations\ReservationRequest;
 use App\Modules\FrontOffice\Application\Reservations\ReservationService;
 use App\Modules\FrontOffice\Application\Routine\ShiftLogService;
 use App\Modules\FrontOffice\Application\Routine\SopService;
+use App\Modules\FrontOffice\Application\Stays\GuestCorrectionService;
 use App\Modules\FrontOffice\Application\Stays\StayService;
 use App\Modules\FrontOffice\Domain\Reservations\Reservation;
 use App\Modules\Housekeeping\Application\HousekeepingService;
@@ -114,6 +115,11 @@ trait BuildsHotel
 
     private string $logReaderId;
 
+    /** Guest data corrections (FR-FO-039): someone who corrects names, and someone who may also correct identity. */
+    private string $nameCorrectorId;
+
+    private string $identityCorrectorId;
+
     private string $typeId;
 
     private string $planId;
@@ -160,6 +166,8 @@ trait BuildsHotel
         $sopStaff2 = UserRecord::factory()->create();
         $logWriter = UserRecord::factory()->create();
         $logReader = UserRecord::factory()->create();
+        $nameCorrector = UserRecord::factory()->create();
+        $identityCorrector = UserRecord::factory()->create();
         $this->grant($admin, self::PROPERTY, [
             RoomCatalogService::MANAGE_PERMISSION, RatePlanService::MANAGE_PERMISSION, ChargeSchemeService::MANAGE_PERMISSION, PropertySettingsService::MANAGE_PERMISSION,
             InventoryAdminService::OVERBOOKING_PERMISSION, InventoryAdminService::BLOCK_PERMISSION, InventoryAdminService::HOLD_PERMISSION, ApprovalPolicyAdmin::MANAGE_PERMISSION,
@@ -187,6 +195,8 @@ trait BuildsHotel
         $this->grant($sopStaff2, self::PROPERTY, [SopService::PERFORM_PERMISSION]);
         $this->grant($logWriter, self::PROPERTY, [ShiftLogService::WRITE_PERMISSION]);
         $this->grant($logReader, self::PROPERTY, [ShiftLogService::READ_PERMISSION]);
+        $this->grant($nameCorrector, self::PROPERTY, [GuestCorrectionService::CORRECT_PERMISSION, StayService::VIEW_PERMISSION]);
+        $this->grant($identityCorrector, self::PROPERTY, [GuestCorrectionService::CORRECT_PERMISSION, StayService::VIEW_PERMISSION, StayService::IDENTITY_PERMISSION]);
         $this->grant($cashSupervisor, self::PROPERTY, [CashierService::VIEW_PERMISSION, CashierService::MANAGE_PERMISSION, CashierService::SETTINGS_PERMISSION]);
         $this->grant($clerk, self::PROPERTY, [LaundryService::INTAKE_PERMISSION, LaundryService::DELIVER_PERMISSION]);
         $this->grant($launderer, self::PROPERTY, [LaundryService::PROCESS_PERMISSION]);
@@ -213,6 +223,8 @@ trait BuildsHotel
         $this->sopManagerId = strtolower((string) $sopManager->getKey());
         $this->sopStaffId = strtolower((string) $sopStaff->getKey());
         $this->sopStaff2Id = strtolower((string) $sopStaff2->getKey());
+        $this->nameCorrectorId = strtolower((string) $nameCorrector->getKey());
+        $this->identityCorrectorId = strtolower((string) $identityCorrector->getKey());
         $this->logWriterId = strtolower((string) $logWriter->getKey());
         $this->logReaderId = strtolower((string) $logReader->getKey());
         $this->feedbackStaffId = strtolower((string) $feedbackStaff->getKey());

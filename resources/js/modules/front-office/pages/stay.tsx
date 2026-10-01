@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { FrontOfficeShell } from '@/modules/front-office/components/front-office-shell';
+import { GuestCorrections, type Corrections } from '@/modules/front-office/components/guest-correction';
 import { useServerAction } from '@/shared/api/use-server-action';
 import { useFormatters, useTranslation } from '@/shared/i18n/i18n';
 import { useErrorStateCopy } from '@/shared/i18n/use-ui-copy';
@@ -25,7 +26,7 @@ type Stay = {
     checked_out_date: string | null; has_id_photo: boolean; lock_version: number; guest: Guest; moves: Move[];
 };
 
-export default function StayPage({ reservation, stay: s }: { reservation: { number: string }; stay: Stay }) {
+export default function StayPage({ corrections, reservation, stay: s }: { corrections: Corrections; reservation: { number: string }; stay: Stay }) {
     const { t } = useTranslation();
     const format = useFormatters();
     const errorCopy = useErrorStateCopy();
@@ -132,6 +133,8 @@ export default function StayPage({ reservation, stay: s }: { reservation: { numb
                     </div>
                 )}
             </section>
+
+            <GuestCorrections corrections={corrections} guest={s.guest} stayId={s.id} />
 
             {s.moves.length > 0 && (
                 <section aria-labelledby="moves-h" className="flex flex-col gap-2">

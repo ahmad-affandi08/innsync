@@ -59,6 +59,34 @@ final readonly class DatabaseGuestRepository implements GuestRepository
         );
     }
 
+    public function replace(PropertyId $property, GuestProfile $guest, DateTimeImmutable $at): void
+    {
+        DB::table('guests')->where('property_id', $property->toString())->where('id', $guest->id)->update([
+            'full_name' => $guest->fullName, 'nationality' => $guest->nationality, 'id_type' => $guest->idType->value, 'id_number_enc' => $this->cipher->seal($guest->idNumber),
+            'id_number_index' => $this->index($guest->idType->value, $guest->normalizedNumber()), 'id_valid_until' => $guest->idValidUntil?->toString(),
+            'visa_number_enc' => $guest->visaNumber === null ? null : $this->cipher->seal($guest->visaNumber), 'address_enc' => $this->cipher->seal($guest->address),
+            'lock_version' => DB::raw('lock_version + 1'), 'updated_at' => $at,
+        ]);
+    }
+
+    public function addCorrection(PropertyId $property, array $correction, string $actorId, DateTimeImmutable $at): void
+    {
+        DB::table('guest_corrections')->insert([
+            'id' => $correction['id'], 'property_id' => $property->toString(), 'guest_id' => $correction['guest_id'], 'stay_id' => $correction['stay_id'], 'field' => $correction['field'],
+            'old_enc' => $correction['old'] === null ? null : $this->cipher->seal($correction['old']), 'new_enc' => $correction['new'] === null ? null : $this->cipher->seal($correction['new']),
+            'reason' => $correction['reason'], 'approval_id' => $correction['approval_id'], 'created_by' => $actorId, 'created_at' => $at,
+        ]);
+    }
+
+    public function corrections(PropertyId $property, string $stayId): array
+    {
+        return DB::table('guest_corrections')->where('property_id', $property->toString())->where('stay_id', $stayId)->orderBy('created_at')->orderBy('id')->get()
+            ->map(fn ($r): array => [
+                'field' => $r->field, 'old' => $r->old_enc === null ? null : $this->cipher->open($r->old_enc), 'new' => $r->new_enc === null ? null : $this->cipher->open($r->new_enc), 'reason' => $r->reason,
+                'approval_id' => $r->approval_id, 'created_by' => $r->created_by, 'created_at' => (new DateTimeImmutable((string) $r->created_at, new \DateTimeZone('UTC')))->format('Y-m-d\TH:i:s\Z'),
+            ])->all();
+    }
+
     public function previousWithDocument(PropertyId $property, string $idType, string $idNumber, int $limit = 5): array
     {
         $rows = DB::table('guests as g')

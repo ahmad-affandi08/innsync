@@ -31,6 +31,7 @@ Release notes for every release (NFR-14). Newest first. Each entry names the tas
 - TASK-FO-030, TASK-FO-016 (BR-008): guest requests for in-house guests filed under a department, with housekeeping requests joined to the room's housekeeping task, the others announced for their department, a queue with status and urgency, and the open requests shown on each room card.
 - TASK-FO-031 (BR-003): guest comments and complaints with kind, severity, owner, follow-up date, resolution and proof reference, an append-only history, escalation of critical complaints and a dashboard alert while a serious one is open.
 - TASK-FO-032, TASK-FO-033, TASK-FO-034 (BR-001, BR-003): daily, weekly and monthly front desk checklists written by management as versioned templates, ticked by staff with who and when, each ticked item and completed checklist announced for the Human Resource module with the percentage done, a completion report, and a shift log book written at the end of a shift and marked as read by each person.
+- TASK-FO-039 (BR-003, BR-004, BR-009): corrections of a guest's name and identity after check-in kept as sealed before-and-after facts with who and why, an audit trail that names only the fields, identity values shown in clear only to people who may read identity, and an optional approval policy for identity corrections bound to the new values.
 
 ### Known limitations
 

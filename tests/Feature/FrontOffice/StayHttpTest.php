@@ -6,6 +6,7 @@ namespace Tests\Feature\FrontOffice;
 
 use App\Modules\FrontOffice\Application\Folios\FolioService;
 use App\Modules\FrontOffice\Application\Reservations\ReservationService;
+use App\Modules\FrontOffice\Application\Stays\GuestCorrectionService;
 use App\Modules\FrontOffice\Application\Stays\StayService;
 use App\Modules\Property\Application\Catalog\RoomCatalogService;
 use App\Modules\Property\Application\Rates\ChargeSchemeService;
@@ -45,7 +46,7 @@ final class StayHttpTest extends TestCase
 
         $this->createProperty(self::A, 'A');
         $this->signIn(self::A, [
-            ReservationService::MANAGE_PERMISSION, FolioService::MANAGE_PERMISSION, StayService::MANAGE_PERMISSION, StayService::IDENTITY_PERMISSION,
+            ReservationService::MANAGE_PERMISSION, FolioService::MANAGE_PERMISSION, StayService::MANAGE_PERMISSION, StayService::IDENTITY_PERMISSION, GuestCorrectionService::CORRECT_PERMISSION,
             RoomCatalogService::MANAGE_PERMISSION, RatePlanService::MANAGE_PERMISSION, ChargeSchemeService::MANAGE_PERMISSION, PropertySettingsService::MANAGE_PERMISSION,
         ]);
         $type = $this->postJson('/property/room-types', ['code' => 'DLX', 'name' => 'Deluxe', 'max_adults' => 2, 'max_children' => 1, 'reason' => 'x'])->json('type.id');
@@ -122,5 +123,21 @@ final class StayHttpTest extends TestCase
         $this->get("/front-office/stays/{$stay}/id-photo")->assertForbidden();
         $this->postJson("/front-office/stays/{$stay}/check-out", ['lock_version' => 0])->assertForbidden();
         $this->postJson("/front-office/reservations/{$this->reservationId}/check-in", $this->form(), ['Idempotency-Key' => 'checkin-http-0000006'])->assertForbidden();
+    }
+
+    public function test_a_guest_registration_is_corrected_through_http_with_its_history_on_the_stay_page(): void
+    {
+        $stay = $this->postJson("/front-office/reservations/{$this->reservationId}/check-in", $this->form(['full_name' => 'Budi Santso']), ['Idempotency-Key' => 'stay-http-correct-01'])->assertCreated()->json('stay.id');
+
+        $this->postJson("/front-office/stays/{$stay}/corrections", ['changes' => ['full_name' => 'Budi Santoso'], 'reason' => ''])->assertStatus(422);
+        $this->postJson("/front-office/stays/{$stay}/corrections", ['changes' => ['id_number' => '123'], 'reason' => 'Wrong digit'])->assertStatus(422)->assertJsonStructure(['error' => ['fields' => ['id_number']]]);
+        $this->postJson("/front-office/stays/{$stay}/corrections", ['changes' => ['full_name' => 'Budi Santoso', 'address' => 'Jl. Sudirman 5'], 'reason' => 'Typo and a new address'])->assertOk()->assertJsonCount(2, 'corrections.corrections');
+
+        $this->get("/front-office/stays/{$stay}")->assertInertia(fn (Assert $p) => $p->component('front-office/pages/stay')->where('stay.guest.full_name', 'Budi Santoso')->has('corrections.corrections', 2)->where('corrections.may_correct_identity', true));
+        self::assertSame(2, DB::table('guest_corrections')->count());
+
+        $this->postJson("/front-office/stays/{$stay}/corrections/approval", ['changes' => ['full_name' => 'Budi S.'], 'reason' => 'x'], ['Idempotency-Key' => 'stay-correct-appr-01'])->assertStatus(409);
+        $this->withSession(['auth.password_confirmed_at' => time() - 3600]);
+        $this->postJson("/front-office/stays/{$stay}/corrections", ['changes' => ['full_name' => 'Budi S.'], 'reason' => 'x'])->assertStatus(423);
     }
 }

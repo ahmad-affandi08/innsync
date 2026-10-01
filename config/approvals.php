@@ -16,5 +16,7 @@ return [
         // FR-FO-013: a discount on a booked room price above the threshold needs the Manager on Duty. The threshold is the amount band of
         // the property's policy, so with no policy no discount needs approval (the owner decides the threshold).
         'front-office.rate.change' => ['mandatory' => false],
+        // FR-FO-039: a correction of a guest's identity after check-in may need approval. The owner decides whether it does, by configuring a policy.
+        'front-office.guest.correction' => ['mandatory' => false],
     ],
 ];
