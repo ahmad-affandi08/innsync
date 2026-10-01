@@ -76,9 +76,9 @@
 | TASK-HK-006 | FR-HK-006 | Housekeeping | Sebaiknya | TODO |
 | TASK-HK-007 | FR-HK-007 | Housekeeping | Wajib | REVIEW |
 | TASK-HK-008 | FR-HK-008 | Housekeeping | Wajib | TODO |
-| TASK-HK-009 | FR-HK-009 | Housekeeping | Wajib | TODO |
-| TASK-HK-010 | FR-HK-010 | Housekeeping | Wajib | TODO |
-| TASK-HK-011 | FR-HK-011 | Housekeeping | Sebaiknya | TODO |
+| TASK-HK-009 | FR-HK-009 | Housekeeping | Wajib | REVIEW |
+| TASK-HK-010 | FR-HK-010 | Housekeeping | Wajib | REVIEW |
+| TASK-HK-011 | FR-HK-011 | Housekeeping | Sebaiknya | REVIEW |
 | TASK-HK-012 | FR-HK-012 | Housekeeping | Sebaiknya | TODO |
 | TASK-HK-013 | FR-HK-013 | Housekeeping | Wajib | REVIEW |
 | TASK-HK-014 | FR-HK-014 | Housekeeping | Wajib | TODO |
@@ -98,7 +98,7 @@
 | TASK-LDY-004 | FR-LDY-004 | Laundry | Wajib | REVIEW |
 | TASK-LDY-005 | FR-LDY-005 | Laundry | Sebaiknya | TODO |
 | TASK-LDY-006 | FR-LDY-006 | Laundry | Sebaiknya | TODO |
-| TASK-LDY-007 | FR-LDY-007 | Laundry | Wajib | TODO |
+| TASK-LDY-007 | FR-LDY-007 | Laundry | Wajib | REVIEW |
 | TASK-LDY-008 | FR-LDY-008 | Laundry | Sebaiknya | TODO |
 | TASK-LDY-009 | FR-LDY-009 | Laundry | Wajib | TODO |
 | TASK-LDY-010 | FR-LDY-010 | Laundry | Sebaiknya | TODO |

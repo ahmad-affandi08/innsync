@@ -20,6 +20,7 @@ use App\Modules\FrontOffice\Application\Stays\GuestCorrectionService;
 use App\Modules\FrontOffice\Application\Stays\StayService;
 use App\Modules\FrontOffice\Domain\Reservations\Reservation;
 use App\Modules\Housekeeping\Application\HousekeepingService;
+use App\Modules\Housekeeping\Application\LinenService;
 use App\Modules\IdentityAccess\Application\Approval\ApprovalPolicyAdmin;
 use App\Modules\IdentityAccess\Infrastructure\Persistence\Eloquent\UserRecord;
 use App\Modules\Laundry\Application\LaundryService;
@@ -71,6 +72,13 @@ trait BuildsHotel
     private string $laundererId;
 
     private string $laundryManagerId;
+
+    /** Linen (FR-HK-009 to -011): two housekeeping linen handlers (one sends, the other counts) and a laundry linen handler. */
+    private string $linenManagerId;
+
+    private string $linenManager2Id;
+
+    private string $linenLaundryId;
 
     /** Reporting: an analyst (dashboard with revenue, reports, audit; identity masked), a registrar (guest reports and export, identity in clear), and a dashboard-only viewer. */
     private string $analystId;
@@ -167,6 +175,9 @@ trait BuildsHotel
         $logWriter = UserRecord::factory()->create();
         $logReader = UserRecord::factory()->create();
         $nameCorrector = UserRecord::factory()->create();
+        $linenManager = UserRecord::factory()->create();
+        $linenManager2 = UserRecord::factory()->create();
+        $linenLaundry = UserRecord::factory()->create();
         $identityCorrector = UserRecord::factory()->create();
         $this->grant($admin, self::PROPERTY, [
             RoomCatalogService::MANAGE_PERMISSION, RatePlanService::MANAGE_PERMISSION, ChargeSchemeService::MANAGE_PERMISSION, PropertySettingsService::MANAGE_PERMISSION,
@@ -197,6 +208,9 @@ trait BuildsHotel
         $this->grant($logReader, self::PROPERTY, [ShiftLogService::READ_PERMISSION]);
         $this->grant($nameCorrector, self::PROPERTY, [GuestCorrectionService::CORRECT_PERMISSION, StayService::VIEW_PERMISSION]);
         $this->grant($identityCorrector, self::PROPERTY, [GuestCorrectionService::CORRECT_PERMISSION, StayService::VIEW_PERMISSION, StayService::IDENTITY_PERMISSION]);
+        $this->grant($linenManager, self::PROPERTY, [LinenService::MANAGE_PERMISSION]);
+        $this->grant($linenManager2, self::PROPERTY, [LinenService::MANAGE_PERMISSION]);
+        $this->grant($linenLaundry, self::PROPERTY, [LinenService::LAUNDRY_PERMISSION]);
         $this->grant($cashSupervisor, self::PROPERTY, [CashierService::VIEW_PERMISSION, CashierService::MANAGE_PERMISSION, CashierService::SETTINGS_PERMISSION]);
         $this->grant($clerk, self::PROPERTY, [LaundryService::INTAKE_PERMISSION, LaundryService::DELIVER_PERMISSION]);
         $this->grant($launderer, self::PROPERTY, [LaundryService::PROCESS_PERMISSION]);
@@ -234,6 +248,9 @@ trait BuildsHotel
         $this->requestViewerId = strtolower((string) $requestViewer->getKey());
         $this->lateChargerId = strtolower((string) $lateCharger->getKey());
         $this->rateManagerId = strtolower((string) $rateManager->getKey());
+        $this->linenManagerId = strtolower((string) $linenManager->getKey());
+        $this->linenManager2Id = strtolower((string) $linenManager2->getKey());
+        $this->linenLaundryId = strtolower((string) $linenLaundry->getKey());
         $this->cashSupervisorId = strtolower((string) $cashSupervisor->getKey());
         app(PropertyContext::class)->activateFromString(self::PROPERTY);
 

@@ -23,9 +23,9 @@
 | TASK-HK-006 | FR-HK-006 | Sebaiknya | Daftar periksa dapat mewajibkan lampiran foto pada butir tertentu sebagai bukti pengerjaan. | TODO |
 | TASK-HK-007 | FR-HK-007 | Wajib | Supervisor melakukan inspeksi kamar dan menyetujui perubahan status menjadi siap dijual; kamar tanpa inspeksi dapat dikonfigurasi tetap masuk status bersih namun belum siap. | REVIEW |
 | TASK-HK-008 | FR-HK-008 | Wajib | Room attendant membuat laporan kerusakan dengan cara memilih kamar atau lokasi, menulis keterangan, dan melampirkan foto; laporan langsung menjadi work order pada modul Maintenance. | TODO |
-| TASK-HK-009 | FR-HK-009 | Wajib | Mencatat pemakaian linen dan perlengkapan: sprei, handuk, sarung bantal, sabun, dan amenitas lain, per kamar dan per hari. | TODO |
-| TASK-HK-010 | FR-HK-010 | Wajib | Mencatat sirkulasi linen mengikuti alur gudang ke luar gudang, ke laundry, dan kembali ke gudang; setiap perpindahan wajib diinput saat pengambilan maupun penyimpanan. | TODO |
-| TASK-HK-011 | FR-HK-011 | Sebaiknya | Sistem menghitung selisih linen yang tidak kembali dan menandainya sebagai kehilangan atau kerusakan untuk ditindaklanjuti. | TODO |
+| TASK-HK-009 | FR-HK-009 | Wajib | Mencatat pemakaian linen dan perlengkapan: sprei, handuk, sarung bantal, sabun, dan amenitas lain, per kamar dan per hari. | REVIEW |
+| TASK-HK-010 | FR-HK-010 | Wajib | Mencatat sirkulasi linen mengikuti alur gudang ke luar gudang, ke laundry, dan kembali ke gudang; setiap perpindahan wajib diinput saat pengambilan maupun penyimpanan. | REVIEW |
+| TASK-HK-011 | FR-HK-011 | Sebaiknya | Sistem menghitung selisih linen yang tidak kembali dan menandainya sebagai kehilangan atau kerusakan untuk ditindaklanjuti. | REVIEW |
 | TASK-HK-012 | FR-HK-012 | Sebaiknya | Mencatat temuan barang tertinggal (lost and found) dengan foto, lokasi, tanggal, penemu, dan status pengembalian. | TODO |
 | TASK-HK-013 | FR-HK-013 | Wajib | Menerima permintaan tamu dari Front Office beserta batas waktu penyelesaian dan menandai status penyelesaiannya. | REVIEW |
 | TASK-HK-014 | FR-HK-014 | Wajib | Mengajukan permintaan pembelian alat dan bahan ke modul Purchasing langsung dari modul Housekeeping. | TODO |

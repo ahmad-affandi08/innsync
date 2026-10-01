@@ -80,6 +80,10 @@ describe('dictionaries', () => {
             'common.language.id',
             'common.language.en',
             'common.field.email',
+            'hk.nav.linen',
+            'hk.linen.place.laundry',
+            'hk.linen.kind.linen',
+            'hk.linen.kind.amenity',
             // Terms Indonesian hotels use unchanged.
             'rates.kind.ota',
             'rates.quote.service',
