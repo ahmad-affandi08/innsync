@@ -28,7 +28,7 @@
 | TASK-FO-010 | FR-FO-010 | Wajib | Formulir check-in memuat: nama tamu, kewarganegaraan, jenis dan nomor identitas (paspor atau KTP), tanggal berlaku identitas, nomor visa bila diperlukan, jumlah tamu (dewasa dan anak), serta alamat sesuai identitas. | REVIEW |
 | TASK-FO-011 | FR-FO-011 | Wajib | Sistem mengunggah dan menampilkan foto identitas yang diambil langsung dari kamera perangkat resepsionis atau tablet, dan melampirkannya pada data tamu. | REVIEW |
 | TASK-FO-012 | FR-FO-012 | Wajib | Pemilihan lama menginap menampilkan blok tanggal menginap secara visual serta menghitung otomatis harga per malam sesuai tarif kamar yang bersangkutan. | TODO |
-| TASK-FO-013 | FR-FO-013 | Wajib | Harga kamar dapat diubah kapan pun oleh pengguna berwenang; setiap perubahan mencatat nilai lama, nilai baru, alasan, dan pelaku. Perubahan melebihi ambang diskon yang ditetapkan memerlukan persetujuan Manager on Duty. | TODO |
+| TASK-FO-013 | FR-FO-013 | Wajib | Harga kamar dapat diubah kapan pun oleh pengguna berwenang; setiap perubahan mencatat nilai lama, nilai baru, alasan, dan pelaku. Perubahan melebihi ambang diskon yang ditetapkan memerlukan persetujuan Manager on Duty. | REVIEW |
 | TASK-FO-014 | FR-FO-014 | Sebaiknya | Sistem memperingatkan bila identitas tamu telah kedaluwarsa atau akan kedaluwarsa selama masa menginap. | REVIEW |
 | TASK-FO-015 | FR-FO-015 | Sebaiknya | Sistem mendeteksi tamu berulang berdasarkan nomor identitas dan mengisi otomatis data profil beserta riwayat menginap dan preferensinya. | IN_PROGRESS |
 | TASK-FO-016 | FR-FO-016 | Wajib | Setelah check-in, status kamar otomatis berubah menjadi terisi dan seluruh permintaan tamu yang tercatat muncul pada kartu kamar tersebut. | IN_PROGRESS |

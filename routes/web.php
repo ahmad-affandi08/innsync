@@ -7,6 +7,7 @@ use App\Modules\FrontOffice\Presentation\Http\Controllers\CashierController;
 use App\Modules\FrontOffice\Presentation\Http\Controllers\FolioController;
 use App\Modules\FrontOffice\Presentation\Http\Controllers\InventoryController;
 use App\Modules\FrontOffice\Presentation\Http\Controllers\NightAuditController;
+use App\Modules\FrontOffice\Presentation\Http\Controllers\RateChangeController;
 use App\Modules\FrontOffice\Presentation\Http\Controllers\ReservationController;
 use App\Modules\FrontOffice\Presentation\Http\Controllers\RoomBoardController;
 use App\Modules\FrontOffice\Presentation\Http\Controllers\StayController;
@@ -173,6 +174,10 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
     Route::post('/reservations/{id}/confirm', [ReservationController::class, 'confirm'])->where('id', $id)->name('front-office.reservations.confirm');
     Route::get('/reservations/{id}/penalty', [ReservationController::class, 'penalty'])->where('id', $id)->name('front-office.reservations.penalty');
     Route::post('/reservations/{id}/guarantee', [ReservationController::class, 'guarantee'])->where('id', $id)->name('front-office.reservations.guarantee');
+    // Changing the room price of a booked reservation; a discount over the policy threshold needs an approval (FR-FO-013).
+    Route::get('/reservations/{id}/rate-preview', [RateChangeController::class, 'preview'])->where('id', $id)->name('front-office.reservations.rate-preview');
+    Route::post('/reservations/{id}/rate-approval', [RateChangeController::class, 'requestApproval'])->where('id', $id)->middleware('idempotent')->name('front-office.reservations.rate-approval');
+    Route::post('/reservations/{id}/rate', [RateChangeController::class, 'change'])->where('id', $id)->middleware('password.confirm')->name('front-office.reservations.rate');
     Route::post('/reservations/{id}/cancel', [ReservationController::class, 'cancel'])->where('id', $id)->name('front-office.reservations.cancel');
     Route::post('/reservations/{id}/no-show', [ReservationController::class, 'noShow'])->where('id', $id)->name('front-office.reservations.no-show');
 

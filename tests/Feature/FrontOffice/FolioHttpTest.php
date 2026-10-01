@@ -87,7 +87,7 @@ final class FolioHttpTest extends TestCase
         $this->postJson("/front-office/postings/{$payment}/reverse", ['reason' => 'Entered twice'])->assertStatus(409);
         self::assertSame(0, DB::table('folio_postings')->where('entry_type', 'reversal')->count());
 
-        $this->get('/approvals/policies')->assertInertia(fn (Assert $p) => $p->component('identity-access/pages/approval-policies')->has('subjects', 2)->where('subjects.0.mandatory', true)->has('subjects.0.policies', 0));
+        $this->get('/approvals/policies')->assertInertia(fn (Assert $p) => $p->component('identity-access/pages/approval-policies')->has('subjects', 3)->where('subjects.0.mandatory', true)->has('subjects.0.policies', 0));
         $this->postJson('/approvals/policies', ['subject_type' => 'front-office.folio.reversal', 'band_min_amount_minor' => 0, 'steps' => [['permission' => 'front-office.folio.approve', 'approvals_required' => 1]], 'reason' => 'Initial chain'])->assertCreated();
         $this->postJson('/approvals/policies', ['subject_type' => 'front-office.folio.refund', 'band_min_amount_minor' => 0, 'steps' => [['permission' => 'front-office.folio.approve']], 'reason' => 'Initial chain'])->assertCreated();
 

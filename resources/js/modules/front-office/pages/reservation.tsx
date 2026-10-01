@@ -9,6 +9,7 @@ import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { FrontOfficeShell } from '@/modules/front-office/components/front-office-shell';
+import { RateChangePanel, type Rates } from '@/modules/front-office/components/rate-change';
 import { statusTone } from '@/modules/front-office/pages/reservations';
 import { useServerAction } from '@/shared/api/use-server-action';
 import { useFormatters, useTranslation } from '@/shared/i18n/i18n';
@@ -32,7 +33,7 @@ type Penalty = { amount_minor: number; free: boolean; currency: string; may_waiv
 
 const PATH = { confirm: 'confirm', cancel: 'cancel', noShow: 'no-show' } as const;
 
-export default function ReservationPage({ folios, lookups, policy, reservation: r }: { folios: FolioRow[]; lookups: Lookups; policy: Policy | null; reservation: Reservation }) {
+export default function ReservationPage({ folios, lookups, policy, rates, reservation: r }: { folios: FolioRow[]; lookups: Lookups; policy: Policy | null; rates: Rates; reservation: Reservation }) {
     const { t } = useTranslation();
     const format = useFormatters();
     const errorCopy = useErrorStateCopy();
@@ -138,6 +139,8 @@ export default function ReservationPage({ folios, lookups, policy, reservation: 
                     </table>
                 </div>
             </section>
+
+            <RateChangePanel currency={r.currency} rates={rates} reservationId={r.id} />
 
             <section aria-labelledby="folio-h" className="flex flex-col gap-2">
                 <div className="flex flex-wrap items-center justify-between gap-2">

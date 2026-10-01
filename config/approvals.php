@@ -13,5 +13,8 @@ return [
         // FR-FO-029: a refund, a payment reversal, or any correction of a settled folio needs authorization.
         'front-office.folio.reversal' => ['mandatory' => true],
         'front-office.folio.refund' => ['mandatory' => true],
+        // FR-FO-013: a discount on a booked room price above the threshold needs the Manager on Duty. The threshold is the amount band of
+        // the property's policy, so with no policy no discount needs approval (the owner decides the threshold).
+        'front-office.rate.change' => ['mandatory' => false],
     ],
 ];

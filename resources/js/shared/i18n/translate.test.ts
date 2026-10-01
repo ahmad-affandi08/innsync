@@ -121,6 +121,7 @@ describe('dictionaries', () => {
             'fo.cash.list.col.number',
             'fo.cash.list.col.status',
             'fo.cash.detail.title',
+            'fo.rate.nightRow',
             'policy.scope.plan',
             'policy.depositBasis',
             'fo.res.fee.fixed',

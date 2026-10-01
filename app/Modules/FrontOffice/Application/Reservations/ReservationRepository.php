@@ -45,6 +45,20 @@ interface ReservationRepository
     /** Nights added by extensions, in the format of the price snapshot, oldest first. @return list<array<string, mixed>> */
     public function extensionNights(PropertyId $property, string $reservationId): array;
 
+    /**
+     * Stores a change of the room price of the given nights as a fact, with the nights as they were.
+     *
+     * @param  list<array<string, mixed>>  $nights  new prices in the format of the price snapshot
+     * @param  list<array<string, mixed>>  $previous  the same nights as they were priced before
+     */
+    public function addRateChange(PropertyId $property, string $id, string $reservationId, BusinessDate $effectiveFrom, array $nights, array $previous, string $reason, ?string $approvalId, BusinessDate $businessDate, string $actorId, DateTimeImmutable $at): void;
+
+    /** Changes of price in the order they were made. @return list<array<string, mixed>> */
+    public function rateChanges(PropertyId $property, string $reservationId): array;
+
+    /** The price each changed night has now, keyed by night: the latest change that covers it wins. @return array<string, array<string, mixed>> */
+    public function rateOverrides(PropertyId $property, string $reservationId): array;
+
     /** Nights of this reservation that still hold inventory (arrival-ordered). @return list<string> */
     public function activeNights(PropertyId $property, string $id): array;
 }

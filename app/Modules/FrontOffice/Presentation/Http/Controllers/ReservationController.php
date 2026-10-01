@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Modules\FrontOffice\Presentation\Http\Controllers;
 
 use App\Modules\FrontOffice\Application\Folios\FolioService;
+use App\Modules\FrontOffice\Application\Reservations\RateChangeService;
 use App\Modules\FrontOffice\Application\Reservations\ReservationRequest;
 use App\Modules\FrontOffice\Application\Reservations\ReservationService;
 use App\Shared\Application\Errors\Refusal;
@@ -18,7 +19,7 @@ use Inertia\Response;
 /** Reservation screens and actions. Every rule lives in `ReservationService`; this maps input and output. */
 final readonly class ReservationController
 {
-    public function __construct(private ReservationService $reservations, private FolioService $folios, private PropertyContext $property) {}
+    public function __construct(private ReservationService $reservations, private FolioService $folios, private RateChangeService $rates, private PropertyContext $property) {}
 
     public function index(Request $request): Response
     {
@@ -46,6 +47,7 @@ final readonly class ReservationController
             'lookups' => $this->reservations->lookups($property, $actor),
             'folios' => $this->folioSummaries($property, $actor, $id),
             'policy' => $this->reservations->policyView($property, $actor, $id),
+            'rates' => $this->rates->overview($property, $actor, $id),
         ]);
     }
 

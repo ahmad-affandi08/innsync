@@ -280,7 +280,8 @@ final readonly class NightAuditService
         // The booked nights, then any nights added later by an extension, each with the price it was given the day it was added.
         foreach ([...($reservation->priceSnapshot['nights'] ?? []), ...$this->reservations->extensionNights($property, $stay->reservationId)] as $night) {
             if (($night['date'] ?? null) === $date->toString()) {
-                return $night;
+                // A later change of the room price (FR-FO-013) replaces the price of that night; the booked snapshot stays as it was.
+                return $this->reservations->rateOverrides($property, $stay->reservationId)[$date->toString()] ?? $night;
             }
         }
 

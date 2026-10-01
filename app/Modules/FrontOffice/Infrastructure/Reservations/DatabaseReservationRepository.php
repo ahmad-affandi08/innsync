@@ -101,6 +101,44 @@ final readonly class DatabaseReservationRepository implements ReservationReposit
         return $nights;
     }
 
+    public function addRateChange(PropertyId $property, string $id, string $reservationId, BusinessDate $effectiveFrom, array $nights, array $previous, string $reason, ?string $approvalId, BusinessDate $businessDate, string $actorId, DateTimeImmutable $at): void
+    {
+        $old = array_sum(array_column($previous, 'total_minor'));
+        $new = array_sum(array_column($nights, 'total_minor'));
+        $discount = $old - $new;
+
+        DB::table('reservation_rate_changes')->insert([
+            'id' => $id, 'property_id' => $property->toString(), 'reservation_id' => $reservationId, 'effective_from' => $effectiveFrom->toString(),
+            'nights' => json_encode($nights, JSON_THROW_ON_ERROR), 'previous_nights' => json_encode($previous, JSON_THROW_ON_ERROR), 'old_total_minor' => $old, 'new_total_minor' => $new,
+            'discount_minor' => $discount, 'discount_bp' => $discount > 0 && $old > 0 ? intdiv($discount * 10_000, $old) : 0, 'reason' => $reason, 'approval_id' => $approvalId,
+            'business_date' => $businessDate->toString(), 'created_by' => $actorId, 'created_at' => $at,
+        ]);
+    }
+
+    public function rateChanges(PropertyId $property, string $reservationId): array
+    {
+        return DB::table('reservation_rate_changes')->where('property_id', $property->toString())->where('reservation_id', $reservationId)->orderBy('created_at')->orderBy('id')->get()
+            ->map(static fn ($r): array => [
+                'id' => $r->id, 'effective_from' => substr((string) $r->effective_from, 0, 10), 'old_total_minor' => (int) $r->old_total_minor, 'new_total_minor' => (int) $r->new_total_minor,
+                'discount_minor' => (int) $r->discount_minor, 'discount_bp' => (int) $r->discount_bp, 'reason' => $r->reason, 'approval_id' => $r->approval_id, 'business_date' => substr((string) $r->business_date, 0, 10),
+                'created_by' => $r->created_by, 'created_at' => (new DateTimeImmutable((string) $r->created_at, new \DateTimeZone('UTC')))->format('Y-m-d\TH:i:s\Z'),
+                'nights' => json_decode((string) $r->nights, true, 512, JSON_THROW_ON_ERROR),
+            ])->all();
+    }
+
+    public function rateOverrides(PropertyId $property, string $reservationId): array
+    {
+        $result = [];
+
+        foreach (DB::table('reservation_rate_changes')->where('property_id', $property->toString())->where('reservation_id', $reservationId)->orderBy('created_at')->orderBy('id')->pluck('nights') as $json) {
+            foreach (json_decode((string) $json, true, 512, JSON_THROW_ON_ERROR) as $night) {
+                $result[(string) $night['date']] = $night;
+            }
+        }
+
+        return $result;
+    }
+
     public function search(PropertyId $property, array $filters, int $limit, int $offset): array
     {
         $query = DB::table('reservations')->where('property_id', $property->toString());
