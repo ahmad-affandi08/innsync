@@ -29,6 +29,7 @@ Release notes for every release (NFR-14). Newest first. Each entry names the tas
 - TASK-FO-013 (BR-002, BR-004): changing the room price of a booked reservation for the nights not yet charged, as an append-only fact with the old and new price, reason and actor (the booked price stays on record), a discount over the policy threshold needing the Manager on Duty's approval, and night audit charging the changed price.
 - TASK-FO-038 (BR-002, BR-003, BR-005): a charge found after a folio was closed goes to a separate folio linked to the original, dated with the current business date, with a reason, so the closed folio and the days already reported stay as they were.
 - TASK-FO-030, TASK-FO-016 (BR-008): guest requests for in-house guests filed under a department, with housekeeping requests joined to the room's housekeeping task, the others announced for their department, a queue with status and urgency, and the open requests shown on each room card.
+- TASK-FO-031 (BR-003): guest comments and complaints with kind, severity, owner, follow-up date, resolution and proof reference, an append-only history, escalation of critical complaints and a dashboard alert while a serious one is open.
 
 ### Known limitations
 

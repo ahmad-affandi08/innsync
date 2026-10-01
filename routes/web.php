@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Modules\FrontOffice\Presentation\Http\Controllers\AvailabilityController;
 use App\Modules\FrontOffice\Presentation\Http\Controllers\CashierController;
+use App\Modules\FrontOffice\Presentation\Http\Controllers\FeedbackController;
 use App\Modules\FrontOffice\Presentation\Http\Controllers\FolioController;
 use App\Modules\FrontOffice\Presentation\Http\Controllers\GuestRequestController;
 use App\Modules\FrontOffice\Presentation\Http\Controllers\InventoryController;
@@ -224,6 +225,17 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
     Route::post('/requests/{id}/start', [GuestRequestController::class, 'start'])->where('id', $id)->name('front-office.requests.start');
     Route::post('/requests/{id}/complete', [GuestRequestController::class, 'complete'])->where('id', $id)->name('front-office.requests.complete');
     Route::post('/requests/{id}/cancel', [GuestRequestController::class, 'cancel'])->where('id', $id)->name('front-office.requests.cancel');
+
+    // Guest comments and complaints (FR-FO-031).
+    Route::get('/feedback', [FeedbackController::class, 'index'])->name('front-office.feedback');
+    Route::get('/feedback/{id}', [FeedbackController::class, 'show'])->where('id', $id)->name('front-office.feedback.show');
+    Route::post('/feedback', [FeedbackController::class, 'record'])->middleware(['idempotent', 'throttle:bookings'])->name('front-office.feedback.store');
+    Route::post('/feedback/{id}/assign', [FeedbackController::class, 'assign'])->where('id', $id)->name('front-office.feedback.assign');
+    Route::post('/feedback/{id}/note', [FeedbackController::class, 'note'])->where('id', $id)->name('front-office.feedback.note');
+    Route::post('/feedback/{id}/start', [FeedbackController::class, 'start'])->where('id', $id)->name('front-office.feedback.start');
+    Route::post('/feedback/{id}/resolve', [FeedbackController::class, 'resolve'])->where('id', $id)->name('front-office.feedback.resolve');
+    Route::post('/feedback/{id}/close', [FeedbackController::class, 'close'])->where('id', $id)->name('front-office.feedback.close');
+    Route::post('/feedback/{id}/reopen', [FeedbackController::class, 'reopen'])->where('id', $id)->name('front-office.feedback.reopen');
 
     // Cashier shifts (FR-FO-036): own shift, review of all shifts, and the property switch that requires an open shift to take money.
     Route::get('/cashier', [CashierController::class, 'mine'])->name('front-office.cashier');

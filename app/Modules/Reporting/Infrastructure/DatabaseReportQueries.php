@@ -117,6 +117,9 @@ final readonly class DatabaseReportQueries implements ReportQueries
             ->whereNotIn('h.room_id', DB::table('stays')->where('property_id', $pid)->where('status', 'in_house')->select('room_id'));
         $alerts['rooms_not_ready'] = ['count' => (clone $notReady)->count(), 'items' => (clone $notReady)->orderBy('rooms.number')->limit(self::ALERT_EXAMPLES)->pluck('rooms.number')->map(static fn ($n): string => 'Room '.$n)->all()];
 
+        $serious = DB::table('guest_feedback')->where('property_id', $pid)->where('kind', 'complaint')->whereIn('severity', ['high', 'critical'])->whereIn('status', ['open', 'in_progress']);
+        $alerts['serious_complaints'] = ['count' => (clone $serious)->count(), 'items' => (clone $serious)->orderByRaw("CASE severity WHEN 'critical' THEN 0 ELSE 1 END")->orderBy('created_at')->limit(self::ALERT_EXAMPLES)->get(['number', 'severity'])->map(static fn ($r): string => $r->number.' ('.$r->severity.')')->all()];
+
         return $alerts;
     }
 

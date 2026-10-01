@@ -101,6 +101,7 @@ final readonly class DashboardService
         'stale_arrivals' => '/front-office/night-audit',
         'laundry_overdue' => '/laundry',
         'rooms_not_ready' => '/housekeeping',
+        'serious_complaints' => '/front-office/feedback',
     ];
 
     /**

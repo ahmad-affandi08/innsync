@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Integration\Reporting;
 
+use App\Modules\FrontOffice\Application\Feedback\FeedbackService;
 use App\Modules\FrontOffice\Application\Folios\FolioRepository;
 use App\Modules\FrontOffice\Application\Folios\FolioService;
 use App\Modules\FrontOffice\Application\Inventory\InventoryAdminService;
@@ -185,6 +186,20 @@ final class ReportingTest extends TestCase
         // A guest due out with a balance on the folio is flagged separately.
         self::assertSame(1, $alerts['unsettled_departures']['count']);
         self::assertSame('/front-office/stays', $alerts['unsettled_departures']['href']);
+    }
+
+    public function test_open_high_or_critical_complaints_raise_an_alert_until_they_are_resolved(): void
+    {
+        $feedback = app(FeedbackService::class);
+        $feedback->record($this->property(), $this->feedbackStaffId, 'complaint', 'low', 'phone', null, 'A guest', 'Slow Wi-Fi', null, null);
+        self::assertArrayNotHasKey('serious_complaints', array_column($this->dashboard()['alerts'], null, 'code'));
+
+        $critical = $feedback->record($this->property(), $this->feedbackStaffId, 'complaint', 'critical', 'in_person', null, 'A guest', 'Broken balcony rail', null, '2026-10-01');
+        $alert = array_column($this->dashboard()['alerts'], null, 'code')['serious_complaints'];
+        self::assertSame([1, '/front-office/feedback', ['FDB-000002 (critical)']], [$alert['count'], $alert['href'], $alert['items']]);
+
+        $feedback->resolve($this->property(), $this->feedbackStaffId, $critical['id'], 'Fixed', 'WO-1', 0);
+        self::assertArrayNotHasKey('serious_complaints', array_column($this->dashboard()['alerts'], null, 'code'));
     }
 
     public function test_the_flash_report_is_built_from_closed_days_and_states_how(): void

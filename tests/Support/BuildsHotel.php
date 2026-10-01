@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Support;
 
 use App\Modules\FrontOffice\Application\Cashier\CashierService;
+use App\Modules\FrontOffice\Application\Feedback\FeedbackService;
 use App\Modules\FrontOffice\Application\Folios\FolioService;
 use App\Modules\FrontOffice\Application\Folios\LateChargeService;
 use App\Modules\FrontOffice\Application\Inventory\InventoryAdminService;
@@ -93,6 +94,13 @@ trait BuildsHotel
 
     private string $requestViewerId;
 
+    /** Guest comments and complaints (FR-FO-031): two people who handle them (one can own what the other records) and one who may only look. */
+    private string $feedbackStaffId;
+
+    private string $feedbackStaff2Id;
+
+    private string $feedbackViewerId;
+
     private string $typeId;
 
     private string $planId;
@@ -131,6 +139,9 @@ trait BuildsHotel
         $lateCharger = UserRecord::factory()->create();
         $requestStaff = UserRecord::factory()->create();
         $requestViewer = UserRecord::factory()->create();
+        $feedbackStaff = UserRecord::factory()->create();
+        $feedbackStaff2 = UserRecord::factory()->create();
+        $feedbackViewer = UserRecord::factory()->create();
         $this->grant($admin, self::PROPERTY, [
             RoomCatalogService::MANAGE_PERMISSION, RatePlanService::MANAGE_PERMISSION, ChargeSchemeService::MANAGE_PERMISSION, PropertySettingsService::MANAGE_PERMISSION,
             InventoryAdminService::OVERBOOKING_PERMISSION, InventoryAdminService::BLOCK_PERMISSION, InventoryAdminService::HOLD_PERMISSION, ApprovalPolicyAdmin::MANAGE_PERMISSION,
@@ -150,6 +161,9 @@ trait BuildsHotel
         $this->grant($lateCharger, self::PROPERTY, [LateChargeService::POST_PERMISSION, FolioService::MANAGE_PERMISSION]);
         $this->grant($requestStaff, self::PROPERTY, [GuestRequestService::MANAGE_PERMISSION]);
         $this->grant($requestViewer, self::PROPERTY, [GuestRequestService::VIEW_PERMISSION]);
+        $this->grant($feedbackStaff, self::PROPERTY, [FeedbackService::MANAGE_PERMISSION]);
+        $this->grant($feedbackStaff2, self::PROPERTY, [FeedbackService::MANAGE_PERMISSION]);
+        $this->grant($feedbackViewer, self::PROPERTY, [FeedbackService::VIEW_PERMISSION]);
         $this->grant($cashSupervisor, self::PROPERTY, [CashierService::VIEW_PERMISSION, CashierService::MANAGE_PERMISSION, CashierService::SETTINGS_PERMISSION]);
         $this->grant($clerk, self::PROPERTY, [LaundryService::INTAKE_PERMISSION, LaundryService::DELIVER_PERMISSION]);
         $this->grant($launderer, self::PROPERTY, [LaundryService::PROCESS_PERMISSION]);
@@ -173,6 +187,9 @@ trait BuildsHotel
         $this->dashOnlyId = strtolower((string) $dashOnly->getKey());
         $this->cashierId = strtolower((string) $cashier->getKey());
         $this->cashier2Id = strtolower((string) $cashier2->getKey());
+        $this->feedbackStaffId = strtolower((string) $feedbackStaff->getKey());
+        $this->feedbackStaff2Id = strtolower((string) $feedbackStaff2->getKey());
+        $this->feedbackViewerId = strtolower((string) $feedbackViewer->getKey());
         $this->requestStaffId = strtolower((string) $requestStaff->getKey());
         $this->requestViewerId = strtolower((string) $requestViewer->getKey());
         $this->lateChargerId = strtolower((string) $lateCharger->getKey());

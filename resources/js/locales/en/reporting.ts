@@ -47,6 +47,7 @@ export const reporting = {
     'rpt.alert.unsettled_departures': 'Guests due to leave with a folio balance',
     'rpt.alert.stale_arrivals': 'Arrivals past their date not yet resolved',
     'rpt.alert.laundry_overdue': 'Laundry past its promised time',
+    'rpt.alert.serious_complaints': 'High or critical complaints still open',
     'rpt.alert.rooms_not_ready': 'Vacant rooms still dirty or in rework',
     'rpt.centre.title': 'Reports',
     'rpt.centre.description': 'Reports grouped by theme. Each states when it was made, the business dates it covers, its filters and its source.',
