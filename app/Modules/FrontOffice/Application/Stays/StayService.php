@@ -77,6 +77,7 @@ final readonly class StayService
 
     public function __construct(
         private StayRepository $stays,
+        private RegistrationCardRepository $cards,
         private GuestRepository $guests,
         private ReservationRepository $reservations,
         private InventoryRepository $inventory,
@@ -334,9 +335,16 @@ final readonly class StayService
                 throw Refusal::stateConflict('This stay changed after you opened it.');
             }
 
+            $anchor = new DateTimeImmutable($today->toString().' 00:00:00', new DateTimeZone('UTC'));
+
             if ($stay->idPhotoFileId !== null) {
-                $anchor = new DateTimeImmutable($today->toString().' 00:00:00', new DateTimeZone('UTC'));
                 $this->files->setExpiryOnce($property, $stay->idPhotoFileId, $this->retention->expiryFor($property, self::RETENTION_CATEGORY, $anchor));
+            }
+
+            $signature = $this->cards->find($property, $stay->id)['signature_file_id'] ?? null;
+
+            if ($signature !== null) {
+                $this->files->setExpiryOnce($property, $signature, $this->retention->expiryFor($property, self::RETENTION_CATEGORY, $anchor));
             }
 
             $this->handover->vacated($property, $stay->roomId, $stay->id, $actor);

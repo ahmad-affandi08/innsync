@@ -23,6 +23,7 @@ use App\Modules\FrontOffice\Application\Reservations\PenaltyPoster;
 use App\Modules\FrontOffice\Application\Reservations\ReservationRepository;
 use App\Modules\FrontOffice\Application\Routine\RoutineRepository;
 use App\Modules\FrontOffice\Application\Stays\GuestRepository;
+use App\Modules\FrontOffice\Application\Stays\RegistrationCardRepository;
 use App\Modules\FrontOffice\Application\Stays\StayOccupancyReader;
 use App\Modules\FrontOffice\Application\Stays\StayRepository;
 use App\Modules\FrontOffice\Application\Stays\StayTimeFeeRepository;
@@ -37,6 +38,7 @@ use App\Modules\FrontOffice\Infrastructure\Requests\DatabaseGuestRequestReposito
 use App\Modules\FrontOffice\Infrastructure\Reservations\DatabaseReservationRepository;
 use App\Modules\FrontOffice\Infrastructure\Routine\DatabaseRoutineRepository;
 use App\Modules\FrontOffice\Infrastructure\Stays\DatabaseGuestRepository;
+use App\Modules\FrontOffice\Infrastructure\Stays\DatabaseRegistrationCardRepository;
 use App\Modules\FrontOffice\Infrastructure\Stays\DatabaseStayRepository;
 use App\Modules\FrontOffice\Infrastructure\Stays\DatabaseStayTimeFeeRepository;
 use App\Modules\Housekeeping\Application\ChecklistRepository;
@@ -332,6 +334,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(LaundryLiability::class, LaundryService::class);
         $this->app->bind(NightAuditRepository::class, DatabaseNightAuditRepository::class);
         $this->app->bind(StayRepository::class, DatabaseStayRepository::class);
+        $this->app->bind(RegistrationCardRepository::class, DatabaseRegistrationCardRepository::class);
         $this->app->bind(DocumentNumbers::class, DatabaseDocumentNumbers::class);
         $this->app->bind(ProviderRegistry::class, ConfiguredProviderRegistry::class);
         $this->app->bind(CircuitStore::class, DatabaseCircuitStore::class);

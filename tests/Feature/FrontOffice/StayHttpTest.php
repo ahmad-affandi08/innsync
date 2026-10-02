@@ -7,6 +7,7 @@ namespace Tests\Feature\FrontOffice;
 use App\Modules\FrontOffice\Application\Folios\FolioService;
 use App\Modules\FrontOffice\Application\Reservations\ReservationService;
 use App\Modules\FrontOffice\Application\Stays\GuestCorrectionService;
+use App\Modules\FrontOffice\Application\Stays\RegistrationCardService;
 use App\Modules\FrontOffice\Application\Stays\StayService;
 use App\Modules\FrontOffice\Application\Stays\StayTimeFeeService;
 use App\Modules\Property\Application\Catalog\RoomCatalogService;
@@ -51,7 +52,7 @@ final class StayHttpTest extends TestCase
         $this->signIn(self::A, [
             ReservationService::MANAGE_PERMISSION, FolioService::MANAGE_PERMISSION, StayService::MANAGE_PERMISSION, StayService::IDENTITY_PERMISSION, GuestCorrectionService::CORRECT_PERMISSION,
             RoomCatalogService::MANAGE_PERMISSION, RatePlanService::MANAGE_PERMISSION, ChargeSchemeService::MANAGE_PERMISSION, PropertySettingsService::MANAGE_PERMISSION,
-            StayTimeFeeService::POLICY_PERMISSION, StayTimeFeeService::APPLY_PERMISSION, StayTimeFeeService::WAIVE_PERMISSION,
+            StayTimeFeeService::POLICY_PERMISSION, StayTimeFeeService::APPLY_PERMISSION, StayTimeFeeService::WAIVE_PERMISSION, RegistrationCardService::TERMS_PERMISSION,
         ]);
         $type = $this->postJson('/property/room-types', ['code' => 'DLX', 'name' => 'Deluxe', 'max_adults' => 2, 'max_children' => 1, 'reason' => 'x'])->json('type.id');
         $this->roomId = $this->postJson('/property/rooms', ['number' => '101', 'room_type_id' => $type, 'reason' => 'x'])->assertCreated()->json('room.id');
@@ -103,6 +104,23 @@ final class StayHttpTest extends TestCase
         $this->postJson("/front-office/stays/{$stay}/time-fees", ['kind' => 'early_checkin', 'action' => 'charge'])->assertOk()->assertJsonPath('time_fees.items.0.decision.status', 'charged');
         $this->postJson("/front-office/stays/{$stay}/time-fees", ['kind' => 'early_checkin', 'action' => 'charge'])->assertStatus(409);
         self::assertSame(1, DB::table('folio_postings')->where('code', 'EARLYIN')->count());
+    }
+
+    public function test_the_registration_card_is_shown_signed_once_and_its_signature_served_privately(): void
+    {
+        $this->get('/front-office/registration-terms')->assertInertia(fn (Assert $p) => $p->component('front-office/pages/registration-terms')->where('catalogue.terms', null)->where('catalogue.may_edit', true));
+        $this->postJson('/front-office/registration-terms', ['body' => 'Check-out is at 12:00.', 'reason' => ''])->assertStatus(422);
+        $this->postJson('/front-office/registration-terms', ['body' => 'Check-out is at 12:00.', 'reason' => 'First version'])->assertCreated()->assertJsonPath('terms.version', 1);
+
+        $this->postJson("/front-office/reservations/{$this->reservationId}/check-in", $this->form(), ['Idempotency-Key' => 'checkin-http-card-0001'])->assertCreated();
+        $stay = DB::table('stays')->value('id');
+        $this->get("/front-office/stays/{$stay}/registration-card")->assertInertia(fn (Assert $p) => $p->component('front-office/pages/registration-card')->where('card.guest.full_name', 'Budi Santoso')->where('card.terms.body', 'Check-out is at 12:00.')->where('card.may_sign', true)->where('card.signed', null));
+
+        $this->postJson("/front-office/stays/{$stay}/registration-card/sign", ['signature' => 'data:image/png;base64,###'])->assertStatus(422);
+        $this->postJson("/front-office/stays/{$stay}/registration-card/sign", ['signature' => 'data:image/png;base64,'.self::PNG])->assertOk()->assertJsonPath('card.may_sign', false);
+        $this->postJson("/front-office/stays/{$stay}/registration-card/sign", ['signature' => 'data:image/png;base64,'.self::PNG])->assertStatus(409);
+        $this->get("/front-office/stays/{$stay}/registration-card/signature")->assertOk()->assertHeader('Content-Type', 'image/png')->assertHeader('X-Content-Type-Options', 'nosniff');
+        $this->get("/front-office/stays/{$stay}/registration-card")->assertInertia(fn (Assert $p) => $p->where('card.signed.by', fn ($v): bool => $v !== null)->where('card.may_see_signature', true));
     }
 
     public function test_guest_lookup_finds_a_returning_guest(): void

@@ -17,6 +17,7 @@ use App\Modules\FrontOffice\Application\Reservations\ReservationService;
 use App\Modules\FrontOffice\Application\Routine\ShiftLogService;
 use App\Modules\FrontOffice\Application\Routine\SopService;
 use App\Modules\FrontOffice\Application\Stays\GuestCorrectionService;
+use App\Modules\FrontOffice\Application\Stays\RegistrationCardService;
 use App\Modules\FrontOffice\Application\Stays\StayService;
 use App\Modules\FrontOffice\Application\Stays\StayTimeFeeService;
 use App\Modules\FrontOffice\Domain\Reservations\Reservation;
@@ -107,6 +108,9 @@ trait BuildsHotel
     private string $lostFinderId;
 
     private string $lostKeeperId;
+
+    /** Registration card terms (FR-FO-017): someone who writes the house terms. */
+    private string $termsWriterId;
 
     /** Reporting: an analyst (dashboard with revenue, reports, audit; identity masked), a registrar (guest reports and export, identity in clear), and a dashboard-only viewer. */
     private string $analystId;
@@ -204,6 +208,7 @@ trait BuildsHotel
         $logReader = UserRecord::factory()->create();
         $nameCorrector = UserRecord::factory()->create();
         $linenManager = UserRecord::factory()->create();
+        $termsWriter = UserRecord::factory()->create();
         $lostFinder = UserRecord::factory()->create();
         $lostKeeper = UserRecord::factory()->create();
         $feePolicy = UserRecord::factory()->create();
@@ -256,6 +261,7 @@ trait BuildsHotel
         $this->grant($feeWaiver, self::PROPERTY, [StayTimeFeeService::WAIVE_PERMISSION, StayService::VIEW_PERMISSION]);
         $this->grant($lostFinder, self::PROPERTY, [LostFoundService::RECORD_PERMISSION]);
         $this->grant($lostKeeper, self::PROPERTY, [LostFoundService::MANAGE_PERMISSION]);
+        $this->grant($termsWriter, self::PROPERTY, [RegistrationCardService::TERMS_PERMISSION]);
         $this->grant($linenManager, self::PROPERTY, [LinenService::MANAGE_PERMISSION]);
         $this->grant($linenManager2, self::PROPERTY, [LinenService::MANAGE_PERMISSION]);
         $this->grant($linenLaundry, self::PROPERTY, [LinenService::LAUNDRY_PERMISSION]);
@@ -306,6 +312,7 @@ trait BuildsHotel
         $this->feeWaiverId = strtolower((string) $feeWaiver->getKey());
         $this->lostFinderId = strtolower((string) $lostFinder->getKey());
         $this->lostKeeperId = strtolower((string) $lostKeeper->getKey());
+        $this->termsWriterId = strtolower((string) $termsWriter->getKey());
         $this->linenManagerId = strtolower((string) $linenManager->getKey());
         $this->linenManager2Id = strtolower((string) $linenManager2->getKey());
         $this->linenLaundryId = strtolower((string) $linenLaundry->getKey());

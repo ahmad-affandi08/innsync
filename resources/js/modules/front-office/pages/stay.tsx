@@ -135,6 +135,8 @@ export default function StayPage({ corrections, reservation, stay: s, time_fees:
                 )}
             </section>
 
+            <div><Button asChild size="sm" variant="outline"><Link href={`/front-office/stays/${s.id}/registration-card`}>{t('fo.regcard.open')}</Link></Button></div>
+
             <StayTimeFeesPanel currency={reservation.currency ?? 'IDR'} fees={timeFees} />
 
             <GuestCorrections corrections={corrections} guest={s.guest} stayId={s.id} />
