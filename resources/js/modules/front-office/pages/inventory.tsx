@@ -124,8 +124,8 @@ export default function InventoryPage({ blocks, holds, rooms, types }: { blocks:
                     return (
                         <form className="grid gap-3 sm:grid-cols-4" key={type.id} onSubmit={(e) => { e.preventDefault(); void saveAllowance(type); }}>
                             <p className="self-end pb-2 text-sm font-medium">{type.code} · {type.name}</p>
-                            <FormField label={t('fo.inv.allowanceRooms')}><Input inputMode="numeric" onChange={(e) => setAllowances({ ...allowances, [type.id]: { ...form, rooms: e.target.value, saved: false } })} value={form.rooms} /></FormField>
-                            <FormField label={t('property.field.reason')}><Input maxLength={500} onChange={(e) => setAllowances({ ...allowances, [type.id]: { ...form, reason: e.target.value, saved: false } })} value={form.reason} /></FormField>
+                            <FormField field="rooms" error={action.fieldError('rooms')} label={t('fo.inv.allowanceRooms')}><Input inputMode="numeric" onChange={(e) => setAllowances({ ...allowances, [type.id]: { ...form, rooms: e.target.value, saved: false } })} value={form.rooms} /></FormField>
+                            <FormField field="reason" error={action.fieldError('reason')} label={t('property.field.reason')}><Input maxLength={500} onChange={(e) => setAllowances({ ...allowances, [type.id]: { ...form, reason: e.target.value, saved: false } })} value={form.reason} /></FormField>
                             <div className="flex items-end gap-2"><Button disabled={action.busy} type="submit" variant="outline">{t('property.action.save')}</Button>{form.saved && <span className="pb-2 text-xs text-success">{t('fo.inv.allowanceSaved')}</span>}</div>
                         </form>
                     );

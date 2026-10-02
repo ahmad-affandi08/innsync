@@ -51,13 +51,13 @@ export default function OutletsPage({ overview }: { overview: Overview }) {
                                 ))}</ul>
                             )}
                             <div className="flex flex-wrap items-end gap-2">
-                                <FormField hint={t('rpt.outlets.sourceHint')} label={`${t('rpt.outlets.source')} (${o.code})`}><Input maxLength={40} onChange={(e) => setSource({ ...source, [o.id]: { ...s, value: e.target.value } })} value={s.value} /></FormField>
-                                <FormField label={`${t('rpt.outlets.reason')} (${o.code})`}><Input maxLength={300} onChange={(e) => setSource({ ...source, [o.id]: { ...s, reason: e.target.value } })} value={s.reason} /></FormField>
+                                <FormField field="source" hint={t('rpt.outlets.sourceHint')} label={`${t('rpt.outlets.source')} (${o.code})`}><Input maxLength={40} onChange={(e) => setSource({ ...source, [o.id]: { ...s, value: e.target.value } })} value={s.value} /></FormField>
+                                <FormField field="reason" label={`${t('rpt.outlets.reason')} (${o.code})`}><Input maxLength={300} onChange={(e) => setSource({ ...source, [o.id]: { ...s, reason: e.target.value } })} value={s.reason} /></FormField>
                                 <Button disabled={action.busy || s.value.trim() === '' || s.reason.trim() === ''} onClick={() => void action.run(`/reports/outlets/${o.id}/sources`, { body: { source: s.value.trim(), reason: s.reason.trim() }, reload }).then((d) => { if (d !== null) setSource({ ...source, [o.id]: { value: '', reason: '' } }); })} type="button" variant="outline">{t('rpt.outlets.addSource')}</Button>
                             </div>
                             <div className="flex flex-wrap items-end gap-2">
-                                <FormField label={`${t('rpt.outlets.name')} (${o.code})`}><Input maxLength={60} onChange={(e) => setRename({ ...rename, [o.id]: { ...r, name: e.target.value } })} value={r.name} /></FormField>
-                                <FormField label={`${t('rpt.outlets.rename')} – ${t('rpt.outlets.reason')} (${o.code})`}><Input maxLength={300} onChange={(e) => setRename({ ...rename, [o.id]: { ...r, reason: e.target.value } })} value={r.reason} /></FormField>
+                                <FormField field="name" label={`${t('rpt.outlets.name')} (${o.code})`}><Input maxLength={60} onChange={(e) => setRename({ ...rename, [o.id]: { ...r, name: e.target.value } })} value={r.name} /></FormField>
+                                <FormField field="reason" label={`${t('rpt.outlets.rename')} – ${t('rpt.outlets.reason')} (${o.code})`}><Input maxLength={300} onChange={(e) => setRename({ ...rename, [o.id]: { ...r, reason: e.target.value } })} value={r.reason} /></FormField>
                                 <Button disabled={action.busy || r.name.trim() === '' || r.reason.trim() === ''} onClick={() => void action.run(`/reports/outlets/${o.id}`, { body: { name: r.name.trim(), lock_version: o.lock_version, reason: r.reason.trim() }, reload })} type="button" variant="outline">{t('rpt.outlets.rename')}</Button>
                             </div>
                         </li>

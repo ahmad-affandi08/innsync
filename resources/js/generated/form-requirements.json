@@ -33,8 +33,10 @@
     ],
     "front-office/pages/folio": [
         "code",
+        "currency",
         "description",
         "payment_method",
+        "purpose",
         "reason",
         "target_folio_id"
     ],
@@ -51,7 +53,8 @@
         "guest_name",
         "rate_plan_id",
         "room_type_id",
-        "source"
+        "source",
+        "status"
     ],
     "front-office/pages/groups": [
         "arrival",
@@ -87,11 +90,13 @@
         "adults",
         "arrival",
         "children",
+        "company_id",
         "departure",
         "guest_name",
         "rate_plan_id",
         "room_type_id",
-        "source"
+        "source",
+        "status"
     ],
     "front-office/pages/reservations": [
         "adults",
@@ -101,7 +106,8 @@
         "guest_name",
         "rate_plan_id",
         "room_type_id",
-        "source"
+        "source",
+        "status"
     ],
     "front-office/pages/room-board": [
         "kind",
@@ -144,6 +150,8 @@
     ],
     "housekeeping/pages/lost-found": [
         "description",
+        "reason",
+        "returned_to",
         "stored_at"
     ],
     "housekeeping/pages/my-rooms": [
@@ -161,11 +169,15 @@
         "band_min_amount_minor",
         "reason"
     ],
+    "identity-access/pages/approvals": [
+        "reason"
+    ],
     "identity-access/pages/confirm-password": [
         "password"
     ],
     "identity-access/pages/login": [
-        "email"
+        "email",
+        "password"
     ],
     "identity-access/pages/mfa-challenge": [
         "code"
@@ -184,6 +196,7 @@
         "description",
         "kind",
         "order_id",
+        "pieces",
         "reason"
     ],
     "laundry/pages/intake": [
@@ -207,10 +220,15 @@
         "value"
     ],
     "property/pages/booking-policies": [
+        "cancel_free_days",
         "cancel_penalty_kind",
+        "cancel_penalty_value",
         "deposit_basis",
+        "deposit_due_days",
+        "deposit_value",
         "effective_from",
         "noshow_penalty_kind",
+        "noshow_penalty_value",
         "reason"
     ],
     "property/pages/charge-schemes": [
@@ -250,6 +268,7 @@
     "reporting/pages/outlets": [
         "code",
         "name",
-        "reason"
+        "reason",
+        "source"
     ]
 }

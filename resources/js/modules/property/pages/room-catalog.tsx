@@ -184,7 +184,7 @@ export default function RoomCatalogPage({ rooms, types }: { rooms: Room[]; types
                             <FormField field="max_children" error={action.fieldError('max_children')} label={t('property.types.maxChildren')}>
                                 <Input inputMode="numeric" onChange={(e) => setTypeForm({ ...typeForm, maxChildren: e.target.value })} value={typeForm.maxChildren} />
                             </FormField>
-                            <FormField label={t('property.types.sortOrder')}>
+                            <FormField field="sort_order" error={action.fieldError('sort_order')} label={t('property.types.sortOrder')}>
                                 <Input inputMode="numeric" onChange={(e) => setTypeForm({ ...typeForm, sortOrder: e.target.value })} value={typeForm.sortOrder} />
                             </FormField>
                         </div>

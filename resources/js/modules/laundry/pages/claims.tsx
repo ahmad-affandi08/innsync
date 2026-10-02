@@ -141,12 +141,12 @@ export default function LaundryClaimsPage({ order, overview, status }: { order: 
                                 <option value="">—</option>{overview.orders.map((o) => <option key={o.id} value={o.id}>{o.number} · {o.room}</option>)}
                             </Select>
                         </FormField>
-                        <FormField field="line_id" error={action.fieldError('line_id') ?? action.fieldError('pieces')} label={t('ldy.claim.item')}>
+                        <FormField field="line_id" error={action.fieldError('line_id')} label={t('ldy.claim.item')}>
                             <Select onChange={(e) => setForm({ ...form, lineId: e.target.value, pieces: '1' })} value={form.lineId}>
                                 <option value="">{t('ldy.claim.wholeBag')}</option>{(chosen?.lines ?? []).map((l) => <option key={l.id} value={l.id}>{l.item_name} (×{l.quantity})</option>)}
                             </Select>
                         </FormField>
-                        {form.lineId !== '' ? <FormField label={t('ldy.claim.pieces')}><Input inputMode="numeric" onChange={(e) => setForm({ ...form, pieces: e.target.value })} value={form.pieces} /></FormField> : null}
+                        {form.lineId !== '' ? <FormField field="pieces" error={action.fieldError('pieces')} label={t('ldy.claim.pieces')}><Input inputMode="numeric" onChange={(e) => setForm({ ...form, pieces: e.target.value })} value={form.pieces} /></FormField> : null}
                         <FormField field="kind" error={action.fieldError('kind')} label={t('ldy.claim.kind')}><Select onChange={(e) => setForm({ ...form, kind: e.target.value })} value={form.kind}><option value="damage">{t('ldy.claim.kind.damage')}</option><option value="loss">{t('ldy.claim.kind.loss')}</option></Select></FormField>
                         <FormField field="claimed_minor" error={invalid ? t('ldy.claim.invalidAmount') : action.fieldError('claimed_minor')} label={t('ldy.claim.claimed')}><Input inputMode="decimal" onChange={(e) => setForm({ ...form, claimed: e.target.value })} required value={form.claimed} /></FormField>
                         <div className="sm:col-span-2"><FormField field="description" error={action.fieldError('description')} label={t('ldy.claim.what')}><Textarea maxLength={300} onChange={(e) => setForm({ ...form, description: e.target.value })} required rows={2} value={form.description} /></FormField></div>

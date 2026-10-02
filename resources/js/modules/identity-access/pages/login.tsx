@@ -35,7 +35,7 @@ export default function LoginPage() {
                             value={form.data.email}
                         />
                     </FormField>
-                    <FormField label={t('common.field.password')}>
+                    <FormField field="password" error={form.errors.password} label={t('common.field.password')}>
                         <Input
                             autoComplete="current-password"
                             name="password"

@@ -211,7 +211,7 @@ export default function ApprovalsPage({ pending, mine }: { pending: Approval[]; 
                 title={t(`identity.approvals.${action?.kind ?? 'approve'}.title`)}
             >
                 {action?.kind === 'reject' && (
-                    <FormField error={reasonMissing ? t('identity.approvals.reject.reasonRequired') : undefined} label={t('identity.approvals.reject.reason')} requiredLabel="*">
+                    <FormField field="reason" error={reasonMissing ? t('identity.approvals.reject.reasonRequired') : undefined} label={t('identity.approvals.reject.reason')}>
                         <Textarea maxLength={MAX_REASON_LENGTH} onChange={(event) => setReason(event.target.value)} required value={reason} />
                     </FormField>
                 )}

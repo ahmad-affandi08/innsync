@@ -101,7 +101,7 @@ export default function LaundryIntakePage({ currency, lookups }: { currency: str
                     </div>
                 </fieldset>
 
-                <div className="sm:col-span-2"><FormField label={t('ldy.intake.notes')}><Textarea maxLength={500} onChange={(e) => set({ notes: e.target.value })} rows={2} value={form.notes} /></FormField></div>
+                <div className="sm:col-span-2"><FormField field="notes" error={action.fieldError('notes')} label={t('ldy.intake.notes')}><Textarea maxLength={500} onChange={(e) => set({ notes: e.target.value })} rows={2} value={form.notes} /></FormField></div>
                 <div className="sm:col-span-2"><Button disabled={form.roomId === '' || lines.every((l) => l.itemId === '')} loading={action.busy} type="submit">{t('ldy.intake.submit')}</Button></div>
             </form>
         </LaundryShell>

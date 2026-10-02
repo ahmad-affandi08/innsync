@@ -65,10 +65,9 @@ export default function BookingPoliciesPage({ business_date, currency, plans, po
         if (done !== null) setForm(null);
     }
 
-    const valueField = (kind: string, value: string, onChange: (v: string) => void, label: string, error?: string) =>
-        kind === 'percent' || kind === 'fixed'
-            ? <FormField error={error} hint={kind === 'percent' ? t('policy.hint.percent') : undefined} label={`${label}: ${kind === 'percent' ? t('policy.value.percent') : t('policy.value.fixed')}`}><Input inputMode="decimal" onChange={(e) => onChange(e.target.value)} value={value} /></FormField>
-            : null;
+    const isAmount = (kind: string) => kind === 'percent' || kind === 'fixed';
+    const valueLabel = (kind: string, label: string) => `${label}: ${kind === 'percent' ? t('policy.value.percent') : t('policy.value.fixed')}`;
+    const valueHint = (kind: string) => (kind === 'percent' ? t('policy.hint.percent') : undefined);
 
     return (
         <PropertyShell description={t('policy.description')} title={t('policy.title')}>
@@ -117,17 +116,17 @@ export default function BookingPoliciesPage({ business_date, currency, plans, po
                         <FormField field="deposit_basis" error={action.fieldError('deposit_basis')} label={t('policy.depositBasis')}>
                             <Select onChange={(e) => setForm({ ...form, basis: e.target.value })} value={form.basis}>{BASES.map((b) => <option key={b} value={b}>{t(`policy.basis.${b}` as 'policy.basis.none')}</option>)}</Select>
                         </FormField>
-                        {valueField(form.basis, form.depositValue, (v) => setForm({ ...form, depositValue: v }), t('policy.depositBasis'), action.fieldError('deposit_value'))}
-                        {form.basis !== 'none' ? <FormField label={t('policy.depositDue')}><Input min={0} onChange={(e) => setForm({ ...form, dueDays: e.target.value })} type="number" value={form.dueDays} /></FormField> : null}
-                        <FormField label={t('policy.freeDays')}><Input min={0} onChange={(e) => setForm({ ...form, freeDays: e.target.value })} type="number" value={form.freeDays} /></FormField>
+                        {isAmount(form.basis) ? <FormField field="deposit_value" error={action.fieldError('deposit_value')} hint={valueHint(form.basis)} label={valueLabel(form.basis, t('policy.depositBasis'))}><Input inputMode="decimal" onChange={(e) => setForm({ ...form, depositValue: e.target.value })} value={form.depositValue} /></FormField> : null}
+                        {form.basis !== 'none' ? <FormField field="deposit_due_days" error={action.fieldError('deposit_due_days')} label={t('policy.depositDue')}><Input min={0} onChange={(e) => setForm({ ...form, dueDays: e.target.value })} type="number" value={form.dueDays} /></FormField> : null}
+                        <FormField field="cancel_free_days" error={action.fieldError('cancel_free_days')} label={t('policy.freeDays')}><Input min={0} onChange={(e) => setForm({ ...form, freeDays: e.target.value })} type="number" value={form.freeDays} /></FormField>
                         <FormField field="cancel_penalty_kind" error={action.fieldError('cancel_penalty_kind')} label={t('policy.cancelPenalty')}>
                             <Select onChange={(e) => setForm({ ...form, cancelKind: e.target.value })} value={form.cancelKind}>{PENALTIES.map((b) => <option key={b} value={b}>{t(`policy.basis.${b}` as 'policy.basis.none')}</option>)}</Select>
                         </FormField>
-                        {valueField(form.cancelKind, form.cancelValue, (v) => setForm({ ...form, cancelValue: v }), t('policy.cancelPenalty'), action.fieldError('cancel_penalty_value'))}
+                        {isAmount(form.cancelKind) ? <FormField field="cancel_penalty_value" error={action.fieldError('cancel_penalty_value')} hint={valueHint(form.cancelKind)} label={valueLabel(form.cancelKind, t('policy.cancelPenalty'))}><Input inputMode="decimal" onChange={(e) => setForm({ ...form, cancelValue: e.target.value })} value={form.cancelValue} /></FormField> : null}
                         <FormField field="noshow_penalty_kind" error={action.fieldError('noshow_penalty_kind')} label={t('policy.noshowPenalty')}>
                             <Select onChange={(e) => setForm({ ...form, noshowKind: e.target.value })} value={form.noshowKind}>{PENALTIES.map((b) => <option key={b} value={b}>{t(`policy.basis.${b}` as 'policy.basis.none')}</option>)}</Select>
                         </FormField>
-                        {valueField(form.noshowKind, form.noshowValue, (v) => setForm({ ...form, noshowValue: v }), t('policy.noshowPenalty'), action.fieldError('noshow_penalty_value'))}
+                        {isAmount(form.noshowKind) ? <FormField field="noshow_penalty_value" error={action.fieldError('noshow_penalty_value')} hint={valueHint(form.noshowKind)} label={valueLabel(form.noshowKind, t('policy.noshowPenalty'))}><Input inputMode="decimal" onChange={(e) => setForm({ ...form, noshowValue: e.target.value })} value={form.noshowValue} /></FormField> : null}
                         <FormField field="reason" error={action.fieldError('reason')} label={t('policy.reason')}><Input maxLength={300} onChange={(e) => setForm({ ...form, reason: e.target.value })} value={form.reason} /></FormField>
                     </div>
                 )}

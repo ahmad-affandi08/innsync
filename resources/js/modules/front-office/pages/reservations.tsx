@@ -200,7 +200,7 @@ export default function ReservationsPage({ filters, lookups, reservations }: { f
                             </FormField>
                             <FormField field="adults" error={field('adults')} label={t('fo.res.adults')}><Input inputMode="numeric" onChange={(e) => set({ adults: e.target.value })} value={form.adults} /></FormField>
                             <FormField field="children" error={field('children')} label={t('fo.res.children')}><Input inputMode="numeric" onChange={(e) => set({ children: e.target.value })} value={form.children} /></FormField>
-                            <FormField label={t('fo.res.initialStatus')}>
+                            <FormField field="status" error={field('status')} label={t('fo.res.initialStatus')}>
                                 <Select onChange={(e) => set({ status: e.target.value })} value={form.status}>{(['tentative', 'confirmed'] as const).map((s) => <option key={s} value={s}>{t(`fo.status.${s}`)}</option>)}</Select>
                             </FormField>
                         </div>
