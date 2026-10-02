@@ -8,6 +8,7 @@ use App\Modules\FrontOffice\Presentation\Http\Controllers\ChecklistController;
 use App\Modules\FrontOffice\Presentation\Http\Controllers\CompanyController;
 use App\Modules\FrontOffice\Presentation\Http\Controllers\FeedbackController;
 use App\Modules\FrontOffice\Presentation\Http\Controllers\FolioController;
+use App\Modules\FrontOffice\Presentation\Http\Controllers\ForeignPaymentController;
 use App\Modules\FrontOffice\Presentation\Http\Controllers\GuestRequestController;
 use App\Modules\FrontOffice\Presentation\Http\Controllers\InventoryController;
 use App\Modules\FrontOffice\Presentation\Http\Controllers\LogbookController;
@@ -232,6 +233,10 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
     Route::post('/companies', [CompanyController::class, 'store'])->name('front-office.companies.store');
     Route::post('/companies/{id}', [CompanyController::class, 'update'])->where('id', $id)->name('front-office.companies.update');
     Route::post('/reservations/{id}/company', [ReservationController::class, 'linkCompany'])->where('id', $id)->name('front-office.reservations.company');
+    Route::get('/foreign-currency', [ForeignPaymentController::class, 'index'])->name('front-office.foreign-currency');
+    Route::post('/foreign-currency/enabled', [ForeignPaymentController::class, 'enable'])->middleware('password.confirm')->name('front-office.foreign-currency.enable');
+    Route::post('/foreign-currency/rates', [ForeignPaymentController::class, 'setRate'])->name('front-office.foreign-currency.rate');
+    Route::post('/folios/{id}/foreign-payments', [ForeignPaymentController::class, 'pay'])->where('id', $id)->middleware(['idempotent', 'throttle:bookings'])->name('front-office.folios.foreign-pay');
     Route::get('/stay-fees', [StayFeePolicyController::class, 'index'])->name('front-office.stay-fees');
     Route::post('/stay-fees', [StayFeePolicyController::class, 'define'])->name('front-office.stay-fees.define');
     Route::post('/stays/{id}/time-fees', [StayController::class, 'decideTimeFee'])->where('id', $id)->name('front-office.stays.time-fees');

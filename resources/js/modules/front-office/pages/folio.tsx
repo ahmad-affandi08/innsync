@@ -29,17 +29,19 @@ type Approval = { id: string; subject_type: string; subject_ref: string; status:
 type Reservation = { id: string; number: string; guest_name: string };
 type Targets = { same: { folio_id: string; number: string; window: number; label: string }[]; others: { folio_id: string; number: string; label: string; room: string; guest: string }[] };
 
+type Foreign = { enabled: boolean; home_currency: string; rates: { currency: string; version: number; rate_e4: number }[] };
+
 const METHODS = ['cash', 'qris', 'card', 'bank_transfer', 'online'] as const;
 const statusTone: Record<string, StatusTone> = { open: 'info', partially_settled: 'warning', settled: 'success', closed: 'neutral' };
 
-export default function FolioPage({ approvals, folio, may_late_charge: mayLateCharge, reservation }: { approvals: Approval[]; folio: Folio; may_late_charge: boolean; reservation: Reservation }) {
+export default function FolioPage({ approvals, folio, foreign, may_late_charge: mayLateCharge, reservation }: { approvals: Approval[]; folio: Folio; foreign: Foreign; may_late_charge: boolean; reservation: Reservation }) {
     const { t } = useTranslation();
     const format = useFormatters();
     const errorCopy = useErrorStateCopy();
     const action = useServerAction();
     const reload = ['folio', 'approvals'];
     const [charge, setCharge] = useState<{ code: string; description: string; amount: string; nett: boolean } | null>(null);
-    const [payment, setPayment] = useState<{ method: string; amount: string; reference: string; purpose: string } | null>(null);
+    const [payment, setPayment] = useState<{ method: string; amount: string; reference: string; purpose: string; currency: string } | null>(null);
     const [reverse, setReverse] = useState<{ posting: Posting; reason: string } | null>(null);
     const [refund, setRefund] = useState<{ method: string; amount: string; reference: string; reason: string } | null>(null);
     const [closing, setClosing] = useState(false);
@@ -81,12 +83,19 @@ export default function FolioPage({ approvals, folio, may_late_charge: mayLateCh
         if (done !== null) closeAll();
     }
 
+    const foreignRate = payment === null ? undefined : foreign.rates.find((r) => r.currency === payment.currency);
+    const foreignMinor = payment === null || foreignRate === undefined ? null : parseMajorToMinor(payment.amount, payment.currency);
+    // Whole units of the hotel's currency, rounded half up, the same sum the server does.
+    const booked = foreignMinor === null || foreignRate === undefined ? null : Number((BigInt(foreignMinor) * BigInt(foreignRate.rate_e4) + 500000n) / 1000000n) * 100;
+
     async function savePayment() {
         if (payment === null) return;
-        const minor = parseMajorToMinor(payment.amount, folio.currency);
+        const minor = parseMajorToMinor(payment.amount, payment.currency);
         setAmountError(minor === null);
         if (minor === null) return;
-        const done = await action.run(`/front-office/folios/${folio.id}/payments`, { idempotencyKey: intent, body: { payment_method: payment.method, amount_minor: minor, reference: payment.reference || null, purpose: payment.purpose }, reload });
+        const done = payment.currency === folio.currency
+            ? await action.run(`/front-office/folios/${folio.id}/payments`, { idempotencyKey: intent, body: { payment_method: payment.method, amount_minor: minor, reference: payment.reference || null, purpose: payment.purpose }, reload })
+            : await action.run(`/front-office/folios/${folio.id}/foreign-payments`, { idempotencyKey: intent, body: { payment_method: payment.method, currency: payment.currency, foreign_minor: minor, reference: payment.reference || null, purpose: payment.purpose }, reload });
         if (done !== null) closeAll();
     }
 
@@ -187,7 +196,7 @@ export default function FolioPage({ approvals, folio, may_late_charge: mayLateCh
             {open && (
                 <div className="flex flex-wrap gap-2">
                     <Button onClick={() => { action.clear(); setCharge({ code: '', description: '', amount: '', nett: false }); }} size="sm" type="button">{t('fo.folio.addCharge')}</Button>
-                    <Button onClick={() => { action.clear(); setPayment({ method: 'cash', amount: '', reference: '', purpose: 'settlement' }); }} size="sm" type="button">{t('fo.folio.addPayment')}</Button>
+                    <Button onClick={() => { action.clear(); setPayment({ method: 'cash', amount: '', reference: '', purpose: 'settlement', currency: folio.currency }); }} size="sm" type="button">{t('fo.folio.addPayment')}</Button>
                     <Button onClick={() => { action.clear(); setRefund({ method: 'bank_transfer', amount: '', reference: '', reason: '' }); }} size="sm" type="button" variant="outline">{t('fo.folio.refund')}</Button>
                     <Button disabled={folio.balance_minor !== 0} onClick={() => { action.clear(); setClosing(true); }} size="sm" type="button" variant="outline">{t('fo.folio.close')}</Button>
                 </div>
@@ -247,7 +256,11 @@ export default function FolioPage({ approvals, folio, may_late_charge: mayLateCh
                     <div className="flex flex-col gap-3">
                         {error}
                         <FormField error={action.fieldError('payment_method')} label={t('fo.folio.method')}><Select onChange={(e) => setPayment({ ...payment, method: e.target.value })} value={payment.method}>{METHODS.map((m) => <option key={m} value={m}>{t(`fo.folio.method.${m}`)}</option>)}</Select></FormField>
-                        <FormField error={amountError ? t('fo.folio.invalidAmount') : action.fieldError('amount')} label={t('fo.folio.amount')}><Input inputMode="decimal" onChange={(e) => setPayment({ ...payment, amount: e.target.value })} value={payment.amount} /></FormField>
+                        {foreign.enabled && foreign.rates.length > 0 ? (
+                            <FormField label={t('fo.foreign.currency')}><Select onChange={(e) => setPayment({ ...payment, currency: e.target.value })} value={payment.currency}><option value={folio.currency}>{folio.currency}</option>{foreign.rates.map((r) => <option key={r.currency} value={r.currency}>{r.currency}</option>)}</Select></FormField>
+                        ) : null}
+                        <FormField error={amountError ? t('fo.folio.invalidAmount') : action.fieldError('amount') ?? action.fieldError('foreign_minor')} hint={foreignRate !== undefined ? t('fo.foreign.rateNote', { rate: format.number(foreignRate.rate_e4 / 10000), currency: folio.currency }) : undefined} label={t('fo.folio.amount')}><Input inputMode="decimal" onChange={(e) => setPayment({ ...payment, amount: e.target.value })} value={payment.amount} /></FormField>
+                        {payment.currency !== folio.currency ? <p className="text-sm font-medium" data-testid="foreign-booked">{booked === null ? '—' : t('fo.foreign.booked', { amount: format.money(booked, folio.currency) })}</p> : null}
                         <FormField error={action.fieldError('payment_reference')} hint={t('fo.folio.referenceHint')} label={t('fo.folio.reference')}><Input maxLength={80} onChange={(e) => setPayment({ ...payment, reference: e.target.value })} value={payment.reference} /></FormField>
                         <FormField label={t('fo.folio.purpose')}><Select onChange={(e) => setPayment({ ...payment, purpose: e.target.value })} value={payment.purpose}><option value="settlement">{t('fo.folio.purpose.settlement')}</option><option value="deposit">{t('fo.folio.purpose.deposit')}</option></Select></FormField>
                     </div>

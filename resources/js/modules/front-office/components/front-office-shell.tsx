@@ -18,6 +18,7 @@ const LINKS = [
     { href: '/front-office/logbook', label: 'fo.log.nav' },
     { href: '/front-office/cashier', label: 'fo.cash.nav' },
     { href: '/front-office/companies', label: 'fo.company.nav' },
+    { href: '/front-office/foreign-currency', label: 'fo.foreign.nav' },
     { href: '/front-office/night-audit', label: 'fo.nav.audit' },
 ] as const;
 

@@ -49,7 +49,7 @@
 | TASK-FO-023 | FR-FO-023 | Front Office | Sebaiknya | REVIEW |
 | TASK-FO-024 | FR-FO-024 | Front Office | Wajib | REVIEW |
 | TASK-FO-025 | FR-FO-025 | Front Office | Wajib | REVIEW |
-| TASK-FO-026 | FR-FO-026 | Front Office | Bisa | TODO |
+| TASK-FO-026 | FR-FO-026 | Front Office | Bisa | REVIEW |
 | TASK-FO-027 | FR-FO-027 | Front Office | Wajib | TODO |
 | TASK-FO-028 | FR-FO-028 | Front Office | Wajib | REVIEW |
 | TASK-FO-029 | FR-FO-029 | Front Office | Wajib | REVIEW |

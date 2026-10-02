@@ -84,3 +84,8 @@ Booking policy is a commercial decision of the hotel, not a legal one; Indonesia
 
 - **Credit limit.** The limit is a warning, not a block: a night is always charged by night audit and the hotel decides whether to keep a guest. Practice in Indonesian hotels is to agree the limit and the payment term (often 14 or 30 days) with the company in writing; **payment terms and ageing are not modelled** and are for the owner to confirm.
 - **Invoice.** A company usually needs an invoice with its tax ID (NPWP) and, for a taxable company, a tax invoice (e-Faktur). The tax ID is kept on the profile; **numbering and issuing invoices or e-Faktur are not done here** and need counsel and the tax consultant to confirm.
+
+## Payment in a foreign currency (FR-FO-026) — baseline for Phase 1
+
+- **Off by default.** Indonesian law requires the rupiah for payments made inside Indonesia (Law 7 of 2011 on Currency and Bank Indonesia's rule on using the rupiah), with narrow exceptions. A hotel that quotes in dollars normally takes the **rupiah equivalent**, by card, transfer or exchange. The feature exists because the PRD asks for it "when enabled"; **counsel must confirm whether and how this hotel may take foreign cash** before anyone switches it on.
+- **Rate and rounding.** The hotel types its own rate (usually its bank's counter rate of the day); nothing is fetched. The rupiah equivalent is rounded to the whole rupiah, half up. The folio stays in rupiah, so tax and service charge are never recalculated in a foreign currency.

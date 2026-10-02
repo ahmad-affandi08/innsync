@@ -9,6 +9,7 @@ use App\Modules\FrontOffice\Application\Companies\CompanyService;
 use App\Modules\FrontOffice\Application\Feedback\FeedbackService;
 use App\Modules\FrontOffice\Application\Folios\FolioService;
 use App\Modules\FrontOffice\Application\Folios\LateChargeService;
+use App\Modules\FrontOffice\Application\ForeignPayments\ForeignPaymentService;
 use App\Modules\FrontOffice\Application\Inventory\InventoryAdminService;
 use App\Modules\FrontOffice\Application\NightAudit\NightAuditService;
 use App\Modules\FrontOffice\Application\Requests\GuestRequestService;
@@ -117,6 +118,9 @@ trait BuildsHotel
 
     private string $companyLinkerId;
 
+    /** Payment in a foreign currency (FR-FO-026): someone who switches it on and sets the rates. */
+    private string $foreignManagerId;
+
     /** Registration card terms (FR-FO-017): someone who writes the house terms. */
     private string $termsWriterId;
 
@@ -217,6 +221,7 @@ trait BuildsHotel
         $nameCorrector = UserRecord::factory()->create();
         $linenManager = UserRecord::factory()->create();
         $termsWriter = UserRecord::factory()->create();
+        $foreignManager = UserRecord::factory()->create();
         $companyManager = UserRecord::factory()->create();
         $companyViewer = UserRecord::factory()->create();
         $companyLinker = UserRecord::factory()->create();
@@ -273,6 +278,7 @@ trait BuildsHotel
         $this->grant($lostFinder, self::PROPERTY, [LostFoundService::RECORD_PERMISSION]);
         $this->grant($lostKeeper, self::PROPERTY, [LostFoundService::MANAGE_PERMISSION]);
         $this->grant($termsWriter, self::PROPERTY, [RegistrationCardService::TERMS_PERMISSION]);
+        $this->grant($foreignManager, self::PROPERTY, [ForeignPaymentService::SETTINGS_PERMISSION]);
         $this->grant($companyManager, self::PROPERTY, [CompanyService::MANAGE_PERMISSION]);
         $this->grant($companyViewer, self::PROPERTY, [CompanyService::VIEW_PERMISSION]);
         $this->grant($companyLinker, self::PROPERTY, [CompanyService::LINK_PERMISSION, CompanyService::VIEW_PERMISSION]);
@@ -327,6 +333,7 @@ trait BuildsHotel
         $this->lostFinderId = strtolower((string) $lostFinder->getKey());
         $this->lostKeeperId = strtolower((string) $lostKeeper->getKey());
         $this->termsWriterId = strtolower((string) $termsWriter->getKey());
+        $this->foreignManagerId = strtolower((string) $foreignManager->getKey());
         $this->companyManagerId = strtolower((string) $companyManager->getKey());
         $this->companyViewerId = strtolower((string) $companyViewer->getKey());
         $this->companyLinkerId = strtolower((string) $companyLinker->getKey());

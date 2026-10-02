@@ -6,6 +6,7 @@ namespace App\Modules\FrontOffice\Presentation\Http\Controllers;
 
 use App\Modules\FrontOffice\Application\Folios\FolioService;
 use App\Modules\FrontOffice\Application\Folios\LateChargeService;
+use App\Modules\FrontOffice\Application\ForeignPayments\ForeignPaymentService;
 use App\Modules\FrontOffice\Application\Reservations\ReservationService;
 use App\Shared\Application\Idempotency\IdempotencyKey;
 use App\Shared\Application\Tenancy\PropertyContext;
@@ -17,7 +18,7 @@ use Inertia\Response;
 /** The folio screen and its actions. Rules, permissions and approvals live in `FolioService`. */
 final readonly class FolioController
 {
-    public function __construct(private FolioService $folios, private ReservationService $reservations, private LateChargeService $lateCharges, private PropertyContext $property) {}
+    public function __construct(private FolioService $folios, private ReservationService $reservations, private LateChargeService $lateCharges, private ForeignPaymentService $foreign, private PropertyContext $property) {}
 
     public function show(Request $request, string $id): Response
     {
@@ -29,6 +30,7 @@ final readonly class FolioController
             'folio' => $folio,
             'approvals' => $this->folios->approvalsFor($property, $actor, $id),
             'may_late_charge' => $this->lateCharges->mayPost($property, $actor),
+            'foreign' => $this->foreign->offer($property),
             'reservation' => $this->summary($this->reservations->find($property, $actor, $folio['reservation_id'])->toArray()),
         ]);
     }
