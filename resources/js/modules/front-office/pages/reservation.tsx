@@ -24,6 +24,7 @@ type Reservation = {
 type Lookups = { types: { id: string; code: string; name: string }[]; plans: { id: string; code: string; name: string; inclusions: string | null }[] };
 type FolioRow = { id: string; number: string; window: number; label: string; status: string; balance_minor: number; currency: string };
 type Billing = { company: { id: string; code: string; name: string; billing_instruction: string | null; route_rooms: boolean; route_extras: boolean } | null; folio_id: string | null; options: { id: string; code: string; name: string }[]; may_link: boolean };
+type Group = { id: string; number: string; name: string; billing_mode: string; master_folio_id: string | null } | null;
 type Kind = 'confirm' | 'cancel' | 'noShow';
 type Fee = { kind: string; value: number };
 type Policy = {
@@ -34,7 +35,7 @@ type Penalty = { amount_minor: number; free: boolean; currency: string; may_waiv
 
 const PATH = { confirm: 'confirm', cancel: 'cancel', noShow: 'no-show' } as const;
 
-export default function ReservationPage({ billing, folios, lookups, policy, rates, reservation: r }: { billing: Billing; folios: FolioRow[]; lookups: Lookups; policy: Policy | null; rates: Rates; reservation: Reservation }) {
+export default function ReservationPage({ billing, folios, group, lookups, policy, rates, reservation: r }: { billing: Billing; folios: FolioRow[]; group: Group; lookups: Lookups; policy: Policy | null; rates: Rates; reservation: Reservation }) {
     const { t } = useTranslation();
     const format = useFormatters();
     const errorCopy = useErrorStateCopy();
@@ -150,6 +151,10 @@ export default function ReservationPage({ billing, folios, lookups, policy, rate
             </section>
 
             <RateChangePanel currency={r.currency} rates={rates} reservationId={r.id} />
+
+            {group !== null ? (
+                <p className="text-sm" data-testid="group-banner">{t('fo.group.partOf', { number: group.number, name: group.name })} · <Link className="underline-offset-2 hover:underline" href={`/front-office/groups/${group.id}`}>{t('fo.group.openGroup')}</Link></p>
+            ) : null}
 
             {billing.company !== null || billing.may_link ? (
                 <section aria-labelledby="bill-h" className="flex flex-col gap-2" data-testid="billing">

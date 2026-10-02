@@ -50,6 +50,7 @@ Release notes for every release (NFR-14). Newest first. Each entry names the tas
 - TASK-FO-017 (BR-009): the registration card of a stay for printing or signing on a tablet, with the guest's details (identity masked unless the person may read it), the room, dates, rate and the house terms (versioned, written by management); the guest's signature is captured on a drawing area, kept as a private file with the terms as they read when signed, signed once, and erased on the retention schedule of identity documents after check-out. Sending the card by e-mail is not delivered.
 - TASK-FO-035 (BR-001, BR-006): company and travel agent profiles with a credit limit, a billing instruction and the charges that go to the company; a reservation is billed to one company, which opens its own folio for the room nights (and, if agreed, the other charges) and may stay open with a balance after check-out; the limit warns on the page and the dashboard, never blocks.
 - TASK-FO-026 (BR-002, BR-003): payment in a foreign currency, off until switched on: the clerk takes, say, US dollars at the hotel's own typed rate and the folio is paid by the rupiah equivalent (whole rupiah, rounded half up), keeping the foreign amount, the rate and its version.
+- TASK-FO-006 (BR-001, BR-006): simple group booking: one booker with up to 30 rooms made together as ordinary reservations, with one master folio that takes the room charges (and optionally the other charges) or a bill per room; the master folio may stay open after check-out until it is paid.
 
 ### Known limitations
 

@@ -10,6 +10,7 @@ use App\Modules\FrontOffice\Application\Feedback\FeedbackService;
 use App\Modules\FrontOffice\Application\Folios\FolioService;
 use App\Modules\FrontOffice\Application\Folios\LateChargeService;
 use App\Modules\FrontOffice\Application\ForeignPayments\ForeignPaymentService;
+use App\Modules\FrontOffice\Application\Groups\GroupBookingService;
 use App\Modules\FrontOffice\Application\Inventory\InventoryAdminService;
 use App\Modules\FrontOffice\Application\NightAudit\NightAuditService;
 use App\Modules\FrontOffice\Application\Requests\GuestRequestService;
@@ -118,6 +119,11 @@ trait BuildsHotel
 
     private string $companyLinkerId;
 
+    /** Group bookings (FR-FO-006): someone who books groups (and reservations) and someone who may only look. */
+    private string $groupManagerId;
+
+    private string $groupViewerId;
+
     /** Payment in a foreign currency (FR-FO-026): someone who switches it on and sets the rates. */
     private string $foreignManagerId;
 
@@ -222,6 +228,8 @@ trait BuildsHotel
         $linenManager = UserRecord::factory()->create();
         $termsWriter = UserRecord::factory()->create();
         $foreignManager = UserRecord::factory()->create();
+        $groupManager = UserRecord::factory()->create();
+        $groupViewer = UserRecord::factory()->create();
         $companyManager = UserRecord::factory()->create();
         $companyViewer = UserRecord::factory()->create();
         $companyLinker = UserRecord::factory()->create();
@@ -279,6 +287,8 @@ trait BuildsHotel
         $this->grant($lostKeeper, self::PROPERTY, [LostFoundService::MANAGE_PERMISSION]);
         $this->grant($termsWriter, self::PROPERTY, [RegistrationCardService::TERMS_PERMISSION]);
         $this->grant($foreignManager, self::PROPERTY, [ForeignPaymentService::SETTINGS_PERMISSION]);
+        $this->grant($groupManager, self::PROPERTY, [GroupBookingService::MANAGE_PERMISSION, ReservationService::MANAGE_PERMISSION]);
+        $this->grant($groupViewer, self::PROPERTY, [GroupBookingService::VIEW_PERMISSION]);
         $this->grant($companyManager, self::PROPERTY, [CompanyService::MANAGE_PERMISSION]);
         $this->grant($companyViewer, self::PROPERTY, [CompanyService::VIEW_PERMISSION]);
         $this->grant($companyLinker, self::PROPERTY, [CompanyService::LINK_PERMISSION, CompanyService::VIEW_PERMISSION]);
@@ -334,6 +344,8 @@ trait BuildsHotel
         $this->lostKeeperId = strtolower((string) $lostKeeper->getKey());
         $this->termsWriterId = strtolower((string) $termsWriter->getKey());
         $this->foreignManagerId = strtolower((string) $foreignManager->getKey());
+        $this->groupManagerId = strtolower((string) $groupManager->getKey());
+        $this->groupViewerId = strtolower((string) $groupViewer->getKey());
         $this->companyManagerId = strtolower((string) $companyManager->getKey());
         $this->companyViewerId = strtolower((string) $companyViewer->getKey());
         $this->companyLinkerId = strtolower((string) $companyLinker->getKey());

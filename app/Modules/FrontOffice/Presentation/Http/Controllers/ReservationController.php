@@ -6,6 +6,7 @@ namespace App\Modules\FrontOffice\Presentation\Http\Controllers;
 
 use App\Modules\FrontOffice\Application\Companies\CompanyService;
 use App\Modules\FrontOffice\Application\Folios\FolioService;
+use App\Modules\FrontOffice\Application\Groups\GroupBookingService;
 use App\Modules\FrontOffice\Application\Reservations\RateChangeService;
 use App\Modules\FrontOffice\Application\Reservations\ReservationRequest;
 use App\Modules\FrontOffice\Application\Reservations\ReservationService;
@@ -20,7 +21,7 @@ use Inertia\Response;
 /** Reservation screens and actions. Every rule lives in `ReservationService`; this maps input and output. */
 final readonly class ReservationController
 {
-    public function __construct(private ReservationService $reservations, private FolioService $folios, private RateChangeService $rates, private CompanyService $companies, private PropertyContext $property) {}
+    public function __construct(private ReservationService $reservations, private FolioService $folios, private RateChangeService $rates, private CompanyService $companies, private GroupBookingService $groups, private PropertyContext $property) {}
 
     public function index(Request $request): Response
     {
@@ -50,6 +51,7 @@ final readonly class ReservationController
             'policy' => $this->reservations->policyView($property, $actor, $id),
             'rates' => $this->rates->overview($property, $actor, $id),
             'billing' => $this->companies->forReservation($property, $actor, $id),
+            'group' => $this->groups->forReservation($property, $actor, $id),
         ]);
     }
 
