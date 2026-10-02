@@ -153,9 +153,11 @@
         ],
         "declared": [
             "columns",
+            "columns.*",
             "dataset",
             "direction",
             "filters",
+            "filters.*",
             "from",
             "sort",
             "to"
@@ -168,9 +170,11 @@
         ],
         "declared": [
             "columns",
+            "columns.*",
             "dataset",
             "direction",
             "filters",
+            "filters.*",
             "from",
             "sort",
             "to"
@@ -340,12 +344,15 @@
             "band_min_amount_minor",
             "reason",
             "steps",
+            "steps.*.permission",
             "subject_type"
         ],
         "declared": [
             "band_min_amount_minor",
             "reason",
             "steps",
+            "steps.*.approvals_required",
+            "steps.*.permission",
             "subject_type"
         ]
     },
@@ -371,7 +378,9 @@
         ],
         "declared": [
             "hidden",
-            "order"
+            "hidden.*",
+            "order",
+            "order.*"
         ]
     },
     "POST /front-office/cashier/settings": {
@@ -420,12 +429,14 @@
             "active",
             "frequency",
             "items",
+            "items.*",
             "name"
         ],
         "declared": [
             "active",
             "frequency",
             "items",
+            "items.*",
             "name"
         ]
     },
@@ -729,16 +740,23 @@
     },
     "POST /front-office/logbook/read": {
         "required": [
-            "entries"
+            "entries",
+            "entries.*"
         ],
         "declared": [
-            "entries"
+            "entries",
+            "entries.*"
         ]
     },
     "POST /front-office/night-audit": {
-        "required": [],
+        "required": [
+            "waivers.*.gate",
+            "waivers.*.reason"
+        ],
         "declared": [
-            "waivers"
+            "waivers",
+            "waivers.*.gate",
+            "waivers.*.reason"
         ]
     },
     "POST /front-office/overbooking/{typeId}": {
@@ -1015,6 +1033,8 @@
     },
     "POST /front-office/stay-fees": {
         "required": [
+            "bands.*.percent_bp",
+            "bands.*.up_to_minutes",
             "beyond_bp",
             "effective_from",
             "grace_minutes",
@@ -1023,6 +1043,8 @@
         ],
         "declared": [
             "bands",
+            "bands.*.percent_bp",
+            "bands.*.up_to_minutes",
             "beyond_bp",
             "effective_from",
             "grace_minutes",
@@ -1046,6 +1068,13 @@
         "declared": [
             "approval_id",
             "changes",
+            "changes.address",
+            "changes.full_name",
+            "changes.id_number",
+            "changes.id_type",
+            "changes.id_valid_until",
+            "changes.nationality",
+            "changes.visa_number",
             "reason"
         ]
     },
@@ -1057,6 +1086,13 @@
         "declared": [
             "approval_id",
             "changes",
+            "changes.address",
+            "changes.full_name",
+            "changes.id_number",
+            "changes.id_type",
+            "changes.id_valid_until",
+            "changes.nationality",
+            "changes.visa_number",
             "reason"
         ]
     },
@@ -1114,16 +1150,21 @@
     "POST /housekeeping/checklists/templates": {
         "required": [
             "active",
+            "areas.*",
             "frequency",
             "items",
+            "items.*.text",
             "name",
             "scope"
         ],
         "declared": [
             "active",
             "areas",
+            "areas.*",
             "frequency",
             "items",
+            "items.*.photo_required",
+            "items.*.text",
             "name",
             "scope"
         ]
@@ -1294,10 +1335,13 @@
     },
     "POST /housekeeping/rooms/{id}/inspections": {
         "required": [
+            "findings.*.description",
             "passed"
         ],
         "declared": [
             "findings",
+            "findings.*.description",
+            "findings.*.mandatory",
             "notes",
             "passed"
         ]
@@ -1417,6 +1461,8 @@
         "required": [
             "barcode",
             "lines",
+            "lines.*.price_item_id",
+            "lines.*.quantity",
             "promised_date",
             "promised_time",
             "room_id"
@@ -1425,6 +1471,11 @@
             "barcode",
             "express",
             "lines",
+            "lines.*.brand",
+            "lines.*.condition_note",
+            "lines.*.price_item_id",
+            "lines.*.quantity",
+            "lines.*.treatment_id",
             "notes",
             "promised_date",
             "promised_time",
@@ -1470,10 +1521,12 @@
     "POST /laundry/orders/{id}/receive": {
         "required": [
             "counts",
+            "counts.*",
             "lock_version"
         ],
         "declared": [
             "counts",
+            "counts.*",
             "lock_version",
             "note"
         ]
@@ -1813,6 +1866,14 @@
         ],
         "declared": [
             "params",
+            "params.by",
+            "params.date",
+            "params.from",
+            "params.kind",
+            "params.nationality",
+            "params.preset",
+            "params.to",
+            "params.year",
             "purpose",
             "report"
         ]
@@ -1890,6 +1951,8 @@
         "required": [],
         "declared": [
             "client_status",
+            "client_status.oldest_pending_seconds",
+            "client_status.pending",
             "device_id",
             "items"
         ]
@@ -1897,11 +1960,13 @@
     "PUT /account/password": {
         "required": [
             "current_password",
-            "password"
+            "password",
+            "password_confirmation"
         ],
         "declared": [
             "current_password",
-            "password"
+            "password",
+            "password_confirmation"
         ]
     },
     "PUT /property/rate-plans/{id}": {

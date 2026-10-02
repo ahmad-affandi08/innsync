@@ -68,11 +68,14 @@ function* nodes(node) {
 
 const nameOf = (n) => (n?.type === 'Identifier' || n?.type === 'JSXIdentifier' ? n.name : n?.type === 'Literal' ? String(n.value) : null)
 
-function urlOf(node) {
-    if (node?.type === 'Literal' && typeof node.value === 'string') return node.value
-    if (node?.type === 'TemplateLiteral') return node.quasis.map((q, i) => q.value.cooked + (i < node.expressions.length ? '{}' : '')).join('')
+/** Every URL an expression can be: a literal, a template (`${x}` becomes a placeholder), either side of a `?:`, or a local constant of those. */
+function urlsOf(node, consts) {
+    if (node?.type === 'Literal' && typeof node.value === 'string') return [node.value]
+    if (node?.type === 'TemplateLiteral') return [node.quasis.map((q, i) => q.value.cooked + (i < node.expressions.length ? '{}' : '')).join('')]
+    if (node?.type === 'ConditionalExpression') return [...urlsOf(node.consequent, consts), ...urlsOf(node.alternate, consts)]
+    if (node?.type === 'Identifier' && consts.has(node.name)) return consts.get(node.name)
 
-    return null
+    return []
 }
 
 const keysOf = (node) => (node?.type === 'ObjectExpression' ? node.properties.filter((p) => p.type === 'Property').map((p) => nameOf(p.key)).filter(Boolean) : null)
@@ -83,6 +86,16 @@ function analyse(file) {
 
     const program = parseAst(readFileSync(file, 'utf8'), { lang: 'tsx' })
     const info = { imports: [], fields: [], calls: [] }
+    const consts = new Map()
+
+    // Local constants that hold a request URL: `const path = cond ? '/a' : `/b/${id}``.
+    for (const node of nodes(program.body)) {
+        if (node.type === 'VariableDeclarator' && node.id.type === 'Identifier' && node.init) {
+            const urls = urlsOf(node.init, consts).filter((u) => u.startsWith('/'))
+
+            if (urls.length > 0) consts.set(node.id.name, urls)
+        }
+    }
 
     for (const node of nodes(program.body)) {
         if (node.type === 'ImportDeclaration') {
@@ -100,9 +113,9 @@ function analyse(file) {
         if (node.type === 'CallExpression') {
             const callee = node.callee
             const args = node.arguments
-            const first = args[0] ? urlOf(args[0]) : null
+            const urls = (args[0] ? urlsOf(args[0], consts) : []).filter((u) => u.startsWith('/'))
 
-            if (first === null || !first.startsWith('/')) continue
+            if (urls.length === 0) continue
 
             let method = null
             let body = null
@@ -118,7 +131,7 @@ function analyse(file) {
                 method = nameOf(callee.property).toUpperCase()
             }
 
-            if (method !== null && method !== 'GET') info.calls.push({ method, url: first.split('?')[0], body })
+            if (method !== null && (method !== 'GET' || (callee.type === 'Identifier' && callee.name === 'apiRequest') || (callee.type === 'MemberExpression' && nameOf(callee.property) === 'run'))) urls.forEach((url) => info.calls.push({ method, url: url.split('?')[0], body }))
         }
     }
 
@@ -137,7 +150,11 @@ function sameRoute(urlPattern, uri) {
     return a.length === b.length && a.every((s, i) => s === b[i] || isPlaceholder(s) || isPlaceholder(b[i]))
 }
 
+/** Fields named in a screen that none of its requests declares: a typo, or a request the generator cannot see. Filled by `generate()`. */
+export const orphans = []
+
 export function generate() {
+    orphans.length = 0
     const routeRules = JSON.parse(readFileSync(join(js, 'generated/route-rules.json'), 'utf8'))
     const routes = Object.entries(routeRules).map(([key, rule]) => {
         const [method, uri] = key.split(' ')
@@ -177,6 +194,7 @@ export function generate() {
 
             for (const { route } of pool) verdicts.push(route.required.has(field))
 
+            if (verdicts.length === 0) orphans.push(`${relative(modules, pageFile)}: ${field}`)
             if (verdicts.length > 0 && verdicts.every(Boolean)) required.push(field)
         }
 

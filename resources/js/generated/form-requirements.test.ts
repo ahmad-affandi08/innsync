@@ -2,13 +2,19 @@ import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { describe, it } from 'node:test'
 
-import { generate } from '../../../scripts/form-requirements.mjs'
+import { generate, orphans } from '../../../scripts/form-requirements.mjs'
 
 describe('required fields per screen', () => {
     it('is up to date with the backend rules and the screens (run `npm run forms`)', () => {
         const committed = readFileSync(new URL('./form-requirements.json', import.meta.url), 'utf8')
 
         assert.equal(generate(), committed)
+    })
+
+    it('has no field name that none of its screen\'s requests declares (a typo or a renamed backend key)', () => {
+        generate()
+
+        assert.deepEqual(orphans, [])
     })
 
     it('marks the reservation form fields the backend requires', () => {

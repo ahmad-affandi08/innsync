@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
+use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Routing\Route;
 use Illuminate\Routing\Router;
 use PhpParser\Node;
@@ -11,7 +12,6 @@ use PhpParser\Node\Expr\Array_;
 use PhpParser\Node\Expr\MethodCall;
 use PhpParser\Node\Expr\StaticCall;
 use PhpParser\Node\Scalar\String_;
-use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Return_;
 use PhpParser\NodeFinder;
@@ -22,8 +22,8 @@ use PhpParser\ParserFactory;
 use ReflectionClass;
 
 /**
- * Reads, from the controllers' own source, which top-level request fields each route requires
- * (`required` and not `sometimes`), so the screens can mark those fields without a second list
+ * Reads, from the controllers' own source, which request fields each route requires
+ * (`required` and not `sometimes`; nested keys such as `lines.*.quantity` are kept as written), so the screens can mark those fields without a second list
  * to keep in step. Static on purpose: nothing is executed. A rule it cannot read (built from a
  * constant, merged arrays) counts as not required, so a star is never shown by mistake.
  */
@@ -135,7 +135,7 @@ final class FormRuleExtractor
         foreach ($node->params as $param) {
             $type = $param->type;
 
-            if ($type instanceof Node\Name && class_exists($type->toString()) && is_subclass_of($type->toString(), \Illuminate\Foundation\Http\FormRequest::class)) {
+            if ($type instanceof Node\Name && class_exists($type->toString()) && is_subclass_of($type->toString(), FormRequest::class)) {
                 $requestFile = (new ReflectionClass($type->toString()))->getFileName();
                 $rules = $requestFile === false ? null : $this->finder->findFirst($this->tree($requestFile), fn (Node $n) => $n instanceof ClassMethod && $n->name->toString() === 'rules');
 
@@ -172,7 +172,7 @@ final class FormRuleExtractor
         $out = [];
 
         foreach ($rules->items as $item) {
-            if (! $item->key instanceof String_ || str_contains($item->key->value, '.') || str_contains($item->key->value, '*')) {
+            if (! $item->key instanceof String_) {
                 continue;
             }
 
@@ -188,7 +188,13 @@ final class FormRuleExtractor
                 }
             }
 
-            $out[$item->key->value] = in_array('required', $tokens, true) && ! in_array('sometimes', $tokens, true);
+            $required = in_array('required', $tokens, true) && ! in_array('sometimes', $tokens, true);
+            $out[$item->key->value] = $required;
+
+            // `confirmed` asks for a second field named `<field>_confirmation`, required together with it.
+            if (in_array('confirmed', $tokens, true)) {
+                $out[$item->key->value.'_confirmation'] = $required;
+            }
         }
 
         return $out;

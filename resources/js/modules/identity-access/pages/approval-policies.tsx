@@ -81,10 +81,10 @@ export default function ApprovalPoliciesPage({ subjects }: { subjects: Subject[]
                         </FormField>
                         {form.steps.map((step, i) => (
                             <div className="grid grid-cols-[1fr_6rem_auto] items-end gap-2" key={i}>
-                                <FormField label={`${t('identity.approvalPolicies.permission')} (${i + 1})`}>
+                                <FormField field="steps.*.permission" label={`${t('identity.approvalPolicies.permission')} (${i + 1})`}>
                                     <Input onChange={(e) => setForm({ ...form, steps: form.steps.map((s, j) => (j === i ? { ...s, permission: e.target.value } : s)) })} value={step.permission} />
                                 </FormField>
-                                <FormField label={t('identity.approvalPolicies.count')}>
+                                <FormField field="steps.*.approvals_required" label={t('identity.approvalPolicies.count')}>
                                     <Input inputMode="numeric" onChange={(e) => setForm({ ...form, steps: form.steps.map((s, j) => (j === i ? { ...s, count: e.target.value } : s)) })} value={step.count} />
                                 </FormField>
                                 {form.steps.length > 1 ? <Button onClick={() => setForm({ ...form, steps: form.steps.filter((_, j) => j !== i) })} size="sm" type="button" variant="outline">{t('identity.approvalPolicies.removeStep')}</Button> : <span />}

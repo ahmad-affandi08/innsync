@@ -63,7 +63,7 @@ export default function SessionsPage({ sessions }: { sessions: Session[] }) {
                         <FormField field="password" error={passwordForm.errors.password} label={t('identity.password.new')}>
                             <Input autoComplete="new-password" onChange={(event) => passwordForm.setData('password', event.target.value)} required type="password" value={passwordForm.data.password} />
                         </FormField>
-                        <FormField label={t('identity.password.confirmNew')}>
+                        <FormField field="password_confirmation" label={t('identity.password.confirmNew')}>
                             <Input autoComplete="new-password" onChange={(event) => passwordForm.setData('password_confirmation', event.target.value)} required type="password" value={passwordForm.data.password_confirmation} />
                         </FormField>
                         <Button loading={passwordForm.processing} type="submit">{t('identity.password.update')}</Button>

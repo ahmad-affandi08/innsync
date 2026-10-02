@@ -150,9 +150,15 @@ export default function RequestsPage({ filters, in_house: inHouse, queue }: Prop
                 {finish !== null && (
                     <div className="flex flex-col gap-3">
                         {error}
-                        <FormField error={action.fieldError(finish.kind === 'cancel' ? 'reason' : 'resolution')} label={finish.kind === 'cancel' ? t('fo.req.cancelReason') : t('fo.req.resolution')}>
-                            <Input maxLength={300} onChange={(e) => setFinish({ ...finish, text: e.target.value })} value={finish.text} />
-                        </FormField>
+                        {finish.kind === 'cancel' ? (
+                            <FormField error={action.fieldError('reason')} field="reason" label={t('fo.req.cancelReason')}>
+                                <Input maxLength={300} onChange={(e) => setFinish({ ...finish, text: e.target.value })} value={finish.text} />
+                            </FormField>
+                        ) : (
+                            <FormField error={action.fieldError('resolution')} field="resolution" label={t('fo.req.resolution')}>
+                                <Input maxLength={300} onChange={(e) => setFinish({ ...finish, text: e.target.value })} value={finish.text} />
+                            </FormField>
+                        )}
                     </div>
                 )}
             </ConfirmDialog>

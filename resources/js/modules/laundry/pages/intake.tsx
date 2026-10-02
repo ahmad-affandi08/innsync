@@ -84,11 +84,11 @@ export default function LaundryIntakePage({ currency, lookups }: { currency: str
                             <FormField field="lines" error={i === 0 ? action.fieldError('lines') : undefined} label={t('ldy.intake.item')}>
                                 <Select onChange={(e) => setLine(i, { itemId: e.target.value })} value={l.itemId}><option value="">{t('ldy.intake.choose')}</option>{lookups.items.map((x) => <option key={x.id} value={x.id}>{x.name} · {format.money(x.unit_price_minor, currency)}</option>)}</Select>
                             </FormField>
-                            <FormField label={t('ldy.intake.quantity')}><Input min={1} onChange={(e) => setLine(i, { quantity: e.target.value })} type="number" value={l.quantity} /></FormField>
-                            <FormField label={t('ldy.intake.brand')}><Input maxLength={60} onChange={(e) => setLine(i, { brand: e.target.value })} value={l.brand} /></FormField>
-                            <FormField label={t('ldy.intake.condition')}><Input maxLength={200} onChange={(e) => setLine(i, { condition: e.target.value })} value={l.condition} /></FormField>
+                            <FormField field="lines.*.quantity" label={t('ldy.intake.quantity')}><Input min={1} onChange={(e) => setLine(i, { quantity: e.target.value })} type="number" value={l.quantity} /></FormField>
+                            <FormField field="lines.*.brand" label={t('ldy.intake.brand')}><Input maxLength={60} onChange={(e) => setLine(i, { brand: e.target.value })} value={l.brand} /></FormField>
+                            <FormField field="lines.*.condition_note" label={t('ldy.intake.condition')}><Input maxLength={200} onChange={(e) => setLine(i, { condition: e.target.value })} value={l.condition} /></FormField>
                             {lookups.treatments.some((x) => x.kind === 'service') ? (
-                                <FormField label={t('ldy.intake.treatment')}>
+                                <FormField field="lines.*.treatment_id" label={t('ldy.intake.treatment')}>
                                     <Select onChange={(e) => setLine(i, { treatmentId: e.target.value })} value={l.treatmentId}><option value="">{t('ldy.intake.noTreatment')}</option>{lookups.treatments.filter((x) => x.kind === 'service').map((x) => <option key={x.id} value={x.id}>{x.name} · {x.pricing === 'percent' ? `+${x.value / 100}%` : `+${format.money(x.value, currency)}`}</option>)}</Select>
                                 </FormField>
                             ) : null}

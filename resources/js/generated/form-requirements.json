@@ -1,4 +1,13 @@
 {
+    "front-office/pages/cashier": [
+        "amount_minor",
+        "counted_cash_minor",
+        "opening_float_minor"
+    ],
+    "front-office/pages/cashier-shift": [
+        "amount_minor",
+        "counted_cash_minor"
+    ],
     "front-office/pages/cashier-shifts": [
         "reason"
     ],
@@ -17,6 +26,11 @@
         "items",
         "name"
     ],
+    "front-office/pages/companies": [
+        "kind",
+        "name",
+        "reason"
+    ],
     "front-office/pages/feedback": [
         "channel",
         "kind",
@@ -32,6 +46,7 @@
         "text"
     ],
     "front-office/pages/folio": [
+        "amount_minor",
         "code",
         "currency",
         "description",
@@ -77,12 +92,16 @@
         "body",
         "shift"
     ],
+    "front-office/pages/night-audit": [
+        "waivers.*.reason"
+    ],
     "front-office/pages/registration-terms": [
         "body",
         "reason"
     ],
     "front-office/pages/requests": [
         "category",
+        "reason",
         "stay_id",
         "title"
     ],
@@ -93,6 +112,7 @@
         "company_id",
         "departure",
         "guest_name",
+        "price_minor",
         "rate_plan_id",
         "room_type_id",
         "source",
@@ -121,6 +141,8 @@
         "room_id"
     ],
     "front-office/pages/stay-fees": [
+        "bands.*.percent_bp",
+        "bands.*.up_to_minutes",
         "beyond_bp",
         "effective_from",
         "grace_minutes",
@@ -138,14 +160,11 @@
     ],
     "housekeeping/pages/linen": [
         "code",
-        "from",
         "item_id",
         "kind",
         "name",
         "quantity",
         "quantity_received",
-        "room_id",
-        "to",
         "unit"
     ],
     "housekeeping/pages/lost-found": [
@@ -167,7 +186,8 @@
     ],
     "identity-access/pages/approval-policies": [
         "band_min_amount_minor",
-        "reason"
+        "reason",
+        "steps.*.permission"
     ],
     "identity-access/pages/approvals": [
         "reason"
@@ -187,7 +207,8 @@
     ],
     "identity-access/pages/sessions": [
         "current_password",
-        "password"
+        "password",
+        "password_confirmation"
     ],
     "laundry/pages/claims": [
         "approved_minor",
@@ -202,6 +223,7 @@
     "laundry/pages/intake": [
         "barcode",
         "lines",
+        "lines.*.quantity",
         "promised_date",
         "promised_time",
         "room_id"
@@ -239,11 +261,23 @@
     ],
     "property/pages/rate-plans": [
         "arrival",
+        "code",
         "departure",
         "from",
+        "kind",
+        "name",
         "nightly_minor",
         "reason",
         "to"
+    ],
+    "property/pages/room-catalog": [
+        "code",
+        "max_adults",
+        "max_children",
+        "name",
+        "number",
+        "reason",
+        "room_type_id"
     ],
     "property/pages/settings": [
         "availability_horizon_days",
@@ -254,6 +288,9 @@
         "reason",
         "rounding_increment_minor",
         "rounding_mode"
+    ],
+    "reporting/pages/builder": [
+        "dataset"
     ],
     "reporting/pages/exports": [
         "report"

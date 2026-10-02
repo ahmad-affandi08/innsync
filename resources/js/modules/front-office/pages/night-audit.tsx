@@ -69,7 +69,7 @@ export default function NightAuditPage({ preview: p }: { preview: Preview }) {
                                     <p className="text-xs text-muted-foreground">{t(`fo.audit.gate.${g.code}.help` as 'fo.audit.gate.pending_arrivals.help')}</p>
                                     <ul className="list-disc pl-5 text-sm">{g.items.map((item) => <li key={item}>{item}</li>)}</ul>
                                     {p.may_waive ? (
-                                        <FormField label={t('fo.audit.waiveReason', { gate: t(`fo.audit.gate.${g.code}` as 'fo.audit.gate.pending_arrivals') })}>
+                                        <FormField field="waivers.*.reason" label={t('fo.audit.waiveReason', { gate: t(`fo.audit.gate.${g.code}` as 'fo.audit.gate.pending_arrivals') })}>
                                             <Input maxLength={300} onChange={(e) => setWaive({ ...waive, [g.code]: e.target.value })} placeholder={t('fo.audit.waive')} value={waive[g.code] ?? ''} />
                                         </FormField>
                                     ) : null}

@@ -62,8 +62,8 @@ export default function StayFeesPage({ catalogue }: Props) {
                     <legend className="text-sm font-medium">{t('fo.stayfee.bands')}</legend>
                     {bands.map((b, i) => (
                         <div className="flex flex-wrap items-end gap-2" key={i}>
-                            <FormField label={t('fo.stayfee.upTo')}><Input aria-label={`${t('fo.stayfee.upTo')} ${i + 1}`} className="w-28" inputMode="numeric" onChange={(e) => setBands(bands.map((x, j) => (j === i ? { ...x, minutes: e.target.value } : x)))} value={b.minutes} /></FormField>
-                            <FormField label={t('fo.stayfee.share')}><Input aria-label={`${t('fo.stayfee.share')} ${i + 1}`} className="w-28" inputMode="decimal" onChange={(e) => setBands(bands.map((x, j) => (j === i ? { ...x, percent: e.target.value } : x)))} value={b.percent} /></FormField>
+                            <FormField field="bands.*.up_to_minutes" label={t('fo.stayfee.upTo')}><Input aria-label={`${t('fo.stayfee.upTo')} ${i + 1}`} className="w-28" inputMode="numeric" onChange={(e) => setBands(bands.map((x, j) => (j === i ? { ...x, minutes: e.target.value } : x)))} value={b.minutes} /></FormField>
+                            <FormField field="bands.*.percent_bp" label={t('fo.stayfee.share')}><Input aria-label={`${t('fo.stayfee.share')} ${i + 1}`} className="w-28" inputMode="decimal" onChange={(e) => setBands(bands.map((x, j) => (j === i ? { ...x, percent: e.target.value } : x)))} value={b.percent} /></FormField>
                             <Button onClick={() => setBands(bands.filter((_, j) => j !== i))} size="sm" type="button" variant="outline">{t('fo.stayfee.removeBand')}</Button>
                         </div>
                     ))}

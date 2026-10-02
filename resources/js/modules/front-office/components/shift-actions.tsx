@@ -67,7 +67,7 @@ export function ShiftActions({ currency, mayClose, mayDrop, reload, shift }: Pro
                 {drop !== null && (
                     <div className="flex flex-col gap-3">
                         {error}
-                        <FormField field="amount" error={amountError ? t('fo.cash.invalidAmount') : action.fieldError('amount')} label={t('fo.cash.drop.amount')}><Input inputMode="decimal" onChange={(e) => setDrop({ ...drop, amount: e.target.value })} value={drop.amount} /></FormField>
+                        <FormField field="amount_minor" error={amountError ? t('fo.cash.invalidAmount') : (action.fieldError('amount_minor') ?? action.fieldError('amount'))} label={t('fo.cash.drop.amount')}><Input inputMode="decimal" onChange={(e) => setDrop({ ...drop, amount: e.target.value })} value={drop.amount} /></FormField>
                         <FormField field="reference" error={action.fieldError('reference')} label={t('fo.cash.drop.reference')}><Input maxLength={80} onChange={(e) => setDrop({ ...drop, reference: e.target.value })} value={drop.reference} /></FormField>
                         <FormField field="note" error={action.fieldError('note')} label={t('fo.cash.drop.note')}><Input maxLength={300} onChange={(e) => setDrop({ ...drop, note: e.target.value })} value={drop.note} /></FormField>
                     </div>
@@ -79,7 +79,7 @@ export function ShiftActions({ currency, mayClose, mayDrop, reload, shift }: Pro
                     <div className="flex flex-col gap-3">
                         {error}
                         <p className="text-sm text-muted-foreground">{t('fo.cash.close.consequence')}</p>
-                        <FormField field="counted_cash" error={amountError ? t('fo.cash.invalidAmount') : action.fieldError('counted_cash')} hint={t('fo.cash.countedHint')} label={t('fo.cash.counted')}><Input inputMode="decimal" onChange={(e) => setClose({ ...close, counted: e.target.value })} value={close.counted} /></FormField>
+                        <FormField field="counted_cash_minor" error={amountError ? t('fo.cash.invalidAmount') : (action.fieldError('counted_cash_minor') ?? action.fieldError('counted_cash'))} hint={t('fo.cash.countedHint')} label={t('fo.cash.counted')}><Input inputMode="decimal" onChange={(e) => setClose({ ...close, counted: e.target.value })} value={close.counted} /></FormField>
                         {variance !== null ? <p className="text-sm font-medium" data-testid="variance-preview">{variance === 0 ? t('fo.cash.varianceNone') : t('fo.cash.varianceNow', { amount: format.money(variance, currency) })}</p> : null}
                         {variance !== null && variance !== 0 ? (
                             <FormField field="variance_reason" error={action.fieldError('variance_reason')} hint={t('fo.cash.varianceNeedsReason')} label={t('fo.cash.varianceReason')}><Input maxLength={300} onChange={(e) => setClose({ ...close, reason: e.target.value })} value={close.reason} /></FormField>
