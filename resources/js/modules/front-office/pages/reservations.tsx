@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from 'react';
 
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
+import { DataGrid, type DataGridColumn } from '@/components/ui/data-grid';
 import { Dialog } from '@/components/ui/dialog';
 import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
@@ -113,6 +114,16 @@ export default function ReservationsPage({ filters, lookups, reservations }: { f
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [quoteKey]);
 
+    const columns: DataGridColumn<ReservationRow>[] = [
+        { id: 'number', label: t('fo.res.number'), value: (r) => r.number, rowHeader: true, cell: (r) => <Link className="font-medium underline-offset-2 hover:underline" href={`/front-office/reservations/${r.id}`}>{r.number}</Link> },
+        { id: 'guest', label: t('fo.res.guest'), value: (r) => r.guest_name },
+        { id: 'stay', label: t('fo.res.stay'), value: (r) => r.arrival, searchText: (r) => `${r.arrival} ${r.departure}`, cell: (r) => <>{format.date(r.arrival)} – {format.date(r.departure)} <span className="text-xs text-muted-foreground">({t('fo.res.nights', { n: r.nights })})</span></> },
+        { id: 'roomType', label: t('fo.res.roomType'), value: (r) => typeName(r.room_type_id), filter: 'select' },
+        { id: 'source', label: t('fo.res.source'), value: (r) => r.source, filter: 'select', filterLabel: (v) => t(`fo.source.${v}` as 'fo.source.direct'), cell: (r) => t(`fo.source.${r.source}` as 'fo.source.direct'), hidden: true },
+        { id: 'status', label: t('fo.res.status'), value: (r) => r.status, filter: 'select', filterLabel: (v) => t(`fo.status.${v}` as 'fo.status.tentative'), cell: (r) => <StatusBadge label={t(`fo.status.${r.status}` as 'fo.status.tentative')} tone={statusTone[r.status] ?? 'neutral'} /> },
+        { id: 'total', label: t('fo.res.total'), align: 'right', value: (r) => r.total_minor, cell: (r) => format.money(r.total_minor, r.currency) },
+    ];
+
     const field = (name: string) => action.fieldError(name);
     const set = (patch: Partial<NonNullable<typeof form>>) => form !== null && setForm({ ...form, ...patch });
 
@@ -136,23 +147,14 @@ export default function ReservationsPage({ filters, lookups, reservations }: { f
 
             <div className="flex justify-end"><Button onClick={open} type="button">{t('fo.res.add')}</Button></div>
 
-            {reservations.length === 0 ? <EmptyState title={t('fo.res.empty')} /> : (
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left text-sm">
-                        <thead><tr className="text-xs text-muted-foreground"><th className="py-2 font-medium" scope="col">{t('fo.res.number')}</th><th scope="col">{t('fo.res.guest')}</th><th scope="col">{t('fo.res.stay')}</th><th scope="col">{t('fo.res.roomType')}</th><th scope="col">{t('fo.res.status')}</th><th className="text-right" scope="col">{t('fo.res.total')}</th></tr></thead>
-                        <tbody>{reservations.map((r) => (
-                            <tr className="border-t border-border" key={r.id}>
-                                <td className="py-2"><Link className="font-medium underline-offset-2 hover:underline" href={`/front-office/reservations/${r.id}`}>{r.number}</Link></td>
-                                <td>{r.guest_name}</td>
-                                <td>{format.date(r.arrival)} – {format.date(r.departure)} <span className="text-xs text-muted-foreground">({t('fo.res.nights', { n: r.nights })})</span></td>
-                                <td>{typeName(r.room_type_id)}</td>
-                                <td><StatusBadge label={t(`fo.status.${r.status}` as 'fo.status.tentative')} tone={statusTone[r.status] ?? 'neutral'} /></td>
-                                <td className="text-right">{format.money(r.total_minor, r.currency)}</td>
-                            </tr>
-                        ))}</tbody>
-                    </table>
-                </div>
-            )}
+            <DataGrid
+                caption={t('fo.res.title')}
+                columns={columns}
+                empty={<EmptyState title={t('fo.res.empty')} />}
+                getRowId={(r) => r.id}
+                id="fo.reservations"
+                rows={reservations}
+            />
 
             <Dialog
                 className="w-[min(44rem,calc(100vw-2rem))]"
