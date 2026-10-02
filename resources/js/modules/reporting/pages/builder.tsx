@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
+import { DataGrid, type DataGridColumn } from '@/components/ui/data-grid';
 import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
@@ -15,6 +16,8 @@ import { useErrorStateCopy } from '@/shared/i18n/use-ui-copy';
 type Dataset = { columns: Record<string, string>; filters: Record<string, string[] | null>; range: string };
 type Catalogue = { datasets: Record<string, Dataset>; business_date: string; view_limit: number; currency: string };
 type Result = { dataset: string; columns: string[]; types: Record<string, string>; rows: Record<string, string | number | boolean | null>[]; truncated: boolean; from: string; to: string };
+
+type Line = { i: number; row: Result['rows'][number] };
 
 /** A simple report builder: choose a dataset, columns, filters and sort (FR-RPT-008). */
 export default function BuilderPage({ catalogue }: { catalogue: Catalogue }) {
@@ -30,6 +33,7 @@ export default function BuilderPage({ catalogue }: { catalogue: Catalogue }) {
     const [sort, setSort] = useState({ column: '', direction: 'asc' });
     const [result, setResult] = useState<Result | null>(null);
     const set = catalogue.datasets[dataset];
+    const lines = useMemo<Line[]>(() => (result?.rows ?? []).map((row, i) => ({ i, row })), [result]);
 
     function pick(name: string) {
         setDataset(name);
@@ -65,6 +69,28 @@ export default function BuilderPage({ catalogue }: { catalogue: Catalogue }) {
         if (type === 'number') return format.number(Number(v));
         return String(v);
     };
+
+    // The columns are whatever the person chose, so the grid's columns are built from the result.
+    const resultColumns = (res: Result): DataGridColumn<Line>[] => res.columns.map((c, i) => {
+        const type = res.types[c];
+        const label = t(`rpt.builder.col.${c}` as 'rpt.builder.col.status');
+        const raw = (line: Line) => line.row[c] ?? null;
+        const numeric = type === 'money' || type === 'number';
+        const value = (line: Line): string | number | null => {
+            const v = raw(line);
+            if (v === null) return null;
+            if (type === 'flag') return v ? t('rpt.builder.yes') : t('rpt.builder.no');
+            if (numeric) return Number(v);
+            return String(v);
+        };
+        // A text column is worth a filter only while it holds a handful of distinct values (a status, a source).
+        const filterable = type === 'flag' || (type === 'text' && new Set(res.rows.map((x) => x[c] ?? '')).size <= 12);
+
+        return {
+            id: c, label, value, rowHeader: i === 0, align: numeric ? 'right' : undefined, filter: filterable ? 'select' : undefined,
+            cell: (line: Line) => cell(type, raw(line)),
+        };
+    });
 
     return (
         <ReportingShell description={t('rpt.builder.description')} title={t('rpt.builder.title')} wide>
@@ -103,12 +129,17 @@ export default function BuilderPage({ catalogue }: { catalogue: Catalogue }) {
             </form>
 
             {result === null ? null : result.rows.length === 0 ? <EmptyState title={t('rpt.builder.none')} /> : (
-                <div className="overflow-x-auto">
-                    <p className="mb-1 text-xs text-muted-foreground" data-testid="count">{t('rpt.builder.count', { count: result.rows.length })}{result.truncated ? ` · ${t('rpt.builder.truncated', { limit: catalogue.view_limit })}` : ''}</p>
-                    <table className="w-full text-left text-sm" data-testid="result">
-                        <thead><tr className="text-xs text-muted-foreground">{result.columns.map((c, i) => <th className={i === 0 ? 'py-1 font-medium' : undefined} key={c} scope="col">{t(`rpt.builder.col.${c}` as 'rpt.builder.col.status')}</th>)}</tr></thead>
-                        <tbody>{result.rows.map((r, i) => <tr className="border-t border-border" key={i}>{result.columns.map((c) => <td className="py-1.5" key={c}>{cell(result.types[c], r[c])}</td>)}</tr>)}</tbody>
-                    </table>
+                <div className="flex flex-col gap-2">
+                    <p className="text-xs text-muted-foreground" data-testid="count">{t('rpt.builder.count', { count: result.rows.length })}{result.truncated ? ` · ${t('rpt.builder.truncated', { limit: catalogue.view_limit })}` : ''}</p>
+                    <DataGrid
+                        caption={t('rpt.builder.title')}
+                        columns={resultColumns(result)}
+                        getRowId={(line) => String(line.i)}
+                        id={`rpt.builder.${result.dataset}`}
+                        key={`${result.dataset}:${result.columns.join(',')}`}
+                        rows={lines}
+                        testId="result"
+                    />
                 </div>
             )}
         </ReportingShell>

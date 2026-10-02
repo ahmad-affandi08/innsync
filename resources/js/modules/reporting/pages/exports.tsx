@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
+import { DataGrid, type DataGridColumn } from '@/components/ui/data-grid';
 import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
@@ -48,25 +49,35 @@ export default function ExportsPage({ overview }: { overview: Overview }) {
         if (done !== null) setForm({ ...form, purpose: '' });
     }
 
+    const reportName = (j: Job) => t(`rpt.report.${j.report}` as 'rpt.report.flash');
+    const columns: DataGridColumn<Job>[] = [
+        {
+            id: 'report', label: t('rpt.exports.report'), value: reportName, searchText: (j) => `${reportName(j)} ${Object.entries(j.params).map(([k, v]) => `${k}: ${v}`).join(' ')}`, filter: 'select', rowHeader: true,
+            cell: (j) => <>{reportName(j)}<span className="block text-xs font-normal text-muted-foreground">{Object.entries(j.params).map(([k, v]) => `${k}: ${v}`).join(' · ')}</span></>,
+        },
+        { id: 'requested', label: t('rpt.exports.requested'), value: (j) => j.requested_at, cell: (j) => format.instant(j.requested_at) },
+        {
+            id: 'status', label: t('rpt.exports.status'), value: (j) => j.status, filter: 'select', filterLabel: (v) => t(`rpt.exports.status.${v}` as 'rpt.exports.status.queued'),
+            cell: (j) => <><StatusBadge label={t(`rpt.exports.status.${j.status}` as 'rpt.exports.status.queued')} tone={TONE[j.status]} />{j.error !== null ? <span className="block text-xs text-danger">{j.error}</span> : null}</>,
+        },
+        { id: 'lines', label: t('rpt.exports.lines'), align: 'right', value: (j) => j.rows, cell: (j) => j.rows ?? '—' },
+        { id: 'download', label: t('rpt.exports.download'), cell: (j) => (j.status === 'done' ? <Button asChild size="sm" variant="outline"><a href={`/reports/exports/${j.id}/download`}>{t('rpt.exports.download')}</a></Button> : null) },
+    ];
+
     return (
         <ReportingShell description={t('rpt.exports.description')} title={t('rpt.exports.title')} wide>
             {action.error !== null ? <ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /> : null}
             <Alert title={t('rpt.exports.note')} tone="info" />
 
-            {overview.jobs.length === 0 ? <EmptyState title={t('rpt.exports.empty')} /> : (
-                <table className="w-full text-left text-sm" data-testid="jobs">
-                    <thead><tr className="text-xs text-muted-foreground"><th className="py-1 font-medium" scope="col">{t('rpt.exports.report')}</th><th scope="col">{t('rpt.exports.requested')}</th><th scope="col">{t('rpt.exports.status')}</th><th scope="col">{t('rpt.exports.lines')}</th><th scope="col" /></tr></thead>
-                    <tbody>{overview.jobs.map((j) => (
-                        <tr className="border-t border-border align-top" key={j.id}>
-                            <th className="py-2 font-medium" scope="row">{t(`rpt.report.${j.report}` as 'rpt.report.flash')}<span className="block text-xs font-normal text-muted-foreground">{Object.entries(j.params).map(([k, v]) => `${k}: ${v}`).join(' · ')}</span></th>
-                            <td>{format.instant(j.requested_at)}</td>
-                            <td><StatusBadge label={t(`rpt.exports.status.${j.status}` as 'rpt.exports.status.queued')} tone={TONE[j.status]} />{j.error !== null ? <span className="block text-xs text-danger">{j.error}</span> : null}</td>
-                            <td>{j.rows ?? '—'}</td>
-                            <td>{j.status === 'done' ? <Button asChild size="sm" variant="outline"><a href={`/reports/exports/${j.id}/download`}>{t('rpt.exports.download')}</a></Button> : null}</td>
-                        </tr>
-                    ))}</tbody>
-                </table>
-            )}
+            <DataGrid
+                caption={t('rpt.exports.title')}
+                columns={columns}
+                empty={<EmptyState title={t('rpt.exports.empty')} />}
+                getRowId={(j) => j.id}
+                id="rpt.exports"
+                rows={overview.jobs}
+                testId="jobs"
+            />
 
             {overview.reports.length > 0 && (
                 <section aria-labelledby="exp-new-h" className="flex max-w-3xl flex-col gap-3 border-t border-border pt-4">

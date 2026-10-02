@@ -2,6 +2,7 @@ import { Link, router } from '@inertiajs/react';
 import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
+import { DataGrid, type DataGridColumn } from '@/components/ui/data-grid';
 import { EmptyState } from '@/components/ui/empty-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
@@ -20,6 +21,17 @@ export default function PerformancePage({ context, report: r }: { context: { cur
     const [year, setYear] = useState(String(r.year));
     const q = new URLSearchParams(r.by === 'day' ? { by: 'day', from: r.meta.period.from, to: r.meta.period.to } : { by: r.by, year: String(r.year) }).toString();
     const label = (row: Row) => (r.by === 'day' ? format.date(row.label) : row.label);
+
+    const money = (minor: number) => format.money(minor, context.currency);
+    const columns: DataGridColumn<Row>[] = [
+        { id: 'period', label: t('rpt.perf.col.period'), value: (row) => row.label, rowHeader: true, cell: (row) => label(row) },
+        ...(r.by !== 'day' ? [{ id: 'closed', label: t('rpt.perf.col.closed'), align: 'right' as const, value: (row: Row) => row.days_closed, cell: (row: Row) => t('rpt.perf.closedOf', { closed: row.days_closed, days: row.days_in_period }) }] : []),
+        { id: 'occupancy', label: t('rpt.perf.col.occupancy'), align: 'right', value: (row) => row.occupancy_bp, cell: (row) => `${(row.occupancy_bp / 100).toFixed(1)}%` },
+        { id: 'nights', label: t('rpt.perf.col.nights'), align: 'right', value: (row) => row.room_nights },
+        { id: 'revenue', label: t('rpt.perf.col.revenue'), align: 'right', value: (row) => row.room_revenue_minor, cell: (row) => money(row.room_revenue_minor) },
+        { id: 'adr', label: t('rpt.perf.col.adr'), align: 'right', value: (row) => row.adr_minor, cell: (row) => money(row.adr_minor) },
+        { id: 'revpar', label: t('rpt.perf.col.revpar'), align: 'right', value: (row) => row.revpar_minor, cell: (row) => money(row.revpar_minor) },
+    ];
 
     return (
         <ReportingShell description={t('rpt.perf.description')} title={t('rpt.perf.title')} wide>
@@ -41,21 +53,16 @@ export default function PerformancePage({ context, report: r }: { context: { cur
                 <Button onClick={() => window.print()} size="sm" type="button" variant="outline">{t('rpt.export.print')}</Button>
             </div>
             <ReportMeta meta={r.meta} />
-            {r.rows.length === 0 ? <EmptyState title={t('rpt.perf.empty')} /> : (
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left text-sm" data-testid="performance-table">
-                        <thead><tr className="text-xs text-muted-foreground"><th className="py-1 font-medium" scope="col">{t('rpt.perf.col.period')}</th>{r.by !== 'day' && <th scope="col">{t('rpt.perf.col.closed')}</th>}<th scope="col">{t('rpt.perf.col.occupancy')}</th><th scope="col">{t('rpt.perf.col.nights')}</th><th scope="col">{t('rpt.perf.col.revenue')}</th><th scope="col">{t('rpt.perf.col.adr')}</th><th scope="col">{t('rpt.perf.col.revpar')}</th></tr></thead>
-                        <tbody>{r.rows.map((row) => (
-                            <tr className="border-t border-border" data-testid={`row-${row.label}`} key={row.label}>
-                                <th className="py-1 font-medium" scope="row">{label(row)}</th>
-                                {r.by !== 'day' && <td>{t('rpt.perf.closedOf', { closed: row.days_closed, days: row.days_in_period })}</td>}
-                                <td>{(row.occupancy_bp / 100).toFixed(1)}%</td><td>{row.room_nights}</td>
-                                <td>{format.money(row.room_revenue_minor, context.currency)}</td><td>{format.money(row.adr_minor, context.currency)}</td><td>{format.money(row.revpar_minor, context.currency)}</td>
-                            </tr>
-                        ))}</tbody>
-                    </table>
-                </div>
-            )}
+            <DataGrid
+                caption={t('rpt.perf.title')}
+                columns={columns}
+                empty={<EmptyState title={t('rpt.perf.empty')} />}
+                getRowId={(row) => row.label}
+                id={`rpt.perf.${r.by}`}
+                rowTestId={(row) => `row-${row.label}`}
+                rows={r.rows}
+                testId="performance-table"
+            />
             <p className="text-xs text-muted-foreground">{t('rpt.perf.formula')}</p>
         </ReportingShell>
     );

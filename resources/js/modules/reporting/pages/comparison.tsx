@@ -2,6 +2,7 @@ import { Link } from '@inertiajs/react';
 
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/empty-state';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ReportMeta, type Meta } from '@/modules/reporting/components/report-meta';
 import { ReportingShell } from '@/modules/reporting/components/reporting-shell';
 import { useFormatters, useTranslation } from '@/shared/i18n/i18n';
@@ -33,20 +34,27 @@ export default function ComparisonPage({ context, report: r }: { context: { curr
             </nav>
             <ReportMeta meta={r.meta} />
             {r.current.figures === null && r.before.figures === null ? <EmptyState title={t('rpt.cmp.empty')} /> : (
-                <table className="w-full text-left text-sm" data-testid="comparison">
-                    <thead><tr className="text-xs text-muted-foreground">
-                        <th className="py-1 font-medium" scope="col">{t('rpt.cmp.figure')}</th>
-                        <th scope="col">{range(r.current)}<span className="block font-normal">{closed(r.current)}</span></th>
-                        <th scope="col">{range(r.before)}<span className="block font-normal">{closed(r.before)}</span></th>
-                        <th scope="col">{t('rpt.cmp.change')}</th>
-                    </tr></thead>
-                    <tbody>{r.metrics.map((m) => (
-                        <tr className="border-t border-border" data-testid={`metric-${m.key}`} key={m.key}>
-                            <th className="py-1 font-medium" scope="row">{t(`rpt.cmp.metric.${m.key}` as 'rpt.cmp.metric.occupancy_bp')}</th>
-                            <td>{show(m.key, m.current)}</td><td>{show(m.key, m.before)}</td><td>{change(m)}</td>
-                        </tr>
-                    ))}</tbody>
-                </table>
+                <div className="border border-border bg-surface">
+                    <Table data-testid="comparison">
+                        <caption className="sr-only">{t('rpt.cmp.title')}</caption>
+                        <TableHeader className="bg-surface-muted">
+                            <TableRow className="hover:bg-transparent">
+                                <TableHead scope="col">{t('rpt.cmp.figure')}</TableHead>
+                                <TableHead className="text-right" scope="col">{range(r.current)}<span className="block font-normal">{closed(r.current)}</span></TableHead>
+                                <TableHead className="text-right" scope="col">{range(r.before)}<span className="block font-normal">{closed(r.before)}</span></TableHead>
+                                <TableHead className="text-right" scope="col">{t('rpt.cmp.change')}</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>{r.metrics.map((m) => (
+                            <TableRow data-testid={`metric-${m.key}`} key={m.key}>
+                                <TableHead className="font-medium text-foreground" scope="row">{t(`rpt.cmp.metric.${m.key}` as 'rpt.cmp.metric.occupancy_bp')}</TableHead>
+                                <TableCell className="text-right tabular-nums">{show(m.key, m.current)}</TableCell>
+                                <TableCell className="text-right tabular-nums">{show(m.key, m.before)}</TableCell>
+                                <TableCell className="text-right tabular-nums">{change(m)}</TableCell>
+                            </TableRow>
+                        ))}</TableBody>
+                    </Table>
+                </div>
             )}
             <p className="text-xs text-muted-foreground">{t('rpt.cmp.note')}</p>
         </ReportingShell>

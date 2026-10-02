@@ -2,6 +2,7 @@ import { router } from '@inertiajs/react';
 import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
+import { DataGrid, type DataGridColumn } from '@/components/ui/data-grid';
 import { EmptyState } from '@/components/ui/empty-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
@@ -20,6 +21,16 @@ export default function AuditPage({ report: r }: { report: Report }) {
     const pages = Math.max(1, Math.ceil(r.total / r.page_size));
     const search = (page = 1) => router.get('/reports/audit', Object.fromEntries(Object.entries({ ...f, page: String(page) }).filter(([, v]) => v !== '')), { preserveScroll: true });
 
+    const columns: DataGridColumn<Row>[] = [
+        { id: 'when', label: t('rpt.audit.when'), value: (row) => row.occurred_at, rowHeader: true, cell: (row) => format.instant(row.occurred_at.replace(' ', 'T') + 'Z') },
+        { id: 'who', label: t('rpt.audit.who'), value: (row) => row.actor_name ?? '', filter: 'select', cell: (row) => row.actor_name ?? '—' },
+        {
+            id: 'action', label: t('rpt.audit.action'), value: (row) => row.action, searchText: (row) => `${row.action} ${row.aggregate_type} ${row.aggregate_id}`,
+            cell: (row) => <><span className="font-mono text-xs">{row.action}</span><span className="block text-xs text-muted-foreground">{row.aggregate_type} {row.aggregate_id}</span></>,
+        },
+        { id: 'reason', label: t('rpt.audit.reason'), value: (row) => row.reason ?? '', cell: (row) => row.reason ?? '' },
+    ];
+
     return (
         <ReportingShell description={t('rpt.audit.description')} title={t('rpt.audit.title')} wide>
             <form className="grid gap-3 sm:grid-cols-4 print:hidden" onSubmit={(e) => { e.preventDefault(); search(); }}>
@@ -33,21 +44,14 @@ export default function AuditPage({ report: r }: { report: Report }) {
             </form>
             <ReportMeta meta={r.meta} />
             <p className="text-sm text-muted-foreground" data-testid="total">{t('rpt.audit.total', { total: r.total })}</p>
-            {r.rows.length === 0 ? <EmptyState title={t('rpt.audit.empty')} /> : (
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left text-sm">
-                        <thead><tr className="text-xs text-muted-foreground"><th className="py-1 font-medium" scope="col">{t('rpt.audit.when')}</th><th scope="col">{t('rpt.audit.who')}</th><th scope="col">{t('rpt.audit.action')}</th><th scope="col">{t('rpt.audit.reason')}</th></tr></thead>
-                        <tbody>{r.rows.map((row) => (
-                            <tr className="border-t border-border align-top" key={row.id}>
-                                <td className="py-1">{format.instant(row.occurred_at.replace(' ', 'T') + 'Z')}</td>
-                                <td>{row.actor_name ?? '—'}</td>
-                                <td><span className="font-mono text-xs">{row.action}</span><span className="block text-xs text-muted-foreground">{row.aggregate_type} {row.aggregate_id}</span></td>
-                                <td>{row.reason ?? ''}</td>
-                            </tr>
-                        ))}</tbody>
-                    </table>
-                </div>
-            )}
+            <DataGrid
+                caption={t('rpt.audit.title')}
+                columns={columns}
+                empty={<EmptyState title={t('rpt.audit.empty')} />}
+                getRowId={(row) => row.id}
+                id="rpt.audit"
+                rows={r.rows}
+            />
             <nav aria-label={t('ui.pagination.navigation')} className="flex items-center gap-3 print:hidden">
                 <Button disabled={r.page <= 1} onClick={() => search(r.page - 1)} size="sm" type="button" variant="outline">{t('rpt.audit.prev')}</Button>
                 <span className="text-xs text-muted-foreground">{t('rpt.audit.page', { page: r.page, pages })}</span>

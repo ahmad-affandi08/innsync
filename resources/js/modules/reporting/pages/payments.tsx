@@ -1,5 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/empty-state';
+import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { PeriodPicker } from '@/modules/reporting/components/period-picker';
 import { ReportMeta, type Meta } from '@/modules/reporting/components/report-meta';
 import { ReportingShell } from '@/modules/reporting/components/reporting-shell';
@@ -23,13 +24,38 @@ export default function PaymentsPage({ context, report: r }: { context: { curren
             </div>
             <ReportMeta meta={r.meta} />
             {r.rows.length === 0 ? <EmptyState title={t('rpt.pay.empty')} /> : (
-                <table className="w-full text-left text-sm">
-                    <thead><tr className="text-xs text-muted-foreground"><th className="py-1 font-medium" scope="col">{t('rpt.pay.method')}</th><th scope="col">{t('rpt.pay.received')}</th><th scope="col">{t('rpt.pay.paidBack')}</th><th scope="col">{t('rpt.pay.net')}</th><th scope="col">{t('rpt.pay.count')}</th></tr></thead>
-                    <tbody>{r.rows.map((row) => (
-                        <tr className="border-t border-border" key={row.method}><th className="py-1 font-medium" scope="row">{method(row.method)}</th><td>{format.money(row.received_minor, context.currency)}</td><td>{format.money(row.paid_back_minor, context.currency)}</td><td>{format.money(row.net_minor, context.currency)}</td><td>{row.count}</td></tr>
-                    ))}</tbody>
-                    <tfoot><tr className="border-t border-border font-medium"><th className="py-1" scope="row">{t('rpt.flash.total')}</th><td>{format.money(r.totals.received_minor, context.currency)}</td><td>{format.money(r.totals.paid_back_minor, context.currency)}</td><td data-testid="total-net">{format.money(r.totals.net_minor, context.currency)}</td><td /></tr></tfoot>
-                </table>
+                <div className="border border-border bg-surface">
+                    <Table>
+                        <caption className="sr-only">{t('rpt.pay.title')}</caption>
+                        <TableHeader className="bg-surface-muted">
+                            <TableRow className="hover:bg-transparent">
+                                <TableHead scope="col">{t('rpt.pay.method')}</TableHead>
+                                <TableHead className="text-right" scope="col">{t('rpt.pay.received')}</TableHead>
+                                <TableHead className="text-right" scope="col">{t('rpt.pay.paidBack')}</TableHead>
+                                <TableHead className="text-right" scope="col">{t('rpt.pay.net')}</TableHead>
+                                <TableHead className="text-right" scope="col">{t('rpt.pay.count')}</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>{r.rows.map((row) => (
+                            <TableRow key={row.method}>
+                                <TableHead className="font-medium text-foreground" scope="row">{method(row.method)}</TableHead>
+                                <TableCell className="text-right tabular-nums">{format.money(row.received_minor, context.currency)}</TableCell>
+                                <TableCell className="text-right tabular-nums">{format.money(row.paid_back_minor, context.currency)}</TableCell>
+                                <TableCell className="text-right tabular-nums">{format.money(row.net_minor, context.currency)}</TableCell>
+                                <TableCell className="text-right tabular-nums">{row.count}</TableCell>
+                            </TableRow>
+                        ))}</TableBody>
+                        <TableFooter>
+                            <TableRow className="hover:bg-transparent">
+                                <TableHead className="font-medium text-foreground" scope="row">{t('rpt.flash.total')}</TableHead>
+                                <TableCell className="text-right tabular-nums">{format.money(r.totals.received_minor, context.currency)}</TableCell>
+                                <TableCell className="text-right tabular-nums">{format.money(r.totals.paid_back_minor, context.currency)}</TableCell>
+                                <TableCell className="text-right tabular-nums" data-testid="total-net">{format.money(r.totals.net_minor, context.currency)}</TableCell>
+                                <TableCell />
+                            </TableRow>
+                        </TableFooter>
+                    </Table>
+                </div>
             )}
         </ReportingShell>
     );

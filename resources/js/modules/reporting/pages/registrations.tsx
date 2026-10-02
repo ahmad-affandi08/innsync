@@ -3,6 +3,7 @@ import { useState } from 'react';
 
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
+import { DataGrid, type DataGridColumn } from '@/components/ui/data-grid';
 import { EmptyState } from '@/components/ui/empty-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
@@ -25,6 +26,20 @@ export default function RegistrationsPage({ foreign, may_export, report: r }: { 
     const [purpose, setPurpose] = useState('');
     const query = new URLSearchParams({ from: r.meta.period.from, to: r.meta.period.to, ...(nationality !== '' ? { nationality } : {}), purpose }).toString();
 
+    const columns: DataGridColumn<Row>[] = [
+        { id: 'room', label: t('rpt.reg.col.room'), value: (row) => row.room, rowHeader: true },
+        { id: 'name', label: t('rpt.reg.col.name'), value: (row) => row.full_name },
+        { id: 'nationality', label: t('rpt.reg.col.nationality'), value: (row) => row.nationality, filter: 'select' },
+        {
+            id: 'id', label: t('rpt.reg.col.id'), value: (row) => row.id_number, searchText: (row) => `${row.id_type} ${row.id_number}`, className: 'font-mono text-xs',
+            cell: (row) => `${t(`fo.checkin.idType.${row.id_type}` as 'fo.checkin.idType.ktp')} ${row.id_number}${row.id_valid_until !== null ? ` · ${format.date(row.id_valid_until)}` : ''}`,
+        },
+        { id: 'visa', label: t('rpt.reg.col.visa'), value: (row) => row.visa_number ?? '', cell: (row) => row.visa_number ?? '—', className: 'font-mono text-xs', hidden: true },
+        { id: 'guests', label: t('rpt.reg.col.guests'), value: (row) => row.adults + row.children, cell: (row) => t('rpt.reg.guestsCell', { adults: row.adults, children: row.children }) },
+        { id: 'address', label: t('rpt.reg.col.address'), value: (row) => row.address ?? '', cell: (row) => row.address ?? '—', className: 'max-w-48 break-words', hidden: true },
+        { id: 'stay', label: t('rpt.reg.col.stay'), value: (row) => row.checked_in, searchText: (row) => `${row.checked_in} ${row.expected_departure}`, cell: (row) => `${format.date(row.checked_in)} – ${format.date(row.expected_departure)}` },
+    ];
+
     return (
         <ReportingShell description={t('rpt.reg.description')} title={foreign ? t('rpt.reg.foreignTitle') : t('rpt.reg.title')} wide>
             <PeriodPicker extra={nationality !== '' ? { nationality } : {}} from={r.meta.period.from} path={path} preset={r.meta.period.preset} to={r.meta.period.to} />
@@ -42,25 +57,14 @@ export default function RegistrationsPage({ foreign, may_export, report: r }: { 
                 </div>
             )}
             <ReportMeta meta={r.meta} />
-            {r.rows.length === 0 ? <EmptyState title={t('rpt.reg.empty')} /> : (
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left text-sm">
-                        <thead><tr className="text-xs text-muted-foreground"><th className="py-1 font-medium" scope="col">{t('rpt.reg.col.room')}</th><th scope="col">{t('rpt.reg.col.name')}</th><th scope="col">{t('rpt.reg.col.nationality')}</th><th scope="col">{t('rpt.reg.col.id')}</th><th scope="col">{t('rpt.reg.col.visa')}</th><th scope="col">{t('rpt.reg.col.guests')}</th><th scope="col">{t('rpt.reg.col.address')}</th><th scope="col">{t('rpt.reg.col.stay')}</th></tr></thead>
-                        <tbody>{r.rows.map((row) => (
-                            <tr className="border-t border-border align-top" key={row.stay_id}>
-                                <th className="py-1 font-medium" scope="row">{row.room}</th>
-                                <td>{row.full_name}</td>
-                                <td>{row.nationality}</td>
-                                <td className="font-mono text-xs">{t(`fo.checkin.idType.${row.id_type}` as 'fo.checkin.idType.ktp')} {row.id_number}{row.id_valid_until !== null ? ` · ${format.date(row.id_valid_until)}` : ''}</td>
-                                <td className="font-mono text-xs">{row.visa_number ?? '—'}</td>
-                                <td>{t('rpt.reg.guestsCell', { adults: row.adults, children: row.children })}</td>
-                                <td className="max-w-48 break-words">{row.address ?? '—'}</td>
-                                <td>{format.date(row.checked_in)} – {format.date(row.expected_departure)}</td>
-                            </tr>
-                        ))}</tbody>
-                    </table>
-                </div>
-            )}
+            <DataGrid
+                caption={foreign ? t('rpt.reg.foreignTitle') : t('rpt.reg.title')}
+                columns={columns}
+                empty={<EmptyState title={t('rpt.reg.empty')} />}
+                getRowId={(row) => row.stay_id}
+                id={foreign ? 'rpt.foreign' : 'rpt.registrations'}
+                rows={r.rows}
+            />
         </ReportingShell>
     );
 }
