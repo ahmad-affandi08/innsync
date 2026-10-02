@@ -41,6 +41,7 @@ final readonly class ObligationService
     public function __construct(
         private ReportQueries $queries,
         private ObligationRepository $obligations,
+        private OutletRepository $outlets,
         private BusinessDateProvider $businessDate,
         private PermissionChecker $permissions,
         private TransactionRunner $transactions,
@@ -68,6 +69,7 @@ final readonly class ObligationService
         $first = $current->modify('-'.($months - 1).' months');
         $figures = $this->queries->obligationsByMonth($property, BusinessDate::fromString($first->format('Y-m-d')), $today);
         $filings = $this->obligations->filings($property);
+        $outlets = $this->outlets->all($property);
         $rows = [];
         $total = ['tax' => 0, 'service_charge' => 0, 'employee_estimate' => 0];
 
@@ -89,8 +91,8 @@ final readonly class ObligationService
             };
             $estimate = intdiv($service * $settings['service_employee_share_bp'], 10_000);
             $rows[] = [
-                'month' => $key, 'tax' => ['room' => $f['room']['tax'], 'laundry' => $f['laundry']['tax'], 'other' => $f['other']['tax'], 'total' => $tax],
-                'service_charge' => ['room' => $f['room']['service_charge'], 'laundry' => $f['laundry']['service_charge'], 'other' => $f['other']['service_charge'], 'total' => $service],
+                'month' => $key, 'tax' => ['room' => $f['room']['tax'], 'laundry' => $f['laundry']['tax'], 'other' => $f['other']['tax'], 'total' => $tax, 'outlets' => $this->byOutlet($outlets, $f, 'tax')],
+                'service_charge' => ['room' => $f['room']['service_charge'], 'laundry' => $f['laundry']['service_charge'], 'other' => $f['other']['service_charge'], 'total' => $service, 'outlets' => $this->byOutlet($outlets, $f, 'service_charge')],
                 'employee_estimate_minor' => $estimate, 'due_date' => $due->format('Y-m-d'), 'status' => $status, 'filing' => $filing,
             ];
             $total['tax'] += $tax;
@@ -99,11 +101,11 @@ final readonly class ObligationService
         }
 
         return [
-            'business_date' => $today->toString(), 'rows' => $rows, 'totals' => $total,
+            'business_date' => $today->toString(), 'rows' => $rows, 'totals' => $total, 'outlets' => array_map(static fn (array $o): array => ['code' => $o['code'], 'name' => $o['name']], $outlets),
             'settings' => [...$settings, 'configured' => $this->obligations->settings($property) !== null],
             'may_manage' => $this->permissions->allowsInProperty($actorId, self::MANAGE_PERMISSION, $property),
             'notes' => [
-                'Outlets other than rooms and laundry appear under "other" until their modules exist.',
+                'Outlets other than rooms and laundry appear under "other" until they are named under the outlets of the reports.',
                 'The date and the share are baselines to be confirmed by the owner and the tax consultant.',
             ],
         ];
@@ -214,5 +216,21 @@ final readonly class ObligationService
         }
 
         throw Refusal::forbidden('This person may not see tax and service charge obligations.');
+    }
+
+    /**
+     * @param  list<array{code: string}>  $outlets
+     * @param  array<string, array<string, int>>  $figures
+     * @return array<string, int> the figure of each named outlet, by its code
+     */
+    private function byOutlet(array $outlets, array $figures, string $field): array
+    {
+        $result = [];
+
+        foreach ($outlets as $outlet) {
+            $result[$outlet['code']] = $figures['outlet:'.$outlet['code']][$field] ?? 0;
+        }
+
+        return $result;
     }
 }

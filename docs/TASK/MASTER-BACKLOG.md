@@ -6,7 +6,7 @@
 | TASK-DSH-002 | FR-DSH-002 | Dashboard Manajemen | Wajib | IN_PROGRESS |
 | TASK-DSH-003 | FR-DSH-003 | Dashboard Manajemen | Wajib | REVIEW |
 | TASK-DSH-004 | FR-DSH-004 | Dashboard Manajemen | Wajib | IN_PROGRESS |
-| TASK-DSH-005 | FR-DSH-005 | Dashboard Manajemen | Wajib | TODO |
+| TASK-DSH-005 | FR-DSH-005 | Dashboard Manajemen | Wajib | REVIEW |
 | TASK-DSH-006 | FR-DSH-006 | Dashboard Manajemen | Wajib | TODO |
 | TASK-DSH-007 | FR-DSH-007 | Dashboard Manajemen | Wajib | TODO |
 | TASK-DSH-008 | FR-DSH-008 | Dashboard Manajemen | Wajib | TODO |

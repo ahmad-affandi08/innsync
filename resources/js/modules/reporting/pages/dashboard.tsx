@@ -1,5 +1,5 @@
 import { Head, Link, router } from '@inertiajs/react';
-import { useEffect, useState } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -143,6 +143,7 @@ export default function DashboardPage({ currency, preferences, snapshot: s, tv }
                                 <dl className="grid grid-cols-[1fr_auto] gap-x-4 text-sm">
                                     <dt>{t('rpt.card.revenue.room')}</dt><dd>{format.money((c.values.room as Money).total, currency)}</dd>
                                     <dt>{t('rpt.card.revenue.laundry')}</dt><dd>{format.money((c.values.laundry as Money).total, currency)}</dd>
+                                    {((c.values.outlets ?? []) as { code: string; name: string; total: number }[]).map((o) => <Fragment key={o.code}><dt>{o.name}</dt><dd>{format.money(o.total, currency)}</dd></Fragment>)}
                                     <dt>{t('rpt.card.revenue.other')}</dt><dd>{format.money((c.values.other as Money).total, currency)}</dd>
                                 </dl>
                                 <ul className="flex flex-col gap-1 text-xs text-muted-foreground">

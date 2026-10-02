@@ -32,7 +32,9 @@ interface ReportQueries
     /**
      * Revenue booked on the postings of the period: charges and the reversals of charges, split by where it came from.
      *
-     * @return array{room: array<string, int>, laundry: array<string, int>, other: array<string, int>, net: array<string, int>}
+     * Outlets named by the hotel (FR-DSH-005) come as `outlets`, each with its code, name and figures; what no outlet owns is `other`.
+     *
+     * @return array{room: array<string, int>, laundry: array<string, int>, other: array<string, int>, net: array<string, int>, outlets: list<array<string, mixed>>}
      */
     public function revenue(PropertyId $property, ReportPeriod $period): array;
 

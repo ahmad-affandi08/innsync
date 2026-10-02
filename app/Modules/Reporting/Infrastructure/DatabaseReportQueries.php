@@ -66,7 +66,13 @@ final readonly class DatabaseReportQueries implements ReportQueries
 
     public function revenue(PropertyId $property, ReportPeriod $period): array
     {
-        $result = ['room' => self::zero(), 'laundry' => self::zero(), 'other' => self::zero(), 'net' => self::zero()];
+        $result = ['room' => self::zero(), 'laundry' => self::zero(), 'other' => self::zero(), 'net' => self::zero(), 'outlets' => []];
+        $named = $this->outletsBySource($property);
+
+        foreach ($named['outlets'] as $code => $name) {
+            $result['outlets'][$code] = ['code' => $code, 'name' => $name, ...self::zero()];
+        }
+
         $rows = DB::table('folio_postings')
             ->where('property_id', $property->toString())->whereBetween('business_date', [$period->from->toString(), $period->to->toString()])
             ->whereIn('entry_type', ['charge', 'reversal'])
@@ -75,17 +81,25 @@ final readonly class DatabaseReportQueries implements ReportQueries
             ->get(['source', DB::raw('SUM(base_minor) as base'), DB::raw('SUM(service_charge_minor) as service_charge'), DB::raw('SUM(tax_minor) as tax'), DB::raw('SUM(total_minor) as total')]);
 
         foreach ($rows as $row) {
+            $outlet = $named['sources'][$row->source] ?? null;
             $bucket = match ($row->source) {
                 'night_audit' => 'room',
                 'laundry' => 'laundry',
-                default => 'other',
+                default => $outlet === null ? 'other' : null,
             };
 
             foreach (['base' => (int) $row->base, 'service_charge' => (int) $row->service_charge, 'tax' => (int) $row->tax, 'total' => (int) $row->total] as $key => $value) {
-                $result[$bucket][$key] += $value;
+                if ($bucket === null) {
+                    $result['outlets'][$outlet][$key] += $value;
+                } else {
+                    $result[$bucket][$key] += $value;
+                }
+
                 $result['net'][$key] += $value;
             }
         }
+
+        $result['outlets'] = array_values($result['outlets']);
 
         return $result;
     }
@@ -296,6 +310,7 @@ final readonly class DatabaseReportQueries implements ReportQueries
     public function obligationsByMonth(PropertyId $property, BusinessDate $from, BusinessDate $to): array
     {
         $blank = static fn (): array => ['base' => 0, 'service_charge' => 0, 'tax' => 0];
+        $named = $this->outletsBySource($property);
         $result = [];
         $rows = DB::table('folio_postings')
             ->where('property_id', $property->toString())->whereBetween('business_date', [$from->toString(), $to->toString()])
@@ -304,12 +319,14 @@ final readonly class DatabaseReportQueries implements ReportQueries
             ->get([DB::raw("DATE_FORMAT(business_date, '%Y-%m') as month"), 'source', DB::raw('SUM(base_minor) as base'), DB::raw('SUM(service_charge_minor) as service_charge'), DB::raw('SUM(tax_minor) as tax')]);
 
         foreach ($rows as $row) {
+            $outlet = $named['sources'][$row->source] ?? null;
             $bucket = match ($row->source) {
                 'night_audit' => 'room',
                 'laundry' => 'laundry',
-                default => 'other',
+                default => $outlet === null ? 'other' : 'outlet:'.$outlet,
             };
             $result[$row->month] ??= ['room' => $blank(), 'laundry' => $blank(), 'other' => $blank()];
+            $result[$row->month][$bucket] ??= $blank();
 
             foreach (['base', 'service_charge', 'tax'] as $key) {
                 $result[$row->month][$bucket][$key] += (int) $row->{$key};
@@ -317,5 +334,24 @@ final readonly class DatabaseReportQueries implements ReportQueries
         }
 
         return $result;
+    }
+
+    /** @return array{outlets: array<string, string>, sources: array<string, string>} outlet names by code, and the outlet code of each source named by one */
+    private function outletsBySource(PropertyId $property): array
+    {
+        $outlets = [];
+        $sources = [];
+        $byId = [];
+
+        foreach (DB::table('revenue_outlets')->where('property_id', $property->toString())->orderBy('name')->orderBy('code')->get(['id', 'code', 'name']) as $outlet) {
+            $outlets[$outlet->code] = $outlet->name;
+            $byId[$outlet->id] = $outlet->code;
+        }
+
+        foreach (DB::table('revenue_outlet_sources')->where('property_id', $property->toString())->get(['source', 'outlet_id']) as $row) {
+            $sources[$row->source] = $byId[$row->outlet_id];
+        }
+
+        return ['outlets' => $outlets, 'sources' => $sources];
     }
 }

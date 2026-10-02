@@ -51,6 +51,7 @@ Release notes for every release (NFR-14). Newest first. Each entry names the tas
 - TASK-FO-035 (BR-001, BR-006): company and travel agent profiles with a credit limit, a billing instruction and the charges that go to the company; a reservation is billed to one company, which opens its own folio for the room nights (and, if agreed, the other charges) and may stay open with a balance after check-out; the limit warns on the page and the dashboard, never blocks.
 - TASK-FO-026 (BR-002, BR-003): payment in a foreign currency, off until switched on: the clerk takes, say, US dollars at the hotel's own typed rate and the folio is paid by the rupiah equivalent (whole rupiah, rounded half up), keeping the foreign amount, the rate and its version.
 - TASK-FO-006 (BR-001, BR-006): simple group booking: one booker with up to 30 rooms made together as ordinary reservations, with one master folio that takes the room charges (and optionally the other charges) or a bill per room; the master folio may stay open after check-out until it is paid.
+- TASK-DSH-005 (BR-003): extensible outlets: a manager names an outlet and the posting sources it owns, and it appears as its own revenue line on the dashboard and its own tax column on the obligations page; what no outlet owns stays under "other".
 
 ### Known limitations
 

@@ -37,6 +37,7 @@ use App\Modules\Property\Application\Rates\RatePlanService;
 use App\Modules\Property\Application\Settings\PropertySettingsService;
 use App\Modules\Reporting\Application\DashboardService;
 use App\Modules\Reporting\Application\ObligationService;
+use App\Modules\Reporting\Application\OutletService;
 use App\Modules\Reporting\Application\ReportService;
 use App\Shared\Application\Idempotency\IdempotencyKey;
 use App\Shared\Application\Tenancy\PropertyContext;
@@ -118,6 +119,9 @@ trait BuildsHotel
     private string $companyViewerId;
 
     private string $companyLinkerId;
+
+    /** Outlets of the reports (FR-DSH-005): someone who names the outlets and the posting sources each owns. */
+    private string $outletManagerId;
 
     /** Group bookings (FR-FO-006): someone who books groups (and reservations) and someone who may only look. */
     private string $groupManagerId;
@@ -229,6 +233,7 @@ trait BuildsHotel
         $termsWriter = UserRecord::factory()->create();
         $foreignManager = UserRecord::factory()->create();
         $groupManager = UserRecord::factory()->create();
+        $outletManager = UserRecord::factory()->create();
         $groupViewer = UserRecord::factory()->create();
         $companyManager = UserRecord::factory()->create();
         $companyViewer = UserRecord::factory()->create();
@@ -289,6 +294,7 @@ trait BuildsHotel
         $this->grant($foreignManager, self::PROPERTY, [ForeignPaymentService::SETTINGS_PERMISSION]);
         $this->grant($groupManager, self::PROPERTY, [GroupBookingService::MANAGE_PERMISSION, ReservationService::MANAGE_PERMISSION]);
         $this->grant($groupViewer, self::PROPERTY, [GroupBookingService::VIEW_PERMISSION]);
+        $this->grant($outletManager, self::PROPERTY, [OutletService::MANAGE_PERMISSION]);
         $this->grant($companyManager, self::PROPERTY, [CompanyService::MANAGE_PERMISSION]);
         $this->grant($companyViewer, self::PROPERTY, [CompanyService::VIEW_PERMISSION]);
         $this->grant($companyLinker, self::PROPERTY, [CompanyService::LINK_PERMISSION, CompanyService::VIEW_PERMISSION]);
@@ -346,6 +352,7 @@ trait BuildsHotel
         $this->foreignManagerId = strtolower((string) $foreignManager->getKey());
         $this->groupManagerId = strtolower((string) $groupManager->getKey());
         $this->groupViewerId = strtolower((string) $groupViewer->getKey());
+        $this->outletManagerId = strtolower((string) $outletManager->getKey());
         $this->companyManagerId = strtolower((string) $companyManager->getKey());
         $this->companyViewerId = strtolower((string) $companyViewer->getKey());
         $this->companyLinkerId = strtolower((string) $companyLinker->getKey());

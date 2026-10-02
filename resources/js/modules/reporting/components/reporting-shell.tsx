@@ -9,6 +9,7 @@ import { useTranslation } from '@/shared/i18n/i18n';
 const LINKS = [
     { href: '/dashboard', label: 'rpt.nav.dashboard' },
     { href: '/reports', label: 'rpt.nav.reports' },
+    { href: '/reports/outlets', label: 'rpt.nav.outlets' },
 ] as const;
 
 type Props = { title: string; description: string; children: ReactNode; wide?: boolean };

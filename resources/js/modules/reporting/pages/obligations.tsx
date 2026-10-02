@@ -12,13 +12,13 @@ import { useServerAction } from '@/shared/api/use-server-action';
 import { useFormatters, useTranslation } from '@/shared/i18n/i18n';
 import { useErrorStateCopy } from '@/shared/i18n/use-ui-copy';
 
-type Split = { room: number; laundry: number; other: number; total: number };
+type Split = { room: number; laundry: number; other: number; total: number; outlets: Record<string, number> };
 type Row = {
     month: string; tax: Split; service_charge: Split; employee_estimate_minor: number; due_date: string; status: 'open' | 'due' | 'overdue' | 'reported' | 'nothing';
     filing: { reported_on: string; reference: string; tax_minor: number } | null;
 };
 type Timeline = {
-    business_date: string; rows: Row[]; totals: { tax: number; service_charge: number; employee_estimate: number }; notes: string[]; may_manage: boolean;
+    outlets: { code: string; name: string }[]; business_date: string; rows: Row[]; totals: { tax: number; service_charge: number; employee_estimate: number }; notes: string[]; may_manage: boolean;
     settings: { tax_report_day: number; service_employee_share_bp: number; lock_version: number | null; configured: boolean };
 };
 
@@ -54,11 +54,11 @@ export default function ObligationsPage({ context, timeline: tl }: { context: { 
 
             <div className="overflow-x-auto">
                 <table className="w-full text-left text-sm" data-testid="obligations">
-                    <thead><tr className="text-xs text-muted-foreground">{['month', 'taxRooms', 'taxLaundry', 'taxOther', 'taxTotal', 'service', 'staff', 'due', 'status'].map((k, i) => <th className={i === 0 ? 'py-1 font-medium' : undefined} key={k} scope="col">{t(`rpt.obl.col.${k}` as 'rpt.obl.col.month')}</th>)}<th scope="col" /></tr></thead>
+                    <thead><tr className="text-xs text-muted-foreground">{['month', 'taxRooms', 'taxLaundry'].map((k, i) => <th className={i === 0 ? 'py-1 font-medium' : undefined} key={k} scope="col">{t(`rpt.obl.col.${k}` as 'rpt.obl.col.month')}</th>)}{tl.outlets.map((o) => <th key={o.code} scope="col">{t('rpt.obl.col.outlet', { name: o.name })}</th>)}{['taxOther', 'taxTotal', 'service', 'staff', 'due', 'status'].map((k) => <th key={k} scope="col">{t(`rpt.obl.col.${k}` as 'rpt.obl.col.month')}</th>)}<th scope="col" /></tr></thead>
                     <tbody>{tl.rows.map((r) => (
                         <tr className="border-t border-border align-top" data-testid={`month-${r.month}`} key={r.month}>
                             <th className="py-2 font-medium" scope="row">{r.month}</th>
-                            <td>{money(r.tax.room)}</td><td>{money(r.tax.laundry)}</td><td>{money(r.tax.other)}</td><td className="font-medium">{money(r.tax.total)}</td>
+                            <td>{money(r.tax.room)}</td><td>{money(r.tax.laundry)}</td>{tl.outlets.map((o) => <td key={o.code}>{money(r.tax.outlets[o.code] ?? 0)}</td>)}<td>{money(r.tax.other)}</td><td className="font-medium">{money(r.tax.total)}</td>
                             <td>{money(r.service_charge.total)}</td><td>{money(r.employee_estimate_minor)}</td>
                             <td>{format.date(r.due_date)}</td>
                             <td>

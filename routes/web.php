@@ -41,6 +41,7 @@ use App\Modules\Property\Presentation\Http\Controllers\RatePlanController;
 use App\Modules\Property\Presentation\Http\Controllers\RoomCatalogController;
 use App\Modules\Reporting\Presentation\Http\Controllers\DashboardController;
 use App\Modules\Reporting\Presentation\Http\Controllers\ObligationController;
+use App\Modules\Reporting\Presentation\Http\Controllers\OutletController;
 use App\Modules\Reporting\Presentation\Http\Controllers\ReportController;
 use App\Shared\Infrastructure\Localization\SetLocaleController;
 use App\Shared\Infrastructure\Offline\SyncController;
@@ -375,6 +376,8 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->group(
     Route::post('/dashboard/preferences', [DashboardController::class, 'savePreferences'])->name('dashboard.preferences');
     Route::delete('/dashboard/preferences', [DashboardController::class, 'resetPreferences'])->name('dashboard.preferences.reset');
     Route::prefix('reports')->group(function (): void {
+        $id = '[0-9A-Za-z]{26}';
+
         Route::get('/', [ReportController::class, 'index'])->name('reports');
         Route::get('/movements', [ReportController::class, 'movements'])->name('reports.movements');
         Route::get('/movements/export', [ReportController::class, 'exportMovements'])->name('reports.movements.export');
@@ -386,6 +389,11 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->group(
         Route::get('/housekeeping/export', [ReportController::class, 'exportHousekeeping'])->name('reports.housekeeping.export');
         Route::get('/comparison', [ReportController::class, 'comparison'])->name('reports.comparison');
         Route::get('/comparison/export', [ReportController::class, 'exportComparison'])->name('reports.comparison.export');
+        Route::get('/outlets', [OutletController::class, 'index'])->name('reports.outlets');
+        Route::post('/outlets', [OutletController::class, 'store'])->name('reports.outlets.store');
+        Route::post('/outlets/{id}', [OutletController::class, 'rename'])->where('id', $id)->name('reports.outlets.rename');
+        Route::post('/outlets/{id}/sources', [OutletController::class, 'addSource'])->where('id', $id)->name('reports.outlets.sources');
+        Route::post('/outlets/{id}/sources/remove', [OutletController::class, 'removeSource'])->where('id', $id)->name('reports.outlets.sources.remove');
         Route::get('/obligations', [ObligationController::class, 'index'])->name('reports.obligations');
         Route::post('/obligations/settings', [ObligationController::class, 'saveSettings'])->name('reports.obligations.settings');
         Route::post('/obligations/filings', [ObligationController::class, 'markReported'])->name('reports.obligations.filings');
