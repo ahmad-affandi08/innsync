@@ -19,6 +19,7 @@ use App\Modules\FrontOffice\Presentation\Http\Controllers\StayFeePolicyControlle
 use App\Modules\Housekeeping\Presentation\Http\Controllers\ChecklistController as HousekeepingChecklistController;
 use App\Modules\Housekeeping\Presentation\Http\Controllers\HousekeepingController;
 use App\Modules\Housekeeping\Presentation\Http\Controllers\LinenController;
+use App\Modules\Housekeeping\Presentation\Http\Controllers\LostFoundController;
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\ApprovalController;
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\ApprovalPolicyController;
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\AuthenticatedSessionController;
@@ -308,6 +309,13 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
     Route::post('/linen/transfers', [LinenController::class, 'send'])->middleware('idempotent')->name('housekeeping.linen.transfers.store');
     Route::post('/linen/transfers/{id}/receive', [LinenController::class, 'receive'])->where('id', $id)->name('housekeeping.linen.transfers.receive');
     Route::post('/linen/transfers/{id}/cancel', [LinenController::class, 'cancel'])->where('id', $id)->name('housekeeping.linen.transfers.cancel');
+
+    // Lost and found (FR-HK-012).
+    Route::get('/lost-found', [LostFoundController::class, 'index'])->name('housekeeping.lost-found');
+    Route::post('/lost-found', [LostFoundController::class, 'store'])->name('housekeeping.lost-found.store');
+    Route::post('/lost-found/{id}/returned', [LostFoundController::class, 'returned'])->where('id', $id)->name('housekeeping.lost-found.returned');
+    Route::post('/lost-found/{id}/disposed', [LostFoundController::class, 'disposed'])->where('id', $id)->name('housekeeping.lost-found.disposed');
+    Route::get('/lost-found/{id}/photo', [LostFoundController::class, 'photo'])->where('id', $id)->name('housekeeping.lost-found.photo');
 
     // Checklists per room and public area (FR-HK-005).
     Route::get('/checklists', [HousekeepingChecklistController::class, 'index'])->name('housekeeping.checklists');

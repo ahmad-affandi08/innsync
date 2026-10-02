@@ -70,3 +70,8 @@ Booking policy is a commercial decision of the hotel, not a legal one; Indonesia
 - **Reporting day.** The regional hotel tax is reported by the **15th of the following month** (operational choice; regional regulations differ and some use the 10th). A property setting from 1 to 28; the owner and the tax consultant confirm it.
 - **Employees' share of the service charge.** An estimate of **60 percent** (operational choice; the allocation formula is PRD `Q-06` and stays open). A property setting from 0 to 100 percent. The system distributes nothing.
 - **What is counted.** Tax and service charge on the charges posted on the business dates of the month, net of reversals, split by where they came from. A filing is only a record of who reported the month, when and under which reference.
+
+## Lost and found (FR-HK-012) — baseline for Phase 1
+
+- **Retention of the photo.** The photo of a found item is **erased 90 days after the item is closed** (returned or disposed): category `lost_found_photo`, anchor `closed_at`, adjustable from 0 to 365 days (operational choice; the photo may show personal belongings, so it is not kept longer than the item). The record itself (who found it, when, where, to whom it was returned) stays with the audit trail.
+- **Time stored.** An item still stored after **90 days** is flagged for a decision (operational choice). Nothing is disposed of automatically.

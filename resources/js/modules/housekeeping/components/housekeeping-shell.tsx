@@ -11,6 +11,7 @@ const LINKS = [
     { href: '/housekeeping/my-rooms', label: 'hk.nav.mine' },
     { href: '/housekeeping/checklists', label: 'hk.nav.checklists' },
     { href: '/housekeeping/linen', label: 'hk.nav.linen' },
+    { href: '/housekeeping/lost-found', label: 'hk.nav.lostfound' },
     { href: '/front-office/room-board', label: 'hk.nav.frontdesk' },
     { href: '/laundry/new', label: 'hk.nav.laundry' },
 ] as const;
