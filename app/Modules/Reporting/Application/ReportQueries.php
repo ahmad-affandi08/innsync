@@ -90,4 +90,12 @@ interface ReportQueries
      * @return list<array{created_at: string, ready_at: ?string, promised_at: string, status: string, express: bool, pieces: int, charged_minor: ?int, has_discrepancy: bool}>
      */
     public function laundryOrders(PropertyId $property, DateTimeImmutable $fromUtc, DateTimeImmutable $toUtc): array;
+
+    /**
+     * Service charge and tax on the charges (and reversals of charges) posted on the business dates, per calendar month and where the
+     * charge came from (FR-DSH-013, FR-DSH-014).
+     *
+     * @return array<string, array{room: array{base: int, service_charge: int, tax: int}, laundry: array{base: int, service_charge: int, tax: int}, other: array{base: int, service_charge: int, tax: int}}> by month `YYYY-MM`
+     */
+    public function obligationsByMonth(PropertyId $property, BusinessDate $from, BusinessDate $to): array;
 }

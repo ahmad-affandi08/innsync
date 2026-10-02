@@ -287,4 +287,30 @@ final readonly class DatabaseReportQueries implements ReportQueries
                 'express' => (bool) $r->express, 'pieces' => (int) $r->pieces, 'charged_minor' => $r->charged_minor === null ? null : (int) $r->charged_minor, 'has_discrepancy' => (bool) $r->has_discrepancy,
             ])->all();
     }
+
+    public function obligationsByMonth(PropertyId $property, BusinessDate $from, BusinessDate $to): array
+    {
+        $blank = static fn (): array => ['base' => 0, 'service_charge' => 0, 'tax' => 0];
+        $result = [];
+        $rows = DB::table('folio_postings')
+            ->where('property_id', $property->toString())->whereBetween('business_date', [$from->toString(), $to->toString()])
+            ->whereIn('entry_type', ['charge', 'reversal'])
+            ->groupBy(DB::raw("DATE_FORMAT(business_date, '%Y-%m')"), 'source')
+            ->get([DB::raw("DATE_FORMAT(business_date, '%Y-%m') as month"), 'source', DB::raw('SUM(base_minor) as base'), DB::raw('SUM(service_charge_minor) as service_charge'), DB::raw('SUM(tax_minor) as tax')]);
+
+        foreach ($rows as $row) {
+            $bucket = match ($row->source) {
+                'night_audit' => 'room',
+                'laundry' => 'laundry',
+                default => 'other',
+            };
+            $result[$row->month] ??= ['room' => $blank(), 'laundry' => $blank(), 'other' => $blank()];
+
+            foreach (['base', 'service_charge', 'tax'] as $key) {
+                $result[$row->month][$bucket][$key] += (int) $row->{$key};
+            }
+        }
+
+        return $result;
+    }
 }

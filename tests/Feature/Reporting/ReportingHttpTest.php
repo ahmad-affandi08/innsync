@@ -12,6 +12,7 @@ use App\Modules\Property\Application\Rates\ChargeSchemeService;
 use App\Modules\Property\Application\Rates\RatePlanService;
 use App\Modules\Property\Application\Settings\PropertySettingsService;
 use App\Modules\Reporting\Application\DashboardService;
+use App\Modules\Reporting\Application\ObligationService;
 use App\Modules\Reporting\Application\ReportService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
@@ -42,7 +43,7 @@ final class ReportingHttpTest extends TestCase
         $this->signIn(self::A, [
             ReservationService::MANAGE_PERMISSION, FolioService::MANAGE_PERMISSION, StayService::MANAGE_PERMISSION, RoomCatalogService::MANAGE_PERMISSION, RatePlanService::MANAGE_PERMISSION,
             ChargeSchemeService::MANAGE_PERMISSION, PropertySettingsService::MANAGE_PERMISSION, DashboardService::VIEW_PERMISSION, DashboardService::REVENUE_PERMISSION, ReportService::VIEW_PERMISSION,
-            ReportService::GUESTS_PERMISSION, ReportService::GUESTS_EXPORT_PERMISSION, ReportService::AUDIT_PERMISSION, ReportService::IDENTITY_PERMISSION, ReportService::HOUSEKEEPING_PERMISSION,
+            ReportService::GUESTS_PERMISSION, ReportService::GUESTS_EXPORT_PERMISSION, ReportService::AUDIT_PERMISSION, ReportService::IDENTITY_PERMISSION, ReportService::HOUSEKEEPING_PERMISSION, ObligationService::VIEW_PERMISSION, ObligationService::MANAGE_PERMISSION,
         ]);
         $type = $this->postJson('/property/room-types', ['code' => 'DLX', 'name' => 'Deluxe', 'max_adults' => 2, 'max_children' => 1, 'reason' => 'x'])->json('type.id');
         $room = $this->postJson('/property/rooms', ['number' => '101', 'room_type_id' => $type, 'reason' => 'x'])->assertCreated()->json('room.id');
@@ -67,7 +68,7 @@ final class ReportingHttpTest extends TestCase
         $this->get('/dashboard?preset=forever')->assertStatus(422);
         $this->get('/dashboard?from=2026-10-09&to=2026-10-01')->assertStatus(422);
 
-        $this->get('/reports')->assertInertia(fn (Assert $p) => $p->component('reporting/pages/reports')->has('reports', 9)->where('context.business_date', '2026-10-01'));
+        $this->get('/reports')->assertInertia(fn (Assert $p) => $p->component('reporting/pages/reports')->has('reports', 10)->where('context.business_date', '2026-10-01'));
     }
 
     public function test_reports_state_their_basis_and_exports_download_as_csv(): void
@@ -98,6 +99,17 @@ final class ReportingHttpTest extends TestCase
         $this->get('/reports/housekeeping?from=2026-10-09&to=2026-10-01')->assertStatus(422);
         $response = $this->get('/reports/housekeeping/export')->assertOk();
         self::assertStringContainsString('attachment; filename="housekeeping-2026-10-01-2026-10-01.csv"', (string) $response->headers->get('Content-Disposition'));
+    }
+
+    public function test_the_obligations_page_settings_and_filing_work_over_http(): void
+    {
+        $this->get('/reports/obligations')->assertInertia(fn (Assert $p) => $p->component('reporting/pages/obligations')->has('timeline.rows', 6)->where('timeline.settings.configured', false)->where('timeline.rows.0.month', '2026-10')->where('timeline.rows.0.status', 'open')->where('timeline.may_manage', true)->where('context.currency', 'IDR'));
+        $this->getJson('/reports/obligations?months=25')->assertStatus(422);
+        $this->postJson('/reports/obligations/settings', ['tax_report_day' => 10, 'service_employee_share_bp' => 7_000, 'reason' => 'Confirmed'])->assertOk()->assertJsonPath('settings.tax_report_day', 10);
+        $this->postJson('/reports/obligations/settings', ['tax_report_day' => 10, 'service_employee_share_bp' => 7_000, 'reason' => 'Again'])->assertStatus(409);
+        $this->postJson('/reports/obligations/settings', ['tax_report_day' => 40, 'service_employee_share_bp' => 7_000, 'reason' => 'x'])->assertStatus(422);
+        $this->postJson('/reports/obligations/filings', ['month' => '2026-10', 'reported_on' => '2026-11-05', 'reference' => 'X'])->assertStatus(409);
+        $this->get('/reports/obligations')->assertInertia(fn (Assert $p) => $p->where('timeline.settings.configured', true)->where('timeline.settings.tax_report_day', 10));
     }
 
     public function test_the_laundry_report_opens_and_exports(): void

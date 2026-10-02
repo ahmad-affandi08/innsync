@@ -30,6 +30,7 @@ use App\Modules\Property\Application\Rates\ChargeSchemeService;
 use App\Modules\Property\Application\Rates\RatePlanService;
 use App\Modules\Property\Application\Settings\PropertySettingsService;
 use App\Modules\Reporting\Application\DashboardService;
+use App\Modules\Reporting\Application\ObligationService;
 use App\Modules\Reporting\Application\ReportService;
 use App\Shared\Application\Idempotency\IdempotencyKey;
 use App\Shared\Application\Tenancy\PropertyContext;
@@ -89,6 +90,9 @@ trait BuildsHotel
     private string $hkListStaff2Id;
 
     private string $hkListViewerId;
+
+    /** Tax and service charge obligations (FR-DSH-013, -014): someone who may mark a month as reported and change the settings. */
+    private string $financeId;
 
     /** Reporting: an analyst (dashboard with revenue, reports, audit; identity masked), a registrar (guest reports and export, identity in clear), and a dashboard-only viewer. */
     private string $analystId;
@@ -186,6 +190,7 @@ trait BuildsHotel
         $logReader = UserRecord::factory()->create();
         $nameCorrector = UserRecord::factory()->create();
         $linenManager = UserRecord::factory()->create();
+        $finance = UserRecord::factory()->create();
         $hkListManager = UserRecord::factory()->create();
         $hkListStaff = UserRecord::factory()->create();
         $hkListStaff2 = UserRecord::factory()->create();
@@ -203,7 +208,8 @@ trait BuildsHotel
         $this->grant($attendant, self::PROPERTY, [HousekeepingService::PERFORM_PERMISSION]);
         $this->grant($attendant2, self::PROPERTY, [HousekeepingService::PERFORM_PERMISSION]);
         $this->grant($hkChief, self::PROPERTY, [HousekeepingService::INSPECT_PERMISSION, HousekeepingService::WAIVE_PERMISSION]);
-        $this->grant($analyst, self::PROPERTY, [DashboardService::VIEW_PERMISSION, DashboardService::REVENUE_PERMISSION, ReportService::VIEW_PERMISSION, ReportService::GUESTS_PERMISSION, ReportService::AUDIT_PERMISSION, ReportService::HOUSEKEEPING_PERMISSION]);
+        $this->grant($analyst, self::PROPERTY, [DashboardService::VIEW_PERMISSION, DashboardService::REVENUE_PERMISSION, ReportService::VIEW_PERMISSION, ReportService::GUESTS_PERMISSION, ReportService::AUDIT_PERMISSION, ReportService::HOUSEKEEPING_PERMISSION, ObligationService::VIEW_PERMISSION]);
+        $this->grant($finance, self::PROPERTY, [ObligationService::VIEW_PERMISSION, ObligationService::MANAGE_PERMISSION]);
         $this->grant($registrar, self::PROPERTY, [ReportService::GUESTS_PERMISSION, ReportService::GUESTS_EXPORT_PERMISSION, ReportService::IDENTITY_PERMISSION]);
         $this->grant($dashOnly, self::PROPERTY, [DashboardService::VIEW_PERMISSION]);
         $this->grant($cashier, self::PROPERTY, [CashierService::OPERATE_PERMISSION, FolioService::MANAGE_PERMISSION, FolioService::REFUND_PERMISSION, FolioService::CORRECT_PERMISSION]);
@@ -270,6 +276,7 @@ trait BuildsHotel
         $this->hkListStaffId = strtolower((string) $hkListStaff->getKey());
         $this->hkListStaff2Id = strtolower((string) $hkListStaff2->getKey());
         $this->hkListViewerId = strtolower((string) $hkListViewer->getKey());
+        $this->financeId = strtolower((string) $finance->getKey());
         $this->linenManagerId = strtolower((string) $linenManager->getKey());
         $this->linenManager2Id = strtolower((string) $linenManager2->getKey());
         $this->linenLaundryId = strtolower((string) $linenLaundry->getKey());

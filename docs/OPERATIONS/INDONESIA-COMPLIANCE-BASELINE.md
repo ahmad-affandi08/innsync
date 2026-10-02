@@ -64,3 +64,9 @@ Booking policy is a commercial decision of the hotel, not a legal one; Indonesia
 
 - The format of the foreign-guest report (`Q-09`) and whether electronic registration is accepted as the official procedure (`Q-17`) depend on the local authority and need a Front Office answer.
 - The service-charge allocation formula (`Q-06`), accounting software (`Q-07`), door locks (`Q-08`), laundry pricing (`Q-10`), rate plans required at go-live (`Q-12`), payment gateway (`Q-04`, `Q-16`) and accounting mapping (`Q-18`) are business choices, not legal ones, and stay open until their tasks start.
+
+## Tax and service charge obligations (FR-DSH-013, FR-DSH-014) — baseline for Phase 1
+
+- **Reporting day.** The regional hotel tax is reported by the **15th of the following month** (operational choice; regional regulations differ and some use the 10th). A property setting from 1 to 28; the owner and the tax consultant confirm it.
+- **Employees' share of the service charge.** An estimate of **60 percent** (operational choice; the allocation formula is PRD `Q-06` and stays open). A property setting from 0 to 100 percent. The system distributes nothing.
+- **What is counted.** Tax and service charge on the charges posted on the business dates of the month, net of reversals, split by where they came from. A filing is only a record of who reported the month, when and under which reference.

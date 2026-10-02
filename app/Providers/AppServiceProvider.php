@@ -107,7 +107,9 @@ use App\Modules\Property\Infrastructure\Rates\DatabasePropertyCurrencyReader;
 use App\Modules\Property\Infrastructure\Rates\DatabaseRatePlanRepository;
 use App\Modules\Property\Infrastructure\Settings\DatabasePropertySettingsRepository;
 use App\Modules\Property\Infrastructure\Time\EloquentPropertyTimeZoneReader;
+use App\Modules\Reporting\Application\ObligationRepository;
 use App\Modules\Reporting\Application\ReportQueries;
+use App\Modules\Reporting\Infrastructure\DatabaseObligationRepository;
 use App\Modules\Reporting\Infrastructure\DatabaseReportQueries;
 use App\Shared\Application\Approval\ApprovalGate;
 use App\Shared\Application\Approval\ApprovalSubjects;
@@ -311,6 +313,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(DepositLedger::class, FolioPenaltyPoster::class);
         $this->app->bind(LaundryRepository::class, DatabaseLaundryRepository::class);
         $this->app->bind(ReportQueries::class, DatabaseReportQueries::class);
+        $this->app->bind(ObligationRepository::class, DatabaseObligationRepository::class);
         $this->app->bind(ImportBatchRepository::class, DatabaseImportBatchRepository::class);
         $this->app->bind(BookingPolicyRepository::class, DatabaseBookingPolicyRepository::class);
         $this->app->bind(BookingPolicyReader::class, BookingPolicyService::class);

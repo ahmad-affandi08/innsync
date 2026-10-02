@@ -34,6 +34,7 @@ use App\Modules\Property\Presentation\Http\Controllers\PropertySettingsControlle
 use App\Modules\Property\Presentation\Http\Controllers\RatePlanController;
 use App\Modules\Property\Presentation\Http\Controllers\RoomCatalogController;
 use App\Modules\Reporting\Presentation\Http\Controllers\DashboardController;
+use App\Modules\Reporting\Presentation\Http\Controllers\ObligationController;
 use App\Modules\Reporting\Presentation\Http\Controllers\ReportController;
 use App\Shared\Infrastructure\Localization\SetLocaleController;
 use App\Shared\Infrastructure\Offline\SyncController;
@@ -345,6 +346,9 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->group(
         Route::get('/flash/export', [ReportController::class, 'exportFlash'])->name('reports.flash.export');
         Route::get('/housekeeping', [ReportController::class, 'housekeeping'])->name('reports.housekeeping');
         Route::get('/housekeeping/export', [ReportController::class, 'exportHousekeeping'])->name('reports.housekeeping.export');
+        Route::get('/obligations', [ObligationController::class, 'index'])->name('reports.obligations');
+        Route::post('/obligations/settings', [ObligationController::class, 'saveSettings'])->name('reports.obligations.settings');
+        Route::post('/obligations/filings', [ObligationController::class, 'markReported'])->name('reports.obligations.filings');
         Route::get('/laundry', [ReportController::class, 'laundry'])->name('reports.laundry');
         Route::get('/laundry/export', [ReportController::class, 'exportLaundry'])->name('reports.laundry.export');
         Route::get('/payments', [ReportController::class, 'payments'])->name('reports.payments');

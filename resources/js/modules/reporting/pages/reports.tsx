@@ -6,7 +6,7 @@ import { useTranslation } from '@/shared/i18n/i18n';
 
 type Report = { code: string; group: string };
 
-const HREF: Record<string, string> = { movements: '/reports/movements', performance: '/reports/performance', flash: '/reports/flash', payments: '/reports/payments', housekeeping: '/reports/housekeeping', laundry: '/reports/laundry', registrations: '/reports/registrations', foreign_guests: '/reports/foreign-guests', audit: '/reports/audit' };
+const HREF: Record<string, string> = { movements: '/reports/movements', performance: '/reports/performance', flash: '/reports/flash', payments: '/reports/payments', housekeeping: '/reports/housekeeping', laundry: '/reports/laundry', obligations: '/reports/obligations', registrations: '/reports/registrations', foreign_guests: '/reports/foreign-guests', audit: '/reports/audit' };
 const GROUPS = ['management', 'front_office', 'housekeeping', 'laundry', 'control'] as const;
 
 export default function ReportsPage({ reports }: { reports: Report[] }) {

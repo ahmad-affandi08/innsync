@@ -38,6 +38,7 @@ Release notes for every release (NFR-14). Newest first. Each entry names the tas
 - TASK-HK-015 (BR-008): housekeeping productivity report with rooms cleaned and average time per room for each person and kind of task, inspections passed the first time, and checklist completion, behind its own permission, with CSV export and the report basis shown.
 - TASK-LDY-010 (BR-001, BR-002): guest laundry report per day with orders and pieces handed over, express orders, orders ready, the average time to ready, orders ready by the promised time, what was charged to folios, orders with a difference and cancelled orders; CSV export and print. Cost per kilogram is stated as not available (no weight or cost data).
 - TASK-LDY-005 (BR-002): special laundry treatments (dry cleaning, stubborn stains, ironing only, any the hotel sets up) and an express service with their own rate, as an extra per piece (a percentage of the item price or a fixed amount) kept on the order line as it was at hand-over, chosen per item at hand-over, shown on the order and in the charge to the folio.
+- TASK-DSH-013, TASK-DSH-014 (BR-001, BR-002): tax and service charge per month from the ledger (net of reversals) split by rooms, laundry and other, the date the tax is to be reported by (day of the next month, a property setting with a baseline), whether it was reported (a recorded filing with its date and reference, once per month), and an estimate of the employees' share of the service charge (a property setting with a baseline).
 
 ### Known limitations
 

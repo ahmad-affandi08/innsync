@@ -47,6 +47,7 @@ final readonly class ReportService
         ['code' => 'flash', 'group' => 'management', 'permission' => self::VIEW_PERMISSION],
         ['code' => 'performance', 'group' => 'management', 'permission' => self::VIEW_PERMISSION],
         ['code' => 'payments', 'group' => 'front_office', 'permission' => self::VIEW_PERMISSION],
+        ['code' => 'obligations', 'group' => 'management', 'permission' => ObligationService::VIEW_PERMISSION],
         ['code' => 'laundry', 'group' => 'laundry', 'permission' => self::VIEW_PERMISSION],
         ['code' => 'housekeeping', 'group' => 'housekeeping', 'permission' => self::HOUSEKEEPING_PERMISSION],
         ['code' => 'registrations', 'group' => 'front_office', 'permission' => self::GUESTS_PERMISSION],
