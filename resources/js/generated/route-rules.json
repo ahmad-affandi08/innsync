@@ -129,6 +129,13 @@
             "shift"
         ]
     },
+    "GET /inventory/stock": {
+        "required": [],
+        "declared": [
+            "item",
+            "location"
+        ]
+    },
     "GET /laundry/claims": {
         "required": [],
         "declared": [
@@ -1405,6 +1412,128 @@
         ],
         "declared": [
             "lock_version"
+        ]
+    },
+    "POST /inventory/categories": {
+        "required": [
+            "code",
+            "name"
+        ],
+        "declared": [
+            "code",
+            "name"
+        ]
+    },
+    "POST /inventory/categories/{id}": {
+        "required": [
+            "active",
+            "lock_version",
+            "name"
+        ],
+        "declared": [
+            "active",
+            "lock_version",
+            "name"
+        ]
+    },
+    "POST /inventory/items": {
+        "required": [
+            "base_unit",
+            "category_id",
+            "code",
+            "department",
+            "name"
+        ],
+        "declared": [
+            "base_unit",
+            "category_id",
+            "code",
+            "department",
+            "name"
+        ]
+    },
+    "POST /inventory/items/{id}": {
+        "required": [
+            "active",
+            "category_id",
+            "department",
+            "lock_version",
+            "name"
+        ],
+        "declared": [
+            "active",
+            "category_id",
+            "department",
+            "lock_version",
+            "name"
+        ]
+    },
+    "POST /inventory/items/{id}/units": {
+        "required": [
+            "factor",
+            "reason",
+            "unit"
+        ],
+        "declared": [
+            "factor",
+            "reason",
+            "unit"
+        ]
+    },
+    "POST /inventory/locations": {
+        "required": [
+            "code",
+            "kind",
+            "name"
+        ],
+        "declared": [
+            "code",
+            "kind",
+            "name"
+        ]
+    },
+    "POST /inventory/locations/{id}": {
+        "required": [
+            "active",
+            "kind",
+            "lock_version",
+            "name"
+        ],
+        "declared": [
+            "active",
+            "kind",
+            "lock_version",
+            "name"
+        ]
+    },
+    "POST /inventory/stock-limits": {
+        "required": [
+            "item_id",
+            "location_id",
+            "min"
+        ],
+        "declared": [
+            "item_id",
+            "location_id",
+            "lock_version",
+            "max",
+            "min"
+        ]
+    },
+    "POST /inventory/stock/opening": {
+        "required": [
+            "item_id",
+            "location_id",
+            "quantity",
+            "unit"
+        ],
+        "declared": [
+            "item_id",
+            "location_id",
+            "note",
+            "quantity",
+            "reference",
+            "unit"
         ]
     },
     "POST /laundry/claims": {

@@ -103,6 +103,7 @@ final readonly class DashboardService
         'rooms_not_ready' => '/housekeeping',
         'serious_complaints' => '/front-office/feedback',
         'company_over_limit' => '/front-office/companies',
+        'stock_below_minimum' => '/inventory/stock',
     ];
 
     /**

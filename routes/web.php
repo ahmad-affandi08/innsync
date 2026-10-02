@@ -34,6 +34,7 @@ use App\Modules\IdentityAccess\Presentation\Http\Controllers\PasswordController;
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\PropertySelectionController;
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\ReconfirmController;
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\UserSessionController;
+use App\Modules\InventoryPurchasing\Presentation\Http\Controllers\InventoryCatalogController;
 use App\Modules\Laundry\Presentation\Http\Controllers\ClaimController;
 use App\Modules\Laundry\Presentation\Http\Controllers\LaundryController;
 use App\Modules\Property\Presentation\Http\Controllers\BookingPolicyController;
@@ -354,6 +355,25 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
     Route::get('/checklists/{template}/detail', [HousekeepingChecklistController::class, 'detail'])->where('template', $id)->name('housekeeping.checklists.detail');
     Route::get('/checklists/photo/{completion}', [HousekeepingChecklistController::class, 'photo'])->where('completion', $id)->name('housekeeping.checklists.photo');
     Route::post('/checklists/{template}/complete', [HousekeepingChecklistController::class, 'complete'])->where('template', $id)->name('housekeeping.checklists.complete');
+});
+
+// Inventory catalog and stock (FR-INV-001, -002, -003, -009): items with versioned unit conversions, storage locations, minimum and maximum stock,
+// and the append-only stock ledger. Permissions are enforced in the application services.
+Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix('inventory')->group(function (): void {
+    $id = '[0-9A-Za-z]{26}';
+    Route::get('/', fn () => redirect()->route('inventory.stock'));
+    Route::get('/items', [InventoryCatalogController::class, 'items'])->name('inventory.items');
+    Route::get('/locations', [InventoryCatalogController::class, 'locations'])->name('inventory.locations');
+    Route::get('/stock', [InventoryCatalogController::class, 'stock'])->name('inventory.stock');
+    Route::post('/categories', [InventoryCatalogController::class, 'storeCategory'])->name('inventory.categories.store');
+    Route::post('/categories/{id}', [InventoryCatalogController::class, 'updateCategory'])->where('id', $id)->name('inventory.categories.update');
+    Route::post('/locations', [InventoryCatalogController::class, 'storeLocation'])->name('inventory.locations.store');
+    Route::post('/locations/{id}', [InventoryCatalogController::class, 'updateLocation'])->where('id', $id)->name('inventory.locations.update');
+    Route::post('/items', [InventoryCatalogController::class, 'storeItem'])->name('inventory.items.store');
+    Route::post('/items/{id}', [InventoryCatalogController::class, 'updateItem'])->where('id', $id)->name('inventory.items.update');
+    Route::post('/items/{id}/units', [InventoryCatalogController::class, 'addConversion'])->where('id', $id)->name('inventory.items.units');
+    Route::post('/stock-limits', [InventoryCatalogController::class, 'setLimits'])->name('inventory.limits');
+    Route::post('/stock/opening', [InventoryCatalogController::class, 'postOpening'])->name('inventory.stock.opening');
 });
 
 // Guest laundry (FR-HK-020 to FR-HK-024, FR-LDY-001 to FR-LDY-004, FR-LDY-011): hand-over by housekeeping, counting and processing by

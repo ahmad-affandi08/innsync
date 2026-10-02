@@ -139,6 +139,13 @@ final readonly class DatabaseReportQueries implements ReportQueries
             ->groupBy('c.id', 'c.code', 'c.credit_limit_minor')->havingRaw('SUM(f.balance_minor) > c.credit_limit_minor');
         $alerts['company_over_limit'] = ['count' => DB::query()->fromSub($owing->select('c.id'), 'o')->count(), 'items' => (clone $owing)->select('c.code')->orderBy('c.code')->limit(self::ALERT_EXAMPLES)->pluck('c.code')->all()];
 
+        // Stock below the minimum set for an item in a location (FR-INV-003): the balance is the sum of the stock ledger.
+        $moved = DB::table('stock_movements')->where('property_id', $pid)->groupBy('item_id', 'location_id')->selectRaw('item_id, location_id, SUM(base_qty_milli) as balance');
+        $low = DB::table('inventory_stock_limits as l')->join('inventory_items as i', 'i.id', '=', 'l.item_id')->join('inventory_locations as loc', 'loc.id', '=', 'l.location_id')
+            ->leftJoinSub($moved, 'm', fn ($j) => $j->on('m.item_id', '=', 'l.item_id')->on('m.location_id', '=', 'l.location_id'))
+            ->where('l.property_id', $pid)->where('i.is_active', true)->where('loc.is_active', true)->where('l.min_milli', '>', 0)->whereRaw('COALESCE(m.balance, 0) < l.min_milli');
+        $alerts['stock_below_minimum'] = ['count' => (clone $low)->count(), 'items' => (clone $low)->orderBy('i.code')->limit(self::ALERT_EXAMPLES)->get(['i.code as item', 'loc.code as location'])->map(static fn ($r): string => $r->item.' · '.$r->location)->all()];
+
         return $alerts;
     }
 

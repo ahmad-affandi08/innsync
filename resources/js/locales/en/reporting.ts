@@ -53,6 +53,7 @@ export const reporting = {
     'rpt.alert.serious_complaints': 'High or critical complaints still open',
     'rpt.alert.company_over_limit': 'Companies owing more than their credit limit',
     'rpt.alert.rooms_not_ready': 'Vacant rooms still dirty or in rework',
+    'rpt.alert.stock_below_minimum': 'Items below their minimum stock',
     'rpt.centre.title': 'Reports',
     'rpt.centre.description': 'Reports grouped by theme. Each states when it was made, the business dates it covers, its filters and its source.',
     'rpt.centre.empty': 'You have no reports available.',

@@ -210,6 +210,28 @@
         "password",
         "password_confirmation"
     ],
+    "inventory-purchasing/pages/items": [
+        "base_unit",
+        "category_id",
+        "code",
+        "department",
+        "factor",
+        "name",
+        "reason",
+        "unit"
+    ],
+    "inventory-purchasing/pages/locations": [
+        "code",
+        "kind",
+        "name"
+    ],
+    "inventory-purchasing/pages/stock": [
+        "item_id",
+        "location_id",
+        "min",
+        "quantity",
+        "unit"
+    ],
     "laundry/pages/claims": [
         "approved_minor",
         "cap_multiple",
