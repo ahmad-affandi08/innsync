@@ -129,6 +129,12 @@
             "shift"
         ]
     },
+    "GET /inventory/counts": {
+        "required": [],
+        "declared": [
+            "status"
+        ]
+    },
     "GET /inventory/stock": {
         "required": [],
         "declared": [
@@ -1448,6 +1454,72 @@
             "lock_version",
             "name",
             "negative_blocked"
+        ]
+    },
+    "POST /inventory/counts": {
+        "required": [
+            "kind",
+            "location_id"
+        ],
+        "declared": [
+            "category_id",
+            "kind",
+            "location_id",
+            "note",
+            "scheduled_for"
+        ]
+    },
+    "POST /inventory/counts/{id}/approve": {
+        "required": [
+            "lock_version"
+        ],
+        "declared": [
+            "lock_version",
+            "note"
+        ]
+    },
+    "POST /inventory/counts/{id}/cancel": {
+        "required": [
+            "lock_version",
+            "note"
+        ],
+        "declared": [
+            "lock_version",
+            "note"
+        ]
+    },
+    "POST /inventory/counts/{id}/lines": {
+        "required": [
+            "lines",
+            "lines.*.line_id",
+            "lock_version"
+        ],
+        "declared": [
+            "lines",
+            "lines.*.line_id",
+            "lines.*.note",
+            "lines.*.quantity",
+            "lines.*.reason_code",
+            "lines.*.unit",
+            "lock_version"
+        ]
+    },
+    "POST /inventory/counts/{id}/send-back": {
+        "required": [
+            "lock_version",
+            "note"
+        ],
+        "declared": [
+            "lock_version",
+            "note"
+        ]
+    },
+    "POST /inventory/counts/{id}/submit": {
+        "required": [
+            "lock_version"
+        ],
+        "declared": [
+            "lock_version"
         ]
     },
     "POST /inventory/items": {

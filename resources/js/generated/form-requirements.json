@@ -210,6 +210,10 @@
         "password",
         "password_confirmation"
     ],
+    "inventory-purchasing/pages/counts": [
+        "kind",
+        "location_id"
+    ],
     "inventory-purchasing/pages/items": [
         "base_unit",
         "category_id",

@@ -96,6 +96,8 @@ final class DevelopmentSeeder extends Seeder
         'identity.approval-policy.manage',
         'inventory.catalog.manage',
         'inventory.catalog.view',
+        'inventory.count.approve',
+        'inventory.count.manage',
         'inventory.stock.adjust',
         'inventory.stock.negative',
         'inventory.stock.post',

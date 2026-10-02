@@ -27,7 +27,7 @@ function TableRow({ className, ...props }: ComponentProps<'tr'>) {
 }
 
 function TableHead({ className, ...props }: ComponentProps<'th'>) {
-    return <th className={cn('h-10 px-3 text-left align-middle text-xs font-medium text-muted-foreground', className)} data-slot="table-head" {...props} />;
+    return <th className={cn('h-10 px-3 text-left align-middle text-xs font-medium text-muted-foreground', className)} data-slot="table-head" scope="col" {...props} />;
 }
 
 function TableCell({ className, ...props }: ComponentProps<'td'>) {

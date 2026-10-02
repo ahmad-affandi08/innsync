@@ -35,6 +35,7 @@ use App\Modules\IdentityAccess\Presentation\Http\Controllers\PropertySelectionCo
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\ReconfirmController;
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\UserSessionController;
 use App\Modules\InventoryPurchasing\Presentation\Http\Controllers\InventoryCatalogController;
+use App\Modules\InventoryPurchasing\Presentation\Http\Controllers\StockCountController;
 use App\Modules\InventoryPurchasing\Presentation\Http\Controllers\StockMovementController;
 use App\Modules\Laundry\Presentation\Http\Controllers\ClaimController;
 use App\Modules\Laundry\Presentation\Http\Controllers\LaundryController;
@@ -382,6 +383,14 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
     Route::post('/transfers/{id}/receive', [StockMovementController::class, 'receive'])->where('id', $id)->name('inventory.transfers.receive');
     Route::post('/transfers/{id}/reject', [StockMovementController::class, 'reject'])->where('id', $id)->name('inventory.transfers.reject');
     Route::post('/transfers/{id}/cancel', [StockMovementController::class, 'cancel'])->where('id', $id)->name('inventory.transfers.cancel');
+    Route::get('/counts', [StockCountController::class, 'index'])->name('inventory.counts');
+    Route::get('/counts/{id}', [StockCountController::class, 'show'])->where('id', $id)->name('inventory.counts.show');
+    Route::post('/counts', [StockCountController::class, 'start'])->middleware(['idempotent'])->name('inventory.counts.start');
+    Route::post('/counts/{id}/lines', [StockCountController::class, 'save'])->where('id', $id)->name('inventory.counts.save');
+    Route::post('/counts/{id}/submit', [StockCountController::class, 'submit'])->where('id', $id)->name('inventory.counts.submit');
+    Route::post('/counts/{id}/send-back', [StockCountController::class, 'sendBack'])->where('id', $id)->name('inventory.counts.send-back');
+    Route::post('/counts/{id}/approve', [StockCountController::class, 'approve'])->where('id', $id)->name('inventory.counts.approve');
+    Route::post('/counts/{id}/cancel', [StockCountController::class, 'cancel'])->where('id', $id)->name('inventory.counts.cancel');
 });
 
 // Guest laundry (FR-HK-020 to FR-HK-024, FR-LDY-001 to FR-LDY-004, FR-LDY-011): hand-over by housekeeping, counting and processing by

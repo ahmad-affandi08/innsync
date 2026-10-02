@@ -88,7 +88,9 @@ use App\Modules\IdentityAccess\Infrastructure\Mfa\EloquentMfaStore;
 use App\Modules\IdentityAccess\Infrastructure\Mfa\TotpOneTimePassword;
 use App\Modules\IdentityAccess\Infrastructure\Sessions\DatabaseUserSessionRepository;
 use App\Modules\InventoryPurchasing\Application\InventoryStore;
+use App\Modules\InventoryPurchasing\Application\StockCountStore;
 use App\Modules\InventoryPurchasing\Infrastructure\DatabaseInventoryStore;
+use App\Modules\InventoryPurchasing\Infrastructure\DatabaseStockCountStore;
 use App\Modules\Laundry\Application\ClaimRepository;
 use App\Modules\Laundry\Application\LaundryLiability;
 use App\Modules\Laundry\Application\LaundryRepository;
@@ -363,6 +365,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(GroupRepository::class, DatabaseGroupRepository::class);
         $this->app->bind(ClaimRepository::class, DatabaseClaimRepository::class);
         $this->app->bind(InventoryStore::class, DatabaseInventoryStore::class);
+        $this->app->bind(StockCountStore::class, DatabaseStockCountStore::class);
         $this->app->bind(ParLevelRepository::class, DatabaseParLevelRepository::class);
         $this->app->bind(CompanyRouting::class, ChargeRoutingChain::class);
         $this->app->bind(DocumentNumbers::class, DatabaseDocumentNumbers::class);
