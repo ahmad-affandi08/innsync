@@ -116,4 +116,7 @@ interface InventoryStore
 
     /** @return bool false when the transfer changed or was already decided */
     public function decideTransfer(PropertyId $property, string $id, int $lock, string $status, string $actorId, ?string $note, DateTimeImmutable $at): bool;
+
+    /** Base quantity of an item already sent back by return transfers of a transfer (not cancelled or rejected). */
+    public function returnedByTransfer(PropertyId $property, string $transferId, string $itemId): int;
 }

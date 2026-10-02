@@ -92,7 +92,8 @@ final readonly class SupplierService
 
         return [
             ...$this->shape([...$supplier, ...(array_values($rated)[0] ?? [])]),
-            'currency' => $this->currency->currencyOf($property), 'aspects' => self::ASPECTS, 'items' => $this->itemChoices($property),
+            'currency' => $this->currency->currencyOf($property), 'aspects' => self::ASPECTS, 'items' => $this->itemChoices($property), 'payable_minor' => $this->store->supplierBalance($property, $supplier['id']),
+            'ledger' => array_map(static fn (array $e): array => ['id' => $e['id'], 'kind' => $e['kind'], 'amount_minor' => (int) $e['amount_minor'], 'ref_type' => $e['ref_type'], 'ref_id' => $e['ref_id'], 'ref_number' => $e['ref_number'], 'business_date' => substr((string) $e['business_date'], 0, 10)], $this->store->ledgerEntries($property, $supplier['id'], 50)),
             'prices' => array_map(static fn (array $p): array => [
                 'id' => $p['id'], 'item_id' => $p['item_id'], 'item_code' => $items[$p['item_id']]['code'] ?? '', 'item_name' => $items[$p['item_id']]['name'] ?? '', 'unit' => $p['unit'], 'unit_price_minor' => (int) $p['unit_price_minor'],
                 'valid_from' => substr((string) $p['valid_from'], 0, 10), 'reason' => $p['reason'], 'created_by_name' => $names[$p['created_by']] ?? null, 'in_force' => ($inForce[$p['item_id'].'|'.$p['unit']] ?? null) === $p['id'],

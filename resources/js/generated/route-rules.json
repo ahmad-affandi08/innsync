@@ -135,6 +135,26 @@
             "status"
         ]
     },
+    "GET /inventory/orders": {
+        "required": [],
+        "declared": [
+            "status",
+            "supplier"
+        ]
+    },
+    "GET /inventory/receipts": {
+        "required": [],
+        "declared": [
+            "order",
+            "supplier"
+        ]
+    },
+    "GET /inventory/requests": {
+        "required": [],
+        "declared": [
+            "status"
+        ]
+    },
     "GET /inventory/stock": {
         "required": [],
         "declared": [
@@ -1592,6 +1612,242 @@
             "lock_version",
             "name",
             "negative_blocked"
+        ]
+    },
+    "POST /inventory/orders": {
+        "required": [
+            "lines",
+            "location_id",
+            "supplier_id"
+        ],
+        "declared": [
+            "expected_date",
+            "lines",
+            "lines.*.department",
+            "lines.*.item_id",
+            "lines.*.quantity",
+            "lines.*.request_line_id",
+            "lines.*.unit",
+            "lines.*.unit_price_minor",
+            "location_id",
+            "note",
+            "supplier_id",
+            "tax_bp"
+        ]
+    },
+    "POST /inventory/orders/{id}": {
+        "required": [
+            "lines",
+            "location_id",
+            "lock_version",
+            "supplier_id"
+        ],
+        "declared": [
+            "expected_date",
+            "lines",
+            "lines.*.department",
+            "lines.*.item_id",
+            "lines.*.quantity",
+            "lines.*.request_line_id",
+            "lines.*.unit",
+            "lines.*.unit_price_minor",
+            "location_id",
+            "lock_version",
+            "note",
+            "supplier_id",
+            "tax_bp"
+        ]
+    },
+    "POST /inventory/orders/{id}/cancel": {
+        "required": [
+            "lock_version",
+            "reason"
+        ],
+        "declared": [
+            "lock_version",
+            "reason"
+        ]
+    },
+    "POST /inventory/orders/{id}/close": {
+        "required": [
+            "lock_version",
+            "reason"
+        ],
+        "declared": [
+            "lock_version",
+            "reason"
+        ]
+    },
+    "POST /inventory/orders/{id}/issue": {
+        "required": [
+            "lock_version"
+        ],
+        "declared": [
+            "lock_version"
+        ]
+    },
+    "POST /inventory/orders/{id}/revise": {
+        "required": [
+            "lines",
+            "lines.*.quantity",
+            "location_id",
+            "lock_version",
+            "reason",
+            "supplier_id"
+        ],
+        "declared": [
+            "expected_date",
+            "lines",
+            "lines.*.department",
+            "lines.*.item_id",
+            "lines.*.line_id",
+            "lines.*.quantity",
+            "lines.*.unit",
+            "lines.*.unit_price_minor",
+            "location_id",
+            "lock_version",
+            "note",
+            "reason",
+            "supplier_id",
+            "tax_bp"
+        ]
+    },
+    "POST /inventory/orders/{id}/submit": {
+        "required": [
+            "lock_version"
+        ],
+        "declared": [
+            "lock_version"
+        ]
+    },
+    "POST /inventory/purchasing-settings": {
+        "required": [
+            "budget_policy",
+            "invoice_price_tolerance_bp",
+            "invoice_qty_tolerance_bp",
+            "lock_version",
+            "over_receipt_bp",
+            "po_tolerance_bp",
+            "tax_bp"
+        ],
+        "declared": [
+            "budget_policy",
+            "invoice_price_tolerance_bp",
+            "invoice_qty_tolerance_bp",
+            "lock_version",
+            "over_receipt_bp",
+            "po_tolerance_bp",
+            "tax_bp"
+        ]
+    },
+    "POST /inventory/purchasing-settings/budgets": {
+        "required": [
+            "amount_minor",
+            "department",
+            "period"
+        ],
+        "declared": [
+            "amount_minor",
+            "department",
+            "lock_version",
+            "period"
+        ]
+    },
+    "POST /inventory/receipts": {
+        "required": [
+            "lines",
+            "lines.*.order_line_id",
+            "order_id"
+        ],
+        "declared": [
+            "delivery_note",
+            "lines",
+            "lines.*.accepted",
+            "lines.*.condition",
+            "lines.*.expires_on",
+            "lines.*.note",
+            "lines.*.order_line_id",
+            "lines.*.rejected",
+            "lines.*.rejection_reason",
+            "location_id",
+            "note",
+            "order_id"
+        ]
+    },
+    "POST /inventory/receipts/{id}/lines/{line}/photos": {
+        "required": [
+            "photo"
+        ],
+        "declared": [
+            "photo"
+        ]
+    },
+    "POST /inventory/requests": {
+        "required": [
+            "department",
+            "lines",
+            "lines.*.item_id",
+            "lines.*.quantity",
+            "lines.*.unit",
+            "needed_by",
+            "reason",
+            "urgency"
+        ],
+        "declared": [
+            "department",
+            "lines",
+            "lines.*.est_cost_minor",
+            "lines.*.item_id",
+            "lines.*.note",
+            "lines.*.quantity",
+            "lines.*.unit",
+            "needed_by",
+            "reason",
+            "urgency"
+        ]
+    },
+    "POST /inventory/requests/{id}": {
+        "required": [
+            "department",
+            "lines",
+            "lines.*.item_id",
+            "lines.*.quantity",
+            "lines.*.unit",
+            "lock_version",
+            "needed_by",
+            "reason",
+            "urgency"
+        ],
+        "declared": [
+            "department",
+            "lines",
+            "lines.*.est_cost_minor",
+            "lines.*.item_id",
+            "lines.*.note",
+            "lines.*.quantity",
+            "lines.*.unit",
+            "lock_version",
+            "needed_by",
+            "reason",
+            "urgency"
+        ]
+    },
+    "POST /inventory/requests/{id}/cancel": {
+        "required": [
+            "lock_version",
+            "reason"
+        ],
+        "declared": [
+            "lock_version",
+            "reason"
+        ]
+    },
+    "POST /inventory/requests/{id}/submit": {
+        "required": [
+            "lock_version"
+        ],
+        "declared": [
+            "lock_version"
         ]
     },
     "POST /inventory/stock-limits": {

@@ -79,10 +79,11 @@ final readonly class StockTransferService
         $names = $this->staff->namesOf($property, array_values(array_unique(array_filter(array_merge(array_column($transfers, 'created_by'), array_column($transfers, 'decided_by'))))));
         $actor = strtolower($actorId);
         $utc = static fn (mixed $v): ?string => $v === null ? null : (new DateTimeImmutable((string) $v, new DateTimeZone('UTC')))->format('Y-m-d\TH:i:s\Z');
+        $numbers = array_column($transfers, 'number', 'id');
 
         return [
             'transfers' => array_map(fn (array $t): array => [
-                'id' => $t['id'], 'number' => $t['number'], 'status' => $t['status'], 'note' => $t['note'], 'decision_note' => $t['decision_note'], 'business_date' => substr((string) $t['business_date'], 0, 10),
+                'id' => $t['id'], 'number' => $t['number'], 'return_of' => $t['return_of'] ?? null, 'return_of_number' => ($t['return_of'] ?? null) === null ? null : ($numbers[$t['return_of']] ?? null), 'status' => $t['status'], 'note' => $t['note'], 'decision_note' => $t['decision_note'], 'business_date' => substr((string) $t['business_date'], 0, 10),
                 'from' => ['id' => $t['from_location_id'], 'code' => $locations[$t['from_location_id']]['code'] ?? '', 'name' => $locations[$t['from_location_id']]['name'] ?? ''],
                 'to' => ['id' => $t['to_location_id'], 'code' => $locations[$t['to_location_id']]['code'] ?? '', 'name' => $locations[$t['to_location_id']]['name'] ?? ''],
                 'created_by_name' => $names[$t['created_by']] ?? null, 'decided_by_name' => $t['decided_by'] === null ? null : ($names[$t['decided_by']] ?? null), 'created_at' => $utc($t['created_at']), 'decided_at' => $utc($t['decided_at']),
@@ -102,7 +103,7 @@ final readonly class StockTransferService
      * @param  list<array{item_id: string, unit: string, quantity: string}>  $lines
      * @return array<string, mixed>
      */
-    public function send(PropertyId $property, string $actorId, string $fromId, string $toId, array $lines, ?string $note, ?IdempotencyKey $key = null): array
+    public function send(PropertyId $property, string $actorId, string $fromId, string $toId, array $lines, ?string $note, ?IdempotencyKey $key = null, ?string $returnOf = null): array
     {
         $this->assertProperty($property);
 
@@ -131,10 +132,24 @@ final readonly class StockTransferService
             throw Refusal::stateConflict('A transfer needs two active locations.');
         }
 
+        $original = null;
+
+        if ($returnOf !== null && $returnOf !== '') {
+            $original = $this->inventory->transfer($property, strtolower($returnOf)) ?? throw Refusal::invalid('The transfer to return was not found.', ['return_of']);
+
+            if ($original['status'] !== 'received') {
+                throw Refusal::stateConflict('Only a transfer that was received can be returned.');
+            }
+
+            if ($original['from_location_id'] !== $to['id'] || $original['to_location_id'] !== $from['id']) {
+                throw Refusal::invalid('A return goes back from where the goods arrived to where they were sent from.', ['to_location_id']);
+            }
+        }
+
         $actor = strtolower($actorId);
         $id = $this->ids->next();
 
-        $operation = function () use ($property, $actor, $id, $from, $to, $lines, $note): void {
+        $operation = function () use ($property, $actor, $id, $from, $to, $lines, $note, $original): void {
             $prepared = [];
             $seen = [];
             $itemIds = array_map(static fn (array $l): string => strtolower((string) ($l['item_id'] ?? '')), $lines);
@@ -185,6 +200,22 @@ final readonly class StockTransferService
                     throw Refusal::invalid('A quantity is less than 0.001 of the base unit.', ['lines']);
                 }
 
+                if ($original !== null) {
+                    $sent = 0;
+
+                    foreach ($original['lines'] as $ol) {
+                        if ($ol['item_id'] === $item['id']) {
+                            $sent += (int) $ol['base_qty_milli'];
+                        }
+                    }
+
+                    $already = $this->inventory->returnedByTransfer($property, $original['id'], $item['id']);
+
+                    if ($base > $sent - $already) {
+                        throw Refusal::stateConflict('More of '.$item['code'].' cannot be returned than the transfer moved and has not been returned already.');
+                    }
+                }
+
                 if ($this->inventory->balanceOf($property, $item['id'], $from['id']) < $base) {
                     throw Refusal::stateConflict('There is not enough of '.$item['code'].' in '.$from['code'].' to send.');
                 }
@@ -195,7 +226,7 @@ final readonly class StockTransferService
             $number = $this->numbers->next($property, 'TRF');
             $date = $this->businessDate->current($property)->toString();
 
-            if (! $this->inventory->addTransfer($property, ['id' => $id, 'number' => $number, 'from_location_id' => $from['id'], 'to_location_id' => $to['id'], 'note' => $note, 'created_by' => $actor, 'business_date' => $date], array_map(static fn (array $l): array => array_diff_key($l, ['code' => 0]), $prepared), $this->clock->nowUtc())) {
+            if (! $this->inventory->addTransfer($property, ['id' => $id, 'number' => $number, 'from_location_id' => $from['id'], 'to_location_id' => $to['id'], 'return_of' => $original['id'] ?? null, 'note' => $note, 'created_by' => $actor, 'business_date' => $date], array_map(static fn (array $l): array => array_diff_key($l, ['code' => 0]), $prepared), $this->clock->nowUtc())) {
                 throw Refusal::stateConflict('A transfer with this number already exists. Try again.');
             }
 
@@ -207,7 +238,7 @@ final readonly class StockTransferService
             $this->transactions->run($operation);
         } else {
             $once = $this->executor->execute(
-                new IdempotencyRequest($property, $key, 'inventory.transfer.send', ['from' => $from['id'], 'to' => $to['id'], 'note' => $note, 'lines' => $lines], $actor),
+                new IdempotencyRequest($property, $key, 'inventory.transfer.send', ['from' => $from['id'], 'to' => $to['id'], 'note' => $note, 'lines' => $lines, 'return_of' => $original['id'] ?? null], $actor),
                 function () use ($operation, $id): array {
                     $operation();
 

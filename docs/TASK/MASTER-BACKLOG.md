@@ -170,21 +170,21 @@
 | TASK-INV-008 | FR-INV-008 | Inventory | Sebaiknya | TODO |
 | TASK-INV-009 | FR-INV-009 | Inventory | Wajib | REVIEW |
 | TASK-INV-010 | FR-INV-010 | Inventory | Wajib | IN_PROGRESS |
-| TASK-INV-011 | FR-INV-011 | Inventory | Wajib | TODO |
+| TASK-INV-011 | FR-INV-011 | Inventory | Wajib | REVIEW |
 | TASK-INV-012 | FR-INV-012 | Inventory | Wajib | REVIEW |
-| TASK-PUR-001 | FR-PUR-001 | Purchasing | Wajib | TODO |
-| TASK-PUR-002 | FR-PUR-002 | Purchasing | Wajib | TODO |
-| TASK-PUR-003 | FR-PUR-003 | Purchasing | Wajib | TODO |
-| TASK-PUR-004 | FR-PUR-004 | Purchasing | Wajib | TODO |
-| TASK-PUR-005 | FR-PUR-005 | Purchasing | Sebaiknya | TODO |
-| TASK-PUR-006 | FR-PUR-006 | Purchasing | Wajib | TODO |
-| TASK-PUR-007 | FR-PUR-007 | Purchasing | Wajib | TODO |
-| TASK-PUR-008 | FR-PUR-008 | Purchasing | Wajib | TODO |
-| TASK-PUR-009 | FR-PUR-009 | Purchasing | Wajib | TODO |
-| TASK-PUR-010 | FR-PUR-010 | Purchasing | Sebaiknya | TODO |
-| TASK-PUR-011 | FR-PUR-011 | Purchasing | Wajib | TODO |
-| TASK-PUR-012 | FR-PUR-012 | Purchasing | Wajib | TODO |
-| TASK-PUR-013 | FR-PUR-013 | Purchasing | Sebaiknya | TODO |
+| TASK-PUR-001 | FR-PUR-001 | Purchasing | Wajib | REVIEW |
+| TASK-PUR-002 | FR-PUR-002 | Purchasing | Wajib | REVIEW |
+| TASK-PUR-003 | FR-PUR-003 | Purchasing | Wajib | REVIEW |
+| TASK-PUR-004 | FR-PUR-004 | Purchasing | Wajib | REVIEW |
+| TASK-PUR-005 | FR-PUR-005 | Purchasing | Sebaiknya | REVIEW |
+| TASK-PUR-006 | FR-PUR-006 | Purchasing | Wajib | REVIEW |
+| TASK-PUR-007 | FR-PUR-007 | Purchasing | Wajib | REVIEW |
+| TASK-PUR-008 | FR-PUR-008 | Purchasing | Wajib | IN_PROGRESS |
+| TASK-PUR-009 | FR-PUR-009 | Purchasing | Wajib | REVIEW |
+| TASK-PUR-010 | FR-PUR-010 | Purchasing | Sebaiknya | REVIEW |
+| TASK-PUR-011 | FR-PUR-011 | Purchasing | Wajib | REVIEW |
+| TASK-PUR-012 | FR-PUR-012 | Purchasing | Wajib | REVIEW |
+| TASK-PUR-013 | FR-PUR-013 | Purchasing | Sebaiknya | REVIEW |
 | TASK-HR-001 | FR-HR-001 | Human Resource | Wajib | TODO |
 | TASK-HR-002 | FR-HR-002 | Human Resource | Wajib | TODO |
 | TASK-HR-003 | FR-HR-003 | Human Resource | Sebaiknya | TODO |

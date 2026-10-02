@@ -18,5 +18,9 @@ return [
         'front-office.rate.change' => ['mandatory' => false],
         // FR-FO-039: a correction of a guest's identity after check-in may need approval. The owner decides whether it does, by configuring a policy.
         'front-office.guest.correction' => ['mandatory' => false],
+        // FR-PUR-002, FR-PUR-011: a purchase request, a purchase order and a revision of one that moves its value or quantities beyond the tolerance. The owner configures
+        // the chain by amount band; with no policy for an amount, the document needs no approval.
+        'inventory.purchase-request' => ['mandatory' => false],
+        'inventory.purchase-order' => ['mandatory' => false],
     ],
 ];

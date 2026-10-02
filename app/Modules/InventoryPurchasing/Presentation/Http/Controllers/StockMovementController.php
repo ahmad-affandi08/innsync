@@ -63,11 +63,11 @@ final readonly class StockMovementController
     public function send(Request $request): JsonResponse
     {
         $data = $request->validate([
-            'from_location_id' => ['required', 'string', 'size:26'], 'to_location_id' => ['required', 'string', 'size:26'], 'note' => ['nullable', 'string', 'max:200'],
+            'from_location_id' => ['required', 'string', 'size:26'], 'to_location_id' => ['required', 'string', 'size:26'], 'note' => ['nullable', 'string', 'max:200'], 'return_of' => ['nullable', 'string', 'size:26'],
             'lines' => ['required', 'array', 'min:1', 'max:30'], 'lines.*.item_id' => ['required', 'string', 'size:26'], 'lines.*.unit' => ['required', 'string', 'max:8'], 'lines.*.quantity' => ['required', 'string', 'max:14'],
         ]);
 
-        return $this->json(['transfer' => $this->transfers->send($this->property->current(), $this->actor($request), $data['from_location_id'], $data['to_location_id'], array_values($data['lines']), $data['note'] ?? null, IdempotencyKey::fromString((string) $request->header('Idempotency-Key')))], 201);
+        return $this->json(['transfer' => $this->transfers->send($this->property->current(), $this->actor($request), $data['from_location_id'], $data['to_location_id'], array_values($data['lines']), $data['note'] ?? null, IdempotencyKey::fromString((string) $request->header('Idempotency-Key')), $data['return_of'] ?? null)], 201);
     }
 
     public function receive(Request $request, string $id): JsonResponse

@@ -229,6 +229,39 @@
         "kind",
         "name"
     ],
+    "inventory-purchasing/pages/order": [
+        "location_id",
+        "reason",
+        "supplier_id"
+    ],
+    "inventory-purchasing/pages/orders": [
+        "location_id",
+        "supplier_id"
+    ],
+    "inventory-purchasing/pages/purchase-request": [
+        "department",
+        "lines.*.item_id",
+        "lines.*.quantity",
+        "lines.*.unit",
+        "needed_by",
+        "reason",
+        "urgency"
+    ],
+    "inventory-purchasing/pages/purchasing-settings": [
+        "amount_minor",
+        "budget_policy",
+        "department",
+        "period"
+    ],
+    "inventory-purchasing/pages/requests": [
+        "department",
+        "lines.*.item_id",
+        "lines.*.quantity",
+        "lines.*.unit",
+        "needed_by",
+        "reason",
+        "urgency"
+    ],
     "inventory-purchasing/pages/stock": [
         "item_id",
         "kind",

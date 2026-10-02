@@ -52,7 +52,7 @@ final readonly class StockPoster
      * @param  array{conversion_id: string|null, factor_milli: int}|null  $snapshot  the unit and factor a document recorded earlier (a transfer)
      * @param  string|null  $overrideReason  why an outflow may take the balance below zero; needs the privilege
      * @param  int|null  $unitCostMinor  the cost of one `$unit` in minor units; needed for opening and receipt, optional for adjustment in (the average is used)
-     * @param  int|null  $fixedValueMinor  the value a transfer in takes over from its transfer out
+     * @param  int|null  $fixedValueMinor  the value a transfer in takes over from its transfer out, or the cost a return to a supplier takes out
      * @return array{movement: array<string, mixed>, replayed: bool}
      */
     public function post(PropertyId $property, string $actorId, array $item, array $location, string $kind, string $unit, int $qtyMilli, ?string $reasonCode, ?string $reference, ?string $note, ?string $sourceType, ?string $sourceRef, ?string $transferId, ?string $overrideReason, bool $allowNegative, ?array $snapshot = null, ?int $unitCostMinor = null, ?int $fixedValueMinor = null): array
@@ -124,6 +124,11 @@ final readonly class StockPoster
     {
         if ($kind === 'transfer_in') {
             return $fixedValueMinor ?? throw new InvalidArgumentException('A transfer in takes the value of its transfer out.');
+        }
+
+        // Goods returned to a supplier go out at what they cost on the receipt they came on, not at the average of the day.
+        if ($kind === 'return_out' && $fixedValueMinor !== null) {
+            return $fixedValueMinor;
         }
 
         if (in_array($kind, ['opening', 'receipt'], true) || ($kind === 'adjustment_in' && $unitCostMinor !== null)) {

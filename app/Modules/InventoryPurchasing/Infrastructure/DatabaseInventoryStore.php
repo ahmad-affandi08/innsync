@@ -205,6 +205,12 @@ final readonly class DatabaseInventoryStore implements InventoryStore
         return $row === null ? null : $this->withLines([$row])[0];
     }
 
+    public function returnedByTransfer(PropertyId $property, string $transferId, string $itemId): int
+    {
+        return (int) DB::table('stock_transfer_lines as l')->join('stock_transfers as t', 't.id', '=', 'l.transfer_id')->where('t.property_id', $property->toString())->where('t.return_of', $transferId)->whereNotIn('t.status', ['cancelled', 'rejected'])
+            ->where('l.item_id', $itemId)->sum('l.base_qty_milli');
+    }
+
     public function decideTransfer(PropertyId $property, string $id, int $lock, string $status, string $actorId, ?string $note, DateTimeImmutable $at): bool
     {
         return DB::table('stock_transfers')->where('property_id', $property->toString())->where('id', $id)->where('lock_version', $lock)->where('status', 'sent')
