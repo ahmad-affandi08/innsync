@@ -85,9 +85,11 @@ use App\Modules\IdentityAccess\Infrastructure\Authorization\ScopedPermissionChec
 use App\Modules\IdentityAccess\Infrastructure\Mfa\EloquentMfaStore;
 use App\Modules\IdentityAccess\Infrastructure\Mfa\TotpOneTimePassword;
 use App\Modules\IdentityAccess\Infrastructure\Sessions\DatabaseUserSessionRepository;
+use App\Modules\Laundry\Application\ClaimRepository;
 use App\Modules\Laundry\Application\LaundryLiability;
 use App\Modules\Laundry\Application\LaundryRepository;
 use App\Modules\Laundry\Application\LaundryService;
+use App\Modules\Laundry\Infrastructure\DatabaseClaimRepository;
 use App\Modules\Laundry\Infrastructure\DatabaseLaundryRepository;
 use App\Modules\Property\Application\Catalog\RoomCatalogReader;
 use App\Modules\Property\Application\Catalog\RoomCatalogRepository;
@@ -349,6 +351,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(CompanyRepository::class, DatabaseCompanyRepository::class);
         $this->app->bind(ForeignPaymentRepository::class, DatabaseForeignPaymentRepository::class);
         $this->app->bind(GroupRepository::class, DatabaseGroupRepository::class);
+        $this->app->bind(ClaimRepository::class, DatabaseClaimRepository::class);
         $this->app->bind(CompanyRouting::class, ChargeRoutingChain::class);
         $this->app->bind(DocumentNumbers::class, DatabaseDocumentNumbers::class);
         $this->app->bind(ProviderRegistry::class, ConfiguredProviderRegistry::class);

@@ -52,6 +52,7 @@ Release notes for every release (NFR-14). Newest first. Each entry names the tas
 - TASK-FO-026 (BR-002, BR-003): payment in a foreign currency, off until switched on: the clerk takes, say, US dollars at the hotel's own typed rate and the folio is paid by the rupiah equivalent (whole rupiah, rounded half up), keeping the foreign amount, the rate and its version.
 - TASK-FO-006 (BR-001, BR-006): simple group booking: one booker with up to 30 rooms made together as ordinary reservations, with one master folio that takes the room charges (and optionally the other charges) or a bill per room; the master folio may stay open after check-out until it is paid.
 - TASK-DSH-005 (BR-003): extensible outlets: a manager names an outlet and the posting sources it owns, and it appears as its own revenue line on the dashboard and its own tax column on the obligations page; what no outlet owns stays under "other".
+- TASK-LDY-006 (BR-003): claims for damaged or lost guest laundry with a photo and the value claimed, decided once by a Manager on Duty who did not record it, the compensation capped at ten times the laundry price of a named item (adjustable); nothing is posted to the folio.
 
 ### Known limitations
 

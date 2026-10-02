@@ -97,7 +97,7 @@
 | TASK-LDY-003 | FR-LDY-003 | Laundry | Wajib | REVIEW |
 | TASK-LDY-004 | FR-LDY-004 | Laundry | Wajib | REVIEW |
 | TASK-LDY-005 | FR-LDY-005 | Laundry | Sebaiknya | REVIEW |
-| TASK-LDY-006 | FR-LDY-006 | Laundry | Sebaiknya | TODO |
+| TASK-LDY-006 | FR-LDY-006 | Laundry | Sebaiknya | REVIEW |
 | TASK-LDY-007 | FR-LDY-007 | Laundry | Wajib | REVIEW |
 | TASK-LDY-008 | FR-LDY-008 | Laundry | Sebaiknya | TODO |
 | TASK-LDY-009 | FR-LDY-009 | Laundry | Wajib | TODO |

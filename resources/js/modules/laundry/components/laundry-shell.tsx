@@ -9,6 +9,7 @@ import { useTranslation } from '@/shared/i18n/i18n';
 const LINKS = [
     { href: '/laundry', label: 'ldy.nav.queue' },
     { href: '/laundry/new', label: 'ldy.nav.new' },
+    { href: '/laundry/claims', label: 'ldy.nav.claims' },
     { href: '/laundry/prices', label: 'ldy.nav.prices' },
 ] as const;
 

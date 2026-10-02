@@ -24,7 +24,7 @@ type May = { process: boolean; deliver: boolean; cancel: boolean };
 
 const NEXT: Record<string, string> = { received: 'washing', washing: 'drying', drying: 'ironing' };
 
-export default function LaundryOrderPage({ currency, may, order: o }: { currency: string; may: May; order: Order }) {
+export default function LaundryOrderPage({ claims, currency, may, order: o }: { claims: { id: string; number: string; kind: string; status: string; claimed_minor: number; approved_minor: number | null }[]; currency: string; may: May; order: Order }) {
     const { t } = useTranslation();
     const format = useFormatters();
     const errorCopy = useErrorStateCopy();
@@ -101,6 +101,18 @@ export default function LaundryOrderPage({ currency, may, order: o }: { currency
                 <h2 className="text-lg font-semibold" id="hist-h">{t('ldy.order.history')}</h2>
                 <ul className="divide-y divide-border border-y border-border text-sm">{o.history.map((h, i) => <li className="flex justify-between gap-2 py-2" key={i}><span>{t(`ldy.status.${h.to}` as 'ldy.status.sent')}</span><span className="text-xs text-muted-foreground">{format.instant(h.occurred_at.replace(' ', 'T') + 'Z')}</span></li>)}</ul>
             </section>
+
+            {claims.length > 0 || o.status !== 'cancelled' ? (
+                <section aria-labelledby="claims-h" className="flex flex-col gap-2" data-testid="order-claims">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                        <h2 className="text-lg font-semibold" id="claims-h">{t('ldy.claim.onOrder')}</h2>
+                        <Button asChild size="sm" variant="outline"><Link href={`/laundry/claims?order=${o.id}`}>{t('ldy.claim.recordFor')}</Link></Button>
+                    </div>
+                    {claims.length === 0 ? <p className="text-sm text-muted-foreground">{t('ldy.claim.noneOnOrder')}</p> : (
+                        <ul className="divide-y divide-border border-y border-border text-sm">{claims.map((c) => <li className="flex flex-wrap justify-between gap-2 py-2" key={c.id}><span>{c.number} · {t(`ldy.claim.kind.${c.kind}` as 'ldy.claim.kind.damage')} · {format.money(c.claimed_minor, currency)}</span><StatusBadge label={t(`ldy.claim.status.${c.status}` as 'ldy.claim.status.open')} tone={c.status === 'approved' ? 'success' : c.status === 'open' ? 'warning' : 'neutral'} /></li>)}</ul>
+                    )}
+                </section>
+            ) : null}
 
             <ConfirmDialog
                 cancelLabel={t('ldy.order.back2')}

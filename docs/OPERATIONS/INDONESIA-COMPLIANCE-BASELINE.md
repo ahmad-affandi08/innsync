@@ -89,3 +89,9 @@ Booking policy is a commercial decision of the hotel, not a legal one; Indonesia
 
 - **Off by default.** Indonesian law requires the rupiah for payments made inside Indonesia (Law 7 of 2011 on Currency and Bank Indonesia's rule on using the rupiah), with narrow exceptions. A hotel that quotes in dollars normally takes the **rupiah equivalent**, by card, transfer or exchange. The feature exists because the PRD asks for it "when enabled"; **counsel must confirm whether and how this hotel may take foreign cash** before anyone switches it on.
 - **Rate and rounding.** The hotel types its own rate (usually its bank's counter rate of the day); nothing is fetched. The rupiah equivalent is rounded to the whole rupiah, half up. The folio stays in rupiah, so tax and service charge are never recalculated in a foreign currency.
+
+## Laundry claims (FR-LDY-006) — baseline for Phase 1
+
+- **Compensation cap.** Hotel laundry terms in Indonesia commonly limit compensation for a damaged or lost item to **ten times the laundry charge** of that item. The system applies that as a default cap for a claim that names an item; the owner changes the multiple or switches it off. The hotel's printed laundry terms (and consumer-protection law, UU 8/1999, on standard clauses) are for counsel to confirm.
+- **Settlement.** The compensation is paid or credited by the hotel outside the ledger; nothing is posted automatically.
+- **Retention.** The claim photo is erased a year after the decision (adjustable up to three years); the claim record itself and its audit trail are kept.

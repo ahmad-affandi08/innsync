@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\Laundry\Presentation\Http\Controllers;
 
+use App\Modules\Laundry\Application\ClaimService;
 use App\Modules\Laundry\Application\LaundryRequest;
 use App\Modules\Laundry\Application\LaundryService;
 use App\Shared\Application\Idempotency\IdempotencyKey;
@@ -16,7 +17,7 @@ use Inertia\Response;
 /** Guest laundry screens and actions. Every rule and permission lives in `LaundryService`. */
 final readonly class LaundryController
 {
-    public function __construct(private LaundryService $laundry, private PropertyContext $property) {}
+    public function __construct(private LaundryService $laundry, private ClaimService $claims, private PropertyContext $property) {}
 
     public function index(Request $request): Response
     {
@@ -31,7 +32,7 @@ final readonly class LaundryController
         $property = $this->property->current();
         $actor = $this->actor($request);
 
-        return Inertia::render('laundry/pages/order', ['order' => $this->laundry->view($property, $actor, $id), 'currency' => $this->laundry->currency($property), 'may' => $this->laundry->abilities($property, $actor)]);
+        return Inertia::render('laundry/pages/order', ['order' => $this->laundry->view($property, $actor, $id), 'claims' => $this->claims->ofOrder($property, $actor, $id), 'currency' => $this->laundry->currency($property), 'may' => $this->laundry->abilities($property, $actor)]);
     }
 
     public function create(Request $request): Response
