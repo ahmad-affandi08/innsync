@@ -164,7 +164,7 @@ export function AppFrame({ actions, children, description, links = [], title, wi
                     </SheetContent>
                 </Sheet>
 
-                <div className="flex min-w-0 flex-1 flex-col lg:pl-64">
+                <div className="flex min-w-0 flex-1 flex-col bg-surface-muted lg:pl-64">
                     <header className="sticky top-0 z-20 flex h-14 items-center gap-3 border-b border-border bg-surface px-4 lg:px-8 print:hidden">
                         <button aria-label={t('shell.openMenu')} className="p-2 text-foreground hover:bg-surface-muted lg:hidden" onClick={() => setOpen(true)} type="button">
                             <Menu aria-hidden="true" className="size-5" />
@@ -178,7 +178,7 @@ export function AppFrame({ actions, children, description, links = [], title, wi
                                     </>
                                 ) : null}
                                 <BreadcrumbItem><BreadcrumbLink asChild><Link href={current.href}>{t(current.label)}</Link></BreadcrumbLink></BreadcrumbItem>
-                                {current.key !== 'home' ? (
+                                {current.key !== 'home' && t(current.label) !== title ? (
                                     <>
                                         <BreadcrumbSeparator />
                                         <BreadcrumbItem className="min-w-0"><BreadcrumbPage className="truncate">{title}</BreadcrumbPage></BreadcrumbItem>

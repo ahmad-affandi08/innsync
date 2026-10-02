@@ -1,4 +1,5 @@
 import { Head, Link, router } from '@inertiajs/react';
+import { ArrowRight } from 'lucide-react';
 import { Fragment, useEffect, useState } from 'react';
 
 import { Alert } from '@/components/ui/alert';
@@ -118,15 +119,15 @@ export default function DashboardPage({ currency, preferences, snapshot: s, tv }
 
             <div className="grid gap-4 md:grid-cols-2">
                 {cards.map((c) => (
-                    <article aria-labelledby={`card-${c.key}`} className="flex flex-col gap-2 border border-border p-4" data-testid={`card-${c.key}`} key={c.key}>
+                    <article aria-labelledby={`card-${c.key}`} className="flex flex-col gap-3 border border-t-2 border-border border-t-brand bg-surface p-5" data-testid={`card-${c.key}`} key={c.key}>
                         <header className="flex flex-wrap items-baseline justify-between gap-2">
-                            <h2 className="text-lg font-semibold" id={`card-${c.key}`}>{t(`rpt.card.${c.key}` as 'rpt.card.occupancy')}</h2>
+                            <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground" id={`card-${c.key}`}>{t(`rpt.card.${c.key}` as 'rpt.card.occupancy')}</h2>
                             <span className="text-xs text-muted-foreground">{scope(c)}</span>
                         </header>
 
                         {c.key === 'occupancy' && (
                             <>
-                                <p className="text-2xl font-semibold" data-testid="occupancy-line">{t('rpt.card.occupancy.line', { occupied: c.values.occupied, sellable: c.values.sellable, percent: percent(c.values.occupancy_bp) })}</p>
+                                <p className="text-3xl font-semibold tabular-nums tracking-tight" data-testid="occupancy-line">{t('rpt.card.occupancy.line', { occupied: c.values.occupied, sellable: c.values.sellable, percent: percent(c.values.occupancy_bp) })}</p>
                                 <p className="text-sm">{t('rpt.card.occupancy.more', { available: c.values.available, blocked: c.values.blocked, guests: c.values.guests })}</p>
                             </>
                         )}
@@ -139,8 +140,8 @@ export default function DashboardPage({ currency, preferences, snapshot: s, tv }
                         {c.key === 'activity' && <p className="text-sm">{t('rpt.card.activity.line', { in: c.values.checked_in, out: c.values.checked_out, new: c.values.new_reservations })}</p>}
                         {c.key === 'revenue' && (
                             <>
-                                <p className="text-2xl font-semibold" data-testid="revenue-net">{format.money((c.values.net as Money).total, currency)}</p>
-                                <dl className="grid grid-cols-[1fr_auto] gap-x-4 text-sm">
+                                <p className="text-3xl font-semibold tabular-nums tracking-tight" data-testid="revenue-net">{format.money((c.values.net as Money).total, currency)}</p>
+                                <dl className="grid grid-cols-[1fr_auto] gap-x-4 gap-y-1 text-sm [&>dd]:text-right [&>dd]:tabular-nums">
                                     <dt>{t('rpt.card.revenue.room')}</dt><dd>{format.money((c.values.room as Money).total, currency)}</dd>
                                     <dt>{t('rpt.card.revenue.laundry')}</dt><dd>{format.money((c.values.laundry as Money).total, currency)}</dd>
                                     {((c.values.outlets ?? []) as { code: string; name: string; total: number }[]).map((o) => <Fragment key={o.code}><dt>{o.name}</dt><dd>{format.money(o.total, currency)}</dd></Fragment>)}
@@ -162,7 +163,7 @@ export default function DashboardPage({ currency, preferences, snapshot: s, tv }
                             <p className="mt-1">{t(`rpt.card.${c.key}.def` as 'rpt.card.occupancy.def')}</p>
                             <p className="mt-1">{t('rpt.dash.asOf', { time: format.instant(c.as_of) })}</p>
                         </details>
-                        <Link className="text-sm font-medium underline-offset-2 hover:underline" href={c.href}>{t('rpt.dash.openSource')}</Link>
+                        <Link className="mt-auto inline-flex items-center gap-1 border-t border-border pt-3 text-sm font-medium text-accent hover:underline" href={c.href}>{t('rpt.dash.openSource')}<ArrowRight aria-hidden="true" className="size-4" /></Link>
                     </article>
                 ))}
             </div>

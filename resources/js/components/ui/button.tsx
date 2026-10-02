@@ -6,7 +6,7 @@ import type { ButtonHTMLAttributes } from 'react';
 import { cn } from '@/shared/lib/utils';
 
 const buttonVariants = cva(
-    'inline-flex min-h-10 items-center justify-center gap-2 whitespace-nowrap px-4 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 aria-busy:cursor-progress',
+    'inline-flex items-center justify-center gap-2 whitespace-nowrap px-4 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 aria-busy:cursor-progress',
     {
         variants: {
             variant: {
@@ -22,7 +22,7 @@ const buttonVariants = cva(
             },
             size: {
                 default: 'h-10',
-                sm: 'h-9 px-3',
+                sm: 'h-8 px-3',
                 lg: 'h-11 px-6',
                 icon: 'size-10 px-0',
             },

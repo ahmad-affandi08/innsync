@@ -29,23 +29,23 @@ const toneStyles: Record<StatusTone, { icon: LucideIcon; className: string }> =
     {
         neutral: {
             icon: Circle,
-            className: 'border-border bg-surface-muted text-foreground',
+            className: 'border-transparent bg-surface-muted text-foreground',
         },
         success: {
             icon: CircleCheck,
-            className: 'border-success/40 bg-success/10 text-success',
+            className: 'border-transparent bg-success/10 text-success',
         },
         warning: {
             icon: TriangleAlert,
-            className: 'border-warning/40 bg-warning/10 text-warning',
+            className: 'border-transparent bg-warning/10 text-warning',
         },
         danger: {
             icon: CircleX,
-            className: 'border-danger/40 bg-danger/10 text-danger',
+            className: 'border-transparent bg-danger/10 text-danger',
         },
         info: {
             icon: Info,
-            className: 'border-info/40 bg-info/10 text-info',
+            className: 'border-transparent bg-info/10 text-info',
         },
         pending: {
             icon: Clock,
