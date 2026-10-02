@@ -142,6 +142,12 @@
             "status"
         ]
     },
+    "GET /inventory/valuation": {
+        "required": [],
+        "declared": [
+            "as_of"
+        ]
+    },
     "GET /laundry/claims": {
         "required": [],
         "declared": [
@@ -1547,7 +1553,8 @@
             "quantity",
             "reason_code",
             "reference",
-            "unit"
+            "unit",
+            "unit_cost_minor"
         ]
     },
     "POST /inventory/stock/opening": {
@@ -1555,7 +1562,8 @@
             "item_id",
             "location_id",
             "quantity",
-            "unit"
+            "unit",
+            "unit_cost_minor"
         ],
         "declared": [
             "item_id",
@@ -1563,7 +1571,8 @@
             "note",
             "quantity",
             "reference",
-            "unit"
+            "unit",
+            "unit_cost_minor"
         ]
     },
     "POST /inventory/transfers": {

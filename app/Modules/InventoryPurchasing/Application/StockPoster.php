@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Modules\InventoryPurchasing\Application;
 
 use App\Modules\InventoryPurchasing\Domain\StockQuantity;
+use App\Modules\InventoryPurchasing\Domain\StockValue;
 use App\Modules\Property\Application\Settings\BusinessDateProvider;
 use App\Shared\Application\Audit\AuditEntry;
 use App\Shared\Application\Audit\AuditTrail;
@@ -22,6 +23,11 @@ use InvalidArgumentException;
  * one after the other and the balance it reads is the balance it changes. It owns the rules every kind of movement shares: the unit and factor
  * (the factor of the moment is kept), the base equivalent, the negative-stock policy (FR-INV-010, BR-007), and exactly-once posting for a source
  * document (BR-005): posting again for the same source, item and location returns the movement already made.
+ *
+ * It also values the movement (FR-INV-007). Stock is valued by the moving average over the item in the whole property: an inflow carries the cost it is
+ * given (a transfer in carries the value of its transfer out, so moving stock between locations never changes the total), and an outflow is taken out
+ * at the average cost of the moment. When nothing is left to average, an outflow uses the cost of the last inflow, so stock that went negative
+ * is valued too and a later correction restores the value with the quantity.
  */
 final readonly class StockPoster
 {
@@ -45,9 +51,11 @@ final readonly class StockPoster
      * @param  int  $qtyMilli  the magnitude in `$unit`; the ledger stores an outflow as negative
      * @param  array{conversion_id: string|null, factor_milli: int}|null  $snapshot  the unit and factor a document recorded earlier (a transfer)
      * @param  string|null  $overrideReason  why an outflow may take the balance below zero; needs the privilege
+     * @param  int|null  $unitCostMinor  the cost of one `$unit` in minor units; needed for opening and receipt, optional for adjustment in (the average is used)
+     * @param  int|null  $fixedValueMinor  the value a transfer in takes over from its transfer out
      * @return array{movement: array<string, mixed>, replayed: bool}
      */
-    public function post(PropertyId $property, string $actorId, array $item, array $location, string $kind, string $unit, int $qtyMilli, ?string $reasonCode, ?string $reference, ?string $note, ?string $sourceType, ?string $sourceRef, ?string $transferId, ?string $overrideReason, bool $allowNegative, ?array $snapshot = null): array
+    public function post(PropertyId $property, string $actorId, array $item, array $location, string $kind, string $unit, int $qtyMilli, ?string $reasonCode, ?string $reference, ?string $note, ?string $sourceType, ?string $sourceRef, ?string $transferId, ?string $overrideReason, bool $allowNegative, ?array $snapshot = null, ?int $unitCostMinor = null, ?int $fixedValueMinor = null): array
     {
         $actor = strtolower($actorId);
         $this->inventory->lockItem($property, $item['id']);
@@ -93,21 +101,58 @@ final readonly class StockPoster
             }
         }
 
-        $id = $this->ids->next();
         $sign = $inflow ? 1 : -1;
+        $value = $this->valueOf($property, $item, $kind, $unit, $qtyMilli, $base, $unitCostMinor, $fixedValueMinor);
+        $id = $this->ids->next();
         $date = $this->businessDate->current($property)->toString();
         $row = [
             'id' => $id, 'item_id' => $item['id'], 'location_id' => $location['id'], 'kind' => $kind, 'reason_code' => $reasonCode, 'unit' => $unit, 'unit_qty_milli' => $sign * $qtyMilli, 'conversion_id' => $conversion,
-            'factor_milli' => $factor, 'base_qty_milli' => $sign * $base, 'reference' => $reference, 'source_type' => $sourceType, 'source_ref' => $sourceRef, 'transfer_id' => $transferId, 'note' => $note,
+            'factor_milli' => $factor, 'base_qty_milli' => $sign * $base, 'value_minor' => $sign * $value, 'unit_cost_minor' => $unitCostMinor, 'reference' => $reference, 'source_type' => $sourceType, 'source_ref' => $sourceRef, 'transfer_id' => $transferId, 'note' => $note,
             'override_reason' => $override, 'business_date' => $date, 'posted_by' => $actor,
         ];
         $this->inventory->addMovement($property, $row, $this->clock->nowUtc());
         $this->audit->record(new AuditEntry($property->toString(), $actor, 'stock.'.$kind.'_posted', 'inventory_item', $item['id'], null, [
-            'location' => $location['code'], 'unit' => $unit, 'unit_qty_milli' => $sign * $qtyMilli, 'factor_milli' => $factor, 'base_qty_milli' => $sign * $base, 'reason_code' => $reasonCode, 'source' => $sourceType === null ? null : $sourceType.':'.$sourceRef,
+            'location' => $location['code'], 'unit' => $unit, 'unit_qty_milli' => $sign * $qtyMilli, 'factor_milli' => $factor, 'base_qty_milli' => $sign * $base, 'value_minor' => $sign * $value, 'reason_code' => $reasonCode, 'source' => $sourceType === null ? null : $sourceType.':'.$sourceRef,
         ], $override));
         $this->outbox->publish(new OutboxEvent($property, 'inventory.stock.moved', $id, 1, ['movement_id' => $id, 'item_id' => $item['id'], 'location_id' => $location['id'], 'kind' => $kind, 'base_qty_milli' => $sign * $base, 'actor_id' => $actor]));
 
         return ['movement' => $this->shape($row, $item), 'replayed' => false];
+    }
+
+    /** The value, a magnitude in minor units, of a movement of `$base` base thousandths. */
+    private function valueOf(PropertyId $property, array $item, string $kind, string $unit, int $qtyMilli, int $base, ?int $unitCostMinor, ?int $fixedValueMinor): int
+    {
+        if ($kind === 'transfer_in') {
+            return $fixedValueMinor ?? throw new InvalidArgumentException('A transfer in takes the value of its transfer out.');
+        }
+
+        if (in_array($kind, ['opening', 'receipt'], true) || ($kind === 'adjustment_in' && $unitCostMinor !== null)) {
+            if ($unitCostMinor === null || $unitCostMinor < 0 || $unitCostMinor > StockValue::MAX_UNIT_COST_MINOR) {
+                throw Refusal::invalid('Give the cost of one '.$unit.' as a whole amount of at most 100,000,000.', ['unit_cost_minor']);
+            }
+
+            return StockValue::ofQuantity($qtyMilli, $unitCostMinor);
+        }
+
+        $pool = $this->inventory->pool($property, $item['id']);
+
+        if ($pool['qty_milli'] > 0 && $pool['value_minor'] > 0) {
+            // Taking the last unit takes exactly the value left. Going past it (negative stock) carries on at the same average, so the value
+            // goes below zero with the quantity and a later correction at that cost brings both back together.
+            return StockValue::mulDiv($base, $pool['value_minor'], $pool['qty_milli']);
+        }
+
+        $last = $this->inventory->lastInflowCost($property, $item['id']);
+
+        if ($last !== null) {
+            return StockValue::mulDiv($base, $last['value_minor'], $last['base_qty_milli']);
+        }
+
+        if ($kind === 'adjustment_in') {
+            throw Refusal::invalid('This item has no cost yet. Give the cost of one '.$unit.'.', ['unit_cost_minor']);
+        }
+
+        return 0;
     }
 
     /** The reason an outflow may go below zero, or a refusal. */
@@ -139,7 +184,7 @@ final readonly class StockPoster
     {
         return [
             'id' => $row['id'], 'kind' => $row['kind'], 'unit' => $row['unit'], 'unit_qty_milli' => (int) $row['unit_qty_milli'], 'factor_milli' => (int) $row['factor_milli'], 'base_qty_milli' => (int) $row['base_qty_milli'],
-            'base_unit' => $item['base_unit'], 'reason_code' => $row['reason_code'], 'override_reason' => $row['override_reason'],
+            'value_minor' => (int) $row['value_minor'], 'base_unit' => $item['base_unit'], 'reason_code' => $row['reason_code'], 'override_reason' => $row['override_reason'],
         ];
     }
 }

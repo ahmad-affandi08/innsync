@@ -251,8 +251,9 @@ final readonly class StockTransferService
             foreach ($lines as $l) {
                 $item = $items[$l['item_id']] ?? throw Refusal::notFound('Item not found.');
                 $snapshot = ['conversion_id' => $l['conversion_id'], 'factor_milli' => (int) $l['factor_milli']];
-                $this->poster->post($property, $actor, $item, $from, 'transfer_out', $l['unit'], (int) $l['unit_qty_milli'], null, $transfer['number'], null, 'transfer', $transfer['id'], $transfer['id'], null, false, $snapshot);
-                $this->poster->post($property, $actor, $item, $to, 'transfer_in', $l['unit'], (int) $l['unit_qty_milli'], null, $transfer['number'], null, 'transfer', $transfer['id'], $transfer['id'], null, false, $snapshot);
+                $out = $this->poster->post($property, $actor, $item, $from, 'transfer_out', $l['unit'], (int) $l['unit_qty_milli'], null, $transfer['number'], null, 'transfer', $transfer['id'], $transfer['id'], null, false, $snapshot);
+                // The stock keeps the value it left with, so a transfer never changes the total.
+                $this->poster->post($property, $actor, $item, $to, 'transfer_in', $l['unit'], (int) $l['unit_qty_milli'], null, $transfer['number'], null, 'transfer', $transfer['id'], $transfer['id'], null, false, $snapshot, null, abs($out['movement']['value_minor']));
             }
 
             $this->audit->record(new AuditEntry($property->toString(), $actor, 'stock_transfer.received', 'stock_transfer', $transfer['id'], ['status' => 'sent'], ['status' => 'received', 'number' => $transfer['number'], 'from' => $from['code'], 'to' => $to['code']]));

@@ -14,6 +14,7 @@ import { StatusBadge, type StatusTone } from '@/components/ui/status-badge';
 import { InventoryShell } from '@/modules/inventory-purchasing/components/inventory-shell';
 import { formatMilli, parseMilli, plainMilli, toBaseMilli } from '@/modules/inventory-purchasing/lib/quantity';
 import { newIdempotencyKey } from '@/shared/api/http';
+import { parseMajorToMinor } from '@/shared/money/money';
 import { useServerAction } from '@/shared/api/use-server-action';
 import { useFormatters, useTranslation } from '@/shared/i18n/i18n';
 import { useErrorStateCopy } from '@/shared/i18n/use-ui-copy';
@@ -21,13 +22,13 @@ import type { MessageKey } from '@/locales/en/index';
 
 type Row = {
     item_id: string; item_code: string; item_name: string; category_name: string; department: string; base_unit: string; is_active: boolean;
-    location_id: string; location_code: string; location_name: string; balance_milli: number; min_milli: number | null; max_milli: number | null; limit_lock: number | null; status: string; last_at: string | null;
+    location_id: string; location_code: string; location_name: string; balance_milli: number; value_minor: number | null; min_milli: number | null; max_milli: number | null; limit_lock: number | null; status: string; last_at: string | null;
 };
-type Movement = { id: string; kind: string; reason_code: string | null; override_reason: string | null; item_code: string; item_name: string; location_code: string; unit: string; unit_qty_milli: number; factor_milli: number; base_qty_milli: number; base_unit: string; reference: string | null; note: string | null; business_date: string; created_at: string };
+type Movement = { value_minor: number | null; id: string; kind: string; reason_code: string | null; override_reason: string | null; item_code: string; item_name: string; location_code: string; unit: string; unit_qty_milli: number; factor_milli: number; base_qty_milli: number; base_unit: string; reference: string | null; note: string | null; business_date: string; created_at: string };
 type CatalogItem = { id: string; code: string; name: string; base_unit: string; is_active: boolean; units: { unit: string; factor_milli: number }[] };
 type Catalog = { items: CatalogItem[]; locations: { id: string; code: string; name: string; is_active: boolean }[]; may: { manage: boolean; stock: boolean } };
-type Position = { reasons: { adjust: string[]; write_off: string[]; departments: string[] }; rows: Row[]; below_minimum: number; may: { post: boolean; adjust: boolean; negative: boolean; transfer: boolean; limits: boolean } };
-type Move = { kind: string; item_id: string; location_id: string; unit: string; quantity: string; reason_code: string; reference: string; note: string; negative_reason: string };
+type Position = { currency: string; reasons: { adjust: string[]; write_off: string[]; departments: string[] }; rows: Row[]; below_minimum: number; may: { post: boolean; adjust: boolean; negative: boolean; transfer: boolean; limits: boolean; valuation: boolean } };
+type Move = { kind: string; item_id: string; location_id: string; unit: string; quantity: string; reason_code: string; reference: string; note: string; negative_reason: string; unit_cost: string };
 
 const OUTFLOWS = ['issue', 'adjustment_out', 'write_off'];
 
@@ -42,6 +43,8 @@ export default function StockPage({ position, movements, catalog, filters }: { p
     const [limits, setLimits] = useState<{ row: Row; min: string; max: string } | null>(null);
     const [posted, setPosted] = useState(false);
     const reload = ['position', 'movements'];
+    const [costError, setCostError] = useState(false);
+    const money = (minor: number) => format.money(minor, position.currency);
     const qty = (n: number) => formatMilli(n, locale);
     const kinds = [...(position.may.post ? ['opening', 'receipt', 'issue'] : []), ...(position.may.adjust ? ['adjustment_in', 'adjustment_out', 'write_off'] : [])];
     const kindLabel = (k: string) => t(`inv.stock.kind.${k}` as MessageKey);
@@ -54,8 +57,9 @@ export default function StockPage({ position, movements, catalog, filters }: { p
     function openMove() {
         action.clear();
         setPosted(false);
+        setCostError(false);
         const item = catalog.items.find((i) => i.is_active);
-        setMove({ kind: kinds[0] ?? 'receipt', item_id: item?.id ?? '', location_id: catalog.locations.find((l) => l.is_active)?.id ?? '', unit: item?.base_unit ?? '', quantity: '', reason_code: '', reference: '', note: '', negative_reason: '' });
+        setMove({ kind: kinds[0] ?? 'receipt', item_id: item?.id ?? '', location_id: catalog.locations.find((l) => l.is_active)?.id ?? '', unit: item?.base_unit ?? '', quantity: '', reason_code: '', reference: '', note: '', negative_reason: '', unit_cost: '' });
     }
 
     const moveItem = move === null ? null : catalog.items.find((i) => i.id === move.item_id) ?? null;
@@ -72,8 +76,11 @@ export default function StockPage({ position, movements, catalog, filters }: { p
 
     async function postMove() {
         if (move === null) return;
+        const cost = move.unit_cost.trim() === '' ? null : parseMajorToMinor(move.unit_cost, position.currency);
+        setCostError(move.unit_cost.trim() !== '' && cost === null);
+        if (move.unit_cost.trim() !== '' && cost === null) return;
         const done = await action.run('/inventory/stock/movements', {
-            body: { kind: move.kind, item_id: move.item_id, location_id: move.location_id, unit: move.unit, quantity: move.quantity, reason_code: move.reason_code || null, reference: move.reference || null, note: move.note || null, negative_reason: move.negative_reason || null },
+            body: { kind: move.kind, item_id: move.item_id, location_id: move.location_id, unit: move.unit, quantity: move.quantity, reason_code: move.reason_code || null, reference: move.reference || null, note: move.note || null, negative_reason: move.negative_reason || null, unit_cost_minor: cost },
             idempotencyKey: intent,
             reload,
         });
@@ -90,6 +97,7 @@ export default function StockPage({ position, movements, catalog, filters }: { p
         { id: 'item', label: t('inv.col.item'), value: (r) => r.item_code, searchText: (r) => `${r.item_code} ${r.item_name}`, rowHeader: true, cell: (r) => <><span className="font-medium">{r.item_code}</span> <span className="text-muted-foreground">{r.item_name}</span></> },
         { id: 'location', label: t('inv.col.location'), value: (r) => r.location_code, searchText: (r) => `${r.location_code} ${r.location_name}`, filter: 'select', cell: (r) => r.location_name },
         { id: 'balance', label: t('inv.col.balance'), align: 'right', value: (r) => r.balance_milli, cell: (r) => `${qty(r.balance_milli)} ${r.base_unit}` },
+        ...(position.may.valuation ? [{ id: 'value', label: t('inv.col.value'), align: 'right' as const, value: (r: Row) => r.value_minor ?? 0, cell: (r: Row) => (r.value_minor === null ? '—' : money(r.value_minor)) }] : []),
         { id: 'min', label: t('inv.col.min'), align: 'right', value: (r) => r.min_milli, cell: (r) => (r.min_milli === null ? '—' : qty(r.min_milli)) },
         { id: 'max', label: t('inv.col.max'), align: 'right', value: (r) => r.max_milli, cell: (r) => (r.max_milli === null ? '—' : qty(r.max_milli)) },
         { id: 'category', label: t('inv.col.category'), value: (r) => r.category_name, filter: 'select', hidden: true },
@@ -104,12 +112,13 @@ export default function StockPage({ position, movements, catalog, filters }: { p
         { id: 'reasonCode', label: t('inv.col.reasonCode'), value: (m) => m.reason_code ?? '', hidden: true },
         { id: 'qty', label: t('inv.col.quantity'), align: 'right', value: (m) => m.unit_qty_milli, cell: (m) => `${qty(m.unit_qty_milli)} ${m.unit}` },
         { id: 'base', label: t('inv.col.base'), align: 'right', value: (m) => m.base_qty_milli, cell: (m) => `${qty(m.base_qty_milli)} ${m.base_unit}` },
+        ...(position.may.valuation ? [{ id: 'value', label: t('inv.col.value'), align: 'right' as const, value: (m: Movement) => m.value_minor ?? 0, cell: (m: Movement) => (m.value_minor === null ? '—' : money(m.value_minor)) }] : []),
         { id: 'reference', label: t('inv.col.reference'), value: (m) => m.reference ?? '', hidden: true },
         { id: 'note', label: t('inv.col.note'), value: (m) => m.note ?? '', hidden: true },
     ];
 
     return (
-        <InventoryShell actions={<>{position.may.transfer ? <Button asChild variant="outline"><Link href="/inventory/transfers">{t('inv.stock.transfer')}</Link></Button> : null}{kinds.length > 0 ? <Button onClick={openMove} type="button">{t('inv.stock.post')}</Button> : null}</>} description={t('inv.stock.description')} title={t('inv.stock.title')} wide>
+        <InventoryShell actions={<>{position.may.valuation ? <Button asChild variant="outline"><Link href="/inventory/valuation">{t('inv.stock.valuation')}</Link></Button> : null}{position.may.transfer ? <Button asChild variant="outline"><Link href="/inventory/transfers">{t('inv.stock.transfer')}</Link></Button> : null}{kinds.length > 0 ? <Button onClick={openMove} type="button">{t('inv.stock.post')}</Button> : null}</>} description={t('inv.stock.description')} title={t('inv.stock.title')} wide>
             {position.below_minimum > 0 ? <Alert title={t('inv.stock.belowCount', { count: position.below_minimum })} tone="warning" /> : null}
             {posted ? <Alert title={t('inv.opening.posted')} tone="success" /> : null}
 
@@ -169,6 +178,13 @@ export default function StockPage({ position, movements, catalog, filters }: { p
                                 {moveItem === null ? null : [moveItem.base_unit, ...moveItem.units.map((u) => u.unit)].map((u) => <option key={u} value={u}>{u}</option>)}
                             </Select>
                         </FormField>
+                        {['opening', 'receipt', 'adjustment_in'].includes(move.kind) ? (
+                            <div className="sm:col-span-2">
+                                <FormField error={costError ? t('fo.folio.invalidAmount') : action.fieldError('unit_cost_minor')} field="unit_cost_minor" hint={move.kind === 'adjustment_in' ? t('inv.move.costHint') : undefined} label={t('inv.move.cost', { unit: move.unit })} required={move.kind !== 'adjustment_in'}>
+                                    <Input inputMode="decimal" onChange={(e) => setMove({ ...move, unit_cost: e.target.value })} value={move.unit_cost} />
+                                </FormField>
+                            </div>
+                        ) : null}
                         {preview !== null && moveItem !== null ? <p className="text-sm sm:col-span-2" data-testid="opening-preview">{t(OUTFLOWS.includes(move.kind) ? 'inv.move.out' : 'inv.move.in', { qty: qty(preview), unit: moveItem.base_unit })}</p> : null}
                         {reasons.length > 0 ? (
                             <div className="sm:col-span-2">

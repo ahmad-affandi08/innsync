@@ -23,7 +23,7 @@
 | TASK-INV-004 | FR-INV-004 | Wajib | Mencatat mutasi stok otomatis dari penjualan POS, pemakaian dapur, pemakaian housekeeping, dan pemakaian teknik. | IN_PROGRESS |
 | TASK-INV-005 | FR-INV-005 | Wajib | Melakukan pemindahan barang antar gudang dengan dokumen serah terima dan konfirmasi penerima. | REVIEW |
 | TASK-INV-006 | FR-INV-006 | Wajib | Melakukan stock opname terjadwal maupun mendadak, membandingkan stok fisik dengan stok sistem, dan menghasilkan berita acara selisih beserta nilai kerugian. | TODO |
-| TASK-INV-007 | FR-INV-007 | Sebaiknya | Menghitung nilai persediaan menggunakan metode rata-rata bergerak dan menyajikannya sebagai laporan nilai persediaan per tanggal. | TODO |
+| TASK-INV-007 | FR-INV-007 | Sebaiknya | Menghitung nilai persediaan menggunakan metode rata-rata bergerak dan menyajikannya sebagai laporan nilai persediaan per tanggal. | REVIEW |
 | TASK-INV-008 | FR-INV-008 | Sebaiknya | Mengelola tanggal kedaluwarsa dan nomor batch untuk barang konsumsi. | TODO |
 | TASK-INV-009 | FR-INV-009 | Wajib | Konversi satuan bersifat berversi dan tidak boleh mengubah histori transaksi; setiap mutasi menyimpan kuantitas satuan transaksi dan ekuivalen satuan dasar. | REVIEW |
 | TASK-INV-010 | FR-INV-010 | Wajib | Stock adjustment, write-off, dan pembukaan stok negatif memerlukan reason code dan otorisasi sesuai threshold. Kebijakan stok negatif dapat diblokir per kategori/lokasi. | IN_PROGRESS |
@@ -81,3 +81,16 @@
   - **Transfers (FR-INV-005)**: the sender creates a transfer document (`TRF-nnnnnn`) with lines in any unit; **stock moves only when the receiver confirms**, as two movements (transfer out, transfer in) in one transaction. The sender cannot confirm their own transfer (two-person rule); the receiver may reject with a note and the sender may cancel while it waits. A decided transfer is immutable (triggers).
 - Permissions: `inventory.stock.adjust`, `inventory.stock.negative`, `inventory.transfer.send`, `inventory.transfer.receive`, plus the slice 1 ones.
 - Evidence: `tests/Feature/InventoryPurchasing/StockMovementHttpTest.php` (13 tests: sign and reason rules, negative block and override, source idempotency, units and factor kept, two-person transfers, reject/cancel, atomic movement pair, permissions, property scope) and a browser run through movements, override, adjustment, write-off and a two-user transfer in both languages.
+
+### Slice 3 (2026-10-02): stock valuation by moving average (FR-INV-007)
+
+- Status: `TASK-INV-007` is `REVIEW`. It also unblocks the value part of FR-INV-006 (loss value of a count difference) and the threshold approval of FR-INV-010. NFR/BR: append-only ledger, integer money (ADR-0006), audit, property scope.
+- Context: migration 54 (`value_minor`, `unit_cost_minor` on `stock_movements`, a check that the value has the sign of the quantity), `StockValue` (exact `a*b/c` without floats), costing inside `StockPoster`, the report page `/inventory/valuation`, a value column on Stock and its movements.
+- Choices recorded as configurable baselines:
+  - **Method**: moving average **per item over the whole property** (not per location), the common baseline for a hotel with several stores. Value is kept per location, and a transfer carries the value it left with, so moving stock never changes the total.
+  - **Inflows carry a cost**: opening and receipt need the cost of one posted unit (whole amount in the property currency, at most 100,000,000); adjustment in uses the current average unless a cost is given, and needs one when the item has no cost yet. Value of a posting = quantity x cost, rounded half up.
+  - **Outflows** (issue, adjustment out, write-off, transfer out) are taken out at the average of the moment; the last unit takes exactly the value left, so no rounding remains. When no stock is left to average, the cost of the last inflow is used, so stock that went negative is valued too and a correction at that cost restores value with quantity.
+  - **Report**: quantity, average cost per base unit and value per item and location at the end of a chosen business date, with the total. It is a sum over the ledger, so a past date always gives the same figures.
+  - **Costs are sensitive**: seeing values needs `inventory.valuation.view` (separate from seeing quantities); entering a cost on a receipt does not.
+- Not yet: valuation by FIFO or last purchase price, per-location average, revaluation, and the link of receipts to purchase prices (comes with purchasing).
+- Evidence: `tests/Unit/Modules/InventoryPurchasing/StockValueTest.php`, `tests/Feature/InventoryPurchasing/StockValuationHttpTest.php` (cost on inflows, average on outflows, last unit empties the value, rounding, negative stock, transfers keep the total, adjustments, ledger sign constraint, report at a date, privilege), and the browser run of Stock, the cost field and the valuation page.

@@ -26,7 +26,7 @@ final readonly class StockMovementController
         $data = $request->validate([
             'kind' => ['required', 'string', 'max:14'], 'item_id' => ['required', 'string', 'size:26'], 'location_id' => ['required', 'string', 'size:26'], 'unit' => ['required', 'string', 'max:8'],
             'quantity' => ['required', 'string', 'max:14'], 'reason_code' => ['nullable', 'string', 'max:16'], 'reference' => ['nullable', 'string', 'max:40'], 'note' => ['nullable', 'string', 'max:200'],
-            'negative_reason' => ['nullable', 'string', 'max:200'],
+            'negative_reason' => ['nullable', 'string', 'max:200'], 'unit_cost_minor' => ['nullable', 'integer', 'min:0', 'max:10000000000'],
         ]);
         $property = $this->property->current();
         $actor = $this->actor($request);
@@ -34,13 +34,14 @@ final readonly class StockMovementController
         $reference = $data['reference'] ?? null;
         $note = $data['note'] ?? null;
         $negative = $data['negative_reason'] ?? null;
+        $cost = isset($data['unit_cost_minor']) ? (int) $data['unit_cost_minor'] : null;
         $key = IdempotencyKey::fromString((string) $request->header('Idempotency-Key'));
 
         $movement = match ($data['kind']) {
-            'opening' => $this->stock->postOpening($property, $actor, $data['item_id'], $data['location_id'], $data['unit'], $data['quantity'], $reference, $note),
-            'receipt' => $this->movements->receive($property, $actor, $data['item_id'], $data['location_id'], $data['unit'], $data['quantity'], $reference, $note, null, null, $key),
+            'opening' => $this->stock->postOpening($property, $actor, $data['item_id'], $data['location_id'], $data['unit'], $data['quantity'], $reference, $note, $cost),
+            'receipt' => $this->movements->receive($property, $actor, $data['item_id'], $data['location_id'], $data['unit'], $data['quantity'], $reference, $note, null, null, $key, $cost),
             'issue' => $this->movements->issue($property, $actor, $data['item_id'], $data['location_id'], $data['unit'], $data['quantity'], (string) $reason, $reference, $note, $negative, null, null, $key),
-            'adjustment_in', 'adjustment_out' => $this->movements->adjust($property, $actor, $data['kind'] === 'adjustment_in', $data['item_id'], $data['location_id'], $data['unit'], $data['quantity'], (string) $reason, $reference, $note, $negative, $key),
+            'adjustment_in', 'adjustment_out' => $this->movements->adjust($property, $actor, $data['kind'] === 'adjustment_in', $data['item_id'], $data['location_id'], $data['unit'], $data['quantity'], (string) $reason, $reference, $note, $negative, $key, $cost),
             'write_off' => $this->movements->writeOff($property, $actor, $data['item_id'], $data['location_id'], $data['unit'], $data['quantity'], (string) $reason, $reference, $note, $negative, $key),
             default => throw Refusal::invalid('Choose the kind of movement.', ['kind']),
         };

@@ -102,6 +102,7 @@ final class DevelopmentSeeder extends Seeder
         'inventory.stock.view',
         'inventory.transfer.receive',
         'inventory.transfer.send',
+        'inventory.valuation.view',
         'laundry.claim.approve',
         'laundry.claim.record',
         'laundry.claim.view',

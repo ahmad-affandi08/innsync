@@ -93,12 +93,12 @@ final class InventoryHttpTest extends TestCase
     public function test_opening_stock_keeps_the_unit_the_factor_and_the_base_equivalent(): void
     {
         $this->postJson("/inventory/items/{$this->item}/units", ['unit' => 'DUS', 'factor' => '24', 'reason' => 'Carton'])->assertCreated();
-        $this->postJson('/inventory/stock/opening', ['item_id' => $this->item, 'location_id' => $this->main, 'unit' => 'dus', 'quantity' => '2', 'reference' => 'Count 1 Oct'])->assertCreated()
+        $this->postJson('/inventory/stock/opening', ['unit_cost_minor' => 1_000, 'item_id' => $this->item, 'location_id' => $this->main, 'unit' => 'dus', 'quantity' => '2', 'reference' => 'Count 1 Oct'])->assertCreated()
             ->assertJsonPath('movement.unit_qty_milli', 2_000)->assertJsonPath('movement.factor_milli', 24_000)->assertJsonPath('movement.base_qty_milli', 48_000)->assertJsonPath('movement.balance_milli', 48_000);
 
         // A later factor does not touch what was posted; the next posting uses the new version.
         $this->postJson("/inventory/items/{$this->item}/units", ['unit' => 'DUS', 'factor' => '20', 'reason' => 'New carton'])->assertCreated();
-        $this->postJson('/inventory/stock/opening', ['item_id' => $this->item, 'location_id' => $this->bar, 'unit' => 'DUS', 'quantity' => '1.5'])->assertCreated()->assertJsonPath('movement.base_qty_milli', 30_000)->assertJsonPath('movement.factor_milli', 20_000);
+        $this->postJson('/inventory/stock/opening', ['unit_cost_minor' => 1_000, 'item_id' => $this->item, 'location_id' => $this->bar, 'unit' => 'DUS', 'quantity' => '1.5'])->assertCreated()->assertJsonPath('movement.base_qty_milli', 30_000)->assertJsonPath('movement.factor_milli', 20_000);
         $this->assertEqualsCanonicalizing([24_000, 20_000], DB::table('stock_movements')->pluck('factor_milli')->map(fn ($v) => (int) $v)->all());
         $this->assertSame('2026-10-01', (string) DB::table('stock_movements')->value('business_date'));
         $this->assertSame(2, DB::table('audit_entries')->where('action', 'stock.opening_posted')->count());
@@ -107,11 +107,11 @@ final class InventoryHttpTest extends TestCase
 
     public function test_opening_stock_is_posted_once_and_with_a_known_unit(): void
     {
-        $this->postJson('/inventory/stock/opening', ['item_id' => $this->item, 'location_id' => $this->main, 'unit' => 'BTL', 'quantity' => '10'])->assertCreated();
-        $this->postJson('/inventory/stock/opening', ['item_id' => $this->item, 'location_id' => $this->main, 'unit' => 'BTL', 'quantity' => '10'])->assertStatus(409);
-        $this->postJson('/inventory/stock/opening', ['item_id' => $this->item, 'location_id' => $this->bar, 'unit' => 'DUS', 'quantity' => '1'])->assertStatus(422);
-        $this->postJson('/inventory/stock/opening', ['item_id' => $this->item, 'location_id' => $this->bar, 'unit' => 'BTL', 'quantity' => '0'])->assertStatus(422);
-        $this->postJson('/inventory/stock/opening', ['item_id' => $this->item, 'location_id' => $this->bar, 'unit' => 'BTL', 'quantity' => '1.2345'])->assertStatus(422);
+        $this->postJson('/inventory/stock/opening', ['unit_cost_minor' => 1_000, 'item_id' => $this->item, 'location_id' => $this->main, 'unit' => 'BTL', 'quantity' => '10'])->assertCreated();
+        $this->postJson('/inventory/stock/opening', ['unit_cost_minor' => 1_000, 'item_id' => $this->item, 'location_id' => $this->main, 'unit' => 'BTL', 'quantity' => '10'])->assertStatus(409);
+        $this->postJson('/inventory/stock/opening', ['unit_cost_minor' => 1_000, 'item_id' => $this->item, 'location_id' => $this->bar, 'unit' => 'DUS', 'quantity' => '1'])->assertStatus(422);
+        $this->postJson('/inventory/stock/opening', ['unit_cost_minor' => 1_000, 'item_id' => $this->item, 'location_id' => $this->bar, 'unit' => 'BTL', 'quantity' => '0'])->assertStatus(422);
+        $this->postJson('/inventory/stock/opening', ['unit_cost_minor' => 1_000, 'item_id' => $this->item, 'location_id' => $this->bar, 'unit' => 'BTL', 'quantity' => '1.2345'])->assertStatus(422);
         $this->assertSame(1, DB::table('stock_movements')->count());
 
         $this->expectException(QueryException::class);
@@ -120,7 +120,7 @@ final class InventoryHttpTest extends TestCase
 
     public function test_a_movement_cannot_be_deleted(): void
     {
-        $this->postJson('/inventory/stock/opening', ['item_id' => $this->item, 'location_id' => $this->main, 'unit' => 'BTL', 'quantity' => '10'])->assertCreated();
+        $this->postJson('/inventory/stock/opening', ['unit_cost_minor' => 1_000, 'item_id' => $this->item, 'location_id' => $this->main, 'unit' => 'BTL', 'quantity' => '10'])->assertCreated();
 
         $this->expectException(QueryException::class);
         DB::table('stock_movements')->delete();
@@ -131,7 +131,7 @@ final class InventoryHttpTest extends TestCase
         $this->postJson('/inventory/stock-limits', ['item_id' => $this->item, 'location_id' => $this->main, 'min' => '12', 'max' => '40'])->assertOk()->assertJsonPath('limits.min_milli', 12_000);
         $this->postJson('/inventory/stock-limits', ['item_id' => $this->item, 'location_id' => $this->bar, 'min' => '5', 'max' => '4'])->assertStatus(422);
         $this->postJson('/inventory/stock-limits', ['item_id' => $this->item, 'location_id' => $this->main, 'min' => '10'])->assertStatus(409);
-        $this->postJson('/inventory/stock/opening', ['item_id' => $this->item, 'location_id' => $this->main, 'unit' => 'BTL', 'quantity' => '8'])->assertCreated();
+        $this->postJson('/inventory/stock/opening', ['unit_cost_minor' => 1_000, 'item_id' => $this->item, 'location_id' => $this->main, 'unit' => 'BTL', 'quantity' => '8'])->assertCreated();
 
         $this->get('/inventory/stock')->assertInertia(fn (Assert $p) => $p->component('inventory-purchasing/pages/stock')->where('position.below_minimum', 1)->where('position.rows.0.status', 'below_minimum')->where('position.rows.0.balance_milli', 8_000)->where('position.rows.0.min_milli', 12_000));
         $this->postJson('/inventory/stock-limits', ['item_id' => $this->item, 'location_id' => $this->main, 'min' => '5', 'max' => '7', 'lock_version' => 0])->assertOk();
@@ -146,7 +146,7 @@ final class InventoryHttpTest extends TestCase
         $this->get('/dashboard')->assertInertia(fn (Assert $p) => $p->where('snapshot.alerts.0.code', 'stock_below_minimum')->where('snapshot.alerts.0.count', 1)->where('snapshot.alerts.0.items.0', 'WATER-600 · MAIN')->where('snapshot.alerts.0.href', '/inventory/stock'));
 
         $this->as([InventoryCatalogService::MANAGE_PERMISSION, StockService::POST_PERMISSION]);
-        $this->postJson('/inventory/stock/opening', ['item_id' => $this->item, 'location_id' => $this->main, 'unit' => 'BTL', 'quantity' => '12'])->assertCreated();
+        $this->postJson('/inventory/stock/opening', ['unit_cost_minor' => 1_000, 'item_id' => $this->item, 'location_id' => $this->main, 'unit' => 'BTL', 'quantity' => '12'])->assertCreated();
         $this->as([DashboardService::VIEW_PERMISSION]);
         $this->get('/dashboard')->assertInertia(fn (Assert $p) => $p->where('snapshot.alerts', []));
     }
@@ -157,7 +157,7 @@ final class InventoryHttpTest extends TestCase
         $this->get('/inventory/stock')->assertOk();
         $this->get('/inventory/items')->assertOk();
         $this->postJson('/inventory/items', ['code' => 'N1', 'name' => 'No', 'category_id' => $this->category, 'department' => 'fnb', 'base_unit' => 'BTL'])->assertForbidden();
-        $this->postJson('/inventory/stock/opening', ['item_id' => $this->item, 'location_id' => $this->main, 'unit' => 'BTL', 'quantity' => '1'])->assertForbidden();
+        $this->postJson('/inventory/stock/opening', ['unit_cost_minor' => 1_000, 'item_id' => $this->item, 'location_id' => $this->main, 'unit' => 'BTL', 'quantity' => '1'])->assertForbidden();
         $this->postJson('/inventory/stock-limits', ['item_id' => $this->item, 'location_id' => $this->main, 'min' => '1'])->assertForbidden();
 
         $this->as([]);
@@ -176,7 +176,7 @@ final class InventoryHttpTest extends TestCase
         $this->post('/logout');
         $this->signIn($other, [InventoryCatalogService::MANAGE_PERMISSION, StockService::POST_PERMISSION]);
         $this->get('/inventory/items')->assertInertia(fn (Assert $p) => $p->has('catalog.items', 0));
-        $this->postJson('/inventory/stock/opening', ['item_id' => $this->item, 'location_id' => $this->main, 'unit' => 'BTL', 'quantity' => '1'])->assertNotFound();
+        $this->postJson('/inventory/stock/opening', ['unit_cost_minor' => 1_000, 'item_id' => $this->item, 'location_id' => $this->main, 'unit' => 'BTL', 'quantity' => '1'])->assertNotFound();
         $this->postJson('/inventory/items/'.$this->item, ['name' => 'Hijack', 'category_id' => $this->category, 'department' => 'fnb', 'active' => true, 'lock_version' => 0])->assertNotFound();
     }
 
@@ -184,7 +184,7 @@ final class InventoryHttpTest extends TestCase
     {
         $this->postJson("/inventory/items/{$this->item}", ['name' => 'Mineral water', 'category_id' => $this->category, 'department' => 'fnb', 'active' => false, 'lock_version' => 0])->assertOk()->assertJsonPath('item.is_active', false);
         $this->postJson("/inventory/items/{$this->item}", ['name' => 'Stale', 'category_id' => $this->category, 'department' => 'fnb', 'active' => true, 'lock_version' => 0])->assertStatus(409);
-        $this->postJson('/inventory/stock/opening', ['item_id' => $this->item, 'location_id' => $this->main, 'unit' => 'BTL', 'quantity' => '1'])->assertStatus(409);
+        $this->postJson('/inventory/stock/opening', ['unit_cost_minor' => 1_000, 'item_id' => $this->item, 'location_id' => $this->main, 'unit' => 'BTL', 'quantity' => '1'])->assertStatus(409);
         $this->postJson("/inventory/locations/{$this->bar}", ['name' => 'Bar', 'kind' => 'bar', 'active' => false, 'lock_version' => 0])->assertOk();
         $this->postJson("/inventory/categories/{$this->category}", ['name' => 'Drinks', 'active' => true, 'lock_version' => 0])->assertOk()->assertJsonPath('category.name', 'Drinks');
         $this->assertSame(1, DB::table('audit_entries')->where('action', 'inventory_location.updated')->count());

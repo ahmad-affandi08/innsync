@@ -166,7 +166,7 @@
 | TASK-INV-004 | FR-INV-004 | Inventory | Wajib | IN_PROGRESS |
 | TASK-INV-005 | FR-INV-005 | Inventory | Wajib | REVIEW |
 | TASK-INV-006 | FR-INV-006 | Inventory | Wajib | TODO |
-| TASK-INV-007 | FR-INV-007 | Inventory | Sebaiknya | TODO |
+| TASK-INV-007 | FR-INV-007 | Inventory | Sebaiknya | REVIEW |
 | TASK-INV-008 | FR-INV-008 | Inventory | Sebaiknya | TODO |
 | TASK-INV-009 | FR-INV-009 | Inventory | Wajib | REVIEW |
 | TASK-INV-010 | FR-INV-010 | Inventory | Wajib | IN_PROGRESS |

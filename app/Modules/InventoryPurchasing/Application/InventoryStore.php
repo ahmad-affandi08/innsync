@@ -78,6 +78,27 @@ interface InventoryStore
     /** The balance in base units of an item in a location (the sum of its movements). */
     public function balanceOf(PropertyId $property, string $itemId, string $locationId): int;
 
+    /**
+     * The whole stock of an item in the property, over every location: quantity in base thousandths and its value in minor units.
+     *
+     * @return array{qty_milli: int, value_minor: int}
+     */
+    public function pool(PropertyId $property, string $itemId): array;
+
+    /**
+     * The most recent receipt, opening or adjustment-in of an item that carried a value: its value and base quantity, for costing an outflow when no stock is left to average.
+     *
+     * @return array{value_minor: int, base_qty_milli: int}|null
+     */
+    public function lastInflowCost(PropertyId $property, string $itemId): ?array;
+
+    /**
+     * Quantity and value per item and location of everything posted up to and including a business date.
+     *
+     * @return list<array{item_id: string, location_id: string, qty_milli: int, value_minor: int}>
+     */
+    public function valuation(PropertyId $property, string $asOf): array;
+
     /** @return array<string, mixed>|null the movement a source document already posted for an item and a location */
     public function movementBySource(PropertyId $property, string $sourceType, string $sourceRef, string $itemId, string $locationId): ?array;
 

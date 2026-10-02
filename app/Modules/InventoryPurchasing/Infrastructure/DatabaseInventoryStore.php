@@ -129,7 +129,7 @@ final readonly class DatabaseInventoryStore implements InventoryStore
     public function balances(PropertyId $property, ?string $itemId, ?string $locationId): array
     {
         $pid = $property->toString();
-        $moved = DB::table('stock_movements')->where('property_id', $pid)->groupBy('item_id', 'location_id')->selectRaw('item_id, location_id, SUM(base_qty_milli) as balance_milli, MAX(created_at) as last_at');
+        $moved = DB::table('stock_movements')->where('property_id', $pid)->groupBy('item_id', 'location_id')->selectRaw('item_id, location_id, SUM(base_qty_milli) as balance_milli, SUM(value_minor) as value_minor, MAX(created_at) as last_at');
         $pairs = DB::query()->fromSub(
             DB::table('stock_movements')->where('property_id', $pid)->select('item_id', 'location_id')->union(DB::table('inventory_stock_limits')->where('property_id', $pid)->select('item_id', 'location_id')),
             'p',
@@ -138,7 +138,7 @@ final readonly class DatabaseInventoryStore implements InventoryStore
         return $this->rows($pairs->leftJoinSub($moved, 'm', fn ($j) => $j->on('m.item_id', '=', 'p.item_id')->on('m.location_id', '=', 'p.location_id'))
             ->leftJoin('inventory_stock_limits as l', fn ($j) => $j->on('l.item_id', '=', 'p.item_id')->on('l.location_id', '=', 'p.location_id'))
             ->when($itemId !== null, static fn ($q) => $q->where('p.item_id', $itemId))->when($locationId !== null, static fn ($q) => $q->where('p.location_id', $locationId))
-            ->get(['p.item_id', 'p.location_id', DB::raw('COALESCE(m.balance_milli, 0) as balance_milli'), 'm.last_at', 'l.min_milli', 'l.max_milli', 'l.lock_version as limit_lock']));
+            ->get(['p.item_id', 'p.location_id', DB::raw('COALESCE(m.balance_milli, 0) as balance_milli'), DB::raw('COALESCE(m.value_minor, 0) as value_minor'), 'm.last_at', 'l.min_milli', 'l.max_milli', 'l.lock_version as limit_lock']));
     }
 
     public function movements(PropertyId $property, ?string $itemId, ?string $locationId, int $limit): array
@@ -150,6 +150,29 @@ final readonly class DatabaseInventoryStore implements InventoryStore
     public function balanceOf(PropertyId $property, string $itemId, string $locationId): int
     {
         return (int) DB::table('stock_movements')->where('property_id', $property->toString())->where('item_id', $itemId)->where('location_id', $locationId)->sum('base_qty_milli');
+    }
+
+    public function pool(PropertyId $property, string $itemId): array
+    {
+        $row = DB::table('stock_movements')->where('property_id', $property->toString())->where('item_id', $itemId)->selectRaw('COALESCE(SUM(base_qty_milli), 0) as qty, COALESCE(SUM(value_minor), 0) as value')->first();
+
+        return ['qty_milli' => (int) $row->qty, 'value_minor' => (int) $row->value];
+    }
+
+    public function lastInflowCost(PropertyId $property, string $itemId): ?array
+    {
+        $row = DB::table('stock_movements')->where('property_id', $property->toString())->where('item_id', $itemId)->whereIn('kind', ['opening', 'receipt', 'adjustment_in'])->where('value_minor', '>', 0)
+            ->orderByDesc('created_at')->orderByDesc('id')->first(['value_minor', 'base_qty_milli']);
+
+        return $row === null ? null : ['value_minor' => (int) $row->value_minor, 'base_qty_milli' => (int) $row->base_qty_milli];
+    }
+
+    public function valuation(PropertyId $property, string $asOf): array
+    {
+        return array_map(
+            static fn (array $r): array => ['item_id' => $r['item_id'], 'location_id' => $r['location_id'], 'qty_milli' => (int) $r['qty'], 'value_minor' => (int) $r['value']],
+            $this->rows(DB::table('stock_movements')->where('property_id', $property->toString())->where('business_date', '<=', $asOf)->groupBy('item_id', 'location_id')->selectRaw('item_id, location_id, SUM(base_qty_milli) as qty, SUM(value_minor) as value')->get()),
+        );
     }
 
     public function movementBySource(PropertyId $property, string $sourceType, string $sourceRef, string $itemId, string $locationId): ?array

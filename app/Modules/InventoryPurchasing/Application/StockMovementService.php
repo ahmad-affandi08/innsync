@@ -45,11 +45,11 @@ final readonly class StockMovementService
     ) {}
 
     /** @return array<string, mixed> */
-    public function receive(PropertyId $property, string $actorId, string $itemId, string $locationId, string $unit, string $quantity, ?string $reference, ?string $note, ?string $sourceType = null, ?string $sourceRef = null, ?IdempotencyKey $key = null): array
+    public function receive(PropertyId $property, string $actorId, string $itemId, string $locationId, string $unit, string $quantity, ?string $reference, ?string $note, ?string $sourceType = null, ?string $sourceRef = null, ?IdempotencyKey $key = null, ?int $unitCostMinor = null): array
     {
         $this->authorize($property, $actorId, StockService::POST_PERMISSION);
 
-        return $this->run($property, $actorId, $itemId, $locationId, 'receipt', $unit, $quantity, null, $reference, $note, $sourceType, $sourceRef, null, $key);
+        return $this->run($property, $actorId, $itemId, $locationId, 'receipt', $unit, $quantity, null, $reference, $note, $sourceType, $sourceRef, null, $key, $unitCostMinor);
     }
 
     /**
@@ -68,12 +68,12 @@ final readonly class StockMovementService
     }
 
     /** @return array<string, mixed> */
-    public function adjust(PropertyId $property, string $actorId, bool $increase, string $itemId, string $locationId, string $unit, string $quantity, string $reasonCode, ?string $reference, ?string $note, ?string $negativeReason = null, ?IdempotencyKey $key = null): array
+    public function adjust(PropertyId $property, string $actorId, bool $increase, string $itemId, string $locationId, string $unit, string $quantity, string $reasonCode, ?string $reference, ?string $note, ?string $negativeReason = null, ?IdempotencyKey $key = null, ?int $unitCostMinor = null): array
     {
         $this->authorize($property, $actorId, self::ADJUST_PERMISSION);
         $this->reason($reasonCode, self::ADJUST_REASONS, $note);
 
-        return $this->run($property, $actorId, $itemId, $locationId, $increase ? 'adjustment_in' : 'adjustment_out', $unit, $quantity, $reasonCode, $reference, $note, null, null, $negativeReason, $key);
+        return $this->run($property, $actorId, $itemId, $locationId, $increase ? 'adjustment_in' : 'adjustment_out', $unit, $quantity, $reasonCode, $reference, $note, null, null, $negativeReason, $key, $increase ? $unitCostMinor : null);
     }
 
     /** @return array<string, mixed> */
@@ -98,7 +98,7 @@ final readonly class StockMovementService
     }
 
     /** @return array<string, mixed> */
-    private function run(PropertyId $property, string $actorId, string $itemId, string $locationId, string $kind, string $unit, string $quantity, ?string $reasonCode, ?string $reference, ?string $note, ?string $sourceType, ?string $sourceRef, ?string $negativeReason, ?IdempotencyKey $key): array
+    private function run(PropertyId $property, string $actorId, string $itemId, string $locationId, string $kind, string $unit, string $quantity, ?string $reasonCode, ?string $reference, ?string $note, ?string $sourceType, ?string $sourceRef, ?string $negativeReason, ?IdempotencyKey $key, ?int $unitCostMinor = null): array
     {
         $qty = StockQuantity::parse($quantity);
 
@@ -125,13 +125,13 @@ final readonly class StockMovementService
         }
 
         $unit = strtoupper(trim($unit));
-        $post = fn (): array => $this->poster->post($property, $actorId, $item, $location, $kind, $unit, $qty, $reasonCode, $reference, $note, $sourceType, $sourceRef, null, $negativeReason, true);
+        $post = fn (): array => $this->poster->post($property, $actorId, $item, $location, $kind, $unit, $qty, $reasonCode, $reference, $note, $sourceType, $sourceRef, null, $negativeReason, true, null, $unitCostMinor);
 
         if ($key === null) {
             $result = $this->transactions->run($post);
         } else {
             $once = $this->executor->execute(
-                new IdempotencyRequest($property, $key, 'inventory.stock.move', ['kind' => $kind, 'item' => $item['id'], 'location' => $location['id'], 'unit' => $unit, 'qty' => $qty, 'reason' => $reasonCode, 'reference' => $reference, 'note' => $note, 'negative' => $negativeReason], strtolower($actorId)),
+                new IdempotencyRequest($property, $key, 'inventory.stock.move', ['kind' => $kind, 'item' => $item['id'], 'location' => $location['id'], 'unit' => $unit, 'qty' => $qty, 'reason' => $reasonCode, 'reference' => $reference, 'note' => $note, 'negative' => $negativeReason, 'cost' => $unitCostMinor], strtolower($actorId)),
                 fn (): array => $post()['movement'],
             );
             $result = ['movement' => $once->payload, 'replayed' => $once->replayed];

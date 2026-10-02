@@ -33,6 +33,8 @@ type FormFieldProps = {
      * (`php tools/export-form-rules.php`, `npm run forms`).
      */
     field?: string;
+    /** Force the star for a field that is only required in some cases (the server decides the rest). */
+    required?: boolean;
     className?: string;
 };
 
@@ -50,11 +52,12 @@ function FormField({
     field,
     hint,
     label,
+    required: requiredHere,
     requiredLabel,
 }: FormFieldProps) {
     const generatedId = useId();
     const screen = usePage().component;
-    const required = requiredLabel !== undefined || (field !== undefined && (requiredByScreen[screen] ?? []).includes(field));
+    const required = requiredHere === true || requiredLabel !== undefined || (field !== undefined && (requiredByScreen[screen] ?? []).includes(field));
     const controlId = children.props.id ?? generatedId;
     const hintId = hint ? `${controlId}-hint` : undefined;
     const errorId = error ? `${controlId}-error` : undefined;

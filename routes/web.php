@@ -366,6 +366,7 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
     Route::get('/items', [InventoryCatalogController::class, 'items'])->name('inventory.items');
     Route::get('/locations', [InventoryCatalogController::class, 'locations'])->name('inventory.locations');
     Route::get('/stock', [InventoryCatalogController::class, 'stock'])->name('inventory.stock');
+    Route::get('/valuation', [InventoryCatalogController::class, 'valuation'])->name('inventory.valuation');
     Route::post('/categories', [InventoryCatalogController::class, 'storeCategory'])->name('inventory.categories.store');
     Route::post('/categories/{id}', [InventoryCatalogController::class, 'updateCategory'])->where('id', $id)->name('inventory.categories.update');
     Route::post('/locations', [InventoryCatalogController::class, 'storeLocation'])->name('inventory.locations.store');

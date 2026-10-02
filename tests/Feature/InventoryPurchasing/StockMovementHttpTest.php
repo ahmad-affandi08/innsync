@@ -59,7 +59,7 @@ final class StockMovementHttpTest extends TestCase
         $this->main = $this->postJson('/inventory/locations', ['code' => 'MAIN', 'name' => 'Main store', 'kind' => 'main'])->assertCreated()->json('location.id');
         $this->bar = $this->postJson('/inventory/locations', ['code' => 'BAR', 'name' => 'Bar store', 'kind' => 'bar'])->assertCreated()->json('location.id');
         $this->postJson("/inventory/items/{$this->item}/units", ['unit' => 'DUS', 'factor' => '24', 'reason' => 'Carton'])->assertCreated();
-        $this->postJson('/inventory/stock/opening', ['item_id' => $this->item, 'location_id' => $this->main, 'unit' => 'BTL', 'quantity' => '100'])->assertCreated();
+        $this->postJson('/inventory/stock/opening', ['unit_cost_minor' => 1_000, 'item_id' => $this->item, 'location_id' => $this->main, 'unit' => 'BTL', 'quantity' => '100'])->assertCreated();
     }
 
     /** @param list<string> $permissions */
@@ -83,7 +83,7 @@ final class StockMovementHttpTest extends TestCase
 
     public function test_a_receipt_adds_stock_in_any_unit_with_its_factor(): void
     {
-        $this->move(['kind' => 'receipt', 'item_id' => $this->item, 'location_id' => $this->bar, 'unit' => 'dus', 'quantity' => '2', 'reference' => 'DO-1'])
+        $this->move(['kind' => 'receipt', 'unit_cost_minor' => 24_000, 'item_id' => $this->item, 'location_id' => $this->bar, 'unit' => 'dus', 'quantity' => '2', 'reference' => 'DO-1'])
             ->assertJsonPath('movement.base_qty_milli', 48_000)->assertJsonPath('movement.factor_milli', 24_000)->assertJsonPath('movement.balance_milli', 48_000)->assertJsonPath('movement.kind', 'receipt');
         $this->assertSame(48_000, $this->balance($this->bar));
         $this->assertSame(1, DB::table('audit_entries')->where('action', 'stock.receipt_posted')->count());

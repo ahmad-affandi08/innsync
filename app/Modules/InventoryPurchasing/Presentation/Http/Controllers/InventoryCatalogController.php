@@ -27,6 +27,15 @@ final readonly class InventoryCatalogController
         return Inertia::render('inventory-purchasing/pages/locations', ['catalog' => $this->catalog->overview($this->property->current(), $this->actor($request))]);
     }
 
+    public function valuation(Request $request): Response
+    {
+        $data = $request->validate(['as_of' => ['nullable', 'date_format:Y-m-d']]);
+
+        return Inertia::render('inventory-purchasing/pages/valuation', [
+            'report' => $this->stock->valuation($this->property->current(), $this->actor($request), $data['as_of'] ?? null),
+        ]);
+    }
+
     public function stock(Request $request): Response
     {
         $data = $request->validate(['location' => ['nullable', 'string', 'size:26'], 'item' => ['nullable', 'string', 'size:26']]);
@@ -110,10 +119,10 @@ final readonly class InventoryCatalogController
     {
         $data = $request->validate([
             'item_id' => ['required', 'string', 'size:26'], 'location_id' => ['required', 'string', 'size:26'], 'unit' => ['required', 'string', 'max:8'], 'quantity' => ['required', 'string', 'max:14'],
-            'reference' => ['nullable', 'string', 'max:40'], 'note' => ['nullable', 'string', 'max:200'],
+            'reference' => ['nullable', 'string', 'max:40'], 'note' => ['nullable', 'string', 'max:200'], 'unit_cost_minor' => ['required', 'integer', 'min:0', 'max:10000000000'],
         ]);
 
-        return $this->json(['movement' => $this->stock->postOpening($this->property->current(), $this->actor($request), $data['item_id'], $data['location_id'], $data['unit'], $data['quantity'], $data['reference'] ?? null, $data['note'] ?? null)], 201);
+        return $this->json(['movement' => $this->stock->postOpening($this->property->current(), $this->actor($request), $data['item_id'], $data['location_id'], $data['unit'], $data['quantity'], $data['reference'] ?? null, $data['note'] ?? null, (int) $data['unit_cost_minor'])], 201);
     }
 
     /** @param array<string, mixed> $body */
