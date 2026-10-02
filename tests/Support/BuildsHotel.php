@@ -18,6 +18,7 @@ use App\Modules\FrontOffice\Application\Routine\ShiftLogService;
 use App\Modules\FrontOffice\Application\Routine\SopService;
 use App\Modules\FrontOffice\Application\Stays\GuestCorrectionService;
 use App\Modules\FrontOffice\Application\Stays\StayService;
+use App\Modules\FrontOffice\Application\Stays\StayTimeFeeService;
 use App\Modules\FrontOffice\Domain\Reservations\Reservation;
 use App\Modules\Housekeeping\Application\ChecklistService;
 use App\Modules\Housekeeping\Application\HousekeepingService;
@@ -93,6 +94,13 @@ trait BuildsHotel
 
     /** Tax and service charge obligations (FR-DSH-013, -014): someone who may mark a month as reported and change the settings. */
     private string $financeId;
+
+    /** Early check-in and late check-out fees (FR-FO-037): someone who writes the policies, someone who charges the fee, someone who may waive it. */
+    private string $feePolicyId;
+
+    private string $feeClerkId;
+
+    private string $feeWaiverId;
 
     /** Reporting: an analyst (dashboard with revenue, reports, audit; identity masked), a registrar (guest reports and export, identity in clear), and a dashboard-only viewer. */
     private string $analystId;
@@ -190,6 +198,9 @@ trait BuildsHotel
         $logReader = UserRecord::factory()->create();
         $nameCorrector = UserRecord::factory()->create();
         $linenManager = UserRecord::factory()->create();
+        $feePolicy = UserRecord::factory()->create();
+        $feeClerk = UserRecord::factory()->create();
+        $feeWaiver = UserRecord::factory()->create();
         $finance = UserRecord::factory()->create();
         $hkListManager = UserRecord::factory()->create();
         $hkListStaff = UserRecord::factory()->create();
@@ -232,6 +243,9 @@ trait BuildsHotel
         $this->grant($hkListStaff, self::PROPERTY, [ChecklistService::PERFORM_PERMISSION]);
         $this->grant($hkListStaff2, self::PROPERTY, [ChecklistService::PERFORM_PERMISSION]);
         $this->grant($hkListViewer, self::PROPERTY, [ChecklistService::VIEW_PERMISSION]);
+        $this->grant($feePolicy, self::PROPERTY, [StayTimeFeeService::POLICY_PERMISSION]);
+        $this->grant($feeClerk, self::PROPERTY, [StayTimeFeeService::APPLY_PERMISSION, StayService::VIEW_PERMISSION]);
+        $this->grant($feeWaiver, self::PROPERTY, [StayTimeFeeService::WAIVE_PERMISSION, StayService::VIEW_PERMISSION]);
         $this->grant($linenManager, self::PROPERTY, [LinenService::MANAGE_PERMISSION]);
         $this->grant($linenManager2, self::PROPERTY, [LinenService::MANAGE_PERMISSION]);
         $this->grant($linenLaundry, self::PROPERTY, [LinenService::LAUNDRY_PERMISSION]);
@@ -277,6 +291,9 @@ trait BuildsHotel
         $this->hkListStaff2Id = strtolower((string) $hkListStaff2->getKey());
         $this->hkListViewerId = strtolower((string) $hkListViewer->getKey());
         $this->financeId = strtolower((string) $finance->getKey());
+        $this->feePolicyId = strtolower((string) $feePolicy->getKey());
+        $this->feeClerkId = strtolower((string) $feeClerk->getKey());
+        $this->feeWaiverId = strtolower((string) $feeWaiver->getKey());
         $this->linenManagerId = strtolower((string) $linenManager->getKey());
         $this->linenManager2Id = strtolower((string) $linenManager2->getKey());
         $this->linenLaundryId = strtolower((string) $linenLaundry->getKey());

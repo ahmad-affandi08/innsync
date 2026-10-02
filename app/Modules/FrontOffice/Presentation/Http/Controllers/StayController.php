@@ -9,6 +9,7 @@ use App\Modules\FrontOffice\Application\Stays\CheckInRequest;
 use App\Modules\FrontOffice\Application\Stays\GuestCorrectionService;
 use App\Modules\FrontOffice\Application\Stays\StayAmendmentService;
 use App\Modules\FrontOffice\Application\Stays\StayService;
+use App\Modules\FrontOffice\Application\Stays\StayTimeFeeService;
 use App\Shared\Application\Errors\Refusal;
 use App\Shared\Application\Idempotency\IdempotencyKey;
 use App\Shared\Application\Tenancy\PropertyContext;
@@ -21,7 +22,7 @@ use Inertia\Response;
 /** Check-in, the guests in the house and check-out. Rules, permissions and privacy live in `StayService`. */
 final readonly class StayController
 {
-    public function __construct(private StayService $stays, private StayAmendmentService $amendments, private GuestCorrectionService $corrections, private ReservationService $reservations, private PropertyContext $property) {}
+    public function __construct(private StayService $stays, private StayAmendmentService $amendments, private GuestCorrectionService $corrections, private StayTimeFeeService $timeFees, private ReservationService $reservations, private PropertyContext $property) {}
 
     public function index(Request $request): Response
     {
@@ -36,6 +37,7 @@ final readonly class StayController
         return Inertia::render('front-office/pages/stay', [
             'stay' => [...$stay, 'moves' => $this->amendmentMoves($property, $request, $id)],
             'corrections' => $this->corrections->history($property, $this->actor($request), $id),
+            'time_fees' => $this->timeFees->assess($property, $this->actor($request), $id),
             'reservation' => $this->summary($this->reservations->find($property, $this->actor($request), $stay['reservation_id'])->toArray()),
         ]);
     }
@@ -185,6 +187,13 @@ final readonly class StayController
         unset($reservation['price_snapshot'], $reservation['guest_phone'], $reservation['guest_email']);
 
         return $reservation;
+    }
+
+    public function decideTimeFee(Request $request, string $id): JsonResponse
+    {
+        $data = $request->validate(['kind' => ['required', 'string', 'max:14'], 'action' => ['required', 'string', 'max:6'], 'reason' => ['nullable', 'string', 'max:300']]);
+
+        return $this->json(['time_fees' => $this->timeFees->decide($this->property->current(), $this->actor($request), $id, $data['kind'], $data['action'], $data['reason'] ?? null)]);
     }
 
     private function actor(Request $request): string

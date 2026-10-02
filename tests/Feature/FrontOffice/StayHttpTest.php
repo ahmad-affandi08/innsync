@@ -8,15 +8,18 @@ use App\Modules\FrontOffice\Application\Folios\FolioService;
 use App\Modules\FrontOffice\Application\Reservations\ReservationService;
 use App\Modules\FrontOffice\Application\Stays\GuestCorrectionService;
 use App\Modules\FrontOffice\Application\Stays\StayService;
+use App\Modules\FrontOffice\Application\Stays\StayTimeFeeService;
 use App\Modules\Property\Application\Catalog\RoomCatalogService;
 use App\Modules\Property\Application\Rates\ChargeSchemeService;
 use App\Modules\Property\Application\Rates\RatePlanService;
 use App\Modules\Property\Application\Settings\PropertySettingsService;
+use App\Shared\Application\Time\Clock;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Inertia\Testing\AssertableInertia as Assert;
 use LogicException;
+use Tests\Support\AdjustableClock;
 use Tests\Support\SignsInToProperty;
 use Tests\TestCase;
 
@@ -48,6 +51,7 @@ final class StayHttpTest extends TestCase
         $this->signIn(self::A, [
             ReservationService::MANAGE_PERMISSION, FolioService::MANAGE_PERMISSION, StayService::MANAGE_PERMISSION, StayService::IDENTITY_PERMISSION, GuestCorrectionService::CORRECT_PERMISSION,
             RoomCatalogService::MANAGE_PERMISSION, RatePlanService::MANAGE_PERMISSION, ChargeSchemeService::MANAGE_PERMISSION, PropertySettingsService::MANAGE_PERMISSION,
+            StayTimeFeeService::POLICY_PERMISSION, StayTimeFeeService::APPLY_PERMISSION, StayTimeFeeService::WAIVE_PERMISSION,
         ]);
         $type = $this->postJson('/property/room-types', ['code' => 'DLX', 'name' => 'Deluxe', 'max_adults' => 2, 'max_children' => 1, 'reason' => 'x'])->json('type.id');
         $this->roomId = $this->postJson('/property/rooms', ['number' => '101', 'room_type_id' => $type, 'reason' => 'x'])->assertCreated()->json('room.id');
@@ -81,6 +85,24 @@ final class StayHttpTest extends TestCase
         $this->get("/front-office/stays/{$stay}")->assertInertia(fn (Assert $p) => $p->component('front-office/pages/stay')->where('stay.room_number', '101')->where('stay.guest.identity_visible', true)->where('reservation.status', 'checked_in'));
         $this->get('/front-office/stays')->assertInertia(fn (Assert $p) => $p->component('front-office/pages/stays')->has('stays', 1)->where('stays.0.guest.id_number', '••••••••••••0001'));
         $this->get("/front-office/reservations/{$this->reservationId}/check-in")->assertInertia(fn (Assert $p) => $p->where('stay.id', $stay));
+    }
+
+    public function test_early_check_in_fees_follow_the_policy_and_are_charged_or_waived_over_http(): void
+    {
+        $this->app->instance(Clock::class, new AdjustableClock('2026-10-01 03:00:00'));
+        $this->get('/front-office/stay-fees')->assertInertia(fn (Assert $p) => $p->component('front-office/pages/stay-fees')->has('catalogue.policies', 0)->where('catalogue.standard.check_in', '14:00'));
+        $this->postJson('/front-office/stay-fees', ['kind' => 'early_checkin', 'effective_from' => '2026-10-01', 'grace_minutes' => 60, 'bands' => [['up_to_minutes' => 240, 'percent_bp' => 3000]], 'beyond_bp' => 10000, 'reason' => 'Hotel policy'])->assertCreated()->assertJsonPath('policy.beyond_bp', 10000);
+        $this->postJson('/front-office/stay-fees', ['kind' => 'early_checkin', 'effective_from' => '2026-10-01', 'grace_minutes' => 0, 'beyond_bp' => 100, 'reason' => 'Same day'])->assertStatus(422);
+        $this->postJson('/front-office/stay-fees', ['kind' => 'early_checkin', 'effective_from' => '2026-10-02', 'grace_minutes' => 0, 'bands' => [['up_to_minutes' => 0, 'percent_bp' => 3000]], 'beyond_bp' => 100, 'reason' => 'Bad band'])->assertStatus(422);
+
+        $this->postJson("/front-office/reservations/{$this->reservationId}/check-in", $this->form(), ['Idempotency-Key' => 'checkin-http-fee-0001'])->assertCreated();
+        $stay = DB::table('stays')->value('id');
+        $this->get("/front-office/stays/{$stay}")->assertInertia(fn (Assert $p) => $p->component('front-office/pages/stay')->where('time_fees.items.0.kind', 'early_checkin')->where('time_fees.items.0.minutes', 240)->where('time_fees.items.0.fee_base_minor', 30_000_000)->where('time_fees.items.0.chargeable', true)->where('time_fees.may.apply', true));
+
+        $this->postJson("/front-office/stays/{$stay}/time-fees", ['kind' => 'early_checkin', 'action' => 'waive', 'reason' => ''])->assertStatus(422);
+        $this->postJson("/front-office/stays/{$stay}/time-fees", ['kind' => 'early_checkin', 'action' => 'charge'])->assertOk()->assertJsonPath('time_fees.items.0.decision.status', 'charged');
+        $this->postJson("/front-office/stays/{$stay}/time-fees", ['kind' => 'early_checkin', 'action' => 'charge'])->assertStatus(409);
+        self::assertSame(1, DB::table('folio_postings')->where('code', 'EARLYIN')->count());
     }
 
     public function test_guest_lookup_finds_a_returning_guest(): void

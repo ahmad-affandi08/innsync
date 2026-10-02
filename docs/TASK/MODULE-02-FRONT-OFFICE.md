@@ -52,7 +52,7 @@
 | TASK-FO-034 | FR-FO-034 | Sebaiknya | Menyediakan buku serah terima shift (log book) yang wajib diisi pada akhir shift dan dibaca pada awal shift berikutnya. | REVIEW |
 | TASK-FO-035 | FR-FO-035 | Sebaiknya | Mengelola profil perusahaan/agen, credit limit, billing instruction, dan routing charge untuk tamu korporat tanpa mencampur tagihan pribadi. | TODO |
 | TASK-FO-036 | FR-FO-036 | Wajib | Membuka dan menutup shift kasir Front Office dengan opening float, penerimaan per metode, cash drop, saldo sistem, kas fisik, dan selisih beralasan. | REVIEW |
-| TASK-FO-037 | FR-FO-037 | Sebaiknya | Mengelola early check-in, late check-out, day-use, dan biaya terkait berdasarkan kebijakan/rate plan yang dapat dikonfigurasi. | TODO |
+| TASK-FO-037 | FR-FO-037 | Sebaiknya | Mengelola early check-in, late check-out, day-use, dan biaya terkait berdasarkan kebijakan/rate plan yang dapat dikonfigurasi. | REVIEW |
 | TASK-FO-038 | FR-FO-038 | Wajib | Late charge setelah folio ditutup harus menggunakan alur khusus yang menaut ke stay/folio asal dan tidak mengubah laporan hari lama tanpa adjustment. | REVIEW |
 | TASK-FO-039 | FR-FO-039 | Wajib | Koreksi nama tamu, identitas, room move, dan routing finansial setelah check-in disimpan sebagai perubahan ter-audit; perubahan data kritis dapat memerlukan approval. | REVIEW |
 | TASK-FO-040 | FR-FO-040 | Wajib | Menerbitkan laporan registrasi tamu harian sesuai kolom di atas dengan penyaring tanggal dan kewarganegaraan. | REVIEW |

@@ -11,6 +11,7 @@ import { Select } from '@/components/ui/select';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { FrontOfficeShell } from '@/modules/front-office/components/front-office-shell';
 import { GuestCorrections, type Corrections } from '@/modules/front-office/components/guest-correction';
+import { StayTimeFeesPanel, type StayTimeFees } from '@/modules/front-office/components/stay-time-fees';
 import { useServerAction } from '@/shared/api/use-server-action';
 import { useFormatters, useTranslation } from '@/shared/i18n/i18n';
 import { useErrorStateCopy } from '@/shared/i18n/use-ui-copy';
@@ -26,7 +27,7 @@ type Stay = {
     checked_out_date: string | null; has_id_photo: boolean; lock_version: number; guest: Guest; moves: Move[];
 };
 
-export default function StayPage({ corrections, reservation, stay: s }: { corrections: Corrections; reservation: { number: string }; stay: Stay }) {
+export default function StayPage({ corrections, reservation, stay: s, time_fees: timeFees }: { corrections: Corrections; reservation: { number: string; currency?: string }; stay: Stay; time_fees: StayTimeFees }) {
     const { t } = useTranslation();
     const format = useFormatters();
     const errorCopy = useErrorStateCopy();
@@ -133,6 +134,8 @@ export default function StayPage({ corrections, reservation, stay: s }: { correc
                     </div>
                 )}
             </section>
+
+            <StayTimeFeesPanel currency={reservation.currency ?? 'IDR'} fees={timeFees} />
 
             <GuestCorrections corrections={corrections} guest={s.guest} stayId={s.id} />
 
