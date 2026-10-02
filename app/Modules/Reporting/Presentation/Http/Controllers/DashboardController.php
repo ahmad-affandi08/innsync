@@ -28,6 +28,24 @@ final readonly class DashboardController
         ]);
     }
 
+    /** The few numbers the home page shows for today. A person without dashboard access gets the service's refusal, and the page simply shows none. */
+    public function today(Request $request): JsonResponse
+    {
+        $snapshot = $this->dashboard->snapshot($this->property->current(), $this->actor($request), 'today', null, null);
+        $values = [];
+
+        foreach ($snapshot['cards'] as $card) {
+            $values[(string) $card['key']] = $card['values'];
+        }
+
+        return response()->json([
+            'business_date' => $snapshot['business_date'],
+            'occupancy' => $values['occupancy'] ?? null,
+            'movements' => $values['movements'] ?? null,
+            'alerts' => count($snapshot['alerts']),
+        ])->header('Cache-Control', 'no-store');
+    }
+
     public function savePreferences(Request $request): JsonResponse
     {
         $data = $request->validate(['order' => ['required', 'array', 'max:10'], 'order.*' => ['string', 'max:20'], 'hidden' => ['present', 'array', 'max:10'], 'hidden.*' => ['string', 'max:20']]);

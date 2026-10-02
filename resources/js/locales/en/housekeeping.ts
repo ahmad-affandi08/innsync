@@ -95,6 +95,7 @@ export const housekeeping = {
     'hk.flag.kind': 'Flag',
     'hk.flag.note': 'Note (optional)',
     'hk.flag.save': 'Add',
+    'hk.flag.add': 'Add a flag',
     'hk.disc.title': 'Where the front desk and housekeeping disagree',
     'hk.disc.rule.occupied_with_vacant_task': 'Room {room} has a guest but housekeeping is working on it as vacant.',
     'hk.disc.rule.vacant_with_stayover_task': 'Room {room} is vacant but housekeeping is working on it as a stay-over.',

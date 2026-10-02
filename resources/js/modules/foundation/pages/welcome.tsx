@@ -4,6 +4,7 @@ import { ArrowUpRight, BedDouble, ChartNoAxesCombined, ConciergeBell, LayoutDash
 import { AppFrame } from '@/components/layout/app-frame';
 import { Card } from '@/components/ui/card';
 import type { MessageKey } from '@/locales/en/index';
+import { TodaySummary } from '@/modules/foundation/components/today-summary';
 import { useTranslation } from '@/shared/i18n/i18n';
 
 type Module = { href: string; icon: LucideIcon; label: MessageKey; about: MessageKey };
@@ -33,6 +34,8 @@ export default function WelcomePage({ appVersion, userName }: WelcomePageProps) 
 
     return (
         <AppFrame description={t('home.description')} title={t('foundation.welcome.heading', { name: userName.split(' ')[0] ?? userName })}>
+            <TodaySummary />
+
             <section aria-labelledby="quick-h" className="flex flex-col gap-3">
                 <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground" id="quick-h">{t('home.quick')}</h2>
                 <div className="flex flex-wrap gap-2">

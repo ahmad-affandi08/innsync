@@ -95,6 +95,7 @@ export const housekeeping = {
     'hk.flag.kind': 'Tanda',
     'hk.flag.note': 'Catatan (opsional)',
     'hk.flag.save': 'Tambah',
+    'hk.flag.add': 'Tambah penanda',
     'hk.disc.title': 'Di mana front desk dan housekeeping tidak sepakat',
     'hk.disc.rule.occupied_with_vacant_task': 'Kamar {room} berpenghuni tetapi housekeeping mengerjakannya sebagai kamar kosong.',
     'hk.disc.rule.vacant_with_stayover_task': 'Kamar {room} kosong tetapi housekeeping mengerjakannya sebagai layanan tamu menginap.',

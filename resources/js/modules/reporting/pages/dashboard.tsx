@@ -137,7 +137,16 @@ export default function DashboardPage({ currency, preferences, snapshot: s, tv }
                                 <p className="text-sm">{t('rpt.card.movements.departures', { waiting: c.values.departures_expected, done: c.values.departures_done })}</p>
                             </>
                         )}
-                        {c.key === 'activity' && <p className="text-sm">{t('rpt.card.activity.line', { in: c.values.checked_in, out: c.values.checked_out, new: c.values.new_reservations })}</p>}
+                        {c.key === 'activity' && (
+                            <dl className="grid grid-cols-3 gap-4" data-testid="activity-line">
+                                {([['in', c.values.checked_in], ['out', c.values.checked_out], ['new', c.values.new_reservations]] as const).map(([k, n]) => (
+                                    <div key={k}>
+                                        <dd className="text-3xl font-semibold tabular-nums tracking-tight">{String(n)}</dd>
+                                        <dt className="text-xs text-muted-foreground">{t(`rpt.card.activity.${k}` as 'rpt.card.activity.in')}</dt>
+                                    </div>
+                                ))}
+                            </dl>
+                        )}
                         {c.key === 'revenue' && (
                             <>
                                 <p className="text-3xl font-semibold tabular-nums tracking-tight" data-testid="revenue-net">{format.money((c.values.net as Money).total, currency)}</p>

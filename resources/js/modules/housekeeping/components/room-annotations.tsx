@@ -1,7 +1,10 @@
+import { Plus } from 'lucide-react';
 import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
+import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Select } from '@/components/ui/select';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { useFormatters, useTranslation } from '@/shared/i18n/i18n';
@@ -36,6 +39,7 @@ export function FlagsPanel({ busy, flags, kinds, onEnd, onRaise }: { busy: boole
     const format = useFormatters();
     const [kind, setKind] = useState('dnd');
     const [note, setNote] = useState('');
+    const [open, setOpen] = useState(false);
 
     return (
         <div className="flex flex-col gap-1 text-xs" data-testid="room-flags">
@@ -47,11 +51,22 @@ export function FlagsPanel({ busy, flags, kinds, onEnd, onRaise }: { busy: boole
                 </div>
             ))}
             {onRaise !== undefined ? (
-                <div className="flex flex-wrap items-center gap-2">
-                    <Select aria-label={t('hk.flag.kind')} className="min-h-9 w-44" onChange={(e) => setKind(e.target.value)} value={kind}>{kinds.map((k) => <option key={k} value={k}>{t(`hk.flag.kind.${k}` as 'hk.flag.kind.dnd')}</option>)}</Select>
-                    <Input aria-label={t('hk.flag.note')} className="min-h-9 w-44" maxLength={200} onChange={(e) => setNote(e.target.value)} placeholder={t('hk.flag.note')} value={note} />
-                    <Button disabled={busy} onClick={() => { onRaise(kind, note); setNote(''); }} size="sm" type="button" variant="outline">{t('hk.flag.save')}</Button>
-                </div>
+                <Popover onOpenChange={setOpen} open={open}>
+                    <PopoverTrigger asChild>
+                        <Button className="self-start" size="sm" type="button" variant="outline"><Plus aria-hidden="true" className="size-4" />{t('hk.flag.add')}</Button>
+                    </PopoverTrigger>
+                    <PopoverContent align="start" className="w-80">
+                        <div className="flex flex-col gap-3">
+                            <FormField label={t('hk.flag.kind')}>
+                                <Select onChange={(e) => setKind(e.target.value)} value={kind}>{kinds.map((k) => <option key={k} value={k}>{t(`hk.flag.kind.${k}` as 'hk.flag.kind.dnd')}</option>)}</Select>
+                            </FormField>
+                            <FormField label={t('hk.flag.note')}>
+                                <Input maxLength={200} onChange={(e) => setNote(e.target.value)} value={note} />
+                            </FormField>
+                            <Button disabled={busy} onClick={() => { onRaise(kind, note); setNote(''); setOpen(false); }} size="sm" type="button">{t('hk.flag.save')}</Button>
+                        </div>
+                    </PopoverContent>
+                </Popover>
             ) : null}
         </div>
     );

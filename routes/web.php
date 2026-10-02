@@ -386,6 +386,7 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
 // an export of personal data needs a stated purpose.
 Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->group(function (): void {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/dashboard/today', [DashboardController::class, 'today'])->name('dashboard.today');
     Route::post('/dashboard/preferences', [DashboardController::class, 'savePreferences'])->name('dashboard.preferences');
     Route::delete('/dashboard/preferences', [DashboardController::class, 'resetPreferences'])->name('dashboard.preferences.reset');
     Route::prefix('reports')->group(function (): void {

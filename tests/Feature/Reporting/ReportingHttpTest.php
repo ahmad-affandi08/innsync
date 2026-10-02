@@ -71,6 +71,16 @@ final class ReportingHttpTest extends TestCase
         $this->get('/reports')->assertInertia(fn (Assert $p) => $p->component('reporting/pages/reports')->has('reports', 11)->where('context.business_date', '2026-10-01'));
     }
 
+    public function test_the_home_page_gets_todays_numbers_in_one_small_response(): void
+    {
+        $this->getJson('/dashboard/today')->assertOk()
+            ->assertJsonPath('business_date', '2026-10-01')
+            ->assertJsonPath('occupancy.occupied', 1)
+            ->assertJsonPath('occupancy.sellable', 1)
+            ->assertJsonPath('movements.arrivals_checked_in', 1)
+            ->assertJsonStructure(['occupancy' => ['occupancy_bp', 'available', 'guests'], 'movements' => ['arrivals_expected', 'departures_expected', 'departures_done'], 'alerts']);
+    }
+
     public function test_the_dashboard_layout_is_saved_per_person_and_the_television_view_is_offered(): void
     {
         $this->get('/dashboard')->assertInertia(fn (Assert $p) => $p->where('preferences.saved', false)->where('preferences.order.0', 'occupancy')->where('tv', false));
