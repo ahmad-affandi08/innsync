@@ -313,20 +313,23 @@ final class ReportingTest extends TestCase
     public function test_the_audit_trail_is_searchable_by_person_module_and_dates(): void
     {
         $this->operate();
+        // The entries are stamped with the real clock, so the window follows the real date (in the property's zone) instead of a fixed one.
+        $from = now('Asia/Jakarta')->subDay()->format('Y-m-d');
+        $to = now('Asia/Jakarta')->addDay()->format('Y-m-d');
 
-        $all = $this->reports()->auditTrail($this->property(), $this->analystId, '2026-09-30', '2026-10-02', null, null, 1);
+        $all = $this->reports()->auditTrail($this->property(), $this->analystId, $from, $to, null, null, 1);
         self::assertGreaterThan(5, $all['total']);
         self::assertSame($all['total'] > 50 ? 50 : $all['total'], count($all['rows']));
         self::assertSame(['audit'], [$all['meta']['report']]);
 
-        $stays = $this->reports()->auditTrail($this->property(), $this->analystId, '2026-09-30', '2026-10-02', null, 'stay', 1);
+        $stays = $this->reports()->auditTrail($this->property(), $this->analystId, $from, $to, null, 'stay', 1);
         self::assertSame(['stay.checked_in', 'stay.checked_in'], array_column($stays['rows'], 'action'));
         self::assertSame($this->managerId, $stays['rows'][0]['actor_id']);
         self::assertNotNull($stays['rows'][0]['actor_name']);
-        self::assertSame(0, $this->reports()->auditTrail($this->property(), $this->analystId, '2026-09-30', '2026-10-02', $this->attendantId, null, 1)['total']);
+        self::assertSame(0, $this->reports()->auditTrail($this->property(), $this->analystId, $from, $to, $this->attendantId, null, 1)['total']);
         self::assertSame(0, $this->reports()->auditTrail($this->property(), $this->analystId, '2026-08-01', '2026-08-02', null, null, 1)['total']);
 
-        $this->assertRefused(422, fn () => $this->reports()->auditTrail($this->property(), $this->analystId, '2026-10-02', '2026-10-01', null, null, 1));
+        $this->assertRefused(422, fn () => $this->reports()->auditTrail($this->property(), $this->analystId, $to, $from, null, null, 1));
         $this->assertRefused(422, fn () => $this->reports()->auditTrail($this->property(), $this->analystId, '2026-01-01', '2026-10-01', null, null, 1));
         $this->assertRefused(422, fn () => $this->reports()->auditTrail($this->property(), $this->analystId, null, null, null, 'bad module!', 1));
         $this->assertRefused(403, fn () => $this->reports()->auditTrail($this->property(), $this->registrarId, null, null, null, null, 1));
