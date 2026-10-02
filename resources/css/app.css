@@ -18,6 +18,14 @@
     --color-border: var(--border);
     --color-input: var(--input);
     --color-ring: var(--ring);
+    --color-accent: var(--accent);
+    --color-accent-foreground: var(--accent-foreground);
+    --color-brand: var(--brand);
+    --color-sidebar: var(--sidebar);
+    --color-sidebar-foreground: var(--sidebar-foreground);
+    --color-sidebar-muted: var(--sidebar-muted);
+    --color-sidebar-active: var(--sidebar-active);
+    --color-sidebar-border: var(--sidebar-border);
     --color-primary: var(--primary);
     --color-primary-foreground: var(--primary-foreground);
     --color-secondary: var(--secondary);
@@ -46,29 +54,38 @@
     --radius-sm: calc(var(--radius) - 0.25rem);
     --radius-md: calc(var(--radius) - 0.125rem);
     --radius-lg: var(--radius);
-    --shadow-panel: 0 1px 2px 0 oklch(0.208 0.042 265.755 / 8%);
+    --shadow-panel: 0 1px 2px 0 oklch(0.208 0.042 265.755 / 6%), 0 1px 3px 0 oklch(0.208 0.042 265.755 / 5%);
     --shadow-overlay: 0 16px 40px -12px oklch(0.208 0.042 265.755 / 25%);
     --spacing-touch: 2.75rem;
 }
 
 :root {
-    --background: oklch(0.985 0.003 247.858);
-    --foreground: oklch(0.208 0.042 265.755);
+    /* Brand: the deep navy and the orange of the InnSYnc logo. Orange marks what is active and what needs a look; filled actions stay navy for contrast. */
+    --brand: #f97316;
+    --background: oklch(0.977 0.004 250);
+    --foreground: oklch(0.235 0.045 262);
     --surface: oklch(1 0 0);
-    --surface-muted: oklch(0.968 0.007 247.896);
-    --overlay: oklch(0.208 0.042 265.755 / 45%);
-    --muted-foreground: oklch(0.446 0.043 257.281);
-    --border: oklch(0.869 0.02 252.894);
-    --input: oklch(0.869 0.02 252.894);
-    --ring: oklch(0.488 0.243 253.793);
-    --primary: oklch(0.24 0.04 253.793);
-    --primary-foreground: oklch(0.985 0 0);
-    --secondary: oklch(0.929 0.013 255.508);
-    --secondary-foreground: oklch(0.279 0.041 260.031);
+    --surface-muted: oklch(0.962 0.008 252);
+    --overlay: oklch(0.235 0.045 262 / 50%);
+    --muted-foreground: oklch(0.47 0.03 258);
+    --border: oklch(0.905 0.012 255);
+    --input: oklch(0.84 0.016 255);
+    --ring: oklch(0.705 0.19 47);
+    --primary: oklch(0.275 0.05 262);
+    --primary-foreground: oklch(0.99 0 0);
+    --secondary: oklch(0.945 0.012 255);
+    --secondary-foreground: oklch(0.275 0.05 262);
+    --accent: oklch(0.52 0.17 40);
+    --accent-foreground: oklch(0.99 0 0);
+    --sidebar: oklch(0.215 0.045 262);
+    --sidebar-foreground: oklch(0.93 0.01 255);
+    --sidebar-muted: oklch(0.72 0.025 258);
+    --sidebar-active: oklch(0.29 0.055 262);
+    --sidebar-border: oklch(0.32 0.04 262);
     --destructive: oklch(0.505 0.213 27.518);
     --destructive-foreground: oklch(0.985 0 0);
     --success: oklch(0.432 0.133 145.5);
-    --warning: oklch(0.555 0.135 66.442);
+    --warning: oklch(0.52 0.135 62);
     --danger: oklch(0.505 0.213 27.518);
     --info: oklch(0.443 0.161 257.101);
     --room-occupancy-vacant: oklch(0.627 0.194 149.214);
@@ -86,7 +103,7 @@
     --chart-3: oklch(0.681 0.162 75.834);
     --chart-4: oklch(0.558 0.288 302.321);
     --chart-5: oklch(0.585 0.233 16.241);
-    --radius: 0.5rem;
+    --radius: 0.625rem;
 }
 
 @layer base {
@@ -96,5 +113,38 @@
 
     body {
         @apply bg-background text-foreground;
+        font-feature-settings: 'cv11', 'ss01';
+        -webkit-font-smoothing: antialiased;
+    }
+
+    h1,
+    h2,
+    h3 {
+        letter-spacing: -0.012em;
+    }
+
+    ::selection {
+        background: color-mix(in oklab, var(--brand) 28%, transparent);
+    }
+
+    /* Tables read as lists: quiet header, a hover row, and numbers that line up. */
+    table {
+        font-variant-numeric: tabular-nums;
+    }
+
+    thead th {
+        @apply text-[0.6875rem] font-semibold uppercase tracking-wide text-muted-foreground;
+    }
+
+    tbody tr {
+        @apply transition-colors;
+    }
+
+    tbody tr:hover {
+        background: color-mix(in oklab, var(--surface-muted) 70%, transparent);
+    }
+
+    a {
+        text-underline-offset: 3px;
     }
 }

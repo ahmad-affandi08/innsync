@@ -1,85 +1,71 @@
-import { Head, Link, router } from '@inertiajs/react';
-import { CheckCircle2 } from 'lucide-react';
+import { Link } from '@inertiajs/react';
+import { ArrowUpRight, BedDouble, ChartNoAxesCombined, ConciergeBell, LayoutDashboard, Settings2, ShieldCheck, Shirt, type LucideIcon } from 'lucide-react';
 
-import { Button } from '@/components/ui/button';
-import { LanguageSwitcher } from '@/components/ui/language-switcher';
+import { AppFrame } from '@/components/layout/app-frame';
+import type { MessageKey } from '@/locales/en/index';
 import { useTranslation } from '@/shared/i18n/i18n';
 
-const MODULES = [
-    { href: '/dashboard', label: 'rpt.nav.dashboard' },
-    { href: '/front-office/room-board', label: 'fo.nav.label' },
-    { href: '/housekeeping', label: 'hk.nav.label' },
-    { href: '/laundry', label: 'ldy.nav.label' },
-    { href: '/reports', label: 'rpt.nav.reports' },
-    { href: '/property/rooms', label: 'property.nav.label' },
-    { href: '/approvals', label: 'identity.approvals.title' },
+type Card = { href: string; icon: LucideIcon; label: MessageKey; about: MessageKey };
+
+const CARDS: readonly Card[] = [
+    { href: '/dashboard', icon: LayoutDashboard, label: 'rpt.nav.dashboard', about: 'home.about.dashboard' },
+    { href: '/front-office/room-board', icon: ConciergeBell, label: 'fo.nav.label', about: 'home.about.frontOffice' },
+    { href: '/housekeeping', icon: BedDouble, label: 'hk.nav.label', about: 'home.about.housekeeping' },
+    { href: '/laundry', icon: Shirt, label: 'ldy.nav.label', about: 'home.about.laundry' },
+    { href: '/reports', icon: ChartNoAxesCombined, label: 'rpt.nav.reports', about: 'home.about.reports' },
+    { href: '/approvals', icon: ShieldCheck, label: 'identity.approvals.title', about: 'home.about.approvals' },
+    { href: '/property/settings', icon: Settings2, label: 'property.nav.label', about: 'home.about.property' },
+];
+
+const QUICK = [
+    { href: '/front-office/reservations', label: 'home.quick.reservation' },
+    { href: '/front-office/stays', label: 'home.quick.stays' },
+    { href: '/front-office/night-audit', label: 'home.quick.audit' },
+    { href: '/housekeeping/my-rooms', label: 'home.quick.myRooms' },
 ] as const;
 
-type WelcomePageProps = {
-    appVersion: string;
-    userName: string;
-    activePropertyId: string;
-};
+type WelcomePageProps = { appVersion: string; userName: string; activePropertyId: string };
 
-export default function WelcomePage({ activePropertyId, appVersion, userName }: WelcomePageProps) {
+/** Where people land: what they can open, and the few things done every day. */
+export default function WelcomePage({ appVersion, userName }: WelcomePageProps) {
     const { t } = useTranslation();
 
     return (
-        <>
-            <Head title={t('foundation.welcome.title')} />
+        <AppFrame description={t('home.description')} title={t('foundation.welcome.heading', { name: userName.split(' ')[0] ?? userName })}>
+            <section aria-labelledby="quick-h" className="flex flex-col gap-3">
+                <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground" id="quick-h">{t('home.quick')}</h2>
+                <div className="flex flex-wrap gap-2">
+                    {QUICK.map((q) => (
+                        <Link className="inline-flex items-center gap-2 rounded-full border border-border bg-surface px-4 py-2 text-sm font-medium shadow-panel transition hover:border-brand hover:text-accent" href={q.href} key={q.href}>
+                            {t(q.label)}
+                            <ArrowUpRight aria-hidden="true" className="size-3.5 text-brand" />
+                        </Link>
+                    ))}
+                </div>
+            </section>
 
-            <main className="min-h-screen bg-surface-muted px-4 py-10 sm:px-6 lg:px-8">
-                <section className="mx-auto max-w-4xl border border-border bg-surface shadow-sm">
-                    <header className="border-b border-border px-6 py-5 sm:px-8">
-                        <div className="flex items-center justify-between gap-3">
-                            <p className="text-sm font-semibold tracking-wide text-primary">
-                                InnSYnc
-                            </p>
-                            <LanguageSwitcher />
-                        </div>
-                        <h1 className="mt-1 text-2xl font-semibold tracking-tight sm:text-3xl">
-                            {t('foundation.welcome.heading', { name: userName })}
-                        </h1>
-                        <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
-                            {t('foundation.welcome.description')}
-                        </p>
-                    </header>
+            <section aria-labelledby="mods-h" className="flex flex-col gap-3">
+                <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground" id="mods-h">{t('foundation.welcome.modules')}</h2>
+                <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                    {CARDS.map((c) => {
+                        const Icon = c.icon;
 
-                    <nav aria-label={t('foundation.welcome.modules')} className="flex flex-wrap gap-2 border-b border-border px-6 py-4 text-sm sm:px-8">
-                        {MODULES.map((m) => (
-                            <Link className="rounded-md border border-border px-3 py-1.5 hover:bg-surface-muted" href={m.href} key={m.href}>{t(m.label)}</Link>
-                        ))}
-                    </nav>
+                        return (
+                            <Link className="group flex gap-4 rounded-xl border border-border bg-surface p-5 shadow-panel transition hover:-translate-y-0.5 hover:border-brand/60 hover:shadow-overlay" href={c.href} key={c.href}>
+                                <span className="grid size-11 shrink-0 place-items-center rounded-lg bg-brand/10 text-accent transition group-hover:bg-brand group-hover:text-white">
+                                    <Icon aria-hidden="true" className="size-5" />
+                                </span>
+                                <span className="min-w-0">
+                                    <span className="block font-semibold">{t(c.label)}</span>
+                                    <span className="mt-0.5 block text-sm leading-5 text-muted-foreground">{t(c.about)}</span>
+                                </span>
+                            </Link>
+                        );
+                    })}
+                </div>
+            </section>
 
-                    <div className="grid gap-6 px-6 py-6 sm:grid-cols-[1fr_auto] sm:items-end sm:px-8">
-                        <div>
-                            <div className="flex items-center gap-2 text-sm font-medium text-success">
-                                <CheckCircle2 aria-hidden="true" className="size-4" />
-                                {t('foundation.welcome.verified')}
-                            </div>
-                            <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
-                                <div>
-                                    <dt className="text-muted-foreground">{t('foundation.welcome.task')}</dt>
-                                    <dd className="font-medium">TASK-FND-001</dd>
-                                </div>
-                                <div>
-                                    <dt className="text-muted-foreground">{t('foundation.welcome.version')}</dt>
-                                    <dd className="font-medium">{appVersion}</dd>
-                                </div>
-                                <div>
-                                    <dt className="text-muted-foreground">{t('foundation.welcome.propertyScope')}</dt>
-                                    <dd className="font-mono text-xs font-medium">{activePropertyId}</dd>
-                                </div>
-                            </dl>
-                        </div>
-
-                        <div className="flex gap-2">
-                            <Button asChild variant="outline"><Link href="/account/sessions">{t('foundation.welcome.sessions')}</Link></Button>
-                            <Button onClick={() => router.post('/logout')} type="button" variant="outline">{t('common.action.signOut')}</Button>
-                        </div>
-                    </div>
-                </section>
-            </main>
-        </>
+            <p className="text-xs text-muted-foreground">InnSYnc {appVersion}</p>
+        </AppFrame>
     );
 }

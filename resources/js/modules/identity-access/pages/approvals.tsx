@@ -1,13 +1,12 @@
-import { Head, Link, router } from '@inertiajs/react';
+import { router } from '@inertiajs/react';
 import { useState } from 'react';
 
+import { AppFrame } from '@/components/layout/app-frame';
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { ConfirmDialog } from '@/components/ui/dialog';
 import { EmptyState } from '@/components/ui/empty-state';
 import { FormField } from '@/components/ui/form-field';
-import { LanguageSwitcher } from '@/components/ui/language-switcher';
-import { PageHeader } from '@/components/ui/page-header';
 import { StatusBadge, type StatusTone } from '@/components/ui/status-badge';
 import { Textarea } from '@/components/ui/textarea';
 import { apiRequest } from '@/shared/api/http';
@@ -164,20 +163,7 @@ export default function ApprovalsPage({ pending, mine }: { pending: Approval[]; 
 
     return (
         <>
-            <Head title={t('identity.approvals.title')} />
-            <main className="min-h-screen bg-surface-muted px-4 py-10">
-                <section className="mx-auto flex max-w-3xl flex-col gap-6 border border-border bg-surface p-6 shadow-panel sm:p-8">
-                    <PageHeader
-                        actions={
-                            <>
-                                <LanguageSwitcher />
-                                <Button asChild variant="outline"><Link href="/">{t('common.action.back')}</Link></Button>
-                            </>
-                        }
-                        description={t('identity.approvals.description')}
-                        title={t('identity.approvals.title')}
-                    />
-
+            <AppFrame actions={<Button asChild variant="outline"><a href="/approvals/policies">{t('identity.approvalPolicies.title')}</a></Button>} description={t('identity.approvals.description')} title={t('identity.approvals.title')} wide={false}>
                     {failure !== null && (
                         <Alert
                             actions={
@@ -211,8 +197,7 @@ export default function ApprovalsPage({ pending, mine }: { pending: Approval[]; 
                             <ul className="mt-2 divide-y divide-border border-y border-border">{mine.map((a) => row(a, ['cancel']))}</ul>
                         )}
                     </div>
-                </section>
-            </main>
+            </AppFrame>
 
             <ConfirmDialog
                 cancelLabel={t('identity.approvals.back')}

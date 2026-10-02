@@ -55,7 +55,7 @@ function Dialog({
             aria-describedby={description ? descriptionId : undefined}
             aria-labelledby={titleId}
             className={cn(
-                'm-auto w-[min(32rem,calc(100vw-2rem))] rounded-lg border border-border bg-surface p-0 text-foreground shadow-overlay backdrop:bg-overlay',
+                'm-auto w-[min(32rem,calc(100vw-2rem))] rounded-2xl border border-border bg-surface p-0 text-foreground shadow-overlay backdrop:bg-overlay',
                 className,
             )}
             onCancel={(event) => {

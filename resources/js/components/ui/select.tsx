@@ -14,7 +14,7 @@ function Select({ children, className, ...props }: SelectProps) {
         <div className="relative">
             <select
                 className={cn(
-                    'flex min-h-11 w-full appearance-none rounded-md border border-input bg-background py-2 pl-3 pr-9 text-sm text-foreground shadow-sm outline-none transition focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-danger',
+                    'flex min-h-11 w-full appearance-none rounded-lg border border-input bg-surface py-2 pl-3 pr-9 text-sm text-foreground shadow-sm outline-none transition focus-visible:border-brand focus-visible:ring-2 focus-visible:ring-ring/40 disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-danger',
                     className,
                 )}
                 {...props}

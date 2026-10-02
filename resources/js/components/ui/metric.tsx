@@ -19,7 +19,7 @@ function Metric({ className, detail, label, loading = false, value }: MetricProp
         <dl
             aria-busy={loading || undefined}
             className={cn(
-                'rounded-lg border border-border bg-surface p-3 shadow-panel',
+                'rounded-xl border border-border bg-surface p-4 shadow-panel',
                 className,
             )}
         >

@@ -1,10 +1,10 @@
-import { Head, Link, router, useForm } from '@inertiajs/react';
+import { router, useForm } from '@inertiajs/react';
 import type { FormEvent } from 'react';
 
+import { AppFrame } from '@/components/layout/app-frame';
 import { Button } from '@/components/ui/button';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
-import { LanguageSwitcher } from '@/components/ui/language-switcher';
 import { useFormatters, useTranslation } from '@/shared/i18n/i18n';
 
 type Session = {
@@ -33,19 +33,7 @@ export default function SessionsPage({ sessions }: { sessions: Session[] }) {
 
     return (
         <>
-            <Head title={t('identity.sessions.title')} />
-            <main className="min-h-screen bg-surface-muted px-4 py-10">
-                <section className="mx-auto max-w-3xl border border-border bg-surface p-6 shadow-panel sm:p-8">
-                    <div className="flex flex-wrap items-start justify-between gap-4">
-                        <div>
-                            <h1 className="text-2xl font-semibold">{t('identity.sessions.title')}</h1>
-                            <p className="mt-1 text-sm text-muted-foreground">{t('identity.sessions.description')}</p>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <LanguageSwitcher />
-                            <Button asChild variant="outline"><Link href="/">{t('common.action.back')}</Link></Button>
-                        </div>
-                    </div>
+            <AppFrame description={t('identity.sessions.description')} title={t('identity.sessions.title')} wide={false}>
                     <ul className="mt-6 divide-y divide-border border-y border-border">
                         {sessions.map((session) => (
                             <li className="flex flex-wrap items-center justify-between gap-4 py-4" key={session.id}>
@@ -80,8 +68,7 @@ export default function SessionsPage({ sessions }: { sessions: Session[] }) {
                         </FormField>
                         <Button loading={passwordForm.processing} type="submit">{t('identity.password.update')}</Button>
                     </form>
-                </section>
-            </main>
+            </AppFrame>
         </>
     );
 }

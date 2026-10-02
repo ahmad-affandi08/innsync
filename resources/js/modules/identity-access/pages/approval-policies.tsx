@@ -1,13 +1,11 @@
-import { Head, Link } from '@inertiajs/react';
 import { useState } from 'react';
 
+import { AppFrame } from '@/components/layout/app-frame';
 import { Button } from '@/components/ui/button';
 import { Dialog } from '@/components/ui/dialog';
 import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
-import { LanguageSwitcher } from '@/components/ui/language-switcher';
-import { PageHeader } from '@/components/ui/page-header';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { useServerAction } from '@/shared/api/use-server-action';
 import { useTranslation } from '@/shared/i18n/i18n';
@@ -41,14 +39,7 @@ export default function ApprovalPoliciesPage({ subjects }: { subjects: Subject[]
 
     return (
         <>
-            <Head title={t('identity.approvalPolicies.title')} />
-            <main className="min-h-screen bg-surface-muted px-4 py-10">
-                <section className="mx-auto flex max-w-3xl flex-col gap-6 border border-border bg-surface p-6 shadow-panel sm:p-8">
-                    <PageHeader
-                        actions={<><LanguageSwitcher /><Button asChild variant="outline"><Link href="/approvals">{t('identity.approvalPolicies.inbox')}</Link></Button></>}
-                        description={t('identity.approvalPolicies.description')}
-                        title={t('identity.approvalPolicies.title')}
-                    />
+            <AppFrame actions={<Button asChild variant="outline"><a href="/approvals">{t('identity.approvalPolicies.inbox')}</a></Button>} description={t('identity.approvalPolicies.description')} title={t('identity.approvalPolicies.title')} wide={false}>
                     {form === null && action.error !== null ? <ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /> : null}
                     {subjects.map((s) => (
                         <section aria-labelledby={`s-${s.subject}`} className="flex flex-col gap-2" key={s.subject}>
@@ -71,8 +62,7 @@ export default function ApprovalPoliciesPage({ subjects }: { subjects: Subject[]
                             )}
                         </section>
                     ))}
-                </section>
-            </main>
+            </AppFrame>
 
             <Dialog
                 footer={<>

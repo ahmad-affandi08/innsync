@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Middleware;
 
+use App\Modules\Property\Application\Ports\PropertyProfileReader;
 use App\Modules\Property\Application\Ports\PropertyTimeZoneReader;
+use App\Modules\Property\Application\Settings\BusinessDateProvider;
 use App\Shared\Domain\Tenancy\PropertyId;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
@@ -29,6 +31,7 @@ final class HandleInertiaRequests extends Middleware
             'locale' => app()->getLocale(),
             'timeZone' => fn (): ?string => $this->activeTimeZone($request),
             'auth' => fn (): ?array => $this->activeIdentity($request),
+            'shell' => fn (): ?array => $this->shell($request),
             'app' => [
                 'name' => (string) config('app.name'),
             ],
@@ -74,5 +77,37 @@ final class HandleInertiaRequests extends Middleware
         }
 
         return ['userId' => strtolower((string) $request->user()->getAuthIdentifier()), 'propertyId' => strtolower($propertyId)];
+    }
+
+    /**
+     * What the frame around every page shows: the property, its business date and who is signed in. Shown only to the signed-in
+     * person themselves; the business date is null before go-live.
+     *
+     * @return array{propertyName: string|null, businessDate: string|null, userName: string}|null
+     */
+    private function shell(Request $request): ?array
+    {
+        $propertyId = $request->session()->get('auth.active_property_id');
+
+        if ($request->user() === null || ! is_string($propertyId) || $propertyId === '') {
+            return null;
+        }
+
+        try {
+            $property = PropertyId::fromString($propertyId);
+            $name = app(PropertyProfileReader::class)->nameOf($property);
+        } catch (Throwable $exception) {
+            report($exception);
+
+            return ['propertyName' => null, 'businessDate' => null, 'userName' => (string) $request->user()->name];
+        }
+
+        try {
+            $date = app(BusinessDateProvider::class)->current($property)->toString();
+        } catch (Throwable) {
+            $date = null;
+        }
+
+        return ['propertyName' => $name, 'businessDate' => $date, 'userName' => (string) $request->user()->name];
     }
 }
