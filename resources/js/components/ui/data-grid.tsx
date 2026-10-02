@@ -306,6 +306,7 @@ function DataGrid<T>({ caption, className, columns, empty, footerLabel, getRowId
                         <span>{t('ui.grid.perPage')}</span>
                         <Select
                             className="min-h-10 w-20"
+                            searchable={false}
                             onChange={(e) => {
                                 const size = Number(e.target.value);
 

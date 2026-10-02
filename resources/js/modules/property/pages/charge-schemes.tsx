@@ -2,6 +2,7 @@ import { Link } from '@inertiajs/react';
 import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
+import { DatePicker } from '@/components/ui/date-picker';
 import { ConfirmDialog } from '@/components/ui/dialog';
 import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
@@ -67,7 +68,7 @@ export default function ChargeSchemesPage({ schemes, scope, scopes }: { schemes:
                 {form !== null && (
                     <div className="flex flex-col gap-3">
                         {action.error !== null ? <ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /> : null}
-                        <FormField error={action.fieldError('effective_from')} label={t('tax.effectiveFrom')}><Input onChange={(e) => setForm({ ...form, from: e.target.value })} type="date" value={form.from} /></FormField>
+                        <FormField error={action.fieldError('effective_from')} label={t('tax.effectiveFrom')}><DatePicker onChange={(e) => setForm({ ...form, from: e.target.value })} value={form.from} /></FormField>
                         <div className="grid grid-cols-2 gap-3">
                             <FormField error={action.fieldError('service_charge_rate')} hint={t('tax.rateHint')} label={t('tax.serviceCharge')}><Input inputMode="decimal" onChange={(e) => setForm({ ...form, sc: e.target.value })} value={form.sc} /></FormField>
                             <FormField error={action.fieldError('tax_rate')} hint={t('tax.rateHint')} label={t('tax.rate')}><Input inputMode="decimal" onChange={(e) => setForm({ ...form, tax: e.target.value })} value={form.tax} /></FormField>

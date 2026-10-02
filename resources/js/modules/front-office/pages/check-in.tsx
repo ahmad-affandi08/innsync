@@ -3,6 +3,7 @@ import { useState } from 'react';
 
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
+import { DatePicker } from '@/components/ui/date-picker';
 import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
@@ -99,7 +100,7 @@ export default function CheckInPage({ preselect, reservation: r, rooms, stay }: 
                             </div>
                         ))}
                     </div>
-                    <FormField error={action.fieldError('id_valid_until')} label={t('fo.checkin.idValidUntil')}><Input onChange={(e) => set({ idValidUntil: e.target.value })} type="date" value={form.idValidUntil} /></FormField>
+                    <FormField error={action.fieldError('id_valid_until')} label={t('fo.checkin.idValidUntil')}><DatePicker onChange={(e) => set({ idValidUntil: e.target.value })} value={form.idValidUntil} /></FormField>
                     <FormField error={action.fieldError('nationality')} label={t('fo.checkin.nationality')}><Input maxLength={2} onChange={(e) => set({ nationality: e.target.value })} required value={form.nationality} /></FormField>
                     <FormField error={action.fieldError('visa_number')} label={t('fo.checkin.visa')}><Input autoComplete="off" maxLength={40} onChange={(e) => set({ visa: e.target.value })} value={form.visa} /></FormField>
                     <div className="grid grid-cols-2 gap-4">

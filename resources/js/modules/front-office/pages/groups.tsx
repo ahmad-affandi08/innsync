@@ -3,6 +3,7 @@ import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { DataGrid, type DataGridColumn } from '@/components/ui/data-grid';
+import { DatePicker } from '@/components/ui/date-picker';
 import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
@@ -89,8 +90,8 @@ export default function GroupsPage({ lookups, overview, query }: Props) {
                         <FormField label={t('fo.res.phone')}><Input maxLength={30} onChange={(e) => setForm({ ...form, booker_phone: e.target.value })} value={form.booker_phone} /></FormField>
                         <FormField error={action.fieldError('booker_email')} label={t('fo.res.email')}><Input maxLength={190} onChange={(e) => setForm({ ...form, booker_email: e.target.value })} value={form.booker_email} /></FormField>
                         <FormField label={t('fo.res.status')}><Select onChange={(e) => setForm({ ...form, status: e.target.value })} value={form.status}><option value="confirmed">{t('fo.status.confirmed')}</option><option value="tentative">{t('fo.status.tentative')}</option></Select></FormField>
-                        <FormField error={action.fieldError('arrival')} label={t('fo.res.arrival')}><Input onChange={(e) => setForm({ ...form, arrival: e.target.value })} type="date" value={form.arrival} /></FormField>
-                        <FormField error={action.fieldError('departure')} label={t('fo.res.departure')}><Input onChange={(e) => setForm({ ...form, departure: e.target.value })} type="date" value={form.departure} /></FormField>
+                        <FormField error={action.fieldError('arrival')} label={t('fo.res.arrival')}><DatePicker onChange={(e) => setForm({ ...form, arrival: e.target.value })} value={form.arrival} /></FormField>
+                        <FormField error={action.fieldError('departure')} label={t('fo.res.departure')}><DatePicker onChange={(e) => setForm({ ...form, departure: e.target.value })} value={form.departure} /></FormField>
                     </div>
                     <fieldset className="flex flex-col gap-1 text-sm">
                         <legend className="font-medium">{t('fo.group.billing')}</legend>

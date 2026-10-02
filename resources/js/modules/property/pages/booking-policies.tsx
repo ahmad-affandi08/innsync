@@ -1,6 +1,7 @@
 import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
+import { DatePicker } from '@/components/ui/date-picker';
 import { ConfirmDialog } from '@/components/ui/dialog';
 import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
@@ -111,7 +112,7 @@ export default function BookingPoliciesPage({ business_date, currency, plans, po
                                 <Select onChange={(e) => setForm({ ...form, source: e.target.value })} value={form.source}><option value="">{t('policy.scope.all')}</option>{sources.map((s) => <option key={s} value={s}>{t(`fo.source.${s}` as 'fo.source.direct')}</option>)}</Select>
                             </FormField>
                         </div>
-                        <FormField error={action.fieldError('effective_from')} label={t('policy.effectiveFrom')}><Input min={business_date} onChange={(e) => setForm({ ...form, from: e.target.value })} type="date" value={form.from} /></FormField>
+                        <FormField error={action.fieldError('effective_from')} label={t('policy.effectiveFrom')}><DatePicker min={business_date} onChange={(e) => setForm({ ...form, from: e.target.value })} value={form.from} /></FormField>
                         <label className="flex items-center gap-2 text-sm"><input checked={form.guarantee} onChange={(e) => setForm({ ...form, guarantee: e.target.checked })} type="checkbox" />{t('policy.guarantee')}</label>
                         <FormField error={action.fieldError('deposit_basis')} label={t('policy.depositBasis')}>
                             <Select onChange={(e) => setForm({ ...form, basis: e.target.value })} value={form.basis}>{BASES.map((b) => <option key={b} value={b}>{t(`policy.basis.${b}` as 'policy.basis.none')}</option>)}</Select>

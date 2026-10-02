@@ -2,6 +2,7 @@ import { useState } from 'react';
 
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
+import { DatePicker } from '@/components/ui/date-picker';
 import { Dialog } from '@/components/ui/dialog';
 import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
@@ -100,7 +101,7 @@ export function RateChangePanel({ currency, reservationId, rates }: { currency: 
                             <label className="flex items-center gap-2"><input checked={!form.nett} name="rate-nett" onChange={() => { setForm({ ...form, nett: false }); setPreview(null); }} type="radio" />{t('fo.rate.plusPlus')}</label>
                             <label className="flex items-center gap-2"><input checked={form.nett} name="rate-nett" onChange={() => { setForm({ ...form, nett: true }); setPreview(null); }} type="radio" />{t('fo.rate.nett')}</label>
                         </fieldset>
-                        <FormField error={action.fieldError('from')} label={t('fo.rate.from')}><Input onChange={(e) => { setForm({ ...form, from: e.target.value }); setPreview(null); }} type="date" value={form.from} /></FormField>
+                        <FormField error={action.fieldError('from')} label={t('fo.rate.from')}><DatePicker onChange={(e) => { setForm({ ...form, from: e.target.value }); setPreview(null); }} value={form.from} /></FormField>
                         <FormField error={action.fieldError('reason')} label={t('fo.rate.reason')}><Input maxLength={300} onChange={(e) => setForm({ ...form, reason: e.target.value })} value={form.reason} /></FormField>
                         {preview !== null && (
                             <div className="flex flex-col gap-1 text-sm" data-testid="rate-preview">

@@ -2,6 +2,7 @@ import { router } from '@inertiajs/react';
 import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
+import { DatePicker } from '@/components/ui/date-picker';
 import { EmptyState } from '@/components/ui/empty-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
@@ -39,7 +40,7 @@ export default function AvailabilityPage({ calendar, plans, selected_plan }: { c
     return (
         <FrontOfficeShell description={t('fo.availability.description')} title={t('fo.availability.title')} wide>
             <form className="grid gap-3 sm:grid-cols-5" onSubmit={(e) => { e.preventDefault(); show(); }}>
-                <FormField label={t('fo.availability.from')}><Input onChange={(e) => setForm({ ...form, from: e.target.value })} type="date" value={form.from} /></FormField>
+                <FormField label={t('fo.availability.from')}><DatePicker onChange={(e) => setForm({ ...form, from: e.target.value })} value={form.from} /></FormField>
                 <FormField label={t('fo.availability.days')}><Input inputMode="numeric" onChange={(e) => setForm({ ...form, days: e.target.value })} value={form.days} /></FormField>
                 <FormField label={t('fo.availability.plan')}>
                     <Select onChange={(e) => setForm({ ...form, plan: e.target.value })} value={form.plan}>

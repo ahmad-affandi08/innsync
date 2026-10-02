@@ -3,9 +3,9 @@ import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { DataGrid, type DataGridColumn } from '@/components/ui/data-grid';
+import { DatePicker } from '@/components/ui/date-picker';
 import { EmptyState } from '@/components/ui/empty-state';
 import { FormField } from '@/components/ui/form-field';
-import { Input } from '@/components/ui/input';
 import { FrontOfficeShell } from '@/modules/front-office/components/front-office-shell';
 import { useTranslation } from '@/shared/i18n/i18n';
 
@@ -33,8 +33,8 @@ export default function ChecklistPerformancePage({ report: r }: Props) {
         <FrontOfficeShell description={t('fo.sop.perf.description')} title={t('fo.sop.perf.title')} wide>
             <div><Button asChild size="sm" variant="outline"><Link href="/front-office/checklists">{t('fo.sop.nav')}</Link></Button></div>
             <form className="flex flex-wrap items-end gap-3" onSubmit={(e) => { e.preventDefault(); router.get('/front-office/checklists/performance', range); }}>
-                <FormField label={t('fo.sop.perf.from')}><Input onChange={(e) => setRange({ ...range, from: e.target.value })} required type="date" value={range.from} /></FormField>
-                <FormField label={t('fo.sop.perf.to')}><Input onChange={(e) => setRange({ ...range, to: e.target.value })} required type="date" value={range.to} /></FormField>
+                <FormField label={t('fo.sop.perf.from')}><DatePicker onChange={(e) => setRange({ ...range, from: e.target.value })} required value={range.from} /></FormField>
+                <FormField label={t('fo.sop.perf.to')}><DatePicker onChange={(e) => setRange({ ...range, to: e.target.value })} required value={range.to} /></FormField>
                 <Button size="sm" type="submit" variant="outline">{t('fo.sop.perf.apply')}</Button>
             </form>
 

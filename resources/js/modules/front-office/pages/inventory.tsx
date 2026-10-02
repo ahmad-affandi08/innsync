@@ -2,6 +2,7 @@ import { useState } from 'react';
 
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
+import { DatePicker } from '@/components/ui/date-picker';
 import { ConfirmDialog, Dialog } from '@/components/ui/dialog';
 import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
@@ -142,8 +143,8 @@ export default function InventoryPage({ blocks, holds, rooms, types }: { blocks:
                         </FormField>
                         <FormField error={action.fieldError('kind')} label={t('fo.inv.kind')}><Select onChange={(e) => setBlockForm({ ...blockForm, kind: e.target.value })} value={blockForm.kind}>{KINDS.map((k) => <option key={k} value={k}>{t(`fo.inv.kind.${k}`)}</option>)}</Select></FormField>
                         <div className="grid grid-cols-2 gap-3">
-                            <FormField error={action.fieldError('from')} label={t('fo.inv.from')}><Input onChange={(e) => setBlockForm({ ...blockForm, from: e.target.value })} type="date" value={blockForm.from} /></FormField>
-                            <FormField error={action.fieldError('to')} label={t('fo.inv.to')}><Input onChange={(e) => setBlockForm({ ...blockForm, to: e.target.value })} type="date" value={blockForm.to} /></FormField>
+                            <FormField error={action.fieldError('from')} label={t('fo.inv.from')}><DatePicker onChange={(e) => setBlockForm({ ...blockForm, from: e.target.value })} value={blockForm.from} /></FormField>
+                            <FormField error={action.fieldError('to')} label={t('fo.inv.to')}><DatePicker onChange={(e) => setBlockForm({ ...blockForm, to: e.target.value })} value={blockForm.to} /></FormField>
                         </div>
                         {reasonField(blockForm.reason, (v) => setBlockForm({ ...blockForm, reason: v }))}
                     </div>
@@ -158,8 +159,8 @@ export default function InventoryPage({ blocks, holds, rooms, types }: { blocks:
                             <Select onChange={(e) => setHoldForm({ ...holdForm, typeId: e.target.value })} value={holdForm.typeId}><option value="">—</option>{types.map((x) => <option key={x.id} value={x.id}>{x.code} · {x.name}</option>)}</Select>
                         </FormField>
                         <div className="grid grid-cols-3 gap-3">
-                            <FormField error={action.fieldError('from')} label={t('fo.inv.from')}><Input onChange={(e) => setHoldForm({ ...holdForm, from: e.target.value })} type="date" value={holdForm.from} /></FormField>
-                            <FormField error={action.fieldError('to')} label={t('fo.inv.to')}><Input onChange={(e) => setHoldForm({ ...holdForm, to: e.target.value })} type="date" value={holdForm.to} /></FormField>
+                            <FormField error={action.fieldError('from')} label={t('fo.inv.from')}><DatePicker onChange={(e) => setHoldForm({ ...holdForm, from: e.target.value })} value={holdForm.from} /></FormField>
+                            <FormField error={action.fieldError('to')} label={t('fo.inv.to')}><DatePicker onChange={(e) => setHoldForm({ ...holdForm, to: e.target.value })} value={holdForm.to} /></FormField>
                             <FormField error={action.fieldError('rooms')} label={t('fo.inv.holdRooms')}><Input inputMode="numeric" onChange={(e) => setHoldForm({ ...holdForm, rooms: e.target.value })} value={holdForm.rooms} /></FormField>
                         </div>
                         <FormField error={action.fieldError('expires_at')} hint={t('fo.inv.expiresHint')} label={t('fo.inv.expires')}><Input onChange={(e) => setHoldForm({ ...holdForm, expires: e.target.value })} value={holdForm.expires} /></FormField>

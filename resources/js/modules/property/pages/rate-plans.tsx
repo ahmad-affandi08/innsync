@@ -2,6 +2,7 @@ import { Link, router } from '@inertiajs/react';
 import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
+import { DatePicker } from '@/components/ui/date-picker';
 import { ConfirmDialog, Dialog } from '@/components/ui/dialog';
 import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
@@ -225,8 +226,8 @@ export default function RatePlansPage({ plans, selected, types }: { plans: Plan[
                                     {types.map((x) => <option key={x.id} value={x.id}>{x.code} · {x.name}</option>)}
                                 </Select>
                             </FormField>
-                            <FormField error={action.fieldError('arrival')} label={t('rates.quote.arrival')}><Input onChange={(e) => setQuoteForm({ ...quoteForm, arrival: e.target.value })} type="date" value={quoteForm.arrival} /></FormField>
-                            <FormField error={action.fieldError('departure')} label={t('rates.quote.departure')}><Input onChange={(e) => setQuoteForm({ ...quoteForm, departure: e.target.value })} type="date" value={quoteForm.departure} /></FormField>
+                            <FormField error={action.fieldError('arrival')} label={t('rates.quote.arrival')}><DatePicker onChange={(e) => setQuoteForm({ ...quoteForm, arrival: e.target.value })} value={quoteForm.arrival} /></FormField>
+                            <FormField error={action.fieldError('departure')} label={t('rates.quote.departure')}><DatePicker onChange={(e) => setQuoteForm({ ...quoteForm, departure: e.target.value })} value={quoteForm.departure} /></FormField>
                             <div className="flex items-end"><Button loading={action.busy} type="submit">{t('rates.quote.check')}</Button></div>
                         </form>
                         {quote !== null && (
@@ -300,8 +301,8 @@ export default function RatePlansPage({ plans, selected, types }: { plans: Plan[
                                 </Select>
                             </FormField>
                             <div className="grid grid-cols-2 gap-3">
-                                <FormField error={action.fieldError('from')} label={t('rates.prices.from')}><Input onChange={(e) => setPriceForm({ ...priceForm, from: e.target.value })} type="date" value={priceForm.from} /></FormField>
-                                <FormField error={action.fieldError('to')} label={t('rates.prices.to')}><Input onChange={(e) => setPriceForm({ ...priceForm, to: e.target.value })} type="date" value={priceForm.to} /></FormField>
+                                <FormField error={action.fieldError('from')} label={t('rates.prices.from')}><DatePicker onChange={(e) => setPriceForm({ ...priceForm, from: e.target.value })} value={priceForm.from} /></FormField>
+                                <FormField error={action.fieldError('to')} label={t('rates.prices.to')}><DatePicker onChange={(e) => setPriceForm({ ...priceForm, to: e.target.value })} value={priceForm.to} /></FormField>
                             </div>
                             <fieldset className="flex flex-wrap gap-3 text-sm"><legend className="mb-1 text-sm font-medium">{t('rates.prices.days')}</legend>
                                 {DAYS.map((d) => (
@@ -330,8 +331,8 @@ export default function RatePlansPage({ plans, selected, types }: { plans: Plan[
                             </Select>
                         </FormField>
                         <div className="grid grid-cols-2 gap-3">
-                            <FormField error={action.fieldError('from')} label={t('rates.prices.from')}><Input onChange={(e) => setRestrictionForm({ ...restrictionForm, from: e.target.value })} type="date" value={restrictionForm.from} /></FormField>
-                            <FormField error={action.fieldError('to')} label={t('rates.prices.to')}><Input onChange={(e) => setRestrictionForm({ ...restrictionForm, to: e.target.value })} type="date" value={restrictionForm.to} /></FormField>
+                            <FormField error={action.fieldError('from')} label={t('rates.prices.from')}><DatePicker onChange={(e) => setRestrictionForm({ ...restrictionForm, from: e.target.value })} value={restrictionForm.from} /></FormField>
+                            <FormField error={action.fieldError('to')} label={t('rates.prices.to')}><DatePicker onChange={(e) => setRestrictionForm({ ...restrictionForm, to: e.target.value })} value={restrictionForm.to} /></FormField>
                             <FormField error={action.fieldError('min_stay')} label={t('rates.restrictions.minStay')}><Input inputMode="numeric" onChange={(e) => setRestrictionForm({ ...restrictionForm, minStay: e.target.value })} value={restrictionForm.minStay} /></FormField>
                             <FormField error={action.fieldError('max_stay')} label={t('rates.restrictions.maxStay')}><Input inputMode="numeric" onChange={(e) => setRestrictionForm({ ...restrictionForm, maxStay: e.target.value })} value={restrictionForm.maxStay} /></FormField>
                         </div>

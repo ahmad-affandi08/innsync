@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { DataGrid, type DataGridColumn } from '@/components/ui/data-grid';
+import { DatePicker } from '@/components/ui/date-picker';
 import { Dialog } from '@/components/ui/dialog';
 import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
@@ -137,8 +138,8 @@ export default function ReservationsPage({ filters, lookups, reservations }: { f
                         {STATUSES.map((s) => <option key={s} value={s}>{t(`fo.status.${s}`)}</option>)}
                     </Select>
                 </FormField>
-                <FormField label={t('fo.res.arrivalFrom')}><Input onChange={(e) => setFilter({ ...filter, arrival_from: e.target.value })} type="date" value={filter.arrival_from} /></FormField>
-                <FormField label={t('fo.res.arrivalTo')}><Input onChange={(e) => setFilter({ ...filter, arrival_to: e.target.value })} type="date" value={filter.arrival_to} /></FormField>
+                <FormField label={t('fo.res.arrivalFrom')}><DatePicker onChange={(e) => setFilter({ ...filter, arrival_from: e.target.value })} value={filter.arrival_from} /></FormField>
+                <FormField label={t('fo.res.arrivalTo')}><DatePicker onChange={(e) => setFilter({ ...filter, arrival_to: e.target.value })} value={filter.arrival_to} /></FormField>
                 <div className="flex items-end gap-2">
                     <Button type="submit">{t('fo.res.apply')}</Button>
                     <Button onClick={() => { const cleared = { query: '', status: '', arrival_from: '', arrival_to: '' }; setFilter(cleared); search(cleared); }} type="button" variant="outline">{t('fo.res.clear')}</Button>
@@ -182,8 +183,8 @@ export default function ReservationsPage({ filters, lookups, reservations }: { f
                             </FormField>
                             <FormField error={field('guest_phone')} label={t('fo.res.phone')}><Input inputMode="tel" maxLength={30} onChange={(e) => set({ phone: e.target.value })} value={form.phone} /></FormField>
                             <FormField error={field('guest_email')} label={t('fo.res.email')}><Input inputMode="email" maxLength={190} onChange={(e) => set({ email: e.target.value })} value={form.email} /></FormField>
-                            <FormField error={field('arrival')} label={t('fo.res.arrival')}><Input min={lookups.business_date} onChange={(e) => set({ arrival: e.target.value })} type="date" value={form.arrival} /></FormField>
-                            <FormField error={field('departure')} label={t('fo.res.departure')}><Input onChange={(e) => set({ departure: e.target.value })} type="date" value={form.departure} /></FormField>
+                            <FormField error={field('arrival')} label={t('fo.res.arrival')}><DatePicker min={lookups.business_date} onChange={(e) => set({ arrival: e.target.value })} value={form.arrival} /></FormField>
+                            <FormField error={field('departure')} label={t('fo.res.departure')}><DatePicker onChange={(e) => set({ departure: e.target.value })} value={form.departure} /></FormField>
                             <StayBlocks arrival={form.arrival} currency={quote?.currency ?? 'IDR'} departure={form.departure} nights={quote?.nights ?? []} onDeparture={(departure) => set({ departure })} />
                             <FormField error={field('room_type_id')} label={t('fo.res.roomType')}>
                                 <Select onChange={(e) => set({ roomTypeId: e.target.value })} value={form.roomTypeId}>

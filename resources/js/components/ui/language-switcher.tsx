@@ -20,6 +20,7 @@ function LanguageSwitcher({ className }: { className?: string }) {
             </Label>
             <Select
                 className="min-h-10 w-auto"
+                searchable={false}
                 id="language-switcher"
                 onChange={(event) => {
                     const next = event.target.value;

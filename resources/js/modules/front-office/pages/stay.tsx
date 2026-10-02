@@ -3,6 +3,7 @@ import { useState } from 'react';
 
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
+import { DatePicker } from '@/components/ui/date-picker';
 import { ConfirmDialog } from '@/components/ui/dialog';
 import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
@@ -195,7 +196,7 @@ export default function StayPage({ corrections, reservation, stay: s, time_fees:
                 <div className="flex flex-col gap-3">
                     {action.error !== null && panel === 'extend' ? <ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /> : null}
                     <div className="flex flex-wrap items-end gap-2">
-                        <FormField error={action.fieldError('departure')} label={t('fo.stay.extendDeparture')}><Input min={s.expected_departure} onChange={(e) => { setDeparture(e.target.value); setQuote(null); }} type="date" value={departure} /></FormField>
+                        <FormField error={action.fieldError('departure')} label={t('fo.stay.extendDeparture')}><DatePicker min={s.expected_departure} onChange={(e) => { setDeparture(e.target.value); setQuote(null); }} value={departure} /></FormField>
                         <Button disabled={action.busy || departure === ''} onClick={() => void checkPrice()} size="sm" type="button" variant="outline">{t('fo.stay.extendQuote')}</Button>
                     </div>
                     {quote !== null && (

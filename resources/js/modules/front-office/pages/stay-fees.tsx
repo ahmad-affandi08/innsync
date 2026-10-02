@@ -1,6 +1,7 @@
 import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
+import { DatePicker } from '@/components/ui/date-picker';
 import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
@@ -55,7 +56,7 @@ export default function StayFeesPage({ catalogue }: Props) {
                 <h2 className="text-lg font-semibold" id="sf-new-h">{t('fo.stayfee.new')}</h2>
                 <p className="text-xs text-muted-foreground">{t('fo.stayfee.note')}</p>
                 <FormField error={action.fieldError('kind')} label={t('fo.stayfee.kind')}><Select onChange={(e) => setForm({ ...form, kind: e.target.value })} value={form.kind}>{catalogue.kinds.map((k) => <option key={k} value={k}>{t(`fo.stayfee.kind.${k}` as 'fo.stayfee.kind.late_checkout')}</option>)}</Select></FormField>
-                <FormField error={action.fieldError('effective_from')} label={t('fo.stayfee.effective')}><Input min={catalogue.business_date} onChange={(e) => setForm({ ...form, from: e.target.value })} type="date" value={form.from} /></FormField>
+                <FormField error={action.fieldError('effective_from')} label={t('fo.stayfee.effective')}><DatePicker min={catalogue.business_date} onChange={(e) => setForm({ ...form, from: e.target.value })} value={form.from} /></FormField>
                 <FormField error={action.fieldError('grace_minutes')} hint={t('fo.stayfee.graceHint')} label={t('fo.stayfee.grace')}><Input inputMode="numeric" onChange={(e) => setForm({ ...form, grace: e.target.value })} value={form.grace} /></FormField>
                 <fieldset className="flex flex-col gap-2">
                     <legend className="text-sm font-medium">{t('fo.stayfee.bands')}</legend>

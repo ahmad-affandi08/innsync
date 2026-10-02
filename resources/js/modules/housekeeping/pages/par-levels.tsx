@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { DataGrid, type DataGridColumn } from '@/components/ui/data-grid';
+import { DatePicker } from '@/components/ui/date-picker';
 import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
@@ -104,7 +105,7 @@ export default function ParLevelsPage({ overview }: { overview: Overview }) {
                 <h2 className="text-lg font-semibold" id="par-use-h">{t('hk.par.consumption')}</h2>
                 <p className="text-sm text-muted-foreground">{t('hk.par.shiftNote')}</p>
                 <div className="flex flex-wrap items-end gap-2">
-                    <FormField label={t('hk.par.date')}><Input onChange={(e) => setWhen({ ...when, date: e.target.value })} type="date" value={when.date} /></FormField>
+                    <FormField label={t('hk.par.date')}><DatePicker onChange={(e) => setWhen({ ...when, date: e.target.value })} value={when.date} /></FormField>
                     <FormField label={t('hk.par.shift')}><Select onChange={(e) => setWhen({ ...when, shift: e.target.value })} value={when.shift}>{overview.shifts.map((s) => <option key={s.code} value={s.code}>{t(`hk.par.shift.${s.code}` as 'hk.par.shift.morning')} ({s.from}–{s.to})</option>)}</Select></FormField>
                     <Button disabled={action.busy} onClick={() => void show()} type="button" variant="outline">{t('hk.par.show')}</Button>
                 </div>

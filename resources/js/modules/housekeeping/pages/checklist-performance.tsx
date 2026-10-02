@@ -3,9 +3,9 @@ import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { DataGrid, type DataGridColumn } from '@/components/ui/data-grid';
+import { DatePicker } from '@/components/ui/date-picker';
 import { EmptyState } from '@/components/ui/empty-state';
 import { FormField } from '@/components/ui/form-field';
-import { Input } from '@/components/ui/input';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { HousekeepingShell } from '@/modules/housekeeping/components/housekeeping-shell';
 import { useTranslation } from '@/shared/i18n/i18n';
@@ -35,8 +35,8 @@ export default function ChecklistPerformancePage({ report: r }: Props) {
         <HousekeepingShell description={t('hk.cl.perf.description')} title={t('hk.cl.perf.title')} wide>
             <div><Button asChild size="sm" variant="outline"><Link href="/housekeeping/checklists">{t('hk.cl.nav')}</Link></Button></div>
             <form className="flex flex-wrap items-end gap-3" onSubmit={(e) => { e.preventDefault(); router.get('/housekeeping/checklists/performance', range); }}>
-                <FormField label={t('hk.cl.perf.from')}><Input onChange={(e) => setRange({ ...range, from: e.target.value })} required type="date" value={range.from} /></FormField>
-                <FormField label={t('hk.cl.perf.to')}><Input onChange={(e) => setRange({ ...range, to: e.target.value })} required type="date" value={range.to} /></FormField>
+                <FormField label={t('hk.cl.perf.from')}><DatePicker onChange={(e) => setRange({ ...range, from: e.target.value })} required value={range.from} /></FormField>
+                <FormField label={t('hk.cl.perf.to')}><DatePicker onChange={(e) => setRange({ ...range, to: e.target.value })} required value={range.to} /></FormField>
                 <Button size="sm" type="submit" variant="outline">{t('hk.cl.perf.apply')}</Button>
             </form>
             <p className="text-sm">{t('hk.cl.perf.overall')} <StatusBadge label={`${r.percent}%`} tone={r.percent === 100 ? 'success' : 'info'} /></p>

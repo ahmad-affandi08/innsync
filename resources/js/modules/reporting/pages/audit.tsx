@@ -3,6 +3,7 @@ import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { DataGrid, type DataGridColumn } from '@/components/ui/data-grid';
+import { DatePicker } from '@/components/ui/date-picker';
 import { EmptyState } from '@/components/ui/empty-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
@@ -34,8 +35,8 @@ export default function AuditPage({ report: r }: { report: Report }) {
     return (
         <ReportingShell description={t('rpt.audit.description')} title={t('rpt.audit.title')} wide>
             <form className="grid gap-3 sm:grid-cols-4 print:hidden" onSubmit={(e) => { e.preventDefault(); search(); }}>
-                <FormField label={t('rpt.period.from')}><Input onChange={(e) => setF({ ...f, from: e.target.value })} type="date" value={f.from} /></FormField>
-                <FormField label={t('rpt.period.to')}><Input onChange={(e) => setF({ ...f, to: e.target.value })} type="date" value={f.to} /></FormField>
+                <FormField label={t('rpt.period.from')}><DatePicker onChange={(e) => setF({ ...f, from: e.target.value })} value={f.from} /></FormField>
+                <FormField label={t('rpt.period.to')}><DatePicker onChange={(e) => setF({ ...f, to: e.target.value })} value={f.to} /></FormField>
                 <FormField label={t('rpt.audit.user')}>
                     <Select onChange={(e) => setF({ ...f, user: e.target.value })} value={f.user}><option value="">{t('rpt.audit.anyone')}</option>{r.staff.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}</Select>
                 </FormField>

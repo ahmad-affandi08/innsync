@@ -2,6 +2,7 @@ import { useState } from 'react';
 
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
+import { DatePicker } from '@/components/ui/date-picker';
 import { ConfirmDialog } from '@/components/ui/dialog';
 import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
@@ -134,7 +135,7 @@ export default function SettingsPage({ settings }: { settings: Settings }) {
                 <div className="flex flex-col gap-3">
                     {action.error !== null ? <ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /> : null}
                     <FormField error={action.fieldError('business_date')} label={t('property.settings.businessDate')}>
-                        <Input onChange={(e) => setDate(e.target.value)} type="date" value={date} />
+                        <DatePicker onChange={(e) => setDate(e.target.value)} value={date} />
                     </FormField>
                     <FormField error={action.fieldError('reason')} hint={t('property.field.reasonHint')} label={t('property.field.reason')}>
                         <Input maxLength={500} onChange={(e) => setDateReason(e.target.value)} value={dateReason} />

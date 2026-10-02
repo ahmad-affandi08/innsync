@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { DataGrid, type DataGridColumn } from '@/components/ui/data-grid';
+import { DatePicker } from '@/components/ui/date-picker';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
 import { ReportMeta, type Meta } from '@/modules/reporting/components/report-meta';
@@ -56,7 +57,7 @@ export default function MovementsPage({ context, may_export, report: r }: { cont
     return (
         <ReportingShell description={t('rpt.mov.description')} title={t('rpt.mov.title')} wide>
             <form className="flex flex-wrap items-end gap-3 print:hidden" onSubmit={(e) => { e.preventDefault(); router.get('/reports/movements', { date }); }}>
-                <FormField label={t('rpt.mov.date')}><Input onChange={(e) => setDate(e.target.value)} required type="date" value={date} /></FormField>
+                <FormField label={t('rpt.mov.date')}><DatePicker onChange={(e) => setDate(e.target.value)} required value={date} /></FormField>
                 <Button size="sm" type="submit" variant="outline">{t('rpt.mov.show')}</Button>
                 <Button onClick={() => window.print()} size="sm" type="button" variant="outline">{t('rpt.export.print')}</Button>
             </form>

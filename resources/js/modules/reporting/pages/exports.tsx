@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { DataGrid, type DataGridColumn } from '@/components/ui/data-grid';
+import { DatePicker } from '@/components/ui/date-picker';
 import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
@@ -84,12 +85,12 @@ export default function ExportsPage({ overview }: { overview: Overview }) {
                     <h2 className="text-lg font-semibold" id="exp-new-h">{t('rpt.exports.new')}</h2>
                     <form className="grid gap-3 sm:grid-cols-2" onSubmit={(e) => { e.preventDefault(); void submit(); }}>
                         <FormField error={action.fieldError('report')} label={t('rpt.exports.report')}><Select onChange={(e) => setForm({ ...form, report: e.target.value })} value={form.report}>{overview.reports.map((r) => <option key={r} value={r}>{t(`rpt.report.${r}` as 'rpt.report.flash')}</option>)}</Select></FormField>
-                        {form.report === 'movements' ? <FormField label={t('rpt.exports.date')}><Input onChange={(e) => setForm({ ...form, date: e.target.value })} type="date" value={form.date} /></FormField> : null}
+                        {form.report === 'movements' ? <FormField label={t('rpt.exports.date')}><DatePicker onChange={(e) => setForm({ ...form, date: e.target.value })} value={form.date} /></FormField> : null}
                         {form.report !== 'movements' && form.report !== 'comparison' ? (
                             <>
                                 <FormField label={t('rpt.period.label')}><Select onChange={(e) => setForm({ ...form, preset: e.target.value })} value={form.preset}>{PRESETS.map((p) => <option key={p} value={p}>{t(`rpt.period.${p}` as 'rpt.period.today')}</option>)}</Select></FormField>
-                                <FormField label={t('rpt.period.from')}><Input onChange={(e) => setForm({ ...form, from: e.target.value })} type="date" value={form.from} /></FormField>
-                                <FormField label={t('rpt.period.to')}><Input onChange={(e) => setForm({ ...form, to: e.target.value })} type="date" value={form.to} /></FormField>
+                                <FormField label={t('rpt.period.from')}><DatePicker onChange={(e) => setForm({ ...form, from: e.target.value })} value={form.from} /></FormField>
+                                <FormField label={t('rpt.period.to')}><DatePicker onChange={(e) => setForm({ ...form, to: e.target.value })} value={form.to} /></FormField>
                             </>
                         ) : null}
                         {personal ? <div className="sm:col-span-2"><FormField error={action.fieldError('purpose')} hint={t('rpt.exports.purposeHint')} label={t('rpt.exports.purpose')}><Input maxLength={300} onChange={(e) => setForm({ ...form, purpose: e.target.value })} required value={form.purpose} /></FormField></div> : null}

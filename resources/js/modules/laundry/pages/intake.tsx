@@ -3,6 +3,7 @@ import { useState } from 'react';
 
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
+import { DatePicker } from '@/components/ui/date-picker';
 import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
@@ -72,7 +73,7 @@ export default function LaundryIntakePage({ currency, lookups }: { currency: str
                     <Select onChange={(e) => set({ roomId: e.target.value })} value={form.roomId}>{lookups.rooms.map((r) => <option key={r.id} value={r.id}>{r.number}</option>)}</Select>
                 </FormField>
                 <FormField error={action.fieldError('barcode')} label={t('ldy.intake.barcode')}><Input autoComplete="off" maxLength={40} onChange={(e) => set({ barcode: e.target.value })} required value={form.barcode} /></FormField>
-                <FormField error={action.fieldError('promised_date')} label={t('ldy.intake.promisedDate')}><Input min={lookups.business_date} onChange={(e) => set({ date: e.target.value })} required type="date" value={form.date} /></FormField>
+                <FormField error={action.fieldError('promised_date')} label={t('ldy.intake.promisedDate')}><DatePicker min={lookups.business_date} onChange={(e) => set({ date: e.target.value })} required value={form.date} /></FormField>
                 <FormField error={action.fieldError('promised_time')} label={t('ldy.intake.promisedTime', { zone: lookups.zone })}><Input onChange={(e) => set({ time: e.target.value })} required type="time" value={form.time} /></FormField>
                 <label className="flex items-center gap-2 text-sm sm:col-span-2"><input checked={form.express} onChange={(e) => set({ express: e.target.checked })} type="checkbox" />{t('ldy.intake.express')}{expressTreatment !== undefined ? ` (${expressTreatment.pricing === 'percent' ? `+${expressTreatment.value / 100}%` : `+${format.money(expressTreatment.value, currency)}`})` : ''}</label>
 

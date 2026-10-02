@@ -1,31 +1,70 @@
-import { ChevronDown } from 'lucide-react';
-import type { SelectHTMLAttributes } from 'react';
+import { Children, Fragment, isValidElement, useMemo, useState, type ReactNode, type SelectHTMLAttributes } from 'react';
 
-import { cn } from '@/shared/lib/utils';
+import { Combobox, type ComboboxOption } from '@/components/ui/combobox';
 
-type SelectProps = SelectHTMLAttributes<HTMLSelectElement>;
+type SelectChange = { target: { value: string }; currentTarget: { value: string } };
+
+type SelectProps = Omit<SelectHTMLAttributes<HTMLSelectElement>, 'onChange' | 'value' | 'defaultValue' | 'children'> & {
+    value?: string | number;
+    defaultValue?: string | number;
+    /** Called like a native select's `onChange`: read `event.target.value`. */
+    onChange?: (event: SelectChange) => void;
+    /** The `<option>` elements, as for a native select. */
+    children?: ReactNode;
+    /** A search box in the list; on by default. Turn it off only for a short fixed list. */
+    searchable?: boolean;
+};
+
+const textOf = (node: ReactNode): string => Children.toArray(node).map((c) => (typeof c === 'string' || typeof c === 'number' ? String(c) : isValidElement<{ children?: ReactNode }>(c) ? textOf(c.props.children) : '')).join('');
+
+function collect(children: ReactNode, into: ComboboxOption[]) {
+    Children.forEach(children, (child) => {
+        if (!isValidElement<{ value?: string | number; disabled?: boolean; children?: ReactNode }>(child)) return;
+
+        if (child.type === Fragment || child.type === 'optgroup') {
+            collect(child.props.children, into);
+        } else if (child.type === 'option') {
+            const label = textOf(child.props.children);
+
+            into.push({ value: String(child.props.value ?? label), label, disabled: child.props.disabled });
+        }
+    });
+}
 
 /**
- * Native select: keyboard, screen-reader and mobile-picker behavior come from
- * the platform. A searchable Combobox is a separate, later primitive.
+ * The form select. It reads its `<option>` children like a native select, but
+ * opens a searchable list below the field (see `Combobox`), so a long list of
+ * guests, rooms or items can be searched instead of scrolled.
  */
-function Select({ children, className, ...props }: SelectProps) {
+function Select({ children, className, defaultValue, disabled, id, name, onChange, searchable = true, value, ...rest }: SelectProps) {
+    const options = useMemo(() => {
+        const list: ComboboxOption[] = [];
+
+        collect(children, list);
+
+        return list;
+    }, [children]);
+    const [inner, setInner] = useState(String(defaultValue ?? ''));
+    const current = value !== undefined ? String(value) : inner;
+
     return (
-        <div className="relative">
-            <select
-                className={cn(
-                    'flex min-h-11 w-full appearance-none border border-input bg-surface py-2 pl-3 pr-9 text-sm text-foreground outline-none transition focus-visible:border-brand focus-visible:ring-2 focus-visible:ring-ring/40 disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-danger',
-                    className,
-                )}
-                {...props}
-            >
-                {children}
-            </select>
-            <ChevronDown
-                aria-hidden="true"
-                className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
-            />
-        </div>
+        <Combobox
+            aria-describedby={rest['aria-describedby']}
+            aria-invalid={rest['aria-invalid'] === true || rest['aria-invalid'] === 'true' ? true : undefined}
+            aria-label={rest['aria-label']}
+            aria-required={rest['aria-required'] === true || rest.required === true ? true : undefined}
+            className={className}
+            disabled={disabled}
+            id={id}
+            name={name}
+            onValueChange={(next) => {
+                setInner(next);
+                onChange?.({ target: { value: next }, currentTarget: { value: next } });
+            }}
+            options={options}
+            searchable={searchable}
+            value={current}
+        />
     );
 }
 

@@ -2,6 +2,7 @@ import { Link, router } from '@inertiajs/react';
 import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
+import { DatePicker } from '@/components/ui/date-picker';
 import { Dialog } from '@/components/ui/dialog';
 import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
@@ -111,7 +112,7 @@ export default function FeedbackPage({ filters, queue }: Props) {
                         <FormField error={action.fieldError('guest_name')} label={t('fo.fb.guestName')}><Input maxLength={150} onChange={(e) => setForm({ ...form, guest: e.target.value })} value={form.guest} /></FormField>
                         <FormField error={action.fieldError('summary')} label={t('fo.fb.summary')}><Input maxLength={150} onChange={(e) => setForm({ ...form, summary: e.target.value })} value={form.summary} /></FormField>
                         <FormField error={action.fieldError('detail')} label={t('fo.fb.detail')}><Input maxLength={1000} onChange={(e) => setForm({ ...form, detail: e.target.value })} value={form.detail} /></FormField>
-                        <FormField error={action.fieldError('follow_up_by')} hint={t('fo.fb.followUpHint')} label={t('fo.fb.followUp')}><Input onChange={(e) => setForm({ ...form, due: e.target.value })} type="date" value={form.due} /></FormField>
+                        <FormField error={action.fieldError('follow_up_by')} hint={t('fo.fb.followUpHint')} label={t('fo.fb.followUp')}><DatePicker onChange={(e) => setForm({ ...form, due: e.target.value })} value={form.due} /></FormField>
                     </div>
                 )}
             </Dialog>
