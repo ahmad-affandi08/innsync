@@ -86,6 +86,8 @@ describe('dictionaries', () => {
             'hk.linen.kind.amenity',
             'hk.cl.perf.run',
             'rpt.group.housekeeping',
+            'rpt.cmp.metric.adr_minor',
+            'rpt.cmp.metric.revpar_minor',
             'rpt.obl.col.service',
             'rpt.obl.col.status',
             'rpt.obl.reportedOn',

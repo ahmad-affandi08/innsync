@@ -334,7 +334,7 @@ final class ReportingTest extends TestCase
 
     public function test_the_report_centre_lists_only_what_the_person_may_open(): void
     {
-        self::assertSame(['movements', 'flash', 'performance', 'payments', 'obligations', 'laundry', 'housekeeping', 'registrations', 'foreign_guests', 'audit'], array_column($this->reports()->catalogue($this->property(), $this->analystId), 'code'));
+        self::assertSame(['movements', 'flash', 'performance', 'comparison', 'payments', 'obligations', 'laundry', 'housekeeping', 'registrations', 'foreign_guests', 'audit'], array_column($this->reports()->catalogue($this->property(), $this->analystId), 'code'));
         self::assertSame(['registrations', 'foreign_guests'], array_column($this->reports()->catalogue($this->property(), $this->registrarId), 'code'));
         self::assertSame([], $this->reports()->catalogue($this->property(), $this->viewerId));
     }
@@ -430,5 +430,38 @@ final class ReportingTest extends TestCase
         $csv = $this->reports()->exportPerformance($this->property(), $this->analystId, 'day', 'yesterday', null, null, null);
         self::assertStringContainsString('"2026-10-01","1","1","2","2","2","10000","200000000","100000000","100000000"', $csv['contents']);
         self::assertNotNull(DB::table('audit_entries')->where('action', 'report.exported')->first());
+    }
+
+    public function test_a_period_is_compared_with_the_one_before_from_the_closed_days(): void
+    {
+        $this->operate();
+        $this->closeDay();
+
+        $day = $this->reports()->comparison($this->property(), $this->analystId, 'day');
+        self::assertSame(['2026-10-01', '2026-09-30'], [$day['current']['from'], $day['before']['from']]);
+        $metrics = array_column($day['metrics'], null, 'key');
+        self::assertSame([10_000, 0, 10_000, null], [$metrics['occupancy_bp']['current'], $metrics['occupancy_bp']['before'], $metrics['occupancy_bp']['change'], $metrics['occupancy_bp']['change_percent']]);
+        self::assertSame([200_000_000, 0, 200_000_000, null], [$metrics['room_revenue_minor']['current'], $metrics['room_revenue_minor']['before'], $metrics['room_revenue_minor']['change'], $metrics['room_revenue_minor']['change_percent']], 'no percentage against a zero');
+        self::assertSame([1, 0], [$day['current']['days_closed'], $day['before']['days_closed']]);
+
+        $month = $this->reports()->comparison($this->property(), $this->analystId, 'month');
+        self::assertSame(['2026-10-01', '2026-10-01', '2026-09-01', '2026-09-01'], [$month['current']['from'], $month['current']['to'], $month['before']['from'], $month['before']['to']], 'the same number of days of the previous month');
+        $year = $this->reports()->comparison($this->property(), $this->analystId, 'year');
+        self::assertSame(['2026-01-01', '2026-10-01', '2025-01-01', '2025-10-01'], [$year['current']['from'], $year['current']['to'], $year['before']['from'], $year['before']['to']]);
+        self::assertSame(200_000_000, array_column($year['metrics'], null, 'key')['room_revenue_minor']['current']);
+
+        $this->clock->advance('+11 hours');
+        $this->closeDay();
+        $second = $this->reports()->comparison($this->property(), $this->analystId, 'day');
+        $secondMetrics = array_column($second['metrics'], null, 'key');
+        self::assertSame(['2026-10-02', '2026-10-01', 200_000_000], [$second['current']['from'], $second['before']['from'], $secondMetrics['room_revenue_minor']['before']]);
+        self::assertSame($secondMetrics['room_revenue_minor']['current'] - 200_000_000, $secondMetrics['room_revenue_minor']['change']);
+
+        $this->assertRefused(422, fn () => $this->reports()->comparison($this->property(), $this->analystId, 'week'));
+        $this->assertRefused(403, fn () => $this->reports()->comparison($this->property(), $this->dashOnlyId, 'day'));
+        $csv = $this->reports()->exportComparison($this->property(), $this->analystId, 'month');
+        self::assertStringContainsString('room_revenue_minor', $csv['contents']);
+        self::assertStringStartsWith('comparison-month-', $csv['filename']);
+        self::assertSame(1, DB::table('audit_entries')->where('action', 'report.exported')->count());
     }
 }

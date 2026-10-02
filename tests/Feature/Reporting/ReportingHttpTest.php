@@ -68,7 +68,7 @@ final class ReportingHttpTest extends TestCase
         $this->get('/dashboard?preset=forever')->assertStatus(422);
         $this->get('/dashboard?from=2026-10-09&to=2026-10-01')->assertStatus(422);
 
-        $this->get('/reports')->assertInertia(fn (Assert $p) => $p->component('reporting/pages/reports')->has('reports', 10)->where('context.business_date', '2026-10-01'));
+        $this->get('/reports')->assertInertia(fn (Assert $p) => $p->component('reporting/pages/reports')->has('reports', 11)->where('context.business_date', '2026-10-01'));
     }
 
     public function test_the_dashboard_layout_is_saved_per_person_and_the_television_view_is_offered(): void
@@ -121,6 +121,15 @@ final class ReportingHttpTest extends TestCase
         $this->postJson('/reports/obligations/settings', ['tax_report_day' => 40, 'service_employee_share_bp' => 7_000, 'reason' => 'x'])->assertStatus(422);
         $this->postJson('/reports/obligations/filings', ['month' => '2026-10', 'reported_on' => '2026-11-05', 'reference' => 'X'])->assertStatus(409);
         $this->get('/reports/obligations')->assertInertia(fn (Assert $p) => $p->where('timeline.settings.configured', true)->where('timeline.settings.tax_report_day', 10));
+    }
+
+    public function test_the_comparison_report_opens_in_three_kinds_and_exports(): void
+    {
+        $this->get('/reports/comparison')->assertInertia(fn (Assert $p) => $p->component('reporting/pages/comparison')->where('report.kind', 'month')->has('report.metrics', 7)->where('context.currency', 'IDR'));
+        $this->get('/reports/comparison?kind=day')->assertInertia(fn (Assert $p) => $p->where('report.kind', 'day'));
+        $this->get('/reports/comparison?kind=year')->assertInertia(fn (Assert $p) => $p->where('report.kind', 'year'));
+        $this->get('/reports/comparison?kind=week')->assertStatus(422);
+        $this->get('/reports/comparison/export?kind=year')->assertOk();
     }
 
     public function test_the_laundry_report_opens_and_exports(): void

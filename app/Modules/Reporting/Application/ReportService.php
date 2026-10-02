@@ -46,6 +46,7 @@ final readonly class ReportService
         ['code' => 'movements', 'group' => 'front_office', 'permission' => self::VIEW_PERMISSION],
         ['code' => 'flash', 'group' => 'management', 'permission' => self::VIEW_PERMISSION],
         ['code' => 'performance', 'group' => 'management', 'permission' => self::VIEW_PERMISSION],
+        ['code' => 'comparison', 'group' => 'management', 'permission' => self::VIEW_PERMISSION],
         ['code' => 'payments', 'group' => 'front_office', 'permission' => self::VIEW_PERMISSION],
         ['code' => 'obligations', 'group' => 'management', 'permission' => ObligationService::VIEW_PERMISSION],
         ['code' => 'laundry', 'group' => 'laundry', 'permission' => self::VIEW_PERMISSION],
@@ -385,6 +386,98 @@ final readonly class ReportService
         $this->recordExport($property, $actorId, 'laundry', $report['meta'], count($report['rows']), null, false);
 
         return ['filename' => sprintf('laundry-%s-%s.csv', $report['meta']['period']['from'], $report['meta']['period']['to']), 'contents' => $contents];
+    }
+
+    /**
+     * A period against the one before it (FR-RPT-006), from the closed days: the last closed day against the day before, the month so
+     * far against the same number of days of the previous month, and the year so far against the same dates of the previous year.
+     * Each side shows how many of its days were closed; a change is shown only against a figure that is not zero.
+     *
+     * @return array<string, mixed>
+     */
+    public function comparison(PropertyId $property, string $actorId, string $kind): array
+    {
+        $this->authorize($property, $actorId, self::VIEW_PERMISSION);
+
+        if (! in_array($kind, ['day', 'month', 'year'], true)) {
+            throw Refusal::invalid('Choose day, month or year.', ['kind']);
+        }
+
+        $today = $this->businessDate->current($property);
+        $yesterday = $today->addDays(-1);
+
+        [$current, $before] = match ($kind) {
+            'day' => [[$yesterday, $yesterday], [$yesterday->addDays(-1), $yesterday->addDays(-1)]],
+            'month' => (static function () use ($today, $yesterday): array {
+                $first = BusinessDate::fromString(substr($today->toString(), 0, 7).'-01');
+                $previousFirst = BusinessDate::fromString((new \DateTimeImmutable($first->toString()))->modify('-1 month')->format('Y-m-d'));
+                $previousLast = BusinessDate::fromString((new \DateTimeImmutable($previousFirst->toString()))->modify('last day of this month')->format('Y-m-d'));
+                $days = $first->daysUntil($yesterday);
+
+                return [[$first, $yesterday], [$previousFirst, self::earlier($previousFirst->addDays(max(0, $days)), $previousLast)]];
+            })(),
+            default => (static function () use ($today, $yesterday): array {
+                $first = BusinessDate::fromString(substr($today->toString(), 0, 4).'-01-01');
+                $previousFirst = BusinessDate::fromString(((int) substr($today->toString(), 0, 4) - 1).'-01-01');
+                $days = $first->daysUntil($yesterday);
+
+                return [[$first, $yesterday], [$previousFirst, $previousFirst->addDays(max(0, $days))]];
+            })(),
+        };
+
+        $side = function (array $range) use ($property): array {
+            [$from, $to] = $range;
+
+            if ($to->isBefore($from)) {
+                return ['from' => $from->toString(), 'to' => $to->toString(), 'figures' => null];
+            }
+
+            $days = $this->queries->closedDays($property, ReportPeriod::custom($from, $to));
+            $row = self::performanceRow($from->toString(), $days, $from->daysUntil($to) + 1);
+            $revenue = 0;
+            $collected = 0;
+
+            foreach ($days as $day) {
+                $revenue += (int) $day['report']['revenue']['net']['total'];
+                $collected += array_sum($day['report']['collected']);
+            }
+
+            return ['from' => $from->toString(), 'to' => $to->toString(), 'days_closed' => count($days), 'days_in_period' => $from->daysUntil($to) + 1, 'figures' => [
+                'occupancy_bp' => $row['occupancy_bp'], 'room_nights' => $row['room_nights'], 'room_revenue_minor' => $row['room_revenue_minor'], 'adr_minor' => $row['adr_minor'], 'revpar_minor' => $row['revpar_minor'],
+                'revenue_minor' => $revenue, 'collected_minor' => $collected,
+            ]];
+        };
+
+        $a = $side($current);
+        $b = $side($before);
+        $metrics = [];
+
+        foreach (['occupancy_bp', 'room_nights', 'room_revenue_minor', 'adr_minor', 'revpar_minor', 'revenue_minor', 'collected_minor'] as $key) {
+            $now = $a['figures'][$key] ?? null;
+            $then = $b['figures'][$key] ?? null;
+            $metrics[] = [
+                'key' => $key, 'current' => $now, 'before' => $then, 'change' => $now === null || $then === null ? null : $now - $then,
+                'change_percent' => $now === null || $then === null || $then === 0 || $key === 'occupancy_bp' ? null : intdiv(($now - $then) * 1_000, $then) / 10,
+            ];
+        }
+
+        return [
+            'meta' => $this->meta('comparison', $property, ReportPeriod::custom($today, $today), ['kind' => $kind], ['night_audits (closed business days)']),
+            'kind' => $kind, 'current' => $a, 'before' => $b, 'metrics' => $metrics,
+        ];
+    }
+
+    /** @return array{filename: string, contents: string} */
+    public function exportComparison(PropertyId $property, string $actorId, string $kind): array
+    {
+        $report = $this->comparison($property, $actorId, $kind);
+        $contents = CsvWriter::build(
+            ['Figure', 'Current '.$report['current']['from'].' to '.$report['current']['to'], 'Before '.$report['before']['from'].' to '.$report['before']['to'], 'Change', 'Change (percent)'],
+            array_map(static fn (array $m): array => [$m['key'], $m['current'], $m['before'], $m['change'], $m['change_percent']], $report['metrics']),
+        );
+        $this->recordExport($property, $actorId, 'comparison', $report['meta'], count($report['metrics']), null, false);
+
+        return ['filename' => sprintf('comparison-%s-%s.csv', $kind, $report['current']['to']), 'contents' => $contents];
     }
 
     /** @return array<string, mixed> */

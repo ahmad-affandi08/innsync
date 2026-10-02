@@ -363,6 +363,8 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->group(
         Route::get('/flash/export', [ReportController::class, 'exportFlash'])->name('reports.flash.export');
         Route::get('/housekeeping', [ReportController::class, 'housekeeping'])->name('reports.housekeeping');
         Route::get('/housekeeping/export', [ReportController::class, 'exportHousekeeping'])->name('reports.housekeeping.export');
+        Route::get('/comparison', [ReportController::class, 'comparison'])->name('reports.comparison');
+        Route::get('/comparison/export', [ReportController::class, 'exportComparison'])->name('reports.comparison.export');
         Route::get('/obligations', [ObligationController::class, 'index'])->name('reports.obligations');
         Route::post('/obligations/settings', [ObligationController::class, 'saveSettings'])->name('reports.obligations.settings');
         Route::post('/obligations/filings', [ObligationController::class, 'markReported'])->name('reports.obligations.filings');

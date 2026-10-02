@@ -98,6 +98,20 @@ final readonly class ReportController
         return $this->download($this->reports->exportLaundry($this->property->current(), $this->actor($request), $preset, $from, $to));
     }
 
+    public function comparison(Request $request): Response
+    {
+        $data = $request->validate(['kind' => ['nullable', 'string', 'max:5']]);
+
+        return Inertia::render('reporting/pages/comparison', ['report' => $this->reports->comparison($this->property->current(), $this->actor($request), $data['kind'] ?? 'month'), 'context' => $this->reports->context($this->property->current(), $this->actor($request))]);
+    }
+
+    public function exportComparison(Request $request): HttpResponse
+    {
+        $data = $request->validate(['kind' => ['nullable', 'string', 'max:5']]);
+
+        return $this->download($this->reports->exportComparison($this->property->current(), $this->actor($request), $data['kind'] ?? 'month'));
+    }
+
     public function payments(Request $request): Response
     {
         [$preset, $from, $to] = $this->range($request);

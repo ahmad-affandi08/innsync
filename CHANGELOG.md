@@ -46,6 +46,7 @@ Release notes for every release (NFR-14). Newest first. Each entry names the tas
 - TASK-HK-012 (BR-008, BR-009): lost and found with a description, a photo, where it was found (a room or a place) and kept, who found it and when, returned to a named person or disposed of with a reason (once, never deleted), the photo kept privately and erased 90 days after the item is closed (a baseline), and a flag for items stored 90 days or more.
 - TASK-HK-006 (BR-008): housekeeping checklist items that need a photo as proof of work, chosen per item in the template; the item cannot be ticked without it, the photo is kept privately and erased 90 days after it was taken (a baseline), shown to those who may see the checklists.
 - TASK-DSH-017, TASK-DSH-019: the dashboard cards can be reordered and hidden per person (kept per property on the server, only the layout changes: the numbers and who may see them stay as they were), with a way back to the default, and a television view (`/dashboard?tv=1`) with large cards, no menu, links or forms that refreshes by itself.
+- TASK-RPT-006: comparison with the period before from the closed days: yesterday against the day before, the month so far against the same number of days of the previous month, and the year so far against the same dates of the previous year, for occupancy, room nights, room revenue, ADR, RevPAR, revenue with charges and money collected, with the change (and a percentage against a figure that is not zero); CSV export and print.
 
 ### Known limitations
 
