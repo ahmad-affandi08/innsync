@@ -232,4 +232,8 @@ export const id: Record<MessageKey, string> = {
     'shell.group.operations': "Operasional",
     'shell.group.insight': "Wawasan",
     'shell.group.control': "Kendali",
+    'shell.layout': 'Tata letak',
+    'shell.layout.sidebar': 'Bilah samping',
+    'shell.layout.rail': 'Rel ikon',
+    'shell.layout.topbar': 'Bilah atas',
 }

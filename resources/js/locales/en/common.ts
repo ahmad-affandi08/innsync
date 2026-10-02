@@ -49,4 +49,8 @@ export const common = {
     'shell.group.operations': "Operations",
     'shell.group.insight': "Insight",
     'shell.group.control': "Control",
+    'shell.layout': 'Layout',
+    'shell.layout.sidebar': 'Sidebar',
+    'shell.layout.rail': 'Icon rail',
+    'shell.layout.topbar': 'Top bar',
 } as const;
