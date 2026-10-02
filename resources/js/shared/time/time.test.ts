@@ -3,6 +3,8 @@ import { describe, it } from 'node:test'
 
 import {
     addDays,
+    formatWeekday,
+    nightsBetween,
     calendarDateIn,
     compareDates,
     formatDate,
@@ -28,6 +30,11 @@ describe('plain dates', () => {
         assert.equal(addDays('2026-03-01', -1), '2026-02-28')
         assert.equal(addDays('2026-10-01', 30), '2026-10-31')
         assert.throws(() => addDays('2026-02-30', 1), RangeError)
+        assert.equal(nightsBetween('2026-10-01', '2026-10-04'), 3)
+        assert.equal(nightsBetween('2026-12-30', '2027-01-02'), 3)
+        assert.equal(nightsBetween('2026-10-04', '2026-10-01'), -3)
+        assert.equal(formatWeekday('2026-10-01', 'en'), 'Thu')
+        assert.throws(() => nightsBetween('2026-02-30', '2026-03-01'), RangeError)
     })
 
     it('compares dates and refuses invalid ones', () => {

@@ -689,4 +689,8 @@ export const frontOffice = {
     'fo.req.due.60': '1 jam',
     'fo.req.due.120': '2 jam',
     'fo.req.dueBy': 'sebelum {time}',
+    'fo.res.nightsLabel': 'Malam',
+    'fo.res.nightsQuick': 'Lama menginap',
+    'fo.res.nightsPreset': '{n} malam',
+    'fo.res.nightBlocks': 'Malam menginap',
 } as const

@@ -35,7 +35,7 @@
 | TASK-FO-009 | FR-FO-009 | Front Office | Wajib | REVIEW |
 | TASK-FO-010 | FR-FO-010 | Front Office | Wajib | REVIEW |
 | TASK-FO-011 | FR-FO-011 | Front Office | Wajib | REVIEW |
-| TASK-FO-012 | FR-FO-012 | Front Office | Wajib | TODO |
+| TASK-FO-012 | FR-FO-012 | Front Office | Wajib | REVIEW |
 | TASK-FO-013 | FR-FO-013 | Front Office | Wajib | REVIEW |
 | TASK-FO-014 | FR-FO-014 | Front Office | Sebaiknya | REVIEW |
 | TASK-FO-015 | FR-FO-015 | Front Office | Sebaiknya | IN_PROGRESS |

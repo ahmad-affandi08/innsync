@@ -1,5 +1,5 @@
 import { Link, router } from '@inertiajs/react';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -12,11 +12,13 @@ import { Select } from '@/components/ui/select';
 import { StatusBadge, type StatusTone } from '@/components/ui/status-badge';
 import { Textarea } from '@/components/ui/textarea';
 import { FrontOfficeShell } from '@/modules/front-office/components/front-office-shell';
+import { StayBlocks } from '@/modules/front-office/components/stay-blocks';
 import { newIdempotencyKey } from '@/shared/api/http';
 import { useServerAction } from '@/shared/api/use-server-action';
 import { useFormatters, useTranslation } from '@/shared/i18n/i18n';
 import { useErrorStateCopy } from '@/shared/i18n/use-ui-copy';
 import { ApiError } from '@/shared/lib/api-error';
+import { isIsoDate, nightsBetween } from '@/shared/time/time';
 
 export type ReservationRow = {
     id: string; number: string; status: string; source: string; guest_name: string; arrival: string; departure: string; nights: number;
@@ -102,6 +104,15 @@ export default function ReservationsPage({ filters, lookups, reservations }: { f
         }
     }
 
+    // The price of every night is worked out as soon as the dates, room type and rate plan are known (FR-FO-012).
+    const quoteKey = form === null ? '' : [form.arrival, form.departure, form.roomTypeId, form.ratePlanId].join('|');
+    useEffect(() => {
+        if (form === null || form.roomTypeId === '' || form.ratePlanId === '' || !isIsoDate(form.arrival) || !isIsoDate(form.departure) || nightsBetween(form.arrival, form.departure) < 1) return;
+        const timer = window.setTimeout(() => { void check(); }, 400);
+        return () => window.clearTimeout(timer);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [quoteKey]);
+
     const field = (name: string) => action.fieldError(name);
     const set = (patch: Partial<NonNullable<typeof form>>) => form !== null && setForm({ ...form, ...patch });
 
@@ -171,6 +182,7 @@ export default function ReservationsPage({ filters, lookups, reservations }: { f
                             <FormField error={field('guest_email')} label={t('fo.res.email')}><Input inputMode="email" maxLength={190} onChange={(e) => set({ email: e.target.value })} value={form.email} /></FormField>
                             <FormField error={field('arrival')} label={t('fo.res.arrival')}><Input min={lookups.business_date} onChange={(e) => set({ arrival: e.target.value })} type="date" value={form.arrival} /></FormField>
                             <FormField error={field('departure')} label={t('fo.res.departure')}><Input onChange={(e) => set({ departure: e.target.value })} type="date" value={form.departure} /></FormField>
+                            <StayBlocks arrival={form.arrival} currency={quote?.currency ?? 'IDR'} departure={form.departure} nights={quote?.nights ?? []} onDeparture={(departure) => set({ departure })} />
                             <FormField error={field('room_type_id')} label={t('fo.res.roomType')}>
                                 <Select onChange={(e) => set({ roomTypeId: e.target.value })} value={form.roomTypeId}>
                                     <option value="">{t('property.rooms.chooseType')}</option>

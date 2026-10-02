@@ -4,7 +4,7 @@ import { useMemo } from 'react';
 import { loaders } from '@/locales';
 import type { MessageKey } from '@/locales/en/index';
 import { formatMinorUnits } from '@/shared/money/money';
-import { calendarDateIn, formatDate, formatInstant, fromEpochSeconds } from '@/shared/time/time';
+import { calendarDateIn, formatDate, formatInstant, formatWeekday, fromEpochSeconds } from '@/shared/time/time';
 import {
     createTranslator,
     FALLBACK_LOCALE,
@@ -85,6 +85,7 @@ export function useFormatters() {
             /** Epoch seconds, as sent by session records. */
             epochSeconds: (seconds: number) => formatInstant(fromEpochSeconds(seconds), { locale, timeZone }),
             date: (isoDate: string, style?: 'short' | 'medium' | 'long') => formatDate(isoDate, locale, style),
+            weekday: (isoDate: string) => formatWeekday(isoDate, locale),
             calendarDateOf: (value: Date | string | number) => calendarDateIn(value, timeZone),
             number: (value: number) => new Intl.NumberFormat(locale).format(value),
             /** Integer minor units + ISO currency, as sent by the server (ADR-0006). */

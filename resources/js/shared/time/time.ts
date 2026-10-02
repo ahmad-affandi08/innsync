@@ -49,6 +49,16 @@ export function addDays(value: string, days: number): string {
     return date.toISOString().slice(0, 10)
 }
 
+/** The number of nights from one plain date to a later one (negative when the second is earlier). */
+export function nightsBetween(from: string, to: string): number {
+    return Math.round((toUtcDate(to).getTime() - toUtcDate(from).getTime()) / 86_400_000)
+}
+
+/** The short weekday name of a plain date, pinned to UTC so no zone can move it to another day. */
+export function formatWeekday(value: string, locale: string): string {
+    return new Intl.DateTimeFormat(locale, { weekday: 'short', timeZone: 'UTC' }).format(toUtcDate(value))
+}
+
 export function compareDates(a: string, b: string): -1 | 0 | 1 {
     toUtcDate(a)
     toUtcDate(b)
