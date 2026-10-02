@@ -113,8 +113,10 @@ use App\Modules\Property\Infrastructure\Rates\DatabaseRatePlanRepository;
 use App\Modules\Property\Infrastructure\Settings\DatabasePropertySettingsRepository;
 use App\Modules\Property\Infrastructure\Settings\EloquentStandardTimesReader;
 use App\Modules\Property\Infrastructure\Time\EloquentPropertyTimeZoneReader;
+use App\Modules\Reporting\Application\DashboardPreferenceRepository;
 use App\Modules\Reporting\Application\ObligationRepository;
 use App\Modules\Reporting\Application\ReportQueries;
+use App\Modules\Reporting\Infrastructure\DatabaseDashboardPreferenceRepository;
 use App\Modules\Reporting\Infrastructure\DatabaseObligationRepository;
 use App\Modules\Reporting\Infrastructure\DatabaseReportQueries;
 use App\Shared\Application\Approval\ApprovalGate;
@@ -323,6 +325,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(LaundryRepository::class, DatabaseLaundryRepository::class);
         $this->app->bind(ReportQueries::class, DatabaseReportQueries::class);
         $this->app->bind(ObligationRepository::class, DatabaseObligationRepository::class);
+        $this->app->bind(DashboardPreferenceRepository::class, DatabaseDashboardPreferenceRepository::class);
         $this->app->bind(ImportBatchRepository::class, DatabaseImportBatchRepository::class);
         $this->app->bind(BookingPolicyRepository::class, DatabaseBookingPolicyRepository::class);
         $this->app->bind(BookingPolicyReader::class, BookingPolicyService::class);

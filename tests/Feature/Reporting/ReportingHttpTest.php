@@ -71,6 +71,17 @@ final class ReportingHttpTest extends TestCase
         $this->get('/reports')->assertInertia(fn (Assert $p) => $p->component('reporting/pages/reports')->has('reports', 10)->where('context.business_date', '2026-10-01'));
     }
 
+    public function test_the_dashboard_layout_is_saved_per_person_and_the_television_view_is_offered(): void
+    {
+        $this->get('/dashboard')->assertInertia(fn (Assert $p) => $p->where('preferences.saved', false)->where('preferences.order.0', 'occupancy')->where('tv', false));
+        $this->postJson('/dashboard/preferences', ['order' => ['revenue', 'occupancy'], 'hidden' => ['activity']])->assertOk()->assertJsonPath('preferences.order.0', 'revenue')->assertJsonPath('preferences.hidden.0', 'activity');
+        $this->postJson('/dashboard/preferences', ['order' => ['nonsense'], 'hidden' => []])->assertStatus(422);
+        $this->postJson('/dashboard/preferences', ['order' => ['occupancy'], 'hidden' => ['occupancy', 'movements', 'activity', 'revenue']])->assertStatus(422);
+        $this->get('/dashboard')->assertInertia(fn (Assert $p) => $p->where('preferences.saved', true)->where('preferences.hidden.0', 'activity'));
+        $this->get('/dashboard?tv=1')->assertInertia(fn (Assert $p) => $p->component('reporting/pages/dashboard')->where('tv', true)->has('snapshot.cards'));
+        $this->deleteJson('/dashboard/preferences')->assertOk()->assertJsonPath('preferences.saved', false);
+    }
+
     public function test_reports_state_their_basis_and_exports_download_as_csv(): void
     {
         $this->get('/reports/flash')->assertInertia(fn (Assert $p) => $p->component('reporting/pages/flash')->where('report.meta.report', 'flash')->has('report.meta.generated_at')->where('report.days', []));

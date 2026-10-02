@@ -29,9 +29,9 @@
 | TASK-DSH-014 | FR-DSH-014 | Wajib | Menampilkan akumulasi service charge yang terkumpul dari kamar dan outlet beserta estimasi porsi yang akan didistribusikan kepada karyawan. | REVIEW |
 | TASK-DSH-015 | FR-DSH-015 | Wajib | Menyediakan penyaring periode (hari ini, kemarin, 7 hari, bulan berjalan, rentang khusus) yang berlaku serentak pada seluruh kartu. | REVIEW |
 | TASK-DSH-016 | FR-DSH-016 | Wajib | Setiap kartu dapat diklik untuk menelusuri hingga daftar transaksi atau dokumen sumbernya. | IN_PROGRESS |
-| TASK-DSH-017 | FR-DSH-017 | Bisa | Susunan kartu dapat diatur per pengguna (urutan dan tampil/sembunyi) dan tersimpan pada profil pengguna. | TODO |
+| TASK-DSH-017 | FR-DSH-017 | Bisa | Susunan kartu dapat diatur per pengguna (urutan dan tampil/sembunyi) dan tersimpan pada profil pengguna. | REVIEW |
 | TASK-DSH-018 | FR-DSH-018 | Sebaiknya | Data diperbarui otomatis paling lambat setiap 60 detik tanpa memuat ulang halaman, dengan penanda waktu pembaruan terakhir. | REVIEW |
-| TASK-DSH-019 | FR-DSH-019 | Bisa | Tersedia mode layar televisi (tampilan besar tanpa navigasi) untuk dipasang di ruang manajemen. | TODO |
+| TASK-DSH-019 | FR-DSH-019 | Bisa | Tersedia mode layar televisi (tampilan besar tanpa navigasi) untuk dipasang di ruang manajemen. | REVIEW |
 | TASK-DSH-020 | FR-DSH-020 | Wajib | Menyediakan pusat exception/alert untuk kondisi yang membutuhkan tindakan: reservasi berpotensi oversold, folio belum settle, pembayaran berstatus unknown, stok negatif atau kritis, work order lewat SLA, dan kegagalan sinkronisasi. | IN_PROGRESS |
 | TASK-DSH-021 | FR-DSH-021 | Wajib | Setiap KPI menampilkan definisi, business date/periode, waktu data terakhir diperbarui, serta drill-down ke data sumber agar tidak terjadi perbedaan interpretasi antar department. | REVIEW |
 | TASK-DSH-022 | FR-DSH-022 | Wajib | Dashboard menerapkan cakupan data berdasarkan property, outlet, department, dan role; pengguna hanya melihat angka yang diizinkan tanpa mengubah sumber data. | IN_PROGRESS |

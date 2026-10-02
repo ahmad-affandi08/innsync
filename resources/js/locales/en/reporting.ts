@@ -238,4 +238,11 @@ export const reporting = {
     'rpt.obl.shareHint': 'Only an estimate: how it is shared is decided by the hotel under the labour regulations.',
     'rpt.obl.reason': 'Reason for the change',
     'rpt.obl.saveSettings': 'Save settings',
+    'rpt.dash.customize': 'Arrange the cards',
+    'rpt.dash.customizeNote': 'Choose the cards you want to see and their order. It changes only your own view.',
+    'rpt.dash.up': 'Move up',
+    'rpt.dash.down': 'Move down',
+    'rpt.dash.saveLayout': 'Save layout',
+    'rpt.dash.resetLayout': 'Back to the default',
+    'rpt.dash.tv': 'Television view',
 } as const

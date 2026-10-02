@@ -238,4 +238,11 @@ export const reporting = {
     'rpt.obl.shareHint': 'Hanya perkiraan: pembagiannya diputuskan hotel sesuai peraturan ketenagakerjaan.',
     'rpt.obl.reason': 'Alasan perubahan',
     'rpt.obl.saveSettings': 'Simpan pengaturan',
+    'rpt.dash.customize': 'Atur kartu',
+    'rpt.dash.customizeNote': 'Pilih kartu yang ingin dilihat dan urutannya. Hanya mengubah tampilan Anda sendiri.',
+    'rpt.dash.up': 'Naikkan',
+    'rpt.dash.down': 'Turunkan',
+    'rpt.dash.saveLayout': 'Simpan tampilan',
+    'rpt.dash.resetLayout': 'Kembali ke bawaan',
+    'rpt.dash.tv': 'Tampilan televisi',
 } as const

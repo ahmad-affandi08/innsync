@@ -45,6 +45,7 @@ Release notes for every release (NFR-14). Newest first. Each entry names the tas
 - TASK-FO-037 (BR-002, BR-003) for early check-in and late check-out: effective-dated, versioned fee policies (a grace period, bands of minutes with a share of the night's room price, and a share beyond), the fee worked out from the time the guest actually checked in or is still in the room against the property's standard times, charged to the folio with the rooms service charge and tax or waived with a reason, one decision per stay and kind. Day-use is not delivered.
 - TASK-HK-012 (BR-008, BR-009): lost and found with a description, a photo, where it was found (a room or a place) and kept, who found it and when, returned to a named person or disposed of with a reason (once, never deleted), the photo kept privately and erased 90 days after the item is closed (a baseline), and a flag for items stored 90 days or more.
 - TASK-HK-006 (BR-008): housekeeping checklist items that need a photo as proof of work, chosen per item in the template; the item cannot be ticked without it, the photo is kept privately and erased 90 days after it was taken (a baseline), shown to those who may see the checklists.
+- TASK-DSH-017, TASK-DSH-019: the dashboard cards can be reordered and hidden per person (kept per property on the server, only the layout changes: the numbers and who may see them stay as they were), with a way back to the default, and a television view (`/dashboard?tv=1`) with large cards, no menu, links or forms that refreshes by itself.
 
 ### Known limitations
 
