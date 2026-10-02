@@ -131,7 +131,7 @@ final class BackupRestoreTest extends TestCase
         $dir = $this->workDir.'/vault/'.$set;
 
         $original = (string) file_get_contents($dir.'/files.tar.enc');
-        file_put_contents($dir.'/files.tar.enc', substr_replace($original, 'X', 100, 1));
+        file_put_contents($dir.'/files.tar.enc', substr_replace($original, $original[100] === 'X' ? 'Y' : 'X', 100, 1));
         $this->assertRestoreFails('files.tar.enc checksum mismatch');
         file_put_contents($dir.'/files.tar.enc', $original);
 
