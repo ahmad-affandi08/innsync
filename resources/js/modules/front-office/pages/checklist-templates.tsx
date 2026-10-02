@@ -52,11 +52,11 @@ export default function ChecklistTemplatesPage({ catalogue }: Props) {
             <section aria-labelledby="tpl-h" className="flex max-w-xl flex-col gap-3">
                 <h2 className="text-lg font-semibold" id="tpl-h">{t('fo.sop.tpl.new')}</h2>
                 {action.error !== null ? <ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /> : null}
-                <FormField error={action.fieldError('name')} hint={t('fo.sop.tpl.nameHint')} label={t('fo.sop.tpl.name')}><Input maxLength={80} onChange={(e) => setForm({ ...form, name: e.target.value })} value={form.name} /></FormField>
-                <FormField error={action.fieldError('frequency')} label={t('fo.sop.tpl.frequency')}>
+                <FormField field="name" error={action.fieldError('name')} hint={t('fo.sop.tpl.nameHint')} label={t('fo.sop.tpl.name')}><Input maxLength={80} onChange={(e) => setForm({ ...form, name: e.target.value })} value={form.name} /></FormField>
+                <FormField field="frequency" error={action.fieldError('frequency')} label={t('fo.sop.tpl.frequency')}>
                     <Select onChange={(e) => setForm({ ...form, frequency: e.target.value })} value={form.frequency}>{catalogue.frequencies.map((f) => <option key={f} value={f}>{t(`fo.sop.frequency.${f}` as 'fo.sop.frequency.daily')}</option>)}</Select>
                 </FormField>
-                <FormField error={action.fieldError('items')} label={t('fo.sop.tpl.items')}><Textarea onChange={(e) => setForm({ ...form, items: e.target.value })} rows={8} value={form.items} /></FormField>
+                <FormField field="items" error={action.fieldError('items')} label={t('fo.sop.tpl.items')}><Textarea onChange={(e) => setForm({ ...form, items: e.target.value })} rows={8} value={form.items} /></FormField>
                 <label className="flex items-center gap-2 text-sm"><input checked={form.active} onChange={(e) => setForm({ ...form, active: e.target.checked })} type="checkbox" />{t('fo.sop.tpl.active')}</label>
                 <div><Button loading={action.busy} onClick={() => void save()} type="button">{t('fo.sop.tpl.save')}</Button></div>
             </section>

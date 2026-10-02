@@ -69,19 +69,19 @@ export default function LaundryIntakePage({ currency, lookups }: { currency: str
             {action.error !== null ? <ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /> : null}
             {lookups.items.length === 0 ? <Alert title={t('ldy.intake.noItems')} tone="warning" /> : null}
             <form className="grid gap-4 sm:grid-cols-2" onSubmit={(e) => { e.preventDefault(); void submit(); }}>
-                <FormField error={action.fieldError('room_id')} hint={lookups.rooms.length === 0 ? t('ldy.intake.noRooms') : undefined} label={t('ldy.intake.room')}>
+                <FormField field="room_id" error={action.fieldError('room_id')} hint={lookups.rooms.length === 0 ? t('ldy.intake.noRooms') : undefined} label={t('ldy.intake.room')}>
                     <Select onChange={(e) => set({ roomId: e.target.value })} value={form.roomId}>{lookups.rooms.map((r) => <option key={r.id} value={r.id}>{r.number}</option>)}</Select>
                 </FormField>
-                <FormField error={action.fieldError('barcode')} label={t('ldy.intake.barcode')}><Input autoComplete="off" maxLength={40} onChange={(e) => set({ barcode: e.target.value })} required value={form.barcode} /></FormField>
-                <FormField error={action.fieldError('promised_date')} label={t('ldy.intake.promisedDate')}><DatePicker min={lookups.business_date} onChange={(e) => set({ date: e.target.value })} required value={form.date} /></FormField>
-                <FormField error={action.fieldError('promised_time')} label={t('ldy.intake.promisedTime', { zone: lookups.zone })}><Input onChange={(e) => set({ time: e.target.value })} required type="time" value={form.time} /></FormField>
+                <FormField field="barcode" error={action.fieldError('barcode')} label={t('ldy.intake.barcode')}><Input autoComplete="off" maxLength={40} onChange={(e) => set({ barcode: e.target.value })} required value={form.barcode} /></FormField>
+                <FormField field="promised_date" error={action.fieldError('promised_date')} label={t('ldy.intake.promisedDate')}><DatePicker min={lookups.business_date} onChange={(e) => set({ date: e.target.value })} required value={form.date} /></FormField>
+                <FormField field="promised_time" error={action.fieldError('promised_time')} label={t('ldy.intake.promisedTime', { zone: lookups.zone })}><Input onChange={(e) => set({ time: e.target.value })} required type="time" value={form.time} /></FormField>
                 <label className="flex items-center gap-2 text-sm sm:col-span-2"><input checked={form.express} onChange={(e) => set({ express: e.target.checked })} type="checkbox" />{t('ldy.intake.express')}{expressTreatment !== undefined ? ` (${expressTreatment.pricing === 'percent' ? `+${expressTreatment.value / 100}%` : `+${format.money(expressTreatment.value, currency)}`})` : ''}</label>
 
                 <fieldset className="flex flex-col gap-3 sm:col-span-2">
                     <legend className="text-lg font-semibold">{t('ldy.intake.items')}</legend>
                     {lines.map((l, i) => (
                         <div className="grid gap-3 border border-border p-3 sm:grid-cols-4" key={i}>
-                            <FormField error={i === 0 ? action.fieldError('lines') : undefined} label={t('ldy.intake.item')}>
+                            <FormField field="lines" error={i === 0 ? action.fieldError('lines') : undefined} label={t('ldy.intake.item')}>
                                 <Select onChange={(e) => setLine(i, { itemId: e.target.value })} value={l.itemId}><option value="">{t('ldy.intake.choose')}</option>{lookups.items.map((x) => <option key={x.id} value={x.id}>{x.name} · {format.money(x.unit_price_minor, currency)}</option>)}</Select>
                             </FormField>
                             <FormField label={t('ldy.intake.quantity')}><Input min={1} onChange={(e) => setLine(i, { quantity: e.target.value })} type="number" value={l.quantity} /></FormField>

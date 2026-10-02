@@ -147,9 +147,9 @@ export default function LinenPage({ linen }: { linen: Linen }) {
                                     {tr.note !== null ? <p className="text-xs text-muted-foreground">{tr.note}</p> : null}
                                     {tr.may_receive === true && (
                                         <div className="grid gap-2 sm:grid-cols-4">
-                                            <FormField label={t('hk.linen.counted')}><Input inputMode="numeric" max={tr.quantity_sent} min={0} onChange={(e) => set({ received: e.target.value })} type="number" value={c.received} /></FormField>
-                                            {short ? <FormField error={action.fieldError('variance_kind')} label={t('hk.linen.variance')}><Select onChange={(e) => set({ kind: e.target.value })} value={c.kind}><option value="loss">{t('hk.linen.variance.loss')}</option><option value="damage">{t('hk.linen.variance.damage')}</option></Select></FormField> : null}
-                                            {short ? <FormField error={action.fieldError('variance_note')} label={t('hk.linen.varianceNote')}><Input maxLength={200} onChange={(e) => set({ note: e.target.value })} value={c.note} /></FormField> : null}
+                                            <FormField field="quantity_received" error={action.fieldError('quantity_received')} label={t('hk.linen.counted')}><Input inputMode="numeric" max={tr.quantity_sent} min={0} onChange={(e) => set({ received: e.target.value })} type="number" value={c.received} /></FormField>
+                                            {short ? <FormField field="variance_kind" error={action.fieldError('variance_kind')} label={t('hk.linen.variance')}><Select onChange={(e) => set({ kind: e.target.value })} value={c.kind}><option value="loss">{t('hk.linen.variance.loss')}</option><option value="damage">{t('hk.linen.variance.damage')}</option></Select></FormField> : null}
+                                            {short ? <FormField field="variance_note" error={action.fieldError('variance_note')} label={t('hk.linen.varianceNote')}><Input maxLength={200} onChange={(e) => set({ note: e.target.value })} value={c.note} /></FormField> : null}
                                             <div className="flex items-end"><Button disabled={action.busy} onClick={() => void receive(tr)} type="button">{t('hk.linen.receive')}</Button></div>
                                         </div>
                                     )}
@@ -166,11 +166,11 @@ export default function LinenPage({ linen }: { linen: Linen }) {
                 <section aria-labelledby="linen-send" className="flex flex-col gap-2">
                     <h2 className="text-lg font-semibold" id="linen-send">{t('hk.linen.send')}</h2>
                     <form className="grid gap-3 sm:grid-cols-5" onSubmit={(e) => void sendTransfer(e)}>
-                        <FormField error={action.fieldError('item_id')} label={t('hk.linen.item')}><Select onChange={(e) => setSend({ ...send, itemId: e.target.value })} required value={send.itemId}><option value="">{t('hk.linen.choose')}</option>{active.map((i) => <option key={i.id} value={i.id}>{i.name}</option>)}</Select></FormField>
-                        <FormField error={action.fieldError('from')} label={t('hk.linen.from')}><Select onChange={(e) => setSend({ ...send, from: e.target.value, to: e.target.value === 'external' ? 'store' : send.to })} value={send.from}>{sources.map((p) => <option key={p} value={p}>{p === 'external' ? t('hk.linen.place.external') : place(p)}</option>)}</Select></FormField>
-                        <FormField error={action.fieldError('to')} label={t('hk.linen.to')}><Select onChange={(e) => setSend({ ...send, to: e.target.value })} value={send.to}>{linen.locations.filter((p) => send.from !== 'external' || p === 'store').map((p) => <option key={p} value={p}>{place(p)}</option>)}</Select></FormField>
-                        <FormField error={action.fieldError('quantity')} label={t('hk.linen.quantity')}><Input inputMode="numeric" min={1} onChange={(e) => setSend({ ...send, quantity: e.target.value })} required type="number" value={send.quantity} /></FormField>
-                        <FormField error={action.fieldError('note')} label={t('hk.linen.note')}><Input maxLength={200} onChange={(e) => setSend({ ...send, note: e.target.value })} value={send.note} /></FormField>
+                        <FormField field="item_id" error={action.fieldError('item_id')} label={t('hk.linen.item')}><Select onChange={(e) => setSend({ ...send, itemId: e.target.value })} required value={send.itemId}><option value="">{t('hk.linen.choose')}</option>{active.map((i) => <option key={i.id} value={i.id}>{i.name}</option>)}</Select></FormField>
+                        <FormField field="from" error={action.fieldError('from')} label={t('hk.linen.from')}><Select onChange={(e) => setSend({ ...send, from: e.target.value, to: e.target.value === 'external' ? 'store' : send.to })} value={send.from}>{sources.map((p) => <option key={p} value={p}>{p === 'external' ? t('hk.linen.place.external') : place(p)}</option>)}</Select></FormField>
+                        <FormField field="to" error={action.fieldError('to')} label={t('hk.linen.to')}><Select onChange={(e) => setSend({ ...send, to: e.target.value })} value={send.to}>{linen.locations.filter((p) => send.from !== 'external' || p === 'store').map((p) => <option key={p} value={p}>{place(p)}</option>)}</Select></FormField>
+                        <FormField field="quantity" error={action.fieldError('quantity')} label={t('hk.linen.quantity')}><Input inputMode="numeric" min={1} onChange={(e) => setSend({ ...send, quantity: e.target.value })} required type="number" value={send.quantity} /></FormField>
+                        <FormField field="note" error={action.fieldError('note')} label={t('hk.linen.note')}><Input maxLength={200} onChange={(e) => setSend({ ...send, note: e.target.value })} value={send.note} /></FormField>
                         <div className="sm:col-span-5"><Button loading={action.busy} type="submit">{t('hk.linen.sendAction')}</Button></div>
                     </form>
                 </section>
@@ -180,10 +180,10 @@ export default function LinenPage({ linen }: { linen: Linen }) {
                 <section aria-labelledby="linen-new" className="flex flex-col gap-2">
                     <h2 className="text-lg font-semibold" id="linen-new">{t('hk.linen.newItem')}</h2>
                     <form className="grid gap-3 sm:grid-cols-5" onSubmit={(e) => void addItem(e)}>
-                        <FormField error={action.fieldError('code')} hint={t('hk.linen.codeHint')} label={t('hk.linen.code')}><Input maxLength={20} onChange={(e) => setItem({ ...item, code: e.target.value.toUpperCase() })} required value={item.code} /></FormField>
-                        <FormField error={action.fieldError('name')} label={t('hk.linen.name')}><Input maxLength={80} onChange={(e) => setItem({ ...item, name: e.target.value })} required value={item.name} /></FormField>
-                        <FormField error={action.fieldError('kind')} label={t('hk.linen.kind')}><Select onChange={(e) => setItem({ ...item, kind: e.target.value })} value={item.kind}>{linen.kinds.map((k) => <option key={k} value={k}>{t(`hk.linen.kind.${k}` as 'hk.linen.kind.linen')}</option>)}</Select></FormField>
-                        <FormField error={action.fieldError('unit')} label={t('hk.linen.unit')}><Input maxLength={12} onChange={(e) => setItem({ ...item, unit: e.target.value })} required value={item.unit} /></FormField>
+                        <FormField field="code" error={action.fieldError('code')} hint={t('hk.linen.codeHint')} label={t('hk.linen.code')}><Input maxLength={20} onChange={(e) => setItem({ ...item, code: e.target.value.toUpperCase() })} required value={item.code} /></FormField>
+                        <FormField field="name" error={action.fieldError('name')} label={t('hk.linen.name')}><Input maxLength={80} onChange={(e) => setItem({ ...item, name: e.target.value })} required value={item.name} /></FormField>
+                        <FormField field="kind" error={action.fieldError('kind')} label={t('hk.linen.kind')}><Select onChange={(e) => setItem({ ...item, kind: e.target.value })} value={item.kind}>{linen.kinds.map((k) => <option key={k} value={k}>{t(`hk.linen.kind.${k}` as 'hk.linen.kind.linen')}</option>)}</Select></FormField>
+                        <FormField field="unit" error={action.fieldError('unit')} label={t('hk.linen.unit')}><Input maxLength={12} onChange={(e) => setItem({ ...item, unit: e.target.value })} required value={item.unit} /></FormField>
                         <div className="flex items-end"><Button loading={action.busy} type="submit">{t('hk.linen.addItem')}</Button></div>
                     </form>
                 </section>
@@ -192,10 +192,10 @@ export default function LinenPage({ linen }: { linen: Linen }) {
             <section aria-labelledby="linen-usage" className="flex flex-col gap-2">
                 <h2 className="text-lg font-semibold" id="linen-usage">{t('hk.linen.usage')}</h2>
                 <form className="grid gap-3 sm:grid-cols-5" onSubmit={(e) => void recordUsage(e)}>
-                    <FormField error={action.fieldError('room_id')} label={t('hk.linen.room')}><Select onChange={(e) => setUse({ ...use, roomId: e.target.value })} required value={use.roomId}><option value="">{t('hk.linen.choose')}</option>{linen.rooms.map((r) => <option key={r.id} value={r.id}>{r.number}</option>)}</Select></FormField>
-                    <FormField error={action.fieldError('item_id')} label={t('hk.linen.item')}><Select onChange={(e) => setUse({ ...use, itemId: e.target.value })} required value={use.itemId}><option value="">{t('hk.linen.choose')}</option>{active.map((i) => <option key={i.id} value={i.id}>{i.name}</option>)}</Select></FormField>
-                    <FormField error={action.fieldError('quantity')} label={t('hk.linen.quantity')}><Input inputMode="numeric" min={1} onChange={(e) => setUse({ ...use, quantity: e.target.value })} required type="number" value={use.quantity} /></FormField>
-                    <FormField error={action.fieldError('note')} label={t('hk.linen.note')}><Input maxLength={200} onChange={(e) => setUse({ ...use, note: e.target.value })} value={use.note} /></FormField>
+                    <FormField field="room_id" error={action.fieldError('room_id')} label={t('hk.linen.room')}><Select onChange={(e) => setUse({ ...use, roomId: e.target.value })} required value={use.roomId}><option value="">{t('hk.linen.choose')}</option>{linen.rooms.map((r) => <option key={r.id} value={r.id}>{r.number}</option>)}</Select></FormField>
+                    <FormField field="item_id" error={action.fieldError('item_id')} label={t('hk.linen.item')}><Select onChange={(e) => setUse({ ...use, itemId: e.target.value })} required value={use.itemId}><option value="">{t('hk.linen.choose')}</option>{active.map((i) => <option key={i.id} value={i.id}>{i.name}</option>)}</Select></FormField>
+                    <FormField field="quantity" error={action.fieldError('quantity')} label={t('hk.linen.quantity')}><Input inputMode="numeric" min={1} onChange={(e) => setUse({ ...use, quantity: e.target.value })} required type="number" value={use.quantity} /></FormField>
+                    <FormField field="note" error={action.fieldError('note')} label={t('hk.linen.note')}><Input maxLength={200} onChange={(e) => setUse({ ...use, note: e.target.value })} value={use.note} /></FormField>
                     <div className="flex flex-wrap items-end gap-2"><Button loading={action.busy} type="submit">{t('hk.linen.record')}</Button><Button disabled={action.busy} onClick={() => void loadUsage()} type="button" variant="outline">{t('hk.linen.showUsage')}</Button></div>
                 </form>
                 {recorded ? <Alert title={t('hk.linen.recorded')} tone="success" /> : null}

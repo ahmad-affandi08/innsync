@@ -96,7 +96,7 @@ export default function LaundryOrderPage({ claims, currency, may, order: o }: { 
             {o.status === 'sent' && may.process && (
                 <section className="flex flex-col gap-3 border-t border-border pt-4">
                     <h2 className="text-lg font-semibold">{t('ldy.order.count')}</h2>
-                    <FormField error={action.fieldError('note')} label={t('ldy.order.countNote')}><Input maxLength={500} onChange={(e) => setNote(e.target.value)} value={note} /></FormField>
+                    <FormField field="note" error={action.fieldError('note')} label={t('ldy.order.countNote')}><Input maxLength={500} onChange={(e) => setNote(e.target.value)} value={note} /></FormField>
                     <div><Button disabled={action.busy} onClick={() => void post('receive', { counts: Object.fromEntries(Object.entries(counts).map(([k, v]) => [k, Number(v)])), note: note || null })} type="button">{t('ldy.order.countSave')}</Button></div>
                 </section>
             )}
@@ -138,8 +138,8 @@ export default function LaundryOrderPage({ claims, currency, may, order: o }: { 
             >
                 <div className="flex flex-col gap-3">
                     {action.error !== null ? <ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /> : null}
-                    {dialog === 'deliver' ? <FormField error={action.fieldError('receipt')} label={t('ldy.order.receipt')}><Input maxLength={200} onChange={(e) => setText(e.target.value)} value={text} /></FormField> : null}
-                    {dialog === 'cancel' ? <FormField error={action.fieldError('reason')} label={t('ldy.order.cancelReason')}><Input maxLength={300} onChange={(e) => setText(e.target.value)} value={text} /></FormField> : null}
+                    {dialog === 'deliver' ? <FormField field="receipt" error={action.fieldError('receipt')} label={t('ldy.order.receipt')}><Input maxLength={200} onChange={(e) => setText(e.target.value)} value={text} /></FormField> : null}
+                    {dialog === 'cancel' ? <FormField field="reason" error={action.fieldError('reason')} label={t('ldy.order.cancelReason')}><Input maxLength={300} onChange={(e) => setText(e.target.value)} value={text} /></FormField> : null}
                 </div>
             </ConfirmDialog>
         </LaundryShell>

@@ -58,14 +58,14 @@ export default function ChecklistTemplatesPage({ catalogue }: Props) {
             <section aria-labelledby="hk-tpl-h" className="flex max-w-xl flex-col gap-3">
                 <h2 className="text-lg font-semibold" id="hk-tpl-h">{t('hk.cl.tpl.new')}</h2>
                 {action.error !== null ? <ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /> : null}
-                <FormField error={action.fieldError('name')} hint={t('hk.cl.tpl.nameHint')} label={t('hk.cl.tpl.name')}><Input maxLength={80} onChange={(e) => setForm({ ...form, name: e.target.value })} value={form.name} /></FormField>
-                <FormField error={action.fieldError('frequency')} label={t('hk.cl.tpl.frequency')}>
+                <FormField field="name" error={action.fieldError('name')} hint={t('hk.cl.tpl.nameHint')} label={t('hk.cl.tpl.name')}><Input maxLength={80} onChange={(e) => setForm({ ...form, name: e.target.value })} value={form.name} /></FormField>
+                <FormField field="frequency" error={action.fieldError('frequency')} label={t('hk.cl.tpl.frequency')}>
                     <Select onChange={(e) => setForm({ ...form, frequency: e.target.value })} value={form.frequency}>{catalogue.frequencies.map((f) => <option key={f} value={f}>{t(`hk.cl.frequency.${f}` as 'hk.cl.frequency.daily')}</option>)}</Select>
                 </FormField>
-                <FormField error={action.fieldError('scope')} label={t('hk.cl.tpl.scope')}>
+                <FormField field="scope" error={action.fieldError('scope')} label={t('hk.cl.tpl.scope')}>
                     <Select onChange={(e) => setForm({ ...form, scope: e.target.value })} value={form.scope}>{catalogue.scopes.map((s) => <option key={s} value={s}>{t(`hk.cl.scope.${s}` as 'hk.cl.scope.room')}</option>)}</Select>
                 </FormField>
-                {form.scope === 'area' ? <FormField error={action.fieldError('areas')} hint={t('hk.cl.tpl.areasHint')} label={t('hk.cl.tpl.areas')}><Textarea onChange={(e) => setForm({ ...form, areas: e.target.value })} rows={4} value={form.areas} /></FormField> : null}
+                {form.scope === 'area' ? <FormField field="areas" error={action.fieldError('areas')} hint={t('hk.cl.tpl.areasHint')} label={t('hk.cl.tpl.areas')}><Textarea onChange={(e) => setForm({ ...form, areas: e.target.value })} rows={4} value={form.areas} /></FormField> : null}
                 <fieldset className="flex flex-col gap-2">
                     <legend className="text-sm font-medium">{t('hk.cl.tpl.items')}</legend>
                     {items.map((row, i) => (

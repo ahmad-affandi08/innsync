@@ -61,7 +61,7 @@ export default function ForeignCurrencyPage({ overview }: { overview: Overview }
                 <h2 className="text-lg font-semibold" id="fx-switch-h">{t('fo.foreign.switch')}</h2>
                 <p className="text-sm"><StatusBadge label={overview.enabled ? t('fo.foreign.on') : t('fo.foreign.off')} tone={overview.enabled ? 'success' : 'neutral'} /></p>
                 <div className="flex flex-wrap items-end gap-2">
-                    <FormField error={action.fieldError('reason')} label={t('fo.folio.reason')}><Input maxLength={300} onChange={(e) => setSwitchReason(e.target.value)} value={switchReason} /></FormField>
+                    <FormField field="reason" error={action.fieldError('reason')} label={t('fo.folio.reason')}><Input maxLength={300} onChange={(e) => setSwitchReason(e.target.value)} value={switchReason} /></FormField>
                     <Button disabled={action.busy || switchReason.trim() === ''} onClick={() => void toggle()} type="button" variant="outline">{overview.enabled ? t('fo.foreign.turnOff') : t('fo.foreign.turnOn')}</Button>
                 </div>
             </section>
@@ -89,9 +89,9 @@ export default function ForeignCurrencyPage({ overview }: { overview: Overview }
                     </Table>
                 )}
                 <form className="grid gap-3 sm:grid-cols-4" onSubmit={(e) => { e.preventDefault(); void saveRate(); }}>
-                    <FormField error={action.fieldError('currency')} label={t('fo.foreign.currency')}><Select onChange={(e) => setRate({ ...rate, currency: e.target.value })} value={rate.currency}>{overview.currencies.map((c) => <option key={c} value={c}>{c}</option>)}</Select></FormField>
-                    <FormField error={invalid ? t('fo.foreign.invalidRate') : action.fieldError('rate_e4')} hint={t('fo.foreign.rateHint', { currency: overview.home_currency })} label={t('fo.foreign.rate', { currency: overview.home_currency })}><Input inputMode="decimal" onChange={(e) => setRate({ ...rate, value: e.target.value })} required value={rate.value} /></FormField>
-                    <FormField error={action.fieldError('reason')} label={t('fo.folio.reason')}><Input maxLength={300} onChange={(e) => setRate({ ...rate, reason: e.target.value })} required value={rate.reason} /></FormField>
+                    <FormField field="currency" error={action.fieldError('currency')} label={t('fo.foreign.currency')}><Select onChange={(e) => setRate({ ...rate, currency: e.target.value })} value={rate.currency}>{overview.currencies.map((c) => <option key={c} value={c}>{c}</option>)}</Select></FormField>
+                    <FormField field="rate_e4" error={invalid ? t('fo.foreign.invalidRate') : action.fieldError('rate_e4')} hint={t('fo.foreign.rateHint', { currency: overview.home_currency })} label={t('fo.foreign.rate', { currency: overview.home_currency })}><Input inputMode="decimal" onChange={(e) => setRate({ ...rate, value: e.target.value })} required value={rate.value} /></FormField>
+                    <FormField field="reason" error={action.fieldError('reason')} label={t('fo.folio.reason')}><Input maxLength={300} onChange={(e) => setRate({ ...rate, reason: e.target.value })} required value={rate.reason} /></FormField>
                     <div className="flex items-end"><Button loading={action.busy} type="submit">{t('fo.foreign.setRate')}</Button></div>
                 </form>
             </section>

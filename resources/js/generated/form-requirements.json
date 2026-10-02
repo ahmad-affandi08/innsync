@@ -1,0 +1,255 @@
+{
+    "front-office/pages/cashier-shifts": [
+        "reason"
+    ],
+    "front-office/pages/check-in": [
+        "address",
+        "adults",
+        "children",
+        "full_name",
+        "id_number",
+        "id_type",
+        "nationality",
+        "room_id"
+    ],
+    "front-office/pages/checklist-templates": [
+        "frequency",
+        "items",
+        "name"
+    ],
+    "front-office/pages/feedback": [
+        "channel",
+        "kind",
+        "summary"
+    ],
+    "front-office/pages/feedback-item": [
+        "channel",
+        "kind",
+        "note",
+        "owner_id",
+        "resolution",
+        "summary",
+        "text"
+    ],
+    "front-office/pages/folio": [
+        "code",
+        "description",
+        "payment_method",
+        "reason",
+        "target_folio_id"
+    ],
+    "front-office/pages/foreign-currency": [
+        "currency",
+        "rate_e4",
+        "reason"
+    ],
+    "front-office/pages/group": [
+        "adults",
+        "arrival",
+        "children",
+        "departure",
+        "guest_name",
+        "rate_plan_id",
+        "room_type_id",
+        "source"
+    ],
+    "front-office/pages/groups": [
+        "arrival",
+        "booker_name",
+        "departure",
+        "name",
+        "source",
+        "status"
+    ],
+    "front-office/pages/inventory": [
+        "from",
+        "kind",
+        "reason",
+        "room_id",
+        "room_type_id",
+        "rooms",
+        "to"
+    ],
+    "front-office/pages/logbook": [
+        "body",
+        "shift"
+    ],
+    "front-office/pages/registration-terms": [
+        "body",
+        "reason"
+    ],
+    "front-office/pages/requests": [
+        "category",
+        "stay_id",
+        "title"
+    ],
+    "front-office/pages/reservation": [
+        "adults",
+        "arrival",
+        "children",
+        "departure",
+        "guest_name",
+        "rate_plan_id",
+        "room_type_id",
+        "source"
+    ],
+    "front-office/pages/reservations": [
+        "adults",
+        "arrival",
+        "children",
+        "departure",
+        "guest_name",
+        "rate_plan_id",
+        "room_type_id",
+        "source"
+    ],
+    "front-office/pages/room-board": [
+        "kind",
+        "reason"
+    ],
+    "front-office/pages/stay": [
+        "changes",
+        "departure",
+        "photo",
+        "reason",
+        "room_id"
+    ],
+    "front-office/pages/stay-fees": [
+        "beyond_bp",
+        "effective_from",
+        "grace_minutes",
+        "kind",
+        "reason"
+    ],
+    "housekeeping/pages/board": [
+        "kind",
+        "reason"
+    ],
+    "housekeeping/pages/checklist-templates": [
+        "frequency",
+        "name",
+        "scope"
+    ],
+    "housekeeping/pages/linen": [
+        "code",
+        "from",
+        "item_id",
+        "kind",
+        "name",
+        "quantity",
+        "quantity_received",
+        "room_id",
+        "to",
+        "unit"
+    ],
+    "housekeeping/pages/lost-found": [
+        "description",
+        "stored_at"
+    ],
+    "housekeeping/pages/my-rooms": [
+        "kind"
+    ],
+    "housekeeping/pages/par-levels": [
+        "item_id",
+        "par_quantity",
+        "reason",
+        "scope_kind",
+        "scope_ref",
+        "use_quantity"
+    ],
+    "identity-access/pages/approval-policies": [
+        "band_min_amount_minor",
+        "reason"
+    ],
+    "identity-access/pages/confirm-password": [
+        "password"
+    ],
+    "identity-access/pages/login": [
+        "email"
+    ],
+    "identity-access/pages/mfa-challenge": [
+        "code"
+    ],
+    "identity-access/pages/mfa-setup": [
+        "code"
+    ],
+    "identity-access/pages/sessions": [
+        "current_password",
+        "password"
+    ],
+    "laundry/pages/claims": [
+        "approved_minor",
+        "cap_multiple",
+        "claimed_minor",
+        "description",
+        "kind",
+        "order_id",
+        "reason"
+    ],
+    "laundry/pages/intake": [
+        "barcode",
+        "lines",
+        "promised_date",
+        "promised_time",
+        "room_id"
+    ],
+    "laundry/pages/order": [
+        "reason",
+        "receipt"
+    ],
+    "laundry/pages/prices": [
+        "code",
+        "kind",
+        "name",
+        "pricing",
+        "reason",
+        "unit_price_minor",
+        "value"
+    ],
+    "property/pages/booking-policies": [
+        "cancel_penalty_kind",
+        "deposit_basis",
+        "effective_from",
+        "noshow_penalty_kind",
+        "reason"
+    ],
+    "property/pages/charge-schemes": [
+        "effective_from",
+        "reason",
+        "service_charge_rate",
+        "tax_rate"
+    ],
+    "property/pages/rate-plans": [
+        "arrival",
+        "departure",
+        "from",
+        "nightly_minor",
+        "reason",
+        "to"
+    ],
+    "property/pages/settings": [
+        "availability_horizon_days",
+        "business_date",
+        "check_in_time",
+        "check_out_time",
+        "night_audit_earliest_time",
+        "reason",
+        "rounding_increment_minor",
+        "rounding_mode"
+    ],
+    "reporting/pages/exports": [
+        "report"
+    ],
+    "reporting/pages/obligations": [
+        "reason",
+        "reference",
+        "reported_on",
+        "service_employee_share_bp",
+        "tax_report_day"
+    ],
+    "reporting/pages/outlets": [
+        "code",
+        "name",
+        "reason"
+    ]
+}

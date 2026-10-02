@@ -92,31 +92,31 @@ export default function SettingsPage({ settings }: { settings: Settings }) {
             <form className="flex flex-col gap-4" onSubmit={(e) => { e.preventDefault(); void save(); }}>
                 <h2 className="text-lg font-semibold">{t('property.settings.times')}</h2>
                 <div className="grid gap-3 sm:grid-cols-3">
-                    <FormField error={action.fieldError('check_in_time')} label={t('property.settings.checkIn')}>
+                    <FormField field="check_in_time" error={action.fieldError('check_in_time')} label={t('property.settings.checkIn')}>
                         <Input onChange={(e) => setForm({ ...form, checkIn: e.target.value })} type="time" value={form.checkIn} />
                     </FormField>
-                    <FormField error={action.fieldError('check_out_time')} label={t('property.settings.checkOut')}>
+                    <FormField field="check_out_time" error={action.fieldError('check_out_time')} label={t('property.settings.checkOut')}>
                         <Input onChange={(e) => setForm({ ...form, checkOut: e.target.value })} type="time" value={form.checkOut} />
                     </FormField>
-                    <FormField error={action.fieldError('night_audit_earliest_time')} hint={t('property.settings.nightAuditHint')} label={t('property.settings.nightAudit')}>
+                    <FormField field="night_audit_earliest_time" error={action.fieldError('night_audit_earliest_time')} hint={t('property.settings.nightAuditHint')} label={t('property.settings.nightAudit')}>
                         <Input onChange={(e) => setForm({ ...form, nightAudit: e.target.value })} type="time" value={form.nightAudit} />
                     </FormField>
                 </div>
                 <h2 className="text-lg font-semibold">{t('property.settings.rounding')}</h2>
                 <div className="grid gap-3 sm:grid-cols-3">
-                    <FormField error={action.fieldError('rounding_increment_minor')} hint={t('property.settings.roundingIncrementHint')} label={t('property.settings.roundingIncrement')}>
+                    <FormField field="rounding_increment_minor" error={action.fieldError('rounding_increment_minor')} hint={t('property.settings.roundingIncrementHint')} label={t('property.settings.roundingIncrement')}>
                         <Input inputMode="numeric" onChange={(e) => setForm({ ...form, increment: e.target.value })} value={form.increment} />
                     </FormField>
-                    <FormField error={action.fieldError('rounding_mode')} label={t('property.settings.roundingMode')}>
+                    <FormField field="rounding_mode" error={action.fieldError('rounding_mode')} label={t('property.settings.roundingMode')}>
                         <Select onChange={(e) => setForm({ ...form, mode: e.target.value as Settings['rounding_mode'] })} value={form.mode}>
                             {MODES.map((m) => <option key={m} value={m}>{t(`property.settings.mode.${m}`)}</option>)}
                         </Select>
                     </FormField>
-                    <FormField error={action.fieldError('availability_horizon_days')} hint={t('property.settings.horizonHint')} label={t('property.settings.horizon')}>
+                    <FormField field="availability_horizon_days" error={action.fieldError('availability_horizon_days')} hint={t('property.settings.horizonHint')} label={t('property.settings.horizon')}>
                         <Input inputMode="numeric" onChange={(e) => setForm({ ...form, horizon: e.target.value })} value={form.horizon} />
                     </FormField>
                 </div>
-                <FormField error={action.fieldError('reason')} hint={t('property.field.reasonHint')} label={t('property.field.reason')}>
+                <FormField field="reason" error={action.fieldError('reason')} hint={t('property.field.reasonHint')} label={t('property.field.reason')}>
                     <Input maxLength={500} onChange={(e) => setForm({ ...form, reason: e.target.value })} value={form.reason} />
                 </FormField>
                 <div><Button loading={action.busy} type="submit">{t('property.action.save')}</Button></div>
@@ -134,10 +134,10 @@ export default function SettingsPage({ settings }: { settings: Settings }) {
             >
                 <div className="flex flex-col gap-3">
                     {action.error !== null ? <ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /> : null}
-                    <FormField error={action.fieldError('business_date')} label={t('property.settings.businessDate')}>
+                    <FormField field="business_date" error={action.fieldError('business_date')} label={t('property.settings.businessDate')}>
                         <DatePicker onChange={(e) => setDate(e.target.value)} value={date} />
                     </FormField>
-                    <FormField error={action.fieldError('reason')} hint={t('property.field.reasonHint')} label={t('property.field.reason')}>
+                    <FormField field="reason" error={action.fieldError('reason')} hint={t('property.field.reasonHint')} label={t('property.field.reason')}>
                         <Input maxLength={500} onChange={(e) => setDateReason(e.target.value)} value={dateReason} />
                     </FormField>
                 </div>

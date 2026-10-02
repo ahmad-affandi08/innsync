@@ -77,7 +77,7 @@ export default function CashierShiftsPage({ filters, list, settings }: Props) {
                     {saved ? <Alert title={t('fo.cash.settings.saved')} tone="success" /> : null}
                     {action.error !== null ? <ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /> : null}
                     <label className="flex items-center gap-2 text-sm"><input checked={require} onChange={(e) => { setRequire(e.target.checked); setSaved(false); }} type="checkbox" />{t('fo.cash.settings.require')}</label>
-                    <FormField error={action.fieldError('reason')} label={t('fo.cash.settings.reason')}><Input maxLength={300} onChange={(e) => setReason(e.target.value)} value={reason} /></FormField>
+                    <FormField field="reason" error={action.fieldError('reason')} label={t('fo.cash.settings.reason')}><Input maxLength={300} onChange={(e) => setReason(e.target.value)} value={reason} /></FormField>
                     <div><Button loading={action.busy} onClick={() => void save()} size="sm" type="button">{t('fo.cash.settings.save')}</Button></div>
                 </section>
             )}

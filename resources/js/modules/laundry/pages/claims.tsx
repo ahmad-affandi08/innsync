@@ -136,21 +136,21 @@ export default function LaundryClaimsPage({ order, overview, status }: { order: 
                 <section aria-labelledby="claim-new-h" className="flex max-w-3xl flex-col gap-3 border-t border-border pt-4">
                     <h2 className="text-lg font-semibold" id="claim-new-h">{t('ldy.claim.new')}</h2>
                     <form className="grid gap-3 sm:grid-cols-2" onSubmit={(e) => void submit(e)}>
-                        <FormField error={action.fieldError('order_id')} label={t('ldy.claim.order')}>
+                        <FormField field="order_id" error={action.fieldError('order_id')} label={t('ldy.claim.order')}>
                             <Select onChange={(e) => setForm({ ...form, orderId: e.target.value, lineId: '', pieces: '1' })} required value={form.orderId}>
                                 <option value="">—</option>{overview.orders.map((o) => <option key={o.id} value={o.id}>{o.number} · {o.room}</option>)}
                             </Select>
                         </FormField>
-                        <FormField error={action.fieldError('line_id') ?? action.fieldError('pieces')} label={t('ldy.claim.item')}>
+                        <FormField field="line_id" error={action.fieldError('line_id') ?? action.fieldError('pieces')} label={t('ldy.claim.item')}>
                             <Select onChange={(e) => setForm({ ...form, lineId: e.target.value, pieces: '1' })} value={form.lineId}>
                                 <option value="">{t('ldy.claim.wholeBag')}</option>{(chosen?.lines ?? []).map((l) => <option key={l.id} value={l.id}>{l.item_name} (×{l.quantity})</option>)}
                             </Select>
                         </FormField>
                         {form.lineId !== '' ? <FormField label={t('ldy.claim.pieces')}><Input inputMode="numeric" onChange={(e) => setForm({ ...form, pieces: e.target.value })} value={form.pieces} /></FormField> : null}
-                        <FormField error={action.fieldError('kind')} label={t('ldy.claim.kind')}><Select onChange={(e) => setForm({ ...form, kind: e.target.value })} value={form.kind}><option value="damage">{t('ldy.claim.kind.damage')}</option><option value="loss">{t('ldy.claim.kind.loss')}</option></Select></FormField>
-                        <FormField error={invalid ? t('ldy.claim.invalidAmount') : action.fieldError('claimed_minor')} label={t('ldy.claim.claimed')}><Input inputMode="decimal" onChange={(e) => setForm({ ...form, claimed: e.target.value })} required value={form.claimed} /></FormField>
-                        <div className="sm:col-span-2"><FormField error={action.fieldError('description')} label={t('ldy.claim.what')}><Textarea maxLength={300} onChange={(e) => setForm({ ...form, description: e.target.value })} required rows={2} value={form.description} /></FormField></div>
-                        <div className="sm:col-span-2"><FormField error={action.fieldError('photo')} label={t('ldy.claim.photoLabel')}><Input accept="image/jpeg,image/png" capture="environment" key={pickerKey} onChange={(e) => setFile(e.target.files?.[0] ?? null)} type="file" /></FormField></div>
+                        <FormField field="kind" error={action.fieldError('kind')} label={t('ldy.claim.kind')}><Select onChange={(e) => setForm({ ...form, kind: e.target.value })} value={form.kind}><option value="damage">{t('ldy.claim.kind.damage')}</option><option value="loss">{t('ldy.claim.kind.loss')}</option></Select></FormField>
+                        <FormField field="claimed_minor" error={invalid ? t('ldy.claim.invalidAmount') : action.fieldError('claimed_minor')} label={t('ldy.claim.claimed')}><Input inputMode="decimal" onChange={(e) => setForm({ ...form, claimed: e.target.value })} required value={form.claimed} /></FormField>
+                        <div className="sm:col-span-2"><FormField field="description" error={action.fieldError('description')} label={t('ldy.claim.what')}><Textarea maxLength={300} onChange={(e) => setForm({ ...form, description: e.target.value })} required rows={2} value={form.description} /></FormField></div>
+                        <div className="sm:col-span-2"><FormField field="photo" error={action.fieldError('photo')} label={t('ldy.claim.photoLabel')}><Input accept="image/jpeg,image/png" capture="environment" key={pickerKey} onChange={(e) => setFile(e.target.files?.[0] ?? null)} type="file" /></FormField></div>
                         <div className="sm:col-span-2"><Button loading={action.busy} type="submit">{t('ldy.claim.record')}</Button></div>
                     </form>
                 </section>
@@ -161,8 +161,8 @@ export default function LaundryClaimsPage({ order, overview, status }: { order: 
                     <h2 className="text-lg font-semibold" id="claim-cap-h">{t('ldy.claim.cap')}</h2>
                     <p className="text-sm text-muted-foreground">{t('ldy.claim.capHint')}</p>
                     <div className="flex flex-wrap items-end gap-2">
-                        <FormField error={action.fieldError('cap_multiple')} label={t('ldy.claim.capMultiple')}><Input inputMode="numeric" onChange={(e) => setCap({ ...cap, multiple: e.target.value })} value={cap.multiple} /></FormField>
-                        <FormField error={action.fieldError('reason')} label={t('fo.folio.reason')}><Input maxLength={300} onChange={(e) => setCap({ ...cap, reason: e.target.value })} value={cap.reason} /></FormField>
+                        <FormField field="cap_multiple" error={action.fieldError('cap_multiple')} label={t('ldy.claim.capMultiple')}><Input inputMode="numeric" onChange={(e) => setCap({ ...cap, multiple: e.target.value })} value={cap.multiple} /></FormField>
+                        <FormField field="reason" error={action.fieldError('reason')} label={t('fo.folio.reason')}><Input maxLength={300} onChange={(e) => setCap({ ...cap, reason: e.target.value })} value={cap.reason} /></FormField>
                         <Button disabled={action.busy || cap.reason.trim() === ''} onClick={() => void saveCap()} type="button" variant="outline">{t('ldy.claim.capSave')}</Button>
                     </div>
                 </section>
@@ -182,8 +182,8 @@ export default function LaundryClaimsPage({ order, overview, status }: { order: 
                 {deciding !== null && (
                     <div className="flex flex-col gap-3">
                         {action.error !== null ? <ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /> : null}
-                        {deciding.mode === 'approve' ? <FormField error={invalid ? t('ldy.claim.invalidAmount') : action.fieldError('approved_minor')} hint={deciding.claim.cap_minor === null ? t('ldy.claim.claimedWas', { amount: money(deciding.claim.claimed_minor) }) : t('ldy.claim.claimedCap', { amount: money(deciding.claim.claimed_minor), cap: money(deciding.claim.cap_minor) })} label={t('ldy.claim.approvedAmount')}><Input inputMode="decimal" onChange={(e) => setDeciding({ ...deciding, amount: e.target.value })} value={deciding.amount} /></FormField> : null}
-                        <FormField error={action.fieldError('note')} label={deciding.mode === 'reject' ? t('ldy.claim.rejectReason') : t('ldy.claim.note2')}><Input maxLength={300} onChange={(e) => setDeciding({ ...deciding, note: e.target.value })} value={deciding.note} /></FormField>
+                        {deciding.mode === 'approve' ? <FormField field="approved_minor" error={invalid ? t('ldy.claim.invalidAmount') : action.fieldError('approved_minor')} hint={deciding.claim.cap_minor === null ? t('ldy.claim.claimedWas', { amount: money(deciding.claim.claimed_minor) }) : t('ldy.claim.claimedCap', { amount: money(deciding.claim.claimed_minor), cap: money(deciding.claim.cap_minor) })} label={t('ldy.claim.approvedAmount')}><Input inputMode="decimal" onChange={(e) => setDeciding({ ...deciding, amount: e.target.value })} value={deciding.amount} /></FormField> : null}
+                        <FormField field="note" error={action.fieldError('note')} label={deciding.mode === 'reject' ? t('ldy.claim.rejectReason') : t('ldy.claim.note2')}><Input maxLength={300} onChange={(e) => setDeciding({ ...deciding, note: e.target.value })} value={deciding.note} /></FormField>
                     </div>
                 )}
             </ConfirmDialog>

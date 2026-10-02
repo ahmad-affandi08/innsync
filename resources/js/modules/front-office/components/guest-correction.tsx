@@ -105,14 +105,14 @@ export function GuestCorrections({ corrections, guest, stayId }: { corrections: 
                         {FIELDS.map((f) => {
                             const locked = (CRITICAL.includes(f) || f === 'address') && !identityOk;
                             return (
-                                <FormField error={action.fieldError(f) ?? action.fieldError('changes')} key={f} label={label(f)}>
+                                <FormField field="changes" error={action.fieldError(f) ?? action.fieldError('changes')} key={f} label={label(f)}>
                                     {f === 'id_type'
                                         ? <Select disabled={locked} onChange={(e) => setForm({ ...form, [f]: e.target.value })} value={form[f]}>{ID_TYPES.map((x) => <option key={x} value={x}>{t(`fo.checkin.idType.${x}` as 'fo.checkin.idType.ktp')}</option>)}</Select>
                                         : <Input disabled={locked} maxLength={f === 'address' ? 500 : 150} onChange={(e) => setForm({ ...form, [f]: f === 'nationality' ? e.target.value.toUpperCase() : e.target.value })} type={f === 'id_valid_until' ? 'date' : 'text'} value={locked && f !== 'address' ? current(f) : form[f]} />}
                                 </FormField>
                             );
                         })}
-                        <FormField error={action.fieldError('reason')} label={t('fo.corr.reason')}><Input maxLength={300} onChange={(e) => setReason(e.target.value)} value={reason} /></FormField>
+                        <FormField field="reason" error={action.fieldError('reason')} label={t('fo.corr.reason')}><Input maxLength={300} onChange={(e) => setReason(e.target.value)} value={reason} /></FormField>
                         {critical && (needsApproval || approved !== undefined || pending !== undefined) ? <Alert title={approved !== undefined ? t('fo.corr.approved') : pending !== undefined ? t('fo.corr.requested') : t('fo.corr.approvalNeeded')} tone={approved !== undefined ? 'success' : 'warning'} /> : null}
                     </div>
                 )}

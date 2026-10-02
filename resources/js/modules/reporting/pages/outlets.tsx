@@ -73,9 +73,9 @@ export default function OutletsPage({ overview }: { overview: Overview }) {
             <section aria-labelledby="outlet-add-h" className="flex flex-col gap-3 border-t border-border pt-4">
                 <h2 className="text-lg font-semibold" id="outlet-add-h">{t('rpt.outlets.add')}</h2>
                 <form className="grid gap-3 sm:grid-cols-4" onSubmit={(e) => { e.preventDefault(); void create(); }}>
-                    <FormField error={action.fieldError('code')} label={t('rpt.outlets.code')}><Input maxLength={20} onChange={(e) => setForm({ ...form, code: e.target.value })} required value={form.code} /></FormField>
-                    <FormField error={action.fieldError('name')} label={t('rpt.outlets.name')}><Input maxLength={60} onChange={(e) => setForm({ ...form, name: e.target.value })} required value={form.name} /></FormField>
-                    <FormField error={action.fieldError('reason')} label={t('rpt.outlets.reason')}><Input maxLength={300} onChange={(e) => setForm({ ...form, reason: e.target.value })} required value={form.reason} /></FormField>
+                    <FormField field="code" error={action.fieldError('code')} label={t('rpt.outlets.code')}><Input maxLength={20} onChange={(e) => setForm({ ...form, code: e.target.value })} required value={form.code} /></FormField>
+                    <FormField field="name" error={action.fieldError('name')} label={t('rpt.outlets.name')}><Input maxLength={60} onChange={(e) => setForm({ ...form, name: e.target.value })} required value={form.name} /></FormField>
+                    <FormField field="reason" error={action.fieldError('reason')} label={t('rpt.outlets.reason')}><Input maxLength={300} onChange={(e) => setForm({ ...form, reason: e.target.value })} required value={form.reason} /></FormField>
                     <div className="flex items-end"><Button loading={action.busy} type="submit">{t('rpt.outlets.add')}</Button></div>
                 </form>
             </section>

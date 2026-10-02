@@ -44,8 +44,8 @@ export default function LogbookPage({ log }: Props) {
             {log.may_write ? (
                 <section aria-labelledby="write-h" className="flex max-w-xl flex-col gap-3">
                     <h2 className="text-lg font-semibold" id="write-h">{t('fo.log.write')}</h2>
-                    <FormField error={action.fieldError('shift')} label={t('fo.log.shift')}><Select onChange={(e) => setForm({ ...form, shift: e.target.value })} value={form.shift}>{log.shifts.map((s) => <option key={s} value={s}>{t(`fo.log.shift.${s}` as 'fo.log.shift.night')}</option>)}</Select></FormField>
-                    <FormField error={action.fieldError('body')} label={t('fo.log.body')}><Textarea maxLength={2000} onChange={(e) => setForm({ ...form, body: e.target.value })} rows={5} value={form.body} /></FormField>
+                    <FormField field="shift" error={action.fieldError('shift')} label={t('fo.log.shift')}><Select onChange={(e) => setForm({ ...form, shift: e.target.value })} value={form.shift}>{log.shifts.map((s) => <option key={s} value={s}>{t(`fo.log.shift.${s}` as 'fo.log.shift.night')}</option>)}</Select></FormField>
+                    <FormField field="body" error={action.fieldError('body')} label={t('fo.log.body')}><Textarea maxLength={2000} onChange={(e) => setForm({ ...form, body: e.target.value })} rows={5} value={form.body} /></FormField>
                     <label className="flex items-center gap-2 text-sm"><input checked={form.important} onChange={(e) => setForm({ ...form, important: e.target.checked })} type="checkbox" />{t('fo.log.important')}</label>
                     <div><Button loading={action.busy} onClick={() => void save()} type="button">{t('fo.log.save')}</Button></div>
                 </section>

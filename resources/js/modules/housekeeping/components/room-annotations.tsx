@@ -57,10 +57,10 @@ export function FlagsPanel({ busy, flags, kinds, onEnd, onRaise }: { busy: boole
                     </PopoverTrigger>
                     <PopoverContent align="start" className="w-80">
                         <div className="flex flex-col gap-3">
-                            <FormField label={t('hk.flag.kind')}>
+                            <FormField field="kind" label={t('hk.flag.kind')}>
                                 <Select onChange={(e) => setKind(e.target.value)} value={kind}>{kinds.map((k) => <option key={k} value={k}>{t(`hk.flag.kind.${k}` as 'hk.flag.kind.dnd')}</option>)}</Select>
                             </FormField>
-                            <FormField label={t('hk.flag.note')}>
+                            <FormField field="note" label={t('hk.flag.note')}>
                                 <Input maxLength={200} onChange={(e) => setNote(e.target.value)} value={note} />
                             </FormField>
                             <Button disabled={busy} onClick={() => { onRaise(kind, note); setNote(''); setOpen(false); }} size="sm" type="button">{t('hk.flag.save')}</Button>

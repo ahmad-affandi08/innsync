@@ -167,28 +167,28 @@ export default function RoomCatalogPage({ rooms, types }: { rooms: Room[]; types
                     <div className="flex flex-col gap-3">
                         {action.error !== null ? <ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /> : null}
                         {typeForm.id === null && (
-                            <FormField error={action.fieldError('code')} hint={t('property.types.codeHint')} label={t('property.types.code')}>
+                            <FormField field="code" error={action.fieldError('code')} hint={t('property.types.codeHint')} label={t('property.types.code')}>
                                 <Input maxLength={20} onChange={(e) => setTypeForm({ ...typeForm, code: e.target.value })} value={typeForm.code} />
                             </FormField>
                         )}
-                        <FormField error={action.fieldError('name')} label={t('property.types.name')}>
+                        <FormField field="name" error={action.fieldError('name')} label={t('property.types.name')}>
                             <Input maxLength={100} onChange={(e) => setTypeForm({ ...typeForm, name: e.target.value })} value={typeForm.name} />
                         </FormField>
-                        <FormField error={action.fieldError('description')} label={t('property.types.descriptionField')}>
+                        <FormField field="description" error={action.fieldError('description')} label={t('property.types.descriptionField')}>
                             <Textarea maxLength={500} onChange={(e) => setTypeForm({ ...typeForm, description: e.target.value })} value={typeForm.description} />
                         </FormField>
                         <div className="grid grid-cols-3 gap-3">
-                            <FormField error={action.fieldError('max_adults')} label={t('property.types.maxAdults')}>
+                            <FormField field="max_adults" error={action.fieldError('max_adults')} label={t('property.types.maxAdults')}>
                                 <Input inputMode="numeric" onChange={(e) => setTypeForm({ ...typeForm, maxAdults: e.target.value })} value={typeForm.maxAdults} />
                             </FormField>
-                            <FormField error={action.fieldError('max_children')} label={t('property.types.maxChildren')}>
+                            <FormField field="max_children" error={action.fieldError('max_children')} label={t('property.types.maxChildren')}>
                                 <Input inputMode="numeric" onChange={(e) => setTypeForm({ ...typeForm, maxChildren: e.target.value })} value={typeForm.maxChildren} />
                             </FormField>
                             <FormField label={t('property.types.sortOrder')}>
                                 <Input inputMode="numeric" onChange={(e) => setTypeForm({ ...typeForm, sortOrder: e.target.value })} value={typeForm.sortOrder} />
                             </FormField>
                         </div>
-                        <FormField error={action.fieldError('reason')} hint={t('property.field.reasonHint')} label={t('property.field.reason')}>
+                        <FormField field="reason" error={action.fieldError('reason')} hint={t('property.field.reasonHint')} label={t('property.field.reason')}>
                             <Input maxLength={500} onChange={(e) => setTypeForm({ ...typeForm, reason: e.target.value })} value={typeForm.reason} />
                         </FormField>
                     </div>
@@ -208,23 +208,23 @@ export default function RoomCatalogPage({ rooms, types }: { rooms: Room[]; types
                     <div className="flex flex-col gap-3">
                         {action.error !== null ? <ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /> : null}
                         {roomForm.id === null && (
-                            <FormField error={action.fieldError('number')} hint={t('property.rooms.numberHint')} label={t('property.rooms.number')}>
+                            <FormField field="number" error={action.fieldError('number')} hint={t('property.rooms.numberHint')} label={t('property.rooms.number')}>
                                 <Input maxLength={20} onChange={(e) => setRoomForm({ ...roomForm, number: e.target.value })} value={roomForm.number} />
                             </FormField>
                         )}
-                        <FormField error={action.fieldError('room_type_id')} label={t('property.rooms.type')}>
+                        <FormField field="room_type_id" error={action.fieldError('room_type_id')} label={t('property.rooms.type')}>
                             <Select onChange={(e) => setRoomForm({ ...roomForm, roomTypeId: e.target.value })} value={roomForm.roomTypeId}>
                                 <option value="">{t('property.rooms.chooseType')}</option>
                                 {types.filter((x) => x.is_active).map((x) => <option key={x.id} value={x.id}>{x.code} · {x.name}</option>)}
                             </Select>
                         </FormField>
-                        <FormField error={action.fieldError('floor')} label={t('property.rooms.floor')}>
+                        <FormField field="floor" error={action.fieldError('floor')} label={t('property.rooms.floor')}>
                             <Input maxLength={10} onChange={(e) => setRoomForm({ ...roomForm, floor: e.target.value })} value={roomForm.floor} />
                         </FormField>
-                        <FormField error={action.fieldError('building')} label={t('property.rooms.building')}>
+                        <FormField field="building" error={action.fieldError('building')} label={t('property.rooms.building')}>
                             <Input maxLength={40} onChange={(e) => setRoomForm({ ...roomForm, building: e.target.value })} value={roomForm.building} />
                         </FormField>
-                        <FormField error={action.fieldError('reason')} hint={t('property.field.reasonHint')} label={t('property.field.reason')}>
+                        <FormField field="reason" error={action.fieldError('reason')} hint={t('property.field.reasonHint')} label={t('property.field.reason')}>
                             <Input maxLength={500} onChange={(e) => setRoomForm({ ...roomForm, reason: e.target.value })} value={roomForm.reason} />
                         </FormField>
                     </div>
@@ -244,7 +244,7 @@ export default function RoomCatalogPage({ rooms, types }: { rooms: Room[]; types
             >
                 <div className="flex flex-col gap-3">
                     {action.error !== null ? <ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /> : null}
-                    <FormField error={action.fieldError('reason')} hint={t('property.field.reasonHint')} label={t('property.field.reason')}>
+                    <FormField field="reason" error={action.fieldError('reason')} hint={t('property.field.reasonHint')} label={t('property.field.reason')}>
                         <Input maxLength={500} onChange={(e) => setReason(e.target.value)} value={reason} />
                     </FormField>
                 </div>

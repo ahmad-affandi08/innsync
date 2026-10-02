@@ -130,7 +130,7 @@ export default function StayPage({ corrections, reservation, stay: s, time_fees:
                 ) : <p className="text-sm text-muted-foreground">{t('fo.stay.photoNone')}</p>}
                 {inHouse && (
                     <div className="flex flex-wrap items-end gap-2">
-                        <FormField error={action.fieldError('photo')} label={t('fo.stay.photoChoose')}><Input accept="image/jpeg,image/png" capture="environment" key={pickerKey} onChange={(e) => setFile(e.target.files?.[0] ?? null)} type="file" /></FormField>
+                        <FormField field="photo" error={action.fieldError('photo')} label={t('fo.stay.photoChoose')}><Input accept="image/jpeg,image/png" capture="environment" key={pickerKey} onChange={(e) => setFile(e.target.files?.[0] ?? null)} type="file" /></FormField>
                         <Button disabled={file === null} loading={action.busy} onClick={() => void upload()} type="button" variant="outline">{s.has_id_photo ? t('fo.stay.photoReplace') : t('fo.stay.photoUpload')}</Button>
                     </div>
                 )}
@@ -171,7 +171,7 @@ export default function StayPage({ corrections, reservation, stay: s, time_fees:
                 <div className="flex flex-col gap-3">
                     {action.error !== null && panel === 'move' ? <ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /> : null}
                     {options.length === 0 ? <p className="text-sm text-muted-foreground">{t('fo.stay.moveNone')}</p> : (
-                        <FormField error={action.fieldError('room_id')} label={t('fo.stay.moveTo')}>
+                        <FormField field="room_id" error={action.fieldError('room_id')} label={t('fo.stay.moveTo')}>
                             <Select onChange={(e) => setTarget(e.target.value)} value={target}>
                                 <option value="">{t('fo.stay.moveChoose')}</option>
                                 {options.map((o) => <option key={o.id} value={o.id}>{o.number} · {o.type}{o.floor !== null ? ` · ${o.floor}` : ''}</option>)}
@@ -179,7 +179,7 @@ export default function StayPage({ corrections, reservation, stay: s, time_fees:
                         </FormField>
                     )}
                     {target !== '' && options.find((o) => o.id === target)?.same_type === false ? <Alert title={t('fo.stay.moveOtherType')} tone="info" /> : null}
-                    <FormField error={action.fieldError('reason')} label={t('fo.stay.moveReason')}><Input maxLength={300} onChange={(e) => setReason(e.target.value)} value={reason} /></FormField>
+                    <FormField field="reason" error={action.fieldError('reason')} label={t('fo.stay.moveReason')}><Input maxLength={300} onChange={(e) => setReason(e.target.value)} value={reason} /></FormField>
                 </div>
             </ConfirmDialog>
 
@@ -196,7 +196,7 @@ export default function StayPage({ corrections, reservation, stay: s, time_fees:
                 <div className="flex flex-col gap-3">
                     {action.error !== null && panel === 'extend' ? <ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /> : null}
                     <div className="flex flex-wrap items-end gap-2">
-                        <FormField error={action.fieldError('departure')} label={t('fo.stay.extendDeparture')}><DatePicker min={s.expected_departure} onChange={(e) => { setDeparture(e.target.value); setQuote(null); }} value={departure} /></FormField>
+                        <FormField field="departure" error={action.fieldError('departure')} label={t('fo.stay.extendDeparture')}><DatePicker min={s.expected_departure} onChange={(e) => { setDeparture(e.target.value); setQuote(null); }} value={departure} /></FormField>
                         <Button disabled={action.busy || departure === ''} onClick={() => void checkPrice()} size="sm" type="button" variant="outline">{t('fo.stay.extendQuote')}</Button>
                     </div>
                     {quote !== null && (
@@ -208,7 +208,7 @@ export default function StayPage({ corrections, reservation, stay: s, time_fees:
                             {quote.violations.length > 0 ? <Alert title={t('fo.stay.extendNotBookable', { codes: quote.violations.join(', ') })} tone="warning" /> : null}
                         </div>
                     )}
-                    <FormField error={action.fieldError('reason')} label={t('fo.stay.extendReason')}><Input maxLength={300} onChange={(e) => setReason(e.target.value)} value={reason} /></FormField>
+                    <FormField field="reason" error={action.fieldError('reason')} label={t('fo.stay.extendReason')}><Input maxLength={300} onChange={(e) => setReason(e.target.value)} value={reason} /></FormField>
                 </div>
             </ConfirmDialog>
 

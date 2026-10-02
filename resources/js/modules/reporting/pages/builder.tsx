@@ -100,9 +100,9 @@ export default function BuilderPage({ catalogue }: { catalogue: Catalogue }) {
 
             <form className="flex flex-col gap-4" onSubmit={(e) => { e.preventDefault(); void run(); }}>
                 <div className="grid gap-3 sm:grid-cols-4">
-                    <FormField error={action.fieldError('dataset')} label={t('rpt.builder.dataset')}><Select onChange={(e) => pick(e.target.value)} value={dataset}>{names.map((n) => <option key={n} value={n}>{t(`rpt.builder.ds.${n}` as 'rpt.builder.ds.reservations')}</option>)}</Select></FormField>
-                    <FormField error={action.fieldError('from')} hint={t(`rpt.builder.range.${set?.range ?? 'arrival'}` as 'rpt.builder.range.arrival')} label={t('rpt.period.from')}><DatePicker onChange={(e) => setRange({ ...range, from: e.target.value })} value={range.from} /></FormField>
-                    <FormField error={action.fieldError('to')} label={t('rpt.period.to')}><DatePicker onChange={(e) => setRange({ ...range, to: e.target.value })} value={range.to} /></FormField>
+                    <FormField field="dataset" error={action.fieldError('dataset')} label={t('rpt.builder.dataset')}><Select onChange={(e) => pick(e.target.value)} value={dataset}>{names.map((n) => <option key={n} value={n}>{t(`rpt.builder.ds.${n}` as 'rpt.builder.ds.reservations')}</option>)}</Select></FormField>
+                    <FormField field="from" error={action.fieldError('from')} hint={t(`rpt.builder.range.${set?.range ?? 'arrival'}` as 'rpt.builder.range.arrival')} label={t('rpt.period.from')}><DatePicker onChange={(e) => setRange({ ...range, from: e.target.value })} value={range.from} /></FormField>
+                    <FormField field="to" error={action.fieldError('to')} label={t('rpt.period.to')}><DatePicker onChange={(e) => setRange({ ...range, to: e.target.value })} value={range.to} /></FormField>
                     <div />
                     {set !== undefined ? Object.entries(set.filters).map(([name, allowed]) => (
                         <FormField key={name} label={`${t('rpt.builder.filter')}: ${t(`rpt.builder.col.${name}` as 'rpt.builder.col.status')}`}>

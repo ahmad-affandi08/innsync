@@ -140,18 +140,18 @@ export default function ParLevelsPage({ overview }: { overview: Overview }) {
                     <h2 className="text-lg font-semibold" id="par-form-h">{t('hk.par.set')}</h2>
                     <Alert title={t('hk.par.setNote')} tone="info" />
                     <form className="grid gap-3 sm:grid-cols-3" onSubmit={(e) => { e.preventDefault(); void save(); }}>
-                        <FormField error={action.fieldError('item_id')} label={t('hk.par.item')}><Select onChange={(e) => setForm({ ...form, itemId: e.target.value })} value={form.itemId}>{overview.items.map((i) => <option key={i.id} value={i.id}>{i.code} · {i.name}</option>)}</Select></FormField>
-                        <FormField error={action.fieldError('scope_kind')} label={t('hk.par.scope')}>
+                        <FormField field="item_id" error={action.fieldError('item_id')} label={t('hk.par.item')}><Select onChange={(e) => setForm({ ...form, itemId: e.target.value })} value={form.itemId}>{overview.items.map((i) => <option key={i.id} value={i.id}>{i.code} · {i.name}</option>)}</Select></FormField>
+                        <FormField field="scope_kind" error={action.fieldError('scope_kind')} label={t('hk.par.scope')}>
                             <Select onChange={(e) => setForm({ ...form, kind: e.target.value, ref: e.target.value === 'area' ? '' : (overview.room_types[0]?.id ?? ''), use: e.target.value === 'area' ? '0' : form.use })} value={form.kind}><option value="room_type">{t('hk.par.roomType')}</option><option value="area">{t('hk.par.area')}</option></Select>
                         </FormField>
                         {form.kind === 'room_type' ? (
-                            <FormField error={action.fieldError('scope_ref')} label={t('hk.par.roomType')}><Select onChange={(e) => setForm({ ...form, ref: e.target.value })} value={form.ref}>{overview.room_types.map((r) => <option key={r.id} value={r.id}>{r.code} · {r.name} ({r.rooms})</option>)}</Select></FormField>
+                            <FormField field="scope_ref" error={action.fieldError('scope_ref')} label={t('hk.par.roomType')}><Select onChange={(e) => setForm({ ...form, ref: e.target.value })} value={form.ref}>{overview.room_types.map((r) => <option key={r.id} value={r.id}>{r.code} · {r.name} ({r.rooms})</option>)}</Select></FormField>
                         ) : (
-                            <FormField error={action.fieldError('scope_ref')} hint={overview.areas.length === 0 ? undefined : overview.areas.join(', ')} label={t('hk.par.area')}><Input maxLength={40} onChange={(e) => setForm({ ...form, ref: e.target.value })} value={form.ref} /></FormField>
+                            <FormField field="scope_ref" error={action.fieldError('scope_ref')} hint={overview.areas.length === 0 ? undefined : overview.areas.join(', ')} label={t('hk.par.area')}><Input maxLength={40} onChange={(e) => setForm({ ...form, ref: e.target.value })} value={form.ref} /></FormField>
                         )}
-                        <FormField error={action.fieldError('par_quantity')} hint={form.kind === 'room_type' ? t('hk.par.parHint') : t('hk.par.parAreaHint')} label={t('hk.par.par')}><Input inputMode="numeric" onChange={(e) => setForm({ ...form, par: e.target.value })} required value={form.par} /></FormField>
-                        {form.kind === 'room_type' ? <FormField error={action.fieldError('use_quantity')} hint={t('hk.par.useHint')} label={t('hk.par.standard')}><Input inputMode="numeric" onChange={(e) => setForm({ ...form, use: e.target.value })} required value={form.use} /></FormField> : <div />}
-                        <FormField error={action.fieldError('reason')} label={t('fo.folio.reason')}><Input maxLength={300} onChange={(e) => setForm({ ...form, reason: e.target.value })} required value={form.reason} /></FormField>
+                        <FormField field="par_quantity" error={action.fieldError('par_quantity')} hint={form.kind === 'room_type' ? t('hk.par.parHint') : t('hk.par.parAreaHint')} label={t('hk.par.par')}><Input inputMode="numeric" onChange={(e) => setForm({ ...form, par: e.target.value })} required value={form.par} /></FormField>
+                        {form.kind === 'room_type' ? <FormField field="use_quantity" error={action.fieldError('use_quantity')} hint={t('hk.par.useHint')} label={t('hk.par.standard')}><Input inputMode="numeric" onChange={(e) => setForm({ ...form, use: e.target.value })} required value={form.use} /></FormField> : <div />}
+                        <FormField field="reason" error={action.fieldError('reason')} label={t('fo.folio.reason')}><Input maxLength={300} onChange={(e) => setForm({ ...form, reason: e.target.value })} required value={form.reason} /></FormField>
                         <div className="sm:col-span-3"><Button loading={action.busy} type="submit">{t('hk.par.save')}</Button></div>
                     </form>
                 </section>

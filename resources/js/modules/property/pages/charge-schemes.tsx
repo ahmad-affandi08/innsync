@@ -68,13 +68,13 @@ export default function ChargeSchemesPage({ schemes, scope, scopes }: { schemes:
                 {form !== null && (
                     <div className="flex flex-col gap-3">
                         {action.error !== null ? <ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /> : null}
-                        <FormField error={action.fieldError('effective_from')} label={t('tax.effectiveFrom')}><DatePicker onChange={(e) => setForm({ ...form, from: e.target.value })} value={form.from} /></FormField>
+                        <FormField field="effective_from" error={action.fieldError('effective_from')} label={t('tax.effectiveFrom')}><DatePicker onChange={(e) => setForm({ ...form, from: e.target.value })} value={form.from} /></FormField>
                         <div className="grid grid-cols-2 gap-3">
-                            <FormField error={action.fieldError('service_charge_rate')} hint={t('tax.rateHint')} label={t('tax.serviceCharge')}><Input inputMode="decimal" onChange={(e) => setForm({ ...form, sc: e.target.value })} value={form.sc} /></FormField>
-                            <FormField error={action.fieldError('tax_rate')} hint={t('tax.rateHint')} label={t('tax.rate')}><Input inputMode="decimal" onChange={(e) => setForm({ ...form, tax: e.target.value })} value={form.tax} /></FormField>
+                            <FormField field="service_charge_rate" error={action.fieldError('service_charge_rate')} hint={t('tax.rateHint')} label={t('tax.serviceCharge')}><Input inputMode="decimal" onChange={(e) => setForm({ ...form, sc: e.target.value })} value={form.sc} /></FormField>
+                            <FormField field="tax_rate" error={action.fieldError('tax_rate')} hint={t('tax.rateHint')} label={t('tax.rate')}><Input inputMode="decimal" onChange={(e) => setForm({ ...form, tax: e.target.value })} value={form.tax} /></FormField>
                         </div>
                         <label className="flex items-center gap-2 text-sm"><input checked={form.onSc} onChange={(e) => setForm({ ...form, onSc: e.target.checked })} type="checkbox" />{t('tax.onServiceCharge')}</label>
-                        <FormField error={action.fieldError('reason')} hint={t('property.field.reasonHint')} label={t('property.field.reason')}><Input maxLength={500} onChange={(e) => setForm({ ...form, reason: e.target.value })} value={form.reason} /></FormField>
+                        <FormField field="reason" error={action.fieldError('reason')} hint={t('property.field.reasonHint')} label={t('property.field.reason')}><Input maxLength={500} onChange={(e) => setForm({ ...form, reason: e.target.value })} value={form.reason} /></FormField>
                     </div>
                 )}
             </ConfirmDialog>

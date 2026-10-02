@@ -105,30 +105,30 @@ export default function BookingPoliciesPage({ business_date, currency, plans, po
                         {action.error !== null ? <ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /> : null}
                         {invalid ? <p className="text-sm text-danger">{t('policy.invalid')}</p> : null}
                         <div className="grid grid-cols-2 gap-3">
-                            <FormField error={action.fieldError('rate_plan_id')} label={t('policy.scope.plan')}>
+                            <FormField field="rate_plan_id" error={action.fieldError('rate_plan_id')} label={t('policy.scope.plan')}>
                                 <Select onChange={(e) => setForm({ ...form, plan: e.target.value })} value={form.plan}><option value="">{t('policy.scope.all')}</option>{plans.map((p) => <option key={p.id} value={p.id}>{p.code}</option>)}</Select>
                             </FormField>
-                            <FormField error={action.fieldError('source')} label={t('policy.scope.source')}>
+                            <FormField field="source" error={action.fieldError('source')} label={t('policy.scope.source')}>
                                 <Select onChange={(e) => setForm({ ...form, source: e.target.value })} value={form.source}><option value="">{t('policy.scope.all')}</option>{sources.map((s) => <option key={s} value={s}>{t(`fo.source.${s}` as 'fo.source.direct')}</option>)}</Select>
                             </FormField>
                         </div>
-                        <FormField error={action.fieldError('effective_from')} label={t('policy.effectiveFrom')}><DatePicker min={business_date} onChange={(e) => setForm({ ...form, from: e.target.value })} value={form.from} /></FormField>
+                        <FormField field="effective_from" error={action.fieldError('effective_from')} label={t('policy.effectiveFrom')}><DatePicker min={business_date} onChange={(e) => setForm({ ...form, from: e.target.value })} value={form.from} /></FormField>
                         <label className="flex items-center gap-2 text-sm"><input checked={form.guarantee} onChange={(e) => setForm({ ...form, guarantee: e.target.checked })} type="checkbox" />{t('policy.guarantee')}</label>
-                        <FormField error={action.fieldError('deposit_basis')} label={t('policy.depositBasis')}>
+                        <FormField field="deposit_basis" error={action.fieldError('deposit_basis')} label={t('policy.depositBasis')}>
                             <Select onChange={(e) => setForm({ ...form, basis: e.target.value })} value={form.basis}>{BASES.map((b) => <option key={b} value={b}>{t(`policy.basis.${b}` as 'policy.basis.none')}</option>)}</Select>
                         </FormField>
                         {valueField(form.basis, form.depositValue, (v) => setForm({ ...form, depositValue: v }), t('policy.depositBasis'), action.fieldError('deposit_value'))}
                         {form.basis !== 'none' ? <FormField label={t('policy.depositDue')}><Input min={0} onChange={(e) => setForm({ ...form, dueDays: e.target.value })} type="number" value={form.dueDays} /></FormField> : null}
                         <FormField label={t('policy.freeDays')}><Input min={0} onChange={(e) => setForm({ ...form, freeDays: e.target.value })} type="number" value={form.freeDays} /></FormField>
-                        <FormField error={action.fieldError('cancel_penalty_kind')} label={t('policy.cancelPenalty')}>
+                        <FormField field="cancel_penalty_kind" error={action.fieldError('cancel_penalty_kind')} label={t('policy.cancelPenalty')}>
                             <Select onChange={(e) => setForm({ ...form, cancelKind: e.target.value })} value={form.cancelKind}>{PENALTIES.map((b) => <option key={b} value={b}>{t(`policy.basis.${b}` as 'policy.basis.none')}</option>)}</Select>
                         </FormField>
                         {valueField(form.cancelKind, form.cancelValue, (v) => setForm({ ...form, cancelValue: v }), t('policy.cancelPenalty'), action.fieldError('cancel_penalty_value'))}
-                        <FormField error={action.fieldError('noshow_penalty_kind')} label={t('policy.noshowPenalty')}>
+                        <FormField field="noshow_penalty_kind" error={action.fieldError('noshow_penalty_kind')} label={t('policy.noshowPenalty')}>
                             <Select onChange={(e) => setForm({ ...form, noshowKind: e.target.value })} value={form.noshowKind}>{PENALTIES.map((b) => <option key={b} value={b}>{t(`policy.basis.${b}` as 'policy.basis.none')}</option>)}</Select>
                         </FormField>
                         {valueField(form.noshowKind, form.noshowValue, (v) => setForm({ ...form, noshowValue: v }), t('policy.noshowPenalty'), action.fieldError('noshow_penalty_value'))}
-                        <FormField error={action.fieldError('reason')} label={t('policy.reason')}><Input maxLength={300} onChange={(e) => setForm({ ...form, reason: e.target.value })} value={form.reason} /></FormField>
+                        <FormField field="reason" error={action.fieldError('reason')} label={t('policy.reason')}><Input maxLength={300} onChange={(e) => setForm({ ...form, reason: e.target.value })} value={form.reason} /></FormField>
                     </div>
                 )}
             </ConfirmDialog>

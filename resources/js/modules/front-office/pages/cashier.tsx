@@ -40,7 +40,7 @@ export default function CashierPage({ cashier: c }: Props) {
                 <form className="flex max-w-md flex-col gap-3" onSubmit={(e) => { e.preventDefault(); void open(); }}>
                     <p className="text-sm text-muted-foreground">{t('fo.cash.none')}</p>
                     {action.error !== null ? <ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /> : null}
-                    <FormField error={floatError ? t('fo.cash.invalidAmount') : action.fieldError('opening_float')} hint={t('fo.cash.floatHint')} label={t('fo.cash.float')}><Input inputMode="decimal" onChange={(e) => setFloat(e.target.value)} value={float} /></FormField>
+                    <FormField field="opening_float" error={floatError ? t('fo.cash.invalidAmount') : action.fieldError('opening_float')} hint={t('fo.cash.floatHint')} label={t('fo.cash.float')}><Input inputMode="decimal" onChange={(e) => setFloat(e.target.value)} value={float} /></FormField>
                     <div><Button loading={action.busy} type="submit">{t('fo.cash.open')}</Button></div>
                 </form>
             ) : (

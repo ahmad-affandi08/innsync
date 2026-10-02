@@ -79,16 +79,16 @@ export default function CheckInPage({ preselect, reservation: r, rooms, stay }: 
             ) : !ready ? <Alert title={t('fo.checkin.notReady')} tone="warning" /> : (
                 <form className="grid gap-4 sm:grid-cols-2" onSubmit={(e) => { e.preventDefault(); void submit(); }}>
                     {action.error !== null ? <div className="sm:col-span-2"><ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /></div> : null}
-                    <FormField error={action.fieldError('room_id')} hint={rooms.length === 0 ? t('fo.checkin.noRooms') : undefined} label={t('fo.checkin.room')}>
+                    <FormField field="room_id" error={action.fieldError('room_id')} hint={rooms.length === 0 ? t('fo.checkin.noRooms') : undefined} label={t('fo.checkin.room')}>
                         <Select onChange={(e) => set({ roomId: e.target.value })} value={form.roomId}>
                             {rooms.map((room) => <option disabled={!room.ready} key={room.id} value={room.id}>{room.number}{room.floor !== null ? ` · ${room.floor}` : ''}{room.ready ? '' : ` (${t('fo.checkin.notReady')})`}</option>)}
                         </Select>
                     </FormField>
-                    <FormField error={action.fieldError('full_name')} label={t('fo.checkin.fullName')}><Input autoComplete="off" maxLength={150} onChange={(e) => set({ fullName: e.target.value })} required value={form.fullName} /></FormField>
-                    <FormField error={action.fieldError('id_type')} label={t('fo.checkin.idType')}>
+                    <FormField field="full_name" error={action.fieldError('full_name')} label={t('fo.checkin.fullName')}><Input autoComplete="off" maxLength={150} onChange={(e) => set({ fullName: e.target.value })} required value={form.fullName} /></FormField>
+                    <FormField field="id_type" error={action.fieldError('id_type')} label={t('fo.checkin.idType')}>
                         <Select onChange={(e) => set({ idType: e.target.value })} value={form.idType}>{ID_TYPES.map((x) => <option key={x} value={x}>{t(`fo.checkin.idType.${x}`)}</option>)}</Select>
                     </FormField>
-                    <FormField error={action.fieldError('id_number')} label={t('fo.checkin.idNumber')}><Input autoComplete="off" maxLength={40} onChange={(e) => { set({ idNumber: e.target.value }); setMatches(null); }} required value={form.idNumber} /></FormField>
+                    <FormField field="id_number" error={action.fieldError('id_number')} label={t('fo.checkin.idNumber')}><Input autoComplete="off" maxLength={40} onChange={(e) => { set({ idNumber: e.target.value }); setMatches(null); }} required value={form.idNumber} /></FormField>
                     <div className="flex flex-col gap-2 sm:col-span-2" aria-live="polite">
                         <div><Button disabled={lookup.busy || form.idNumber.trim() === ''} onClick={() => void find()} size="sm" type="button" variant="outline">{t('fo.checkin.lookup')}</Button></div>
                         {lookup.error !== null ? <ErrorState {...errorCopy} error={lookup.error} onRefresh={() => window.location.reload()} /> : null}
@@ -100,14 +100,14 @@ export default function CheckInPage({ preselect, reservation: r, rooms, stay }: 
                             </div>
                         ))}
                     </div>
-                    <FormField error={action.fieldError('id_valid_until')} label={t('fo.checkin.idValidUntil')}><DatePicker onChange={(e) => set({ idValidUntil: e.target.value })} value={form.idValidUntil} /></FormField>
-                    <FormField error={action.fieldError('nationality')} label={t('fo.checkin.nationality')}><Input maxLength={2} onChange={(e) => set({ nationality: e.target.value })} required value={form.nationality} /></FormField>
-                    <FormField error={action.fieldError('visa_number')} label={t('fo.checkin.visa')}><Input autoComplete="off" maxLength={40} onChange={(e) => set({ visa: e.target.value })} value={form.visa} /></FormField>
+                    <FormField field="id_valid_until" error={action.fieldError('id_valid_until')} label={t('fo.checkin.idValidUntil')}><DatePicker onChange={(e) => set({ idValidUntil: e.target.value })} value={form.idValidUntil} /></FormField>
+                    <FormField field="nationality" error={action.fieldError('nationality')} label={t('fo.checkin.nationality')}><Input maxLength={2} onChange={(e) => set({ nationality: e.target.value })} required value={form.nationality} /></FormField>
+                    <FormField field="visa_number" error={action.fieldError('visa_number')} label={t('fo.checkin.visa')}><Input autoComplete="off" maxLength={40} onChange={(e) => set({ visa: e.target.value })} value={form.visa} /></FormField>
                     <div className="grid grid-cols-2 gap-4">
-                        <FormField error={action.fieldError('adults')} label={t('fo.checkin.adults')}><Input min={1} onChange={(e) => set({ adults: e.target.value })} type="number" value={form.adults} /></FormField>
-                        <FormField error={action.fieldError('children')} label={t('fo.checkin.children')}><Input min={0} onChange={(e) => set({ children: e.target.value })} type="number" value={form.children} /></FormField>
+                        <FormField field="adults" error={action.fieldError('adults')} label={t('fo.checkin.adults')}><Input min={1} onChange={(e) => set({ adults: e.target.value })} type="number" value={form.adults} /></FormField>
+                        <FormField field="children" error={action.fieldError('children')} label={t('fo.checkin.children')}><Input min={0} onChange={(e) => set({ children: e.target.value })} type="number" value={form.children} /></FormField>
                     </div>
-                    <div className="sm:col-span-2"><FormField error={action.fieldError('address')} label={t('fo.checkin.address')}><Textarea maxLength={500} onChange={(e) => set({ address: e.target.value })} required rows={2} value={form.address} /></FormField></div>
+                    <div className="sm:col-span-2"><FormField field="address" error={action.fieldError('address')} label={t('fo.checkin.address')}><Textarea maxLength={500} onChange={(e) => set({ address: e.target.value })} required rows={2} value={form.address} /></FormField></div>
                     <div className="sm:col-span-2"><Button disabled={form.roomId === ''} loading={action.busy} type="submit">{t('fo.checkin.submit')}</Button></div>
                 </form>
             )}

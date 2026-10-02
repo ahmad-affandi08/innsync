@@ -53,7 +53,7 @@ export function StayTimeFeesPanel({ currency, fees }: { currency: string; fees: 
                         )}
                         {waiving?.kind === i.kind && (
                             <div className="flex flex-wrap items-end gap-2">
-                                <FormField error={action.fieldError('reason')} label={t('fo.timefee.reason')}><Input maxLength={300} onChange={(e) => setWaiving({ ...waiving, reason: e.target.value })} value={waiving.reason} /></FormField>
+                                <FormField field="reason" error={action.fieldError('reason')} label={t('fo.timefee.reason')}><Input maxLength={300} onChange={(e) => setWaiving({ ...waiving, reason: e.target.value })} value={waiving.reason} /></FormField>
                                 <Button disabled={waiving.reason.trim() === ''} loading={action.busy} onClick={() => void decide(i.kind, 'waive', waiving.reason.trim())} size="sm" type="button">{t('fo.timefee.confirmWaive')}</Button>
                             </div>
                         )}

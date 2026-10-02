@@ -84,7 +84,7 @@ export default function ExportsPage({ overview }: { overview: Overview }) {
                 <section aria-labelledby="exp-new-h" className="flex max-w-3xl flex-col gap-3 border-t border-border pt-4">
                     <h2 className="text-lg font-semibold" id="exp-new-h">{t('rpt.exports.new')}</h2>
                     <form className="grid gap-3 sm:grid-cols-2" onSubmit={(e) => { e.preventDefault(); void submit(); }}>
-                        <FormField error={action.fieldError('report')} label={t('rpt.exports.report')}><Select onChange={(e) => setForm({ ...form, report: e.target.value })} value={form.report}>{overview.reports.map((r) => <option key={r} value={r}>{t(`rpt.report.${r}` as 'rpt.report.flash')}</option>)}</Select></FormField>
+                        <FormField field="report" error={action.fieldError('report')} label={t('rpt.exports.report')}><Select onChange={(e) => setForm({ ...form, report: e.target.value })} value={form.report}>{overview.reports.map((r) => <option key={r} value={r}>{t(`rpt.report.${r}` as 'rpt.report.flash')}</option>)}</Select></FormField>
                         {form.report === 'movements' ? <FormField label={t('rpt.exports.date')}><DatePicker onChange={(e) => setForm({ ...form, date: e.target.value })} value={form.date} /></FormField> : null}
                         {form.report !== 'movements' && form.report !== 'comparison' ? (
                             <>
@@ -93,7 +93,7 @@ export default function ExportsPage({ overview }: { overview: Overview }) {
                                 <FormField label={t('rpt.period.to')}><DatePicker onChange={(e) => setForm({ ...form, to: e.target.value })} value={form.to} /></FormField>
                             </>
                         ) : null}
-                        {personal ? <div className="sm:col-span-2"><FormField error={action.fieldError('purpose')} hint={t('rpt.exports.purposeHint')} label={t('rpt.exports.purpose')}><Input maxLength={300} onChange={(e) => setForm({ ...form, purpose: e.target.value })} required value={form.purpose} /></FormField></div> : null}
+                        {personal ? <div className="sm:col-span-2"><FormField field="purpose" error={action.fieldError('purpose')} hint={t('rpt.exports.purposeHint')} label={t('rpt.exports.purpose')}><Input maxLength={300} onChange={(e) => setForm({ ...form, purpose: e.target.value })} required value={form.purpose} /></FormField></div> : null}
                         <div className="sm:col-span-2"><Button loading={action.busy} type="submit">{t('rpt.exports.ask')}</Button></div>
                     </form>
                 </section>

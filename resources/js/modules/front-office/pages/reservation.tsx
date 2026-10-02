@@ -181,7 +181,7 @@ export default function ReservationPage({ billing, folios, group, lookups, polic
                         </div>
                     ) : (
                         <div className="flex flex-wrap items-end gap-2">
-                            <FormField hint={t('fo.company.linkNote')} label={t('fo.company.choose')}>
+                            <FormField field="company_id" error={action.fieldError('company_id')} hint={t('fo.company.linkNote')} label={t('fo.company.choose')}>
                                 <select className="min-h-11 border border-border bg-background px-3 text-sm" onChange={(e) => setCompanyId(e.target.value)} value={companyId}>
                                     <option value="">—</option>
                                     {billing.options.map((o) => <option key={o.id} value={o.id}>{o.code} · {o.name}</option>)}
@@ -200,7 +200,7 @@ export default function ReservationPage({ billing, folios, group, lookups, polic
                 </div>
                 {newFolio !== null && (
                     <form className="flex flex-wrap items-end gap-2" onSubmit={(e) => { e.preventDefault(); void openFolio(); }}>
-                        <FormField hint={t('fo.folio.labelHint')} label={t('fo.folio.label')}><Input maxLength={60} onChange={(e) => setNewFolio(e.target.value)} value={newFolio} /></FormField>
+                        <FormField field="label" error={action.fieldError('label')} hint={t('fo.folio.labelHint')} label={t('fo.folio.label')}><Input maxLength={60} onChange={(e) => setNewFolio(e.target.value)} value={newFolio} /></FormField>
                         <Button loading={action.busy} size="sm" type="submit">{t('fo.folio.open')}</Button>
                         <Button disabled={action.busy} onClick={() => setNewFolio(null)} size="sm" type="button" variant="outline">{t('ui.dialog.cancel')}</Button>
                     </form>
@@ -246,7 +246,7 @@ export default function ReservationPage({ billing, folios, group, lookups, polic
                             {penalty.may_waive ? <label className="mt-1 flex items-center gap-2 text-sm"><input checked={waive} onChange={(e) => setWaive(e.target.checked)} type="checkbox" />{t('fo.res.penaltyWaive')}</label> : null}
                         </Alert>
                         : <p className="text-xs text-muted-foreground">{t('fo.res.penaltyFree')}</p>)}
-                    {kind !== 'confirm' && <FormField error={action.fieldError('reason')} label={t('fo.action.reason')}><Input maxLength={500} onChange={(e) => setReason(e.target.value)} value={reason} /></FormField>}
+                    {kind !== 'confirm' && <FormField field="reason" error={action.fieldError('reason')} label={t('fo.action.reason')}><Input maxLength={500} onChange={(e) => setReason(e.target.value)} value={reason} /></FormField>}
                 </div>
             </ConfirmDialog>
         </FrontOfficeShell>

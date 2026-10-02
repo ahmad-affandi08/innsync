@@ -1,0 +1,1978 @@
+{
+    "GET /dashboard": {
+        "required": [],
+        "declared": [
+            "from",
+            "preset",
+            "to",
+            "tv"
+        ]
+    },
+    "GET /front-office/availability": {
+        "required": [],
+        "declared": [
+            "days",
+            "from",
+            "plan"
+        ]
+    },
+    "GET /front-office/cashier/shifts": {
+        "required": [],
+        "declared": [
+            "cashier",
+            "status"
+        ]
+    },
+    "GET /front-office/checklists/performance": {
+        "required": [],
+        "declared": [
+            "from",
+            "to"
+        ]
+    },
+    "GET /front-office/feedback": {
+        "required": [],
+        "declared": [
+            "kind",
+            "owner",
+            "severity",
+            "status"
+        ]
+    },
+    "GET /front-office/groups": {
+        "required": [],
+        "declared": [
+            "query"
+        ]
+    },
+    "GET /front-office/requests": {
+        "required": [],
+        "declared": [
+            "category",
+            "room",
+            "status"
+        ]
+    },
+    "GET /front-office/reservations": {
+        "required": [],
+        "declared": [
+            "arrival_from",
+            "arrival_to",
+            "query",
+            "status"
+        ]
+    },
+    "GET /front-office/reservations/{id}/penalty": {
+        "required": [
+            "kind"
+        ],
+        "declared": [
+            "kind"
+        ]
+    },
+    "GET /front-office/reservations/{id}/rate-preview": {
+        "required": [
+            "nett",
+            "price_minor"
+        ],
+        "declared": [
+            "approval_id",
+            "from",
+            "nett",
+            "price_minor",
+            "reason"
+        ]
+    },
+    "GET /front-office/stays/{id}/extension-quote": {
+        "required": [
+            "departure"
+        ],
+        "declared": [
+            "departure"
+        ]
+    },
+    "GET /housekeeping/checklists/performance": {
+        "required": [],
+        "declared": [
+            "from",
+            "to"
+        ]
+    },
+    "GET /housekeeping/checklists/{template}/detail": {
+        "required": [
+            "target"
+        ],
+        "declared": [
+            "target"
+        ]
+    },
+    "GET /housekeeping/linen/usage": {
+        "required": [],
+        "declared": [
+            "from",
+            "room_id",
+            "to"
+        ]
+    },
+    "GET /housekeeping/lost-found": {
+        "required": [],
+        "declared": [
+            "status"
+        ]
+    },
+    "GET /housekeeping/par-levels/consumption": {
+        "required": [
+            "shift"
+        ],
+        "declared": [
+            "date",
+            "shift"
+        ]
+    },
+    "GET /laundry/claims": {
+        "required": [],
+        "declared": [
+            "order",
+            "status"
+        ]
+    },
+    "GET /reports/audit": {
+        "required": [],
+        "declared": [
+            "from",
+            "module",
+            "page",
+            "to",
+            "user"
+        ]
+    },
+    "GET /reports/builder/export": {
+        "required": [
+            "columns",
+            "dataset"
+        ],
+        "declared": [
+            "columns",
+            "dataset",
+            "direction",
+            "filters",
+            "from",
+            "sort",
+            "to"
+        ]
+    },
+    "GET /reports/builder/run": {
+        "required": [
+            "columns",
+            "dataset"
+        ],
+        "declared": [
+            "columns",
+            "dataset",
+            "direction",
+            "filters",
+            "from",
+            "sort",
+            "to"
+        ]
+    },
+    "GET /reports/comparison": {
+        "required": [],
+        "declared": [
+            "kind"
+        ]
+    },
+    "GET /reports/comparison/export": {
+        "required": [],
+        "declared": [
+            "kind"
+        ]
+    },
+    "GET /reports/flash": {
+        "required": [],
+        "declared": [
+            "from",
+            "preset",
+            "to"
+        ]
+    },
+    "GET /reports/flash/export": {
+        "required": [],
+        "declared": [
+            "from",
+            "preset",
+            "to"
+        ]
+    },
+    "GET /reports/foreign-guests": {
+        "required": [],
+        "declared": [
+            "from",
+            "nationality",
+            "preset",
+            "to"
+        ]
+    },
+    "GET /reports/foreign-guests/export": {
+        "required": [
+            "purpose"
+        ],
+        "declared": [
+            "from",
+            "nationality",
+            "preset",
+            "purpose",
+            "to"
+        ]
+    },
+    "GET /reports/housekeeping": {
+        "required": [],
+        "declared": [
+            "from",
+            "preset",
+            "to"
+        ]
+    },
+    "GET /reports/housekeeping/export": {
+        "required": [],
+        "declared": [
+            "from",
+            "preset",
+            "to"
+        ]
+    },
+    "GET /reports/laundry": {
+        "required": [],
+        "declared": [
+            "from",
+            "preset",
+            "to"
+        ]
+    },
+    "GET /reports/laundry/export": {
+        "required": [],
+        "declared": [
+            "from",
+            "preset",
+            "to"
+        ]
+    },
+    "GET /reports/movements": {
+        "required": [],
+        "declared": [
+            "date"
+        ]
+    },
+    "GET /reports/movements/export": {
+        "required": [
+            "purpose"
+        ],
+        "declared": [
+            "date",
+            "purpose"
+        ]
+    },
+    "GET /reports/obligations": {
+        "required": [],
+        "declared": [
+            "months"
+        ]
+    },
+    "GET /reports/payments": {
+        "required": [],
+        "declared": [
+            "from",
+            "preset",
+            "to"
+        ]
+    },
+    "GET /reports/payments/export": {
+        "required": [],
+        "declared": [
+            "from",
+            "preset",
+            "to"
+        ]
+    },
+    "GET /reports/performance": {
+        "required": [],
+        "declared": [
+            "by",
+            "from",
+            "preset",
+            "to",
+            "year"
+        ]
+    },
+    "GET /reports/performance/export": {
+        "required": [],
+        "declared": [
+            "by",
+            "from",
+            "preset",
+            "to",
+            "year"
+        ]
+    },
+    "GET /reports/registrations": {
+        "required": [],
+        "declared": [
+            "from",
+            "nationality",
+            "preset",
+            "to"
+        ]
+    },
+    "GET /reports/registrations/export": {
+        "required": [
+            "purpose"
+        ],
+        "declared": [
+            "from",
+            "nationality",
+            "preset",
+            "purpose",
+            "to"
+        ]
+    },
+    "POST /approvals/policies": {
+        "required": [
+            "band_min_amount_minor",
+            "reason",
+            "steps",
+            "subject_type"
+        ],
+        "declared": [
+            "band_min_amount_minor",
+            "reason",
+            "steps",
+            "subject_type"
+        ]
+    },
+    "POST /approvals/{id}/reject": {
+        "required": [
+            "reason"
+        ],
+        "declared": [
+            "reason"
+        ]
+    },
+    "POST /confirm-password": {
+        "required": [
+            "password"
+        ],
+        "declared": [
+            "password"
+        ]
+    },
+    "POST /dashboard/preferences": {
+        "required": [
+            "order"
+        ],
+        "declared": [
+            "hidden",
+            "order"
+        ]
+    },
+    "POST /front-office/cashier/settings": {
+        "required": [
+            "lock_version",
+            "reason",
+            "require_open_shift"
+        ],
+        "declared": [
+            "lock_version",
+            "reason",
+            "require_open_shift"
+        ]
+    },
+    "POST /front-office/cashier/shifts": {
+        "required": [
+            "opening_float_minor"
+        ],
+        "declared": [
+            "opening_float_minor"
+        ]
+    },
+    "POST /front-office/cashier/shifts/{id}/close": {
+        "required": [
+            "counted_cash_minor",
+            "lock_version"
+        ],
+        "declared": [
+            "counted_cash_minor",
+            "lock_version",
+            "variance_reason"
+        ]
+    },
+    "POST /front-office/cashier/shifts/{id}/drops": {
+        "required": [
+            "amount_minor"
+        ],
+        "declared": [
+            "amount_minor",
+            "note",
+            "reference"
+        ]
+    },
+    "POST /front-office/checklists/templates": {
+        "required": [
+            "active",
+            "frequency",
+            "items",
+            "name"
+        ],
+        "declared": [
+            "active",
+            "frequency",
+            "items",
+            "name"
+        ]
+    },
+    "POST /front-office/checklists/{template}/items/{item}/complete": {
+        "required": [],
+        "declared": [
+            "note"
+        ]
+    },
+    "POST /front-office/companies": {
+        "required": [
+            "kind",
+            "name"
+        ],
+        "declared": [
+            "billing_instruction",
+            "code",
+            "contact_email",
+            "contact_name",
+            "contact_phone",
+            "credit_limit_minor",
+            "kind",
+            "name",
+            "route_extras",
+            "route_rooms",
+            "tax_id"
+        ]
+    },
+    "POST /front-office/companies/{id}": {
+        "required": [
+            "is_active",
+            "kind",
+            "lock_version",
+            "name",
+            "reason"
+        ],
+        "declared": [
+            "billing_instruction",
+            "code",
+            "contact_email",
+            "contact_name",
+            "contact_phone",
+            "credit_limit_minor",
+            "is_active",
+            "kind",
+            "lock_version",
+            "name",
+            "reason",
+            "route_extras",
+            "route_rooms",
+            "tax_id"
+        ]
+    },
+    "POST /front-office/feedback": {
+        "required": [
+            "channel",
+            "kind",
+            "summary"
+        ],
+        "declared": [
+            "channel",
+            "detail",
+            "follow_up_by",
+            "guest_name",
+            "kind",
+            "reservation_id",
+            "severity",
+            "summary"
+        ]
+    },
+    "POST /front-office/feedback/{id}/assign": {
+        "required": [
+            "lock_version",
+            "owner_id"
+        ],
+        "declared": [
+            "lock_version",
+            "owner_id"
+        ]
+    },
+    "POST /front-office/feedback/{id}/close": {
+        "required": [
+            "lock_version"
+        ],
+        "declared": [
+            "lock_version"
+        ]
+    },
+    "POST /front-office/feedback/{id}/note": {
+        "required": [
+            "text"
+        ],
+        "declared": [
+            "text"
+        ]
+    },
+    "POST /front-office/feedback/{id}/reopen": {
+        "required": [
+            "lock_version",
+            "note"
+        ],
+        "declared": [
+            "lock_version",
+            "note"
+        ]
+    },
+    "POST /front-office/feedback/{id}/resolve": {
+        "required": [
+            "lock_version",
+            "resolution"
+        ],
+        "declared": [
+            "evidence_ref",
+            "lock_version",
+            "resolution"
+        ]
+    },
+    "POST /front-office/feedback/{id}/start": {
+        "required": [
+            "lock_version"
+        ],
+        "declared": [
+            "lock_version"
+        ]
+    },
+    "POST /front-office/folios/{id}/charges": {
+        "required": [
+            "amount_minor",
+            "code",
+            "description",
+            "prices_include_charges"
+        ],
+        "declared": [
+            "amount_minor",
+            "code",
+            "description",
+            "prices_include_charges"
+        ]
+    },
+    "POST /front-office/folios/{id}/close": {
+        "required": [
+            "lock_version"
+        ],
+        "declared": [
+            "lock_version"
+        ]
+    },
+    "POST /front-office/folios/{id}/foreign-payments": {
+        "required": [
+            "currency",
+            "foreign_minor",
+            "payment_method",
+            "purpose"
+        ],
+        "declared": [
+            "currency",
+            "foreign_minor",
+            "payment_method",
+            "purpose",
+            "reference"
+        ]
+    },
+    "POST /front-office/folios/{id}/late-charges": {
+        "required": [
+            "amount_minor",
+            "code",
+            "description",
+            "prices_include_charges",
+            "reason"
+        ],
+        "declared": [
+            "amount_minor",
+            "code",
+            "description",
+            "prices_include_charges",
+            "reason"
+        ]
+    },
+    "POST /front-office/folios/{id}/payments": {
+        "required": [
+            "amount_minor",
+            "payment_method",
+            "purpose"
+        ],
+        "declared": [
+            "amount_minor",
+            "payment_method",
+            "purpose",
+            "reference"
+        ]
+    },
+    "POST /front-office/folios/{id}/refund": {
+        "required": [
+            "amount_minor",
+            "payment_method",
+            "reason"
+        ],
+        "declared": [
+            "amount_minor",
+            "approval_id",
+            "payment_method",
+            "reason",
+            "reference"
+        ]
+    },
+    "POST /front-office/folios/{id}/refund-request": {
+        "required": [
+            "amount_minor",
+            "payment_method",
+            "reason"
+        ],
+        "declared": [
+            "amount_minor",
+            "payment_method",
+            "reason"
+        ]
+    },
+    "POST /front-office/foreign-currency/enabled": {
+        "required": [
+            "enabled",
+            "lock_version",
+            "reason"
+        ],
+        "declared": [
+            "enabled",
+            "lock_version",
+            "reason"
+        ]
+    },
+    "POST /front-office/foreign-currency/rates": {
+        "required": [
+            "currency",
+            "rate_e4",
+            "reason"
+        ],
+        "declared": [
+            "currency",
+            "rate_e4",
+            "reason"
+        ]
+    },
+    "POST /front-office/groups": {
+        "required": [
+            "arrival",
+            "billing_mode",
+            "booker_name",
+            "departure",
+            "name",
+            "source",
+            "status"
+        ],
+        "declared": [
+            "arrival",
+            "billing_mode",
+            "booker_email",
+            "booker_name",
+            "booker_phone",
+            "departure",
+            "name",
+            "notes",
+            "route_extras",
+            "source",
+            "status"
+        ]
+    },
+    "POST /front-office/holds": {
+        "required": [
+            "from",
+            "reason",
+            "room_type_id",
+            "rooms",
+            "to"
+        ],
+        "declared": [
+            "expires_at",
+            "from",
+            "reason",
+            "room_type_id",
+            "rooms",
+            "to"
+        ]
+    },
+    "POST /front-office/holds/{id}/release": {
+        "required": [
+            "reason"
+        ],
+        "declared": [
+            "reason"
+        ]
+    },
+    "POST /front-office/logbook": {
+        "required": [
+            "body",
+            "shift"
+        ],
+        "declared": [
+            "body",
+            "important",
+            "shift"
+        ]
+    },
+    "POST /front-office/logbook/read": {
+        "required": [
+            "entries"
+        ],
+        "declared": [
+            "entries"
+        ]
+    },
+    "POST /front-office/night-audit": {
+        "required": [],
+        "declared": [
+            "waivers"
+        ]
+    },
+    "POST /front-office/overbooking/{typeId}": {
+        "required": [
+            "lock_version",
+            "reason",
+            "rooms"
+        ],
+        "declared": [
+            "lock_version",
+            "reason",
+            "rooms"
+        ]
+    },
+    "POST /front-office/postings/{id}/reversal-request": {
+        "required": [
+            "reason"
+        ],
+        "declared": [
+            "reason"
+        ]
+    },
+    "POST /front-office/postings/{id}/reverse": {
+        "required": [
+            "reason"
+        ],
+        "declared": [
+            "approval_id",
+            "reason"
+        ]
+    },
+    "POST /front-office/postings/{id}/transfer": {
+        "required": [
+            "reason",
+            "target_folio_id"
+        ],
+        "declared": [
+            "reason",
+            "target_folio_id"
+        ]
+    },
+    "POST /front-office/registration-terms": {
+        "required": [
+            "body",
+            "reason"
+        ],
+        "declared": [
+            "body",
+            "reason"
+        ]
+    },
+    "POST /front-office/requests": {
+        "required": [
+            "category",
+            "stay_id",
+            "title"
+        ],
+        "declared": [
+            "category",
+            "detail",
+            "due_in_minutes",
+            "stay_id",
+            "title",
+            "urgent"
+        ]
+    },
+    "POST /front-office/requests/{id}/cancel": {
+        "required": [
+            "lock_version",
+            "reason"
+        ],
+        "declared": [
+            "lock_version",
+            "reason"
+        ]
+    },
+    "POST /front-office/requests/{id}/complete": {
+        "required": [
+            "lock_version"
+        ],
+        "declared": [
+            "lock_version",
+            "resolution"
+        ]
+    },
+    "POST /front-office/requests/{id}/start": {
+        "required": [
+            "lock_version"
+        ],
+        "declared": [
+            "lock_version"
+        ]
+    },
+    "POST /front-office/reservations": {
+        "required": [
+            "adults",
+            "arrival",
+            "children",
+            "departure",
+            "guest_name",
+            "rate_plan_id",
+            "room_type_id",
+            "source",
+            "status"
+        ],
+        "declared": [
+            "acknowledge_oversell",
+            "adults",
+            "arrival",
+            "children",
+            "departure",
+            "guest_email",
+            "guest_name",
+            "guest_phone",
+            "notes",
+            "oversell_reason",
+            "rate_plan_id",
+            "room_type_id",
+            "source",
+            "status"
+        ]
+    },
+    "POST /front-office/reservations/quote": {
+        "required": [
+            "arrival",
+            "departure",
+            "rate_plan_id",
+            "room_type_id"
+        ],
+        "declared": [
+            "arrival",
+            "departure",
+            "rate_plan_id",
+            "room_type_id"
+        ]
+    },
+    "POST /front-office/reservations/{id}/cancel": {
+        "required": [
+            "lock_version",
+            "reason"
+        ],
+        "declared": [
+            "lock_version",
+            "reason",
+            "waive_penalty"
+        ]
+    },
+    "POST /front-office/reservations/{id}/check-in": {
+        "required": [
+            "address",
+            "adults",
+            "children",
+            "full_name",
+            "id_number",
+            "id_type",
+            "nationality",
+            "room_id"
+        ],
+        "declared": [
+            "address",
+            "adults",
+            "children",
+            "full_name",
+            "id_number",
+            "id_type",
+            "id_valid_until",
+            "nationality",
+            "room_id",
+            "visa_number"
+        ]
+    },
+    "POST /front-office/reservations/{id}/company": {
+        "required": [
+            "company_id"
+        ],
+        "declared": [
+            "company_id"
+        ]
+    },
+    "POST /front-office/reservations/{id}/confirm": {
+        "required": [
+            "lock_version"
+        ],
+        "declared": [
+            "lock_version"
+        ]
+    },
+    "POST /front-office/reservations/{id}/folios": {
+        "required": [],
+        "declared": [
+            "label",
+            "window"
+        ]
+    },
+    "POST /front-office/reservations/{id}/guarantee": {
+        "required": [
+            "lock_version"
+        ],
+        "declared": [
+            "lock_version",
+            "reason"
+        ]
+    },
+    "POST /front-office/reservations/{id}/guest-lookup": {
+        "required": [
+            "id_number",
+            "id_type"
+        ],
+        "declared": [
+            "id_number",
+            "id_type"
+        ]
+    },
+    "POST /front-office/reservations/{id}/no-show": {
+        "required": [
+            "lock_version",
+            "reason"
+        ],
+        "declared": [
+            "lock_version",
+            "reason",
+            "waive_penalty"
+        ]
+    },
+    "POST /front-office/reservations/{id}/rate": {
+        "required": [
+            "nett",
+            "price_minor"
+        ],
+        "declared": [
+            "approval_id",
+            "from",
+            "nett",
+            "price_minor",
+            "reason"
+        ]
+    },
+    "POST /front-office/reservations/{id}/rate-approval": {
+        "required": [
+            "nett",
+            "price_minor"
+        ],
+        "declared": [
+            "approval_id",
+            "from",
+            "nett",
+            "price_minor",
+            "reason"
+        ]
+    },
+    "POST /front-office/room-blocks": {
+        "required": [
+            "from",
+            "kind",
+            "reason",
+            "room_id",
+            "to"
+        ],
+        "declared": [
+            "from",
+            "kind",
+            "reason",
+            "room_id",
+            "to"
+        ]
+    },
+    "POST /front-office/room-blocks/{id}/release": {
+        "required": [
+            "reason"
+        ],
+        "declared": [
+            "reason"
+        ]
+    },
+    "POST /front-office/stay-fees": {
+        "required": [
+            "beyond_bp",
+            "effective_from",
+            "grace_minutes",
+            "kind",
+            "reason"
+        ],
+        "declared": [
+            "bands",
+            "beyond_bp",
+            "effective_from",
+            "grace_minutes",
+            "kind",
+            "reason"
+        ]
+    },
+    "POST /front-office/stays/{id}/check-out": {
+        "required": [
+            "lock_version"
+        ],
+        "declared": [
+            "lock_version"
+        ]
+    },
+    "POST /front-office/stays/{id}/corrections": {
+        "required": [
+            "changes",
+            "reason"
+        ],
+        "declared": [
+            "approval_id",
+            "changes",
+            "reason"
+        ]
+    },
+    "POST /front-office/stays/{id}/corrections/approval": {
+        "required": [
+            "changes",
+            "reason"
+        ],
+        "declared": [
+            "approval_id",
+            "changes",
+            "reason"
+        ]
+    },
+    "POST /front-office/stays/{id}/extend": {
+        "required": [
+            "departure",
+            "lock_version",
+            "reason"
+        ],
+        "declared": [
+            "departure",
+            "lock_version",
+            "reason"
+        ]
+    },
+    "POST /front-office/stays/{id}/id-photo": {
+        "required": [
+            "photo"
+        ],
+        "declared": [
+            "photo"
+        ]
+    },
+    "POST /front-office/stays/{id}/move": {
+        "required": [
+            "lock_version",
+            "reason",
+            "room_id"
+        ],
+        "declared": [
+            "lock_version",
+            "reason",
+            "room_id"
+        ]
+    },
+    "POST /front-office/stays/{id}/registration-card/sign": {
+        "required": [
+            "signature"
+        ],
+        "declared": [
+            "signature"
+        ]
+    },
+    "POST /front-office/stays/{id}/time-fees": {
+        "required": [
+            "action",
+            "kind"
+        ],
+        "declared": [
+            "action",
+            "kind",
+            "reason"
+        ]
+    },
+    "POST /housekeeping/checklists/templates": {
+        "required": [
+            "active",
+            "frequency",
+            "items",
+            "name",
+            "scope"
+        ],
+        "declared": [
+            "active",
+            "areas",
+            "frequency",
+            "items",
+            "name",
+            "scope"
+        ]
+    },
+    "POST /housekeeping/checklists/{template}/complete": {
+        "required": [
+            "item_id",
+            "target"
+        ],
+        "declared": [
+            "item_id",
+            "note",
+            "photo",
+            "target"
+        ]
+    },
+    "POST /housekeeping/findings/{id}/waive": {
+        "required": [
+            "reason"
+        ],
+        "declared": [
+            "reason"
+        ]
+    },
+    "POST /housekeeping/flags": {
+        "required": [
+            "kind",
+            "room_id"
+        ],
+        "declared": [
+            "kind",
+            "note",
+            "room_id"
+        ]
+    },
+    "POST /housekeeping/flags/{id}/end": {
+        "required": [
+            "lock_version"
+        ],
+        "declared": [
+            "lock_version"
+        ]
+    },
+    "POST /housekeeping/linen/items": {
+        "required": [
+            "code",
+            "kind",
+            "name",
+            "unit"
+        ],
+        "declared": [
+            "code",
+            "kind",
+            "name",
+            "unit"
+        ]
+    },
+    "POST /housekeeping/linen/items/{id}/active": {
+        "required": [
+            "active",
+            "lock_version"
+        ],
+        "declared": [
+            "active",
+            "lock_version"
+        ]
+    },
+    "POST /housekeeping/linen/transfers": {
+        "required": [
+            "from",
+            "item_id",
+            "quantity",
+            "to"
+        ],
+        "declared": [
+            "from",
+            "item_id",
+            "note",
+            "quantity",
+            "to"
+        ]
+    },
+    "POST /housekeeping/linen/transfers/{id}/cancel": {
+        "required": [
+            "lock_version"
+        ],
+        "declared": [
+            "lock_version"
+        ]
+    },
+    "POST /housekeeping/linen/transfers/{id}/receive": {
+        "required": [
+            "lock_version",
+            "quantity_received"
+        ],
+        "declared": [
+            "lock_version",
+            "quantity_received",
+            "variance_kind",
+            "variance_note"
+        ]
+    },
+    "POST /housekeeping/linen/usage": {
+        "required": [
+            "item_id",
+            "quantity",
+            "room_id"
+        ],
+        "declared": [
+            "item_id",
+            "note",
+            "quantity",
+            "room_id"
+        ]
+    },
+    "POST /housekeeping/lost-found": {
+        "required": [
+            "description",
+            "stored_at"
+        ],
+        "declared": [
+            "description",
+            "photo",
+            "place",
+            "room_id",
+            "stored_at"
+        ]
+    },
+    "POST /housekeeping/lost-found/{id}/disposed": {
+        "required": [
+            "lock_version",
+            "reason"
+        ],
+        "declared": [
+            "lock_version",
+            "reason"
+        ]
+    },
+    "POST /housekeeping/lost-found/{id}/returned": {
+        "required": [
+            "lock_version",
+            "returned_to"
+        ],
+        "declared": [
+            "lock_version",
+            "note",
+            "returned_to"
+        ]
+    },
+    "POST /housekeeping/par-levels": {
+        "required": [
+            "item_id",
+            "par_quantity",
+            "reason",
+            "scope_kind",
+            "scope_ref",
+            "use_quantity"
+        ],
+        "declared": [
+            "item_id",
+            "lock_version",
+            "par_quantity",
+            "reason",
+            "scope_kind",
+            "scope_ref",
+            "use_quantity"
+        ]
+    },
+    "POST /housekeeping/rooms/{id}/inspections": {
+        "required": [
+            "passed"
+        ],
+        "declared": [
+            "findings",
+            "notes",
+            "passed"
+        ]
+    },
+    "POST /housekeeping/settings": {
+        "required": [
+            "inspection_required",
+            "lock_version",
+            "reason"
+        ],
+        "declared": [
+            "inspection_required",
+            "lock_version",
+            "reason"
+        ]
+    },
+    "POST /housekeeping/tasks": {
+        "required": [
+            "kind",
+            "reason",
+            "room_id"
+        ],
+        "declared": [
+            "assigned_to",
+            "kind",
+            "reason",
+            "room_id"
+        ]
+    },
+    "POST /housekeeping/tasks/{id}/assign": {
+        "required": [
+            "assigned_to",
+            "lock_version"
+        ],
+        "declared": [
+            "assigned_to",
+            "lock_version"
+        ]
+    },
+    "POST /housekeeping/tasks/{id}/cancel": {
+        "required": [
+            "lock_version",
+            "reason"
+        ],
+        "declared": [
+            "lock_version",
+            "reason"
+        ]
+    },
+    "POST /housekeeping/tasks/{id}/finish": {
+        "required": [
+            "lock_version"
+        ],
+        "declared": [
+            "lock_version"
+        ]
+    },
+    "POST /housekeeping/tasks/{id}/start": {
+        "required": [
+            "lock_version"
+        ],
+        "declared": [
+            "lock_version"
+        ]
+    },
+    "POST /laundry/claims": {
+        "required": [
+            "claimed_minor",
+            "description",
+            "kind",
+            "order_id",
+            "pieces"
+        ],
+        "declared": [
+            "claimed_minor",
+            "description",
+            "kind",
+            "line_id",
+            "order_id",
+            "photo",
+            "pieces"
+        ]
+    },
+    "POST /laundry/claims/cap": {
+        "required": [
+            "cap_multiple",
+            "reason"
+        ],
+        "declared": [
+            "cap_multiple",
+            "lock_version",
+            "reason"
+        ]
+    },
+    "POST /laundry/claims/{id}/approve": {
+        "required": [
+            "approved_minor",
+            "lock_version"
+        ],
+        "declared": [
+            "approved_minor",
+            "lock_version",
+            "note"
+        ]
+    },
+    "POST /laundry/claims/{id}/reject": {
+        "required": [
+            "lock_version",
+            "note"
+        ],
+        "declared": [
+            "lock_version",
+            "note"
+        ]
+    },
+    "POST /laundry/orders": {
+        "required": [
+            "barcode",
+            "lines",
+            "promised_date",
+            "promised_time",
+            "room_id"
+        ],
+        "declared": [
+            "barcode",
+            "express",
+            "lines",
+            "notes",
+            "promised_date",
+            "promised_time",
+            "room_id"
+        ]
+    },
+    "POST /laundry/orders/{id}/advance": {
+        "required": [
+            "lock_version"
+        ],
+        "declared": [
+            "lock_version"
+        ]
+    },
+    "POST /laundry/orders/{id}/cancel": {
+        "required": [
+            "lock_version",
+            "reason"
+        ],
+        "declared": [
+            "lock_version",
+            "reason"
+        ]
+    },
+    "POST /laundry/orders/{id}/deliver": {
+        "required": [
+            "lock_version",
+            "receipt"
+        ],
+        "declared": [
+            "lock_version",
+            "receipt"
+        ]
+    },
+    "POST /laundry/orders/{id}/ready": {
+        "required": [
+            "lock_version"
+        ],
+        "declared": [
+            "lock_version"
+        ]
+    },
+    "POST /laundry/orders/{id}/receive": {
+        "required": [
+            "counts",
+            "lock_version"
+        ],
+        "declared": [
+            "counts",
+            "lock_version",
+            "note"
+        ]
+    },
+    "POST /laundry/prices": {
+        "required": [
+            "code",
+            "name",
+            "reason",
+            "unit_price_minor"
+        ],
+        "declared": [
+            "code",
+            "name",
+            "reason",
+            "unit_price_minor"
+        ]
+    },
+    "POST /laundry/prices/{id}": {
+        "required": [
+            "is_active",
+            "lock_version",
+            "name",
+            "reason",
+            "unit_price_minor"
+        ],
+        "declared": [
+            "is_active",
+            "lock_version",
+            "name",
+            "reason",
+            "unit_price_minor"
+        ]
+    },
+    "POST /laundry/treatments": {
+        "required": [
+            "code",
+            "kind",
+            "name",
+            "pricing",
+            "reason",
+            "value"
+        ],
+        "declared": [
+            "code",
+            "kind",
+            "name",
+            "pricing",
+            "reason",
+            "value"
+        ]
+    },
+    "POST /laundry/treatments/{id}": {
+        "required": [
+            "is_active",
+            "lock_version",
+            "name",
+            "pricing",
+            "reason",
+            "value"
+        ],
+        "declared": [
+            "is_active",
+            "lock_version",
+            "name",
+            "pricing",
+            "reason",
+            "value"
+        ]
+    },
+    "POST /locale": {
+        "required": [
+            "locale"
+        ],
+        "declared": [
+            "locale"
+        ]
+    },
+    "POST /login": {
+        "required": [
+            "email",
+            "password"
+        ],
+        "declared": [
+            "email",
+            "password"
+        ]
+    },
+    "POST /mfa/challenge": {
+        "required": [
+            "code"
+        ],
+        "declared": [
+            "code"
+        ]
+    },
+    "POST /mfa/confirm": {
+        "required": [
+            "code"
+        ],
+        "declared": [
+            "code"
+        ]
+    },
+    "POST /properties/select": {
+        "required": [
+            "property_id"
+        ],
+        "declared": [
+            "property_id"
+        ]
+    },
+    "POST /property/policies": {
+        "required": [
+            "cancel_free_days",
+            "cancel_penalty_kind",
+            "cancel_penalty_value",
+            "deposit_basis",
+            "deposit_due_days",
+            "deposit_value",
+            "effective_from",
+            "guarantee_required",
+            "noshow_penalty_kind",
+            "noshow_penalty_value",
+            "reason"
+        ],
+        "declared": [
+            "cancel_free_days",
+            "cancel_penalty_kind",
+            "cancel_penalty_value",
+            "deposit_basis",
+            "deposit_due_days",
+            "deposit_value",
+            "effective_from",
+            "guarantee_required",
+            "noshow_penalty_kind",
+            "noshow_penalty_value",
+            "rate_plan_id",
+            "reason",
+            "source"
+        ]
+    },
+    "POST /property/rate-plans": {
+        "required": [
+            "code",
+            "kind",
+            "name",
+            "prices_include_charges",
+            "reason"
+        ],
+        "declared": [
+            "code",
+            "inclusions",
+            "kind",
+            "name",
+            "prices_include_charges",
+            "reason"
+        ]
+    },
+    "POST /property/rate-plans/{id}/active": {
+        "required": [
+            "active",
+            "lock_version",
+            "reason"
+        ],
+        "declared": [
+            "active",
+            "lock_version",
+            "reason"
+        ]
+    },
+    "POST /property/rate-plans/{id}/prices": {
+        "required": [
+            "from",
+            "nightly_minor",
+            "reason",
+            "room_type_id",
+            "to",
+            "weekday_mask"
+        ],
+        "declared": [
+            "from",
+            "nightly_minor",
+            "reason",
+            "room_type_id",
+            "to",
+            "weekday_mask"
+        ]
+    },
+    "POST /property/rate-plans/{id}/quote": {
+        "required": [
+            "arrival",
+            "departure",
+            "room_type_id"
+        ],
+        "declared": [
+            "arrival",
+            "departure",
+            "room_type_id"
+        ]
+    },
+    "POST /property/rate-plans/{id}/restrictions": {
+        "required": [
+            "closed_to_arrival",
+            "closed_to_departure",
+            "from",
+            "reason",
+            "stop_sell",
+            "to"
+        ],
+        "declared": [
+            "closed_to_arrival",
+            "closed_to_departure",
+            "from",
+            "max_stay",
+            "min_stay",
+            "reason",
+            "room_type_id",
+            "stop_sell",
+            "to"
+        ]
+    },
+    "POST /property/rate-prices/{id}/remove": {
+        "required": [
+            "reason"
+        ],
+        "declared": [
+            "reason"
+        ]
+    },
+    "POST /property/rate-prices/{id}/reprice": {
+        "required": [
+            "nightly_minor",
+            "reason"
+        ],
+        "declared": [
+            "nightly_minor",
+            "reason"
+        ]
+    },
+    "POST /property/rate-restrictions/{id}/remove": {
+        "required": [
+            "reason"
+        ],
+        "declared": [
+            "reason"
+        ]
+    },
+    "POST /property/room-types": {
+        "required": [
+            "code",
+            "max_adults",
+            "max_children",
+            "name",
+            "reason"
+        ],
+        "declared": [
+            "code",
+            "description",
+            "max_adults",
+            "max_children",
+            "name",
+            "reason",
+            "sort_order"
+        ]
+    },
+    "POST /property/room-types/{id}/active": {
+        "required": [
+            "active",
+            "lock_version",
+            "reason"
+        ],
+        "declared": [
+            "active",
+            "lock_version",
+            "reason"
+        ]
+    },
+    "POST /property/rooms": {
+        "required": [
+            "number",
+            "reason",
+            "room_type_id"
+        ],
+        "declared": [
+            "building",
+            "floor",
+            "number",
+            "reason",
+            "room_type_id"
+        ]
+    },
+    "POST /property/rooms/{id}/active": {
+        "required": [
+            "active",
+            "lock_version",
+            "reason"
+        ],
+        "declared": [
+            "active",
+            "lock_version",
+            "reason"
+        ]
+    },
+    "POST /property/settings/business-date": {
+        "required": [
+            "business_date",
+            "lock_version",
+            "reason"
+        ],
+        "declared": [
+            "business_date",
+            "lock_version",
+            "reason"
+        ]
+    },
+    "POST /property/tax": {
+        "required": [
+            "effective_from",
+            "reason",
+            "service_charge_rate",
+            "tax_on_service_charge",
+            "tax_rate"
+        ],
+        "declared": [
+            "effective_from",
+            "reason",
+            "scope",
+            "service_charge_rate",
+            "tax_on_service_charge",
+            "tax_rate"
+        ]
+    },
+    "POST /reports/exports": {
+        "required": [
+            "report"
+        ],
+        "declared": [
+            "params",
+            "purpose",
+            "report"
+        ]
+    },
+    "POST /reports/obligations/filings": {
+        "required": [
+            "month",
+            "reference",
+            "reported_on"
+        ],
+        "declared": [
+            "month",
+            "reference",
+            "reported_on"
+        ]
+    },
+    "POST /reports/obligations/settings": {
+        "required": [
+            "reason",
+            "service_employee_share_bp",
+            "tax_report_day"
+        ],
+        "declared": [
+            "lock_version",
+            "reason",
+            "service_employee_share_bp",
+            "tax_report_day"
+        ]
+    },
+    "POST /reports/outlets": {
+        "required": [
+            "code",
+            "name",
+            "reason"
+        ],
+        "declared": [
+            "code",
+            "name",
+            "reason"
+        ]
+    },
+    "POST /reports/outlets/{id}": {
+        "required": [
+            "lock_version",
+            "name",
+            "reason"
+        ],
+        "declared": [
+            "lock_version",
+            "name",
+            "reason"
+        ]
+    },
+    "POST /reports/outlets/{id}/sources": {
+        "required": [
+            "reason",
+            "source"
+        ],
+        "declared": [
+            "reason",
+            "source"
+        ]
+    },
+    "POST /reports/outlets/{id}/sources/remove": {
+        "required": [
+            "reason",
+            "source"
+        ],
+        "declared": [
+            "reason",
+            "source"
+        ]
+    },
+    "POST /sync/batch": {
+        "required": [],
+        "declared": [
+            "client_status",
+            "device_id",
+            "items"
+        ]
+    },
+    "PUT /account/password": {
+        "required": [
+            "current_password",
+            "password"
+        ],
+        "declared": [
+            "current_password",
+            "password"
+        ]
+    },
+    "PUT /property/rate-plans/{id}": {
+        "required": [
+            "kind",
+            "lock_version",
+            "name",
+            "prices_include_charges",
+            "reason"
+        ],
+        "declared": [
+            "inclusions",
+            "kind",
+            "lock_version",
+            "name",
+            "prices_include_charges",
+            "reason"
+        ]
+    },
+    "PUT /property/room-types/{id}": {
+        "required": [
+            "lock_version",
+            "max_adults",
+            "max_children",
+            "name",
+            "reason"
+        ],
+        "declared": [
+            "description",
+            "lock_version",
+            "max_adults",
+            "max_children",
+            "name",
+            "reason",
+            "sort_order"
+        ]
+    },
+    "PUT /property/rooms/{id}": {
+        "required": [
+            "lock_version",
+            "reason",
+            "room_type_id"
+        ],
+        "declared": [
+            "building",
+            "floor",
+            "lock_version",
+            "reason",
+            "room_type_id"
+        ]
+    },
+    "PUT /property/settings": {
+        "required": [
+            "availability_horizon_days",
+            "check_in_time",
+            "check_out_time",
+            "lock_version",
+            "night_audit_earliest_time",
+            "reason",
+            "rounding_increment_minor",
+            "rounding_mode"
+        ],
+        "declared": [
+            "availability_horizon_days",
+            "check_in_time",
+            "check_out_time",
+            "lock_version",
+            "night_audit_earliest_time",
+            "reason",
+            "rounding_increment_minor",
+            "rounding_mode"
+        ]
+    }
+}

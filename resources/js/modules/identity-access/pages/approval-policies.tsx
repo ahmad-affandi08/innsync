@@ -76,7 +76,7 @@ export default function ApprovalPoliciesPage({ subjects }: { subjects: Subject[]
                 {form !== null && (
                     <div className="flex flex-col gap-3">
                         {action.error !== null ? <ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /> : null}
-                        <FormField error={action.fieldError('band_min_amount_minor')} hint={t('identity.approvalPolicies.bandHint')} label={t('identity.approvalPolicies.band')}>
+                        <FormField field="band_min_amount_minor" error={action.fieldError('band_min_amount_minor')} hint={t('identity.approvalPolicies.bandHint')} label={t('identity.approvalPolicies.band')}>
                             <Input inputMode="numeric" onChange={(e) => setForm({ ...form, band: e.target.value })} value={form.band} />
                         </FormField>
                         {form.steps.map((step, i) => (
@@ -91,7 +91,7 @@ export default function ApprovalPoliciesPage({ subjects }: { subjects: Subject[]
                             </div>
                         ))}
                         {form.steps.length < 5 ? <div><Button onClick={() => setForm({ ...form, steps: [...form.steps, { permission: '', count: '1' }] })} size="sm" type="button" variant="outline">{t('identity.approvalPolicies.addStep')}</Button></div> : null}
-                        <FormField error={action.fieldError('reason')} hint={t('property.field.reasonHint')} label={t('property.field.reason')}>
+                        <FormField field="reason" error={action.fieldError('reason')} hint={t('property.field.reasonHint')} label={t('property.field.reason')}>
                             <Input maxLength={500} onChange={(e) => setForm({ ...form, reason: e.target.value })} value={form.reason} />
                         </FormField>
                     </div>

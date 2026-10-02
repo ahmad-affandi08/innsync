@@ -119,20 +119,20 @@ export default function RequestsPage({ filters, in_house: inHouse, queue }: Prop
                 {form !== null && (
                     <div className="flex flex-col gap-3">
                         {error}
-                        <FormField error={action.fieldError('stay_id')} label={t('fo.req.room')}>
+                        <FormField field="stay_id" error={action.fieldError('stay_id')} label={t('fo.req.room')}>
                             <Select onChange={(e) => setForm({ ...form, stay: e.target.value })} value={form.stay}>
                                 <option value="">{t('fo.req.chooseRoom')}</option>
                                 {inHouse.map((s) => <option key={s.stay_id} value={s.stay_id}>{s.room} · {s.guest}</option>)}
                             </Select>
                         </FormField>
-                        <FormField error={action.fieldError('category')} label={t('fo.req.category')}>
+                        <FormField field="category" error={action.fieldError('category')} label={t('fo.req.category')}>
                             <Select onChange={(e) => setForm({ ...form, category: e.target.value })} value={form.category}>
                                 {queue.categories.map((c) => <option key={c} value={c}>{t(`fo.req.category.${c}` as 'fo.req.category.other')}</option>)}
                             </Select>
                         </FormField>
-                        <FormField error={action.fieldError('title')} label={t('fo.req.titleLabel')}><Input maxLength={120} onChange={(e) => setForm({ ...form, title: e.target.value })} value={form.title} /></FormField>
-                        <FormField error={action.fieldError('detail')} label={t('fo.req.detail')}><Input maxLength={500} onChange={(e) => setForm({ ...form, detail: e.target.value })} value={form.detail} /></FormField>
-                        <FormField error={action.fieldError('due_in_minutes')} label={t('fo.req.due')}>
+                        <FormField field="title" error={action.fieldError('title')} label={t('fo.req.titleLabel')}><Input maxLength={120} onChange={(e) => setForm({ ...form, title: e.target.value })} value={form.title} /></FormField>
+                        <FormField field="detail" error={action.fieldError('detail')} label={t('fo.req.detail')}><Input maxLength={500} onChange={(e) => setForm({ ...form, detail: e.target.value })} value={form.detail} /></FormField>
+                        <FormField field="due_in_minutes" error={action.fieldError('due_in_minutes')} label={t('fo.req.due')}>
                             <Select onChange={(e) => setForm({ ...form, due: e.target.value })} value={form.due}>
                                 <option value="">{t('fo.req.due.none')}</option>
                                 {['15', '30', '60', '120'].map((m) => <option key={m} value={m}>{t(`fo.req.due.${m}` as 'fo.req.due.15')}</option>)}

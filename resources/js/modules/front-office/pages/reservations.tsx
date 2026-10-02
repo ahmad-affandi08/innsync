@@ -177,34 +177,34 @@ export default function ReservationsPage({ filters, lookups, reservations }: { f
                             </ErrorState>
                         ) : null}
                         <div className="grid gap-3 sm:grid-cols-2">
-                            <FormField error={field('guest_name')} label={t('fo.res.guest')}><Input maxLength={150} onChange={(e) => set({ guest: e.target.value })} value={form.guest} /></FormField>
-                            <FormField error={field('source')} label={t('fo.res.source')}>
+                            <FormField field="guest_name" error={field('guest_name')} label={t('fo.res.guest')}><Input maxLength={150} onChange={(e) => set({ guest: e.target.value })} value={form.guest} /></FormField>
+                            <FormField field="source" error={field('source')} label={t('fo.res.source')}>
                                 <Select onChange={(e) => set({ source: e.target.value })} value={form.source}>{SOURCES.map((s) => <option key={s} value={s}>{t(`fo.source.${s}`)}</option>)}</Select>
                             </FormField>
-                            <FormField error={field('guest_phone')} label={t('fo.res.phone')}><Input inputMode="tel" maxLength={30} onChange={(e) => set({ phone: e.target.value })} value={form.phone} /></FormField>
-                            <FormField error={field('guest_email')} label={t('fo.res.email')}><Input inputMode="email" maxLength={190} onChange={(e) => set({ email: e.target.value })} value={form.email} /></FormField>
-                            <FormField error={field('arrival')} label={t('fo.res.arrival')}><DatePicker min={lookups.business_date} onChange={(e) => set({ arrival: e.target.value })} value={form.arrival} /></FormField>
-                            <FormField error={field('departure')} label={t('fo.res.departure')}><DatePicker onChange={(e) => set({ departure: e.target.value })} value={form.departure} /></FormField>
+                            <FormField field="guest_phone" error={field('guest_phone')} label={t('fo.res.phone')}><Input inputMode="tel" maxLength={30} onChange={(e) => set({ phone: e.target.value })} value={form.phone} /></FormField>
+                            <FormField field="guest_email" error={field('guest_email')} label={t('fo.res.email')}><Input inputMode="email" maxLength={190} onChange={(e) => set({ email: e.target.value })} value={form.email} /></FormField>
+                            <FormField field="arrival" error={field('arrival')} label={t('fo.res.arrival')}><DatePicker min={lookups.business_date} onChange={(e) => set({ arrival: e.target.value })} value={form.arrival} /></FormField>
+                            <FormField field="departure" error={field('departure')} label={t('fo.res.departure')}><DatePicker onChange={(e) => set({ departure: e.target.value })} value={form.departure} /></FormField>
                             <StayBlocks arrival={form.arrival} currency={quote?.currency ?? 'IDR'} departure={form.departure} nights={quote?.nights ?? []} onDeparture={(departure) => set({ departure })} />
-                            <FormField error={field('room_type_id')} label={t('fo.res.roomType')}>
+                            <FormField field="room_type_id" error={field('room_type_id')} label={t('fo.res.roomType')}>
                                 <Select onChange={(e) => set({ roomTypeId: e.target.value })} value={form.roomTypeId}>
                                     <option value="">{t('property.rooms.chooseType')}</option>
                                     {lookups.types.map((x) => <option key={x.id} value={x.id}>{x.code} · {x.name}</option>)}
                                 </Select>
                             </FormField>
-                            <FormField error={field('rate_plan_id')} label={t('fo.res.ratePlan')}>
+                            <FormField field="rate_plan_id" error={field('rate_plan_id')} label={t('fo.res.ratePlan')}>
                                 <Select onChange={(e) => set({ ratePlanId: e.target.value })} value={form.ratePlanId}>
                                     <option value="">—</option>
                                     {lookups.plans.map((x) => <option key={x.id} value={x.id}>{x.code} · {x.name}</option>)}
                                 </Select>
                             </FormField>
-                            <FormField error={field('adults')} label={t('fo.res.adults')}><Input inputMode="numeric" onChange={(e) => set({ adults: e.target.value })} value={form.adults} /></FormField>
-                            <FormField error={field('children')} label={t('fo.res.children')}><Input inputMode="numeric" onChange={(e) => set({ children: e.target.value })} value={form.children} /></FormField>
+                            <FormField field="adults" error={field('adults')} label={t('fo.res.adults')}><Input inputMode="numeric" onChange={(e) => set({ adults: e.target.value })} value={form.adults} /></FormField>
+                            <FormField field="children" error={field('children')} label={t('fo.res.children')}><Input inputMode="numeric" onChange={(e) => set({ children: e.target.value })} value={form.children} /></FormField>
                             <FormField label={t('fo.res.initialStatus')}>
                                 <Select onChange={(e) => set({ status: e.target.value })} value={form.status}>{(['tentative', 'confirmed'] as const).map((s) => <option key={s} value={s}>{t(`fo.status.${s}`)}</option>)}</Select>
                             </FormField>
                         </div>
-                        <FormField error={field('notes')} label={t('fo.res.notes')}><Textarea maxLength={1000} onChange={(e) => set({ notes: e.target.value })} value={form.notes} /></FormField>
+                        <FormField field="notes" error={field('notes')} label={t('fo.res.notes')}><Textarea maxLength={1000} onChange={(e) => set({ notes: e.target.value })} value={form.notes} /></FormField>
 
                         {quote !== null && (
                             <div className="flex flex-col gap-2 text-sm" role="status">
@@ -234,7 +234,7 @@ export default function ReservationsPage({ filters, lookups, reservations }: { f
                 <div className="flex flex-col gap-3">
                     <p className="text-sm">{t('fo.oversell.body', { nights: quote?.availability.overbooking_nights.map((d) => format.date(d)).join(', ') ?? '' })}</p>
                     {action.error !== null && conflictReason !== 'oversell_warning' ? <ErrorState {...errorCopy} error={action.error} /> : null}
-                    <FormField error={field('oversell_reason')} label={t('fo.oversell.reason')}><Input maxLength={500} onChange={(e) => set({ oversellReason: e.target.value })} value={form?.oversellReason ?? ''} /></FormField>
+                    <FormField field="oversell_reason" error={field('oversell_reason')} label={t('fo.oversell.reason')}><Input maxLength={500} onChange={(e) => set({ oversellReason: e.target.value })} value={form?.oversellReason ?? ''} /></FormField>
                 </div>
             </Dialog>
         </FrontOfficeShell>

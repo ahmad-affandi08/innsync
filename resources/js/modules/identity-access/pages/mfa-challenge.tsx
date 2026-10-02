@@ -24,7 +24,7 @@ export default function MfaChallengePage() {
                 description={t('identity.mfa.challenge.description')}
             >
                 <form className="space-y-5" onSubmit={submit}>
-                    <FormField error={form.errors.code} label={t('identity.mfa.challenge.code')}>
+                    <FormField field="code" error={form.errors.code} label={t('identity.mfa.challenge.code')}>
                         <Input
                             autoComplete="one-time-code"
                             autoFocus

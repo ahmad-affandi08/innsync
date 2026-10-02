@@ -123,10 +123,10 @@ export default function LaundryPricesPage({ currency, items, treatments, may }: 
                 <section aria-labelledby="add-h" className="flex flex-col gap-3 border-t border-border pt-4">
                     <h2 className="text-lg font-semibold" id="add-h">{t('ldy.prices.add')}</h2>
                     <form className="grid gap-3 sm:grid-cols-4" onSubmit={(e) => { e.preventDefault(); void add(); }}>
-                        <FormField error={action.fieldError('code')} label={t('ldy.prices.code')}><Input maxLength={20} onChange={(e) => setForm({ ...form, code: e.target.value })} required value={form.code} /></FormField>
-                        <FormField error={action.fieldError('name')} label={t('ldy.prices.name')}><Input maxLength={80} onChange={(e) => setForm({ ...form, name: e.target.value })} required value={form.name} /></FormField>
-                        <FormField error={action.fieldError('unit_price_minor')} label={t('ldy.prices.price')}><Input inputMode="decimal" onChange={(e) => setForm({ ...form, price: e.target.value })} required value={form.price} /></FormField>
-                        <FormField error={action.fieldError('reason')} label={t('ldy.prices.reason')}><Input maxLength={300} onChange={(e) => setForm({ ...form, reason: e.target.value })} required value={form.reason} /></FormField>
+                        <FormField field="code" error={action.fieldError('code')} label={t('ldy.prices.code')}><Input maxLength={20} onChange={(e) => setForm({ ...form, code: e.target.value })} required value={form.code} /></FormField>
+                        <FormField field="name" error={action.fieldError('name')} label={t('ldy.prices.name')}><Input maxLength={80} onChange={(e) => setForm({ ...form, name: e.target.value })} required value={form.name} /></FormField>
+                        <FormField field="unit_price_minor" error={action.fieldError('unit_price_minor')} label={t('ldy.prices.price')}><Input inputMode="decimal" onChange={(e) => setForm({ ...form, price: e.target.value })} required value={form.price} /></FormField>
+                        <FormField field="reason" error={action.fieldError('reason')} label={t('ldy.prices.reason')}><Input maxLength={300} onChange={(e) => setForm({ ...form, reason: e.target.value })} required value={form.reason} /></FormField>
                         <div className="sm:col-span-4"><Button loading={action.busy} type="submit">{t('ldy.prices.add')}</Button></div>
                     </form>
                 </section>
@@ -146,12 +146,12 @@ export default function LaundryPricesPage({ currency, items, treatments, may }: 
                 />
                 {may.prices && (
                     <form className="grid gap-3 sm:grid-cols-3" onSubmit={(e) => { e.preventDefault(); void addTreatment(); }}>
-                        <FormField error={action.fieldError('code')} label={t('ldy.prices.code')}><Input maxLength={20} onChange={(e) => setTForm({ ...tForm, code: e.target.value })} required value={tForm.code} /></FormField>
-                        <FormField error={action.fieldError('name')} label={t('ldy.prices.name')}><Input maxLength={80} onChange={(e) => setTForm({ ...tForm, name: e.target.value })} required value={tForm.name} /></FormField>
-                        <FormField error={action.fieldError('kind')} label={t('ldy.treat.kind')}><Select onChange={(e) => setTForm({ ...tForm, kind: e.target.value })} value={tForm.kind}><option value="service">{t('ldy.treat.kind.service')}</option><option value="express">{t('ldy.treat.kind.express')}</option></Select></FormField>
-                        <FormField error={action.fieldError('pricing')} label={t('ldy.treat.pricing')}><Select onChange={(e) => setTForm({ ...tForm, pricing: e.target.value })} value={tForm.pricing}><option value="percent">{t('ldy.treat.pricing.percent')}</option><option value="fixed">{t('ldy.treat.pricing.fixed')}</option></Select></FormField>
-                        <FormField error={action.fieldError('value')} label={t('ldy.treat.value')}><Input inputMode="decimal" onChange={(e) => setTForm({ ...tForm, value: e.target.value })} required value={tForm.value} /></FormField>
-                        <FormField error={action.fieldError('reason')} label={t('ldy.prices.reason')}><Input maxLength={300} onChange={(e) => setTForm({ ...tForm, reason: e.target.value })} required value={tForm.reason} /></FormField>
+                        <FormField field="code" error={action.fieldError('code')} label={t('ldy.prices.code')}><Input maxLength={20} onChange={(e) => setTForm({ ...tForm, code: e.target.value })} required value={tForm.code} /></FormField>
+                        <FormField field="name" error={action.fieldError('name')} label={t('ldy.prices.name')}><Input maxLength={80} onChange={(e) => setTForm({ ...tForm, name: e.target.value })} required value={tForm.name} /></FormField>
+                        <FormField field="kind" error={action.fieldError('kind')} label={t('ldy.treat.kind')}><Select onChange={(e) => setTForm({ ...tForm, kind: e.target.value })} value={tForm.kind}><option value="service">{t('ldy.treat.kind.service')}</option><option value="express">{t('ldy.treat.kind.express')}</option></Select></FormField>
+                        <FormField field="pricing" error={action.fieldError('pricing')} label={t('ldy.treat.pricing')}><Select onChange={(e) => setTForm({ ...tForm, pricing: e.target.value })} value={tForm.pricing}><option value="percent">{t('ldy.treat.pricing.percent')}</option><option value="fixed">{t('ldy.treat.pricing.fixed')}</option></Select></FormField>
+                        <FormField field="value" error={action.fieldError('value')} label={t('ldy.treat.value')}><Input inputMode="decimal" onChange={(e) => setTForm({ ...tForm, value: e.target.value })} required value={tForm.value} /></FormField>
+                        <FormField field="reason" error={action.fieldError('reason')} label={t('ldy.prices.reason')}><Input maxLength={300} onChange={(e) => setTForm({ ...tForm, reason: e.target.value })} required value={tForm.reason} /></FormField>
                         <div className="sm:col-span-3"><Button loading={action.busy} type="submit">{t('ldy.treat.add')}</Button></div>
                     </form>
                 )}

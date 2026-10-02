@@ -257,9 +257,9 @@ export default function FolioPage({ approvals, folio, foreign, may_late_charge: 
                 {charge !== null && (
                     <div className="flex flex-col gap-3">
                         {error}
-                        <FormField error={action.fieldError('code')} hint={t('fo.folio.chargeCodeHint')} label={t('fo.folio.chargeCode')}><Input maxLength={20} onChange={(e) => setCharge({ ...charge, code: e.target.value.toUpperCase() })} value={charge.code} /></FormField>
-                        <FormField error={action.fieldError('description')} label={t('fo.folio.chargeDescription')}><Input maxLength={200} onChange={(e) => setCharge({ ...charge, description: e.target.value })} value={charge.description} /></FormField>
-                        <FormField error={amountError ? t('fo.folio.invalidAmount') : action.fieldError('amount')} hint={t('fo.folio.chargeAmountHint')} label={t('fo.folio.chargeAmount')}><Input inputMode="decimal" onChange={(e) => setCharge({ ...charge, amount: e.target.value })} value={charge.amount} /></FormField>
+                        <FormField field="code" error={action.fieldError('code')} hint={t('fo.folio.chargeCodeHint')} label={t('fo.folio.chargeCode')}><Input maxLength={20} onChange={(e) => setCharge({ ...charge, code: e.target.value.toUpperCase() })} value={charge.code} /></FormField>
+                        <FormField field="description" error={action.fieldError('description')} label={t('fo.folio.chargeDescription')}><Input maxLength={200} onChange={(e) => setCharge({ ...charge, description: e.target.value })} value={charge.description} /></FormField>
+                        <FormField field="amount" error={amountError ? t('fo.folio.invalidAmount') : action.fieldError('amount')} hint={t('fo.folio.chargeAmountHint')} label={t('fo.folio.chargeAmount')}><Input inputMode="decimal" onChange={(e) => setCharge({ ...charge, amount: e.target.value })} value={charge.amount} /></FormField>
                         <fieldset className="flex flex-col gap-1 text-sm">
                             <label className="flex items-center gap-2"><input checked={!charge.nett} name="nett" onChange={() => setCharge({ ...charge, nett: false })} type="radio" />{t('fo.folio.plusPlus')}</label>
                             <label className="flex items-center gap-2"><input checked={charge.nett} name="nett" onChange={() => setCharge({ ...charge, nett: true })} type="radio" />{t('fo.folio.nett')}</label>
@@ -272,13 +272,13 @@ export default function FolioPage({ approvals, folio, foreign, may_late_charge: 
                 {payment !== null && (
                     <div className="flex flex-col gap-3">
                         {error}
-                        <FormField error={action.fieldError('payment_method')} label={t('fo.folio.method')}><Select onChange={(e) => setPayment({ ...payment, method: e.target.value })} value={payment.method}>{METHODS.map((m) => <option key={m} value={m}>{t(`fo.folio.method.${m}`)}</option>)}</Select></FormField>
+                        <FormField field="payment_method" error={action.fieldError('payment_method')} label={t('fo.folio.method')}><Select onChange={(e) => setPayment({ ...payment, method: e.target.value })} value={payment.method}>{METHODS.map((m) => <option key={m} value={m}>{t(`fo.folio.method.${m}`)}</option>)}</Select></FormField>
                         {foreign.enabled && foreign.rates.length > 0 ? (
                             <FormField label={t('fo.foreign.currency')}><Select onChange={(e) => setPayment({ ...payment, currency: e.target.value })} value={payment.currency}><option value={folio.currency}>{folio.currency}</option>{foreign.rates.map((r) => <option key={r.currency} value={r.currency}>{r.currency}</option>)}</Select></FormField>
                         ) : null}
-                        <FormField error={amountError ? t('fo.folio.invalidAmount') : action.fieldError('amount') ?? action.fieldError('foreign_minor')} hint={foreignRate !== undefined ? t('fo.foreign.rateNote', { rate: format.number(foreignRate.rate_e4 / 10000), currency: folio.currency }) : undefined} label={t('fo.folio.amount')}><Input inputMode="decimal" onChange={(e) => setPayment({ ...payment, amount: e.target.value })} value={payment.amount} /></FormField>
+                        <FormField field="amount" error={amountError ? t('fo.folio.invalidAmount') : action.fieldError('amount') ?? action.fieldError('foreign_minor')} hint={foreignRate !== undefined ? t('fo.foreign.rateNote', { rate: format.number(foreignRate.rate_e4 / 10000), currency: folio.currency }) : undefined} label={t('fo.folio.amount')}><Input inputMode="decimal" onChange={(e) => setPayment({ ...payment, amount: e.target.value })} value={payment.amount} /></FormField>
                         {payment.currency !== folio.currency ? <p className="text-sm font-medium" data-testid="foreign-booked">{booked === null ? '—' : t('fo.foreign.booked', { amount: format.money(booked, folio.currency) })}</p> : null}
-                        <FormField error={action.fieldError('payment_reference')} hint={t('fo.folio.referenceHint')} label={t('fo.folio.reference')}><Input maxLength={80} onChange={(e) => setPayment({ ...payment, reference: e.target.value })} value={payment.reference} /></FormField>
+                        <FormField field="payment_reference" error={action.fieldError('payment_reference')} hint={t('fo.folio.referenceHint')} label={t('fo.folio.reference')}><Input maxLength={80} onChange={(e) => setPayment({ ...payment, reference: e.target.value })} value={payment.reference} /></FormField>
                         <FormField label={t('fo.folio.purpose')}><Select onChange={(e) => setPayment({ ...payment, purpose: e.target.value })} value={payment.purpose}><option value="settlement">{t('fo.folio.purpose.settlement')}</option><option value="deposit">{t('fo.folio.purpose.deposit')}</option></Select></FormField>
                     </div>
                 )}
@@ -301,7 +301,7 @@ export default function FolioPage({ approvals, folio, foreign, may_late_charge: 
                     {reverse !== null && pendingApproval(reverse.posting.id, 'front-office.folio.reversal') ? <StatusBadge label={t('fo.folio.approvalPending')} tone="pending" /> : null}
                     {needsApproval ? <Alert actions={<Button loading={action.busy} onClick={() => void requestReversal()} size="sm" type="button">{t('fo.folio.requestApproval')}</Button>} title={t('fo.folio.approvalNeeded')} tone="warning" /> : null}
                     {requested ? <Alert title={t('fo.folio.approvalRequested')} tone="info" /> : null}
-                    <FormField error={action.fieldError('reason')} label={t('fo.folio.reason')}><Input maxLength={500} onChange={(e) => reverse !== null && setReverse({ ...reverse, reason: e.target.value })} value={reverse?.reason ?? ''} /></FormField>
+                    <FormField field="reason" error={action.fieldError('reason')} label={t('fo.folio.reason')}><Input maxLength={500} onChange={(e) => reverse !== null && setReverse({ ...reverse, reason: e.target.value })} value={reverse?.reason ?? ''} /></FormField>
                 </div>
             </ConfirmDialog>
 
@@ -310,7 +310,7 @@ export default function FolioPage({ approvals, folio, foreign, may_late_charge: 
                     <div className="flex flex-col gap-3">
                         {error}
                         <p className="text-sm">{t('fo.folio.move.about', { description: move.posting.description, amount: money(move.posting.total_minor) })}</p>
-                        <FormField error={action.fieldError('target_folio_id')} label={t('fo.folio.move.target')}>
+                        <FormField field="target_folio_id" error={action.fieldError('target_folio_id')} label={t('fo.folio.move.target')}>
                             <Select onChange={(e) => setMove({ ...move, target: e.target.value })} value={move.target}>
                                 <option value="">{move.targets === null ? '…' : t('fo.folio.move.choose')}</option>
                                 {(move.targets?.same ?? []).map((x) => <option key={x.folio_id} value={x.folio_id}>{t('fo.folio.move.same', { number: x.number, label: x.label })}</option>)}
@@ -318,7 +318,7 @@ export default function FolioPage({ approvals, folio, foreign, may_late_charge: 
                             </Select>
                         </FormField>
                         {move.targets !== null && move.targets.same.length === 0 && move.targets.others.length === 0 ? <p className="text-xs text-muted-foreground">{t('fo.folio.move.none')}</p> : null}
-                        <FormField error={action.fieldError('reason')} label={t('fo.folio.reason')}><Input maxLength={400} onChange={(e) => setMove({ ...move, reason: e.target.value })} value={move.reason} /></FormField>
+                        <FormField field="reason" error={action.fieldError('reason')} label={t('fo.folio.reason')}><Input maxLength={400} onChange={(e) => setMove({ ...move, reason: e.target.value })} value={move.reason} /></FormField>
                         <p className="text-xs text-muted-foreground">{t('fo.folio.move.note')}</p>
                     </div>
                 )}
@@ -340,10 +340,10 @@ export default function FolioPage({ approvals, folio, foreign, may_late_charge: 
                         {error}
                         {needsApproval ? <Alert actions={<Button loading={action.busy} onClick={() => void requestRefund()} size="sm" type="button">{t('fo.folio.requestApproval')}</Button>} title={t('fo.folio.approvalNeeded')} tone="warning" /> : null}
                         {requested ? <Alert title={t('fo.folio.approvalRequested')} tone="info" /> : null}
-                        <FormField error={action.fieldError('payment_method')} label={t('fo.folio.method')}><Select onChange={(e) => setRefund({ ...refund, method: e.target.value })} value={refund.method}>{METHODS.map((m) => <option key={m} value={m}>{t(`fo.folio.method.${m}`)}</option>)}</Select></FormField>
-                        <FormField error={amountError ? t('fo.folio.invalidAmount') : action.fieldError('amount')} label={t('fo.folio.amount')}><Input inputMode="decimal" onChange={(e) => setRefund({ ...refund, amount: e.target.value })} value={refund.amount} /></FormField>
-                        <FormField error={action.fieldError('payment_reference')} hint={t('fo.folio.referenceHint')} label={t('fo.folio.reference')}><Input maxLength={80} onChange={(e) => setRefund({ ...refund, reference: e.target.value })} value={refund.reference} /></FormField>
-                        <FormField error={action.fieldError('reason')} label={t('fo.folio.reason')}><Input maxLength={500} onChange={(e) => setRefund({ ...refund, reason: e.target.value })} value={refund.reason} /></FormField>
+                        <FormField field="payment_method" error={action.fieldError('payment_method')} label={t('fo.folio.method')}><Select onChange={(e) => setRefund({ ...refund, method: e.target.value })} value={refund.method}>{METHODS.map((m) => <option key={m} value={m}>{t(`fo.folio.method.${m}`)}</option>)}</Select></FormField>
+                        <FormField field="amount" error={amountError ? t('fo.folio.invalidAmount') : action.fieldError('amount')} label={t('fo.folio.amount')}><Input inputMode="decimal" onChange={(e) => setRefund({ ...refund, amount: e.target.value })} value={refund.amount} /></FormField>
+                        <FormField field="payment_reference" error={action.fieldError('payment_reference')} hint={t('fo.folio.referenceHint')} label={t('fo.folio.reference')}><Input maxLength={80} onChange={(e) => setRefund({ ...refund, reference: e.target.value })} value={refund.reference} /></FormField>
+                        <FormField field="reason" error={action.fieldError('reason')} label={t('fo.folio.reason')}><Input maxLength={500} onChange={(e) => setRefund({ ...refund, reason: e.target.value })} value={refund.reason} /></FormField>
                     </div>
                 )}
             </ConfirmDialog>

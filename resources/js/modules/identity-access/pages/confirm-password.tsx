@@ -24,7 +24,7 @@ export default function ConfirmPasswordPage() {
                 description={t('identity.confirmPassword.description')}
             >
                 <form className="space-y-5" onSubmit={submit}>
-                    <FormField error={form.errors.password} label={t('common.field.password')}>
+                    <FormField field="password" error={form.errors.password} label={t('common.field.password')}>
                         <Input
                             autoComplete="current-password"
                             autoFocus

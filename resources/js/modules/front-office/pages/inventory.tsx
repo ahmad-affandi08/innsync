@@ -77,7 +77,7 @@ export default function InventoryPage({ blocks, holds, rooms, types }: { blocks:
         <Button loading={action.busy} onClick={onSave} type="button">{t('property.action.save')}</Button>
     </>);
     const reasonField = (value: string, set: (v: string) => void) => (
-        <FormField error={action.fieldError('reason')} hint={t('property.field.reasonHint')} label={t('property.field.reason')}><Input maxLength={500} onChange={(e) => set(e.target.value)} value={value} /></FormField>
+        <FormField field="reason" error={action.fieldError('reason')} hint={t('property.field.reasonHint')} label={t('property.field.reason')}><Input maxLength={500} onChange={(e) => set(e.target.value)} value={value} /></FormField>
     );
 
     return (
@@ -136,15 +136,15 @@ export default function InventoryPage({ blocks, holds, rooms, types }: { blocks:
                 {blockForm !== null && (
                     <div className="flex flex-col gap-3">
                         {error}
-                        <FormField error={action.fieldError('room_id')} label={t('fo.inv.room')}>
+                        <FormField field="room_id" error={action.fieldError('room_id')} label={t('fo.inv.room')}>
                             <Select onChange={(e) => setBlockForm({ ...blockForm, roomId: e.target.value })} value={blockForm.roomId}>
                                 <option value="">—</option>{rooms.map((r) => <option key={r.id} value={r.id}>{r.number} ({typeCode(r.room_type_id)})</option>)}
                             </Select>
                         </FormField>
-                        <FormField error={action.fieldError('kind')} label={t('fo.inv.kind')}><Select onChange={(e) => setBlockForm({ ...blockForm, kind: e.target.value })} value={blockForm.kind}>{KINDS.map((k) => <option key={k} value={k}>{t(`fo.inv.kind.${k}`)}</option>)}</Select></FormField>
+                        <FormField field="kind" error={action.fieldError('kind')} label={t('fo.inv.kind')}><Select onChange={(e) => setBlockForm({ ...blockForm, kind: e.target.value })} value={blockForm.kind}>{KINDS.map((k) => <option key={k} value={k}>{t(`fo.inv.kind.${k}`)}</option>)}</Select></FormField>
                         <div className="grid grid-cols-2 gap-3">
-                            <FormField error={action.fieldError('from')} label={t('fo.inv.from')}><DatePicker onChange={(e) => setBlockForm({ ...blockForm, from: e.target.value })} value={blockForm.from} /></FormField>
-                            <FormField error={action.fieldError('to')} label={t('fo.inv.to')}><DatePicker onChange={(e) => setBlockForm({ ...blockForm, to: e.target.value })} value={blockForm.to} /></FormField>
+                            <FormField field="from" error={action.fieldError('from')} label={t('fo.inv.from')}><DatePicker onChange={(e) => setBlockForm({ ...blockForm, from: e.target.value })} value={blockForm.from} /></FormField>
+                            <FormField field="to" error={action.fieldError('to')} label={t('fo.inv.to')}><DatePicker onChange={(e) => setBlockForm({ ...blockForm, to: e.target.value })} value={blockForm.to} /></FormField>
                         </div>
                         {reasonField(blockForm.reason, (v) => setBlockForm({ ...blockForm, reason: v }))}
                     </div>
@@ -155,15 +155,15 @@ export default function InventoryPage({ blocks, holds, rooms, types }: { blocks:
                 {holdForm !== null && (
                     <div className="flex flex-col gap-3">
                         {error}
-                        <FormField error={action.fieldError('room_type_id')} label={t('fo.res.roomType')}>
+                        <FormField field="room_type_id" error={action.fieldError('room_type_id')} label={t('fo.res.roomType')}>
                             <Select onChange={(e) => setHoldForm({ ...holdForm, typeId: e.target.value })} value={holdForm.typeId}><option value="">—</option>{types.map((x) => <option key={x.id} value={x.id}>{x.code} · {x.name}</option>)}</Select>
                         </FormField>
                         <div className="grid grid-cols-3 gap-3">
-                            <FormField error={action.fieldError('from')} label={t('fo.inv.from')}><DatePicker onChange={(e) => setHoldForm({ ...holdForm, from: e.target.value })} value={holdForm.from} /></FormField>
-                            <FormField error={action.fieldError('to')} label={t('fo.inv.to')}><DatePicker onChange={(e) => setHoldForm({ ...holdForm, to: e.target.value })} value={holdForm.to} /></FormField>
-                            <FormField error={action.fieldError('rooms')} label={t('fo.inv.holdRooms')}><Input inputMode="numeric" onChange={(e) => setHoldForm({ ...holdForm, rooms: e.target.value })} value={holdForm.rooms} /></FormField>
+                            <FormField field="from" error={action.fieldError('from')} label={t('fo.inv.from')}><DatePicker onChange={(e) => setHoldForm({ ...holdForm, from: e.target.value })} value={holdForm.from} /></FormField>
+                            <FormField field="to" error={action.fieldError('to')} label={t('fo.inv.to')}><DatePicker onChange={(e) => setHoldForm({ ...holdForm, to: e.target.value })} value={holdForm.to} /></FormField>
+                            <FormField field="rooms" error={action.fieldError('rooms')} label={t('fo.inv.holdRooms')}><Input inputMode="numeric" onChange={(e) => setHoldForm({ ...holdForm, rooms: e.target.value })} value={holdForm.rooms} /></FormField>
                         </div>
-                        <FormField error={action.fieldError('expires_at')} hint={t('fo.inv.expiresHint')} label={t('fo.inv.expires')}><Input onChange={(e) => setHoldForm({ ...holdForm, expires: e.target.value })} value={holdForm.expires} /></FormField>
+                        <FormField field="expires_at" error={action.fieldError('expires_at')} hint={t('fo.inv.expiresHint')} label={t('fo.inv.expires')}><Input onChange={(e) => setHoldForm({ ...holdForm, expires: e.target.value })} value={holdForm.expires} /></FormField>
                         {reasonField(holdForm.reason, (v) => setHoldForm({ ...holdForm, reason: v }))}
                     </div>
                 )}

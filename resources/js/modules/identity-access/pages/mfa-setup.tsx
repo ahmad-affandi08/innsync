@@ -52,7 +52,7 @@ export default function MfaSetupPage({
                             <code className="mt-1 block break-all bg-surface-muted p-3 text-sm">{secret}</code>
                             <p className="mt-2 break-all text-xs text-muted-foreground">{provisioningUri}</p>
                         </div>
-                        <FormField error={form.errors.code} label={t('identity.mfa.setup.sixDigitCode')}>
+                        <FormField field="code" error={form.errors.code} label={t('identity.mfa.setup.sixDigitCode')}>
                             <Input inputMode="numeric" onChange={(event) => form.setData('code', event.target.value)} required value={form.data.code} />
                         </FormField>
                         <Button className="w-full" loading={form.processing} type="submit">{t('identity.mfa.setup.confirm')}</Button>

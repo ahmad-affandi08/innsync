@@ -31,8 +31,8 @@ export default function RegistrationTermsPage({ catalogue }: { catalogue: { term
             <p className="text-sm" data-testid="terms-version">{catalogue.terms === null ? t('fo.regterms.none') : t('fo.regterms.version', { n: catalogue.terms.version })}</p>
             {catalogue.may_edit ? (
                 <section className="flex max-w-2xl flex-col gap-3">
-                    <FormField error={action.fieldError('body')} hint={t('fo.regterms.hint')} label={t('fo.regterms.body')}><Textarea maxLength={4000} onChange={(e) => setBody(e.target.value)} rows={12} value={body} /></FormField>
-                    <FormField error={action.fieldError('reason')} label={t('fo.regterms.reason')}><Input maxLength={300} onChange={(e) => setReason(e.target.value)} value={reason} /></FormField>
+                    <FormField field="body" error={action.fieldError('body')} hint={t('fo.regterms.hint')} label={t('fo.regterms.body')}><Textarea maxLength={4000} onChange={(e) => setBody(e.target.value)} rows={12} value={body} /></FormField>
+                    <FormField field="reason" error={action.fieldError('reason')} label={t('fo.regterms.reason')}><Input maxLength={300} onChange={(e) => setReason(e.target.value)} value={reason} /></FormField>
                     <div><Button disabled={body.trim() === '' || reason.trim() === ''} loading={action.busy} onClick={() => void save()} type="button">{t('fo.regterms.save')}</Button></div>
                 </section>
             ) : catalogue.terms !== null ? <p className="whitespace-pre-line text-sm">{catalogue.terms.body}</p> : null}

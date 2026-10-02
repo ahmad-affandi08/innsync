@@ -99,16 +99,16 @@ export default function CompaniesPage({ accounts, currency, overview }: Props) {
                     <h2 className="text-lg font-semibold" id="co-form-h">{form.id === null ? t('fo.company.add') : t('property.action.edit')}</h2>
                     {action.error !== null ? <ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /> : null}
                     <div className="grid gap-3 sm:grid-cols-2">
-                        {form.id === null ? <FormField error={action.fieldError('code')} label={t('fo.company.code')}><Input maxLength={20} onChange={(e) => setForm({ ...form, code: e.target.value.toUpperCase() })} value={form.code} /></FormField> : null}
-                        <FormField error={action.fieldError('name')} label={t('fo.company.name')}><Input maxLength={120} onChange={(e) => setForm({ ...form, name: e.target.value })} value={form.name} /></FormField>
-                        <FormField error={action.fieldError('kind')} label={t('fo.company.kindLabel')}><Select onChange={(e) => setForm({ ...form, kind: e.target.value })} value={form.kind}><option value="company">{t('fo.company.kind.company')}</option><option value="agent">{t('fo.company.kind.agent')}</option></Select></FormField>
-                        <FormField error={action.fieldError('tax_id')} label={t('fo.company.taxId')}><Input maxLength={30} onChange={(e) => setForm({ ...form, tax_id: e.target.value })} value={form.tax_id} /></FormField>
-                        <FormField error={action.fieldError('contact_name')} label={t('fo.company.contactName')}><Input maxLength={100} onChange={(e) => setForm({ ...form, contact_name: e.target.value })} value={form.contact_name} /></FormField>
-                        <FormField error={action.fieldError('contact_phone')} label={t('fo.company.contactPhone')}><Input maxLength={30} onChange={(e) => setForm({ ...form, contact_phone: e.target.value })} value={form.contact_phone} /></FormField>
-                        <FormField error={action.fieldError('contact_email')} label={t('fo.company.contactEmail')}><Input maxLength={190} onChange={(e) => setForm({ ...form, contact_email: e.target.value })} value={form.contact_email} /></FormField>
-                        <FormField error={invalid ? t('fo.folio.invalidAmount') : action.fieldError('credit_limit_minor')} hint={t('fo.company.limitHint')} label={t('fo.company.limitLabel')}><Input inputMode="decimal" onChange={(e) => setForm({ ...form, limit: e.target.value })} value={form.limit} /></FormField>
+                        {form.id === null ? <FormField field="code" error={action.fieldError('code')} label={t('fo.company.code')}><Input maxLength={20} onChange={(e) => setForm({ ...form, code: e.target.value.toUpperCase() })} value={form.code} /></FormField> : null}
+                        <FormField field="name" error={action.fieldError('name')} label={t('fo.company.name')}><Input maxLength={120} onChange={(e) => setForm({ ...form, name: e.target.value })} value={form.name} /></FormField>
+                        <FormField field="kind" error={action.fieldError('kind')} label={t('fo.company.kindLabel')}><Select onChange={(e) => setForm({ ...form, kind: e.target.value })} value={form.kind}><option value="company">{t('fo.company.kind.company')}</option><option value="agent">{t('fo.company.kind.agent')}</option></Select></FormField>
+                        <FormField field="tax_id" error={action.fieldError('tax_id')} label={t('fo.company.taxId')}><Input maxLength={30} onChange={(e) => setForm({ ...form, tax_id: e.target.value })} value={form.tax_id} /></FormField>
+                        <FormField field="contact_name" error={action.fieldError('contact_name')} label={t('fo.company.contactName')}><Input maxLength={100} onChange={(e) => setForm({ ...form, contact_name: e.target.value })} value={form.contact_name} /></FormField>
+                        <FormField field="contact_phone" error={action.fieldError('contact_phone')} label={t('fo.company.contactPhone')}><Input maxLength={30} onChange={(e) => setForm({ ...form, contact_phone: e.target.value })} value={form.contact_phone} /></FormField>
+                        <FormField field="contact_email" error={action.fieldError('contact_email')} label={t('fo.company.contactEmail')}><Input maxLength={190} onChange={(e) => setForm({ ...form, contact_email: e.target.value })} value={form.contact_email} /></FormField>
+                        <FormField field="credit_limit_minor" error={invalid ? t('fo.folio.invalidAmount') : action.fieldError('credit_limit_minor')} hint={t('fo.company.limitHint')} label={t('fo.company.limitLabel')}><Input inputMode="decimal" onChange={(e) => setForm({ ...form, limit: e.target.value })} value={form.limit} /></FormField>
                     </div>
-                    <FormField error={action.fieldError('billing_instruction')} label={t('fo.company.instruction')}><Textarea maxLength={500} onChange={(e) => setForm({ ...form, billing_instruction: e.target.value })} rows={3} value={form.billing_instruction} /></FormField>
+                    <FormField field="billing_instruction" error={action.fieldError('billing_instruction')} label={t('fo.company.instruction')}><Textarea maxLength={500} onChange={(e) => setForm({ ...form, billing_instruction: e.target.value })} rows={3} value={form.billing_instruction} /></FormField>
                     <fieldset className="flex flex-col gap-1 text-sm">
                         <legend className="font-medium">{t('fo.company.routing')}</legend>
                         <label className="flex items-center gap-2"><input checked={form.route_rooms} onChange={(e) => setForm({ ...form, route_rooms: e.target.checked })} type="checkbox" />{t('fo.company.routeRooms')}</label>
@@ -117,7 +117,7 @@ export default function CompaniesPage({ accounts, currency, overview }: Props) {
                     {form.id !== null ? (
                         <>
                             <label className="flex items-center gap-2 text-sm"><input checked={form.active} onChange={(e) => setForm({ ...form, active: e.target.checked })} type="checkbox" />{t('fo.company.active')}</label>
-                            <FormField error={action.fieldError('reason')} label={t('fo.folio.reason')}><Input maxLength={300} onChange={(e) => setForm({ ...form, reason: e.target.value })} value={form.reason} /></FormField>
+                            <FormField field="reason" error={action.fieldError('reason')} label={t('fo.folio.reason')}><Input maxLength={300} onChange={(e) => setForm({ ...form, reason: e.target.value })} value={form.reason} /></FormField>
                         </>
                     ) : null}
                     <Alert title={t('fo.company.routingNote')} tone="info" />

@@ -89,8 +89,10 @@ export default function LostFoundPage({ overview, status }: { overview: Overview
                             </div>
                             {closing?.id === i.id && (
                                 <div className="flex flex-wrap items-end gap-2">
-                                    <FormField error={action.fieldError(closing.mode === 'returned' ? 'returned_to' : 'reason')} label={closing.mode === 'returned' ? t('hk.lf.returnedToLabel') : t('hk.lf.disposeReason')}><Input maxLength={closing.mode === 'returned' ? 100 : 300} onChange={(e) => setClosing({ ...closing, text: e.target.value })} value={closing.text} /></FormField>
-                                    {closing.mode === 'returned' ? <FormField error={action.fieldError('note')} label={t('hk.lf.note')}><Input maxLength={300} onChange={(e) => setClosing({ ...closing, note: e.target.value })} value={closing.note} /></FormField> : null}
+                                    {closing.mode === 'returned'
+                                        ? <FormField field="returned_to" error={action.fieldError('returned_to')} label={t('hk.lf.returnedToLabel')}><Input maxLength={100} onChange={(e) => setClosing({ ...closing, text: e.target.value })} value={closing.text} /></FormField>
+                                        : <FormField field="reason" error={action.fieldError('reason')} label={t('hk.lf.disposeReason')}><Input maxLength={300} onChange={(e) => setClosing({ ...closing, text: e.target.value })} value={closing.text} /></FormField>}
+                                    {closing.mode === 'returned' ? <FormField field="note" error={action.fieldError('note')} label={t('hk.lf.note')}><Input maxLength={300} onChange={(e) => setClosing({ ...closing, note: e.target.value })} value={closing.note} /></FormField> : null}
                                     <Button disabled={closing.text.trim() === ''} loading={action.busy} onClick={() => void close(i)} size="sm" type="button">{t('hk.lf.confirm')}</Button>
                                     <Button disabled={action.busy} onClick={() => setClosing(null)} size="sm" type="button" variant="outline">{t('ui.dialog.cancel')}</Button>
                                 </div>
@@ -104,11 +106,11 @@ export default function LostFoundPage({ overview, status }: { overview: Overview
                 <section aria-labelledby="lf-new-h" className="flex flex-col gap-3 border-t border-border pt-4">
                     <h2 className="text-lg font-semibold" id="lf-new-h">{t('hk.lf.new')}</h2>
                     <form className="grid gap-3 sm:grid-cols-2" onSubmit={(e) => void submit(e)}>
-                        <FormField error={action.fieldError('description')} label={t('hk.lf.what')}><Input maxLength={200} onChange={(e) => setForm({ ...form, description: e.target.value })} required value={form.description} /></FormField>
-                        <FormField error={action.fieldError('stored_at')} hint={t('hk.lf.keptHint')} label={t('hk.lf.keptLabel')}><Input maxLength={80} onChange={(e) => setForm({ ...form, storedAt: e.target.value })} required value={form.storedAt} /></FormField>
-                        <FormField error={action.fieldError('room_id')} label={t('hk.lf.roomLabel')}><Select onChange={(e) => setForm({ ...form, roomId: e.target.value })} value={form.roomId}><option value="">—</option>{overview.rooms.map((r) => <option key={r.id} value={r.id}>{r.number}</option>)}</Select></FormField>
-                        <FormField error={action.fieldError('place')} hint={t('hk.lf.placeHint')} label={t('hk.lf.placeLabel')}><Input maxLength={80} onChange={(e) => setForm({ ...form, place: e.target.value })} value={form.place} /></FormField>
-                        <FormField error={action.fieldError('photo')} label={t('hk.lf.photoLabel')}><Input accept="image/jpeg,image/png" capture="environment" key={pickerKey} onChange={(e) => setFile(e.target.files?.[0] ?? null)} type="file" /></FormField>
+                        <FormField field="description" error={action.fieldError('description')} label={t('hk.lf.what')}><Input maxLength={200} onChange={(e) => setForm({ ...form, description: e.target.value })} required value={form.description} /></FormField>
+                        <FormField field="stored_at" error={action.fieldError('stored_at')} hint={t('hk.lf.keptHint')} label={t('hk.lf.keptLabel')}><Input maxLength={80} onChange={(e) => setForm({ ...form, storedAt: e.target.value })} required value={form.storedAt} /></FormField>
+                        <FormField field="room_id" error={action.fieldError('room_id')} label={t('hk.lf.roomLabel')}><Select onChange={(e) => setForm({ ...form, roomId: e.target.value })} value={form.roomId}><option value="">—</option>{overview.rooms.map((r) => <option key={r.id} value={r.id}>{r.number}</option>)}</Select></FormField>
+                        <FormField field="place" error={action.fieldError('place')} hint={t('hk.lf.placeHint')} label={t('hk.lf.placeLabel')}><Input maxLength={80} onChange={(e) => setForm({ ...form, place: e.target.value })} value={form.place} /></FormField>
+                        <FormField field="photo" error={action.fieldError('photo')} label={t('hk.lf.photoLabel')}><Input accept="image/jpeg,image/png" capture="environment" key={pickerKey} onChange={(e) => setFile(e.target.files?.[0] ?? null)} type="file" /></FormField>
                         <div className="flex items-end"><Button loading={action.busy} type="submit">{t('hk.lf.record')}</Button></div>
                     </form>
                 </section>

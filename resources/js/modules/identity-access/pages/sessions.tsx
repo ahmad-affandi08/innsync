@@ -57,10 +57,10 @@ export default function SessionsPage({ sessions }: { sessions: Session[] }) {
                             <h2 className="text-lg font-semibold">{t('identity.password.heading')}</h2>
                             <p className="mt-1 text-sm text-muted-foreground">{t('identity.password.description')}</p>
                         </div>
-                        <FormField error={passwordForm.errors.current_password} label={t('identity.password.current')}>
+                        <FormField field="current_password" error={passwordForm.errors.current_password} label={t('identity.password.current')}>
                             <Input autoComplete="current-password" onChange={(event) => passwordForm.setData('current_password', event.target.value)} required type="password" value={passwordForm.data.current_password} />
                         </FormField>
-                        <FormField error={passwordForm.errors.password} label={t('identity.password.new')}>
+                        <FormField field="password" error={passwordForm.errors.password} label={t('identity.password.new')}>
                             <Input autoComplete="new-password" onChange={(event) => passwordForm.setData('password', event.target.value)} required type="password" value={passwordForm.data.password} />
                         </FormField>
                         <FormField label={t('identity.password.confirmNew')}>

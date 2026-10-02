@@ -102,8 +102,8 @@ export default function ObligationsPage({ context, timeline: tl }: { context: { 
             {filing !== null && (
                 <section aria-labelledby="obl-file-h" className="flex max-w-xl flex-col gap-3 border border-border p-4">
                     <h2 className="text-lg font-semibold" id="obl-file-h">{t('rpt.obl.filingTitle', { month: filing.month })}</h2>
-                    <FormField error={action.fieldError('reported_on')} label={t('rpt.obl.reportedDate')}><DatePicker onChange={(e) => setFiling({ ...filing, date: e.target.value })} value={filing.date} /></FormField>
-                    <FormField error={action.fieldError('reference')} hint={t('rpt.obl.referenceHint')} label={t('rpt.obl.reference')}><Input maxLength={60} onChange={(e) => setFiling({ ...filing, reference: e.target.value })} value={filing.reference} /></FormField>
+                    <FormField field="reported_on" error={action.fieldError('reported_on')} label={t('rpt.obl.reportedDate')}><DatePicker onChange={(e) => setFiling({ ...filing, date: e.target.value })} value={filing.date} /></FormField>
+                    <FormField field="reference" error={action.fieldError('reference')} hint={t('rpt.obl.referenceHint')} label={t('rpt.obl.reference')}><Input maxLength={60} onChange={(e) => setFiling({ ...filing, reference: e.target.value })} value={filing.reference} /></FormField>
                     <div className="flex gap-2"><Button loading={action.busy} onClick={() => void report()} type="button">{t('rpt.obl.confirmReported')}</Button><Button disabled={action.busy} onClick={() => setFiling(null)} type="button" variant="outline">{t('ui.dialog.cancel')}</Button></div>
                 </section>
             )}
@@ -111,9 +111,9 @@ export default function ObligationsPage({ context, timeline: tl }: { context: { 
             {tl.may_manage && (
                 <section aria-labelledby="obl-set-h" className="flex max-w-xl flex-col gap-3 border-t border-border pt-4">
                     <h2 className="text-lg font-semibold" id="obl-set-h">{t('rpt.obl.settings')}</h2>
-                    <FormField error={action.fieldError('tax_report_day')} hint={t('rpt.obl.dayHint')} label={t('rpt.obl.day')}><Input max={28} min={1} onChange={(e) => setForm({ ...form, day: e.target.value })} type="number" value={form.day} /></FormField>
-                    <FormField error={action.fieldError('service_employee_share_bp')} hint={t('rpt.obl.shareHint')} label={t('rpt.obl.share')}><Input inputMode="decimal" onChange={(e) => setForm({ ...form, share: e.target.value })} value={form.share} /></FormField>
-                    <FormField error={action.fieldError('reason')} label={t('rpt.obl.reason')}><Input maxLength={300} onChange={(e) => setForm({ ...form, reason: e.target.value })} value={form.reason} /></FormField>
+                    <FormField field="tax_report_day" error={action.fieldError('tax_report_day')} hint={t('rpt.obl.dayHint')} label={t('rpt.obl.day')}><Input max={28} min={1} onChange={(e) => setForm({ ...form, day: e.target.value })} type="number" value={form.day} /></FormField>
+                    <FormField field="service_employee_share_bp" error={action.fieldError('service_employee_share_bp')} hint={t('rpt.obl.shareHint')} label={t('rpt.obl.share')}><Input inputMode="decimal" onChange={(e) => setForm({ ...form, share: e.target.value })} value={form.share} /></FormField>
+                    <FormField field="reason" error={action.fieldError('reason')} label={t('rpt.obl.reason')}><Input maxLength={300} onChange={(e) => setForm({ ...form, reason: e.target.value })} value={form.reason} /></FormField>
                     <div><Button disabled={form.reason.trim() === ''} loading={action.busy} onClick={() => void saveSettings()} type="button">{t('rpt.obl.saveSettings')}</Button></div>
                 </section>
             )}

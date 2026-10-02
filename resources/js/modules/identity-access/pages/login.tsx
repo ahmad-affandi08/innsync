@@ -24,7 +24,7 @@ export default function LoginPage() {
                 description={t('identity.login.description')}
             >
                 <form className="space-y-5" onSubmit={submit}>
-                    <FormField error={form.errors.email} label={t('common.field.email')}>
+                    <FormField field="email" error={form.errors.email} label={t('common.field.email')}>
                         <Input
                             autoComplete="username"
                             autoFocus

@@ -169,7 +169,7 @@ export default function HousekeepingBoardPage({ board }: { board: Board }) {
                     <h2 className="text-lg font-semibold" id="set-h">{t('hk.settings.title')}</h2>
                     {saved ? <Alert title={t('hk.board.saved')} tone="success" /> : null}
                     <label className="flex items-center gap-2 text-sm"><input checked={setting.required} onChange={(e) => setSetting({ ...setting, required: e.target.checked })} type="checkbox" />{t('hk.settings.required')}</label>
-                    <FormField error={action.fieldError('reason')} label={t('hk.settings.reason')}><Input maxLength={300} onChange={(e) => setSetting({ ...setting, reason: e.target.value })} value={setting.reason} /></FormField>
+                    <FormField field="reason" error={action.fieldError('reason')} label={t('hk.settings.reason')}><Input maxLength={300} onChange={(e) => setSetting({ ...setting, reason: e.target.value })} value={setting.reason} /></FormField>
                     <div><Button disabled={action.busy || setting.reason.trim() === ''} onClick={() => void saveSetting()} type="button" variant="outline">{t('hk.settings.save')}</Button></div>
                 </section>
             )}
@@ -177,10 +177,10 @@ export default function HousekeepingBoardPage({ board }: { board: Board }) {
             <ConfirmDialog cancelLabel={t('ui.dialog.cancel')} confirmLabel={t('hk.board.requestSave')} consequence={t('hk.board.cancelConsequence')} onCancel={() => setRequest(null)} onConfirm={() => void createRequest()} open={request !== null} pending={action.busy} title={`${t('hk.board.request')}: ${request?.number ?? ''}`}>
                 <div className="flex flex-col gap-3">
                     {action.error !== null ? <ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /> : null}
-                    <FormField error={action.fieldError('kind')} label={t('hk.board.requestKind')}>
+                    <FormField field="kind" error={action.fieldError('kind')} label={t('hk.board.requestKind')}>
                         <Select onChange={(e) => setRequestForm({ ...requestForm, kind: e.target.value })} value={requestForm.kind}>{['vacant', 'request', 'stayover'].map((k) => <option key={k} value={k}>{t(`hk.kind.${k}` as 'hk.kind.vacant')}</option>)}</Select>
                     </FormField>
-                    <FormField error={action.fieldError('reason')} label={t('hk.board.requestReason')}><Input maxLength={300} onChange={(e) => setRequestForm({ ...requestForm, reason: e.target.value })} value={requestForm.reason} /></FormField>
+                    <FormField field="reason" error={action.fieldError('reason')} label={t('hk.board.requestReason')}><Input maxLength={300} onChange={(e) => setRequestForm({ ...requestForm, reason: e.target.value })} value={requestForm.reason} /></FormField>
                 </div>
             </ConfirmDialog>
 
@@ -217,7 +217,7 @@ export default function HousekeepingBoardPage({ board }: { board: Board }) {
                     {!pass && (
                         <div className="flex flex-col gap-2">
                             {findings.map((f, i) => (
-                                <FormField error={i === 0 ? action.fieldError('findings') : undefined} key={i} label={`${t('hk.inspect.finding')} ${i + 1}`}><Input maxLength={300} onChange={(e) => setFindings(findings.map((x, j) => (j === i ? e.target.value : x)))} value={f} /></FormField>
+                                <FormField field="findings" error={i === 0 ? action.fieldError('findings') : undefined} key={i} label={`${t('hk.inspect.finding')} ${i + 1}`}><Input maxLength={300} onChange={(e) => setFindings(findings.map((x, j) => (j === i ? e.target.value : x)))} value={f} /></FormField>
                             ))}
                             <div><Button onClick={() => setFindings([...findings, ''])} size="sm" type="button" variant="outline">{t('hk.inspect.addFinding')}</Button></div>
                         </div>

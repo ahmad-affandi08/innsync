@@ -55,9 +55,9 @@ export default function StayFeesPage({ catalogue }: Props) {
             <section aria-labelledby="sf-new-h" className="flex max-w-xl flex-col gap-3 border-t border-border pt-4">
                 <h2 className="text-lg font-semibold" id="sf-new-h">{t('fo.stayfee.new')}</h2>
                 <p className="text-xs text-muted-foreground">{t('fo.stayfee.note')}</p>
-                <FormField error={action.fieldError('kind')} label={t('fo.stayfee.kind')}><Select onChange={(e) => setForm({ ...form, kind: e.target.value })} value={form.kind}>{catalogue.kinds.map((k) => <option key={k} value={k}>{t(`fo.stayfee.kind.${k}` as 'fo.stayfee.kind.late_checkout')}</option>)}</Select></FormField>
-                <FormField error={action.fieldError('effective_from')} label={t('fo.stayfee.effective')}><DatePicker min={catalogue.business_date} onChange={(e) => setForm({ ...form, from: e.target.value })} value={form.from} /></FormField>
-                <FormField error={action.fieldError('grace_minutes')} hint={t('fo.stayfee.graceHint')} label={t('fo.stayfee.grace')}><Input inputMode="numeric" onChange={(e) => setForm({ ...form, grace: e.target.value })} value={form.grace} /></FormField>
+                <FormField field="kind" error={action.fieldError('kind')} label={t('fo.stayfee.kind')}><Select onChange={(e) => setForm({ ...form, kind: e.target.value })} value={form.kind}>{catalogue.kinds.map((k) => <option key={k} value={k}>{t(`fo.stayfee.kind.${k}` as 'fo.stayfee.kind.late_checkout')}</option>)}</Select></FormField>
+                <FormField field="effective_from" error={action.fieldError('effective_from')} label={t('fo.stayfee.effective')}><DatePicker min={catalogue.business_date} onChange={(e) => setForm({ ...form, from: e.target.value })} value={form.from} /></FormField>
+                <FormField field="grace_minutes" error={action.fieldError('grace_minutes')} hint={t('fo.stayfee.graceHint')} label={t('fo.stayfee.grace')}><Input inputMode="numeric" onChange={(e) => setForm({ ...form, grace: e.target.value })} value={form.grace} /></FormField>
                 <fieldset className="flex flex-col gap-2">
                     <legend className="text-sm font-medium">{t('fo.stayfee.bands')}</legend>
                     {bands.map((b, i) => (
@@ -70,8 +70,8 @@ export default function StayFeesPage({ catalogue }: Props) {
                     {action.fieldError('bands') ? <p className="text-sm text-danger">{action.fieldError('bands')}</p> : null}
                     {bands.length < 6 ? <div><Button onClick={() => setBands([...bands, { minutes: '', percent: '' }])} size="sm" type="button" variant="outline">{t('fo.stayfee.addBand')}</Button></div> : null}
                 </fieldset>
-                <FormField error={action.fieldError('beyond_bp')} hint={t('fo.stayfee.beyondHint')} label={t('fo.stayfee.beyondLabel')}><Input inputMode="decimal" onChange={(e) => setForm({ ...form, beyond: e.target.value })} value={form.beyond} /></FormField>
-                <FormField error={action.fieldError('reason')} label={t('fo.stayfee.reason')}><Input maxLength={300} onChange={(e) => setForm({ ...form, reason: e.target.value })} value={form.reason} /></FormField>
+                <FormField field="beyond_bp" error={action.fieldError('beyond_bp')} hint={t('fo.stayfee.beyondHint')} label={t('fo.stayfee.beyondLabel')}><Input inputMode="decimal" onChange={(e) => setForm({ ...form, beyond: e.target.value })} value={form.beyond} /></FormField>
+                <FormField field="reason" error={action.fieldError('reason')} label={t('fo.stayfee.reason')}><Input maxLength={300} onChange={(e) => setForm({ ...form, reason: e.target.value })} value={form.reason} /></FormField>
                 <div><Button disabled={form.reason.trim() === ''} loading={action.busy} onClick={() => void save()} type="button">{t('fo.stayfee.save')}</Button></div>
             </section>
         </FrontOfficeShell>

@@ -136,7 +136,7 @@ export default function RatePlansPage({ plans, selected, types }: { plans: Plan[
         <Button loading={action.busy} onClick={onSave} type="button">{t('property.action.save')}</Button>
     </>);
     const reasonField = (value: string, set: (v: string) => void) => (
-        <FormField error={action.fieldError('reason')} hint={t('property.field.reasonHint')} label={t('property.field.reason')}>
+        <FormField field="reason" error={action.fieldError('reason')} hint={t('property.field.reasonHint')} label={t('property.field.reason')}>
             <Input maxLength={500} onChange={(e) => set(e.target.value)} value={value} />
         </FormField>
     );
@@ -220,14 +220,14 @@ export default function RatePlansPage({ plans, selected, types }: { plans: Plan[
                     <section aria-labelledby="quote-h" className="flex flex-col gap-3">
                         <h2 className="text-lg font-semibold" id="quote-h">{t('rates.quote.heading')}</h2>
                         <form className="grid gap-3 sm:grid-cols-4" onSubmit={(e) => { e.preventDefault(); void check(); }}>
-                            <FormField error={action.fieldError('room_type_id')} label={t('rates.prices.roomType')}>
+                            <FormField field="room_type_id" error={action.fieldError('room_type_id')} label={t('rates.prices.roomType')}>
                                 <Select onChange={(e) => setQuoteForm({ ...quoteForm, roomTypeId: e.target.value })} value={quoteForm.roomTypeId}>
                                     <option value="">{t('property.rooms.chooseType')}</option>
                                     {types.map((x) => <option key={x.id} value={x.id}>{x.code} · {x.name}</option>)}
                                 </Select>
                             </FormField>
-                            <FormField error={action.fieldError('arrival')} label={t('rates.quote.arrival')}><DatePicker onChange={(e) => setQuoteForm({ ...quoteForm, arrival: e.target.value })} value={quoteForm.arrival} /></FormField>
-                            <FormField error={action.fieldError('departure')} label={t('rates.quote.departure')}><DatePicker onChange={(e) => setQuoteForm({ ...quoteForm, departure: e.target.value })} value={quoteForm.departure} /></FormField>
+                            <FormField field="arrival" error={action.fieldError('arrival')} label={t('rates.quote.arrival')}><DatePicker onChange={(e) => setQuoteForm({ ...quoteForm, arrival: e.target.value })} value={quoteForm.arrival} /></FormField>
+                            <FormField field="departure" error={action.fieldError('departure')} label={t('rates.quote.departure')}><DatePicker onChange={(e) => setQuoteForm({ ...quoteForm, departure: e.target.value })} value={quoteForm.departure} /></FormField>
                             <div className="flex items-end"><Button loading={action.busy} type="submit">{t('rates.quote.check')}</Button></div>
                         </form>
                         {quote !== null && (
@@ -277,12 +277,12 @@ export default function RatePlansPage({ plans, selected, types }: { plans: Plan[
                 {planForm !== null && (
                     <div className="flex flex-col gap-3">
                         {error}
-                        {planForm.id === null && <FormField error={action.fieldError('code')} label={t('rates.plans.code')}><Input maxLength={20} onChange={(e) => setPlanForm({ ...planForm, code: e.target.value })} value={planForm.code} /></FormField>}
-                        <FormField error={action.fieldError('name')} label={t('rates.plans.name')}><Input maxLength={100} onChange={(e) => setPlanForm({ ...planForm, name: e.target.value })} value={planForm.name} /></FormField>
-                        <FormField error={action.fieldError('kind')} label={t('rates.plans.kind')}>
+                        {planForm.id === null && <FormField field="code" error={action.fieldError('code')} label={t('rates.plans.code')}><Input maxLength={20} onChange={(e) => setPlanForm({ ...planForm, code: e.target.value })} value={planForm.code} /></FormField>}
+                        <FormField field="name" error={action.fieldError('name')} label={t('rates.plans.name')}><Input maxLength={100} onChange={(e) => setPlanForm({ ...planForm, name: e.target.value })} value={planForm.name} /></FormField>
+                        <FormField field="kind" error={action.fieldError('kind')} label={t('rates.plans.kind')}>
                             <Select onChange={(e) => setPlanForm({ ...planForm, kind: e.target.value })} value={planForm.kind}>{KINDS.map((k) => <option key={k} value={k}>{t(`rates.kind.${k}`)}</option>)}</Select>
                         </FormField>
-                        <FormField error={action.fieldError('inclusions')} label={t('rates.plans.inclusions')}><Textarea maxLength={500} onChange={(e) => setPlanForm({ ...planForm, inclusions: e.target.value })} value={planForm.inclusions} /></FormField>
+                        <FormField field="inclusions" error={action.fieldError('inclusions')} label={t('rates.plans.inclusions')}><Textarea maxLength={500} onChange={(e) => setPlanForm({ ...planForm, inclusions: e.target.value })} value={planForm.inclusions} /></FormField>
                         <label className="flex items-center gap-2 text-sm"><input checked={planForm.nett} onChange={(e) => setPlanForm({ ...planForm, nett: e.target.checked })} type="checkbox" />{t('rates.plans.nett')}</label>
                         {reasonField(planForm.reason, (v) => setPlanForm({ ...planForm, reason: v }))}
                     </div>
@@ -294,15 +294,15 @@ export default function RatePlansPage({ plans, selected, types }: { plans: Plan[
                     <div className="flex flex-col gap-3">
                         {error}
                         {priceForm.periodId === null && (<>
-                            <FormField error={action.fieldError('room_type_id')} label={t('rates.prices.roomType')}>
+                            <FormField field="room_type_id" error={action.fieldError('room_type_id')} label={t('rates.prices.roomType')}>
                                 <Select onChange={(e) => setPriceForm({ ...priceForm, roomTypeId: e.target.value })} value={priceForm.roomTypeId}>
                                     <option value="">{t('property.rooms.chooseType')}</option>
                                     {types.map((x) => <option key={x.id} value={x.id}>{x.code} · {x.name}</option>)}
                                 </Select>
                             </FormField>
                             <div className="grid grid-cols-2 gap-3">
-                                <FormField error={action.fieldError('from')} label={t('rates.prices.from')}><DatePicker onChange={(e) => setPriceForm({ ...priceForm, from: e.target.value })} value={priceForm.from} /></FormField>
-                                <FormField error={action.fieldError('to')} label={t('rates.prices.to')}><DatePicker onChange={(e) => setPriceForm({ ...priceForm, to: e.target.value })} value={priceForm.to} /></FormField>
+                                <FormField field="from" error={action.fieldError('from')} label={t('rates.prices.from')}><DatePicker onChange={(e) => setPriceForm({ ...priceForm, from: e.target.value })} value={priceForm.from} /></FormField>
+                                <FormField field="to" error={action.fieldError('to')} label={t('rates.prices.to')}><DatePicker onChange={(e) => setPriceForm({ ...priceForm, to: e.target.value })} value={priceForm.to} /></FormField>
                             </div>
                             <fieldset className="flex flex-wrap gap-3 text-sm"><legend className="mb-1 text-sm font-medium">{t('rates.prices.days')}</legend>
                                 {DAYS.map((d) => (
@@ -312,7 +312,7 @@ export default function RatePlansPage({ plans, selected, types }: { plans: Plan[
                                 ))}
                             </fieldset>
                         </>)}
-                        <FormField error={amountError ? t('rates.prices.invalidAmount') : action.fieldError('nightly_minor')} hint={t('rates.prices.nightlyHint')} label={t('rates.prices.nightly')}>
+                        <FormField field="nightly_minor" error={amountError ? t('rates.prices.invalidAmount') : action.fieldError('nightly_minor')} hint={t('rates.prices.nightlyHint')} label={t('rates.prices.nightly')}>
                             <Input inputMode="decimal" onChange={(e) => setPriceForm({ ...priceForm, amount: e.target.value })} value={priceForm.amount} />
                         </FormField>
                         {reasonField(priceForm.reason, (v) => setPriceForm({ ...priceForm, reason: v }))}
@@ -324,17 +324,17 @@ export default function RatePlansPage({ plans, selected, types }: { plans: Plan[
                 {restrictionForm !== null && (
                     <div className="flex flex-col gap-3">
                         {error}
-                        <FormField error={action.fieldError('room_type_id')} label={t('rates.prices.roomType')}>
+                        <FormField field="room_type_id" error={action.fieldError('room_type_id')} label={t('rates.prices.roomType')}>
                             <Select onChange={(e) => setRestrictionForm({ ...restrictionForm, roomTypeId: e.target.value })} value={restrictionForm.roomTypeId}>
                                 <option value="">{t('rates.restrictions.allTypes')}</option>
                                 {types.map((x) => <option key={x.id} value={x.id}>{x.code} · {x.name}</option>)}
                             </Select>
                         </FormField>
                         <div className="grid grid-cols-2 gap-3">
-                            <FormField error={action.fieldError('from')} label={t('rates.prices.from')}><DatePicker onChange={(e) => setRestrictionForm({ ...restrictionForm, from: e.target.value })} value={restrictionForm.from} /></FormField>
-                            <FormField error={action.fieldError('to')} label={t('rates.prices.to')}><DatePicker onChange={(e) => setRestrictionForm({ ...restrictionForm, to: e.target.value })} value={restrictionForm.to} /></FormField>
-                            <FormField error={action.fieldError('min_stay')} label={t('rates.restrictions.minStay')}><Input inputMode="numeric" onChange={(e) => setRestrictionForm({ ...restrictionForm, minStay: e.target.value })} value={restrictionForm.minStay} /></FormField>
-                            <FormField error={action.fieldError('max_stay')} label={t('rates.restrictions.maxStay')}><Input inputMode="numeric" onChange={(e) => setRestrictionForm({ ...restrictionForm, maxStay: e.target.value })} value={restrictionForm.maxStay} /></FormField>
+                            <FormField field="from" error={action.fieldError('from')} label={t('rates.prices.from')}><DatePicker onChange={(e) => setRestrictionForm({ ...restrictionForm, from: e.target.value })} value={restrictionForm.from} /></FormField>
+                            <FormField field="to" error={action.fieldError('to')} label={t('rates.prices.to')}><DatePicker onChange={(e) => setRestrictionForm({ ...restrictionForm, to: e.target.value })} value={restrictionForm.to} /></FormField>
+                            <FormField field="min_stay" error={action.fieldError('min_stay')} label={t('rates.restrictions.minStay')}><Input inputMode="numeric" onChange={(e) => setRestrictionForm({ ...restrictionForm, minStay: e.target.value })} value={restrictionForm.minStay} /></FormField>
+                            <FormField field="max_stay" error={action.fieldError('max_stay')} label={t('rates.restrictions.maxStay')}><Input inputMode="numeric" onChange={(e) => setRestrictionForm({ ...restrictionForm, maxStay: e.target.value })} value={restrictionForm.maxStay} /></FormField>
                         </div>
                         <div className="flex flex-col gap-1 text-sm">
                             <label className="flex items-center gap-2"><input checked={restrictionForm.cta} onChange={(e) => setRestrictionForm({ ...restrictionForm, cta: e.target.checked })} type="checkbox" />{t('rates.restrictions.cta')}</label>

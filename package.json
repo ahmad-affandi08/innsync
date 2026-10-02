@@ -3,11 +3,13 @@
     "private": true,
     "type": "module",
     "scripts": {
-        "build": "vite build",
+        "build": "node scripts/form-requirements.mjs && vite build",
         "dev": "vite",
         "test": "node --experimental-strip-types --disable-warning=ExperimentalWarning --test \"resources/js/**/*.test.ts\"",
         "typecheck": "tsc --noEmit",
-        "quality": "npm run typecheck && npm test && npm run build"
+        "quality": "npm run typecheck && npm test && npm run build",
+        "forms": "node scripts/form-requirements.mjs",
+        "forms:rules": "php tools/export-form-rules.php && node scripts/form-requirements.mjs"
     },
     "devDependencies": {
         "@tailwindcss/vite": "^4.0.0",

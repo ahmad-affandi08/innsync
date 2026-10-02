@@ -96,13 +96,13 @@ export function RateChangePanel({ currency, reservationId, rates }: { currency: 
                     <div className="flex flex-col gap-3">
                         {action.error !== null ? <ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /> : null}
                         <p className="text-xs text-muted-foreground">{t('fo.rate.note')}</p>
-                        <FormField error={priceError ? t('fo.rate.invalidPrice') : action.fieldError('price')} hint={t('fo.rate.priceHint')} label={t('fo.rate.price')}><Input inputMode="decimal" onChange={(e) => { setForm({ ...form, price: e.target.value }); setPreview(null); }} value={form.price} /></FormField>
+                        <FormField field="price" error={priceError ? t('fo.rate.invalidPrice') : action.fieldError('price')} hint={t('fo.rate.priceHint')} label={t('fo.rate.price')}><Input inputMode="decimal" onChange={(e) => { setForm({ ...form, price: e.target.value }); setPreview(null); }} value={form.price} /></FormField>
                         <fieldset className="flex flex-col gap-1 text-sm">
                             <label className="flex items-center gap-2"><input checked={!form.nett} name="rate-nett" onChange={() => { setForm({ ...form, nett: false }); setPreview(null); }} type="radio" />{t('fo.rate.plusPlus')}</label>
                             <label className="flex items-center gap-2"><input checked={form.nett} name="rate-nett" onChange={() => { setForm({ ...form, nett: true }); setPreview(null); }} type="radio" />{t('fo.rate.nett')}</label>
                         </fieldset>
-                        <FormField error={action.fieldError('from')} label={t('fo.rate.from')}><DatePicker onChange={(e) => { setForm({ ...form, from: e.target.value }); setPreview(null); }} value={form.from} /></FormField>
-                        <FormField error={action.fieldError('reason')} label={t('fo.rate.reason')}><Input maxLength={300} onChange={(e) => setForm({ ...form, reason: e.target.value })} value={form.reason} /></FormField>
+                        <FormField field="from" error={action.fieldError('from')} label={t('fo.rate.from')}><DatePicker onChange={(e) => { setForm({ ...form, from: e.target.value }); setPreview(null); }} value={form.from} /></FormField>
+                        <FormField field="reason" error={action.fieldError('reason')} label={t('fo.rate.reason')}><Input maxLength={300} onChange={(e) => setForm({ ...form, reason: e.target.value })} value={form.reason} /></FormField>
                         {preview !== null && (
                             <div className="flex flex-col gap-1 text-sm" data-testid="rate-preview">
                                 <ul>{preview.nights.map((n) => <li key={n.date}>{t('fo.rate.nightRow', { date: format.date(n.date), old: money(n.old_total_minor), new: money(n.new_total_minor) })}</li>)}</ul>

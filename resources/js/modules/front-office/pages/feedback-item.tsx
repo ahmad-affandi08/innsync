@@ -59,27 +59,27 @@ export default function FeedbackItemPage({ detail: d }: Props) {
             {d.may_manage && i.status !== 'closed' ? (
                 <div className="flex flex-col gap-4">
                     <div className="flex flex-wrap items-end gap-2">
-                        <FormField error={action.fieldError('owner_id')} label={t('fo.fb.assign')}>
+                        <FormField field="owner_id" error={action.fieldError('owner_id')} label={t('fo.fb.assign')}>
                             <Select onChange={(e) => setOwner(e.target.value)} value={owner}><option value="">{t('fo.fb.chooseOwner')}</option>{d.owners.map((o) => <option key={o.id} value={o.id}>{o.name}</option>)}</Select>
                         </FormField>
                         <Button disabled={action.busy || owner === ''} onClick={() => void post('assign', { owner_id: owner, ...lock })} size="sm" type="button" variant="outline">{t('fo.fb.assignSave')}</Button>
                     </div>
                     <div className="flex flex-wrap items-end gap-2">
-                        <FormField error={action.fieldError('text')} label={t('fo.fb.note')}><Input maxLength={500} onChange={(e) => setNote(e.target.value)} value={note} /></FormField>
+                        <FormField field="text" error={action.fieldError('text')} label={t('fo.fb.note')}><Input maxLength={500} onChange={(e) => setNote(e.target.value)} value={note} /></FormField>
                         <Button disabled={action.busy || note.trim() === ''} onClick={async () => { if ((await post('note', { text: note })) !== null) setNote(''); }} size="sm" type="button" variant="outline">{t('fo.fb.noteSave')}</Button>
                     </div>
                     {i.status === 'open' ? <div><Button disabled={action.busy} onClick={() => void post('start', lock)} size="sm" type="button">{t('fo.fb.start')}</Button></div> : null}
                     {i.status === 'open' || i.status === 'in_progress' ? (
                         <div className="flex flex-wrap items-end gap-2">
-                            <FormField error={action.fieldError('resolution')} label={t('fo.fb.resolution')}><Input maxLength={500} onChange={(e) => setResolution(e.target.value)} value={resolution} /></FormField>
-                            <FormField error={action.fieldError('evidence_ref')} hint={t('fo.fb.evidenceHint')} label={t('fo.fb.evidence')}><Input maxLength={120} onChange={(e) => setEvidence(e.target.value)} value={evidence} /></FormField>
+                            <FormField field="resolution" error={action.fieldError('resolution')} label={t('fo.fb.resolution')}><Input maxLength={500} onChange={(e) => setResolution(e.target.value)} value={resolution} /></FormField>
+                            <FormField field="evidence_ref" error={action.fieldError('evidence_ref')} hint={t('fo.fb.evidenceHint')} label={t('fo.fb.evidence')}><Input maxLength={120} onChange={(e) => setEvidence(e.target.value)} value={evidence} /></FormField>
                             <Button disabled={action.busy} onClick={() => void post('resolve', { resolution, evidence_ref: evidence.trim() || null, ...lock })} size="sm" type="button">{t('fo.fb.resolve')}</Button>
                         </div>
                     ) : null}
                     {i.status === 'resolved' ? (
                         <div className="flex flex-wrap items-end gap-2">
                             <Button disabled={action.busy} onClick={() => void post('close', lock)} size="sm" type="button">{t('fo.fb.close')}</Button>
-                            <FormField error={action.fieldError('note')} label={t('fo.fb.reopenNote')}><Input maxLength={300} onChange={(e) => setReopen(e.target.value)} value={reopen} /></FormField>
+                            <FormField field="note" error={action.fieldError('note')} label={t('fo.fb.reopenNote')}><Input maxLength={300} onChange={(e) => setReopen(e.target.value)} value={reopen} /></FormField>
                             <Button disabled={action.busy} onClick={() => void post('reopen', { note: reopen, ...lock })} size="sm" type="button" variant="outline">{t('fo.fb.reopen')}</Button>
                         </div>
                     ) : null}
