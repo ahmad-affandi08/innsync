@@ -237,6 +237,21 @@
         "quantity",
         "unit"
     ],
+    "inventory-purchasing/pages/supplier": [
+        "aspect",
+        "item_id",
+        "name",
+        "payment_terms_days",
+        "score",
+        "unit",
+        "unit_price_minor",
+        "valid_from"
+    ],
+    "inventory-purchasing/pages/suppliers": [
+        "code",
+        "name",
+        "payment_terms_days"
+    ],
     "inventory-purchasing/pages/transfers": [
         "from_location_id",
         "lines.*.item_id",

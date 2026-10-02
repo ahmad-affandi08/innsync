@@ -6,6 +6,7 @@ const LINKS = [
     { href: '/inventory/stock', label: 'inv.nav.stock' },
     { href: '/inventory/transfers', label: 'inv.nav.transfers' },
     { href: '/inventory/counts', label: 'inv.nav.counts' },
+    { href: '/inventory/suppliers', label: 'inv.nav.suppliers' },
     { href: '/inventory/items', label: 'inv.nav.items' },
     { href: '/inventory/locations', label: 'inv.nav.locations' },
 ] as const;

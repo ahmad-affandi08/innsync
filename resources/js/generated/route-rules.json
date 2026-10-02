@@ -1647,6 +1647,70 @@
             "unit_cost_minor"
         ]
     },
+    "POST /inventory/suppliers": {
+        "required": [
+            "code",
+            "name",
+            "payment_terms_days"
+        ],
+        "declared": [
+            "address",
+            "code",
+            "contact_name",
+            "email",
+            "name",
+            "note",
+            "payment_terms_days",
+            "phone",
+            "tax_id"
+        ]
+    },
+    "POST /inventory/suppliers/{id}": {
+        "required": [
+            "active",
+            "lock_version",
+            "name",
+            "payment_terms_days"
+        ],
+        "declared": [
+            "active",
+            "address",
+            "contact_name",
+            "email",
+            "lock_version",
+            "name",
+            "note",
+            "payment_terms_days",
+            "phone",
+            "tax_id"
+        ]
+    },
+    "POST /inventory/suppliers/{id}/prices": {
+        "required": [
+            "item_id",
+            "unit",
+            "unit_price_minor",
+            "valid_from"
+        ],
+        "declared": [
+            "item_id",
+            "reason",
+            "unit",
+            "unit_price_minor",
+            "valid_from"
+        ]
+    },
+    "POST /inventory/suppliers/{id}/ratings": {
+        "required": [
+            "aspect",
+            "score"
+        ],
+        "declared": [
+            "aspect",
+            "comment",
+            "score"
+        ]
+    },
     "POST /inventory/transfers": {
         "required": [
             "from_location_id",

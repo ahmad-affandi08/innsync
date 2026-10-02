@@ -37,6 +37,7 @@ use App\Modules\IdentityAccess\Presentation\Http\Controllers\UserSessionControll
 use App\Modules\InventoryPurchasing\Presentation\Http\Controllers\InventoryCatalogController;
 use App\Modules\InventoryPurchasing\Presentation\Http\Controllers\StockCountController;
 use App\Modules\InventoryPurchasing\Presentation\Http\Controllers\StockMovementController;
+use App\Modules\InventoryPurchasing\Presentation\Http\Controllers\SupplierController;
 use App\Modules\Laundry\Presentation\Http\Controllers\ClaimController;
 use App\Modules\Laundry\Presentation\Http\Controllers\LaundryController;
 use App\Modules\Property\Presentation\Http\Controllers\BookingPolicyController;
@@ -383,6 +384,12 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
     Route::post('/transfers/{id}/receive', [StockMovementController::class, 'receive'])->where('id', $id)->name('inventory.transfers.receive');
     Route::post('/transfers/{id}/reject', [StockMovementController::class, 'reject'])->where('id', $id)->name('inventory.transfers.reject');
     Route::post('/transfers/{id}/cancel', [StockMovementController::class, 'cancel'])->where('id', $id)->name('inventory.transfers.cancel');
+    Route::get('/suppliers', [SupplierController::class, 'index'])->name('inventory.suppliers');
+    Route::get('/suppliers/{id}', [SupplierController::class, 'show'])->where('id', $id)->name('inventory.suppliers.show');
+    Route::post('/suppliers', [SupplierController::class, 'store'])->name('inventory.suppliers.store');
+    Route::post('/suppliers/{id}', [SupplierController::class, 'update'])->where('id', $id)->name('inventory.suppliers.update');
+    Route::post('/suppliers/{id}/prices', [SupplierController::class, 'addPrice'])->where('id', $id)->name('inventory.suppliers.prices');
+    Route::post('/suppliers/{id}/ratings', [SupplierController::class, 'rate'])->where('id', $id)->name('inventory.suppliers.rate');
     Route::get('/counts', [StockCountController::class, 'index'])->name('inventory.counts');
     Route::get('/counts/{id}', [StockCountController::class, 'show'])->where('id', $id)->name('inventory.counts.show');
     Route::post('/counts', [StockCountController::class, 'start'])->middleware(['idempotent'])->name('inventory.counts.start');
