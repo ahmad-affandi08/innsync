@@ -95,6 +95,26 @@ final class LaundryHttpTest extends TestCase
         $this->postJson("/laundry/orders/{$order['id']}/deliver", ['receipt' => 'Mr Budi', 'lock_version' => 5])->assertOk()->assertJsonPath('order.status', 'delivered');
     }
 
+    public function test_treatments_are_managed_and_chosen_at_hand_over_over_http(): void
+    {
+        $item = $this->postJson('/laundry/prices', ['code' => 'SHIRT', 'name' => 'Shirt', 'unit_price_minor' => 2_000_000, 'reason' => 'Opening list'])->assertCreated()->json('item.id');
+        $dry = $this->postJson('/laundry/treatments', ['code' => 'DRY', 'name' => 'Dry cleaning', 'kind' => 'service', 'pricing' => 'percent', 'value' => 5_000, 'reason' => 'Price list'])->assertCreated()->assertJsonPath('treatment.value', 5_000)->json('treatment');
+        $this->postJson('/laundry/treatments', ['code' => 'EXP', 'name' => 'Express', 'kind' => 'express', 'pricing' => 'fixed', 'value' => 500_000, 'reason' => 'Price list'])->assertCreated();
+        $this->postJson('/laundry/treatments', ['code' => 'EXP2', 'name' => 'Express 2', 'kind' => 'express', 'pricing' => 'fixed', 'value' => 1, 'reason' => 'x'])->assertStatus(409);
+        $this->postJson('/laundry/treatments', ['code' => 'BAD', 'name' => 'Bad', 'kind' => 'service', 'pricing' => 'percent', 'value' => 999_999, 'reason' => 'x'])->assertStatus(422);
+
+        $this->get('/laundry/prices')->assertInertia(fn (Assert $p) => $p->has('treatments', 2));
+        $this->get('/laundry/new')->assertInertia(fn (Assert $p) => $p->has('lookups.treatments', 2));
+        $body = ['barcode' => 'BAG-88', 'room_id' => $this->roomId, 'express' => true, 'promised_date' => '2026-10-02', 'promised_time' => '17:00', 'lines' => [['price_item_id' => $item, 'quantity' => 2, 'treatment_id' => $dry['id']]]];
+        $this->postJson('/laundry/orders', $body, ['Idempotency-Key' => 'laundry-http-treat-1'])->assertCreated()
+            ->assertJsonPath('order.lines.0.treatment_name', 'Dry cleaning')->assertJsonPath('order.lines.0.treatment_extra_minor', 1_000_000)->assertJsonPath('order.lines.0.express_extra_minor', 500_000)
+            ->assertJsonPath('order.billable_minor', 7_000_000);
+
+        $this->postJson("/laundry/treatments/{$dry['id']}", ['name' => 'Dry cleaning', 'pricing' => 'percent', 'value' => 5_000, 'is_active' => false, 'lock_version' => 0, 'reason' => 'Stopped'])->assertOk()->assertJsonPath('treatment.is_active', false);
+        $this->postJson("/laundry/treatments/{$dry['id']}", ['name' => 'Dry cleaning', 'pricing' => 'percent', 'value' => 5_000, 'is_active' => true, 'lock_version' => 0, 'reason' => 'Stale'])->assertStatus(409);
+        $this->postJson('/laundry/orders', [...$body, 'barcode' => 'BAG-89'], ['Idempotency-Key' => 'laundry-http-treat-2'])->assertStatus(422);
+    }
+
     public function test_someone_with_only_viewing_rights_sees_the_work_list_but_cannot_act(): void
     {
         $this->post('/logout');

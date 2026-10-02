@@ -14,10 +14,13 @@ import { useServerAction } from '@/shared/api/use-server-action';
 import { useFormatters, useTranslation } from '@/shared/i18n/i18n';
 import { useErrorStateCopy } from '@/shared/i18n/use-ui-copy';
 
-type Lookups = { rooms: { id: string; number: string }[]; items: { id: string; code: string; name: string; unit_price_minor: number }[]; business_date: string; zone: string };
-type Line = { itemId: string; quantity: string; brand: string; condition: string };
+type Treatment = { id: string; name: string; kind: string; pricing: string; value: number };
+type Lookups = { rooms: { id: string; number: string }[]; items: { id: string; code: string; name: string; unit_price_minor: number }[]; treatments: Treatment[]; business_date: string; zone: string };
+/** The extra for one piece, as the server works it out: a percentage is rounded half up. */
+const extra = (tr: Treatment | undefined, unit: number) => (tr === undefined ? 0 : tr.pricing === 'percent' ? Math.floor((unit * tr.value + 5000) / 10000) : tr.value);
+type Line = { itemId: string; quantity: string; brand: string; condition: string; treatmentId: string };
 
-const blank = (): Line => ({ itemId: '', quantity: '1', brand: '', condition: '' });
+const blank = (): Line => ({ itemId: '', quantity: '1', brand: '', condition: '', treatmentId: '' });
 
 /** The housekeeping hand-over screen: a bag tag, a room with a guest, what is in the bag and when it was promised back. */
 export default function LaundryIntakePage({ currency, lookups }: { currency: string; lookups: Lookups }) {
@@ -31,14 +34,18 @@ export default function LaundryIntakePage({ currency, lookups }: { currency: str
     const [done, setDone] = useState<{ id: string; number: string } | null>(null);
     const set = (patch: Partial<typeof form>) => setForm((f) => ({ ...f, ...patch }));
     const setLine = (i: number, patch: Partial<Line>) => setLines((ls) => ls.map((l, j) => (j === i ? { ...l, ...patch } : l)));
-    const estimate = lines.reduce((sum, l) => sum + (lookups.items.find((x) => x.id === l.itemId)?.unit_price_minor ?? 0) * (Number(l.quantity) || 0), 0);
+    const expressTreatment = lookups.treatments.find((x) => x.kind === 'express');
+    const estimate = lines.reduce((sum, l) => {
+        const unit = lookups.items.find((x) => x.id === l.itemId)?.unit_price_minor ?? 0;
+        return sum + (unit + extra(lookups.treatments.find((x) => x.id === l.treatmentId), unit) + (form.express ? extra(expressTreatment, unit) : 0)) * (Number(l.quantity) || 0);
+    }, 0);
 
     async function submit() {
         const result = await action.run<{ order: { id: string; number: string } }>('/laundry/orders', {
             idempotencyKey: intent,
             body: {
                 barcode: form.barcode, room_id: form.roomId, express: form.express, promised_date: form.date, promised_time: form.time, notes: form.notes || null,
-                lines: lines.filter((l) => l.itemId !== '').map((l) => ({ price_item_id: l.itemId, quantity: Number(l.quantity), brand: l.brand || null, condition_note: l.condition || null })),
+                lines: lines.filter((l) => l.itemId !== '').map((l) => ({ price_item_id: l.itemId, quantity: Number(l.quantity), brand: l.brand || null, condition_note: l.condition || null, treatment_id: l.treatmentId || null })),
             },
         });
         if (result !== null) {
@@ -67,7 +74,7 @@ export default function LaundryIntakePage({ currency, lookups }: { currency: str
                 <FormField error={action.fieldError('barcode')} label={t('ldy.intake.barcode')}><Input autoComplete="off" maxLength={40} onChange={(e) => set({ barcode: e.target.value })} required value={form.barcode} /></FormField>
                 <FormField error={action.fieldError('promised_date')} label={t('ldy.intake.promisedDate')}><Input min={lookups.business_date} onChange={(e) => set({ date: e.target.value })} required type="date" value={form.date} /></FormField>
                 <FormField error={action.fieldError('promised_time')} label={t('ldy.intake.promisedTime', { zone: lookups.zone })}><Input onChange={(e) => set({ time: e.target.value })} required type="time" value={form.time} /></FormField>
-                <label className="flex items-center gap-2 text-sm sm:col-span-2"><input checked={form.express} onChange={(e) => set({ express: e.target.checked })} type="checkbox" />{t('ldy.intake.express')}</label>
+                <label className="flex items-center gap-2 text-sm sm:col-span-2"><input checked={form.express} onChange={(e) => set({ express: e.target.checked })} type="checkbox" />{t('ldy.intake.express')}{expressTreatment !== undefined ? ` (${expressTreatment.pricing === 'percent' ? `+${expressTreatment.value / 100}%` : `+${format.money(expressTreatment.value, currency)}`})` : ''}</label>
 
                 <fieldset className="flex flex-col gap-3 sm:col-span-2">
                     <legend className="text-lg font-semibold">{t('ldy.intake.items')}</legend>
@@ -79,6 +86,11 @@ export default function LaundryIntakePage({ currency, lookups }: { currency: str
                             <FormField label={t('ldy.intake.quantity')}><Input min={1} onChange={(e) => setLine(i, { quantity: e.target.value })} type="number" value={l.quantity} /></FormField>
                             <FormField label={t('ldy.intake.brand')}><Input maxLength={60} onChange={(e) => setLine(i, { brand: e.target.value })} value={l.brand} /></FormField>
                             <FormField label={t('ldy.intake.condition')}><Input maxLength={200} onChange={(e) => setLine(i, { condition: e.target.value })} value={l.condition} /></FormField>
+                            {lookups.treatments.some((x) => x.kind === 'service') ? (
+                                <FormField label={t('ldy.intake.treatment')}>
+                                    <Select onChange={(e) => setLine(i, { treatmentId: e.target.value })} value={l.treatmentId}><option value="">{t('ldy.intake.noTreatment')}</option>{lookups.treatments.filter((x) => x.kind === 'service').map((x) => <option key={x.id} value={x.id}>{x.name} · {x.pricing === 'percent' ? `+${x.value / 100}%` : `+${format.money(x.value, currency)}`}</option>)}</Select>
+                                </FormField>
+                            ) : null}
                             {lines.length > 1 ? <div><Button onClick={() => setLines((ls) => ls.filter((_, j) => j !== i))} size="sm" type="button" variant="outline">{t('ldy.intake.removeLine')}</Button></div> : null}
                         </div>
                     ))}

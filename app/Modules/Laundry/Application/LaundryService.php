@@ -150,12 +150,111 @@ final readonly class LaundryService implements LaundryLiability
         });
     }
 
+    // ---- special treatments and express (FR-LDY-005) ----
+
+    /** @return list<array{id: string, code: string, name: string, kind: string, pricing: string, value: int, is_active: bool, lock_version: int}> */
+    public function treatments(PropertyId $property, string $actorId, bool $activeOnly = false): array
+    {
+        $this->authorizeAny($property, $actorId, [self::VIEW_PERMISSION, self::INTAKE_PERMISSION, self::PROCESS_PERMISSION, self::PRICES_PERMISSION]);
+
+        return $this->repository->treatments($property, $activeOnly);
+    }
+
+    /**
+     * Adds a special treatment (`service`, chosen per line) or the express service (`express`, added to every line of an express
+     * order; one at a time). The extra is per piece: `percent` is a share of the item's price in basis points, `fixed` an amount.
+     *
+     * @return array<string, mixed>
+     */
+    public function addTreatment(PropertyId $property, string $actorId, string $code, string $name, string $kind, string $pricing, int $value, string $reason): array
+    {
+        $this->authorize($property, $actorId, self::PRICES_PERMISSION);
+        $this->assertReason($reason);
+        $code = strtoupper(trim($code));
+        $name = trim($name);
+
+        if (preg_match('/^[A-Z0-9_-]{2,20}$/D', $code) !== 1 || $name === '' || mb_strlen($name) > 80 || ! in_array($kind, ['service', 'express'], true)) {
+            throw Refusal::invalid('Give a code of 2 to 20 letters or digits, a name, and service or express.', ['code', 'name', 'kind']);
+        }
+
+        $this->assertTreatmentValue($pricing, $value);
+
+        return $this->transactions->run(function () use ($property, $actorId, $code, $name, $kind, $pricing, $value, $reason): array {
+            $id = $this->ids->next();
+            $result = $this->repository->addTreatment($property, $id, $code, $name, $kind, $pricing, $value, $this->clock->nowUtc());
+
+            if ($result === 'code_used') {
+                throw Refusal::invalid('This code is already used.', ['code']);
+            }
+
+            if ($result === 'express_exists') {
+                throw Refusal::stateConflict('There is already an express service in use: stop it before adding another.');
+            }
+
+            $this->audit->record(new AuditEntry($property->toString(), strtolower($actorId), 'laundry.treatment.added', 'laundry_treatment', $id, null, ['code' => $code, 'name' => $name, 'kind' => $kind, 'pricing' => $pricing, 'value' => $value], trim($reason)));
+
+            return $this->repository->findTreatment($property, $id) ?? throw Refusal::notFound('Treatment not found.');
+        });
+    }
+
+    /**
+     * Changing a rate never changes an order already made: orders keep what they were charged at hand-over.
+     *
+     * @return array<string, mixed>
+     */
+    public function updateTreatment(PropertyId $property, string $actorId, string $id, string $name, string $pricing, int $value, bool $active, int $expectedLockVersion, string $reason): array
+    {
+        $this->authorize($property, $actorId, self::PRICES_PERMISSION);
+        $this->assertReason($reason);
+        $name = trim($name);
+
+        if ($name === '' || mb_strlen($name) > 80) {
+            throw Refusal::invalid('Give a name.', ['name']);
+        }
+
+        $this->assertTreatmentValue($pricing, $value);
+
+        return $this->transactions->run(function () use ($property, $actorId, $id, $name, $pricing, $value, $active, $expectedLockVersion, $reason): array {
+            $before = $this->repository->findTreatment($property, strtolower($id)) ?? throw Refusal::notFound('Treatment not found.');
+            $result = $this->repository->updateTreatment($property, $before['id'], $name, $pricing, $value, $active, $expectedLockVersion, $this->clock->nowUtc());
+
+            if ($result === 'stale') {
+                throw Refusal::stateConflict('This treatment changed after you opened it.');
+            }
+
+            if ($result === 'express_exists') {
+                throw Refusal::stateConflict('There is already an express service in use: stop it before using another.');
+            }
+
+            $this->audit->record(new AuditEntry(
+                $property->toString(), strtolower($actorId), 'laundry.treatment.changed', 'laundry_treatment', $before['id'],
+                ['name' => $before['name'], 'pricing' => $before['pricing'], 'value' => $before['value'], 'is_active' => $before['is_active']],
+                ['name' => $name, 'pricing' => $pricing, 'value' => $value, 'is_active' => $active], trim($reason),
+            ));
+
+            return $this->repository->findTreatment($property, $before['id']) ?? throw Refusal::notFound('Treatment not found.');
+        });
+    }
+
+    private function assertTreatmentValue(string $pricing, int $value): void
+    {
+        if (! in_array($pricing, ['percent', 'fixed'], true) || $value < 0 || ($pricing === 'percent' ? $value > 100_000 : $value > 100_000_000_00)) {
+            throw Refusal::invalid('Choose a percentage (up to 1000 percent) or a fixed amount per piece, zero or more.', ['pricing', 'value']);
+        }
+    }
+
+    /** The extra for one piece of an item priced `$unitMinor`: a percentage is rounded half up to the smallest unit. */
+    private static function extraFor(string $pricing, int $value, int $unitMinor): int
+    {
+        return $pricing === 'percent' ? intdiv($unitMinor * $value + 5_000, 10_000) : $value;
+    }
+
     // ---- housekeeping: hand a bag over ----
 
     /**
      * Rooms with a guest in them and the price list, for the intake screen.
      *
-     * @return array{rooms: list<array{id: string, number: string}>, items: list<array<string, mixed>>, business_date: string, zone: string}
+     * @return array{rooms: list<array{id: string, number: string}>, items: list<array<string, mixed>>, treatments: list<array<string, mixed>>, business_date: string, zone: string}
      */
     public function intakeLookups(PropertyId $property, string $actorId): array
     {
@@ -173,6 +272,7 @@ final readonly class LaundryService implements LaundryLiability
         return [
             'rooms' => $rooms,
             'items' => $this->repository->priceItems($property, true),
+            'treatments' => $this->repository->treatments($property, true),
             'business_date' => $this->businessDate->current($property)->toString(),
             'zone' => ($this->zones->forProperty($property) ?? throw Refusal::notFound('Property not found.'))->identifier(),
         ];
@@ -338,6 +438,7 @@ final readonly class LaundryService implements LaundryLiability
 
         $lines = [];
         $seen = [];
+        $express = $request->express ? array_values(array_filter($this->repository->treatments($property, true), static fn (array $t): bool => $t['kind'] === 'express'))[0] ?? null : null;
 
         foreach ($request->lines as $line) {
             $item = $this->repository->findPriceItem($property, strtolower((string) ($line['price_item_id'] ?? '')));
@@ -348,7 +449,17 @@ final readonly class LaundryService implements LaundryLiability
 
             $brand = isset($line['brand']) && trim((string) $line['brand']) !== '' ? trim((string) $line['brand']) : null;
             $note = isset($line['condition_note']) && trim((string) $line['condition_note']) !== '' ? trim((string) $line['condition_note']) : null;
-            $signature = $item['id'].'|'.$brand.'|'.$note;
+            $treatment = null;
+
+            if (isset($line['treatment_id']) && (string) $line['treatment_id'] !== '') {
+                $treatment = $this->repository->findTreatment($property, strtolower((string) $line['treatment_id']));
+
+                if ($treatment === null || ! $treatment['is_active'] || $treatment['kind'] !== 'service') {
+                    throw Refusal::invalid('Choose a treatment from the list.', ['lines']);
+                }
+            }
+
+            $signature = $item['id'].'|'.$brand.'|'.$note.'|'.($treatment['id'] ?? '');
 
             if (isset($seen[$signature])) {
                 throw Refusal::invalid('List each kind of item once; add the quantity instead.', ['lines']);
@@ -357,7 +468,7 @@ final readonly class LaundryService implements LaundryLiability
             $seen[$signature] = true;
 
             try {
-                $lines[] = new LaundryLine($this->ids->next(), $item['id'], $item['name'], $brand, (int) ($line['quantity'] ?? 0), $item['unit_price_minor'], $note);
+                $lines[] = new LaundryLine($this->ids->next(), $item['id'], $item['name'], $brand, (int) ($line['quantity'] ?? 0), $item['unit_price_minor'], $note, null, $treatment['name'] ?? null, $treatment === null ? 0 : self::extraFor($treatment['pricing'], $treatment['value'], $item['unit_price_minor']), $express === null ? 0 : self::extraFor($express['pricing'], $express['value'], $item['unit_price_minor']));
             } catch (LaundryRuleViolation $e) {
                 throw Refusal::invalid($e->getMessage(), ['lines']);
             }
@@ -481,7 +592,8 @@ final readonly class LaundryService implements LaundryLiability
             'billable_minor' => $o->billableMinor(),
             'lines' => array_map(static fn (LaundryLine $l): array => [
                 'id' => $l->id, 'item_name' => $l->itemName, 'brand' => $l->brand, 'quantity' => $l->quantity, 'verified_quantity' => $l->verifiedQuantity,
-                'unit_price_minor' => $l->unitPriceMinor, 'condition_note' => $l->conditionNote, 'total_minor' => $l->totalMinor(),
+                'unit_price_minor' => $l->unitPriceMinor, 'treatment_name' => $l->treatmentName, 'treatment_extra_minor' => $l->treatmentExtraMinor, 'express_extra_minor' => $l->expressExtraMinor,
+                'piece_minor' => $l->pieceMinor(), 'condition_note' => $l->conditionNote, 'total_minor' => $l->totalMinor(),
             ], $o->lines),
             'history' => $history,
         ];

@@ -55,6 +55,47 @@ final readonly class DatabaseLaundryRepository implements LaundryRepository
             ->update(['name' => $name, 'unit_price_minor' => $unitPriceMinor, 'is_active' => $active, 'lock_version' => $expectedLockVersion + 1, 'updated_at' => $at]) === 1;
     }
 
+    public function treatments(PropertyId $property, bool $activeOnly): array
+    {
+        $query = DB::table('laundry_treatments')->where('property_id', $property->toString());
+
+        if ($activeOnly) {
+            $query->where('is_active', true);
+        }
+
+        return $query->orderBy('kind')->orderBy('name')->get()->map(static fn (stdClass $r): array => self::treatment($r))->all();
+    }
+
+    public function findTreatment(PropertyId $property, string $id): ?array
+    {
+        $row = DB::table('laundry_treatments')->where('property_id', $property->toString())->where('id', $id)->first();
+
+        return $row === null ? null : self::treatment($row);
+    }
+
+    public function addTreatment(PropertyId $property, string $id, string $code, string $name, string $kind, string $pricing, int $value, DateTimeImmutable $at): string
+    {
+        try {
+            DB::table('laundry_treatments')->insert(['id' => $id, 'property_id' => $property->toString(), 'code' => $code, 'name' => $name, 'kind' => $kind, 'pricing' => $pricing, 'value' => $value, 'is_active' => true, 'lock_version' => 0, 'created_at' => $at, 'updated_at' => $at]);
+        } catch (UniqueConstraintViolationException $e) {
+            return str_contains($e->getMessage(), 'laundry_one_active_express') ? 'express_exists' : 'code_used';
+        }
+
+        return 'added';
+    }
+
+    public function updateTreatment(PropertyId $property, string $id, string $name, string $pricing, int $value, bool $active, int $expectedLockVersion, DateTimeImmutable $at): string
+    {
+        try {
+            $changed = DB::table('laundry_treatments')->where('property_id', $property->toString())->where('id', $id)->where('lock_version', $expectedLockVersion)
+                ->update(['name' => $name, 'pricing' => $pricing, 'value' => $value, 'is_active' => $active, 'lock_version' => $expectedLockVersion + 1, 'updated_at' => $at]);
+        } catch (UniqueConstraintViolationException) {
+            return 'express_exists';
+        }
+
+        return $changed === 1 ? 'saved' : 'stale';
+    }
+
     public function addOrder(PropertyId $property, LaundryOrder $order, string $createdBy, DateTimeImmutable $at): string
     {
         try {
@@ -70,6 +111,7 @@ final readonly class DatabaseLaundryRepository implements LaundryRepository
                     DB::table('laundry_order_lines')->insert([
                         'id' => $line->id, 'property_id' => $property->toString(), 'order_id' => $order->id, 'price_item_id' => $line->priceItemId, 'item_name' => $line->itemName,
                         'brand' => $line->brand, 'quantity' => $line->quantity, 'unit_price_minor' => $line->unitPriceMinor, 'condition_note' => $line->conditionNote,
+                        'treatment_name' => $line->treatmentName, 'treatment_extra_minor' => $line->treatmentExtraMinor, 'express_extra_minor' => $line->expressExtraMinor,
                     ]);
                 }
             });
@@ -149,7 +191,7 @@ final readonly class DatabaseLaundryRepository implements LaundryRepository
         $result = [];
 
         foreach (DB::table('laundry_order_lines')->whereIn('order_id', $orderIds)->orderBy('id')->get() as $r) {
-            $result[$r->order_id][] = new LaundryLine($r->id, $r->price_item_id, $r->item_name, $r->brand, (int) $r->quantity, (int) $r->unit_price_minor, $r->condition_note, $r->verified_quantity === null ? null : (int) $r->verified_quantity);
+            $result[$r->order_id][] = new LaundryLine($r->id, $r->price_item_id, $r->item_name, $r->brand, (int) $r->quantity, (int) $r->unit_price_minor, $r->condition_note, $r->verified_quantity === null ? null : (int) $r->verified_quantity, $r->treatment_name, (int) $r->treatment_extra_minor, (int) $r->express_extra_minor);
         }
 
         return $result;
@@ -171,5 +213,11 @@ final readonly class DatabaseLaundryRepository implements LaundryRepository
     private static function item(stdClass $r): array
     {
         return ['id' => $r->id, 'code' => $r->code, 'name' => $r->name, 'unit_price_minor' => (int) $r->unit_price_minor, 'is_active' => (bool) $r->is_active, 'lock_version' => (int) $r->lock_version];
+    }
+
+    /** @return array{id: string, code: string, name: string, kind: string, pricing: string, value: int, is_active: bool, lock_version: int} */
+    private static function treatment(stdClass $r): array
+    {
+        return ['id' => $r->id, 'code' => $r->code, 'name' => $r->name, 'kind' => $r->kind, 'pricing' => $r->pricing, 'value' => (int) $r->value, 'is_active' => (bool) $r->is_active, 'lock_version' => (int) $r->lock_version];
     }
 }

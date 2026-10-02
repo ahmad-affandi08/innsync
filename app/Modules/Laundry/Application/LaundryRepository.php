@@ -29,6 +29,18 @@ interface LaundryRepository
     public function updatePriceItem(PropertyId $property, string $id, string $name, int $unitPriceMinor, bool $active, int $expectedLockVersion, DateTimeImmutable $at): bool;
 
     /** @return 'created'|'bag_busy' */
+    /** @return list<array{id: string, code: string, name: string, kind: string, pricing: string, value: int, is_active: bool, lock_version: int}> */
+    public function treatments(PropertyId $property, bool $activeOnly): array;
+
+    /** @return array{id: string, code: string, name: string, kind: string, pricing: string, value: int, is_active: bool, lock_version: int}|null */
+    public function findTreatment(PropertyId $property, string $id): ?array;
+
+    /** @return 'added'|'code_used'|'express_exists' */
+    public function addTreatment(PropertyId $property, string $id, string $code, string $name, string $kind, string $pricing, int $value, DateTimeImmutable $at): string;
+
+    /** @return 'saved'|'stale'|'express_exists' */
+    public function updateTreatment(PropertyId $property, string $id, string $name, string $pricing, int $value, bool $active, int $expectedLockVersion, DateTimeImmutable $at): string;
+
     public function addOrder(PropertyId $property, LaundryOrder $order, string $createdBy, DateTimeImmutable $at): string;
 
     public function findOrder(PropertyId $property, string $id): ?LaundryOrder;

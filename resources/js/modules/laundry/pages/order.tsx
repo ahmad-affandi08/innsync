@@ -14,7 +14,7 @@ import { useServerAction } from '@/shared/api/use-server-action';
 import { useFormatters, useTranslation } from '@/shared/i18n/i18n';
 import { useErrorStateCopy } from '@/shared/i18n/use-ui-copy';
 
-type Line = { id: string; item_name: string; brand: string | null; quantity: number; verified_quantity: number | null; unit_price_minor: number; condition_note: string | null; total_minor: number };
+type Line = { id: string; item_name: string; brand: string | null; quantity: number; verified_quantity: number | null; unit_price_minor: number; treatment_name: string | null; treatment_extra_minor: number; express_extra_minor: number; piece_minor: number; condition_note: string | null; total_minor: number };
 type Order = {
     id: string; number: string; barcode: string; room_number: string | null; status: string; express: boolean; promised_at: string; overdue: boolean; pickup_date: string; notes: string | null;
     has_discrepancy: boolean; discrepancy_note: string | null; charged_minor: number | null; billable_minor: number; lock_version: number; lines: Line[];
@@ -68,12 +68,12 @@ export default function LaundryOrderPage({ currency, may, order: o }: { currency
                         <thead><tr className="text-xs text-muted-foreground"><th className="py-1 font-medium" scope="col">{t('ldy.order.col.item')}</th><th scope="col">{t('ldy.order.col.listed')}</th><th scope="col">{t('ldy.order.col.counted')}</th><th scope="col">{t('ldy.order.col.price')}</th><th scope="col">{t('ldy.order.col.total')}</th></tr></thead>
                         <tbody>{o.lines.map((l) => (
                             <tr className="border-t border-border align-top" key={l.id}>
-                                <th className="py-2 font-medium" scope="row">{l.item_name}{l.brand !== null ? ` · ${l.brand}` : ''}{l.condition_note !== null ? <span className="block text-xs font-normal text-muted-foreground">{l.condition_note}</span> : null}</th>
+                                <th className="py-2 font-medium" scope="row">{l.item_name}{l.brand !== null ? ` · ${l.brand}` : ''}{l.treatment_name !== null ? <span className="block text-xs font-normal text-muted-foreground">{t('ldy.order.treatment', { name: l.treatment_name, extra: format.money(l.treatment_extra_minor, currency) })}</span> : null}{l.express_extra_minor > 0 ? <span className="block text-xs font-normal text-muted-foreground">{t('ldy.order.expressExtra', { extra: format.money(l.express_extra_minor, currency) })}</span> : null}{l.condition_note !== null ? <span className="block text-xs font-normal text-muted-foreground">{l.condition_note}</span> : null}</th>
                                 <td>{l.quantity}</td>
                                 <td>{o.status === 'sent' && may.process
                                     ? <Input aria-label={`${t('ldy.order.col.counted')}: ${l.item_name}`} className="min-h-9 w-20" inputMode="numeric" onChange={(e) => setCounts({ ...counts, [l.id]: e.target.value })} value={counts[l.id] ?? ''} />
                                     : (l.verified_quantity ?? '—')}</td>
-                                <td>{format.money(l.unit_price_minor, currency)}</td>
+                                <td>{format.money(l.piece_minor, currency)}</td>
                                 <td>{format.money(l.total_minor, currency)}</td>
                             </tr>
                         ))}</tbody>

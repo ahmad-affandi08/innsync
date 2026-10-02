@@ -320,6 +320,8 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
     Route::get('/prices', [LaundryController::class, 'prices'])->name('laundry.prices');
     Route::post('/prices', [LaundryController::class, 'addPrice'])->name('laundry.prices.store');
     Route::post('/prices/{id}', [LaundryController::class, 'updatePrice'])->where('id', $id)->name('laundry.prices.update');
+    Route::post('/treatments', [LaundryController::class, 'addTreatment'])->name('laundry.treatments.store');
+    Route::post('/treatments/{id}', [LaundryController::class, 'updateTreatment'])->where('id', $id)->name('laundry.treatments.update');
     Route::post('/orders', [LaundryController::class, 'store'])->middleware(['idempotent', 'throttle:bookings'])->name('laundry.orders.store');
     Route::get('/orders/{id}', [LaundryController::class, 'show'])->where('id', $id)->name('laundry.orders.show');
     Route::post('/orders/{id}/receive', [LaundryController::class, 'receive'])->where('id', $id)->name('laundry.orders.receive');

@@ -16,6 +16,9 @@ final readonly class LaundryLine
         public int $unitPriceMinor,
         public ?string $conditionNote,
         public ?int $verifiedQuantity = null,
+        public ?string $treatmentName = null,
+        public int $treatmentExtraMinor = 0,
+        public int $expressExtraMinor = 0,
     ) {
         if ($quantity < 1 || $quantity > 999) {
             throw LaundryRuleViolation::invalid('A quantity is 1 to 999.', 'lines');
@@ -38,11 +41,17 @@ final readonly class LaundryLine
 
     public function withVerified(int $counted): self
     {
-        return new self($this->id, $this->priceItemId, $this->itemName, $this->brand, $this->quantity, $this->unitPriceMinor, $this->conditionNote, $counted);
+        return new self($this->id, $this->priceItemId, $this->itemName, $this->brand, $this->quantity, $this->unitPriceMinor, $this->conditionNote, $counted, $this->treatmentName, $this->treatmentExtraMinor, $this->expressExtraMinor);
+    }
+
+    /** The price of one piece: the item's price plus the special treatment and the express service, as they were at hand-over. */
+    public function pieceMinor(): int
+    {
+        return $this->unitPriceMinor + $this->treatmentExtraMinor + $this->expressExtraMinor;
     }
 
     public function totalMinor(): int
     {
-        return $this->billableQuantity() * $this->unitPriceMinor;
+        return $this->billableQuantity() * $this->pieceMinor();
     }
 }

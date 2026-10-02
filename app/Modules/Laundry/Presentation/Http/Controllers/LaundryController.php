@@ -44,7 +44,7 @@ final readonly class LaundryController
         $property = $this->property->current();
         $actor = $this->actor($request);
 
-        return Inertia::render('laundry/pages/prices', ['items' => $this->laundry->priceList($property, $actor), 'currency' => $this->laundry->currency($property), 'may' => $this->laundry->abilities($property, $actor)]);
+        return Inertia::render('laundry/pages/prices', ['items' => $this->laundry->priceList($property, $actor), 'treatments' => $this->laundry->treatments($property, $actor), 'currency' => $this->laundry->currency($property), 'may' => $this->laundry->abilities($property, $actor)]);
     }
 
     public function store(Request $request): JsonResponse
@@ -53,7 +53,7 @@ final readonly class LaundryController
             'barcode' => ['required', 'string', 'max:40'], 'room_id' => ['required', 'string', 'size:26'], 'express' => ['nullable', 'boolean'],
             'promised_date' => ['required', 'string', 'size:10'], 'promised_time' => ['required', 'string', 'max:8'], 'notes' => ['nullable', 'string', 'max:500'],
             'lines' => ['required', 'array', 'min:1', 'max:30'], 'lines.*.price_item_id' => ['required', 'string', 'size:26'], 'lines.*.quantity' => ['required', 'integer', 'min:1', 'max:999'],
-            'lines.*.brand' => ['nullable', 'string', 'max:60'], 'lines.*.condition_note' => ['nullable', 'string', 'max:200'],
+            'lines.*.brand' => ['nullable', 'string', 'max:60'], 'lines.*.condition_note' => ['nullable', 'string', 'max:200'], 'lines.*.treatment_id' => ['nullable', 'string', 'size:26'],
         ]);
 
         $order = $this->laundry->intake(
@@ -113,6 +113,26 @@ final readonly class LaundryController
         $data = $request->validate(['name' => ['required', 'string', 'max:80'], 'unit_price_minor' => ['required', 'integer', 'min:0'], 'is_active' => ['required', 'boolean'], 'lock_version' => ['required', 'integer', 'min:0'], 'reason' => ['required', 'string', 'max:300']]);
 
         return $this->json(['item' => $this->laundry->updatePriceItem($this->property->current(), $this->actor($request), $id, $data['name'], (int) $data['unit_price_minor'], (bool) $data['is_active'], (int) $data['lock_version'], $data['reason'])]);
+    }
+
+    public function addTreatment(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'code' => ['required', 'string', 'max:20'], 'name' => ['required', 'string', 'max:80'], 'kind' => ['required', 'string', 'max:7'], 'pricing' => ['required', 'string', 'max:7'],
+            'value' => ['required', 'integer', 'min:0'], 'reason' => ['required', 'string', 'max:300'],
+        ]);
+
+        return $this->json(['treatment' => $this->laundry->addTreatment($this->property->current(), $this->actor($request), $data['code'], $data['name'], $data['kind'], $data['pricing'], (int) $data['value'], $data['reason'])], 201);
+    }
+
+    public function updateTreatment(Request $request, string $id): JsonResponse
+    {
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:80'], 'pricing' => ['required', 'string', 'max:7'], 'value' => ['required', 'integer', 'min:0'], 'is_active' => ['required', 'boolean'],
+            'lock_version' => ['required', 'integer', 'min:0'], 'reason' => ['required', 'string', 'max:300'],
+        ]);
+
+        return $this->json(['treatment' => $this->laundry->updateTreatment($this->property->current(), $this->actor($request), $id, $data['name'], $data['pricing'], (int) $data['value'], (bool) $data['is_active'], (int) $data['lock_version'], $data['reason'])]);
     }
 
     private function actor(Request $request): string

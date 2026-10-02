@@ -391,4 +391,66 @@ final class LaundryTest extends TestCase
         self::assertSame(1, DB::table('audit_entries')->where('action', 'report.exported')->count());
         $this->assertRefused(403, fn () => app(ReportService::class)->laundry($this->property(), $this->clerkId, 'today', null, null));
     }
+
+    public function test_special_treatments_and_the_express_service_add_a_rate_per_piece_that_orders_keep(): void
+    {
+        $this->configureLaundryScheme();
+        $dry = $this->laundry()->addTreatment($this->property(), $this->laundryManagerId, 'dry', 'Dry cleaning', 'service', 'percent', 5_000, 'Price list 2026')['id'];
+        $stain = $this->laundry()->addTreatment($this->property(), $this->laundryManagerId, 'STAIN', 'Stubborn stain', 'service', 'fixed', 500_000, 'Price list 2026')['id'];
+        $express = $this->laundry()->addTreatment($this->property(), $this->laundryManagerId, 'EXPRESS', 'Express', 'express', 'percent', 3_000, 'Price list 2026');
+
+        $this->assertRefused(409, fn () => $this->laundry()->addTreatment($this->property(), $this->laundryManagerId, 'EXPRESS2', 'Another express', 'express', 'fixed', 1_000_000, 'x'));
+        $this->assertRefused(422, fn () => $this->laundry()->addTreatment($this->property(), $this->laundryManagerId, 'DRY', 'Again', 'service', 'fixed', 1, 'x'));
+        $this->assertRefused(422, fn () => $this->laundry()->addTreatment($this->property(), $this->laundryManagerId, 'BAD', 'Bad', 'service', 'percent', 200_000, 'x'));
+        $this->assertRefused(422, fn () => $this->laundry()->addTreatment($this->property(), $this->laundryManagerId, 'BAD', 'Bad', 'other', 'fixed', 1, 'x'));
+        $this->assertRefused(422, fn () => $this->laundry()->addTreatment($this->property(), $this->laundryManagerId, 'BAD', 'Bad', 'service', 'fixed', 1, ' '));
+        $this->assertRefused(403, fn () => $this->laundry()->addTreatment($this->property(), $this->clerkId, 'BAD', 'Bad', 'service', 'fixed', 1, 'x'));
+        self::assertCount(3, $this->laundry()->treatments($this->property(), $this->clerkId));
+
+        // A shirt is 25,000 and trousers 30,000. Shirts get dry cleaning (+50 percent), trousers a stain treatment (+5,000), and the order is express (+30 percent).
+        $order = $this->handOver('BAG-0201', [
+            ['price_item_id' => $this->shirtId, 'quantity' => 2, 'treatment_id' => $dry],
+            ['price_item_id' => $this->trousersId, 'quantity' => 1, 'treatment_id' => $stain],
+        ], true);
+        $lines = array_column($order['lines'], null, 'item_name');
+        self::assertSame([2_500_000, 1_250_000, 750_000, 4_500_000], [$lines['Shirt']['unit_price_minor'], $lines['Shirt']['treatment_extra_minor'], $lines['Shirt']['express_extra_minor'], $lines['Shirt']['piece_minor']]);
+        self::assertSame([3_000_000, 500_000, 900_000, 4_400_000], [$lines['Trousers']['unit_price_minor'], $lines['Trousers']['treatment_extra_minor'], $lines['Trousers']['express_extra_minor'], $lines['Trousers']['piece_minor']]);
+        self::assertSame('Dry cleaning', $lines['Shirt']['treatment_name']);
+        self::assertSame(2 * 4_500_000 + 4_400_000, $order['billable_minor']);
+
+        // A later change of the rates leaves the order as it was handed over.
+        $this->laundry()->updateTreatment($this->property(), $this->laundryManagerId, $dry, 'Dry cleaning', 'percent', 9_000, true, 0, 'Raised');
+        $this->laundry()->updateTreatment($this->property(), $this->laundryManagerId, $express['id'], 'Express', 'fixed', 2_000_000, true, 0, 'Raised');
+        self::assertSame(2 * 4_500_000 + 4_400_000, $this->laundry()->view($this->property(), $this->clerkId, $order['id'])['billable_minor']);
+        $order = $this->toIroned($order);
+        $ready = $this->laundry()->markReady($this->property(), $this->laundererId, $order['id'], $order['lock_version']);
+        self::assertSame(13_400_000, $ready['charged_minor']);
+        self::assertSame(13_400_000, (int) DB::table('folio_postings')->where('source', 'laundry')->value('base_minor'));
+
+        // A new order uses the new rates; an order that is not express gets no express extra.
+        $next = $this->handOver('BAG-0202', [['price_item_id' => $this->shirtId, 'quantity' => 1, 'treatment_id' => $dry]]);
+        self::assertSame([2_500_000, 2_250_000, 0], [$next['lines'][0]['unit_price_minor'], $next['lines'][0]['treatment_extra_minor'], $next['lines'][0]['express_extra_minor']]);
+        $expressTwo = $this->handOver('BAG-0203', [['price_item_id' => $this->shirtId, 'quantity' => 1]], true);
+        self::assertSame(2_000_000, $expressTwo['lines'][0]['express_extra_minor']);
+
+        // Refusals at hand-over: a stopped treatment, the express service used as a line treatment, an unknown one, and the same item twice.
+        $this->laundry()->updateTreatment($this->property(), $this->laundryManagerId, $stain, 'Stubborn stain', 'fixed', 500_000, false, 0, 'Stopped');
+        $this->assertRefused(422, fn () => $this->handOver('BAG-0204', [['price_item_id' => $this->shirtId, 'quantity' => 1, 'treatment_id' => $stain]]));
+        $this->assertRefused(422, fn () => $this->handOver('BAG-0205', [['price_item_id' => $this->shirtId, 'quantity' => 1, 'treatment_id' => $express['id']]]));
+        $this->assertRefused(422, fn () => $this->handOver('BAG-0206', [['price_item_id' => $this->shirtId, 'quantity' => 1, 'treatment_id' => '01arz3ndektsv4rrffq69g5faa']]));
+        self::assertCount(2, $this->laundry()->intakeLookups($this->property(), $this->clerkId)['treatments']);
+        $this->assertRefused(409, fn () => $this->laundry()->updateTreatment($this->property(), $this->laundryManagerId, $dry, 'Dry cleaning', 'percent', 9_000, true, 0, 'Stale'));
+
+        // The express service can be replaced: stop one, then another may be used.
+        $this->laundry()->updateTreatment($this->property(), $this->laundryManagerId, $express['id'], 'Express', 'fixed', 2_000_000, false, 1, 'Replaced');
+        self::assertSame('express', $this->laundry()->addTreatment($this->property(), $this->laundryManagerId, 'EXPRESS2', 'Express 2', 'express', 'fixed', 1_000_000, 'New price')['kind']);
+        self::assertSame(4, DB::table('audit_entries')->where('action', 'laundry.treatment.added')->count());
+
+        try {
+            DB::table('laundry_treatments')->delete();
+            self::fail('A treatment cannot be deleted');
+        } catch (QueryException) {
+            self::assertTrue(true);
+        }
+    }
 }
