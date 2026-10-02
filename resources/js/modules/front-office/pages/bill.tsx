@@ -27,7 +27,7 @@ export default function BillPage({ bill, folio_id: folioId }: { bill: Bill; foli
         <>
             <Head title={t('fo.bill.title')} />
             <main className="min-h-screen bg-surface-muted px-4 py-10 print:bg-white print:p-0">
-                <article className="mx-auto flex max-w-4xl flex-col gap-5 border border-border bg-surface p-6 text-sm shadow-panel sm:p-8 print:max-w-none print:border-0 print:p-0 print:shadow-none">
+                <article className="mx-auto flex max-w-4xl flex-col gap-5 border border-border bg-surface p-6 text-sm sm:p-8 print:max-w-none print:border-0 print:p-0 ">
                     <div className="flex flex-wrap justify-end gap-2 print:hidden">
                         <LanguageSwitcher />
                         <Button asChild size="sm" variant="outline"><Link href={`/front-office/folios/${folioId}`}>{t('common.action.back')}</Link></Button>
@@ -47,7 +47,7 @@ export default function BillPage({ bill, folio_id: folioId }: { bill: Bill; foli
 
                     {bill.outlets.length === 0 ? <EmptyState title={t('fo.bill.empty')} /> : bill.outlets.map((o) => (
                         <section aria-label={t(`fo.bill.outlet.${o.outlet}` as 'fo.bill.outlet.rooms')} data-testid={`outlet-${o.outlet}`} key={o.outlet}>
-                            <h2 className="mb-1 font-semibold">{t(`fo.bill.outlet.${o.outlet}` as 'fo.bill.outlet.rooms')}</h2>
+                            <h2 className="mb-1 font-semibold">{t(`fo.bill.outlet.${o.outlet}`as 'fo.bill.outlet.rooms')}</h2>
                             <table className="w-full text-left">
                                 <thead><tr className="text-xs text-muted-foreground"><th className="py-1 font-medium" scope="col">{t('fo.bill.date')}</th><th scope="col">{t('fo.bill.description')}</th><th className="text-right" scope="col">{t('fo.bill.base')}</th><th className="text-right" scope="col">{t('fo.bill.serviceCharge')}</th><th className="text-right" scope="col">{t('fo.bill.tax')}</th><th className="text-right" scope="col">{t('fo.bill.total')}</th></tr></thead>
                                 <tbody>{o.lines.map((l, i) => (

@@ -35,4 +35,7 @@ export const common = {
     'auth.point.housekeeping': "Housekeeping, linen and laundry",
     'auth.point.reports': "Reports and the day at a glance",
     'auth.point.control': "Approvals and an audit trail for everything",
+    'shell.group.operations': "Operations",
+    'shell.group.insight': "Insight",
+    'shell.group.control': "Control",
 } as const;

@@ -232,7 +232,7 @@ function DataTable<TData extends RowData>({
             <div
                 aria-label={labels.scrollRegion}
                 className={cn(
-                    'overflow-x-auto rounded-lg border border-border bg-surface shadow-panel',
+                    'overflow-x-auto border border-border bg-surface',
                     renderMobileRow ? 'hidden md:block' : undefined,
                 )}
                 // Keyboard users must be able to scroll a wide table.
@@ -274,7 +274,7 @@ function DataTable<TData extends RowData>({
                                             {header.isPlaceholder ? null : canSort ? (
                                                 <button
                                                     aria-label={labels.sortBy(title)}
-                                                    className="inline-flex min-h-8 items-center gap-1 rounded-sm text-left font-semibold hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                                                    className="inline-flex min-h-8 items-center gap-1 text-left font-semibold hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                                                     onClick={header.column.getToggleSortingHandler()}
                                                     type="button"
                                                 >
@@ -311,14 +311,14 @@ function DataTable<TData extends RowData>({
                           ))
                         : tableRows.map((row) => (
                               <li
-                                  className="rounded-lg border border-border bg-surface p-3 shadow-panel"
+                                  className="border border-border bg-surface p-3 "
                                   key={row.id}
                               >
                                   {renderMobileRow(row.original)}
                               </li>
                           ))}
                     {tableRows.length === 0 && !isLoading ? (
-                        <li className="rounded-lg border border-border bg-surface">{message}</li>
+                        <li className="border border-border bg-surface">{message}</li>
                     ) : null}
                 </ul>
             ) : null}

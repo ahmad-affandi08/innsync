@@ -46,7 +46,7 @@ export default function RoomBoardPage({ board }: { board: Board }) {
                                     <span>{a.number} · {a.guest_name} · {a.type} · {format.date(a.arrival)} – {format.date(a.departure)}</span>
                                     <span className="flex flex-wrap gap-2">
                                         {ready.length === 0 ? <span className="text-xs text-muted-foreground">{t('fo.board.notReadyNote')}</span> : ready.slice(0, 3).map((r) => (
-                                            <Link className="rounded-md border border-border px-2 py-1 text-xs hover:bg-surface-muted" href={`/front-office/reservations/${a.reservation_id}/check-in?room_id=${r.room_id}`} key={r.room_id}>{t('fo.board.checkInTo')}: {r.number}</Link>
+                                            <Link className="border border-border px-2 py-1 text-xs hover:bg-surface-muted" href={`/front-office/reservations/${a.reservation_id}/check-in?room_id=${r.room_id}`} key={r.room_id}>{t('fo.board.checkInTo')}: {r.number}</Link>
                                         ))}
                                     </span>
                                 </li>

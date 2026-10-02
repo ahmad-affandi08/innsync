@@ -184,4 +184,7 @@ export const id: Record<MessageKey, string> = {
     'auth.point.housekeeping': "Housekeeping, linen, dan laundry",
     'auth.point.reports': "Laporan dan ringkasan hari ini",
     'auth.point.control': "Persetujuan dan jejak audit untuk semuanya",
+    'shell.group.operations': "Operasional",
+    'shell.group.insight': "Wawasan",
+    'shell.group.control': "Kendali",
 }

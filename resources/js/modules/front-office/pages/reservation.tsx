@@ -111,7 +111,7 @@ export default function ReservationPage({ billing, folios, group, lookups, polic
                 <dt className="text-muted-foreground">{t('fo.res.roomType')}</dt><dd>{type?.code} · {type?.name}</dd>
                 <dt className="text-muted-foreground">{t('fo.res.ratePlan')}</dt><dd>{plan?.code} · {plan?.name}{plan?.inclusions ? ` (${plan.inclusions})` : ''}</dd>
                 <dt className="text-muted-foreground">{t('fo.res.adults')} / {t('fo.res.children')}</dt><dd>{t('fo.res.guests', { adults: r.adults, children: r.children })}</dd>
-                <dt className="text-muted-foreground">{t('fo.res.source')}</dt><dd>{t(`fo.source.${r.source}` as 'fo.source.direct')}</dd>
+                <dt className="text-muted-foreground">{t('fo.res.source')}</dt><dd>{t(`fo.source.${r.source}`as 'fo.source.direct')}</dd>
                 <dt className="text-muted-foreground">{t('fo.res.phone')}</dt><dd>{r.guest_phone ?? '—'}</dd>
                 <dt className="text-muted-foreground">{t('fo.res.email')}</dt><dd>{r.guest_email ?? '—'}</dd>
                 {r.notes !== null && <><dt className="text-muted-foreground">{t('fo.res.notes')}</dt><dd className="break-words">{r.notes}</dd></>}
@@ -169,7 +169,7 @@ export default function ReservationPage({ billing, folios, group, lookups, polic
                     ) : (
                         <div className="flex flex-wrap items-end gap-2">
                             <FormField hint={t('fo.company.linkNote')} label={t('fo.company.choose')}>
-                                <select className="min-h-11 rounded-md border border-border bg-background px-3 text-sm" onChange={(e) => setCompanyId(e.target.value)} value={companyId}>
+                                <select className="min-h-11 border border-border bg-background px-3 text-sm" onChange={(e) => setCompanyId(e.target.value)} value={companyId}>
                                     <option value="">—</option>
                                     {billing.options.map((o) => <option key={o.id} value={o.id}>{o.code} · {o.name}</option>)}
                                 </select>
@@ -196,7 +196,7 @@ export default function ReservationPage({ billing, folios, group, lookups, polic
                     <ul className="divide-y divide-border border-y border-border text-sm">{folios.map((f) => (
                         <li className="flex flex-wrap items-center justify-between gap-2 py-2" key={f.id}>
                             <Link className="font-medium underline-offset-2 hover:underline" href={`/front-office/folios/${f.id}`}>{t('fo.folio.openLink', { number: f.number })}</Link>
-                            <span className="text-xs text-muted-foreground">{t('fo.folio.windowLabel', { n: f.window, label: f.label })} · {t(`fo.folio.status.${f.status}` as 'fo.folio.status.open')} · {format.money(f.balance_minor, f.currency)}</span>
+                            <span className="text-xs text-muted-foreground">{t('fo.folio.windowLabel', { n: f.window, label: f.label })} · {t(`fo.folio.status.${f.status}`as 'fo.folio.status.open')} · {format.money(f.balance_minor, f.currency)}</span>
                         </li>
                     ))}</ul>
                 )}

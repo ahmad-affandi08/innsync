@@ -4,7 +4,7 @@ import type { ReactNode } from 'react';
 
 import { cn } from '@/shared/lib/utils';
 
-const alertVariants = cva('flex gap-3 rounded-lg border p-3.5 text-sm', {
+const alertVariants = cva('flex gap-3 border p-3.5 text-sm', {
     variants: {
         tone: {
             info: 'border-info/40 bg-info/10 text-foreground',

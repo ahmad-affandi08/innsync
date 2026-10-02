@@ -2,12 +2,13 @@ import { Link } from '@inertiajs/react';
 import { ArrowUpRight, BedDouble, ChartNoAxesCombined, ConciergeBell, LayoutDashboard, Settings2, ShieldCheck, Shirt, type LucideIcon } from 'lucide-react';
 
 import { AppFrame } from '@/components/layout/app-frame';
+import { Card } from '@/components/ui/card';
 import type { MessageKey } from '@/locales/en/index';
 import { useTranslation } from '@/shared/i18n/i18n';
 
-type Card = { href: string; icon: LucideIcon; label: MessageKey; about: MessageKey };
+type Module = { href: string; icon: LucideIcon; label: MessageKey; about: MessageKey };
 
-const CARDS: readonly Card[] = [
+const CARDS: readonly Module[] = [
     { href: '/dashboard', icon: LayoutDashboard, label: 'rpt.nav.dashboard', about: 'home.about.dashboard' },
     { href: '/front-office/room-board', icon: ConciergeBell, label: 'fo.nav.label', about: 'home.about.frontOffice' },
     { href: '/housekeeping', icon: BedDouble, label: 'hk.nav.label', about: 'home.about.housekeeping' },
@@ -36,7 +37,7 @@ export default function WelcomePage({ appVersion, userName }: WelcomePageProps) 
                 <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground" id="quick-h">{t('home.quick')}</h2>
                 <div className="flex flex-wrap gap-2">
                     {QUICK.map((q) => (
-                        <Link className="inline-flex items-center gap-2 rounded-full border border-border bg-surface px-4 py-2 text-sm font-medium shadow-panel transition hover:border-brand hover:text-accent" href={q.href} key={q.href}>
+                        <Link className="inline-flex items-center gap-2 border border-border bg-surface px-4 py-2 text-sm font-medium transition hover:border-brand hover:text-accent" href={q.href} key={q.href}>
                             {t(q.label)}
                             <ArrowUpRight aria-hidden="true" className="size-3.5 text-brand" />
                         </Link>
@@ -51,14 +52,16 @@ export default function WelcomePage({ appVersion, userName }: WelcomePageProps) 
                         const Icon = c.icon;
 
                         return (
-                            <Link className="group flex gap-4 rounded-xl border border-border bg-surface p-5 shadow-panel transition hover:-translate-y-0.5 hover:border-brand/60 hover:shadow-overlay" href={c.href} key={c.href}>
-                                <span className="grid size-11 shrink-0 place-items-center rounded-lg bg-brand/10 text-accent transition group-hover:bg-brand group-hover:text-white">
+                            <Link className="group block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" href={c.href} key={c.href}>
+                                <Card className="flex h-full gap-4 p-5 transition-colors group-hover:border-brand">
+                                <span className="grid size-11 shrink-0 place-items-center bg-brand/10 text-accent transition group-hover:bg-brand group-hover:text-white">
                                     <Icon aria-hidden="true" className="size-5" />
                                 </span>
                                 <span className="min-w-0">
                                     <span className="block font-semibold">{t(c.label)}</span>
                                     <span className="mt-0.5 block text-sm leading-5 text-muted-foreground">{t(c.about)}</span>
                                 </span>
+                                </Card>
                             </Link>
                         );
                     })}

@@ -74,7 +74,7 @@ export default function OfflineCheckPage() {
 
                 <section aria-label={t('offline.check.support')}>
                     <h2 className="mb-1 text-base font-semibold">{t('offline.check.support')}</h2>
-                    <dl className="rounded-lg border border-border bg-surface px-3">
+                    <dl className="border border-border bg-surface px-3">
                         <Row label={t('offline.check.support.indexedDb')} value={yesNo(support.indexedDb)} />
                         <Row label={t('offline.check.support.webCrypto')} value={yesNo(support.webCrypto)} />
                         <Row label={t('offline.check.support.secureContext')} value={yesNo(support.secureContext)} />

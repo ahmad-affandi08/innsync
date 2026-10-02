@@ -36,7 +36,7 @@ export default function ChargeSchemesPage({ schemes, scope, scopes }: { schemes:
             {form === null && action.error !== null ? <ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /> : null}
             <nav aria-label={t('tax.scope')} className="flex flex-wrap gap-2 text-sm">
                 {scopes.map((s) => (
-                    <Link aria-current={s === scope ? 'page' : undefined} className="rounded-md border border-border px-3 py-1.5 hover:bg-surface-muted aria-[current=page]:bg-surface-muted aria-[current=page]:font-medium" href={`/property/tax?scope=${s}`} key={s}>{t(`tax.scope.${s}` as 'tax.scope.rooms')}</Link>
+                    <Link aria-current={s === scope ? 'page' : undefined} className="border border-border px-3 py-1.5 hover:bg-surface-muted aria-[current=page]:bg-surface-muted aria-[current=page]:font-medium" href={`/property/tax?scope=${s}`} key={s}>{t(`tax.scope.${s}` as 'tax.scope.rooms')}</Link>
                 ))}
             </nav>
             <section aria-labelledby="tax-h" className="flex flex-col gap-3">

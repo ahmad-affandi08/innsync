@@ -81,7 +81,7 @@ export function SyncStatus({ className }: { className?: string }) {
     return (
         <div
             aria-label={t('offline.status.label')}
-            className={cn('inline-flex items-center gap-2 rounded-md border px-3 py-1.5 text-sm', toneClass[view.tone], className)}
+            className={cn('inline-flex items-center gap-2 border px-3 py-1.5 text-sm', toneClass[view.tone], className)}
             role="status"
         >
             <Icon aria-hidden="true" className={cn('size-4 shrink-0', view.spin && 'animate-spin motion-reduce:animate-none')} />
@@ -119,7 +119,7 @@ export function SyncPanel({ className }: { className?: string }) {
             {entries.length === 0 ? (
                 <EmptyState title={t('offline.panel.empty')} />
             ) : (
-                <ul className="divide-y divide-border rounded-lg border border-border bg-surface">
+                <ul className="divide-y divide-border border border-border bg-surface">
                     {entries.map((entry) => (
                         <li className="flex flex-wrap items-center justify-between gap-3 px-3 py-2.5" key={entry.operationId}>
                             <div className="min-w-0">
