@@ -58,6 +58,22 @@ final readonly class Posting
         return new self($id, EntryType::Charge, $code, trim($description), $base, $serviceCharge, $tax, $total, $date, $at, $by, self::source($source), self::ref($sourceRef), null, null, null, null, null, null, $schemeSnapshot);
     }
 
+    /**
+     * The charge that takes the place of a charge moved to another folio (FR-FO-023): the same parts, the same code, dated today, with
+     * the reason. The folio it leaves gets the reversal of the original; together they leave the money where the guest wants it.
+     */
+    public static function movedFrom(self $original, string $id, string $fromFolioNumber, string $reason, BusinessDate $date, DateTimeImmutable $at, ?string $by): self
+    {
+        if ($original->type !== EntryType::Charge) {
+            throw FolioRuleViolation::notReversible('Only a charge can be moved to another folio.');
+        }
+
+        return new self(
+            $id, EntryType::Charge, $original->code, mb_substr('Moved from '.$fromFolioNumber.': '.$original->description, 0, 200), $original->base, $original->serviceCharge, $original->tax, $original->total,
+            $date, $at, $by, 'transfer', 'transfer:'.$original->id, null, self::reasonText($reason), null, null, null, null, $original->schemeSnapshot,
+        );
+    }
+
     public static function payment(string $id, string $code, string $description, Money $amount, PaymentMethod $method, ?string $reference, string $purpose, BusinessDate $date, DateTimeImmutable $at, ?string $by, string $source, ?string $sourceRef): self
     {
         self::assertCode($code);

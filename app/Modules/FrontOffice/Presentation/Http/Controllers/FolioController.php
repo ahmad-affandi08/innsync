@@ -46,6 +46,18 @@ final readonly class FolioController
         return $this->json(['folio' => $this->folios->open($this->property->current(), $this->actor($request), $id, $data['label'] ?? 'Guest', (int) ($data['window'] ?? 1))], 201);
     }
 
+    public function transferTargets(Request $request, string $id): JsonResponse
+    {
+        return $this->json(['targets' => $this->folios->transferTargets($this->property->current(), $this->actor($request), $id)]);
+    }
+
+    public function transfer(Request $request, string $id): JsonResponse
+    {
+        $data = $request->validate(['target_folio_id' => ['required', 'string', 'size:26'], 'reason' => ['required', 'string', 'max:400']]);
+
+        return $this->json(['transfer' => $this->folios->transfer($this->property->current(), $this->actor($request), $id, $data['target_folio_id'], $data['reason'])]);
+    }
+
     public function charge(Request $request, string $id): JsonResponse
     {
         $data = $request->validate([

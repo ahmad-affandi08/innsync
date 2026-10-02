@@ -45,8 +45,10 @@ export default function ReservationPage({ folios, lookups, policy, rates, reserv
     const preview = useServerAction();
     const type = lookups.types.find((x) => x.id === r.room_type_id);
     const plan = lookups.plans.find((x) => x.id === r.rate_plan_id);
+    const [newFolio, setNewFolio] = useState<string | null>(null);
+
     async function openFolio() {
-        const done = await action.run<{ folio: { id: string } }>(`/front-office/reservations/${r.id}/folios`, { body: { label: 'Guest', window: folios.length + 1 } });
+        const done = await action.run<{ folio: { id: string } }>(`/front-office/reservations/${r.id}/folios`, { body: { label: (newFolio ?? '').trim() || 'Guest', window: folios.length + 1 } });
         if (done !== null) router.visit(`/front-office/folios/${done.folio.id}`);
     }
 
@@ -145,8 +147,15 @@ export default function ReservationPage({ folios, lookups, policy, rates, reserv
             <section aria-labelledby="folio-h" className="flex flex-col gap-2">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                     <h2 className="text-lg font-semibold" id="folio-h">{t('fo.folio.postings')}</h2>
-                    {r.status !== 'cancelled' && r.status !== 'no_show' ? <Button disabled={action.busy} onClick={() => void openFolio()} size="sm" type="button" variant="outline">{t('fo.folio.open')}</Button> : null}
+                    {r.status !== 'cancelled' && r.status !== 'no_show' ? <Button disabled={action.busy} onClick={() => setNewFolio(folios.length === 0 ? 'Guest' : '')} size="sm" type="button" variant="outline">{t('fo.folio.open')}</Button> : null}
                 </div>
+                {newFolio !== null && (
+                    <form className="flex flex-wrap items-end gap-2" onSubmit={(e) => { e.preventDefault(); void openFolio(); }}>
+                        <FormField hint={t('fo.folio.labelHint')} label={t('fo.folio.label')}><Input maxLength={60} onChange={(e) => setNewFolio(e.target.value)} value={newFolio} /></FormField>
+                        <Button loading={action.busy} size="sm" type="submit">{t('fo.folio.open')}</Button>
+                        <Button disabled={action.busy} onClick={() => setNewFolio(null)} size="sm" type="button" variant="outline">{t('ui.dialog.cancel')}</Button>
+                    </form>
+                )}
                 {folios.length === 0 ? <p className="text-sm text-muted-foreground">{t('fo.folio.none')}</p> : (
                     <ul className="divide-y divide-border border-y border-border text-sm">{folios.map((f) => (
                         <li className="flex flex-wrap items-center justify-between gap-2 py-2" key={f.id}>

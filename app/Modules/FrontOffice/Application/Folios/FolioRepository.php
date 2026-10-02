@@ -22,6 +22,13 @@ interface FolioRepository
     /** Reads the folio with a row lock (`FOR UPDATE`). Every posting happens under it. Call inside a transaction. */
     public function lock(PropertyId $property, string $id): ?Folio;
 
+    /**
+     * Open folios of guests who are in the house now, for moving a charge to another room (FR-FO-023).
+     *
+     * @return list<array{folio_id: string, number: string, window: int, label: string, reservation_id: string, room: string, guest: string}>
+     */
+    public function openInHouseFolios(PropertyId $property): array;
+
     /** @return list<Folio> */
     public function byReservation(PropertyId $property, string $reservationId): array;
 

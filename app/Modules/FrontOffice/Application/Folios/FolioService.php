@@ -6,6 +6,7 @@ namespace App\Modules\FrontOffice\Application\Folios;
 
 use App\Modules\FrontOffice\Application\Cashier\ShiftAttribution;
 use App\Modules\FrontOffice\Application\Reservations\ReservationRepository;
+use App\Modules\FrontOffice\Domain\Folios\EntryType;
 use App\Modules\FrontOffice\Domain\Folios\Folio;
 use App\Modules\FrontOffice\Domain\Folios\FolioRuleViolation;
 use App\Modules\FrontOffice\Domain\Folios\PaymentMethod;
@@ -368,6 +369,88 @@ final readonly class FolioService
             }
 
             return $this->postAndRecord($property, $actorId, $folio->id, 'folio.posting.reversed', fn ($date, $now): Posting => Posting::reversalOf($original, $this->ledger->newId(), $reason, $date, $now, strtolower($actorId), $approval === '' ? null : $approval), $approval, $original);
+        });
+    }
+
+    /**
+     * Where a charge can be moved (FR-FO-023): the other open folios of the same reservation (the company's and the guest's own, for a
+     * split bill) and, for someone who may correct folios, the open folios of the other guests in the house.
+     *
+     * @return array{same: list<array<string, mixed>>, others: list<array<string, mixed>>}
+     */
+    public function transferTargets(PropertyId $property, string $actorId, string $folioId): array
+    {
+        $this->authorize($property, $actorId, self::MANAGE_PERMISSION);
+        $source = $this->folios->find($property, strtolower($folioId)) ?? throw Refusal::notFound('Folio not found.');
+        $same = [];
+
+        foreach ($this->folios->byReservation($property, $source->reservationId) as $f) {
+            if ($f->id !== $source->id && ! $f->isClosed && $f->currency === $source->currency) {
+                $same[] = ['folio_id' => $f->id, 'number' => $f->number, 'window' => $f->window, 'label' => $f->label];
+            }
+        }
+
+        $others = [];
+
+        if ($this->permissions->allowsInProperty($actorId, self::CORRECT_PERMISSION, $property)) {
+            foreach ($this->folios->openInHouseFolios($property) as $f) {
+                if ($f['reservation_id'] !== $source->reservationId) {
+                    $others[] = $f;
+                }
+            }
+        }
+
+        return ['same' => $same, 'others' => $others];
+    }
+
+    /**
+     * Moves a charge to another open folio (FR-FO-022, FR-FO-023): the folio it leaves gets the reversal of the charge and the folio
+     * it goes to gets the same charge, with the reason, dated today. The ledger only grows. Within a reservation (splitting a bill
+     * between the company and the guest) the right to manage folios is enough; to another guest's folio (another room) the right
+     * to correct folios is needed as well, since it changes what another guest owes.
+     *
+     * @return array<string, mixed> the folio it left and the one it went to
+     */
+    public function transfer(PropertyId $property, string $actorId, string $postingId, string $targetFolioId, string $reason): array
+    {
+        $this->authorize($property, $actorId, self::MANAGE_PERMISSION);
+        [$sourceId, $original] = $this->folios->findPosting($property, strtolower($postingId)) ?? throw Refusal::notFound('Posting not found.');
+        $source = $this->folios->find($property, $sourceId) ?? throw Refusal::notFound('Folio not found.');
+        $target = $this->folios->find($property, strtolower($targetFolioId)) ?? throw Refusal::invalid('Choose a folio to move it to.', ['target_folio_id']);
+
+        if (trim($reason) === '' || mb_strlen($reason) > 400) {
+            throw Refusal::invalid('A reason of at most 400 characters is required.', ['reason']);
+        }
+
+        if ($target->id === $source->id) {
+            throw Refusal::invalid('Choose another folio.', ['target_folio_id']);
+        }
+
+        if ($target->reservationId !== $source->reservationId) {
+            $this->authorize($property, $actorId, self::CORRECT_PERMISSION);
+        }
+
+        if ($original->type !== EntryType::Charge) {
+            throw Refusal::stateConflict('Only a charge can be moved: payments and refunds stay on the folio they were made on.');
+        }
+
+        if ($source->isClosed || $target->isClosed) {
+            throw Refusal::stateConflict('A closed folio cannot give or take a charge.');
+        }
+
+        if ($target->currency !== $source->currency) {
+            throw Refusal::invalid('The folios are in different currencies.', ['target_folio_id']);
+        }
+
+        return $this->transactions->run(function () use ($property, $actorId, $original, $source, $target, $reason): array {
+            if ($this->folios->isReversed($property, $original->id)) {
+                throw Refusal::stateConflict('This charge was already reversed or moved.');
+            }
+
+            $left = $this->postAndRecord($property, $actorId, $source->id, 'folio.posting.moved_out', fn ($date, $now): Posting => Posting::reversalOf($original, $this->ledger->newId(), 'Moved to '.$target->number.': '.trim($reason), $date, $now, strtolower($actorId), null), null, $original);
+            $moved = $this->postAndRecord($property, $actorId, $target->id, 'folio.posting.moved_in', fn ($date, $now): Posting => Posting::movedFrom($original, $this->ledger->newId(), $source->number, $reason, $date, $now, strtolower($actorId)), null);
+
+            return ['from' => $left['folio'], 'to' => $moved['folio'], 'posting' => $moved['posting']];
         });
     }
 

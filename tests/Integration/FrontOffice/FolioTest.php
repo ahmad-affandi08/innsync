@@ -8,6 +8,8 @@ use App\Modules\FrontOffice\Application\Folios\ApprovalRequired;
 use App\Modules\FrontOffice\Application\Folios\FolioRepository;
 use App\Modules\FrontOffice\Application\Folios\FolioService;
 use App\Modules\FrontOffice\Application\Reservations\ReservationService;
+use App\Modules\FrontOffice\Application\Stays\CheckInRequest;
+use App\Modules\FrontOffice\Application\Stays\StayService;
 use App\Modules\IdentityAccess\Application\Approval\ApprovalPolicyAdmin;
 use App\Modules\IdentityAccess\Application\Approval\ApprovalService;
 use App\Modules\IdentityAccess\Infrastructure\Persistence\Eloquent\UserRecord;
@@ -435,5 +437,67 @@ final class FolioTest extends TestCase
 
         $this->expect(fn () => $this->folios()->bill($this->property(), $this->dashOnlyId, $this->folioId), 403);
         $this->expect(fn () => $this->folios()->bill($this->property(), $this->viewerId, '01arz3ndektsv4rrffq69g5fax'), 404);
+    }
+
+    public function test_a_charge_is_moved_to_another_folio_of_the_booking_by_a_reversal_and_a_new_charge(): void
+    {
+        $company = $this->folios()->open($this->property(), $this->managerId, $this->reservationId, 'Company', 2)['id'];
+        $charge = $this->folios()->charge($this->property(), $this->managerId, $this->folioId, 'MINIBAR', 'Minibar', 100_000_000, false)['posting'];
+
+        $targets = $this->folios()->transferTargets($this->property(), $this->managerId, $this->folioId);
+        self::assertSame([$company], array_column($targets['same'], 'folio_id'));
+        self::assertSame('Company', $targets['same'][0]['label']);
+
+        $moved = $this->folios()->transfer($this->property(), $this->managerId, $charge['id'], $company, 'The company pays the minibar');
+        self::assertSame([0, 121_000_000], [$moved['from']['balance_minor'], $moved['to']['balance_minor']]);
+        self::assertSame(['charge', 'MINIBAR', 'transfer', 'The company pays the minibar'], [$moved['posting']['type'], $moved['posting']['code'], DB::table('folio_postings')->where('id', $moved['posting']['id'])->value('source'), $moved['posting']['reason']]);
+        self::assertStringStartsWith('Moved from FOL-000001: Minibar', $moved['posting']['description']);
+        self::assertSame([100_000_000, 10_000_000, 11_000_000], [$moved['posting']['base_minor'], $moved['posting']['service_charge_minor'], $moved['posting']['tax_minor']]);
+        self::assertSame(3, DB::table('folio_postings')->count());
+        self::assertSame(121_000_000, (int) DB::table('folio_postings')->where('id', $charge['id'])->value('total_minor'), 'the original stays');
+        self::assertSame(1, DB::table('folio_postings')->where('reverses_id', $charge['id'])->count());
+        self::assertSame(1, DB::table('audit_entries')->where('action', 'folio.posting.moved_out')->count());
+        self::assertSame(1, DB::table('audit_entries')->where('action', 'folio.posting.moved_in')->count());
+
+        // Nothing is created or lost: the ledger sums to what was charged, and what was moved cannot be moved from the same place twice.
+        self::assertSame(121_000_000, (int) DB::table('folio_postings')->sum('total_minor'));
+        $this->expect(fn () => $this->folios()->transfer($this->property(), $this->managerId, $charge['id'], $company, 'Again'), 409);
+
+        // It can be moved back, and a payment, a reversal or a move to the same folio is refused.
+        $back = $this->folios()->transfer($this->property(), $this->managerId, $moved['posting']['id'], $this->folioId, 'A mistake');
+        self::assertSame([121_000_000, 0], [$back['to']['balance_minor'], $back['from']['balance_minor']]);
+        $payment = $this->folios()->pay($this->property(), $this->managerId, $this->folioId, 'cash', 1_000_000, null, 'settlement')['posting'];
+        $this->expect(fn () => $this->folios()->transfer($this->property(), $this->managerId, $payment['id'], $company, 'x'), 409);
+        $this->expect(fn () => $this->folios()->transfer($this->property(), $this->managerId, $back['posting']['id'], $this->folioId, 'x'), 422);
+        $this->expect(fn () => $this->folios()->transfer($this->property(), $this->managerId, $back['posting']['id'], $company, ' '), 422);
+        $this->expect(fn () => $this->folios()->transfer($this->property(), $this->managerId, $back['posting']['id'], '01arz3ndektsv4rrffq69g5faa', 'x'), 422);
+        $this->expect(fn () => $this->folios()->transfer($this->property(), $this->viewerId, $back['posting']['id'], $company, 'x'), 403);
+        $this->expect(fn () => $this->folios()->transfer($this->property(), $this->managerId, '01arz3ndektsv4rrffq69g5faa', $company, 'x'), 404);
+    }
+
+    public function test_a_closed_folio_neither_gives_nor_takes_a_charge(): void
+    {
+        $company = $this->folios()->open($this->property(), $this->managerId, $this->reservationId, 'Company', 2)['id'];
+        $charge = $this->folios()->charge($this->property(), $this->managerId, $this->folioId, 'MINIBAR', 'Minibar', 10_000_000, false)['posting'];
+        $this->folios()->close($this->property(), $this->managerId, $company, 0);
+
+        $this->expect(fn () => $this->folios()->transfer($this->property(), $this->managerId, $charge['id'], $company, 'To a closed folio'), 409);
+        self::assertSame([], $this->folios()->transferTargets($this->property(), $this->managerId, $this->folioId)['same']);
+    }
+
+    public function test_moving_a_charge_to_another_guests_folio_needs_the_right_to_correct_folios(): void
+    {
+        $other = $this->book('2026-10-01', '2026-10-03', 'confirmed');
+        app(StayService::class)->checkIn($this->property(), $this->managerId, new CheckInRequest($other->id, $this->roomIds[1], 'Siti', 'ID', 'ktp', '3174010101900002', null, null, 'Jl. Merdeka 2', 2, 0), IdempotencyKey::fromString('folio-move-checkin-1'));
+        $otherFolio = $this->folios()->forReservation($this->property(), $this->managerId, $other->id)[0]['id'];
+        $charge = $this->folios()->charge($this->property(), $this->cashierId, $this->folioId, 'MINIBAR', 'Minibar', 10_000_000, false)['posting'];
+
+        self::assertSame([], $this->folios()->transferTargets($this->property(), $this->cashier2Id, $this->folioId)['others'], 'only someone who may correct folios sees other guests');
+        $others = $this->folios()->transferTargets($this->property(), $this->managerId, $this->folioId)['others'];
+        self::assertSame([[$otherFolio, '102', 'Budi Santoso']], array_map(static fn (array $f): array => [$f['folio_id'], $f['room'], $f['guest']], $others));
+
+        $this->expect(fn () => $this->folios()->transfer($this->property(), $this->cashier2Id, $charge['id'], $otherFolio, 'Wrong room'), 403);
+        $moved = $this->folios()->transfer($this->property(), $this->managerId, $charge['id'], $otherFolio, 'Posted to the wrong room');
+        self::assertSame([0, 12_100_000], [$moved['from']['balance_minor'], $moved['to']['balance_minor']]);
     }
 }

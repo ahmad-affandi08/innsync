@@ -48,6 +48,15 @@ final readonly class DatabaseFolioRepository implements FolioRepository
             ->map(static fn (stdClass $r): Folio => self::folio($r))->all();
     }
 
+    public function openInHouseFolios(PropertyId $property): array
+    {
+        return DB::table('folios as f')->join('stays as s', 's.reservation_id', '=', 'f.reservation_id')->join('rooms', 'rooms.id', '=', 's.room_id')->join('reservations as r', 'r.id', '=', 'f.reservation_id')
+            ->where('f.property_id', $property->toString())->where('f.status', 'open')->where('s.status', 'in_house')
+            ->orderBy('rooms.number')->orderBy('f.window_no')
+            ->get(['f.id as folio_id', 'f.number', 'f.window_no', 'f.label', 'f.reservation_id', 'rooms.number as room', 'r.guest_name'])
+            ->map(static fn (stdClass $r): array => ['folio_id' => $r->folio_id, 'number' => $r->number, 'window' => (int) $r->window_no, 'label' => $r->label, 'reservation_id' => $r->reservation_id, 'room' => $r->room, 'guest' => (string) $r->guest_name])->all();
+    }
+
     public function lock(PropertyId $property, string $id): ?Folio
     {
         $row = DB::table('folios')->where('property_id', $property->toString())->where('id', $id)->lockForUpdate()->first();

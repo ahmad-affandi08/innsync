@@ -78,6 +78,20 @@ final class FolioHttpTest extends TestCase
         $this->postJson("/front-office/folios/{$folio}/charges", ['code' => 'LATE', 'description' => 'Late', 'amount_minor' => 100, 'prices_include_charges' => false], ['Idempotency-Key' => 'charge-key-00000002'])->assertStatus(409);
     }
 
+    public function test_a_charge_is_moved_to_a_company_folio_over_http(): void
+    {
+        $guest = $this->folio();
+        $company = $this->postJson("/front-office/reservations/{$this->reservationId}/folios", ['label' => 'Company', 'window' => 2])->assertCreated()->assertJsonPath('folio.label', 'Company')->json('folio.id');
+        $charge = $this->postJson("/front-office/folios/{$guest}/charges", ['code' => 'MINIBAR', 'description' => 'Minibar', 'amount_minor' => 10_000_000, 'prices_include_charges' => false], ['Idempotency-Key' => 'move-key-0000000001'])->assertOk()->json('posting.id');
+
+        $this->getJson("/front-office/folios/{$guest}/transfer-targets")->assertOk()->assertJsonPath('targets.same.0.folio_id', $company)->assertJsonPath('targets.others', []);
+        $this->postJson("/front-office/postings/{$charge}/transfer", ['target_folio_id' => $company, 'reason' => ''])->assertStatus(422);
+        $this->postJson("/front-office/postings/{$charge}/transfer", ['target_folio_id' => $guest, 'reason' => 'Same folio'])->assertStatus(422);
+        $this->postJson("/front-office/postings/{$charge}/transfer", ['target_folio_id' => $company, 'reason' => 'The company pays'])->assertOk()->assertJsonPath('transfer.from.balance_minor', 0)->assertJsonPath('transfer.to.balance_minor', 12_100_000);
+        $this->postJson("/front-office/postings/{$charge}/transfer", ['target_folio_id' => $company, 'reason' => 'Again'])->assertStatus(409);
+        $this->get("/front-office/folios/{$company}")->assertInertia(fn (Assert $p) => $p->where('folio.balance_minor', 12_100_000)->where('folio.postings.0.description', fn ($d): bool => str_starts_with((string) $d, 'Moved from FOL-')));
+    }
+
     public function test_reversing_a_payment_needs_a_policy_then_an_approval_request_and_the_approval_page_lists_it(): void
     {
         $folio = $this->folio();

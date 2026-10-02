@@ -27,6 +27,7 @@ type LateFolio = { id: string; number: string; balance_minor: number; closed: bo
 type Folio = { origin_folio_id: string | null; origin_number: string | null; late_folios: LateFolio[]; id: string; number: string; reservation_id: string; window: number; label: string; currency: string; status: string; balance_minor: number; charges_minor: number; payments_minor: number; lock_version: number; postings: Posting[] };
 type Approval = { id: string; subject_type: string; subject_ref: string; status: string; consumed: boolean; amount_minor: number | null; payload: Record<string, unknown> };
 type Reservation = { id: string; number: string; guest_name: string };
+type Targets = { same: { folio_id: string; number: string; window: number; label: string }[]; others: { folio_id: string; number: string; label: string; room: string; guest: string }[] };
 
 const METHODS = ['cash', 'qris', 'card', 'bank_transfer', 'online'] as const;
 const statusTone: Record<string, StatusTone> = { open: 'info', partially_settled: 'warning', settled: 'success', closed: 'neutral' };
@@ -42,6 +43,7 @@ export default function FolioPage({ approvals, folio, may_late_charge: mayLateCh
     const [reverse, setReverse] = useState<{ posting: Posting; reason: string } | null>(null);
     const [refund, setRefund] = useState<{ method: string; amount: string; reference: string; reason: string } | null>(null);
     const [closing, setClosing] = useState(false);
+    const [move, setMove] = useState<{ posting: Posting; target: string; reason: string; targets: Targets | null } | null>(null);
     const [amountError, setAmountError] = useState(false);
     const [needsApproval, setNeedsApproval] = useState(false);
     const [requested, setRequested] = useState(false);
@@ -58,6 +60,7 @@ export default function FolioPage({ approvals, folio, may_late_charge: mayLateCh
         setPayment(null);
         setReverse(null);
         setRefund(null);
+        setMove(null);
         setClosing(false);
         setAmountError(false);
         setNeedsApproval(false);
@@ -131,6 +134,19 @@ export default function FolioPage({ approvals, folio, may_late_charge: mayLateCh
     }
 
     const conflictReason = action.error instanceof ApiError ? action.error.failure.conflict?.reason : null;
+    async function startMove(posting: Posting) {
+        action.clear();
+        setMove({ posting, target: '', reason: '', targets: null });
+        const done = await action.run<{ targets: Targets }>(`/front-office/folios/${folio.id}/transfer-targets`, { method: 'GET' });
+        setMove((m) => (m === null ? m : { ...m, targets: done?.targets ?? { same: [], others: [] } }));
+    }
+
+    async function doMove() {
+        if (move === null) return;
+        const done = await action.run(`/front-office/postings/${move.posting.id}/transfer`, { body: { target_folio_id: move.target, reason: move.reason }, reload });
+        if (done !== null) closeAll();
+    }
+
     const error = action.error !== null && conflictReason !== 'approval_required' ? <ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /> : null;
     const balanceLabel = folio.balance_minor > 0 ? t('fo.folio.balanceOwed') : folio.balance_minor < 0 ? t('fo.folio.balanceCredit') : t('fo.folio.balanceZero');
     const footer = (onSave: () => void) => (<>
@@ -192,7 +208,10 @@ export default function FolioPage({ approvals, folio, may_late_charge: mayLateCh
                                     <td className="text-right">{p.service_charge_minor === 0 ? '' : money(p.service_charge_minor)}</td>
                                     <td className="text-right">{p.tax_minor === 0 ? '' : money(p.tax_minor)}</td>
                                     <td className="text-right font-medium">{p.total_minor < 0 ? `−${money(-p.total_minor)}` : money(p.total_minor)}</td>
-                                    <td className="text-right">{open && p.type !== 'reversal' && !p.is_reversed ? <Button onClick={() => { action.clear(); setReverse({ posting: p, reason: '' }); }} size="sm" type="button" variant="outline">{t('fo.folio.reverse')}</Button> : null}</td>
+                                    <td className="text-right"><div className="flex justify-end gap-1">
+                                        {open && p.type === 'charge' && !p.is_reversed ? <Button onClick={() => void startMove(p)} size="sm" type="button" variant="outline">{t('fo.folio.move')}</Button> : null}
+                                        {open && p.type !== 'reversal' && !p.is_reversed ? <Button onClick={() => { action.clear(); setReverse({ posting: p, reason: '' }); }} size="sm" type="button" variant="outline">{t('fo.folio.reverse')}</Button> : null}
+                                    </div></td>
                                 </tr>
                             ))}</tbody>
                         </table>
@@ -255,6 +274,25 @@ export default function FolioPage({ approvals, folio, may_late_charge: mayLateCh
                     <FormField error={action.fieldError('reason')} label={t('fo.folio.reason')}><Input maxLength={500} onChange={(e) => reverse !== null && setReverse({ ...reverse, reason: e.target.value })} value={reverse?.reason ?? ''} /></FormField>
                 </div>
             </ConfirmDialog>
+
+            <Dialog footer={<><Button disabled={action.busy} onClick={closeAll} type="button" variant="outline">{t('ui.dialog.cancel')}</Button><Button disabled={move === null || move.target === '' || move.reason.trim() === ''} loading={action.busy} onClick={() => void doMove()} type="button">{t('fo.folio.move')}</Button></>} onClose={closeAll} open={move !== null} title={t('fo.folio.move.title')}>
+                {move !== null && (
+                    <div className="flex flex-col gap-3">
+                        {error}
+                        <p className="text-sm">{t('fo.folio.move.about', { description: move.posting.description, amount: money(move.posting.total_minor) })}</p>
+                        <FormField error={action.fieldError('target_folio_id')} label={t('fo.folio.move.target')}>
+                            <Select onChange={(e) => setMove({ ...move, target: e.target.value })} value={move.target}>
+                                <option value="">{move.targets === null ? '…' : t('fo.folio.move.choose')}</option>
+                                {(move.targets?.same ?? []).map((x) => <option key={x.folio_id} value={x.folio_id}>{t('fo.folio.move.same', { number: x.number, label: x.label })}</option>)}
+                                {(move.targets?.others ?? []).map((x) => <option key={x.folio_id} value={x.folio_id}>{t('fo.folio.move.other', { room: x.room, guest: x.guest, number: x.number })}</option>)}
+                            </Select>
+                        </FormField>
+                        {move.targets !== null && move.targets.same.length === 0 && move.targets.others.length === 0 ? <p className="text-xs text-muted-foreground">{t('fo.folio.move.none')}</p> : null}
+                        <FormField error={action.fieldError('reason')} label={t('fo.folio.reason')}><Input maxLength={400} onChange={(e) => setMove({ ...move, reason: e.target.value })} value={move.reason} /></FormField>
+                        <p className="text-xs text-muted-foreground">{t('fo.folio.move.note')}</p>
+                    </div>
+                )}
+            </Dialog>
 
             <ConfirmDialog
                 cancelLabel={t('ui.dialog.cancel')}
