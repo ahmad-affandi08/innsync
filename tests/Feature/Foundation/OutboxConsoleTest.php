@@ -27,7 +27,13 @@ final class OutboxConsoleTest extends TestCase
         self::assertCount(2, array_filter(
             $events,
             static fn ($event): bool => $event->expression === '* * * * *'
-                && $event->withoutOverlapping,
+                && $event->withoutOverlapping
+                && (str_contains((string) $event->command, 'outbox:drain') || str_contains((string) $event->command, 'queue:work')),
+        ));
+        // Report exports asked for (FR-RPT-011) are built by their own minutely, non-overlapping run.
+        self::assertCount(1, array_filter(
+            $events,
+            static fn ($event): bool => $event->expression === '* * * * *' && $event->withoutOverlapping && str_contains((string) $event->command, 'reports:run-exports'),
         ));
     }
 

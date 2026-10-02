@@ -1,5 +1,7 @@
 import { Link } from '@inertiajs/react';
 
+import { Alert } from '@/components/ui/alert';
+
 import { EmptyState } from '@/components/ui/empty-state';
 import { ReportingShell } from '@/modules/reporting/components/reporting-shell';
 import { useTranslation } from '@/shared/i18n/i18n';
@@ -9,11 +11,12 @@ type Report = { code: string; group: string };
 const HREF: Record<string, string> = { movements: '/reports/movements', performance: '/reports/performance', comparison: '/reports/comparison', flash: '/reports/flash', payments: '/reports/payments', housekeeping: '/reports/housekeeping', laundry: '/reports/laundry', obligations: '/reports/obligations', registrations: '/reports/registrations', foreign_guests: '/reports/foreign-guests', audit: '/reports/audit' };
 const GROUPS = ['management', 'front_office', 'housekeeping', 'laundry', 'control'] as const;
 
-export default function ReportsPage({ reports }: { reports: Report[] }) {
+export default function ReportsPage({ exports_unseen: unseen, reports }: { exports_unseen: number; reports: Report[] }) {
     const { t } = useTranslation();
 
     return (
         <ReportingShell description={t('rpt.centre.description')} title={t('rpt.centre.title')}>
+            {unseen > 0 ? <Alert actions={<Link className="text-sm font-medium underline-offset-2 hover:underline" href="/reports/exports">{t('rpt.exports.open')}</Link>} title={t('rpt.exports.ready', { count: unseen })} tone="info" /> : null}
             {reports.length === 0 ? <EmptyState title={t('rpt.centre.empty')} /> : GROUPS.map((group) => {
                 const items = reports.filter((r) => r.group === group);
                 if (items.length === 0) return null;

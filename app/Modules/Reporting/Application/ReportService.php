@@ -42,6 +42,9 @@ final readonly class ReportService
 
     public const IDENTITY_PERMISSION = 'front-office.guest-identity.view';
 
+    /** Exports of personal data: they need the purpose and the right to export guests. */
+    public const PERSONAL_EXPORTS = ['movements', 'registrations', 'foreign_guests'];
+
     public const CATALOGUE = [
         ['code' => 'movements', 'group' => 'front_office', 'permission' => self::VIEW_PERMISSION],
         ['code' => 'flash', 'group' => 'management', 'permission' => self::VIEW_PERMISSION],
@@ -79,6 +82,18 @@ final readonly class ReportService
             static fn (array $r): array => ['code' => $r['code'], 'group' => $r['group']],
             array_filter(self::CATALOGUE, fn (array $r): bool => $this->permissions->allowsInProperty($actorId, $r['permission'], $property)),
         ));
+    }
+
+    /** Whether this person may export the report, as the export itself will check again when it is built (FR-RPT-011). */
+    public function mayExport(PropertyId $property, string $actorId, string $code): bool
+    {
+        $this->assertProperty($property);
+
+        if (in_array($code, self::PERSONAL_EXPORTS, true)) {
+            return $this->permissions->allowsInProperty($actorId, self::GUESTS_EXPORT_PERMISSION, $property);
+        }
+
+        return in_array($code, array_column($this->catalogue($property, $actorId), 'code'), true);
     }
 
     /**

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\Reporting\Presentation\Http\Controllers;
 
+use App\Modules\Reporting\Application\ExportJobService;
 use App\Modules\Reporting\Application\ReportService;
 use App\Shared\Application\Tenancy\PropertyContext;
 use Illuminate\Http\Request;
@@ -14,14 +15,14 @@ use Inertia\Response;
 /** The report centre, each report and its CSV export. Every rule and permission lives in `ReportService`. */
 final readonly class ReportController
 {
-    public function __construct(private ReportService $reports, private PropertyContext $property) {}
+    public function __construct(private ReportService $reports, private ExportJobService $exports, private PropertyContext $property) {}
 
     public function index(Request $request): Response
     {
         $property = $this->property->current();
         $actor = $this->actor($request);
 
-        return Inertia::render('reporting/pages/reports', ['reports' => $this->reports->catalogue($property, $actor), 'context' => $this->reports->context($property, $actor)]);
+        return Inertia::render('reporting/pages/reports', ['reports' => $this->reports->catalogue($property, $actor), 'context' => $this->reports->context($property, $actor), 'exports_unseen' => $this->exports->unseen($property, $actor)]);
     }
 
     public function flash(Request $request): Response

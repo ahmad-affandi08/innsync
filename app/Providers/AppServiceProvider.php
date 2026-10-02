@@ -128,10 +128,12 @@ use App\Modules\Property\Infrastructure\Settings\DatabasePropertySettingsReposit
 use App\Modules\Property\Infrastructure\Settings\EloquentStandardTimesReader;
 use App\Modules\Property\Infrastructure\Time\EloquentPropertyTimeZoneReader;
 use App\Modules\Reporting\Application\DashboardPreferenceRepository;
+use App\Modules\Reporting\Application\ExportJobRepository;
 use App\Modules\Reporting\Application\ObligationRepository;
 use App\Modules\Reporting\Application\OutletRepository;
 use App\Modules\Reporting\Application\ReportQueries;
 use App\Modules\Reporting\Infrastructure\DatabaseDashboardPreferenceRepository;
+use App\Modules\Reporting\Infrastructure\DatabaseExportJobRepository;
 use App\Modules\Reporting\Infrastructure\DatabaseObligationRepository;
 use App\Modules\Reporting\Infrastructure\DatabaseOutletRepository;
 use App\Modules\Reporting\Infrastructure\DatabaseReportQueries;
@@ -342,6 +344,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(ReportQueries::class, DatabaseReportQueries::class);
         $this->app->bind(ObligationRepository::class, DatabaseObligationRepository::class);
         $this->app->bind(OutletRepository::class, DatabaseOutletRepository::class);
+        $this->app->bind(ExportJobRepository::class, DatabaseExportJobRepository::class);
         $this->app->bind(DashboardPreferenceRepository::class, DatabaseDashboardPreferenceRepository::class);
         $this->app->bind(ImportBatchRepository::class, DatabaseImportBatchRepository::class);
         $this->app->bind(BookingPolicyRepository::class, DatabaseBookingPolicyRepository::class);

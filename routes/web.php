@@ -42,6 +42,7 @@ use App\Modules\Property\Presentation\Http\Controllers\PropertySettingsControlle
 use App\Modules\Property\Presentation\Http\Controllers\RatePlanController;
 use App\Modules\Property\Presentation\Http\Controllers\RoomCatalogController;
 use App\Modules\Reporting\Presentation\Http\Controllers\DashboardController;
+use App\Modules\Reporting\Presentation\Http\Controllers\ExportJobController;
 use App\Modules\Reporting\Presentation\Http\Controllers\ObligationController;
 use App\Modules\Reporting\Presentation\Http\Controllers\OutletController;
 use App\Modules\Reporting\Presentation\Http\Controllers\ReportController;
@@ -400,6 +401,10 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->group(
         Route::get('/housekeeping/export', [ReportController::class, 'exportHousekeeping'])->name('reports.housekeeping.export');
         Route::get('/comparison', [ReportController::class, 'comparison'])->name('reports.comparison');
         Route::get('/comparison/export', [ReportController::class, 'exportComparison'])->name('reports.comparison.export');
+        Route::get('/exports', [ExportJobController::class, 'index'])->name('reports.exports');
+        Route::post('/exports', [ExportJobController::class, 'store'])->middleware('throttle:bookings')->name('reports.exports.store');
+        Route::post('/exports/seen', [ExportJobController::class, 'seen'])->name('reports.exports.seen');
+        Route::get('/exports/{id}/download', [ExportJobController::class, 'download'])->where('id', $id)->name('reports.exports.download');
         Route::get('/outlets', [OutletController::class, 'index'])->name('reports.outlets');
         Route::post('/outlets', [OutletController::class, 'store'])->name('reports.outlets.store');
         Route::post('/outlets/{id}', [OutletController::class, 'rename'])->where('id', $id)->name('reports.outlets.rename');

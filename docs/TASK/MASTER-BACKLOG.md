@@ -254,7 +254,7 @@
 | TASK-RPT-008 | FR-RPT-008 | Reporting & Analytics | Bisa | TODO |
 | TASK-RPT-009 | FR-RPT-009 | Reporting & Analytics | Wajib | REVIEW |
 | TASK-RPT-010 | FR-RPT-010 | Reporting & Analytics | Wajib | REVIEW |
-| TASK-RPT-011 | FR-RPT-011 | Reporting & Analytics | Sebaiknya | TODO |
+| TASK-RPT-011 | FR-RPT-011 | Reporting & Analytics | Sebaiknya | REVIEW |
 | TASK-GST-001 | FR-GST-001 | Guest Self-Service | Wajib | TODO |
 | TASK-GST-002 | FR-GST-002 | Guest Self-Service | Wajib | TODO |
 | TASK-GST-003 | FR-GST-003 | Guest Self-Service | Wajib | TODO |

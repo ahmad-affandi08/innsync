@@ -54,6 +54,7 @@ Release notes for every release (NFR-14). Newest first. Each entry names the tas
 - TASK-DSH-005 (BR-003): extensible outlets: a manager names an outlet and the posting sources it owns, and it appears as its own revenue line on the dashboard and its own tax column on the obligations page; what no outlet owns stays under "other".
 - TASK-LDY-006 (BR-003): claims for damaged or lost guest laundry with a photo and the value claimed, decided once by a Manager on Duty who did not record it, the compensation capped at ten times the laundry price of a named item (adjustable); nothing is posted to the folio.
 - TASK-HK-019 (BR-003): par levels of linen and amenities per room type and area, with what to bring to the floor against the store, and consumption by shift (morning, afternoon, night) against the standard use times the rooms serviced.
+- TASK-RPT-011 (BR-009, NFR-24): large report exports built in the background by a scheduled worker as the requester, with a status page, a private expiring file only the requester can download, and an in-application notice when ready or failed; no e-mail is sent.
 
 ### Known limitations
 

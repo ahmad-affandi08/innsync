@@ -6,6 +6,7 @@ use App\Modules\IdentityAccess\Presentation\Http\Middleware\EnsureMfaVerified;
 use App\Modules\IdentityAccess\Presentation\Http\Middleware\RequirePermission;
 use App\Modules\IdentityAccess\Presentation\Http\Middleware\ResolvePropertyContext;
 use App\Modules\Property\Infrastructure\Migration\ImportRoomMasterCommand;
+use App\Modules\Reporting\Infrastructure\RunReportExportsCommand;
 use App\Shared\Application\Observability\CorrelationId;
 use App\Shared\Infrastructure\Backup\BackupDecryptCommand;
 use App\Shared\Infrastructure\Backup\BackupKeygenCommand;
@@ -55,6 +56,7 @@ return Application::configure(basePath: dirname(__DIR__))
         ImportRoomMasterCommand::class,
         SmokeCommand::class,
         RetentionPurgeCommand::class,
+        RunReportExportsCommand::class,
     ])
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->prepend(AssignCorrelationId::class);
