@@ -86,7 +86,7 @@
 | TASK-HK-016 | FR-HK-016 | Housekeeping | Wajib | REVIEW |
 | TASK-HK-017 | FR-HK-017 | Housekeeping | Wajib | REVIEW |
 | TASK-HK-018 | FR-HK-018 | Housekeeping | Wajib | REVIEW |
-| TASK-HK-019 | FR-HK-019 | Housekeeping | Sebaiknya | TODO |
+| TASK-HK-019 | FR-HK-019 | Housekeeping | Sebaiknya | REVIEW |
 | TASK-HK-020 | FR-HK-020 | Housekeeping | Wajib | REVIEW |
 | TASK-HK-021 | FR-HK-021 | Housekeeping | Wajib | REVIEW |
 | TASK-HK-022 | FR-HK-022 | Housekeeping | Wajib | REVIEW |

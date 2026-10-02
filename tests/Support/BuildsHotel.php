@@ -28,6 +28,7 @@ use App\Modules\Housekeeping\Application\ChecklistService;
 use App\Modules\Housekeeping\Application\HousekeepingService;
 use App\Modules\Housekeeping\Application\LinenService;
 use App\Modules\Housekeeping\Application\LostFoundService;
+use App\Modules\Housekeeping\Application\ParLevelService;
 use App\Modules\IdentityAccess\Application\Approval\ApprovalPolicyAdmin;
 use App\Modules\IdentityAccess\Infrastructure\Persistence\Eloquent\UserRecord;
 use App\Modules\Laundry\Application\ClaimService;
@@ -120,6 +121,9 @@ trait BuildsHotel
     private string $companyViewerId;
 
     private string $companyLinkerId;
+
+    /** Par levels (FR-HK-019): someone who sets them. */
+    private string $parManagerId;
 
     /** Laundry claims (FR-LDY-006): someone who records them, a Manager on Duty who decides them, one who may do both, and one who may only look. */
     private string $claimClerkId;
@@ -244,6 +248,7 @@ trait BuildsHotel
         $foreignManager = UserRecord::factory()->create();
         $groupManager = UserRecord::factory()->create();
         $outletManager = UserRecord::factory()->create();
+        $parManager = UserRecord::factory()->create();
         $claimClerk = UserRecord::factory()->create();
         $claimDutyManager = UserRecord::factory()->create();
         $claimBoth = UserRecord::factory()->create();
@@ -309,6 +314,7 @@ trait BuildsHotel
         $this->grant($groupManager, self::PROPERTY, [GroupBookingService::MANAGE_PERMISSION, ReservationService::MANAGE_PERMISSION]);
         $this->grant($groupViewer, self::PROPERTY, [GroupBookingService::VIEW_PERMISSION]);
         $this->grant($outletManager, self::PROPERTY, [OutletService::MANAGE_PERMISSION]);
+        $this->grant($parManager, self::PROPERTY, [ParLevelService::MANAGE_PERMISSION]);
         $this->grant($claimClerk, self::PROPERTY, [ClaimService::RECORD_PERMISSION]);
         $this->grant($claimDutyManager, self::PROPERTY, [ClaimService::APPROVE_PERMISSION]);
         $this->grant($claimBoth, self::PROPERTY, [ClaimService::RECORD_PERMISSION, ClaimService::APPROVE_PERMISSION]);
@@ -371,6 +377,7 @@ trait BuildsHotel
         $this->groupManagerId = strtolower((string) $groupManager->getKey());
         $this->groupViewerId = strtolower((string) $groupViewer->getKey());
         $this->outletManagerId = strtolower((string) $outletManager->getKey());
+        $this->parManagerId = strtolower((string) $parManager->getKey());
         $this->claimClerkId = strtolower((string) $claimClerk->getKey());
         $this->claimDutyManagerId = strtolower((string) $claimDutyManager->getKey());
         $this->claimBothId = strtolower((string) $claimBoth->getKey());

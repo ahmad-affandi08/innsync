@@ -24,6 +24,7 @@ use App\Modules\Housekeeping\Presentation\Http\Controllers\ChecklistController a
 use App\Modules\Housekeeping\Presentation\Http\Controllers\HousekeepingController;
 use App\Modules\Housekeeping\Presentation\Http\Controllers\LinenController;
 use App\Modules\Housekeeping\Presentation\Http\Controllers\LostFoundController;
+use App\Modules\Housekeeping\Presentation\Http\Controllers\ParLevelController;
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\ApprovalController;
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\ApprovalPolicyController;
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\AuthenticatedSessionController;
@@ -324,6 +325,9 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
     Route::post('/settings', [HousekeepingController::class, 'settings'])->name('housekeeping.settings');
 
     // Linen and amenities (FR-HK-009 to FR-HK-011, FR-LDY-007): counted transfers, in-transit balances, usage per room.
+    Route::get('/par-levels', [ParLevelController::class, 'index'])->name('housekeeping.par-levels');
+    Route::get('/par-levels/consumption', [ParLevelController::class, 'consumption'])->name('housekeeping.par-levels.consumption');
+    Route::post('/par-levels', [ParLevelController::class, 'save'])->name('housekeeping.par-levels.save');
     Route::get('/linen', [LinenController::class, 'index'])->name('housekeeping.linen');
     Route::get('/linen/usage', [LinenController::class, 'usage'])->name('housekeeping.linen.usage');
     Route::post('/linen/usage', [LinenController::class, 'recordUsage'])->name('housekeeping.linen.usage.store');
