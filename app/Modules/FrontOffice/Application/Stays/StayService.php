@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\FrontOffice\Application\Stays;
 
+use App\Modules\FrontOffice\Application\Companies\CompanyRouting;
 use App\Modules\FrontOffice\Application\Folios\FolioRepository;
 use App\Modules\FrontOffice\Application\Folios\FolioService;
 use App\Modules\FrontOffice\Application\Inventory\InventoryRepository;
@@ -78,6 +79,7 @@ final readonly class StayService
     public function __construct(
         private StayRepository $stays,
         private RegistrationCardRepository $cards,
+        private CompanyRouting $companies,
         private GuestRepository $guests,
         private ReservationRepository $reservations,
         private InventoryRepository $inventory,
@@ -319,13 +321,14 @@ final readonly class StayService
             }
 
             foreach ($this->folioStore->byReservation($property, $reservation->id) as $folio) {
-                if ($folio->balance->amountMinor !== 0) {
+                // What the company owes stays on the company's folio after the guest has left; the guest's own folios must be settled.
+                if ($folio->balance->amountMinor !== 0 && ! $this->companies->isCompanyFolio($property, $folio->id)) {
                     throw Refusal::stateConflict(sprintf('Folio %s still has a balance of %d; settle it before checking out.', $folio->number, $folio->balance->amountMinor));
                 }
             }
 
             foreach ($this->folioStore->byReservation($property, $reservation->id) as $folio) {
-                if (! $folio->isClosed) {
+                if (! $folio->isClosed && ! ($folio->balance->amountMinor !== 0 && $this->companies->isCompanyFolio($property, $folio->id))) {
                     $this->folios->close($property, $actor, $folio->id, $folio->lockVersion);
                 }
             }

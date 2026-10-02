@@ -23,6 +23,7 @@ type Reservation = {
 };
 type Lookups = { types: { id: string; code: string; name: string }[]; plans: { id: string; code: string; name: string; inclusions: string | null }[] };
 type FolioRow = { id: string; number: string; window: number; label: string; status: string; balance_minor: number; currency: string };
+type Billing = { company: { id: string; code: string; name: string; billing_instruction: string | null; route_rooms: boolean; route_extras: boolean } | null; folio_id: string | null; options: { id: string; code: string; name: string }[]; may_link: boolean };
 type Kind = 'confirm' | 'cancel' | 'noShow';
 type Fee = { kind: string; value: number };
 type Policy = {
@@ -33,7 +34,7 @@ type Penalty = { amount_minor: number; free: boolean; currency: string; may_waiv
 
 const PATH = { confirm: 'confirm', cancel: 'cancel', noShow: 'no-show' } as const;
 
-export default function ReservationPage({ folios, lookups, policy, rates, reservation: r }: { folios: FolioRow[]; lookups: Lookups; policy: Policy | null; rates: Rates; reservation: Reservation }) {
+export default function ReservationPage({ billing, folios, lookups, policy, rates, reservation: r }: { billing: Billing; folios: FolioRow[]; lookups: Lookups; policy: Policy | null; rates: Rates; reservation: Reservation }) {
     const { t } = useTranslation();
     const format = useFormatters();
     const errorCopy = useErrorStateCopy();
@@ -46,6 +47,12 @@ export default function ReservationPage({ folios, lookups, policy, rates, reserv
     const type = lookups.types.find((x) => x.id === r.room_type_id);
     const plan = lookups.plans.find((x) => x.id === r.rate_plan_id);
     const [newFolio, setNewFolio] = useState<string | null>(null);
+    const [companyId, setCompanyId] = useState('');
+
+    async function linkCompany() {
+        await action.run(`/front-office/reservations/${r.id}/company`, { body: { company_id: companyId }, reload: ['billing', 'folios'] });
+        setCompanyId('');
+    }
 
     async function openFolio() {
         const done = await action.run<{ folio: { id: string } }>(`/front-office/reservations/${r.id}/folios`, { body: { label: (newFolio ?? '').trim() || 'Guest', window: folios.length + 1 } });
@@ -143,6 +150,30 @@ export default function ReservationPage({ folios, lookups, policy, rates, reserv
             </section>
 
             <RateChangePanel currency={r.currency} rates={rates} reservationId={r.id} />
+
+            {billing.company !== null || billing.may_link ? (
+                <section aria-labelledby="bill-h" className="flex flex-col gap-2" data-testid="billing">
+                    <h2 className="text-lg font-semibold" id="bill-h">{t('fo.company.billTo')}</h2>
+                    {billing.company !== null ? (
+                        <div className="flex flex-col gap-1 text-sm">
+                            <p className="font-medium">{billing.company.code} · {billing.company.name}</p>
+                            <p className="text-muted-foreground">{[billing.company.route_rooms ? t('fo.company.takesRooms') : null, billing.company.route_extras ? t('fo.company.takesExtras') : null].filter((x) => x !== null).join(' · ')}</p>
+                            {billing.company.billing_instruction !== null ? <p>{t('fo.company.instructionShown')}: {billing.company.billing_instruction}</p> : null}
+                            {billing.folio_id !== null ? <Link className="underline-offset-2 hover:underline" href={`/front-office/folios/${billing.folio_id}`}>{t('fo.company.openFolio')}</Link> : null}
+                        </div>
+                    ) : (
+                        <div className="flex flex-wrap items-end gap-2">
+                            <FormField hint={t('fo.company.linkNote')} label={t('fo.company.choose')}>
+                                <select className="min-h-11 rounded-md border border-border bg-background px-3 text-sm" onChange={(e) => setCompanyId(e.target.value)} value={companyId}>
+                                    <option value="">—</option>
+                                    {billing.options.map((o) => <option key={o.id} value={o.id}>{o.code} · {o.name}</option>)}
+                                </select>
+                            </FormField>
+                            <Button disabled={action.busy || companyId === ''} onClick={() => void linkCompany()} type="button" variant="outline">{t('fo.company.link')}</Button>
+                        </div>
+                    )}
+                </section>
+            ) : null}
 
             <section aria-labelledby="folio-h" className="flex flex-col gap-2">
                 <div className="flex flex-wrap items-center justify-between gap-2">

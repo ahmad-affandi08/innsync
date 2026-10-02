@@ -120,6 +120,11 @@ final readonly class DatabaseReportQueries implements ReportQueries
         $serious = DB::table('guest_feedback')->where('property_id', $pid)->where('kind', 'complaint')->whereIn('severity', ['high', 'critical'])->whereIn('status', ['open', 'in_progress']);
         $alerts['serious_complaints'] = ['count' => (clone $serious)->count(), 'items' => (clone $serious)->orderByRaw("CASE severity WHEN 'critical' THEN 0 ELSE 1 END")->orderBy('created_at')->limit(self::ALERT_EXAMPLES)->get(['number', 'severity'])->map(static fn ($r): string => $r->number.' ('.$r->severity.')')->all()];
 
+        $owing = DB::table('company_folios as cf')->join('folios as f', 'f.id', '=', 'cf.folio_id')->join('company_profiles as c', 'c.id', '=', 'cf.company_id')
+            ->where('c.property_id', $pid)->where('f.status', 'open')->whereNotNull('c.credit_limit_minor')
+            ->groupBy('c.id', 'c.code', 'c.credit_limit_minor')->havingRaw('SUM(f.balance_minor) > c.credit_limit_minor');
+        $alerts['company_over_limit'] = ['count' => DB::query()->fromSub($owing->select('c.id'), 'o')->count(), 'items' => (clone $owing)->select('c.code')->orderBy('c.code')->limit(self::ALERT_EXAMPLES)->pluck('c.code')->all()];
+
         return $alerts;
     }
 

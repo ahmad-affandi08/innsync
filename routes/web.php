@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Modules\FrontOffice\Presentation\Http\Controllers\AvailabilityController;
 use App\Modules\FrontOffice\Presentation\Http\Controllers\CashierController;
 use App\Modules\FrontOffice\Presentation\Http\Controllers\ChecklistController;
+use App\Modules\FrontOffice\Presentation\Http\Controllers\CompanyController;
 use App\Modules\FrontOffice\Presentation\Http\Controllers\FeedbackController;
 use App\Modules\FrontOffice\Presentation\Http\Controllers\FolioController;
 use App\Modules\FrontOffice\Presentation\Http\Controllers\GuestRequestController;
@@ -227,6 +228,10 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
     Route::get('/stays/{id}/registration-card/signature', [RegistrationCardController::class, 'signature'])->where('id', $id)->name('front-office.registration-card.signature');
     Route::get('/registration-terms', [RegistrationCardController::class, 'terms'])->name('front-office.registration-terms');
     Route::post('/registration-terms', [RegistrationCardController::class, 'defineTerms'])->name('front-office.registration-terms.define');
+    Route::get('/companies', [CompanyController::class, 'index'])->name('front-office.companies');
+    Route::post('/companies', [CompanyController::class, 'store'])->name('front-office.companies.store');
+    Route::post('/companies/{id}', [CompanyController::class, 'update'])->where('id', $id)->name('front-office.companies.update');
+    Route::post('/reservations/{id}/company', [ReservationController::class, 'linkCompany'])->where('id', $id)->name('front-office.reservations.company');
     Route::get('/stay-fees', [StayFeePolicyController::class, 'index'])->name('front-office.stay-fees');
     Route::post('/stay-fees', [StayFeePolicyController::class, 'define'])->name('front-office.stay-fees.define');
     Route::post('/stays/{id}/time-fees', [StayController::class, 'decideTimeFee'])->where('id', $id)->name('front-office.stays.time-fees');

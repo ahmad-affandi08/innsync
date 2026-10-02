@@ -79,3 +79,8 @@ Booking policy is a commercial decision of the hotel, not a legal one; Indonesia
 ## Checklist proof photos (FR-HK-006) — baseline for Phase 1
 
 - **Retention.** A proof photo of a checklist item is **erased 90 days after the business date it was taken** (category `checklist_photo`, anchor `completed_at`, adjustable from 0 to 365 days; operational choice). The completion record (item, who, when, note) stays with the audit trail.
+
+## Company and agent billing (FR-FO-035) — baseline for Phase 1
+
+- **Credit limit.** The limit is a warning, not a block: a night is always charged by night audit and the hotel decides whether to keep a guest. Practice in Indonesian hotels is to agree the limit and the payment term (often 14 or 30 days) with the company in writing; **payment terms and ageing are not modelled** and are for the owner to confirm.
+- **Invoice.** A company usually needs an invoice with its tax ID (NPWP) and, for a taxable company, a tax invoice (e-Faktur). The tax ID is kept on the profile; **numbering and issuing invoices or e-Faktur are not done here** and need counsel and the tax consultant to confirm.

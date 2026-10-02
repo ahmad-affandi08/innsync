@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Support;
 
 use App\Modules\FrontOffice\Application\Cashier\CashierService;
+use App\Modules\FrontOffice\Application\Companies\CompanyService;
 use App\Modules\FrontOffice\Application\Feedback\FeedbackService;
 use App\Modules\FrontOffice\Application\Folios\FolioService;
 use App\Modules\FrontOffice\Application\Folios\LateChargeService;
@@ -109,6 +110,13 @@ trait BuildsHotel
 
     private string $lostKeeperId;
 
+    /** Companies and agents (FR-FO-035): someone who keeps the profiles, someone who may only look, someone who bills a reservation to a company. */
+    private string $companyManagerId;
+
+    private string $companyViewerId;
+
+    private string $companyLinkerId;
+
     /** Registration card terms (FR-FO-017): someone who writes the house terms. */
     private string $termsWriterId;
 
@@ -209,6 +217,9 @@ trait BuildsHotel
         $nameCorrector = UserRecord::factory()->create();
         $linenManager = UserRecord::factory()->create();
         $termsWriter = UserRecord::factory()->create();
+        $companyManager = UserRecord::factory()->create();
+        $companyViewer = UserRecord::factory()->create();
+        $companyLinker = UserRecord::factory()->create();
         $lostFinder = UserRecord::factory()->create();
         $lostKeeper = UserRecord::factory()->create();
         $feePolicy = UserRecord::factory()->create();
@@ -262,6 +273,9 @@ trait BuildsHotel
         $this->grant($lostFinder, self::PROPERTY, [LostFoundService::RECORD_PERMISSION]);
         $this->grant($lostKeeper, self::PROPERTY, [LostFoundService::MANAGE_PERMISSION]);
         $this->grant($termsWriter, self::PROPERTY, [RegistrationCardService::TERMS_PERMISSION]);
+        $this->grant($companyManager, self::PROPERTY, [CompanyService::MANAGE_PERMISSION]);
+        $this->grant($companyViewer, self::PROPERTY, [CompanyService::VIEW_PERMISSION]);
+        $this->grant($companyLinker, self::PROPERTY, [CompanyService::LINK_PERMISSION, CompanyService::VIEW_PERMISSION]);
         $this->grant($linenManager, self::PROPERTY, [LinenService::MANAGE_PERMISSION]);
         $this->grant($linenManager2, self::PROPERTY, [LinenService::MANAGE_PERMISSION]);
         $this->grant($linenLaundry, self::PROPERTY, [LinenService::LAUNDRY_PERMISSION]);
@@ -313,6 +327,9 @@ trait BuildsHotel
         $this->lostFinderId = strtolower((string) $lostFinder->getKey());
         $this->lostKeeperId = strtolower((string) $lostKeeper->getKey());
         $this->termsWriterId = strtolower((string) $termsWriter->getKey());
+        $this->companyManagerId = strtolower((string) $companyManager->getKey());
+        $this->companyViewerId = strtolower((string) $companyViewer->getKey());
+        $this->companyLinkerId = strtolower((string) $companyLinker->getKey());
         $this->linenManagerId = strtolower((string) $linenManager->getKey());
         $this->linenManager2Id = strtolower((string) $linenManager2->getKey());
         $this->linenLaundryId = strtolower((string) $linenLaundry->getKey());

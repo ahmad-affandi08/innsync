@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Modules\FrontOffice\Application\NightAudit;
 
 use App\Modules\FrontOffice\Application\Cashier\CashierRepository;
+use App\Modules\FrontOffice\Application\Companies\CompanyRouting;
 use App\Modules\FrontOffice\Application\Folios\FolioLedger;
 use App\Modules\FrontOffice\Application\Folios\FolioRepository;
 use App\Modules\FrontOffice\Application\Inventory\RoomBlockRepository;
@@ -69,6 +70,7 @@ final readonly class NightAuditService
         private StayRepository $stays,
         private ReservationRepository $reservations,
         private FolioRepository $folios,
+        private CompanyRouting $routing,
         private FolioLedger $ledger,
         private RoomCatalogReader $rooms,
         private RoomBlockRepository $blocks,
@@ -249,7 +251,8 @@ final readonly class NightAuditService
             return 'skipped';
         }
 
-        $folio = $this->openFolio($property, $stay->reservationId);
+        $routed = $this->routing->routeTo($property, $stay->reservationId, 'room');
+        $folio = $routed === null ? $this->openFolio($property, $stay->reservationId) : $this->folios->find($property, $routed);
 
         if ($folio === null) {
             return 'skipped';

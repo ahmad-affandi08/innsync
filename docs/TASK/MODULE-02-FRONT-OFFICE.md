@@ -50,7 +50,7 @@
 | TASK-FO-032 | FR-FO-032 | Wajib | Menampilkan SOP tugas harian, mingguan, dan bulanan resepsionis pada ponsel atau tablet, dengan isi template yang disusun oleh manajemen. | REVIEW |
 | TASK-FO-033 | FR-FO-033 | Wajib | Staf menandai tugas selesai; persentase penyelesaian dikirim otomatis ke modul Human Resource sebagai komponen penilaian kinerja. | REVIEW |
 | TASK-FO-034 | FR-FO-034 | Sebaiknya | Menyediakan buku serah terima shift (log book) yang wajib diisi pada akhir shift dan dibaca pada awal shift berikutnya. | REVIEW |
-| TASK-FO-035 | FR-FO-035 | Sebaiknya | Mengelola profil perusahaan/agen, credit limit, billing instruction, dan routing charge untuk tamu korporat tanpa mencampur tagihan pribadi. | TODO |
+| TASK-FO-035 | FR-FO-035 | Sebaiknya | Mengelola profil perusahaan/agen, credit limit, billing instruction, dan routing charge untuk tamu korporat tanpa mencampur tagihan pribadi. | REVIEW |
 | TASK-FO-036 | FR-FO-036 | Wajib | Membuka dan menutup shift kasir Front Office dengan opening float, penerimaan per metode, cash drop, saldo sistem, kas fisik, dan selisih beralasan. | REVIEW |
 | TASK-FO-037 | FR-FO-037 | Sebaiknya | Mengelola early check-in, late check-out, day-use, dan biaya terkait berdasarkan kebijakan/rate plan yang dapat dikonfigurasi. | REVIEW |
 | TASK-FO-038 | FR-FO-038 | Wajib | Late charge setelah folio ditutup harus menggunakan alur khusus yang menaut ke stay/folio asal dan tidak mengubah laporan hari lama tanpa adjustment. | REVIEW |

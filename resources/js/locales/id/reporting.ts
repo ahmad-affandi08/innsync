@@ -48,6 +48,7 @@ export const reporting = {
     'rpt.alert.stale_arrivals': 'Kedatangan lewat tanggal yang belum diselesaikan',
     'rpt.alert.laundry_overdue': 'Laundry melewati waktu janji',
     'rpt.alert.serious_complaints': 'Keluhan tinggi atau kritis yang masih terbuka',
+    'rpt.alert.company_over_limit': 'Perusahaan dengan piutang melebihi batas kreditnya',
     'rpt.alert.rooms_not_ready': 'Kamar kosong yang masih kotor atau perlu dikerjakan ulang',
     'rpt.centre.title': 'Laporan',
     'rpt.centre.description': 'Laporan dikelompokkan menurut tema. Setiap laporan menyebut kapan dibuat, business date yang dicakup, filter dan sumbernya.',

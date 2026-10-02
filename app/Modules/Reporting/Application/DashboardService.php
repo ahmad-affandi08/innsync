@@ -102,6 +102,7 @@ final readonly class DashboardService
         'laundry_overdue' => '/laundry',
         'rooms_not_ready' => '/housekeeping',
         'serious_complaints' => '/front-office/feedback',
+        'company_over_limit' => '/front-office/companies',
     ];
 
     /**

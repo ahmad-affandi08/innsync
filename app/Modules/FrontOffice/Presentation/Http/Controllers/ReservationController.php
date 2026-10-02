@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\FrontOffice\Presentation\Http\Controllers;
 
+use App\Modules\FrontOffice\Application\Companies\CompanyService;
 use App\Modules\FrontOffice\Application\Folios\FolioService;
 use App\Modules\FrontOffice\Application\Reservations\RateChangeService;
 use App\Modules\FrontOffice\Application\Reservations\ReservationRequest;
@@ -19,7 +20,7 @@ use Inertia\Response;
 /** Reservation screens and actions. Every rule lives in `ReservationService`; this maps input and output. */
 final readonly class ReservationController
 {
-    public function __construct(private ReservationService $reservations, private FolioService $folios, private RateChangeService $rates, private PropertyContext $property) {}
+    public function __construct(private ReservationService $reservations, private FolioService $folios, private RateChangeService $rates, private CompanyService $companies, private PropertyContext $property) {}
 
     public function index(Request $request): Response
     {
@@ -48,7 +49,15 @@ final readonly class ReservationController
             'folios' => $this->folioSummaries($property, $actor, $id),
             'policy' => $this->reservations->policyView($property, $actor, $id),
             'rates' => $this->rates->overview($property, $actor, $id),
+            'billing' => $this->companies->forReservation($property, $actor, $id),
         ]);
+    }
+
+    public function linkCompany(Request $request, string $id): JsonResponse
+    {
+        $data = $request->validate(['company_id' => ['required', 'string', 'size:26']]);
+
+        return response()->json(['billing' => $this->companies->link($this->property->current(), $this->actor($request), $id, $data['company_id'])])->header('Cache-Control', 'no-store');
     }
 
     public function quote(Request $request): JsonResponse

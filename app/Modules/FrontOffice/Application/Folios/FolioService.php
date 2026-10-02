@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Modules\FrontOffice\Application\Folios;
 
 use App\Modules\FrontOffice\Application\Cashier\ShiftAttribution;
+use App\Modules\FrontOffice\Application\Companies\CompanyRouting;
 use App\Modules\FrontOffice\Application\Reservations\ReservationRepository;
 use App\Modules\FrontOffice\Domain\Folios\EntryType;
 use App\Modules\FrontOffice\Domain\Folios\Folio;
@@ -73,6 +74,7 @@ final readonly class FolioService
         private RoomCatalogReader $rooms,
         private PropertyProfileReader $profile,
         private ShiftAttribution $shifts,
+        private CompanyRouting $routing,
     ) {}
 
     // ---- reads ----
@@ -300,8 +302,13 @@ final readonly class FolioService
         }
 
         $folio = null;
+        $routed = $this->routing->routeTo($property, strtolower($reservationId), 'extras');
 
-        foreach ($this->folios->byReservation($property, strtolower($reservationId)) as $candidate) {
+        if ($routed !== null) {
+            $folio = $this->folios->find($property, $routed);
+        }
+
+        foreach ($folio === null ? $this->folios->byReservation($property, strtolower($reservationId)) : [] as $candidate) {
             if (! $candidate->isClosed) {
                 $folio = $candidate;
 
