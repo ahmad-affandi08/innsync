@@ -2,6 +2,7 @@ import { useState } from 'react';
 
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
+import { DataGrid, type DataGridColumn } from '@/components/ui/data-grid';
 import { ConfirmDialog } from '@/components/ui/dialog';
 import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
@@ -92,6 +93,54 @@ export default function HousekeepingBoardPage({ board }: { board: Board }) {
         if (done !== null) setSaved(true);
     }
 
+    const occupancy = (r: Room) => (r.occupied && r.expected_departure !== null ? t('hk.board.occupied', { date: format.date(r.expected_departure) }) : t('hk.board.vacant'));
+    const taskText = (r: Room) => (r.task === null ? '' : `${t(`hk.kind.${r.task.kind}` as 'hk.kind.departure')} · ${t(`hk.task.${r.task.status}` as 'hk.task.open')}${r.task.assigned_name !== null ? ` · ${r.task.assigned_name}` : ''}`);
+    const columns: DataGridColumn<Room>[] = [
+        {
+            id: 'room', label: t('hk.board.room'), value: (r) => r.number, searchText: (r) => `${r.number} ${r.building ?? ''} ${r.floor ?? ''}`, rowHeader: true,
+            cell: (r) => <>{r.number}{r.building !== null || r.floor !== null ? <span className="ml-1 text-xs font-normal text-muted-foreground">· {[r.building, r.floor].filter((x) => x !== null).join(' · ')}</span> : null}</>,
+        },
+        { id: 'state', label: t('hk.board.state'), value: (r) => r.status, filter: 'select', filterLabel: (v) => t(`hk.status.${v}` as 'hk.status.dirty'), cell: (r) => <StatusBadge label={t(`hk.status.${r.status}` as 'hk.status.dirty')} tone={statusTone[r.status] ?? 'neutral'} /> },
+        { id: 'occupancy', label: t('hk.board.occupancy'), value: occupancy },
+        {
+            id: 'task', label: t('hk.board.task'), value: taskText,
+            cell: (r) => (
+                <>
+                    {r.requests.length > 0 || r.flags.length > 0 || r.occupied ? (
+                        <div className="mb-2 flex flex-col gap-1">
+                            <RequestsList requests={r.requests} />
+                            {r.occupied ? <FlagsPanel busy={action.busy} flags={r.flags} kinds={board.flag_kinds} onEnd={(f) => void endFlag(f)} onRaise={(k, n) => void raiseFlag(r, k, n)} /> : null}
+                        </div>
+                    ) : null}
+                    {r.task === null ? '—' : (
+                        <div className="flex flex-col gap-1">
+                            <span>{taskText(r)}</span>
+                            {board.may.manage && r.task.status !== 'in_progress' ? (
+                                <div className="flex flex-wrap items-center gap-2">
+                                    <Select aria-label={t('hk.board.assignTo')} className="min-h-9 w-44" onChange={(e) => setAssignTo({ ...assignTo, [r.task!.id]: e.target.value })} value={assignTo[r.task.id] ?? ''}>
+                                        <option value="">{t('hk.board.chooseStaff')}</option>
+                                        {board.staff.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
+                                    </Select>
+                                    <Button disabled={action.busy || (assignTo[r.task.id] ?? '') === ''} onClick={() => void assign(r.task!)} size="sm" type="button" variant="outline">{t('hk.board.assign')}</Button>
+                                    <Button disabled={action.busy} onClick={() => void cancel(r.task!)} size="sm" type="button" variant="outline">{t('hk.board.cancel')}</Button>
+                                </div>
+                            ) : null}
+                        </div>
+                    )}
+                </>
+            ),
+        },
+        ...(board.may.manage || board.may.inspect ? [{
+            id: 'actions', label: t('hk.board.actions'),
+            cell: (r: Room) => (
+                <div className="flex flex-wrap gap-2">
+                    {board.may.manage && r.task === null ? <Button onClick={() => { action.clear(); setRequest(r); }} size="sm" type="button" variant="outline">{t('hk.board.request')}</Button> : null}
+                    {board.may.inspect && r.status === 'clean' ? <Button onClick={() => void openInspection(r)} size="sm" type="button">{t('hk.board.inspect')}</Button> : null}
+                </div>
+            ),
+        }] : []),
+    ];
+
     return (
         <HousekeepingShell description={t('hk.board.description')} title={t('hk.board.title')} wide>
             {action.error !== null && request === null && inspecting === null ? <ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /> : null}
@@ -106,51 +155,14 @@ export default function HousekeepingBoardPage({ board }: { board: Board }) {
                 </section>
             ) : null}
 
-            {board.rooms.length === 0 ? <EmptyState title={t('hk.board.empty')} /> : (
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left text-sm">
-                        <thead><tr className="text-xs text-muted-foreground"><th className="py-1 font-medium" scope="col">{t('hk.board.room')}</th><th scope="col">{t('hk.board.state')}</th><th scope="col">{t('hk.board.occupancy')}</th><th scope="col">{t('hk.board.task')}</th>{board.may.manage || board.may.inspect ? <th scope="col">{t('hk.board.actions')}</th> : null}</tr></thead>
-                        <tbody>{board.rooms.map((r) => (
-                            <tr className="border-t border-border align-top" key={r.room_id}>
-                                <th className="py-2 font-medium" scope="row">{r.number}{r.building !== null || r.floor !== null ? <span className="ml-1 text-xs font-normal text-muted-foreground">· {[r.building, r.floor].filter((x) => x !== null).join(' · ')}</span> : null}</th>
-                                <td><StatusBadge label={t(`hk.status.${r.status}` as 'hk.status.dirty')} tone={statusTone[r.status] ?? 'neutral'} /></td>
-                                <td>{r.occupied && r.expected_departure !== null ? t('hk.board.occupied', { date: format.date(r.expected_departure) }) : t('hk.board.vacant')}</td>
-                                <td>
-                                    {r.requests.length > 0 || r.flags.length > 0 || r.occupied ? (
-                                        <div className="mb-2 flex flex-col gap-1">
-                                            <RequestsList requests={r.requests} />
-                                            {r.occupied ? <FlagsPanel busy={action.busy} flags={r.flags} kinds={board.flag_kinds} onEnd={(f) => void endFlag(f)} onRaise={(k, n) => void raiseFlag(r, k, n)} /> : null}
-                                        </div>
-                                    ) : null}
-                                    {r.task === null ? '—' : (
-                                        <div className="flex flex-col gap-1">
-                                            <span>{t(`hk.kind.${r.task.kind}` as 'hk.kind.departure')} · {t(`hk.task.${r.task.status}` as 'hk.task.open')}{r.task.assigned_name !== null ? ` · ${r.task.assigned_name}` : ''}</span>
-                                            {board.may.manage && r.task.status !== 'in_progress' ? (
-                                                <div className="flex flex-wrap items-center gap-2">
-                                                    <Select aria-label={t('hk.board.assignTo')} className="min-h-9 w-44" onChange={(e) => setAssignTo({ ...assignTo, [r.task!.id]: e.target.value })} value={assignTo[r.task.id] ?? ''}>
-                                                        <option value="">{t('hk.board.chooseStaff')}</option>
-                                                        {board.staff.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
-                                                    </Select>
-                                                    <Button disabled={action.busy || (assignTo[r.task.id] ?? '') === ''} onClick={() => void assign(r.task!)} size="sm" type="button" variant="outline">{t('hk.board.assign')}</Button>
-                                                    <Button disabled={action.busy} onClick={() => void cancel(r.task!)} size="sm" type="button" variant="outline">{t('hk.board.cancel')}</Button>
-                                                </div>
-                                            ) : null}
-                                        </div>
-                                    )}
-                                </td>
-                                {board.may.manage || board.may.inspect ? (
-                                    <td>
-                                        <div className="flex flex-wrap gap-2">
-                                            {board.may.manage && r.task === null ? <Button onClick={() => { action.clear(); setRequest(r); }} size="sm" type="button" variant="outline">{t('hk.board.request')}</Button> : null}
-                                            {board.may.inspect && r.status === 'clean' ? <Button onClick={() => void openInspection(r)} size="sm" type="button">{t('hk.board.inspect')}</Button> : null}
-                                        </div>
-                                    </td>
-                                ) : null}
-                            </tr>
-                        ))}</tbody>
-                    </table>
-                </div>
-            )}
+            <DataGrid
+                caption={t('hk.board.title')}
+                columns={columns}
+                empty={<EmptyState title={t('hk.board.empty')} />}
+                getRowId={(r) => r.room_id}
+                id="hk.board"
+                rows={board.rooms}
+            />
 
             {board.may.settings && (
                 <section aria-labelledby="set-h" className="flex flex-col gap-3 border-t border-border pt-4">

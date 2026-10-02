@@ -2,6 +2,7 @@ import { Link, router } from '@inertiajs/react';
 import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
+import { DataGrid, type DataGridColumn } from '@/components/ui/data-grid';
 import { EmptyState } from '@/components/ui/empty-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
@@ -17,10 +18,18 @@ type Props = {
     };
 };
 
+type Run = Props['report']['runs'][number];
+
 /** How much of each checklist was done, in which room or area, and by whom (FR-HK-005). */
 export default function ChecklistPerformancePage({ report: r }: Props) {
     const { t } = useTranslation();
     const [range, setRange] = useState({ from: r.from, to: r.to });
+
+    const columns: DataGridColumn<Run>[] = [
+        { id: 'run', label: t('hk.cl.perf.runs'), value: (x) => t('hk.cl.perf.run', { name: x.template, target: x.target, period: x.period_key }), rowHeader: true },
+        { id: 'frequency', label: t('hk.cl.tpl.frequency'), value: (x) => x.frequency, filter: 'select', filterLabel: (v) => t(`hk.cl.frequency.${v}` as 'hk.cl.frequency.daily'), cell: (x) => t(`hk.cl.frequency.${x.frequency}` as 'hk.cl.frequency.daily') },
+        { id: 'progress', label: t('hk.cl.perf.progress'), align: 'right', value: (x) => x.percent, searchText: (x) => t('hk.cl.progress', { done: x.completed, total: x.items, percent: x.percent }), cell: (x) => t('hk.cl.progress', { done: x.completed, total: x.items, percent: x.percent }) },
+    ];
 
     return (
         <HousekeepingShell description={t('hk.cl.perf.description')} title={t('hk.cl.perf.title')} wide>
@@ -34,13 +43,15 @@ export default function ChecklistPerformancePage({ report: r }: Props) {
 
             <section aria-labelledby="hk-runs-h" className="flex flex-col gap-1">
                 <h2 className="text-lg font-semibold" id="hk-runs-h">{t('hk.cl.perf.runs')}</h2>
-                {r.runs.length === 0 ? <EmptyState title={t('hk.cl.perf.noRuns')} /> : (
-                    <table className="w-full text-left text-sm" data-testid="runs">
-                        <tbody>{r.runs.map((x) => (
-                            <tr className="border-t border-border" key={x.run_id}><th className="py-1 font-medium" scope="row">{t('hk.cl.perf.run', { name: x.template, target: x.target, period: x.period_key })}</th><td>{t('hk.cl.progress', { done: x.completed, total: x.items, percent: x.percent })}</td></tr>
-                        ))}</tbody>
-                    </table>
-                )}
+                <DataGrid
+                    caption={t('hk.cl.perf.runs')}
+                    columns={columns}
+                    empty={<EmptyState title={t('hk.cl.perf.noRuns')} />}
+                    getRowId={(x) => x.run_id}
+                    id="hk.checklist.runs"
+                    rows={r.runs}
+                    testId="runs"
+                />
             </section>
 
             <section aria-labelledby="hk-people-h" className="flex flex-col gap-1">

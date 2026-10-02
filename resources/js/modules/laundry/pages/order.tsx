@@ -8,6 +8,7 @@ import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
 import { StatusBadge } from '@/components/ui/status-badge';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { LaundryShell } from '@/modules/laundry/components/laundry-shell';
 import { statusTone } from '@/modules/laundry/pages/queue';
 import { useServerAction } from '@/shared/api/use-server-action';
@@ -63,21 +64,31 @@ export default function LaundryOrderPage({ claims, currency, may, order: o }: { 
 
             <section aria-labelledby="lines-h" className="flex flex-col gap-2">
                 <h2 className="text-lg font-semibold" id="lines-h">{t('ldy.order.items')}</h2>
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left text-sm">
-                        <thead><tr className="text-xs text-muted-foreground"><th className="py-1 font-medium" scope="col">{t('ldy.order.col.item')}</th><th scope="col">{t('ldy.order.col.listed')}</th><th scope="col">{t('ldy.order.col.counted')}</th><th scope="col">{t('ldy.order.col.price')}</th><th scope="col">{t('ldy.order.col.total')}</th></tr></thead>
-                        <tbody>{o.lines.map((l) => (
-                            <tr className="border-t border-border align-top" key={l.id}>
-                                <th className="py-2 font-medium" scope="row">{l.item_name}{l.brand !== null ? ` · ${l.brand}` : ''}{l.treatment_name !== null ? <span className="block text-xs font-normal text-muted-foreground">{t('ldy.order.treatment', { name: l.treatment_name, extra: format.money(l.treatment_extra_minor, currency) })}</span> : null}{l.express_extra_minor > 0 ? <span className="block text-xs font-normal text-muted-foreground">{t('ldy.order.expressExtra', { extra: format.money(l.express_extra_minor, currency) })}</span> : null}{l.condition_note !== null ? <span className="block text-xs font-normal text-muted-foreground">{l.condition_note}</span> : null}</th>
-                                <td>{l.quantity}</td>
-                                <td>{o.status === 'sent' && may.process
-                                    ? <Input aria-label={`${t('ldy.order.col.counted')}: ${l.item_name}`} className="min-h-9 w-20" inputMode="numeric" onChange={(e) => setCounts({ ...counts, [l.id]: e.target.value })} value={counts[l.id] ?? ''} />
-                                    : (l.verified_quantity ?? '—')}</td>
-                                <td>{format.money(l.piece_minor, currency)}</td>
-                                <td>{format.money(l.total_minor, currency)}</td>
-                            </tr>
-                        ))}</tbody>
-                    </table>
+                <div className="border border-border bg-surface">
+                    <Table>
+                        <TableHeader className="bg-surface-muted">
+                            <TableRow className="hover:bg-transparent">
+                                <TableHead scope="col">{t('ldy.order.col.item')}</TableHead>
+                                <TableHead className="text-right" scope="col">{t('ldy.order.col.listed')}</TableHead>
+                                <TableHead className="text-right" scope="col">{t('ldy.order.col.counted')}</TableHead>
+                                <TableHead className="text-right" scope="col">{t('ldy.order.col.price')}</TableHead>
+                                <TableHead className="text-right" scope="col">{t('ldy.order.col.total')}</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {o.lines.map((l) => (
+                                <TableRow className="align-top" key={l.id}>
+                                    <TableHead className="py-3 align-top font-medium text-foreground" scope="row">{l.item_name}{l.brand !== null ? ` · ${l.brand}` : ''}{l.treatment_name !== null ? <span className="block text-xs font-normal text-muted-foreground">{t('ldy.order.treatment', { name: l.treatment_name, extra: format.money(l.treatment_extra_minor, currency) })}</span> : null}{l.express_extra_minor > 0 ? <span className="block text-xs font-normal text-muted-foreground">{t('ldy.order.expressExtra', { extra: format.money(l.express_extra_minor, currency) })}</span> : null}{l.condition_note !== null ? <span className="block text-xs font-normal text-muted-foreground">{l.condition_note}</span> : null}</TableHead>
+                                    <TableCell className="text-right tabular-nums">{l.quantity}</TableCell>
+                                    <TableCell className="text-right tabular-nums">{o.status === 'sent' && may.process
+                                        ? <Input aria-label={`${t('ldy.order.col.counted')}: ${l.item_name}`} className="ml-auto min-h-9 w-20" inputMode="numeric" onChange={(e) => setCounts({ ...counts, [l.id]: e.target.value })} value={counts[l.id] ?? ''} />
+                                        : (l.verified_quantity ?? '—')}</TableCell>
+                                    <TableCell className="text-right tabular-nums">{format.money(l.piece_minor, currency)}</TableCell>
+                                    <TableCell className="text-right tabular-nums">{format.money(l.total_minor, currency)}</TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
                 </div>
                 <p className="text-sm">{o.charged_minor !== null ? t('ldy.order.charged', { amount: format.money(o.charged_minor, currency) }) : `${t('ldy.order.billable')}: ${format.money(o.billable_minor, currency)}`}</p>
             </section>

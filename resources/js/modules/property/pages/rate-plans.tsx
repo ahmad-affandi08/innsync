@@ -9,6 +9,7 @@ import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
 import { StatusBadge } from '@/components/ui/status-badge';
+import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Textarea } from '@/components/ui/textarea';
 import { PropertyShell } from '@/modules/property/components/property-shell';
 import { useServerAction } from '@/shared/api/use-server-action';
@@ -234,13 +235,36 @@ export default function RatePlansPage({ plans, selected, types }: { plans: Plan[
                                     <div><StatusBadge label={t('rates.quote.notBookable')} tone="warning" /><ul className="mt-2 list-disc pl-5">{quote.violations.map((v, i) => <li key={i}>{violation(v)}</li>)}</ul></div>
                                 )}
                                 {quote.nights.length > 0 && (
-                                    <table className="w-full text-left">
-                                        <thead><tr className="text-xs text-muted-foreground"><th className="py-1 font-medium" scope="col">{t('rates.quote.arrival')}</th><th scope="col">{t('rates.quote.base')}</th><th scope="col">{t('rates.quote.service')}</th><th scope="col">{t('rates.quote.tax')}</th><th scope="col">{t('rates.quote.total')}</th></tr></thead>
-                                        <tbody>{quote.nights.map((n) => (
-                                            <tr className="border-t border-border" key={n.date}><td className="py-1">{format.date(n.date)}</td><td>{format.money(n.base_minor, quote.currency)}</td><td>{format.money(n.service_charge_minor, quote.currency)}</td><td>{format.money(n.tax_minor, quote.currency)}</td><td>{format.money(n.total_minor, quote.currency)}</td></tr>
-                                        ))}</tbody>
-                                        <tfoot><tr className="border-t border-border font-medium"><td className="py-1" colSpan={4}>{t('rates.quote.total')}</td><td>{format.money(quote.total_minor, quote.currency)}</td></tr></tfoot>
-                                    </table>
+                                    <div className="border border-border bg-surface">
+                                        <Table>
+                                            <TableHeader className="bg-surface-muted">
+                                                <TableRow className="hover:bg-transparent">
+                                                    <TableHead scope="col">{t('rates.quote.arrival')}</TableHead>
+                                                    <TableHead className="text-right" scope="col">{t('rates.quote.base')}</TableHead>
+                                                    <TableHead className="text-right" scope="col">{t('rates.quote.service')}</TableHead>
+                                                    <TableHead className="text-right" scope="col">{t('rates.quote.tax')}</TableHead>
+                                                    <TableHead className="text-right" scope="col">{t('rates.quote.total')}</TableHead>
+                                                </TableRow>
+                                            </TableHeader>
+                                            <TableBody>
+                                                {quote.nights.map((n) => (
+                                                    <TableRow key={n.date}>
+                                                        <TableHead className="font-normal text-foreground" scope="row">{format.date(n.date)}</TableHead>
+                                                        <TableCell className="text-right tabular-nums">{format.money(n.base_minor, quote.currency)}</TableCell>
+                                                        <TableCell className="text-right tabular-nums">{format.money(n.service_charge_minor, quote.currency)}</TableCell>
+                                                        <TableCell className="text-right tabular-nums">{format.money(n.tax_minor, quote.currency)}</TableCell>
+                                                        <TableCell className="text-right tabular-nums">{format.money(n.total_minor, quote.currency)}</TableCell>
+                                                    </TableRow>
+                                                ))}
+                                            </TableBody>
+                                            <TableFooter>
+                                                <TableRow className="hover:bg-transparent">
+                                                    <TableCell colSpan={4}>{t('rates.quote.total')}</TableCell>
+                                                    <TableCell className="text-right tabular-nums">{format.money(quote.total_minor, quote.currency)}</TableCell>
+                                                </TableRow>
+                                            </TableFooter>
+                                        </Table>
+                                    </div>
                                 )}
                             </div>
                         )}

@@ -195,6 +195,7 @@ export const housekeeping = {
     'hk.cl.perf.runs': 'Checklists',
     'hk.cl.perf.noRuns': 'No checklist was started in these dates.',
     'hk.cl.perf.run': '{name} · {target} · {period}',
+    'hk.cl.perf.progress': 'Progress',
     'hk.cl.perf.people': 'Items ticked per person',
     'hk.nav.lostfound': 'Lost and found',
     'hk.lf.title': 'Lost and found',

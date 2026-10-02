@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react';
 
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
+import { DataGrid, type DataGridColumn } from '@/components/ui/data-grid';
 import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
@@ -92,38 +93,43 @@ export default function LinenPage({ linen }: { linen: Linen }) {
         if (result !== null) setUsage(result.usage.rows);
     }
 
+    const positionColumns: DataGridColumn<Item>[] = [
+        {
+            id: 'item', label: t('hk.linen.item'), value: (row) => row.name, searchText: (row) => `${row.name} ${row.code} ${row.unit}`, rowHeader: true,
+            cell: (row) => <><span className="font-medium">{row.name}</span> <span className="text-xs font-normal text-muted-foreground">{row.code} · {row.unit}</span>{row.is_active ? null : <> <StatusBadge label={t('hk.linen.inactive')} tone="neutral" /></>}</>,
+        },
+        { id: 'kind', label: t('hk.linen.kind'), value: (row) => row.kind, filter: 'select', filterLabel: (v) => t(`hk.linen.kind.${v}` as 'hk.linen.kind.linen'), cell: (row) => t(`hk.linen.kind.${row.kind}` as 'hk.linen.kind.linen'), hidden: true },
+        ...linen.locations.map((p): DataGridColumn<Item> => ({ id: `place-${p}`, label: place(p), align: 'right', value: (row) => row.locations[p], cell: (row) => format.number(row.locations[p]) })),
+        { id: 'in_transit', label: t('hk.linen.inTransit'), align: 'right', value: (row) => row.in_transit, cell: (row) => format.number(row.in_transit) },
+        { id: 'lost', label: t('hk.linen.lost'), align: 'right', value: (row) => row.lost, cell: (row) => format.number(row.lost) },
+        { id: 'damaged', label: t('hk.linen.damaged'), align: 'right', value: (row) => row.damaged, cell: (row) => format.number(row.damaged) },
+        ...(linen.may.manage ? [{
+            id: 'actions', label: t('hk.board.actions'), align: 'right' as const,
+            cell: (row: Item) => <Button disabled={action.busy} onClick={() => void toggle(row)} size="sm" type="button" variant="outline">{row.is_active ? t('hk.linen.deactivate') : t('hk.linen.activate')}</Button>,
+        }] : []),
+    ];
+    const usageColumns: DataGridColumn<UsageRow>[] = [
+        { id: 'date', label: t('hk.linen.date'), value: (u) => u.usage_date },
+        { id: 'room', label: t('hk.linen.room'), value: (u) => u.room, filter: 'select', rowHeader: true },
+        { id: 'item', label: t('hk.linen.item'), value: (u) => u.item_name, searchText: (u) => `${u.item_name} ${u.item}`, filter: 'select' },
+        { id: 'quantity', label: t('hk.linen.quantity'), align: 'right', value: (u) => u.quantity, cell: (u) => format.number(u.quantity) },
+    ];
+
     return (
         <HousekeepingShell description={t('hk.linen.description')} title={t('hk.linen.title')} wide>
             {action.error !== null ? <ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /> : null}
 
             <section aria-labelledby="linen-position" className="flex flex-col gap-2">
                 <h2 className="text-lg font-semibold" id="linen-position">{t('hk.linen.position')}</h2>
-                {linen.items.length === 0 ? <EmptyState title={t('hk.linen.noItems')} /> : (
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-sm" data-testid="linen-position">
-                            <thead><tr className="border-b border-border text-left">
-                                <th className="py-2 pr-3">{t('hk.linen.item')}</th>
-                                {linen.locations.map((p) => <th className="px-2 py-2 text-right" key={p}>{place(p)}</th>)}
-                                <th className="px-2 py-2 text-right">{t('hk.linen.inTransit')}</th>
-                                <th className="px-2 py-2 text-right">{t('hk.linen.lost')}</th>
-                                <th className="px-2 py-2 text-right">{t('hk.linen.damaged')}</th>
-                                {linen.may.manage ? <th className="py-2 pl-2" /> : null}
-                            </tr></thead>
-                            <tbody>
-                                {linen.items.map((row) => (
-                                    <tr className="border-b border-border" key={row.id}>
-                                        <td className="py-2 pr-3"><span className="font-medium">{row.name}</span> <span className="text-xs text-muted-foreground">{row.code} · {row.unit}</span>{row.is_active ? null : <> <StatusBadge label={t('hk.linen.inactive')} tone="neutral" /></>}</td>
-                                        {linen.locations.map((p) => <td className="px-2 py-2 text-right tabular-nums" key={p}>{format.number(row.locations[p])}</td>)}
-                                        <td className="px-2 py-2 text-right tabular-nums">{format.number(row.in_transit)}</td>
-                                        <td className="px-2 py-2 text-right tabular-nums">{format.number(row.lost)}</td>
-                                        <td className="px-2 py-2 text-right tabular-nums">{format.number(row.damaged)}</td>
-                                        {linen.may.manage ? <td className="py-2 pl-2 text-right"><Button disabled={action.busy} onClick={() => void toggle(row)} size="sm" type="button" variant="outline">{row.is_active ? t('hk.linen.deactivate') : t('hk.linen.activate')}</Button></td> : null}
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                )}
+                <DataGrid
+                    caption={t('hk.linen.position')}
+                    columns={positionColumns}
+                    empty={<EmptyState title={t('hk.linen.noItems')} />}
+                    getRowId={(row) => row.id}
+                    id="hk.linen.stock"
+                    rows={linen.items}
+                    testId="linen-position"
+                />
             </section>
 
             <section aria-labelledby="linen-pending" className="flex flex-col gap-2">
@@ -193,12 +199,17 @@ export default function LinenPage({ linen }: { linen: Linen }) {
                     <div className="flex flex-wrap items-end gap-2"><Button loading={action.busy} type="submit">{t('hk.linen.record')}</Button><Button disabled={action.busy} onClick={() => void loadUsage()} type="button" variant="outline">{t('hk.linen.showUsage')}</Button></div>
                 </form>
                 {recorded ? <Alert title={t('hk.linen.recorded')} tone="success" /> : null}
-                {usage !== null && (usage.length === 0 ? <p className="text-sm text-muted-foreground">{t('hk.linen.noUsage')}</p> : (
-                    <table className="w-full text-sm" data-testid="linen-usage">
-                        <thead><tr className="border-b border-border text-left"><th className="py-2">{t('hk.linen.date')}</th><th>{t('hk.linen.room')}</th><th>{t('hk.linen.item')}</th><th className="text-right">{t('hk.linen.quantity')}</th></tr></thead>
-                        <tbody>{usage.map((u) => <tr className="border-b border-border" key={`${u.usage_date}-${u.room}-${u.item}`}><td className="py-2">{u.usage_date}</td><td>{u.room}</td><td>{u.item_name}</td><td className="text-right tabular-nums">{format.number(u.quantity)}</td></tr>)}</tbody>
-                    </table>
-                ))}
+                {usage !== null && (
+                    <DataGrid
+                        caption={t('hk.linen.usage')}
+                        columns={usageColumns}
+                        empty={<p className="text-sm text-muted-foreground">{t('hk.linen.noUsage')}</p>}
+                        getRowId={(u) => `${u.usage_date}-${u.room}-${u.item}`}
+                        id="hk.linen.usage"
+                        rows={usage}
+                        testId="linen-usage"
+                    />
+                )}
             </section>
 
             <section aria-labelledby="linen-recent" className="flex flex-col gap-2">

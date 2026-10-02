@@ -51,6 +51,7 @@ export const laundry = {
     'ldy.order.col.counted': 'Counted',
     'ldy.order.col.price': 'Price',
     'ldy.order.col.total': 'Total',
+    'ldy.actions': 'Actions',
     'ldy.order.billable': 'To be charged (before service charge and tax)',
     'ldy.order.charged': 'Charged to the folio: {amount} before service charge and tax',
     'ldy.order.discrepancy': 'The count differs from the list: {note}',

@@ -195,6 +195,7 @@ export const housekeeping = {
     'hk.cl.perf.runs': 'Daftar periksa',
     'hk.cl.perf.noRuns': 'Tidak ada daftar periksa yang dimulai pada tanggal ini.',
     'hk.cl.perf.run': '{name} · {target} · {period}',
+    'hk.cl.perf.progress': 'Kemajuan',
     'hk.cl.perf.people': 'Butir dicentang per orang',
     'hk.nav.lostfound': 'Barang tertinggal',
     'hk.lf.title': 'Barang tertinggal',

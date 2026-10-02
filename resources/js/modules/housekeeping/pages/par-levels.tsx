@@ -2,6 +2,7 @@ import { useState } from 'react';
 
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
+import { DataGrid, type DataGridColumn } from '@/components/ui/data-grid';
 import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
@@ -52,23 +53,51 @@ export default function ParLevelsPage({ overview }: { overview: Overview }) {
         setForm({ itemId: l.item_id, kind: l.scope_kind, ref: l.scope_kind === 'area' ? (l.area ?? '') : (l.room_type_id ?? ''), par: String(l.par_quantity), use: String(l.use_quantity), reason: '' });
     }
 
+    const scopeText = (l: Level) => (l.scope_kind === 'room_type' ? `${t('hk.par.roomType')} ${typeCode(l.room_type_id)}` : `${t('hk.par.area')} ${l.area}`);
+    const needColumns: DataGridColumn<Need>[] = [
+        { id: 'item', label: t('hk.par.item'), value: (n) => `${n.code} · ${n.name}`, searchText: (n) => `${n.code} ${n.name}`, rowHeader: true },
+        { id: 'target', label: t('hk.par.target'), align: 'right', value: (n) => n.target, cell: (n) => format.number(n.target) },
+        { id: 'on_floor', label: t('hk.par.onFloor'), align: 'right', value: (n) => n.on_floor, cell: (n) => format.number(n.on_floor) },
+        { id: 'need', label: t('hk.par.toBring'), align: 'right', value: (n) => n.need, cell: (n) => <span className="font-medium">{format.number(n.need)}</span> },
+        { id: 'in_store', label: t('hk.par.inStore'), align: 'right', value: (n) => n.in_store, cell: (n) => format.number(n.in_store) },
+        { id: 'from_store', label: t('hk.par.fromStore'), align: 'right', value: (n) => n.from_store, cell: (n) => format.number(n.from_store) },
+        { id: 'to_obtain', label: t('hk.par.toObtain'), align: 'right', value: (n) => n.to_obtain, cell: (n) => <span className={n.to_obtain > 0 ? 'font-medium text-danger' : undefined}>{format.number(n.to_obtain)}</span> },
+    ];
+    const useColumns: DataGridColumn<Row>[] = [
+        { id: 'item', label: t('hk.par.item'), value: (r) => `${r.code} · ${r.name}`, searchText: (r) => `${r.code} ${r.name}`, rowHeader: true },
+        { id: 'room_type', label: t('hk.par.roomType'), value: (r) => r.room_type, filter: 'select' },
+        { id: 'serviced', label: t('hk.par.serviced'), align: 'right', value: (r) => r.rooms_serviced },
+        { id: 'standard', label: t('hk.par.standard'), align: 'right', value: (r) => r.standard },
+        { id: 'expected', label: t('hk.par.expected'), align: 'right', value: (r) => r.expected },
+        { id: 'actual', label: t('hk.par.actual'), align: 'right', value: (r) => r.actual },
+        { id: 'variance', label: t('hk.par.variance'), align: 'right', value: (r) => r.variance, cell: (r) => <span className={r.variance > 0 ? 'font-medium text-danger' : r.variance < 0 ? 'font-medium text-warning' : undefined}>{r.variance > 0 ? `+${r.variance}` : r.variance}</span> },
+    ];
+    const levelColumns: DataGridColumn<Level>[] = [
+        { id: 'item', label: t('hk.par.item'), value: (l) => `${l.item_code} · ${l.item_name}`, searchText: (l) => `${l.item_code} ${l.item_name}`, rowHeader: true },
+        { id: 'scope', label: t('hk.par.scope'), value: scopeText, filter: 'select' },
+        { id: 'par', label: t('hk.par.par'), align: 'right', value: (l) => l.par_quantity },
+        { id: 'standard', label: t('hk.par.standard'), align: 'right', value: (l) => (l.scope_kind === 'room_type' ? l.use_quantity : null), cell: (l) => (l.scope_kind === 'room_type' ? l.use_quantity : '—') },
+        ...(overview.may.manage ? [{
+            id: 'actions', label: t('hk.board.actions'),
+            cell: (l: Level) => <Button aria-label={`${t('hk.par.edit')} ${l.item_code} ${l.scope_kind === 'room_type' ? typeCode(l.room_type_id) : l.area}`} onClick={() => edit(l)} size="sm" type="button" variant="outline">{t('hk.par.edit')}</Button>,
+        }] : []),
+    ];
+
     return (
         <HousekeepingShell description={t('hk.par.description')} title={t('hk.par.title')} wide>
             {action.error !== null ? <ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /> : null}
 
             <section aria-labelledby="par-need-h" className="flex flex-col gap-2">
                 <h2 className="text-lg font-semibold" id="par-need-h">{t('hk.par.need')}</h2>
-                {overview.replenishment.length === 0 ? <EmptyState title={t('hk.par.noNeed')} /> : (
-                    <table className="w-full text-left text-sm" data-testid="need">
-                        <thead><tr className="text-xs text-muted-foreground"><th className="py-1 font-medium" scope="col">{t('hk.par.item')}</th><th scope="col">{t('hk.par.target')}</th><th scope="col">{t('hk.par.onFloor')}</th><th scope="col">{t('hk.par.toBring')}</th><th scope="col">{t('hk.par.inStore')}</th><th scope="col">{t('hk.par.fromStore')}</th><th scope="col">{t('hk.par.toObtain')}</th></tr></thead>
-                        <tbody>{overview.replenishment.map((n) => (
-                            <tr className="border-t border-border" key={n.item_id}>
-                                <th className="py-2 font-medium" scope="row">{n.code} · {n.name}</th><td>{format.number(n.target)}</td><td>{format.number(n.on_floor)}</td><td className="font-medium">{format.number(n.need)}</td>
-                                <td>{format.number(n.in_store)}</td><td>{format.number(n.from_store)}</td><td className={n.to_obtain > 0 ? 'font-medium text-danger' : undefined}>{format.number(n.to_obtain)}</td>
-                            </tr>
-                        ))}</tbody>
-                    </table>
-                )}
+                <DataGrid
+                    caption={t('hk.par.need')}
+                    columns={needColumns}
+                    empty={<EmptyState title={t('hk.par.noNeed')} />}
+                    getRowId={(n) => n.item_id}
+                    id="hk.par.need"
+                    rows={overview.replenishment}
+                    testId="need"
+                />
             </section>
 
             <section aria-labelledby="par-use-h" className="flex flex-col gap-2">
@@ -79,33 +108,30 @@ export default function ParLevelsPage({ overview }: { overview: Overview }) {
                     <FormField label={t('hk.par.shift')}><Select onChange={(e) => setWhen({ ...when, shift: e.target.value })} value={when.shift}>{overview.shifts.map((s) => <option key={s.code} value={s.code}>{t(`hk.par.shift.${s.code}` as 'hk.par.shift.morning')} ({s.from}–{s.to})</option>)}</Select></FormField>
                     <Button disabled={action.busy} onClick={() => void show()} type="button" variant="outline">{t('hk.par.show')}</Button>
                 </div>
-                {shown === null ? null : shown.rows.length === 0 ? <p className="text-sm text-muted-foreground" data-testid="use-empty">{t('hk.par.noUse')}</p> : (
-                    <table className="w-full text-left text-sm" data-testid="use">
-                        <thead><tr className="text-xs text-muted-foreground"><th className="py-1 font-medium" scope="col">{t('hk.par.item')}</th><th scope="col">{t('hk.par.roomType')}</th><th scope="col">{t('hk.par.serviced')}</th><th scope="col">{t('hk.par.standard')}</th><th scope="col">{t('hk.par.expected')}</th><th scope="col">{t('hk.par.actual')}</th><th scope="col">{t('hk.par.variance')}</th></tr></thead>
-                        <tbody>{shown.rows.map((r) => (
-                            <tr className="border-t border-border" key={`${r.item_id}${r.room_type}`}>
-                                <th className="py-2 font-medium" scope="row">{r.code} · {r.name}</th><td>{r.room_type}</td><td>{r.rooms_serviced}</td><td>{r.standard}</td><td>{r.expected}</td><td>{r.actual}</td>
-                                <td className={r.variance > 0 ? 'font-medium text-danger' : r.variance < 0 ? 'font-medium text-warning' : undefined}>{r.variance > 0 ? `+${r.variance}` : r.variance}</td>
-                            </tr>
-                        ))}</tbody>
-                    </table>
+                {shown === null ? null : (
+                    <DataGrid
+                        caption={t('hk.par.consumption')}
+                        columns={useColumns}
+                        empty={<p className="text-sm text-muted-foreground" data-testid="use-empty">{t('hk.par.noUse')}</p>}
+                        getRowId={(r) => `${r.item_id}${r.room_type}`}
+                        id="hk.par.use"
+                        rows={shown.rows}
+                        testId="use"
+                    />
                 )}
             </section>
 
             <section aria-labelledby="par-set-h" className="flex flex-col gap-2">
                 <h2 className="text-lg font-semibold" id="par-set-h">{t('hk.par.levels')}</h2>
-                {overview.levels.length === 0 ? <EmptyState title={t('hk.par.none')} /> : (
-                    <table className="w-full text-left text-sm" data-testid="levels">
-                        <thead><tr className="text-xs text-muted-foreground"><th className="py-1 font-medium" scope="col">{t('hk.par.item')}</th><th scope="col">{t('hk.par.scope')}</th><th scope="col">{t('hk.par.par')}</th><th scope="col">{t('hk.par.standard')}</th>{overview.may.manage ? <th scope="col" /> : null}</tr></thead>
-                        <tbody>{overview.levels.map((l) => (
-                            <tr className="border-t border-border" key={l.id}>
-                                <th className="py-2 font-medium" scope="row">{l.item_code} · {l.item_name}</th>
-                                <td>{l.scope_kind === 'room_type' ? `${t('hk.par.roomType')} ${typeCode(l.room_type_id)}` : `${t('hk.par.area')} ${l.area}`}</td><td>{l.par_quantity}</td><td>{l.scope_kind === 'room_type' ? l.use_quantity : '—'}</td>
-                                {overview.may.manage ? <td><Button aria-label={`${t('hk.par.edit')} ${l.item_code} ${l.scope_kind === 'room_type' ? typeCode(l.room_type_id) : l.area}`} onClick={() => edit(l)} size="sm" type="button" variant="outline">{t('hk.par.edit')}</Button></td> : null}
-                            </tr>
-                        ))}</tbody>
-                    </table>
-                )}
+                <DataGrid
+                    caption={t('hk.par.levels')}
+                    columns={levelColumns}
+                    empty={<EmptyState title={t('hk.par.none')} />}
+                    getRowId={(l) => l.id}
+                    id="hk.par.levels"
+                    rows={overview.levels}
+                    testId="levels"
+                />
             </section>
 
             {overview.may.manage && (

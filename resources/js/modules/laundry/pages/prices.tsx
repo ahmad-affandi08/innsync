@@ -1,6 +1,7 @@
 import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
+import { DataGrid, type DataGridColumn } from '@/components/ui/data-grid';
 import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
@@ -66,34 +67,56 @@ export default function LaundryPricesPage({ currency, items, treatments, may }: 
         await action.run(`/laundry/treatments/${tr.id}`, { body: { name: tr.name, pricing: tr.pricing, value: tr.value, is_active: !tr.is_active, lock_version: tr.lock_version, reason: tReason[tr.id] ?? '' }, reload: ['treatments'] });
     }
 
+    const activeColumn = <T extends { is_active: boolean }>(): DataGridColumn<T> => ({
+        id: 'active', label: t('ldy.prices.active'), value: (x) => (x.is_active ? 'active' : 'inactive'), filter: 'select', filterLabel: (v) => (v === 'active' ? t('property.status.active') : t('property.status.inactive')),
+        cell: (x) => <StatusBadge label={x.is_active ? t('ldy.prices.active') : '—'} tone={x.is_active ? 'success' : 'neutral'} />,
+    });
+    const itemColumns: DataGridColumn<Item>[] = [
+        { id: 'code', label: t('ldy.prices.code'), value: (i) => i.code, rowHeader: true },
+        { id: 'name', label: t('ldy.prices.name'), value: (i) => i.name },
+        { id: 'price', label: t('ldy.prices.price'), align: 'right', value: (i) => i.unit_price_minor, cell: (i) => format.money(i.unit_price_minor, currency) },
+        activeColumn<Item>(),
+        ...(may.prices ? [{
+            id: 'actions', label: t('ldy.actions'),
+            cell: (i: Item) => (
+                <div className="flex flex-wrap items-center gap-2">
+                    <Input aria-label={`${t('ldy.prices.price')} ${i.code}`} className="min-h-9 w-32" inputMode="decimal" onChange={(e) => setEdit({ ...edit, [i.id]: { price: e.target.value, reason: edit[i.id]?.reason ?? '' } })} placeholder={t('ldy.prices.price')} value={edit[i.id]?.price ?? ''} />
+                    <Input aria-label={`${t('ldy.prices.reason')} ${i.code}`} className="min-h-9 w-44" maxLength={300} onChange={(e) => setEdit({ ...edit, [i.id]: { price: edit[i.id]?.price ?? '', reason: e.target.value } })} placeholder={t('ldy.prices.reason')} value={edit[i.id]?.reason ?? ''} />
+                    <Button disabled={action.busy || (edit[i.id]?.reason ?? '').trim() === ''} onClick={() => void save(i, i.is_active)} size="sm" type="button" variant="outline">{t('ldy.prices.save')}</Button>
+                    <Button disabled={action.busy || (edit[i.id]?.reason ?? '').trim() === ''} onClick={() => void save(i, !i.is_active)} size="sm" type="button" variant="outline">{i.is_active ? t('ldy.prices.deactivate') : t('ldy.prices.activate')}</Button>
+                </div>
+            ),
+        }] : []),
+    ];
+    const treatmentColumns: DataGridColumn<Treatment>[] = [
+        { id: 'code', label: t('ldy.prices.code'), value: (tr) => tr.code, rowHeader: true },
+        { id: 'name', label: t('ldy.prices.name'), value: (tr) => tr.name },
+        { id: 'kind', label: t('ldy.treat.kind'), value: (tr) => tr.kind, filter: 'select', filterLabel: (v) => t(`ldy.treat.kind.${v}` as 'ldy.treat.kind.service'), cell: (tr) => t(`ldy.treat.kind.${tr.kind}` as 'ldy.treat.kind.service') },
+        { id: 'pricing', label: t('ldy.treat.pricing'), value: (tr) => tr.pricing, filter: 'select', filterLabel: (v) => t(`ldy.treat.pricing.${v}` as 'ldy.treat.pricing.percent'), cell: (tr) => t(`ldy.treat.pricing.${tr.pricing}` as 'ldy.treat.pricing.percent'), hidden: true },
+        { id: 'rate', label: t('ldy.treat.rate'), align: 'right', value: rate },
+        activeColumn<Treatment>(),
+        ...(may.prices ? [{
+            id: 'actions', label: t('ldy.actions'),
+            cell: (tr: Treatment) => (
+                <div className="flex flex-wrap items-center gap-2">
+                    <Input aria-label={`${t('ldy.prices.reason')} ${tr.code}`} className="min-h-9 w-44" maxLength={300} onChange={(e) => setTReason({ ...tReason, [tr.id]: e.target.value })} placeholder={t('ldy.prices.reason')} value={tReason[tr.id] ?? ''} />
+                    <Button disabled={action.busy || (tReason[tr.id] ?? '').trim() === ''} onClick={() => void toggleTreatment(tr)} size="sm" type="button" variant="outline">{tr.is_active ? t('ldy.prices.deactivate') : t('ldy.prices.activate')}</Button>
+                </div>
+            ),
+        }] : []),
+    ];
+
     return (
         <LaundryShell description={t('ldy.prices.description')} title={t('ldy.prices.title')} wide>
             {action.error !== null ? <ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /> : null}
-            {items.length === 0 ? <EmptyState title={t('ldy.prices.empty')} /> : (
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left text-sm">
-                        <thead><tr className="text-xs text-muted-foreground"><th className="py-1 font-medium" scope="col">{t('ldy.prices.code')}</th><th scope="col">{t('ldy.prices.name')}</th><th scope="col">{t('ldy.prices.price')}</th><th scope="col">{t('ldy.prices.active')}</th>{may.prices ? <th scope="col" /> : null}</tr></thead>
-                        <tbody>{items.map((i) => (
-                            <tr className="border-t border-border align-top" key={i.id}>
-                                <th className="py-2 font-medium" scope="row">{i.code}</th>
-                                <td>{i.name}</td>
-                                <td>{format.money(i.unit_price_minor, currency)}</td>
-                                <td><StatusBadge label={i.is_active ? t('ldy.prices.active') : '—'} tone={i.is_active ? 'success' : 'neutral'} /></td>
-                                {may.prices ? (
-                                    <td>
-                                        <div className="flex flex-wrap items-center gap-2">
-                                            <Input aria-label={`${t('ldy.prices.price')} ${i.code}`} className="min-h-9 w-32" inputMode="decimal" onChange={(e) => setEdit({ ...edit, [i.id]: { price: e.target.value, reason: edit[i.id]?.reason ?? '' } })} placeholder={t('ldy.prices.price')} value={edit[i.id]?.price ?? ''} />
-                                            <Input aria-label={`${t('ldy.prices.reason')} ${i.code}`} className="min-h-9 w-44" maxLength={300} onChange={(e) => setEdit({ ...edit, [i.id]: { price: edit[i.id]?.price ?? '', reason: e.target.value } })} placeholder={t('ldy.prices.reason')} value={edit[i.id]?.reason ?? ''} />
-                                            <Button disabled={action.busy || (edit[i.id]?.reason ?? '').trim() === ''} onClick={() => void save(i, i.is_active)} size="sm" type="button" variant="outline">{t('ldy.prices.save')}</Button>
-                                            <Button disabled={action.busy || (edit[i.id]?.reason ?? '').trim() === ''} onClick={() => void save(i, !i.is_active)} size="sm" type="button" variant="outline">{i.is_active ? t('ldy.prices.deactivate') : t('ldy.prices.activate')}</Button>
-                                        </div>
-                                    </td>
-                                ) : null}
-                            </tr>
-                        ))}</tbody>
-                    </table>
-                </div>
-            )}
+            <DataGrid
+                caption={t('ldy.prices.title')}
+                columns={itemColumns}
+                empty={<EmptyState title={t('ldy.prices.empty')} />}
+                getRowId={(i) => i.id}
+                id="ldy.prices"
+                rows={items}
+            />
             {invalid ? <p className="text-sm text-danger">{t('ldy.prices.invalid')}</p> : null}
 
             {may.prices && (
@@ -112,23 +135,15 @@ export default function LaundryPricesPage({ currency, items, treatments, may }: 
             <section aria-labelledby="treat-h" className="flex flex-col gap-3 border-t border-border pt-4">
                 <h2 className="text-lg font-semibold" id="treat-h">{t('ldy.treat.title')}</h2>
                 <p className="text-sm text-muted-foreground">{t('ldy.treat.description')}</p>
-                {treatments.length === 0 ? <EmptyState title={t('ldy.treat.empty')} /> : (
-                    <table className="w-full text-left text-sm" data-testid="treatments">
-                        <thead><tr className="text-xs text-muted-foreground"><th className="py-1 font-medium" scope="col">{t('ldy.prices.code')}</th><th scope="col">{t('ldy.prices.name')}</th><th scope="col">{t('ldy.treat.kind')}</th><th scope="col">{t('ldy.treat.rate')}</th><th scope="col">{t('ldy.prices.active')}</th>{may.prices ? <th scope="col" /> : null}</tr></thead>
-                        <tbody>{treatments.map((tr) => (
-                            <tr className="border-t border-border align-top" key={tr.id}>
-                                <th className="py-2 font-medium" scope="row">{tr.code}</th><td>{tr.name}</td><td>{t(`ldy.treat.kind.${tr.kind}` as 'ldy.treat.kind.service')}</td><td>{rate(tr)}</td>
-                                <td><StatusBadge label={tr.is_active ? t('ldy.prices.active') : '—'} tone={tr.is_active ? 'success' : 'neutral'} /></td>
-                                {may.prices ? (
-                                    <td><div className="flex flex-wrap items-center gap-2">
-                                        <Input aria-label={`${t('ldy.prices.reason')} ${tr.code}`} className="min-h-9 w-44" maxLength={300} onChange={(e) => setTReason({ ...tReason, [tr.id]: e.target.value })} placeholder={t('ldy.prices.reason')} value={tReason[tr.id] ?? ''} />
-                                        <Button disabled={action.busy || (tReason[tr.id] ?? '').trim() === ''} onClick={() => void toggleTreatment(tr)} size="sm" type="button" variant="outline">{tr.is_active ? t('ldy.prices.deactivate') : t('ldy.prices.activate')}</Button>
-                                    </div></td>
-                                ) : null}
-                            </tr>
-                        ))}</tbody>
-                    </table>
-                )}
+                <DataGrid
+                    caption={t('ldy.treat.title')}
+                    columns={treatmentColumns}
+                    empty={<EmptyState title={t('ldy.treat.empty')} />}
+                    getRowId={(tr) => tr.id}
+                    id="ldy.treatments"
+                    rows={treatments}
+                    testId="treatments"
+                />
                 {may.prices && (
                     <form className="grid gap-3 sm:grid-cols-3" onSubmit={(e) => { e.preventDefault(); void addTreatment(); }}>
                         <FormField error={action.fieldError('code')} label={t('ldy.prices.code')}><Input maxLength={20} onChange={(e) => setTForm({ ...tForm, code: e.target.value })} required value={tForm.code} /></FormField>

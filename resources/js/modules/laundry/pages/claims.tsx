@@ -3,6 +3,7 @@ import { useState, type FormEvent } from 'react';
 
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
+import { DataGrid, type DataGridColumn } from '@/components/ui/data-grid';
 import { ConfirmDialog } from '@/components/ui/dialog';
 import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
@@ -74,6 +75,41 @@ export default function LaundryClaimsPage({ order, overview, status }: { order: 
         await action.run('/laundry/claims/cap', { body: { cap_multiple: Number(cap.multiple), lock_version: overview.settings_lock, reason: cap.reason.trim() }, reload: ['overview'] });
     }
 
+    const columns: DataGridColumn<Claim>[] = [
+        {
+            id: 'number', label: t('ldy.claim.number'), value: (c) => c.number, searchText: (c) => `${c.number} ${c.recorded_by_name ?? ''}`, rowHeader: true,
+            cell: (c) => <>{c.number}<span className="block text-xs font-normal text-muted-foreground">{format.instant(c.created_at + 'Z')} · {c.recorded_by_name}</span></>,
+        },
+        {
+            id: 'order', label: t('ldy.claim.order'), value: (c) => c.order_number, searchText: (c) => `${c.order_number} ${c.room}`,
+            cell: (c) => <><Link className="underline-offset-2 hover:underline" href={`/laundry/orders/${c.order_id}`}>{c.order_number}</Link> · {c.room}</>,
+        },
+        {
+            id: 'item', label: t('ldy.claim.item'), value: (c) => (c.item_name === null ? t('ldy.claim.wholeBag') : c.item_name), searchText: (c) => `${c.item_name ?? t('ldy.claim.wholeBag')} ${c.description}`,
+            cell: (c) => <>{c.item_name === null ? t('ldy.claim.wholeBag') : `${c.item_name} × ${c.pieces}`}<span className="block text-xs text-muted-foreground">{c.description}</span></>,
+        },
+        { id: 'kind', label: t('ldy.claim.kind'), value: (c) => c.kind, filter: 'select', filterLabel: (v) => t(`ldy.claim.kind.${v}` as 'ldy.claim.kind.damage'), cell: (c) => t(`ldy.claim.kind.${c.kind}` as 'ldy.claim.kind.damage') },
+        { id: 'claimed', label: t('ldy.claim.claimed'), align: 'right', value: (c) => c.claimed_minor, cell: (c) => money(c.claimed_minor) },
+        {
+            id: 'status', label: t('ldy.claim.status'), value: (c) => c.status, searchText: (c) => `${t(`ldy.claim.status.${c.status}` as 'ldy.claim.status.open')} ${c.decided_by_name ?? ''}`, filter: 'select', filterLabel: (v) => t(`ldy.claim.status.${v}` as 'ldy.claim.status.open'),
+            cell: (c) => <><StatusBadge label={t(`ldy.claim.status.${c.status}` as 'ldy.claim.status.open')} tone={TONE[c.status]} />{c.decided_by_name !== null ? <span className="block text-xs text-muted-foreground">{c.decided_by_name}</span> : null}</>,
+        },
+        {
+            id: 'approved', label: t('ldy.claim.approved'), align: 'right', value: (c) => c.approved_minor, searchText: (c) => c.decision_note ?? '',
+            cell: (c) => <>{c.approved_minor === null ? '—' : money(c.approved_minor)}{c.decision_note !== null ? <span className="block text-xs text-muted-foreground">{c.decision_note}</span> : null}</>,
+        },
+        {
+            id: 'actions', label: t('ldy.actions'),
+            cell: (c) => (
+                <div className="flex flex-wrap gap-2">
+                    {c.has_photo ? <Button asChild size="sm" variant="outline"><a href={`/laundry/claims/${c.id}/photo`} rel="noreferrer" target="_blank">{t('ldy.claim.photo')}</a></Button> : null}
+                    {c.may_decide ? <Button onClick={() => { action.clear(); setInvalid(false); setDeciding({ claim: c, mode: 'approve', amount: String(c.claimed_minor / 100), note: '' }); }} size="sm" type="button">{t('ldy.claim.approve')}</Button> : null}
+                    {c.may_decide ? <Button onClick={() => { action.clear(); setDeciding({ claim: c, mode: 'reject', amount: '', note: '' }); }} size="sm" type="button" variant="outline">{t('ldy.claim.reject')}</Button> : null}
+                </div>
+            ),
+        },
+    ];
+
     return (
         <LaundryShell description={t('ldy.claim.description')} title={t('ldy.claim.title')} wide>
             {action.error !== null && deciding === null ? <ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /> : null}
@@ -86,31 +122,15 @@ export default function LaundryClaimsPage({ order, overview, status }: { order: 
                 <Button type="submit" variant="outline">{t('ldy.claim.filter')}</Button>
             </form>
 
-            {overview.claims.length === 0 ? <EmptyState title={t('ldy.claim.empty')} /> : (
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left text-sm" data-testid="claims">
-                        <thead><tr className="text-xs text-muted-foreground"><th className="py-1 font-medium" scope="col">{t('ldy.claim.number')}</th><th scope="col">{t('ldy.claim.order')}</th><th scope="col">{t('ldy.claim.item')}</th><th scope="col">{t('ldy.claim.kind')}</th><th scope="col">{t('ldy.claim.claimed')}</th><th scope="col">{t('ldy.claim.status')}</th><th scope="col">{t('ldy.claim.approved')}</th><th scope="col" /></tr></thead>
-                        <tbody>{overview.claims.map((c) => (
-                            <tr className="border-t border-border align-top" key={c.id}>
-                                <th className="py-2 font-medium" scope="row">{c.number}<span className="block text-xs font-normal text-muted-foreground">{format.instant(c.created_at + 'Z')} · {c.recorded_by_name}</span></th>
-                                <td><Link className="underline-offset-2 hover:underline" href={`/laundry/orders/${c.order_id}`}>{c.order_number}</Link> · {c.room}</td>
-                                <td>{c.item_name === null ? t('ldy.claim.wholeBag') : `${c.item_name} × ${c.pieces}`}<span className="block text-xs text-muted-foreground">{c.description}</span></td>
-                                <td>{t(`ldy.claim.kind.${c.kind}` as 'ldy.claim.kind.damage')}</td>
-                                <td>{money(c.claimed_minor)}</td>
-                                <td><StatusBadge label={t(`ldy.claim.status.${c.status}` as 'ldy.claim.status.open')} tone={TONE[c.status]} />{c.decided_by_name !== null ? <span className="block text-xs text-muted-foreground">{c.decided_by_name}</span> : null}</td>
-                                <td>{c.approved_minor === null ? '—' : money(c.approved_minor)}{c.decision_note !== null ? <span className="block text-xs text-muted-foreground">{c.decision_note}</span> : null}</td>
-                                <td>
-                                    <div className="flex flex-wrap gap-2">
-                                        {c.has_photo ? <Button asChild size="sm" variant="outline"><a href={`/laundry/claims/${c.id}/photo`} rel="noreferrer" target="_blank">{t('ldy.claim.photo')}</a></Button> : null}
-                                        {c.may_decide ? <Button onClick={() => { action.clear(); setInvalid(false); setDeciding({ claim: c, mode: 'approve', amount: String(c.claimed_minor / 100), note: '' }); }} size="sm" type="button">{t('ldy.claim.approve')}</Button> : null}
-                                        {c.may_decide ? <Button onClick={() => { action.clear(); setDeciding({ claim: c, mode: 'reject', amount: '', note: '' }); }} size="sm" type="button" variant="outline">{t('ldy.claim.reject')}</Button> : null}
-                                    </div>
-                                </td>
-                            </tr>
-                        ))}</tbody>
-                    </table>
-                </div>
-            )}
+            <DataGrid
+                caption={t('ldy.claim.title')}
+                columns={columns}
+                empty={<EmptyState title={t('ldy.claim.empty')} />}
+                getRowId={(c) => c.id}
+                id="ldy.claims"
+                rows={overview.claims}
+                testId="claims"
+            />
 
             {overview.may.record && (
                 <section aria-labelledby="claim-new-h" className="flex max-w-3xl flex-col gap-3 border-t border-border pt-4">

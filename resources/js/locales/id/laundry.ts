@@ -51,6 +51,7 @@ export const laundry = {
     'ldy.order.col.counted': 'Dihitung',
     'ldy.order.col.price': 'Harga',
     'ldy.order.col.total': 'Total',
+    'ldy.actions': 'Tindakan',
     'ldy.order.billable': 'Akan ditagihkan (sebelum service charge dan pajak)',
     'ldy.order.charged': 'Ditagihkan ke folio: {amount} sebelum service charge dan pajak',
     'ldy.order.discrepancy': 'Jumlah berbeda dari daftar: {note}',
