@@ -163,13 +163,13 @@
 | TASK-INV-001 | FR-INV-001 | Inventory | Wajib | REVIEW |
 | TASK-INV-002 | FR-INV-002 | Inventory | Wajib | REVIEW |
 | TASK-INV-003 | FR-INV-003 | Inventory | Wajib | REVIEW |
-| TASK-INV-004 | FR-INV-004 | Inventory | Wajib | TODO |
-| TASK-INV-005 | FR-INV-005 | Inventory | Wajib | TODO |
+| TASK-INV-004 | FR-INV-004 | Inventory | Wajib | IN_PROGRESS |
+| TASK-INV-005 | FR-INV-005 | Inventory | Wajib | REVIEW |
 | TASK-INV-006 | FR-INV-006 | Inventory | Wajib | TODO |
 | TASK-INV-007 | FR-INV-007 | Inventory | Sebaiknya | TODO |
 | TASK-INV-008 | FR-INV-008 | Inventory | Sebaiknya | TODO |
 | TASK-INV-009 | FR-INV-009 | Inventory | Wajib | REVIEW |
-| TASK-INV-010 | FR-INV-010 | Inventory | Wajib | TODO |
+| TASK-INV-010 | FR-INV-010 | Inventory | Wajib | IN_PROGRESS |
 | TASK-INV-011 | FR-INV-011 | Inventory | Wajib | TODO |
 | TASK-INV-012 | FR-INV-012 | Inventory | Wajib | TODO |
 | TASK-PUR-001 | FR-PUR-001 | Purchasing | Wajib | TODO |

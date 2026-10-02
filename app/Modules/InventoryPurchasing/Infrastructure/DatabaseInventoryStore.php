@@ -27,10 +27,10 @@ final readonly class DatabaseInventoryStore implements InventoryStore
         return $this->insert('inventory_categories', [...$row, 'property_id' => $property->toString(), 'is_active' => true, 'lock_version' => 0, 'created_at' => $at, 'updated_at' => $at]);
     }
 
-    public function updateCategory(PropertyId $property, string $id, int $lock, string $name, bool $active, DateTimeImmutable $at): bool
+    public function updateCategory(PropertyId $property, string $id, int $lock, string $name, bool $active, bool $negativeBlocked, DateTimeImmutable $at): bool
     {
         return DB::table('inventory_categories')->where('property_id', $property->toString())->where('id', $id)->where('lock_version', $lock)
-            ->update(['name' => $name, 'is_active' => $active, 'lock_version' => $lock + 1, 'updated_at' => $at]) === 1;
+            ->update(['name' => $name, 'is_active' => $active, 'negative_blocked' => $negativeBlocked, 'lock_version' => $lock + 1, 'updated_at' => $at]) === 1;
     }
 
     public function locations(PropertyId $property): array
@@ -48,10 +48,10 @@ final readonly class DatabaseInventoryStore implements InventoryStore
         return $this->insert('inventory_locations', [...$row, 'property_id' => $property->toString(), 'is_active' => true, 'lock_version' => 0, 'created_at' => $at, 'updated_at' => $at]);
     }
 
-    public function updateLocation(PropertyId $property, string $id, int $lock, string $name, string $kind, bool $active, DateTimeImmutable $at): bool
+    public function updateLocation(PropertyId $property, string $id, int $lock, string $name, string $kind, bool $active, bool $negativeBlocked, DateTimeImmutable $at): bool
     {
         return DB::table('inventory_locations')->where('property_id', $property->toString())->where('id', $id)->where('lock_version', $lock)
-            ->update(['name' => $name, 'kind' => $kind, 'is_active' => $active, 'lock_version' => $lock + 1, 'updated_at' => $at]) === 1;
+            ->update(['name' => $name, 'kind' => $kind, 'is_active' => $active, 'negative_blocked' => $negativeBlocked, 'lock_version' => $lock + 1, 'updated_at' => $at]) === 1;
     }
 
     public function items(PropertyId $property): array
@@ -145,6 +145,66 @@ final readonly class DatabaseInventoryStore implements InventoryStore
     {
         return $this->rows(DB::table('stock_movements')->where('property_id', $property->toString())->when($itemId !== null, static fn ($q) => $q->where('item_id', $itemId))
             ->when($locationId !== null, static fn ($q) => $q->where('location_id', $locationId))->orderByDesc('created_at')->orderByDesc('id')->limit($limit)->get());
+    }
+
+    public function balanceOf(PropertyId $property, string $itemId, string $locationId): int
+    {
+        return (int) DB::table('stock_movements')->where('property_id', $property->toString())->where('item_id', $itemId)->where('location_id', $locationId)->sum('base_qty_milli');
+    }
+
+    public function movementBySource(PropertyId $property, string $sourceType, string $sourceRef, string $itemId, string $locationId): ?array
+    {
+        return $this->row(DB::table('stock_movements')->where('property_id', $property->toString())->where('source_type', $sourceType)->where('source_ref', $sourceRef)->where('item_id', $itemId)->where('location_id', $locationId)->first());
+    }
+
+    public function addTransfer(PropertyId $property, array $row, array $lines, DateTimeImmutable $at): bool
+    {
+        $ok = $this->insert('stock_transfers', [...$row, 'property_id' => $property->toString(), 'status' => 'sent', 'lock_version' => 0, 'created_at' => $at, 'updated_at' => $at]);
+
+        if ($ok) {
+            DB::table('stock_transfer_lines')->insert(array_map(static fn (array $l): array => [...$l, 'transfer_id' => $row['id']], $lines));
+        }
+
+        return $ok;
+    }
+
+    public function transfers(PropertyId $property, ?string $status, int $limit): array
+    {
+        $rows = $this->rows(DB::table('stock_transfers')->where('property_id', $property->toString())->when($status !== null, static fn ($q) => $q->where('status', $status))->orderByDesc('created_at')->orderByDesc('id')->limit($limit)->get());
+
+        return $this->withLines($rows);
+    }
+
+    public function transfer(PropertyId $property, string $id): ?array
+    {
+        $row = $this->row(DB::table('stock_transfers')->where('property_id', $property->toString())->where('id', $id)->first());
+
+        return $row === null ? null : $this->withLines([$row])[0];
+    }
+
+    public function decideTransfer(PropertyId $property, string $id, int $lock, string $status, string $actorId, ?string $note, DateTimeImmutable $at): bool
+    {
+        return DB::table('stock_transfers')->where('property_id', $property->toString())->where('id', $id)->where('lock_version', $lock)->where('status', 'sent')
+            ->update(['status' => $status, 'decided_by' => $actorId, 'decided_at' => $at, 'decision_note' => $note, 'lock_version' => $lock + 1, 'updated_at' => $at]) === 1;
+    }
+
+    /**
+     * @param  list<array<string, mixed>>  $transfers
+     * @return list<array<string, mixed>>
+     */
+    private function withLines(array $transfers): array
+    {
+        if ($transfers === []) {
+            return [];
+        }
+
+        $lines = [];
+
+        foreach (DB::table('stock_transfer_lines')->whereIn('transfer_id', array_column($transfers, 'id'))->orderBy('id')->get() as $l) {
+            $lines[$l->transfer_id][] = (array) $l;
+        }
+
+        return array_map(static fn (array $t): array => [...$t, 'lines' => $lines[$t['id']] ?? []], $transfers);
     }
 
     /** @param array<string, mixed> $row */

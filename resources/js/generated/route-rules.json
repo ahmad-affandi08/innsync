@@ -136,6 +136,12 @@
             "location"
         ]
     },
+    "GET /inventory/transfers": {
+        "required": [],
+        "declared": [
+            "status"
+        ]
+    },
     "GET /laundry/claims": {
         "required": [],
         "declared": [
@@ -1421,7 +1427,8 @@
         ],
         "declared": [
             "code",
-            "name"
+            "name",
+            "negative_blocked"
         ]
     },
     "POST /inventory/categories/{id}": {
@@ -1433,7 +1440,8 @@
         "declared": [
             "active",
             "lock_version",
-            "name"
+            "name",
+            "negative_blocked"
         ]
     },
     "POST /inventory/items": {
@@ -1489,7 +1497,8 @@
         "declared": [
             "code",
             "kind",
-            "name"
+            "name",
+            "negative_blocked"
         ]
     },
     "POST /inventory/locations/{id}": {
@@ -1503,7 +1512,8 @@
             "active",
             "kind",
             "lock_version",
-            "name"
+            "name",
+            "negative_blocked"
         ]
     },
     "POST /inventory/stock-limits": {
@@ -1520,6 +1530,26 @@
             "min"
         ]
     },
+    "POST /inventory/stock/movements": {
+        "required": [
+            "item_id",
+            "kind",
+            "location_id",
+            "quantity",
+            "unit"
+        ],
+        "declared": [
+            "item_id",
+            "kind",
+            "location_id",
+            "negative_reason",
+            "note",
+            "quantity",
+            "reason_code",
+            "reference",
+            "unit"
+        ]
+    },
     "POST /inventory/stock/opening": {
         "required": [
             "item_id",
@@ -1534,6 +1564,51 @@
             "quantity",
             "reference",
             "unit"
+        ]
+    },
+    "POST /inventory/transfers": {
+        "required": [
+            "from_location_id",
+            "lines",
+            "lines.*.item_id",
+            "lines.*.quantity",
+            "lines.*.unit",
+            "to_location_id"
+        ],
+        "declared": [
+            "from_location_id",
+            "lines",
+            "lines.*.item_id",
+            "lines.*.quantity",
+            "lines.*.unit",
+            "note",
+            "to_location_id"
+        ]
+    },
+    "POST /inventory/transfers/{id}/cancel": {
+        "required": [
+            "lock_version"
+        ],
+        "declared": [
+            "lock_version"
+        ]
+    },
+    "POST /inventory/transfers/{id}/receive": {
+        "required": [
+            "lock_version"
+        ],
+        "declared": [
+            "lock_version"
+        ]
+    },
+    "POST /inventory/transfers/{id}/reject": {
+        "required": [
+            "lock_version",
+            "note"
+        ],
+        "declared": [
+            "lock_version",
+            "note"
         ]
     },
     "POST /laundry/claims": {

@@ -43,30 +43,30 @@ final readonly class InventoryCatalogController
 
     public function storeCategory(Request $request): JsonResponse
     {
-        $data = $request->validate(['code' => ['required', 'string', 'max:12'], 'name' => ['required', 'string', 'max:80']]);
+        $data = $request->validate(['code' => ['required', 'string', 'max:12'], 'name' => ['required', 'string', 'max:80'], 'negative_blocked' => ['nullable', 'boolean']]);
 
-        return $this->json(['category' => $this->catalog->createCategory($this->property->current(), $this->actor($request), $data['code'], $data['name'])], 201);
+        return $this->json(['category' => $this->catalog->createCategory($this->property->current(), $this->actor($request), $data['code'], $data['name'], (bool) ($data['negative_blocked'] ?? false))], 201);
     }
 
     public function updateCategory(Request $request, string $id): JsonResponse
     {
-        $data = $request->validate(['name' => ['required', 'string', 'max:80'], 'active' => ['required', 'boolean'], 'lock_version' => ['required', 'integer', 'min:0']]);
+        $data = $request->validate(['name' => ['required', 'string', 'max:80'], 'active' => ['required', 'boolean'], 'negative_blocked' => ['nullable', 'boolean'], 'lock_version' => ['required', 'integer', 'min:0']]);
 
-        return $this->json(['category' => $this->catalog->updateCategory($this->property->current(), $this->actor($request), $id, $data['name'], (bool) $data['active'], (int) $data['lock_version'])]);
+        return $this->json(['category' => $this->catalog->updateCategory($this->property->current(), $this->actor($request), $id, $data['name'], (bool) $data['active'], (int) $data['lock_version'], isset($data['negative_blocked']) ? (bool) $data['negative_blocked'] : null)]);
     }
 
     public function storeLocation(Request $request): JsonResponse
     {
-        $data = $request->validate(['code' => ['required', 'string', 'max:12'], 'name' => ['required', 'string', 'max:80'], 'kind' => ['required', 'string', 'max:12']]);
+        $data = $request->validate(['code' => ['required', 'string', 'max:12'], 'name' => ['required', 'string', 'max:80'], 'kind' => ['required', 'string', 'max:12'], 'negative_blocked' => ['nullable', 'boolean']]);
 
-        return $this->json(['location' => $this->catalog->createLocation($this->property->current(), $this->actor($request), $data['code'], $data['name'], $data['kind'])], 201);
+        return $this->json(['location' => $this->catalog->createLocation($this->property->current(), $this->actor($request), $data['code'], $data['name'], $data['kind'], (bool) ($data['negative_blocked'] ?? false))], 201);
     }
 
     public function updateLocation(Request $request, string $id): JsonResponse
     {
-        $data = $request->validate(['name' => ['required', 'string', 'max:80'], 'kind' => ['required', 'string', 'max:12'], 'active' => ['required', 'boolean'], 'lock_version' => ['required', 'integer', 'min:0']]);
+        $data = $request->validate(['name' => ['required', 'string', 'max:80'], 'kind' => ['required', 'string', 'max:12'], 'active' => ['required', 'boolean'], 'negative_blocked' => ['nullable', 'boolean'], 'lock_version' => ['required', 'integer', 'min:0']]);
 
-        return $this->json(['location' => $this->catalog->updateLocation($this->property->current(), $this->actor($request), $id, $data['name'], $data['kind'], (bool) $data['active'], (int) $data['lock_version'])]);
+        return $this->json(['location' => $this->catalog->updateLocation($this->property->current(), $this->actor($request), $id, $data['name'], $data['kind'], (bool) $data['active'], (int) $data['lock_version'], isset($data['negative_blocked']) ? (bool) $data['negative_blocked'] : null)]);
     }
 
     public function storeItem(Request $request): JsonResponse

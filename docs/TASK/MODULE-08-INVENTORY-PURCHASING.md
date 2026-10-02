@@ -20,13 +20,13 @@
 | TASK-INV-001 | FR-INV-001 | Wajib | Mengelola data induk barang: kode, nama, kategori, satuan dasar, konversi satuan (dus ke botol, kilogram ke gram), dan department pemilik. | REVIEW |
 | TASK-INV-002 | FR-INV-002 | Wajib | Mengelola beberapa lokasi penyimpanan: gudang utama, gudang bar, gudang dapur, gudang housekeeping, gudang teknik, dan galley. | REVIEW |
 | TASK-INV-003 | FR-INV-003 | Wajib | Menetapkan stok minimum dan stok maksimum per barang per lokasi; pelanggaran batas minimum otomatis muncul sebagai peringatan pada dashboard. | REVIEW |
-| TASK-INV-004 | FR-INV-004 | Wajib | Mencatat mutasi stok otomatis dari penjualan POS, pemakaian dapur, pemakaian housekeeping, dan pemakaian teknik. | TODO |
-| TASK-INV-005 | FR-INV-005 | Wajib | Melakukan pemindahan barang antar gudang dengan dokumen serah terima dan konfirmasi penerima. | TODO |
+| TASK-INV-004 | FR-INV-004 | Wajib | Mencatat mutasi stok otomatis dari penjualan POS, pemakaian dapur, pemakaian housekeeping, dan pemakaian teknik. | IN_PROGRESS |
+| TASK-INV-005 | FR-INV-005 | Wajib | Melakukan pemindahan barang antar gudang dengan dokumen serah terima dan konfirmasi penerima. | REVIEW |
 | TASK-INV-006 | FR-INV-006 | Wajib | Melakukan stock opname terjadwal maupun mendadak, membandingkan stok fisik dengan stok sistem, dan menghasilkan berita acara selisih beserta nilai kerugian. | TODO |
 | TASK-INV-007 | FR-INV-007 | Sebaiknya | Menghitung nilai persediaan menggunakan metode rata-rata bergerak dan menyajikannya sebagai laporan nilai persediaan per tanggal. | TODO |
 | TASK-INV-008 | FR-INV-008 | Sebaiknya | Mengelola tanggal kedaluwarsa dan nomor batch untuk barang konsumsi. | TODO |
 | TASK-INV-009 | FR-INV-009 | Wajib | Konversi satuan bersifat berversi dan tidak boleh mengubah histori transaksi; setiap mutasi menyimpan kuantitas satuan transaksi dan ekuivalen satuan dasar. | REVIEW |
-| TASK-INV-010 | FR-INV-010 | Wajib | Stock adjustment, write-off, dan pembukaan stok negatif memerlukan reason code dan otorisasi sesuai threshold. Kebijakan stok negatif dapat diblokir per kategori/lokasi. | TODO |
+| TASK-INV-010 | FR-INV-010 | Wajib | Stock adjustment, write-off, dan pembukaan stok negatif memerlukan reason code dan otorisasi sesuai threshold. Kebijakan stok negatif dapat diblokir per kategori/lokasi. | IN_PROGRESS |
 | TASK-INV-011 | FR-INV-011 | Wajib | Mendukung retur ke pemasok dan retur antar gudang dengan dokumen referensi sehingga stok, hutang/kredit, dan histori barang tetap dapat direkonsiliasi. | TODO |
 | TASK-INV-012 | FR-INV-012 | Wajib | Stock opname menggunakan snapshot waktu mulai; mutasi selama opname tetap tercatat dan sistem menghitung expected quantity yang konsisten untuk mencegah selisih semu. | TODO |
 | TASK-PUR-001 | FR-PUR-001 | Wajib | Setiap department mengajukan permintaan pembelian (purchase request) berisi barang, jumlah, alasan, dan tingkat urgensi. | TODO |
@@ -67,3 +67,17 @@
   - **Minimum and maximum** per item and location (maximum optional); below the minimum the stock screen, the home page and the **dashboard alert** `stock_below_minimum` show it (FR-INV-003); above the maximum is shown as a warning on the stock screen.
 - Permissions: `inventory.catalog.manage` (items, locations, categories, units, limits), `inventory.catalog.view`, `inventory.stock.view`, `inventory.stock.post`.
 - Evidence: `tests/Unit/Modules/InventoryPurchasing/StockQuantityTest.php`, `tests/Feature/InventoryPurchasing/InventoryHttpTest.php` (conversion versions never edited, opening stock once and with its factor kept, append-only triggers, limits and status, dashboard alert, permissions, property scope), `resources/js/modules/inventory-purchasing/lib/quantity.test.ts`, and a browser run of the whole flow in English and Indonesian.
+
+### Slice 2 (2026-10-02): stock movements, negative-stock policy, transfers with hand-over
+
+- Status: `TASK-INV-005` is `REVIEW`. `TASK-INV-004` and `TASK-INV-010` are `IN_PROGRESS`: FR-INV-004 still needs its automatic feeders (POS sales, kitchen, housekeeping and engineering usage) that depend on modules not built yet; FR-INV-010 still needs threshold-based approval, which waits for valuation (FR-INV-007). NFR/BR: BR-005, BR-007, append-only ledger, idempotency, audit, optimistic locking.
+- Context: migration 53, `StockPoster` (the single place that writes a movement), `StockMovementService` (receipt, issue, adjustment, write-off), `StockTransferService`, screens Stock (movement dialog) and Transfers, and the negative-stock flag on categories and locations.
+- Choices recorded as configurable baselines:
+  - **Movement kinds**: opening, receipt, adjustment in (positive); issue, adjustment out, write-off, transfer out (negative); transfer in (positive). Outflows are stored negative; a database constraint checks the sign per kind and that adjustments and write-offs carry a reason code.
+  - **Reason codes** are a fixed baseline list: adjustment (count correction, found, system correction, other), write-off (damaged, expired, lost, spoiled, other); issues carry the receiving department (the fixed department list).
+  - **Negative stock**: a category or a location can be marked `negative_blocked`, which is a hard stop. Otherwise a posting that would go below zero is refused unless the person holds `inventory.stock.negative` and gives a reason; the reason is kept on the movement. Transfers never go below zero.
+  - **Source documents (idempotency)**: a movement from another document (source type + reference) can be posted once per item and location; a repeat returns the first movement instead of posting twice. Manual postings also accept an idempotency key.
+  - **Adjustments and write-offs** need `inventory.stock.adjust` and a reason code. Approval by value threshold is deferred until valuation exists (FR-INV-007); until then every adjustment is audited and attributable.
+  - **Transfers (FR-INV-005)**: the sender creates a transfer document (`TRF-nnnnnn`) with lines in any unit; **stock moves only when the receiver confirms**, as two movements (transfer out, transfer in) in one transaction. The sender cannot confirm their own transfer (two-person rule); the receiver may reject with a note and the sender may cancel while it waits. A decided transfer is immutable (triggers).
+- Permissions: `inventory.stock.adjust`, `inventory.stock.negative`, `inventory.transfer.send`, `inventory.transfer.receive`, plus the slice 1 ones.
+- Evidence: `tests/Feature/InventoryPurchasing/StockMovementHttpTest.php` (13 tests: sign and reason rules, negative block and override, source idempotency, units and factor kept, two-person transfers, reject/cancel, atomic movement pair, permissions, property scope) and a browser run through movements, override, adjustment, write-off and a two-user transfer in both languages.

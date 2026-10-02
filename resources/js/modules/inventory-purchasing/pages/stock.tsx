@@ -1,5 +1,5 @@
-import { router } from '@inertiajs/react';
-import { useState } from 'react';
+import { Link, router } from '@inertiajs/react';
+import { useMemo, useState } from 'react';
 
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -13,6 +13,7 @@ import { Select } from '@/components/ui/select';
 import { StatusBadge, type StatusTone } from '@/components/ui/status-badge';
 import { InventoryShell } from '@/modules/inventory-purchasing/components/inventory-shell';
 import { formatMilli, parseMilli, plainMilli, toBaseMilli } from '@/modules/inventory-purchasing/lib/quantity';
+import { newIdempotencyKey } from '@/shared/api/http';
 import { useServerAction } from '@/shared/api/use-server-action';
 import { useFormatters, useTranslation } from '@/shared/i18n/i18n';
 import { useErrorStateCopy } from '@/shared/i18n/use-ui-copy';
@@ -22,10 +23,13 @@ type Row = {
     item_id: string; item_code: string; item_name: string; category_name: string; department: string; base_unit: string; is_active: boolean;
     location_id: string; location_code: string; location_name: string; balance_milli: number; min_milli: number | null; max_milli: number | null; limit_lock: number | null; status: string; last_at: string | null;
 };
-type Movement = { id: string; kind: string; item_code: string; item_name: string; location_code: string; unit: string; unit_qty_milli: number; factor_milli: number; base_qty_milli: number; base_unit: string; reference: string | null; note: string | null; business_date: string; created_at: string };
+type Movement = { id: string; kind: string; reason_code: string | null; override_reason: string | null; item_code: string; item_name: string; location_code: string; unit: string; unit_qty_milli: number; factor_milli: number; base_qty_milli: number; base_unit: string; reference: string | null; note: string | null; business_date: string; created_at: string };
 type CatalogItem = { id: string; code: string; name: string; base_unit: string; is_active: boolean; units: { unit: string; factor_milli: number }[] };
 type Catalog = { items: CatalogItem[]; locations: { id: string; code: string; name: string; is_active: boolean }[]; may: { manage: boolean; stock: boolean } };
-type Position = { rows: Row[]; below_minimum: number; may: { post: boolean; limits: boolean } };
+type Position = { reasons: { adjust: string[]; write_off: string[]; departments: string[] }; rows: Row[]; below_minimum: number; may: { post: boolean; adjust: boolean; negative: boolean; transfer: boolean; limits: boolean } };
+type Move = { kind: string; item_id: string; location_id: string; unit: string; quantity: string; reason_code: string; reference: string; note: string; negative_reason: string };
+
+const OUTFLOWS = ['issue', 'adjustment_out', 'write_off'];
 
 const tone: Record<string, StatusTone> = { below_minimum: 'danger', above_maximum: 'warning', ok: 'success' };
 
@@ -34,37 +38,46 @@ export default function StockPage({ position, movements, catalog, filters }: { p
     const format = useFormatters();
     const errorCopy = useErrorStateCopy();
     const action = useServerAction();
-    const [opening, setOpening] = useState<{ item_id: string; location_id: string; unit: string; quantity: string; reference: string; note: string } | null>(null);
+    const [move, setMove] = useState<Move | null>(null);
     const [limits, setLimits] = useState<{ row: Row; min: string; max: string } | null>(null);
     const [posted, setPosted] = useState(false);
     const reload = ['position', 'movements'];
     const qty = (n: number) => formatMilli(n, locale);
+    const kinds = [...(position.may.post ? ['opening', 'receipt', 'issue'] : []), ...(position.may.adjust ? ['adjustment_in', 'adjustment_out', 'write_off'] : [])];
+    const kindLabel = (k: string) => t(`inv.stock.kind.${k}` as MessageKey);
+    const intent = useMemo(() => newIdempotencyKey(), [JSON.stringify(move)]);
 
     function go(next: { location: string; item: string }) {
         router.get('/inventory/stock', { ...(next.location ? { location: next.location } : {}), ...(next.item ? { item: next.item } : {}) }, { preserveScroll: true });
     }
 
-    function openOpening() {
+    function openMove() {
         action.clear();
         setPosted(false);
         const item = catalog.items.find((i) => i.is_active);
-        setOpening({ item_id: item?.id ?? '', location_id: catalog.locations.find((l) => l.is_active)?.id ?? '', unit: item?.base_unit ?? '', quantity: '', reference: '', note: '' });
+        setMove({ kind: kinds[0] ?? 'receipt', item_id: item?.id ?? '', location_id: catalog.locations.find((l) => l.is_active)?.id ?? '', unit: item?.base_unit ?? '', quantity: '', reason_code: '', reference: '', note: '', negative_reason: '' });
     }
 
-    const openingItem = opening === null ? null : catalog.items.find((i) => i.id === opening.item_id) ?? null;
-    const factorOf = (unit: string) => (openingItem === null ? null : unit === openingItem.base_unit ? 1000 : (openingItem.units.find((u) => u.unit === unit)?.factor_milli ?? null));
+    const moveItem = move === null ? null : catalog.items.find((i) => i.id === move.item_id) ?? null;
+    const factorOf = (unit: string) => (moveItem === null ? null : unit === moveItem.base_unit ? 1000 : (moveItem.units.find((u) => u.unit === unit)?.factor_milli ?? null));
     const preview = (() => {
-        if (opening === null || openingItem === null) return null;
-        const q = parseMilli(opening.quantity);
-        const f = factorOf(opening.unit);
+        if (move === null || moveItem === null) return null;
+        const q = parseMilli(move.quantity);
+        const f = factorOf(move.unit);
 
         return q === null || f === null ? null : toBaseMilli(q, f);
     })();
+    const reasons = move === null ? [] : move.kind === 'issue' ? position.reasons.departments : move.kind === 'write_off' ? position.reasons.write_off : move.kind.startsWith('adjustment') ? position.reasons.adjust : [];
+    const reasonLabel = (code: string) => t((move?.kind === 'issue' ? `inv.dept.${code}` : `inv.reason.${code}`) as MessageKey);
 
-    async function postOpening() {
-        if (opening === null) return;
-        const done = await action.run('/inventory/stock/opening', { body: { item_id: opening.item_id, location_id: opening.location_id, unit: opening.unit, quantity: opening.quantity, reference: opening.reference || null, note: opening.note || null }, reload });
-        if (done !== null) { setPosted(true); setOpening(null); }
+    async function postMove() {
+        if (move === null) return;
+        const done = await action.run('/inventory/stock/movements', {
+            body: { kind: move.kind, item_id: move.item_id, location_id: move.location_id, unit: move.unit, quantity: move.quantity, reason_code: move.reason_code || null, reference: move.reference || null, note: move.note || null, negative_reason: move.negative_reason || null },
+            idempotencyKey: intent,
+            reload,
+        });
+        if (done !== null) { setPosted(true); setMove(null); }
     }
 
     async function saveLimits() {
@@ -87,7 +100,8 @@ export default function StockPage({ position, movements, catalog, filters }: { p
         { id: 'date', label: t('inv.col.date'), value: (m) => m.business_date, rowHeader: true, cell: (m) => format.date(m.business_date) },
         { id: 'item', label: t('inv.col.item'), value: (m) => m.item_code, searchText: (m) => `${m.item_code} ${m.item_name}`, cell: (m) => `${m.item_code} · ${m.item_name}` },
         { id: 'location', label: t('inv.col.location'), value: (m) => m.location_code, filter: 'select' },
-        { id: 'kind', label: t('inv.col.kind'), value: (m) => m.kind, filter: 'select', filterLabel: (v) => t(`inv.stock.kind.${v}` as MessageKey), cell: (m) => t(`inv.stock.kind.${m.kind}` as MessageKey) },
+        { id: 'kind', label: t('inv.col.kind'), value: (m) => m.kind, filter: 'select', filterLabel: kindLabel, cell: (m) => kindLabel(m.kind) },
+        { id: 'reasonCode', label: t('inv.col.reasonCode'), value: (m) => m.reason_code ?? '', hidden: true },
         { id: 'qty', label: t('inv.col.quantity'), align: 'right', value: (m) => m.unit_qty_milli, cell: (m) => `${qty(m.unit_qty_milli)} ${m.unit}` },
         { id: 'base', label: t('inv.col.base'), align: 'right', value: (m) => m.base_qty_milli, cell: (m) => `${qty(m.base_qty_milli)} ${m.base_unit}` },
         { id: 'reference', label: t('inv.col.reference'), value: (m) => m.reference ?? '', hidden: true },
@@ -95,7 +109,7 @@ export default function StockPage({ position, movements, catalog, filters }: { p
     ];
 
     return (
-        <InventoryShell actions={position.may.post ? <Button onClick={openOpening} type="button">{t('inv.stock.opening')}</Button> : undefined} description={t('inv.stock.description')} title={t('inv.stock.title')} wide>
+        <InventoryShell actions={<>{position.may.transfer ? <Button asChild variant="outline"><Link href="/inventory/transfers">{t('inv.stock.transfer')}</Link></Button> : null}{kinds.length > 0 ? <Button onClick={openMove} type="button">{t('inv.stock.post')}</Button> : null}</>} description={t('inv.stock.description')} title={t('inv.stock.title')} wide>
             {position.below_minimum > 0 ? <Alert title={t('inv.stock.belowCount', { count: position.below_minimum })} tone="warning" /> : null}
             {posted ? <Alert title={t('inv.opening.posted')} tone="success" /> : null}
 
@@ -119,42 +133,66 @@ export default function StockPage({ position, movements, catalog, filters }: { p
 
             <Dialog
                 footer={<>
-                    <Button disabled={action.busy} onClick={() => setOpening(null)} type="button" variant="outline">{t('ui.dialog.cancel')}</Button>
-                    <Button loading={action.busy} onClick={() => void postOpening()} type="button">{t('inv.action.save')}</Button>
+                    <Button disabled={action.busy} onClick={() => setMove(null)} type="button" variant="outline">{t('ui.dialog.cancel')}</Button>
+                    <Button loading={action.busy} onClick={() => void postMove()} type="button">{t('inv.action.save')}</Button>
                 </>}
-                onClose={() => setOpening(null)}
-                open={opening !== null}
-                title={t('inv.opening.title')}
+                onClose={() => setMove(null)}
+                open={move !== null}
+                title={t('inv.move.title')}
             >
-                {opening !== null && (
+                {move !== null && (
                     <div className="grid gap-3 sm:grid-cols-2">
-                        <p className="text-sm text-muted-foreground sm:col-span-2">{t('inv.opening.hint')}</p>
+                        {move.kind === 'opening' ? <p className="text-sm text-muted-foreground sm:col-span-2">{t('inv.opening.hint')}</p> : null}
                         {action.error !== null ? <div className="sm:col-span-2"><ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /></div> : null}
+                        <div className="sm:col-span-2">
+                            <FormField error={action.fieldError('kind')} field="kind" label={t('inv.col.kind')}>
+                                <Select onChange={(e) => setMove({ ...move, kind: e.target.value, reason_code: '' })} searchable={false} value={move.kind}>
+                                    {kinds.map((k) => <option key={k} value={k}>{kindLabel(k)}</option>)}
+                                </Select>
+                            </FormField>
+                        </div>
                         <FormField error={action.fieldError('item_id')} field="item_id" label={t('inv.opening.item')}>
-                            <Select onChange={(e) => { const next = catalog.items.find((i) => i.id === e.target.value); setOpening({ ...opening, item_id: e.target.value, unit: next?.base_unit ?? '' }); }} value={opening.item_id}>
+                            <Select onChange={(e) => { const next = catalog.items.find((i) => i.id === e.target.value); setMove({ ...move, item_id: e.target.value, unit: next?.base_unit ?? '' }); }} value={move.item_id}>
                                 {catalog.items.filter((i) => i.is_active).map((i) => <option key={i.id} value={i.id}>{i.code} · {i.name}</option>)}
                             </Select>
                         </FormField>
                         <FormField error={action.fieldError('location_id')} field="location_id" label={t('inv.opening.location')}>
-                            <Select onChange={(e) => setOpening({ ...opening, location_id: e.target.value })} value={opening.location_id}>
+                            <Select onChange={(e) => setMove({ ...move, location_id: e.target.value })} value={move.location_id}>
                                 {catalog.locations.filter((l) => l.is_active).map((l) => <option key={l.id} value={l.id}>{l.code} · {l.name}</option>)}
                             </Select>
                         </FormField>
                         <FormField error={action.fieldError('quantity')} field="quantity" label={t('inv.opening.quantity')}>
-                            <Input inputMode="decimal" onChange={(e) => setOpening({ ...opening, quantity: e.target.value })} value={opening.quantity} />
+                            <Input inputMode="decimal" onChange={(e) => setMove({ ...move, quantity: e.target.value })} value={move.quantity} />
                         </FormField>
                         <FormField error={action.fieldError('unit')} field="unit" label={t('inv.opening.unit')}>
-                            <Select onChange={(e) => setOpening({ ...opening, unit: e.target.value })} value={opening.unit}>
-                                {openingItem === null ? null : [openingItem.base_unit, ...openingItem.units.map((u) => u.unit)].map((u) => <option key={u} value={u}>{u}</option>)}
+                            <Select onChange={(e) => setMove({ ...move, unit: e.target.value })} value={move.unit}>
+                                {moveItem === null ? null : [moveItem.base_unit, ...moveItem.units.map((u) => u.unit)].map((u) => <option key={u} value={u}>{u}</option>)}
                             </Select>
                         </FormField>
-                        {preview !== null && openingItem !== null ? <p className="text-sm sm:col-span-2" data-testid="opening-preview">{t('inv.opening.equals', { qty: qty(preview), unit: openingItem.base_unit })}</p> : null}
+                        {preview !== null && moveItem !== null ? <p className="text-sm sm:col-span-2" data-testid="opening-preview">{t(OUTFLOWS.includes(move.kind) ? 'inv.move.out' : 'inv.move.in', { qty: qty(preview), unit: moveItem.base_unit })}</p> : null}
+                        {reasons.length > 0 ? (
+                            <div className="sm:col-span-2">
+                                <FormField error={action.fieldError('reason_code')} field="reason_code" label={t(move.kind === 'issue' ? 'inv.move.department' : 'inv.move.reason')}>
+                                    <Select onChange={(e) => setMove({ ...move, reason_code: e.target.value })} value={move.reason_code}>
+                                        <option value="">—</option>
+                                        {reasons.map((c) => <option key={c} value={c}>{reasonLabel(c)}</option>)}
+                                    </Select>
+                                </FormField>
+                            </div>
+                        ) : null}
                         <FormField error={action.fieldError('reference')} field="reference" label={t('inv.opening.reference')}>
-                            <Input maxLength={40} onChange={(e) => setOpening({ ...opening, reference: e.target.value })} value={opening.reference} />
+                            <Input maxLength={40} onChange={(e) => setMove({ ...move, reference: e.target.value })} value={move.reference} />
                         </FormField>
                         <FormField error={action.fieldError('note')} field="note" label={t('inv.opening.note')}>
-                            <Input maxLength={200} onChange={(e) => setOpening({ ...opening, note: e.target.value })} value={opening.note} />
+                            <Input maxLength={200} onChange={(e) => setMove({ ...move, note: e.target.value })} value={move.note} />
                         </FormField>
+                        {OUTFLOWS.includes(move.kind) && position.may.negative ? (
+                            <div className="sm:col-span-2">
+                                <FormField error={action.fieldError('negative_reason')} field="negative_reason" hint={t('inv.move.negativeHint')} label={t('inv.move.negative')}>
+                                    <Input maxLength={200} onChange={(e) => setMove({ ...move, negative_reason: e.target.value })} value={move.negative_reason} />
+                                </FormField>
+                            </div>
+                        ) : null}
                     </div>
                 )}
             </Dialog>

@@ -35,6 +35,7 @@ use App\Modules\IdentityAccess\Presentation\Http\Controllers\PropertySelectionCo
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\ReconfirmController;
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\UserSessionController;
 use App\Modules\InventoryPurchasing\Presentation\Http\Controllers\InventoryCatalogController;
+use App\Modules\InventoryPurchasing\Presentation\Http\Controllers\StockMovementController;
 use App\Modules\Laundry\Presentation\Http\Controllers\ClaimController;
 use App\Modules\Laundry\Presentation\Http\Controllers\LaundryController;
 use App\Modules\Property\Presentation\Http\Controllers\BookingPolicyController;
@@ -374,6 +375,12 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
     Route::post('/items/{id}/units', [InventoryCatalogController::class, 'addConversion'])->where('id', $id)->name('inventory.items.units');
     Route::post('/stock-limits', [InventoryCatalogController::class, 'setLimits'])->name('inventory.limits');
     Route::post('/stock/opening', [InventoryCatalogController::class, 'postOpening'])->name('inventory.stock.opening');
+    Route::post('/stock/movements', [StockMovementController::class, 'store'])->middleware(['idempotent'])->name('inventory.stock.movements');
+    Route::get('/transfers', [StockMovementController::class, 'transfersPage'])->name('inventory.transfers');
+    Route::post('/transfers', [StockMovementController::class, 'send'])->middleware(['idempotent'])->name('inventory.transfers.send');
+    Route::post('/transfers/{id}/receive', [StockMovementController::class, 'receive'])->where('id', $id)->name('inventory.transfers.receive');
+    Route::post('/transfers/{id}/reject', [StockMovementController::class, 'reject'])->where('id', $id)->name('inventory.transfers.reject');
+    Route::post('/transfers/{id}/cancel', [StockMovementController::class, 'cancel'])->where('id', $id)->name('inventory.transfers.cancel');
 });
 
 // Guest laundry (FR-HK-020 to FR-HK-024, FR-LDY-001 to FR-LDY-004, FR-LDY-011): hand-over by housekeeping, counting and processing by

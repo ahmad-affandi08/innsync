@@ -5,22 +5,14 @@ declare(strict_types=1);
 namespace App\Modules\InventoryPurchasing\Application;
 
 use App\Modules\InventoryPurchasing\Domain\StockQuantity;
-use App\Modules\Property\Application\Settings\BusinessDateProvider;
-use App\Shared\Application\Audit\AuditEntry;
-use App\Shared\Application\Audit\AuditTrail;
 use App\Shared\Application\Errors\Refusal;
-use App\Shared\Application\Identifiers\IdentifierGenerator;
-use App\Shared\Application\Outbox\OutboxEvent;
-use App\Shared\Application\Outbox\OutboxPublisher;
 use App\Shared\Application\Security\PermissionChecker;
 use App\Shared\Application\Tenancy\PropertyContext;
 use App\Shared\Application\Tenancy\PropertyScopeViolation;
-use App\Shared\Application\Time\Clock;
 use App\Shared\Application\Transactions\TransactionRunner;
 use App\Shared\Domain\Tenancy\PropertyId;
 use DateTimeImmutable;
 use DateTimeZone;
-use InvalidArgumentException;
 
 /**
  * The stock ledger (FR-INV-001, -003, -009). A movement is appended and never changed; it keeps the quantity in the unit it was posted in, the
@@ -36,18 +28,14 @@ final readonly class StockService
 
     public function __construct(
         private InventoryStore $inventory,
-        private BusinessDateProvider $businessDate,
+        private StockPoster $poster,
         private PermissionChecker $permissions,
         private TransactionRunner $transactions,
-        private AuditTrail $audit,
-        private OutboxPublisher $outbox,
-        private IdentifierGenerator $ids,
-        private Clock $clock,
         private PropertyContext $property,
     ) {}
 
     /**
-     * @return array{rows: list<array<string, mixed>>, below_minimum: int, may: array{post: bool, limits: bool}}
+     * @return array{reasons: array<string, list<string>>, rows: list<array<string, mixed>>, below_minimum: int, may: array{post: bool, adjust: bool, negative: bool, transfer: bool, limits: bool}}
      */
     public function position(PropertyId $property, string $actorId, ?string $locationId, ?string $itemId): array
     {
@@ -80,9 +68,14 @@ final readonly class StockService
         usort($rows, static fn (array $a, array $b): int => [$a['item_code'], $a['location_code']] <=> [$b['item_code'], $b['location_code']]);
 
         return [
+            'reasons' => ['adjust' => StockMovementService::ADJUST_REASONS, 'write_off' => StockMovementService::WRITE_OFF_REASONS, 'departments' => InventoryCatalogService::DEPARTMENTS],
             'rows' => $rows,
             'below_minimum' => count(array_filter($rows, static fn (array $r): bool => $r['status'] === 'below_minimum' && $r['is_active'])),
-            'may' => ['post' => $this->may($property, $actorId, self::POST_PERMISSION), 'limits' => $this->may($property, $actorId, InventoryCatalogService::MANAGE_PERMISSION)],
+            'may' => [
+                'post' => $this->may($property, $actorId, self::POST_PERMISSION), 'adjust' => $this->may($property, $actorId, StockMovementService::ADJUST_PERMISSION),
+                'negative' => $this->may($property, $actorId, StockPoster::NEGATIVE_PERMISSION), 'transfer' => $this->may($property, $actorId, StockTransferService::SEND_PERMISSION),
+                'limits' => $this->may($property, $actorId, InventoryCatalogService::MANAGE_PERMISSION),
+            ],
         ];
     }
 
@@ -102,7 +95,7 @@ final readonly class StockService
         return array_map(static fn (array $m): array => [
             'id' => $m['id'], 'kind' => $m['kind'], 'item_code' => $items[$m['item_id']]['code'] ?? '', 'item_name' => $items[$m['item_id']]['name'] ?? '', 'location_code' => $locations[$m['location_id']]['code'] ?? '',
             'unit' => $m['unit'], 'unit_qty_milli' => (int) $m['unit_qty_milli'], 'factor_milli' => (int) $m['factor_milli'], 'base_qty_milli' => (int) $m['base_qty_milli'],
-            'base_unit' => $items[$m['item_id']]['base_unit'] ?? '', 'reference' => $m['reference'], 'note' => $m['note'], 'business_date' => substr((string) $m['business_date'], 0, 10), 'created_at' => (new DateTimeImmutable((string) $m['created_at'], new DateTimeZone('UTC')))->format('Y-m-d\TH:i:s\Z'),
+            'base_unit' => $items[$m['item_id']]['base_unit'] ?? '', 'reason_code' => $m['reason_code'], 'override_reason' => $m['override_reason'], 'reference' => $m['reference'], 'note' => $m['note'], 'business_date' => substr((string) $m['business_date'], 0, 10), 'created_at' => (new DateTimeImmutable((string) $m['created_at'], new DateTimeZone('UTC')))->format('Y-m-d\TH:i:s\Z'),
         ], $this->inventory->movements($property, $itemId === null || $itemId === '' ? null : strtolower($itemId), $locationId === null || $locationId === '' ? null : strtolower($locationId), max(1, min(500, $limit))));
     }
 
@@ -140,44 +133,15 @@ final readonly class StockService
         }
 
         $unit = strtoupper(trim($unit));
-        $id = $this->ids->next();
-        $actor = strtolower($actorId);
 
-        $movement = $this->transactions->run(function () use ($property, $actor, $item, $location, $unit, $qty, $reference, $note, $id): array {
+        $movement = $this->transactions->run(function () use ($property, $actorId, $item, $location, $unit, $qty, $reference, $note): array {
             $this->inventory->lockItem($property, $item['id']);
 
             if ($this->inventory->movementCount($property, $item['id'], $location['id']) > 0) {
                 throw Refusal::stateConflict('Opening stock is posted once, before anything else. Later changes are receipts, issues or adjustments.');
             }
 
-            if ($unit === $item['base_unit']) {
-                $conversion = null;
-                $factor = 1000;
-            } else {
-                $current = $this->inventory->currentUnit($property, $item['id'], $unit) ?? throw Refusal::invalid('This item has no conversion for that unit.', ['unit']);
-                $conversion = $current['id'];
-                $factor = (int) $current['factor_milli'];
-            }
-
-            try {
-                $base = StockQuantity::toBase($qty, $factor);
-            } catch (InvalidArgumentException $e) {
-                throw Refusal::invalid($e->getMessage(), ['quantity']);
-            }
-
-            if ($base < 1) {
-                throw Refusal::invalid('This quantity is less than 0.001 of the base unit.', ['quantity']);
-            }
-
-            $date = $this->businessDate->current($property);
-            $this->inventory->addMovement($property, [
-                'id' => $id, 'item_id' => $item['id'], 'location_id' => $location['id'], 'kind' => 'opening', 'unit' => $unit, 'unit_qty_milli' => $qty, 'conversion_id' => $conversion, 'factor_milli' => $factor,
-                'base_qty_milli' => $base, 'reference' => $reference, 'note' => $note, 'business_date' => $date->toString(), 'posted_by' => $actor,
-            ], $this->clock->nowUtc());
-            $this->audit->record(new AuditEntry($property->toString(), $actor, 'stock.opening_posted', 'inventory_item', $item['id'], null, ['location' => $location['code'], 'unit' => $unit, 'unit_qty_milli' => $qty, 'factor_milli' => $factor, 'base_qty_milli' => $base]));
-            $this->outbox->publish(new OutboxEvent($property, 'inventory.stock.moved', $id, 1, ['movement_id' => $id, 'item_id' => $item['id'], 'location_id' => $location['id'], 'kind' => 'opening', 'base_qty_milli' => $base, 'actor_id' => $actor]));
-
-            return ['id' => $id, 'unit' => $unit, 'unit_qty_milli' => $qty, 'factor_milli' => $factor, 'base_qty_milli' => $base, 'base_unit' => $item['base_unit']];
+            return $this->poster->post($property, $actorId, $item, $location, 'opening', $unit, $qty, null, $reference, $note, null, null, null, null, false)['movement'];
         });
 
         $balance = $this->inventory->balances($property, $item['id'], $location['id'])[0] ?? null;

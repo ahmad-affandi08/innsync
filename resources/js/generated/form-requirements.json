@@ -227,10 +227,18 @@
     ],
     "inventory-purchasing/pages/stock": [
         "item_id",
+        "kind",
         "location_id",
         "min",
         "quantity",
         "unit"
+    ],
+    "inventory-purchasing/pages/transfers": [
+        "from_location_id",
+        "lines.*.item_id",
+        "lines.*.quantity",
+        "lines.*.unit",
+        "to_location_id"
     ],
     "laundry/pages/claims": [
         "approved_minor",

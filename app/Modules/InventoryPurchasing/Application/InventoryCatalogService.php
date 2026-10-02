@@ -78,8 +78,8 @@ final readonly class InventoryCatalogService
         }, $this->inventory->items($property));
 
         return [
-            'categories' => array_map(static fn (array $c): array => ['id' => $c['id'], 'code' => $c['code'], 'name' => $c['name'], 'is_active' => (bool) $c['is_active'], 'lock_version' => (int) $c['lock_version']], $this->inventory->categories($property)),
-            'locations' => array_map(static fn (array $l): array => ['id' => $l['id'], 'code' => $l['code'], 'name' => $l['name'], 'kind' => $l['kind'], 'is_active' => (bool) $l['is_active'], 'lock_version' => (int) $l['lock_version']], $this->inventory->locations($property)),
+            'categories' => array_map(static fn (array $c): array => ['id' => $c['id'], 'code' => $c['code'], 'name' => $c['name'], 'is_active' => (bool) $c['is_active'], 'negative_blocked' => (bool) $c['negative_blocked'], 'lock_version' => (int) $c['lock_version']], $this->inventory->categories($property)),
+            'locations' => array_map(static fn (array $l): array => ['id' => $l['id'], 'code' => $l['code'], 'name' => $l['name'], 'kind' => $l['kind'], 'is_active' => (bool) $l['is_active'], 'negative_blocked' => (bool) $l['negative_blocked'], 'lock_version' => (int) $l['lock_version']], $this->inventory->locations($property)),
             'items' => $items,
             'departments' => self::DEPARTMENTS,
             'kinds' => self::LOCATION_KINDS,
@@ -88,44 +88,46 @@ final readonly class InventoryCatalogService
     }
 
     /** @return array<string, mixed> */
-    public function createCategory(PropertyId $property, string $actorId, string $code, string $name): array
+    public function createCategory(PropertyId $property, string $actorId, string $code, string $name, bool $negativeBlocked = false): array
     {
         $this->authorize($property, $actorId);
         $code = $this->code($code, 12, 'code');
         $name = $this->name($name, 80);
         $id = $this->ids->next();
 
-        $this->transactions->run(function () use ($property, $actorId, $id, $code, $name): void {
-            if (! $this->inventory->addCategory($property, ['id' => $id, 'code' => $code, 'name' => $name], $this->clock->nowUtc())) {
+        $this->transactions->run(function () use ($property, $actorId, $id, $code, $name, $negativeBlocked): void {
+            if (! $this->inventory->addCategory($property, ['id' => $id, 'code' => $code, 'name' => $name, 'negative_blocked' => $negativeBlocked], $this->clock->nowUtc())) {
                 throw Refusal::stateConflict('A category with this code already exists.');
             }
 
-            $this->audit->record(new AuditEntry($property->toString(), strtolower($actorId), 'inventory_category.created', 'inventory_category', $id, null, ['code' => $code, 'name' => $name]));
+            $this->audit->record(new AuditEntry($property->toString(), strtolower($actorId), 'inventory_category.created', 'inventory_category', $id, null, ['code' => $code, 'name' => $name, 'negative_blocked' => $negativeBlocked]));
         });
 
         return $this->shape($this->inventory->category($property, $id) ?? throw Refusal::notFound('Category not found.'));
     }
 
     /** @return array<string, mixed> */
-    public function updateCategory(PropertyId $property, string $actorId, string $id, string $name, bool $active, int $lock): array
+    public function updateCategory(PropertyId $property, string $actorId, string $id, string $name, bool $active, int $lock, ?bool $negativeBlocked = null): array
     {
         $this->authorize($property, $actorId);
         $name = $this->name($name, 80);
         $before = $this->inventory->category($property, strtolower($id)) ?? throw Refusal::notFound('Category not found.');
 
-        $this->transactions->run(function () use ($property, $actorId, $before, $name, $active, $lock): void {
-            if (! $this->inventory->updateCategory($property, $before['id'], $lock, $name, $active, $this->clock->nowUtc())) {
+        $blocked = $negativeBlocked ?? (bool) $before['negative_blocked'];
+
+        $this->transactions->run(function () use ($property, $actorId, $before, $name, $active, $lock, $blocked): void {
+            if (! $this->inventory->updateCategory($property, $before['id'], $lock, $name, $active, $blocked, $this->clock->nowUtc())) {
                 throw Refusal::stateConflict('This category changed after you opened it.');
             }
 
-            $this->audit->record(new AuditEntry($property->toString(), strtolower($actorId), 'inventory_category.updated', 'inventory_category', $before['id'], ['name' => $before['name'], 'is_active' => (bool) $before['is_active']], ['name' => $name, 'is_active' => $active]));
+            $this->audit->record(new AuditEntry($property->toString(), strtolower($actorId), 'inventory_category.updated', 'inventory_category', $before['id'], ['name' => $before['name'], 'is_active' => (bool) $before['is_active'], 'negative_blocked' => (bool) $before['negative_blocked']], ['name' => $name, 'is_active' => $active, 'negative_blocked' => $blocked]));
         });
 
         return $this->shape($this->inventory->category($property, $before['id']) ?? throw Refusal::notFound('Category not found.'));
     }
 
     /** @return array<string, mixed> */
-    public function createLocation(PropertyId $property, string $actorId, string $code, string $name, string $kind): array
+    public function createLocation(PropertyId $property, string $actorId, string $code, string $name, string $kind, bool $negativeBlocked = false): array
     {
         $this->authorize($property, $actorId);
         $code = $this->code($code, 12, 'code');
@@ -133,31 +135,33 @@ final readonly class InventoryCatalogService
         $this->kind($kind);
         $id = $this->ids->next();
 
-        $this->transactions->run(function () use ($property, $actorId, $id, $code, $name, $kind): void {
-            if (! $this->inventory->addLocation($property, ['id' => $id, 'code' => $code, 'name' => $name, 'kind' => $kind], $this->clock->nowUtc())) {
+        $this->transactions->run(function () use ($property, $actorId, $id, $code, $name, $kind, $negativeBlocked): void {
+            if (! $this->inventory->addLocation($property, ['id' => $id, 'code' => $code, 'name' => $name, 'kind' => $kind, 'negative_blocked' => $negativeBlocked], $this->clock->nowUtc())) {
                 throw Refusal::stateConflict('A location with this code already exists.');
             }
 
-            $this->audit->record(new AuditEntry($property->toString(), strtolower($actorId), 'inventory_location.created', 'inventory_location', $id, null, ['code' => $code, 'name' => $name, 'kind' => $kind]));
+            $this->audit->record(new AuditEntry($property->toString(), strtolower($actorId), 'inventory_location.created', 'inventory_location', $id, null, ['code' => $code, 'name' => $name, 'kind' => $kind, 'negative_blocked' => $negativeBlocked]));
         });
 
         return $this->shape($this->inventory->location($property, $id) ?? throw Refusal::notFound('Location not found.'));
     }
 
     /** @return array<string, mixed> */
-    public function updateLocation(PropertyId $property, string $actorId, string $id, string $name, string $kind, bool $active, int $lock): array
+    public function updateLocation(PropertyId $property, string $actorId, string $id, string $name, string $kind, bool $active, int $lock, ?bool $negativeBlocked = null): array
     {
         $this->authorize($property, $actorId);
         $name = $this->name($name, 80);
         $this->kind($kind);
         $before = $this->inventory->location($property, strtolower($id)) ?? throw Refusal::notFound('Location not found.');
 
-        $this->transactions->run(function () use ($property, $actorId, $before, $name, $kind, $active, $lock): void {
-            if (! $this->inventory->updateLocation($property, $before['id'], $lock, $name, $kind, $active, $this->clock->nowUtc())) {
+        $blocked = $negativeBlocked ?? (bool) $before['negative_blocked'];
+
+        $this->transactions->run(function () use ($property, $actorId, $before, $name, $kind, $active, $lock, $blocked): void {
+            if (! $this->inventory->updateLocation($property, $before['id'], $lock, $name, $kind, $active, $blocked, $this->clock->nowUtc())) {
                 throw Refusal::stateConflict('This location changed after you opened it.');
             }
 
-            $this->audit->record(new AuditEntry($property->toString(), strtolower($actorId), 'inventory_location.updated', 'inventory_location', $before['id'], ['name' => $before['name'], 'kind' => $before['kind'], 'is_active' => (bool) $before['is_active']], ['name' => $name, 'kind' => $kind, 'is_active' => $active]));
+            $this->audit->record(new AuditEntry($property->toString(), strtolower($actorId), 'inventory_location.updated', 'inventory_location', $before['id'], ['name' => $before['name'], 'kind' => $before['kind'], 'is_active' => (bool) $before['is_active'], 'negative_blocked' => (bool) $before['negative_blocked']], ['name' => $name, 'kind' => $kind, 'is_active' => $active, 'negative_blocked' => $blocked]));
         });
 
         return $this->shape($this->inventory->location($property, $before['id']) ?? throw Refusal::notFound('Location not found.'));
@@ -298,7 +302,7 @@ final readonly class InventoryCatalogService
      */
     private function shape(array $row): array
     {
-        foreach (['is_active'] as $flag) {
+        foreach (['is_active', 'negative_blocked'] as $flag) {
             if (array_key_exists($flag, $row)) {
                 $row[$flag] = (bool) $row[$flag];
             }
