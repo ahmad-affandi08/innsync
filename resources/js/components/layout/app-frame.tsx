@@ -3,6 +3,7 @@ import {
     BedDouble,
     CalendarDays,
     ChartNoAxesCombined,
+    ChevronDown,
     ChevronRight,
     ConciergeBell,
     Hotel,
@@ -10,6 +11,9 @@ import {
     LogOut,
     Menu,
     MonitorSmartphone,
+    PanelLeft,
+    PanelLeftClose,
+    PanelTop,
     Settings2,
     ShieldCheck,
     Shirt,
@@ -185,19 +189,33 @@ export function AppFrame({ actions, children, description, links = [], title, wi
                     <Link href="/account/sessions"><MonitorSmartphone aria-hidden="true" />{t('shell.sessions')}</Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuLabel>{t('shell.layout')}</DropdownMenuLabel>
-                <DropdownMenuRadioGroup onValueChange={(v) => setLayout(v as LayoutMode)} value={layout}>
-                    {LAYOUT_MODES.map((mode) => (
-                        <DropdownMenuRadioItem key={mode} value={mode}>{t(`shell.layout.${mode}` as MessageKey)}</DropdownMenuRadioItem>
-                    ))}
-                </DropdownMenuRadioGroup>
-                <DropdownMenuSeparator />
                 <DropdownMenuItem onSelect={() => router.post('/logout')}>
                     <LogOut aria-hidden="true" />{t('common.action.signOut')}
                 </DropdownMenuItem>
             </DropdownMenuContent>
         </DropdownMenu>
     ) : null;
+
+    const layoutIcons: Record<LayoutMode, LucideIcon> = { rail: PanelLeftClose, sidebar: PanelLeft, topbar: PanelTop };
+    const LayoutIcon = layoutIcons[layout];
+
+    const layoutSwitcher = (
+        <DropdownMenu>
+            <DropdownMenuTrigger aria-label={t('shell.layout')} className="grid size-10 place-items-center border border-input bg-surface text-muted-foreground hover:bg-surface-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" title={t('shell.layout')} type="button">
+                <LayoutIcon aria-hidden="true" className="size-[1.125rem]" strokeWidth={1.75} />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-52">
+                <DropdownMenuLabel>{t('shell.layout')}</DropdownMenuLabel>
+                <DropdownMenuRadioGroup onValueChange={(v) => setLayout(v as LayoutMode)} value={layout}>
+                    {LAYOUT_MODES.map((mode) => {
+                        const Icon = layoutIcons[mode];
+
+                        return <DropdownMenuRadioItem key={mode} value={mode}><Icon aria-hidden="true" className="size-4" strokeWidth={1.75} />{t(`shell.layout.${mode}` as MessageKey)}</DropdownMenuRadioItem>;
+                    })}
+                </DropdownMenuRadioGroup>
+            </DropdownMenuContent>
+        </DropdownMenu>
+    );
 
     const menuButton = (
         <button aria-label={t('shell.openMenu')} className="p-2 text-foreground hover:bg-surface-muted lg:hidden" onClick={() => setOpen(true)} type="button">
@@ -303,6 +321,7 @@ export function AppFrame({ actions, children, description, links = [], title, wi
                 </nav>
                 <div className="ml-auto flex items-center gap-2 lg:ml-0">
                     <LanguageSwitcher />
+                    {layoutSwitcher}
                     {userMenu}
                 </div>
             </div>
@@ -322,6 +341,18 @@ export function AppFrame({ actions, children, description, links = [], title, wi
                         ))}
                     </ul>
                 ) : <span className="flex-1" />}
+                {hasLinks ? (
+                    <DropdownMenu>
+                        <DropdownMenuTrigger className="flex items-center gap-1 whitespace-nowrap px-2 py-1 text-[0.8125rem] text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" type="button">
+                            {t('shell.allPages')}<ChevronDown aria-hidden="true" className="size-3.5" />
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-60">
+                            {links.map((l) => (
+                                <DropdownMenuItem asChild key={l.href}><Link href={l.href}>{t(l.label as MessageKey)}</Link></DropdownMenuItem>
+                            ))}
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                ) : null}
                 {shell?.propertyName ? <span className="max-w-[14rem] truncate text-sm font-medium">{shell.propertyName}</span> : null}
                 {dateChip}
             </div>
@@ -362,6 +393,7 @@ export function AppFrame({ actions, children, description, links = [], title, wi
                             {crumbs}
                             {dateChip}
                             <LanguageSwitcher />
+                            {layoutSwitcher}
                             {userMenu}
                         </header>
                     )}

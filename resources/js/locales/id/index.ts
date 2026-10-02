@@ -236,4 +236,5 @@ export const id: Record<MessageKey, string> = {
     'shell.layout.sidebar': 'Bilah samping',
     'shell.layout.rail': 'Rel ikon',
     'shell.layout.topbar': 'Bilah atas',
+    'shell.allPages': 'Semua halaman',
 }

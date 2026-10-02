@@ -53,4 +53,5 @@ export const common = {
     'shell.layout.sidebar': 'Sidebar',
     'shell.layout.rail': 'Icon rail',
     'shell.layout.topbar': 'Top bar',
+    'shell.allPages': 'All pages',
 } as const;

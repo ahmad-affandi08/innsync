@@ -2,7 +2,10 @@ import { useSyncExternalStore } from 'react'
 
 export type LayoutMode = 'sidebar' | 'rail' | 'topbar'
 
-export const LAYOUT_MODES: readonly LayoutMode[] = ['sidebar', 'rail', 'topbar']
+export const LAYOUT_MODES: readonly LayoutMode[] = ['rail', 'sidebar', 'topbar']
+
+/** Used until a person chooses another. */
+export const DEFAULT_LAYOUT: LayoutMode = 'rail'
 
 const KEY = 'innsync.layout'
 const EVENT = 'innsync:layout'
@@ -11,9 +14,9 @@ function read(): LayoutMode {
     try {
         const stored = window.localStorage.getItem(KEY)
 
-        return LAYOUT_MODES.find((m) => m === stored) ?? 'sidebar'
+        return LAYOUT_MODES.find((m) => m === stored) ?? DEFAULT_LAYOUT
     } catch {
-        return 'sidebar'
+        return DEFAULT_LAYOUT
     }
 }
 
@@ -30,7 +33,7 @@ export function useLayout(): [LayoutMode, (mode: LayoutMode) => void] {
             }
         },
         read,
-        () => 'sidebar' as LayoutMode,
+        () => DEFAULT_LAYOUT,
     )
 
     return [
