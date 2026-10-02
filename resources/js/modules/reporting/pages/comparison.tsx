@@ -37,7 +37,7 @@ export default function ComparisonPage({ context, report: r }: { context: { curr
                 <div className="border border-border bg-surface">
                     <Table data-testid="comparison">
                         <caption className="sr-only">{t('rpt.cmp.title')}</caption>
-                        <TableHeader className="bg-surface-muted">
+                        <TableHeader>
                             <TableRow className="hover:bg-transparent">
                                 <TableHead scope="col">{t('rpt.cmp.figure')}</TableHead>
                                 <TableHead className="text-right" scope="col">{range(r.current)}<span className="block font-normal">{closed(r.current)}</span></TableHead>

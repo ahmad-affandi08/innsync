@@ -66,7 +66,7 @@ export default function LaundryOrderPage({ claims, currency, may, order: o }: { 
                 <h2 className="text-lg font-semibold" id="lines-h">{t('ldy.order.items')}</h2>
                 <div className="border border-border bg-surface">
                     <Table>
-                        <TableHeader className="bg-surface-muted">
+                        <TableHeader>
                             <TableRow className="hover:bg-transparent">
                                 <TableHead scope="col">{t('ldy.order.col.item')}</TableHead>
                                 <TableHead className="text-right" scope="col">{t('ldy.order.col.listed')}</TableHead>

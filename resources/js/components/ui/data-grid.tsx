@@ -232,7 +232,7 @@ function DataGrid<T>({ caption, className, columns, empty, footerLabel, getRowId
             <div className="border border-border bg-surface">
                 <Table data-testid={testId}>
                     <caption className="sr-only">{caption}</caption>
-                    <TableHeader className="bg-surface-muted">
+                    <TableHeader>
                         <TableRow className="hover:bg-transparent">
                             {visible.map((c) => {
                                 const sortable = (c.sortable ?? c.value !== undefined) && c.value !== undefined;
@@ -248,7 +248,7 @@ function DataGrid<T>({ caption, className, columns, empty, footerLabel, getRowId
                                         {sortable ? (
                                             <button
                                                 aria-label={t('ui.grid.sortBy', { column: c.label })}
-                                                className={cn('inline-flex min-h-8 items-center gap-1 font-medium hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring', c.align === 'right' && 'flex-row-reverse')}
+                                                className={cn('inline-flex min-h-8 items-center gap-1 font-bold hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring', c.align === 'right' && 'flex-row-reverse')}
                                                 onClick={() => toggleSort(c.id)}
                                                 type="button"
                                             >

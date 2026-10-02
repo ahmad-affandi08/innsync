@@ -11,7 +11,7 @@ function Table({ className, ...props }: ComponentProps<'table'>) {
 }
 
 function TableHeader({ className, ...props }: ComponentProps<'thead'>) {
-    return <thead className={cn('[&_tr]:border-b [&_tr]:border-border', className)} data-slot="table-header" {...props} />;
+    return <thead className={cn('bg-primary text-primary-foreground [&_th]:font-bold [&_th]:text-primary-foreground [&_tr:hover]:bg-transparent [&_tr]:border-b [&_tr]:border-primary', className)} data-slot="table-header" {...props} />;
 }
 
 function TableBody({ className, ...props }: ComponentProps<'tbody'>) {

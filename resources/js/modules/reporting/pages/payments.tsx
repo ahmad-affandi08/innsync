@@ -27,7 +27,7 @@ export default function PaymentsPage({ context, report: r }: { context: { curren
                 <div className="border border-border bg-surface">
                     <Table>
                         <caption className="sr-only">{t('rpt.pay.title')}</caption>
-                        <TableHeader className="bg-surface-muted">
+                        <TableHeader>
                             <TableRow className="hover:bg-transparent">
                                 <TableHead scope="col">{t('rpt.pay.method')}</TableHead>
                                 <TableHead className="text-right" scope="col">{t('rpt.pay.received')}</TableHead>

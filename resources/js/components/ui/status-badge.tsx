@@ -29,27 +29,27 @@ const toneStyles: Record<StatusTone, { icon: LucideIcon; className: string }> =
     {
         neutral: {
             icon: Circle,
-            className: 'border-transparent bg-surface-muted text-foreground',
+            className: 'border-transparent bg-muted-foreground text-white',
         },
         success: {
             icon: CircleCheck,
-            className: 'border-transparent bg-success/10 text-success',
+            className: 'border-transparent bg-success text-white',
         },
         warning: {
             icon: TriangleAlert,
-            className: 'border-transparent bg-warning/10 text-warning',
+            className: 'border-transparent bg-warning text-white',
         },
         danger: {
             icon: CircleX,
-            className: 'border-transparent bg-danger/10 text-danger',
+            className: 'border-transparent bg-danger text-white',
         },
         info: {
             icon: Info,
-            className: 'border-transparent bg-info/10 text-info',
+            className: 'border-transparent bg-info text-white',
         },
         pending: {
             icon: Clock,
-            className: 'border-info/40 bg-surface text-info',
+            className: 'border-info bg-surface text-info',
         },
         unknown: {
             icon: CircleHelp,
@@ -71,7 +71,7 @@ function StatusBadge({ className, label, tone }: StatusBadgeProps) {
     return (
         <span
             className={cn(
-                'inline-flex items-center gap-1.5 border px-2.5 py-0.5 text-xs font-medium',
+                'inline-flex items-center gap-1.5 border px-2.5 py-0.5 text-xs font-semibold',
                 toneClass,
                 className,
             )}
