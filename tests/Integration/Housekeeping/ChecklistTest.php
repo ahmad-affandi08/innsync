@@ -185,6 +185,36 @@ final class ChecklistTest extends TestCase
         self::assertSame(['2026-10', '2026-10-01', '2026-10-31'], array_values(ChecklistService::period('monthly', BusinessDate::fromString('2026-10-15'))));
     }
 
+    public function test_an_item_can_need_a_photo_as_proof_which_is_kept_privately_for_90_days(): void
+    {
+        config(['files.disk' => 'local']);
+        $png = (string) base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==', true);
+        $t = $this->lists()->define($this->property(), $this->hkListManagerId, 'Bathroom proof', 'daily', 'room', [], [['text' => 'Photo of the clean bathroom', 'photo_required' => true], 'Wipe the mirror'], true);
+        self::assertSame([true, false], array_column($t['items'], 'photo_required'));
+
+        $this->refused(fn () => $this->lists()->complete($this->property(), $this->hkListStaffId, $t['id'], $this->roomIds[0], 'i1', null), 422);
+        $this->refused(fn () => $this->lists()->complete($this->property(), $this->hkListStaffId, $t['id'], $this->roomIds[0], 'i1', null, 'this is not an image', 'x.png'), 422);
+        self::assertSame(0, DB::table('hk_checklist_completions')->count());
+
+        $done = $this->lists()->complete($this->property(), $this->hkListStaffId, $t['id'], $this->roomIds[0], 'i1', 'Clean', $png, 'bathroom.png');
+        self::assertSame([true, true], [$done['items'][0]['done'], $done['items'][0]['has_photo']]);
+        $completion = $done['items'][0]['completion_id'];
+        self::assertSame('2026-12-30', substr((string) DB::table('stored_files')->value('expires_at'), 0, 10), 'kept 90 days from the business date');
+        self::assertSame($png, $this->lists()->photo($this->property(), $this->hkListViewerId, $completion)->contents);
+        $this->refused(fn () => $this->lists()->photo($this->property(), $this->clerkId, $completion), 403);
+        $this->refused(fn () => $this->lists()->photo($this->property(), $this->hkListStaffId, '01arz3ndektsv4rrffq69g5faa'), 404);
+
+        // A photo is optional where it is not required, and a repeated tick leaves no photo behind.
+        $second = $this->lists()->complete($this->property(), $this->hkListStaff2Id, $t['id'], $this->roomIds[0], 'i2', null, $png, 'mirror.png');
+        self::assertTrue($second['items'][1]['has_photo']);
+        $this->refused(fn () => $this->lists()->complete($this->property(), $this->hkListStaff2Id, $t['id'], $this->roomIds[0], 'i2', null, $png, 'again.png'), 409);
+        self::assertSame(3, DB::table('stored_files')->count());
+        self::assertSame(3, DB::table('stored_files')->whereNotNull('expires_at')->count(), 'the photo of the refused tick expires at once');
+        $this->lists()->complete($this->property(), $this->hkListStaffId, $t['id'], $this->roomIds[1], 'i2', null);
+        self::assertNotNull($this->lists()->detail($this->property(), $this->hkListStaffId, $t['id'], $this->roomIds[1])['items'][1]['completion_id']);
+        $this->refused(fn () => $this->lists()->photo($this->property(), $this->hkListStaffId, (string) $this->lists()->detail($this->property(), $this->hkListStaffId, $t['id'], $this->roomIds[1])['items'][1]['completion_id']), 404);
+    }
+
     public function test_the_performance_figure_counts_per_room_per_run_and_per_person(): void
     {
         $t = $this->roomList(['One', 'Two']);

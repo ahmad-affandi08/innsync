@@ -75,3 +75,7 @@ Booking policy is a commercial decision of the hotel, not a legal one; Indonesia
 
 - **Retention of the photo.** The photo of a found item is **erased 90 days after the item is closed** (returned or disposed): category `lost_found_photo`, anchor `closed_at`, adjustable from 0 to 365 days (operational choice; the photo may show personal belongings, so it is not kept longer than the item). The record itself (who found it, when, where, to whom it was returned) stays with the audit trail.
 - **Time stored.** An item still stored after **90 days** is flagged for a decision (operational choice). Nothing is disposed of automatically.
+
+## Checklist proof photos (FR-HK-006) — baseline for Phase 1
+
+- **Retention.** A proof photo of a checklist item is **erased 90 days after the business date it was taken** (category `checklist_photo`, anchor `completed_at`, adjustable from 0 to 365 days; operational choice). The completion record (item, who, when, note) stays with the audit trail.

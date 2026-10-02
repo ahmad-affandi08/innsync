@@ -227,4 +227,11 @@ export const housekeeping = {
     'hk.lf.placeHint': 'Pilih kamar atau sebutkan tempat seperti lobi.',
     'hk.lf.photoLabel': 'Foto (opsional)',
     'hk.lf.record': 'Catat',
+    'hk.cl.photo': 'Foto',
+    'hk.cl.photoFor': 'Foto bukti untuk',
+    'hk.cl.tpl.photoNeeded': 'Wajib foto',
+    'hk.cl.tpl.photoTag': 'wajib foto',
+    'hk.cl.tpl.item': 'Butir',
+    'hk.cl.tpl.addItem': 'Tambah butir',
+    'hk.cl.tpl.removeItem': 'Hapus',
 } as const

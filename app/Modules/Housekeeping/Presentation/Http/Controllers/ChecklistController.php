@@ -8,6 +8,7 @@ use App\Modules\Housekeeping\Application\ChecklistService;
 use App\Shared\Application\Tenancy\PropertyContext;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response as HttpResponse;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -38,7 +39,7 @@ final readonly class ChecklistController
         $data = $request->validate([
             'name' => ['required', 'string', 'max:80'], 'frequency' => ['required', 'string', 'max:8'], 'scope' => ['required', 'string', 'max:4'],
             'areas' => ['nullable', 'array', 'max:30'], 'areas.*' => ['required', 'string', 'max:60'],
-            'items' => ['required', 'array', 'min:1', 'max:40'], 'items.*' => ['required', 'string', 'max:160'], 'active' => ['required', 'boolean'],
+            'items' => ['required', 'array', 'min:1', 'max:40'], 'items.*.text' => ['required', 'string', 'max:160'], 'items.*.photo_required' => ['nullable', 'boolean'], 'active' => ['required', 'boolean'],
         ]);
 
         return $this->json(['template' => $this->checklists->define($this->property->current(), $this->actor($request), $data['name'], $data['frequency'], $data['scope'], array_values($data['areas'] ?? []), array_values($data['items']), (bool) $data['active'])], 201);
@@ -53,9 +54,20 @@ final readonly class ChecklistController
 
     public function complete(Request $request, string $template): JsonResponse
     {
-        $data = $request->validate(['target' => ['required', 'string', 'max:60'], 'item_id' => ['required', 'string', 'max:20'], 'note' => ['nullable', 'string', 'max:300']]);
+        $data = $request->validate(['target' => ['required', 'string', 'max:60'], 'item_id' => ['required', 'string', 'max:20'], 'note' => ['nullable', 'string', 'max:300'], 'photo' => ['nullable', 'file', 'max:5120']]);
+        $upload = $request->file('photo');
 
-        return $this->json(['checklist' => $this->checklists->complete($this->property->current(), $this->actor($request), $template, $data['target'], $data['item_id'], $data['note'] ?? null)]);
+        return $this->json(['checklist' => $this->checklists->complete($this->property->current(), $this->actor($request), $template, $data['target'], $data['item_id'], $data['note'] ?? null, $upload === null ? null : (string) $upload->get(), $upload?->getClientOriginalName())]);
+    }
+
+    public function photo(Request $request, string $completion): HttpResponse
+    {
+        $content = $this->checklists->photo($this->property->current(), $this->actor($request), $completion);
+
+        return response($content->contents, 200, [
+            'Content-Type' => $content->file->mimeType, 'Content-Disposition' => 'inline; filename="checklist-proof"',
+            'Cache-Control' => 'no-store, private', 'X-Content-Type-Options' => 'nosniff',
+        ]);
     }
 
     private function actor(Request $request): string

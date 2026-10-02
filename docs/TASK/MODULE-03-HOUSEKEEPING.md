@@ -20,7 +20,7 @@
 | TASK-HK-003 | FR-HK-003 | Sebaiknya | Sistem menyusun urutan prioritas pembersihan secara otomatis: kamar keberangkatan, kamar kotor kosong, permintaan tamu, lalu kamar menginap. | REVIEW |
 | TASK-HK-004 | FR-HK-004 | Wajib | Room attendant mengubah status kamar langsung dari ponsel dengan maksimal tiga ketukan, termasuk penanda mulai dan selesai membersihkan untuk mengukur durasi. | REVIEW |
 | TASK-HK-005 | FR-HK-005 | Wajib | Menyediakan daftar periksa SOP tugas harian, mingguan, dan bulanan per kamar dan per area umum, disusun oleh manajemen sebagai template. | REVIEW |
-| TASK-HK-006 | FR-HK-006 | Sebaiknya | Daftar periksa dapat mewajibkan lampiran foto pada butir tertentu sebagai bukti pengerjaan. | TODO |
+| TASK-HK-006 | FR-HK-006 | Sebaiknya | Daftar periksa dapat mewajibkan lampiran foto pada butir tertentu sebagai bukti pengerjaan. | REVIEW |
 | TASK-HK-007 | FR-HK-007 | Wajib | Supervisor melakukan inspeksi kamar dan menyetujui perubahan status menjadi siap dijual; kamar tanpa inspeksi dapat dikonfigurasi tetap masuk status bersih namun belum siap. | REVIEW |
 | TASK-HK-008 | FR-HK-008 | Wajib | Room attendant membuat laporan kerusakan dengan cara memilih kamar atau lokasi, menulis keterangan, dan melampirkan foto; laporan langsung menjadi work order pada modul Maintenance. | TODO |
 | TASK-HK-009 | FR-HK-009 | Wajib | Mencatat pemakaian linen dan perlengkapan: sprei, handuk, sarung bantal, sabun, dan amenitas lain, per kamar dan per hari. | REVIEW |

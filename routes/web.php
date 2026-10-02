@@ -323,6 +323,7 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
     Route::post('/checklists/templates', [HousekeepingChecklistController::class, 'define'])->name('housekeeping.checklists.define');
     Route::get('/checklists/performance', [HousekeepingChecklistController::class, 'performance'])->name('housekeeping.checklists.performance');
     Route::get('/checklists/{template}/detail', [HousekeepingChecklistController::class, 'detail'])->where('template', $id)->name('housekeeping.checklists.detail');
+    Route::get('/checklists/photo/{completion}', [HousekeepingChecklistController::class, 'photo'])->where('completion', $id)->name('housekeeping.checklists.photo');
     Route::post('/checklists/{template}/complete', [HousekeepingChecklistController::class, 'complete'])->where('template', $id)->name('housekeeping.checklists.complete');
 });
 

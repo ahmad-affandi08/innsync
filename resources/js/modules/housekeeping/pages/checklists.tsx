@@ -2,6 +2,7 @@ import { Link } from '@inertiajs/react';
 import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
 import { StatusBadge } from '@/components/ui/status-badge';
@@ -12,7 +13,7 @@ import { useErrorStateCopy } from '@/shared/i18n/use-ui-copy';
 
 type Target = { ref: string; label: string; completed: number; total: number; percent: number };
 type Checklist = { template_id: string; name: string; frequency: string; scope: string; period_key: string; period_start: string; period_end: string; targets: Target[] };
-type Item = { id: string; text: string; done: boolean; note: string | null; by: string | null; at: string | null };
+type Item = { id: string; text: string; photo_required: boolean; done: boolean; note: string | null; by: string | null; at: string | null; completion_id: string | null; has_photo: boolean };
 type Detail = { template_id: string; target: string; label: string; items: Item[]; completed: number; total: number; percent: number };
 type Props = { board: { business_date: string; checklists: Checklist[]; may_perform: boolean } };
 
@@ -23,6 +24,7 @@ export default function ChecklistsPage({ board }: Props) {
     const errorCopy = useErrorStateCopy();
     const action = useServerAction();
     const [open, setOpen] = useState<Detail | null>(null);
+    const [photos, setPhotos] = useState<Record<string, File | null>>({});
 
     async function show(list: Checklist, target: Target) {
         const done = await action.run<{ checklist: Detail }>(`/housekeeping/checklists/${list.template_id}/detail?target=${encodeURIComponent(target.ref)}`, { method: 'GET' });
@@ -31,8 +33,13 @@ export default function ChecklistsPage({ board }: Props) {
 
     async function tick(item: Item) {
         if (open === null) return;
-        const done = await action.run<{ checklist: Detail }>(`/housekeeping/checklists/${open.template_id}/complete`, { body: { target: open.target, item_id: item.id }, reload: ['board'] });
-        if (done !== null) setOpen(done.checklist);
+        const body = new FormData();
+        body.set('target', open.target);
+        body.set('item_id', item.id);
+        const photo = photos[item.id];
+        if (photo !== undefined && photo !== null) body.set('photo', photo);
+        const done = await action.run<{ checklist: Detail }>(`/housekeeping/checklists/${open.template_id}/complete`, { body, reload: ['board'] });
+        if (done !== null) { setOpen(done.checklist); setPhotos({ ...photos, [item.id]: null }); }
     }
 
     return (
@@ -66,8 +73,13 @@ export default function ChecklistsPage({ board }: Props) {
                                 {open.items.map((i) => (
                                     <li className="flex flex-wrap items-center justify-between gap-2 py-2" data-testid={`item-${i.id}`} key={i.id}>
                                         <span className={i.done ? 'text-muted-foreground line-through' : undefined}>{i.text}</span>
-                                        {i.done ? <span className="text-xs text-muted-foreground">{t('hk.cl.tickedBy', { name: i.by ?? '—', time: i.at === null ? '' : format.instant(i.at) })}{i.note !== null ? ` · ${i.note}` : ''}</span>
-                                            : board.may_perform ? <Button disabled={action.busy} onClick={() => void tick(i)} size="sm" type="button" variant="outline">{t('hk.cl.tick')}</Button> : null}
+                                        {i.done ? <span className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">{t('hk.cl.tickedBy', { name: i.by ?? '—', time: i.at === null ? '' : format.instant(i.at) })}{i.note !== null ? ` · ${i.note}` : ''}{i.has_photo && i.completion_id !== null ? <a className="underline" href={`/housekeeping/checklists/photo/${i.completion_id}`} rel="noreferrer" target="_blank">{t('hk.cl.photo')}</a> : null}</span>
+                                            : board.may_perform ? (
+                                                <span className="flex flex-wrap items-center gap-2">
+                                                    {i.photo_required ? <Input accept="image/jpeg,image/png" aria-label={`${t('hk.cl.photoFor')} ${i.text}`} capture="environment" className="max-w-56" onChange={(e) => setPhotos({ ...photos, [i.id]: e.target.files?.[0] ?? null })} type="file" /> : null}
+                                                    <Button disabled={action.busy || (i.photo_required && (photos[i.id] ?? null) === null)} onClick={() => void tick(i)} size="sm" type="button" variant="outline">{t('hk.cl.tick')}</Button>
+                                                </span>
+                                            ) : null}
                                     </li>
                                 ))}
                             </ul>

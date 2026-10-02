@@ -227,4 +227,11 @@ export const housekeeping = {
     'hk.lf.placeHint': 'Choose a room or name a place such as the lobby.',
     'hk.lf.photoLabel': 'Photo (optional)',
     'hk.lf.record': 'Record',
+    'hk.cl.photo': 'Photo',
+    'hk.cl.photoFor': 'Photo proof for',
+    'hk.cl.tpl.photoNeeded': 'Photo needed',
+    'hk.cl.tpl.photoTag': 'photo needed',
+    'hk.cl.tpl.item': 'Item',
+    'hk.cl.tpl.addItem': 'Add an item',
+    'hk.cl.tpl.removeItem': 'Remove',
 } as const

@@ -78,10 +78,10 @@ final readonly class DatabaseChecklistRepository implements ChecklistRepository
         return $result;
     }
 
-    public function complete(PropertyId $property, string $id, string $runId, string $itemId, ?string $note, string $actorId, DateTimeImmutable $at, string $businessDate): string
+    public function complete(PropertyId $property, string $id, string $runId, string $itemId, ?string $note, ?string $photoFileId, string $actorId, DateTimeImmutable $at, string $businessDate): string
     {
         try {
-            DB::table('hk_checklist_completions')->insert(['id' => $id, 'property_id' => $property->toString(), 'run_id' => $runId, 'item_id' => $itemId, 'note' => $note, 'completed_by' => $actorId, 'completed_at' => $at, 'business_date' => $businessDate]);
+            DB::table('hk_checklist_completions')->insert(['id' => $id, 'property_id' => $property->toString(), 'run_id' => $runId, 'item_id' => $itemId, 'note' => $note, 'photo_file_id' => $photoFileId, 'completed_by' => $actorId, 'completed_at' => $at, 'business_date' => $businessDate]);
         } catch (UniqueConstraintViolationException) {
             return 'already';
         }
@@ -92,7 +92,14 @@ final readonly class DatabaseChecklistRepository implements ChecklistRepository
     public function completions(PropertyId $property, string $runId): array
     {
         return DB::table('hk_checklist_completions')->where('property_id', $property->toString())->where('run_id', $runId)->orderBy('completed_at')->get()
-            ->map(static fn ($r): array => ['item_id' => $r->item_id, 'note' => $r->note, 'completed_by' => $r->completed_by, 'completed_at' => (new DateTimeImmutable((string) $r->completed_at, new DateTimeZone('UTC')))->format('Y-m-d\TH:i:s\Z')])->all();
+            ->map(static fn ($r): array => ['id' => $r->id, 'item_id' => $r->item_id, 'note' => $r->note, 'photo_file_id' => $r->photo_file_id, 'completed_by' => $r->completed_by, 'completed_at' => (new DateTimeImmutable((string) $r->completed_at, new DateTimeZone('UTC')))->format('Y-m-d\TH:i:s\Z')])->all();
+    }
+
+    public function findCompletion(PropertyId $property, string $completionId): ?array
+    {
+        $row = DB::table('hk_checklist_completions')->where('property_id', $property->toString())->where('id', $completionId)->first();
+
+        return $row === null ? null : ['photo_file_id' => $row->photo_file_id];
     }
 
     public function performance(PropertyId $property, string $from, string $to): array

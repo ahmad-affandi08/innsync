@@ -9,9 +9,22 @@ use App\Modules\Property\Application\Settings\BusinessDateProvider;
 use App\Shared\Application\Audit\AuditEntry;
 use App\Shared\Application\Audit\AuditTrail;
 use App\Shared\Application\Errors\Refusal;
+use App\Shared\Application\Files\DownloadFile;
+use App\Shared\Application\Files\FileAccessDenied;
+use App\Shared\Application\Files\FileAccessPolicy;
+use App\Shared\Application\Files\FileContent;
+use App\Shared\Application\Files\FilePolicy;
+use App\Shared\Application\Files\FileRejected;
+use App\Shared\Application\Files\FileSensitivity;
+use App\Shared\Application\Files\FileUpload;
+use App\Shared\Application\Files\StoredFile;
+use App\Shared\Application\Files\StoredFileNotFound;
+use App\Shared\Application\Files\StoredFileRepository;
+use App\Shared\Application\Files\StoreFile;
 use App\Shared\Application\Identifiers\IdentifierGenerator;
 use App\Shared\Application\Outbox\OutboxEvent;
 use App\Shared\Application\Outbox\OutboxPublisher;
+use App\Shared\Application\Retention\RetentionPolicies;
 use App\Shared\Application\Security\PermissionChecker;
 use App\Shared\Application\Security\StaffDirectory;
 use App\Shared\Application\Tenancy\PropertyContext;
@@ -20,6 +33,8 @@ use App\Shared\Application\Time\Clock;
 use App\Shared\Application\Transactions\TransactionRunner;
 use App\Shared\Domain\Tenancy\PropertyId;
 use App\Shared\Domain\Time\BusinessDate;
+use DateTimeImmutable;
+use DateTimeZone;
 use InvalidArgumentException;
 
 /**
@@ -40,10 +55,20 @@ final readonly class ChecklistService
 
     public const SCOPES = ['room', 'area'];
 
+    public const PHOTO_PURPOSE = 'housekeeping.checklist';
+
+    public const PHOTO_MAX_BYTES = 5_242_880;
+
+    private const RETENTION_CATEGORY = 'checklist_photo';
+
     public function __construct(
         private ChecklistRepository $checklists,
         private RoomCatalogReader $rooms,
         private BusinessDateProvider $businessDate,
+        private StoreFile $storeFile,
+        private DownloadFile $downloadFile,
+        private StoredFileRepository $files,
+        private RetentionPolicies $retention,
         private PermissionChecker $permissions,
         private StaffDirectory $staff,
         private TransactionRunner $transactions,
@@ -57,7 +82,7 @@ final readonly class ChecklistService
     /**
      * Writes a checklist: the first version or a new version of an existing name (which becomes the one in force).
      *
-     * @param  list<string>  $items
+     * @param  list<string|array{text: string, photo_required?: bool}>  $items  an item is its text, or its text with whether a photo proves it was done
      * @param  list<string>  $areas  the public areas, for the area scope
      * @return array<string, mixed>
      */
@@ -70,9 +95,9 @@ final readonly class ChecklistService
             throw Refusal::invalid('Name the checklist in 3 to 80 characters and choose daily, weekly or monthly, for rooms or for areas.', ['name', 'frequency', 'scope']);
         }
 
-        $items = array_values(array_filter(array_map(static fn (string $i): string => trim($i), $items), static fn (string $i): bool => $i !== ''));
+        $items = array_values(array_filter(array_map(static fn (string|array $i): array => ['text' => trim(is_array($i) ? (string) ($i['text'] ?? '') : $i), 'photo_required' => is_array($i) && ! empty($i['photo_required'])], $items), static fn (array $i): bool => $i['text'] !== ''));
 
-        if ($items === [] || count($items) > 40 || array_filter($items, static fn (string $i): bool => mb_strlen($i) > 160) !== []) {
+        if ($items === [] || count($items) > 40 || array_filter($items, static fn (array $i): bool => mb_strlen($i['text']) > 160) !== []) {
             throw Refusal::invalid('A checklist has 1 to 40 items of at most 160 characters.', ['items']);
         }
 
@@ -85,8 +110,8 @@ final readonly class ChecklistService
         $actor = strtolower($actorId);
         $structured = [];
 
-        foreach ($items as $i => $text) {
-            $structured[] = ['id' => 'i'.($i + 1), 'text' => $text];
+        foreach ($items as $i => $item) {
+            $structured[] = ['id' => 'i'.($i + 1), 'text' => $item['text'], 'photo_required' => $item['photo_required']];
         }
 
         $id = $this->ids->next();
@@ -169,8 +194,9 @@ final readonly class ChecklistService
         return [
             'template_id' => $template['id'], 'name' => $template['name'], 'target' => $ref, 'label' => $label, 'period_key' => $period['key'],
             'items' => array_map(static fn (array $i): array => [
-                'id' => $i['id'], 'text' => $i['text'], 'done' => isset($done[$i['id']]), 'note' => $done[$i['id']]['note'] ?? null,
+                'id' => $i['id'], 'text' => $i['text'], 'photo_required' => (bool) ($i['photo_required'] ?? false), 'done' => isset($done[$i['id']]), 'note' => $done[$i['id']]['note'] ?? null,
                 'by' => isset($done[$i['id']]) ? ($names[$done[$i['id']]['completed_by']] ?? null) : null, 'at' => $done[$i['id']]['completed_at'] ?? null,
+                'completion_id' => $done[$i['id']]['id'] ?? null, 'has_photo' => ($done[$i['id']]['photo_file_id'] ?? null) !== null,
             ], $items),
             'completed' => count($done), 'total' => count($items), 'percent' => intdiv(count($done) * 100, count($items)),
         ];
@@ -181,7 +207,7 @@ final readonly class ChecklistService
      *
      * @return array<string, mixed> the checklist for that room or area, as `detail` shows it
      */
-    public function complete(PropertyId $property, string $actorId, string $templateId, string $target, string $itemId, ?string $note): array
+    public function complete(PropertyId $property, string $actorId, string $templateId, string $target, string $itemId, ?string $note, ?string $photo = null, ?string $photoName = null): array
     {
         $this->authorize($property, $actorId, [self::PERFORM_PERMISSION]);
         $actor = strtolower($actorId);
@@ -191,7 +217,34 @@ final readonly class ChecklistService
             throw Refusal::invalid('A note is at most 300 characters.', ['note']);
         }
 
-        $this->transactions->run(function () use ($property, $actor, $templateId, $target, $itemId, $note): void {
+        $photo = $photo === '' ? null : $photo;
+        $file = null;
+
+        if ($photo !== null) {
+            // The photo is stored first and on its own, so it is not rolled back with a refused tick; a refused tick gives it an expiry at once.
+            try {
+                $file = $this->storeFile->execute(new FileUpload($property, $actor, self::PHOTO_PURPOSE, 'hk-checklist-run', $this->ids->next(), $photo, new FilePolicy(['image/jpeg', 'image/png'], self::PHOTO_MAX_BYTES, FileSensitivity::Standard, false), $photoName));
+            } catch (FileRejected $e) {
+                throw Refusal::invalid($e->getMessage(), ['photo']);
+            }
+        }
+
+        try {
+            $this->record($property, $actor, $templateId, $target, $itemId, $note, $file);
+        } catch (\Throwable $e) {
+            if ($file !== null) {
+                $this->files->setExpiryOnce($property, $file->id, $this->clock->nowUtc());
+            }
+
+            throw $e;
+        }
+
+        return $this->detail($property, $actorId, $templateId, $target);
+    }
+
+    private function record(PropertyId $property, string $actor, string $templateId, string $target, string $itemId, ?string $note, ?StoredFile $file): void
+    {
+        $this->transactions->run(function () use ($property, $actor, $templateId, $target, $itemId, $note, $file): void {
             $template = $this->checklists->template($property, strtolower($templateId)) ?? throw Refusal::notFound('Checklist not found.');
             $latest = $this->checklists->latestByName($property, $template['name']);
 
@@ -210,15 +263,26 @@ final readonly class ChecklistService
                 throw Refusal::invalid('This item is not on the checklist.', ['item_id']);
             }
 
-            if ($this->checklists->complete($property, $this->ids->next(), $run['id'], $itemId, $note, $actor, $now, $today->toString()) === 'already') {
+            $item = array_column($run['items'], null, 'id')[$itemId];
+
+            if (($item['photo_required'] ?? false) && $file === null) {
+                throw Refusal::invalid('This item needs a photo as proof.', ['photo']);
+            }
+
+            if ($this->checklists->complete($property, $this->ids->next(), $run['id'], $itemId, $note, $file?->id, $actor, $now, $today->toString()) === 'already') {
                 throw Refusal::stateConflict('This item was already ticked.');
+            }
+
+            if ($file !== null) {
+                $anchor = new DateTimeImmutable($today->toString().' 00:00:00', new DateTimeZone('UTC'));
+                $this->files->setExpiryOnce($property, $file->id, $this->retention->expiryFor($property, self::RETENTION_CATEGORY, $anchor));
             }
 
             $done = count($this->checklists->completions($property, $run['id']));
             $total = count($run['items']);
             $percent = intdiv($done * 100, $total);
 
-            $this->audit->record(new AuditEntry($property->toString(), $actor, 'hk.checklist.item_completed', 'hk_checklist_run', $run['id'], null, ['checklist' => $template['name'], 'period' => $period['key'], 'target' => $label, 'item' => $itemId, 'percent' => $percent]));
+            $this->audit->record(new AuditEntry($property->toString(), $actor, 'hk.checklist.item_completed', 'hk_checklist_run', $run['id'], null, ['checklist' => $template['name'], 'period' => $period['key'], 'target' => $label, 'item' => $itemId, 'percent' => $percent, 'photo' => $file !== null]));
             $this->outbox->publish(new OutboxEvent($property, 'housekeeping.checklist.item_completed', $run['id'], 1, [
                 'run_id' => $run['id'], 'checklist' => $template['name'], 'frequency' => $template['frequency'], 'period' => $period['key'], 'target' => $label, 'item_id' => $itemId, 'completed_by' => $actor, 'completed' => $done, 'total' => $total, 'percent' => $percent,
             ]));
@@ -227,8 +291,41 @@ final readonly class ChecklistService
                 $this->outbox->publish(new OutboxEvent($property, 'housekeeping.checklist.run_completed', $run['id'], 1, ['run_id' => $run['id'], 'checklist' => $template['name'], 'frequency' => $template['frequency'], 'period' => $period['key'], 'target' => $label, 'total' => $total, 'completed_by' => $actor]));
             }
         });
+    }
 
-        return $this->detail($property, $actorId, $templateId, $target);
+    /** The photo that proves a ticked item, for anyone who may see the checklists. */
+    public function photo(PropertyId $property, string $actorId, string $completionId): FileContent
+    {
+        $this->authorize($property, $actorId, [self::PERFORM_PERMISSION, self::VIEW_PERMISSION, self::MANAGE_PERMISSION]);
+        $completion = $this->checklists->findCompletion($property, strtolower($completionId)) ?? throw Refusal::notFound('Item not found.');
+
+        if ($completion['photo_file_id'] === null) {
+            throw Refusal::notFound('This item has no photo.');
+        }
+
+        $policy = new class($this->permissions, $property) implements FileAccessPolicy
+        {
+            public function __construct(private PermissionChecker $permissions, private PropertyId $property) {}
+
+            public function allows(string $actorId, StoredFile $file): bool
+            {
+                foreach ([ChecklistService::PERFORM_PERMISSION, ChecklistService::VIEW_PERMISSION, ChecklistService::MANAGE_PERMISSION] as $permission) {
+                    if ($this->permissions->allowsInProperty($actorId, $permission, $this->property)) {
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+        };
+
+        try {
+            return $this->downloadFile->execute($property, $completion['photo_file_id'], strtolower($actorId), $policy);
+        } catch (StoredFileNotFound) {
+            throw Refusal::notFound('The photo is no longer kept.');
+        } catch (FileAccessDenied) {
+            throw Refusal::forbidden('This person may not see this photo.');
+        }
     }
 
     /**
@@ -276,7 +373,7 @@ final readonly class ChecklistService
     /** @return array{key: string, start: string, end: string} */
     public static function period(string $frequency, BusinessDate $date): array
     {
-        $d = new \DateTimeImmutable($date->toString(), new \DateTimeZone('UTC'));
+        $d = new DateTimeImmutable($date->toString(), new DateTimeZone('UTC'));
 
         return match ($frequency) {
             'daily' => ['key' => $d->format('Y-m-d'), 'start' => $d->format('Y-m-d'), 'end' => $d->format('Y-m-d')],
