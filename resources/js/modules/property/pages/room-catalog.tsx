@@ -26,14 +26,14 @@ type RoomType = {
     lock_version: number;
 };
 
-type Room = { id: string; number: string; room_type_id: string; floor: string | null; is_active: boolean; lock_version: number };
+type Room = { id: string; number: string; room_type_id: string; floor: string | null; building: string | null; is_active: boolean; lock_version: number };
 
 type TypeForm = { id: string | null; code: string; name: string; description: string; maxAdults: string; maxChildren: string; sortOrder: string; lockVersion: number; reason: string };
-type RoomForm = { id: string | null; number: string; roomTypeId: string; floor: string; lockVersion: number; reason: string };
+type RoomForm = { id: string | null; number: string; roomTypeId: string; floor: string; building: string; lockVersion: number; reason: string };
 type Toggle = { kind: 'type' | 'room'; id: string; name: string; active: boolean; lockVersion: number };
 
 const emptyType: TypeForm = { id: null, code: '', name: '', description: '', maxAdults: '2', maxChildren: '0', sortOrder: '0', lockVersion: 0, reason: '' };
-const emptyRoom: RoomForm = { id: null, number: '', roomTypeId: '', floor: '', lockVersion: 0, reason: '' };
+const emptyRoom: RoomForm = { id: null, number: '', roomTypeId: '', floor: '', building: '', lockVersion: 0, reason: '' };
 
 export default function RoomCatalogPage({ rooms, types }: { rooms: Room[]; types: RoomType[] }) {
     const { t } = useTranslation();
@@ -75,7 +75,7 @@ export default function RoomCatalogPage({ rooms, types }: { rooms: Room[]; types
 
     async function saveRoom() {
         if (roomForm === null) return;
-        const body = { number: roomForm.number, room_type_id: roomForm.roomTypeId, floor: roomForm.floor || null, lock_version: roomForm.lockVersion, reason: roomForm.reason };
+        const body = { number: roomForm.number, room_type_id: roomForm.roomTypeId, floor: roomForm.floor || null, building: roomForm.building || null, lock_version: roomForm.lockVersion, reason: roomForm.reason };
         const done = await action.run(roomForm.id === null ? '/property/rooms' : `/property/rooms/${roomForm.id}`, {
             method: roomForm.id === null ? 'POST' : 'PUT',
             body,
@@ -141,11 +141,11 @@ export default function RoomCatalogPage({ rooms, types }: { rooms: Room[]; types
                             <li className="flex flex-wrap items-center justify-between gap-3 py-3" key={room.id}>
                                 <div>
                                     <p className="text-sm font-medium">{room.number}</p>
-                                    <p className="text-xs text-muted-foreground">{typeName(room.room_type_id)}{room.floor !== null ? ` · ${t('property.rooms.floor')} ${room.floor}` : ''}</p>
+                                    <p className="text-xs text-muted-foreground">{typeName(room.room_type_id)}{room.building !== null ? ` · ${t('property.rooms.building')} ${room.building}` : ''}{room.floor !== null ? ` · ${t('property.rooms.floor')} ${room.floor}` : ''}</p>
                                 </div>
                                 <div className="flex items-center gap-2">
                                     <StatusBadge label={room.is_active ? t('property.status.active') : t('property.status.inactive')} tone={room.is_active ? 'success' : 'neutral'} />
-                                    <Button onClick={open(() => setRoomForm({ id: room.id, number: room.number, roomTypeId: room.room_type_id, floor: room.floor ?? '', lockVersion: room.lock_version, reason: '' }))} size="sm" type="button" variant="outline">{t('property.action.edit')}</Button>
+                                    <Button onClick={open(() => setRoomForm({ id: room.id, number: room.number, roomTypeId: room.room_type_id, floor: room.floor ?? '', building: room.building ?? '', lockVersion: room.lock_version, reason: '' }))} size="sm" type="button" variant="outline">{t('property.action.edit')}</Button>
                                     <Button onClick={open(() => setToggle({ kind: 'room', id: room.id, name: room.number, active: !room.is_active, lockVersion: room.lock_version }))} size="sm" type="button" variant="outline">{room.is_active ? t('property.action.deactivate') : t('property.action.activate')}</Button>
                                 </div>
                             </li>
@@ -220,6 +220,9 @@ export default function RoomCatalogPage({ rooms, types }: { rooms: Room[]; types
                         </FormField>
                         <FormField error={action.fieldError('floor')} label={t('property.rooms.floor')}>
                             <Input maxLength={10} onChange={(e) => setRoomForm({ ...roomForm, floor: e.target.value })} value={roomForm.floor} />
+                        </FormField>
+                        <FormField error={action.fieldError('building')} label={t('property.rooms.building')}>
+                            <Input maxLength={40} onChange={(e) => setRoomForm({ ...roomForm, building: e.target.value })} value={roomForm.building} />
                         </FormField>
                         <FormField error={action.fieldError('reason')} hint={t('property.field.reasonHint')} label={t('property.field.reason')}>
                             <Input maxLength={500} onChange={(e) => setRoomForm({ ...roomForm, reason: e.target.value })} value={roomForm.reason} />

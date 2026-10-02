@@ -41,6 +41,7 @@ Release notes for every release (NFR-14). Newest first. Each entry names the tas
 - TASK-DSH-013, TASK-DSH-014 (BR-001, BR-002): tax and service charge per month from the ledger (net of reversals) split by rooms, laundry and other, the date the tax is to be reported by (day of the next month, a property setting with a baseline), whether it was reported (a recorded filing with its date and reference, once per month), and an estimate of the employees' share of the service charge (a property setting with a baseline).
 - TASK-FO-012 (BR-002): choosing the length of a stay on the new reservation form with the number of nights and quick choices, one block per night with its weekday and date, and the price of every night worked out automatically as soon as the dates, room type and rate plan are known.
 - TASK-FO-022, TASK-FO-023 (BR-002, BR-003): split bill into named folios of a booking (for example Company and Guest) and moving a charge to another folio of the booking, or, with the right to correct folios, to another guest's folio, with a reason, as a reversal on the folio it leaves and a new charge on the folio it goes to; the ledger is never changed.
+- TASK-DSH-003: the building a room is in, next to its floor, set and changed with the other room details by an administrator (the room catalogue already added, changed, deactivated rooms and set their type, floor and, through the type, their capacity without a developer), shown on the catalogue and the housekeeping screens.
 
 ### Known limitations
 

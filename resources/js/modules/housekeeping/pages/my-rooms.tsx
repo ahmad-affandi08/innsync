@@ -12,7 +12,7 @@ import { useTranslation } from '@/shared/i18n/i18n';
 import { useErrorStateCopy } from '@/shared/i18n/use-ui-copy';
 
 type Finding = { id: string; description: string; mandatory: boolean };
-type Task = { id: string; room_id: string; requests: RoomRequest[]; flags: RoomFlag[]; room_number: string | null; floor: string | null; kind: string; status: string; lock_version: number; findings: Finding[] };
+type Task = { id: string; room_id: string; requests: RoomRequest[]; flags: RoomFlag[]; room_number: string | null; floor: string | null; building: string | null; kind: string; status: string; lock_version: number; findings: Finding[] };
 
 /** The attendant's phone screen: large targets, one action per room. Start and Finish are two taps from the list. */
 export default function MyRoomsPage({ tasks }: { tasks: Task[] }) {
@@ -54,7 +54,7 @@ export default function MyRoomsPage({ tasks }: { tasks: Task[] }) {
                             <div className="flex flex-wrap items-center justify-between gap-2">
                                 <p className="text-2xl font-semibold" data-testid="room-number">{task.room_number}</p>
                                 <div className="flex items-center gap-2">
-                                    {task.floor !== null ? <span className="text-xs text-muted-foreground">{t('hk.mine.floor', { floor: task.floor })}</span> : null}
+                                    {task.floor !== null ? <span className="text-xs text-muted-foreground">{task.building !== null ? `${task.building} · ` : ''}{t('hk.mine.floor', { floor: task.floor })}</span> : null}
                                     <StatusBadge label={t(`hk.kind.${task.kind}` as 'hk.kind.departure')} tone={task.kind === 'rework' ? 'danger' : 'neutral'} />
                                     <StatusBadge label={t(`hk.task.${task.status}` as 'hk.task.open')} tone={task.status === 'in_progress' ? 'info' : 'neutral'} />
                                 </div>

@@ -21,6 +21,7 @@ export const property = {
     'property.rooms.number': 'Room number',
     'property.rooms.numberHint': 'As shown on the door. It cannot be changed or reused.',
     'property.rooms.type': 'Room type',
+    'property.rooms.building': 'Building',
     'property.rooms.floor': 'Floor',
     'property.rooms.chooseType': 'Choose a room type',
     'property.field.reason': 'Reason for this change',

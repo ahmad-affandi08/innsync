@@ -16,7 +16,7 @@ import { useFormatters, useTranslation } from '@/shared/i18n/i18n';
 import { useErrorStateCopy } from '@/shared/i18n/use-ui-copy';
 
 type Task = { id: string; kind: string; status: string; assigned_to: string | null; assigned_name: string | null; lock_version: number };
-type Room = { room_id: string; number: string; floor: string | null; status: string; occupied: boolean; expected_departure: string | null; task: Task | null; requests: RoomRequest[]; flags: RoomFlag[] };
+type Room = { room_id: string; number: string; floor: string | null; building: string | null; status: string; occupied: boolean; expected_departure: string | null; task: Task | null; requests: RoomRequest[]; flags: RoomFlag[] };
 type Discrepancy = { room_id: string; number: string; rule: string; task_id: string | null; task_lock_version: number | null };
 type Board = { rooms: Room[]; discrepancies: Discrepancy[]; flag_kinds: string[]; staff: { id: string; name: string }[]; inspection_required: boolean; may: { manage: boolean; inspect: boolean; waive: boolean; settings: boolean } };
 type Finding = { id: string; description: string; mandatory: boolean };
@@ -112,7 +112,7 @@ export default function HousekeepingBoardPage({ board }: { board: Board }) {
                         <thead><tr className="text-xs text-muted-foreground"><th className="py-1 font-medium" scope="col">{t('hk.board.room')}</th><th scope="col">{t('hk.board.state')}</th><th scope="col">{t('hk.board.occupancy')}</th><th scope="col">{t('hk.board.task')}</th>{board.may.manage || board.may.inspect ? <th scope="col">{t('hk.board.actions')}</th> : null}</tr></thead>
                         <tbody>{board.rooms.map((r) => (
                             <tr className="border-t border-border align-top" key={r.room_id}>
-                                <th className="py-2 font-medium" scope="row">{r.number}{r.floor !== null ? <span className="ml-1 text-xs font-normal text-muted-foreground">· {r.floor}</span> : null}</th>
+                                <th className="py-2 font-medium" scope="row">{r.number}{r.building !== null || r.floor !== null ? <span className="ml-1 text-xs font-normal text-muted-foreground">· {[r.building, r.floor].filter((x) => x !== null).join(' · ')}</span> : null}</th>
                                 <td><StatusBadge label={t(`hk.status.${r.status}` as 'hk.status.dirty')} tone={statusTone[r.status] ?? 'neutral'} /></td>
                                 <td>{r.occupied && r.expected_departure !== null ? t('hk.board.occupied', { date: format.date(r.expected_departure) }) : t('hk.board.vacant')}</td>
                                 <td>

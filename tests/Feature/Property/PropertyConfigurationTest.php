@@ -69,6 +69,19 @@ final class PropertyConfigurationTest extends TestCase
             ->component('property/pages/room-catalog')->has('types', 1)->has('rooms', 1));
     }
 
+    public function test_a_room_has_a_building_that_can_be_set_changed_cleared_and_validated(): void
+    {
+        $this->manager();
+        $type = $this->postJson('/property/room-types', $this->type())->assertCreated()->json('type');
+
+        $room = $this->postJson('/property/rooms', ['number' => '201', 'room_type_id' => $type['id'], 'floor' => '2', 'building' => 'Tower A', 'reason' => 'Setup'])->assertCreated()->assertJsonPath('room.building', 'Tower A')->json('room');
+        $this->putJson("/property/rooms/{$room['id']}", ['room_type_id' => $type['id'], 'floor' => '2', 'building' => 'Garden Wing', 'lock_version' => 0, 'reason' => 'Moved'])->assertOk()->assertJsonPath('room.building', 'Garden Wing');
+        $this->get('/property/rooms')->assertInertia(fn (Assert $page) => $page->where('rooms.0.building', 'Garden Wing'));
+        $this->postJson("/property/rooms/{$room['id']}/active", ['active' => false, 'lock_version' => 1, 'reason' => 'Closed'])->assertOk()->assertJsonPath('room.building', 'Garden Wing');
+        $this->postJson('/property/rooms', ['number' => '202', 'room_type_id' => $type['id'], 'building' => '<script>', 'reason' => 'Setup'])->assertStatus(422);
+        $this->putJson("/property/rooms/{$room['id']}", ['room_type_id' => $type['id'], 'floor' => '2', 'building' => '', 'lock_version' => 2, 'reason' => 'No building'])->assertOk()->assertJsonPath('room.building', null);
+    }
+
     public function test_people_without_the_permission_get_the_standard_forbidden_error_and_nothing_changes(): void
     {
         $this->signIn(self::A, ['front-office.reservation.view']);

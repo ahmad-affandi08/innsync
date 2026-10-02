@@ -83,7 +83,7 @@ final readonly class RoomCatalogService implements RoomCatalogReader
 
     private static function roomView(Room $r): RoomView
     {
-        return new RoomView($r->id, $r->number->value, $r->roomTypeId, $r->floor, $r->isActive);
+        return new RoomView($r->id, $r->number->value, $r->roomTypeId, $r->floor, $r->isActive, $r->building);
     }
 
     // ---- reads for the admin screens ----
@@ -158,7 +158,7 @@ final readonly class RoomCatalogService implements RoomCatalogReader
 
     // ---- rooms ----
 
-    public function createRoom(PropertyId $property, string $actorId, string $number, string $roomTypeId, ?string $floor, string $reason): Room
+    public function createRoom(PropertyId $property, string $actorId, string $number, string $roomTypeId, ?string $floor, string $reason, ?string $building = null): Room
     {
         $this->authorize($property, $actorId, self::MANAGE_PERMISSION);
         $this->assertReason($reason);
@@ -169,9 +169,9 @@ final readonly class RoomCatalogService implements RoomCatalogReader
         }
 
         try {
-            $room = new Room($this->ids->next(), RoomNumber::fromString($number), $type->id, $floor === null || trim($floor) === '' ? null : trim($floor), true, 0);
+            $room = new Room($this->ids->next(), RoomNumber::fromString($number), $type->id, $floor === null || trim($floor) === '' ? null : trim($floor), true, 0, $building === null || trim($building) === '' ? null : trim($building));
         } catch (InvalidArgumentException $e) {
-            throw Refusal::invalid($e->getMessage(), ['number', 'floor']);
+            throw Refusal::invalid($e->getMessage(), ['number', 'floor', 'building']);
         }
 
         $this->transactions->run(function () use ($property, $actorId, $room, $reason): void {
@@ -185,7 +185,7 @@ final readonly class RoomCatalogService implements RoomCatalogReader
         return $room;
     }
 
-    public function updateRoom(PropertyId $property, string $actorId, string $id, string $roomTypeId, ?string $floor, int $expectedLockVersion, string $reason): Room
+    public function updateRoom(PropertyId $property, string $actorId, string $id, string $roomTypeId, ?string $floor, int $expectedLockVersion, string $reason, ?string $building = null): Room
     {
         $this->authorize($property, $actorId, self::MANAGE_PERMISSION);
         $this->assertReason($reason);
@@ -197,9 +197,9 @@ final readonly class RoomCatalogService implements RoomCatalogReader
         }
 
         try {
-            $after = $before->moved($type->id, $floor);
+            $after = $before->moved($type->id, $floor, $building);
         } catch (InvalidArgumentException $e) {
-            throw Refusal::invalid($e->getMessage(), ['floor']);
+            throw Refusal::invalid($e->getMessage(), ['floor', 'building']);
         }
 
         return $this->saveRoom($property, $actorId, $before, $after, $expectedLockVersion, 'room.updated', $reason);

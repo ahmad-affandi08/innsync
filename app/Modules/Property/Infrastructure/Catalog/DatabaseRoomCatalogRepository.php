@@ -107,6 +107,7 @@ final readonly class DatabaseRoomCatalogRepository implements RoomCatalogReposit
                 'room_type_id' => $room->roomTypeId,
                 'number' => $room->number->value,
                 'floor' => $room->floor,
+                'building' => $room->building,
                 'is_active' => $room->isActive,
                 'lock_version' => 0,
                 'created_at' => now(),
@@ -128,6 +129,7 @@ final readonly class DatabaseRoomCatalogRepository implements RoomCatalogReposit
             ->update([
                 'room_type_id' => $room->roomTypeId,
                 'floor' => $room->floor,
+                'building' => $room->building,
                 'is_active' => $room->isActive,
                 'lock_version' => $expectedLockVersion + 1,
                 'updated_at' => now(),
@@ -146,6 +148,6 @@ final readonly class DatabaseRoomCatalogRepository implements RoomCatalogReposit
 
     private static function room(stdClass $r): Room
     {
-        return new Room($r->id, RoomNumber::fromString($r->number), $r->room_type_id, $r->floor, (bool) $r->is_active, (int) $r->lock_version);
+        return new Room($r->id, RoomNumber::fromString($r->number), $r->room_type_id, $r->floor, (bool) $r->is_active, (int) $r->lock_version, $r->building);
     }
 }

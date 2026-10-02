@@ -21,6 +21,7 @@ export const property = {
     'property.rooms.number': 'Nomor kamar',
     'property.rooms.numberHint': 'Sesuai nomor di pintu. Tidak dapat diubah atau dipakai ulang.',
     'property.rooms.type': 'Tipe kamar',
+    'property.rooms.building': 'Gedung',
     'property.rooms.floor': 'Lantai',
     'property.rooms.chooseType': 'Pilih tipe kamar',
     'property.field.reason': 'Alasan perubahan ini',

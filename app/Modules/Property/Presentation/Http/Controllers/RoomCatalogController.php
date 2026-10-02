@@ -76,10 +76,11 @@ final readonly class RoomCatalogController
             'number' => ['required', 'string', 'max:20'],
             'room_type_id' => ['required', 'string', 'size:26'],
             'floor' => ['nullable', 'string', 'max:10'],
+            'building' => ['nullable', 'string', 'max:40'],
             'reason' => ['required', 'string', 'max:500'],
         ]);
 
-        $room = $this->catalog->createRoom($this->property->current(), $this->actor($request), $data['number'], $data['room_type_id'], $data['floor'] ?? null, $data['reason']);
+        $room = $this->catalog->createRoom($this->property->current(), $this->actor($request), $data['number'], $data['room_type_id'], $data['floor'] ?? null, $data['reason'], $data['building'] ?? null);
 
         return response()->json(['room' => $room->toArray()], 201)->header('Cache-Control', 'no-store');
     }
@@ -89,11 +90,12 @@ final readonly class RoomCatalogController
         $data = $request->validate([
             'room_type_id' => ['required', 'string', 'size:26'],
             'floor' => ['nullable', 'string', 'max:10'],
+            'building' => ['nullable', 'string', 'max:40'],
             'lock_version' => ['required', 'integer', 'min:0'],
             'reason' => ['required', 'string', 'max:500'],
         ]);
 
-        $room = $this->catalog->updateRoom($this->property->current(), $this->actor($request), $id, $data['room_type_id'], $data['floor'] ?? null, (int) $data['lock_version'], $data['reason']);
+        $room = $this->catalog->updateRoom($this->property->current(), $this->actor($request), $id, $data['room_type_id'], $data['floor'] ?? null, (int) $data['lock_version'], $data['reason'], $data['building'] ?? null);
 
         return response()->json(['room' => $room->toArray()])->header('Cache-Control', 'no-store');
     }

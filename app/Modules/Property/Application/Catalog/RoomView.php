@@ -13,5 +13,6 @@ final readonly class RoomView
         public string $roomTypeId,
         public ?string $floor,
         public bool $isActive,
+        public ?string $building = null,
     ) {}
 }

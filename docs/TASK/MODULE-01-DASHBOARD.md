@@ -15,7 +15,7 @@
 | --- | --- | --- | --- | --- |
 | TASK-DSH-001 | FR-DSH-001 | Wajib | Menampilkan kartu okupansi hari berjalan: jumlah kamar terisi, jumlah kamar tersedia, jumlah tamu menginap, kedatangan hari ini, keberangkatan hari ini, dan reservasi masuk. Angka bersumber dari Front Office dan Housekeeping. | REVIEW |
 | TASK-DSH-002 | FR-DSH-002 | Wajib | Menampilkan room board dengan dimensi status yang terpisah: occupancy (vacant/occupied), housekeeping (dirty/clean/inspected), sellability (sellable/OOO/OOS), serta service flag seperti DND/Double Lock. Complimentary ditampilkan sebagai atribut tarif/folio, bukan status kebersihan kamar. | IN_PROGRESS |
-| TASK-DSH-003 | FR-DSH-003 | Wajib | Papan kamar bersifat template: administrator dapat menambah, mengubah, menonaktifkan kamar, menetapkan tipe, lantai, gedung, dan kapasitas tanpa bantuan pengembang. | TODO |
+| TASK-DSH-003 | FR-DSH-003 | Wajib | Papan kamar bersifat template: administrator dapat menambah, mengubah, menonaktifkan kamar, menetapkan tipe, lantai, gedung, dan kapasitas tanpa bantuan pengembang. | REVIEW |
 | TASK-DSH-004 | FR-DSH-004 | Wajib | Menampilkan pendapatan hari berjalan per outlet (Kamar, Restoran, Bar, Spa, Gift Shop, dan outlet tambahan yang dibuat pengguna) beserta total dan perbandingan terhadap hari, minggu, serta bulan sebelumnya. | IN_PROGRESS |
 | TASK-DSH-005 | FR-DSH-005 | Wajib | Daftar outlet bersifat dapat diperluas; penambahan outlet baru otomatis muncul sebagai kolom pendapatan dan kategori pada laporan. | TODO |
 | TASK-DSH-006 | FR-DSH-006 | Wajib | Menampilkan ringkasan pengeluaran: pembayaran kepada pemasok dan vendor yang telah dibayar, hutang berjalan, serta daftar jatuh tempo dalam 7 dan 30 hari ke depan. | TODO |
