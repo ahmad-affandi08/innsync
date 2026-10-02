@@ -33,6 +33,7 @@ type LineEntry = { accepted: string; rejected: string; reason: string; condition
 type Form = { orderId: string; locationId: string; deliveryNote: string; note: string; lines: Record<string, LineEntry> };
 
 const blankEntry = (): LineEntry => ({ accepted: '', rejected: '', reason: '', condition: 'good', note: '', expires: '' });
+const CELL = '[&_[data-required]]:hidden';
 const emptyToNull = (s: string) => (s.trim() === '' ? null : s.trim());
 
 export default function ReceiptsPage({ overview, order }: { overview: Overview; order: string }) {
@@ -41,6 +42,7 @@ export default function ReceiptsPage({ overview, order }: { overview: Overview; 
     const errorCopy = useErrorStateCopy();
     const action = useServerAction();
     const [form, setForm] = useState<Form | null>(null);
+    const [problem, setProblem] = useState<string | null>(null);
     const money = (minor: number) => format.money(minor, overview.currency);
     const qty = (n: number) => formatMilli(n, locale);
     const intent = useMemo(() => newIdempotencyKey(), [JSON.stringify(form)]);
@@ -56,16 +58,23 @@ export default function ReceiptsPage({ overview, order }: { overview: Overview; 
 
     function openNew() {
         action.clear();
+        setProblem(null);
         chooseOrder(overview.receivable[0]?.id ?? '', null);
     }
 
     function setLine(id: string, patch: Partial<LineEntry>) {
         if (form === null) return;
+        setProblem(null);
         setForm({ ...form, lines: { ...form.lines, [id]: { ...(form.lines[id] ?? blankEntry()), ...patch } } });
     }
 
     async function save() {
         if (form === null || chosen === null) return;
+        const refusedLine = chosen.lines.find((l) => { const e = form.lines[l.id]; return e !== undefined && e.rejected.trim() !== '' && e.rejected.trim() !== '0' && e.reason === ''; });
+        const otherLine = chosen.lines.find((l) => form.lines[l.id]?.reason === 'other' && (form.lines[l.id]?.note.trim() ?? '') === '');
+        const flagged = refusedLine ?? otherLine;
+        if (flagged !== undefined) { setProblem(t(refusedLine === undefined ? 'inv.rcv.otherNeedsNote' : 'inv.rcv.reasonRequired', { item: flagged.item_code })); return; }
+        setProblem(null);
         const lines = chosen.lines
             .filter((l) => (form.lines[l.id]?.accepted.trim() ?? '') !== '' || (form.lines[l.id]?.rejected.trim() ?? '') !== '')
             .map((l) => {
@@ -99,7 +108,7 @@ export default function ReceiptsPage({ overview, order }: { overview: Overview; 
             <DataGrid caption={t('inv.rcv.title')} columns={columns} empty={<EmptyState title={t('inv.rcv.empty')} />} getRowId={(r) => r.id} id="inv.receipts" rows={overview.receipts} testId="receipts" />
 
             <Dialog
-                className="w-[min(64rem,calc(100vw-2rem))]"
+                className="w-[min(80rem,calc(100vw-2rem))]"
                 footer={<>
                     <Button disabled={action.busy} onClick={() => setForm(null)} type="button" variant="outline">{t('ui.dialog.cancel')}</Button>
                     <Button disabled={chosen === null} loading={action.busy} onClick={() => void save()} type="button">{t('inv.rcv.post')}</Button>
@@ -132,6 +141,7 @@ export default function ReceiptsPage({ overview, order }: { overview: Overview; 
 
                         {chosen !== null && (
                             <div className="flex flex-col gap-2 sm:col-span-2">
+                                {problem !== null ? <p className="text-sm text-danger" role="alert">{problem}</p> : null}
                                 {action.fieldError('lines') !== undefined ? <p className="text-sm text-danger">{action.fieldError('lines')}</p> : null}
                                 <div className="overflow-x-auto border border-border bg-surface">
                                     <Table data-testid="receive-lines">
@@ -162,20 +172,20 @@ export default function ReceiptsPage({ overview, order }: { overview: Overview; 
                                                         <TableCell className="text-right">{qty(l.remaining_milli)} {l.unit}</TableCell>
                                                         <TableCell>
                                                             <div className="flex items-start gap-1">
-                                                                <FormField field="lines.*.accepted" label={<span className="sr-only">{t('inv.rcv.accepted')} {l.item_code}</span>}>
+                                                                <FormField className={CELL} field="lines.*.accepted" label={<span className="sr-only">{t('inv.rcv.accepted')} {l.item_code}</span>}>
                                                                     <Input className="w-24" inputMode="decimal" onChange={(ev) => setLine(l.id, { accepted: ev.target.value })} value={e.accepted} />
                                                                 </FormField>
                                                                 {l.remaining_milli > 0 ? <Button aria-label={`${t('inv.rcv.fillRemaining')} ${l.item_code}`} onClick={() => setLine(l.id, { accepted: plainMilli(l.remaining_milli) })} size="sm" title={t('inv.rcv.fillRemaining')} type="button" variant="outline">{t('inv.rcv.fill')}</Button> : null}
                                                             </div>
                                                         </TableCell>
                                                         <TableCell>
-                                                            <FormField field="lines.*.rejected" label={<span className="sr-only">{t('inv.rcv.refused')} {l.item_code}</span>}>
+                                                            <FormField className={CELL} field="lines.*.rejected" label={<span className="sr-only">{t('inv.rcv.refused')} {l.item_code}</span>}>
                                                                 <Input className="w-24" inputMode="decimal" onChange={(ev) => setLine(l.id, { rejected: ev.target.value })} value={e.rejected} />
                                                             </FormField>
                                                         </TableCell>
                                                         <TableCell>
                                                             <div className="w-40">
-                                                                <FormField field="lines.*.rejection_reason" label={<span className="sr-only">{t('inv.rcv.refusalReason')} {l.item_code}</span>} required={refused}>
+                                                                <FormField className={CELL} field="lines.*.rejection_reason" label={<span className="sr-only">{t('inv.rcv.refusalReason')} {l.item_code}</span>}>
                                                                     <Select disabled={!refused} onChange={(ev) => setLine(l.id, { reason: ev.target.value })} searchable={false} value={e.reason}>
                                                                         <option value="">—</option>
                                                                         {overview.rejection_reasons.map((r) => <option key={r} value={r}>{t(`inv.rcv.reason.${r}` as MessageKey)}</option>)}
@@ -185,7 +195,7 @@ export default function ReceiptsPage({ overview, order }: { overview: Overview; 
                                                         </TableCell>
                                                         <TableCell>
                                                             <div className="w-36">
-                                                                <FormField field="lines.*.condition" label={<span className="sr-only">{t('inv.rcv.condition')} {l.item_code}</span>}>
+                                                                <FormField className={CELL} field="lines.*.condition" label={<span className="sr-only">{t('inv.rcv.condition')} {l.item_code}</span>}>
                                                                     <Select onChange={(ev) => setLine(l.id, { condition: ev.target.value })} searchable={false} value={e.condition}>
                                                                         {overview.conditions.map((c) => <option key={c} value={c}>{t(`inv.rcv.condition.${c}` as MessageKey)}</option>)}
                                                                     </Select>
@@ -193,13 +203,13 @@ export default function ReceiptsPage({ overview, order }: { overview: Overview; 
                                                             </div>
                                                         </TableCell>
                                                         <TableCell>
-                                                            <FormField field="lines.*.note" label={<span className="sr-only">{t('inv.rcv.lineNote')} {l.item_code}</span>}>
+                                                            <FormField className={CELL} field="lines.*.note" label={<span className="sr-only">{t('inv.rcv.lineNote')} {l.item_code}</span>}>
                                                                 <Input className="min-w-36" maxLength={200} onChange={(ev) => setLine(l.id, { note: ev.target.value })} value={e.note} />
                                                             </FormField>
                                                         </TableCell>
                                                         <TableCell>
                                                             <div className="w-44">
-                                                                <FormField field="lines.*.expires_on" label={<span className="sr-only">{t('inv.rcv.expiry')} {l.item_code}</span>}>
+                                                                <FormField className={CELL} field="lines.*.expires_on" label={<span className="sr-only">{t('inv.rcv.expiry')} {l.item_code}</span>}>
                                                                     <DatePicker onChange={(ev) => setLine(l.id, { expires: ev.target.value })} value={e.expires} />
                                                                 </FormField>
                                                             </div>

@@ -135,11 +135,25 @@
             "status"
         ]
     },
+    "GET /inventory/invoices": {
+        "required": [],
+        "declared": [
+            "status",
+            "supplier"
+        ]
+    },
     "GET /inventory/orders": {
         "required": [],
         "declared": [
             "status",
             "supplier"
+        ]
+    },
+    "GET /inventory/quotes": {
+        "required": [],
+        "declared": [
+            "items",
+            "items.*"
         ]
     },
     "GET /inventory/receipts": {
@@ -149,10 +163,32 @@
             "supplier"
         ]
     },
+    "GET /inventory/reports/deliveries": {
+        "required": [],
+        "declared": [
+            "from",
+            "to"
+        ]
+    },
+    "GET /inventory/reports/purchases": {
+        "required": [],
+        "declared": [
+            "department",
+            "from",
+            "supplier",
+            "to"
+        ]
+    },
     "GET /inventory/requests": {
         "required": [],
         "declared": [
             "status"
+        ]
+    },
+    "GET /inventory/returns": {
+        "required": [],
+        "declared": [
+            "supplier"
         ]
     },
     "GET /inventory/stock": {
@@ -1542,6 +1578,60 @@
             "lock_version"
         ]
     },
+    "POST /inventory/invoices": {
+        "required": [
+            "invoice_date",
+            "invoice_number",
+            "lines",
+            "lines.*.order_line_id",
+            "lines.*.quantity",
+            "lines.*.unit_price_minor",
+            "order_id",
+            "tax_minor",
+            "total_minor"
+        ],
+        "declared": [
+            "invoice_date",
+            "invoice_number",
+            "lines",
+            "lines.*.order_line_id",
+            "lines.*.quantity",
+            "lines.*.unit_price_minor",
+            "note",
+            "order_id",
+            "tax_minor",
+            "tax_number",
+            "total_minor"
+        ]
+    },
+    "POST /inventory/invoices/{id}/approve": {
+        "required": [
+            "lock_version",
+            "note"
+        ],
+        "declared": [
+            "lock_version",
+            "note"
+        ]
+    },
+    "POST /inventory/invoices/{id}/documents": {
+        "required": [
+            "document"
+        ],
+        "declared": [
+            "document"
+        ]
+    },
+    "POST /inventory/invoices/{id}/reject": {
+        "required": [
+            "lock_version",
+            "note"
+        ],
+        "declared": [
+            "lock_version",
+            "note"
+        ]
+    },
     "POST /inventory/items": {
         "required": [
             "base_unit",
@@ -1753,6 +1843,27 @@
             "period"
         ]
     },
+    "POST /inventory/quotes": {
+        "required": [
+            "item_id",
+            "supplier_id",
+            "unit",
+            "unit_price_minor",
+            "valid_until"
+        ],
+        "declared": [
+            "item_id",
+            "lead_time_days",
+            "min_quantity",
+            "note",
+            "quoted_on",
+            "reference",
+            "supplier_id",
+            "unit",
+            "unit_price_minor",
+            "valid_until"
+        ]
+    },
     "POST /inventory/receipts": {
         "required": [
             "lines",
@@ -1848,6 +1959,25 @@
         ],
         "declared": [
             "lock_version"
+        ]
+    },
+    "POST /inventory/returns": {
+        "required": [
+            "lines",
+            "lines.*.quantity",
+            "lines.*.receipt_line_id",
+            "reason",
+            "receipt_id"
+        ],
+        "declared": [
+            "credit_note_number",
+            "credit_tax_minor",
+            "lines",
+            "lines.*.quantity",
+            "lines.*.receipt_line_id",
+            "note",
+            "reason",
+            "receipt_id"
         ]
     },
     "POST /inventory/stock-limits": {
@@ -1983,6 +2113,7 @@
             "lines.*.quantity",
             "lines.*.unit",
             "note",
+            "return_of",
             "to_location_id"
         ]
     },

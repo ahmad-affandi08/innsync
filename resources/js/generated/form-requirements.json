@@ -214,6 +214,19 @@
         "kind",
         "location_id"
     ],
+    "inventory-purchasing/pages/invoice": [
+        "document",
+        "note"
+    ],
+    "inventory-purchasing/pages/invoices": [
+        "invoice_date",
+        "invoice_number",
+        "lines.*.quantity",
+        "lines.*.unit_price_minor",
+        "order_id",
+        "tax_minor",
+        "total_minor"
+    ],
     "inventory-purchasing/pages/items": [
         "base_unit",
         "category_id",
@@ -253,6 +266,19 @@
         "department",
         "period"
     ],
+    "inventory-purchasing/pages/quotes": [
+        "item_id",
+        "supplier_id",
+        "unit",
+        "unit_price_minor",
+        "valid_until"
+    ],
+    "inventory-purchasing/pages/receipt": [
+        "photo"
+    ],
+    "inventory-purchasing/pages/receipts": [
+        "order_id"
+    ],
     "inventory-purchasing/pages/requests": [
         "department",
         "lines.*.item_id",
@@ -261,6 +287,10 @@
         "needed_by",
         "reason",
         "urgency"
+    ],
+    "inventory-purchasing/pages/returns": [
+        "reason",
+        "receipt_id"
     ],
     "inventory-purchasing/pages/stock": [
         "item_id",

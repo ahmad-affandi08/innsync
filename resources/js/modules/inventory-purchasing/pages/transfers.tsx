@@ -12,7 +12,7 @@ import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
 import { StatusBadge, type StatusTone } from '@/components/ui/status-badge';
 import { InventoryShell } from '@/modules/inventory-purchasing/components/inventory-shell';
-import { formatMilli } from '@/modules/inventory-purchasing/lib/quantity';
+import { formatMilli, plainMilli } from '@/modules/inventory-purchasing/lib/quantity';
 import { newIdempotencyKey } from '@/shared/api/http';
 import { useServerAction } from '@/shared/api/use-server-action';
 import { useFormatters, useTranslation } from '@/shared/i18n/i18n';
@@ -22,7 +22,7 @@ import type { MessageKey } from '@/locales/en/index';
 type Line = { item_code: string; item_name: string; unit: string; unit_qty_milli: number; base_qty_milli: number; base_unit: string };
 type Place = { id: string; code: string; name: string };
 type Transfer = {
-    id: string; number: string; status: string; note: string | null; decision_note: string | null; business_date: string; from: Place; to: Place; created_by_name: string | null; decided_by_name: string | null;
+    id: string; number: string; return_of: string | null; return_of_number: string | null; status: string; note: string | null; decision_note: string | null; business_date: string; from: Place; to: Place; created_by_name: string | null; decided_by_name: string | null;
     created_at: string | null; decided_at: string | null; lock_version: number; may_receive: boolean; may_cancel: boolean; lines: Line[];
 };
 type CatalogItem = { id: string; code: string; name: string; base_unit: string; is_active: boolean; units: { unit: string; factor_milli: number }[] };
@@ -30,13 +30,14 @@ type Catalog = { items: CatalogItem[]; locations: { id: string; code: string; na
 
 const tone: Record<string, StatusTone> = { sent: 'pending', received: 'success', rejected: 'danger', cancelled: 'neutral' };
 const BLANK_LINE = { item_id: '', unit: '', quantity: '' };
+type Form = { from: string; to: string; note: string; return_of: string | null; lines: { item_id: string; unit: string; quantity: string }[] };
 
 export default function TransfersPage({ overview, catalog, status }: { overview: { transfers: Transfer[]; may: { send: boolean; receive: boolean } }; catalog: Catalog; status: string }) {
     const { t, locale } = useTranslation();
     const format = useFormatters();
     const errorCopy = useErrorStateCopy();
     const action = useServerAction();
-    const [form, setForm] = useState<{ from: string; to: string; note: string; lines: { item_id: string; unit: string; quantity: string }[] } | null>(null);
+    const [form, setForm] = useState<Form | null>(null);
     const [openId, setOpenId] = useState<string | null>(null);
     const [rejecting, setRejecting] = useState('');
     const [showReject, setShowReject] = useState(false);
@@ -51,7 +52,21 @@ export default function TransfersPage({ overview, catalog, status }: { overview:
     function openNew() {
         action.clear();
         const first = activeItems[0];
-        setForm({ from: activeLocations[0]?.id ?? '', to: activeLocations[1]?.id ?? '', note: '', lines: [{ ...BLANK_LINE, item_id: first?.id ?? '', unit: first?.base_unit ?? '' }] });
+        setForm({ from: activeLocations[0]?.id ?? '', to: activeLocations[1]?.id ?? '', note: '', return_of: null, lines: [{ ...BLANK_LINE, item_id: first?.id ?? '', unit: first?.base_unit ?? '' }] });
+    }
+
+    /** The goods of a received transfer going back where they came from; the server checks the quantities and the direction. */
+    function openReturn(original: Transfer) {
+        action.clear();
+        setOpenId(null);
+        setForm({
+            from: original.to.id, to: original.from.id, note: t('inv.ret.returnOf', { number: original.number }), return_of: original.id,
+            lines: original.lines.flatMap((l) => {
+                const item = catalog.items.find((x) => x.code === l.item_code);
+
+                return item === undefined ? [] : [{ item_id: item.id, unit: l.unit, quantity: plainMilli(l.unit_qty_milli) }];
+            }),
+        });
     }
 
     function setLine(i: number, patch: Partial<typeof BLANK_LINE>) {
@@ -62,7 +77,7 @@ export default function TransfersPage({ overview, catalog, status }: { overview:
     async function send() {
         if (form === null) return;
         const done = await action.run('/inventory/transfers', {
-            body: { from_location_id: form.from, to_location_id: form.to, note: form.note || null, lines: form.lines.map((l) => ({ item_id: l.item_id, unit: l.unit, quantity: l.quantity })) },
+            body: { from_location_id: form.from, to_location_id: form.to, note: form.note || null, return_of: form.return_of, lines: form.lines.map((l) => ({ item_id: l.item_id, unit: l.unit, quantity: l.quantity })) },
             idempotencyKey: intent,
             reload,
         });
@@ -77,7 +92,7 @@ export default function TransfersPage({ overview, catalog, status }: { overview:
     }
 
     const columns: DataGridColumn<Transfer>[] = [
-        { id: 'number', label: t('inv.col.number'), value: (x) => x.number, rowHeader: true },
+        { id: 'number', label: t('inv.col.number'), value: (x) => x.number, rowHeader: true, cell: (x) => <>{x.number}{x.return_of_number === null ? null : <span className="block text-xs font-normal text-muted-foreground">{t('inv.ret.returnOf', { number: x.return_of_number })}</span>}</> },
         { id: 'from', label: t('inv.col.from'), value: (x) => x.from.code, searchText: (x) => `${x.from.code} ${x.from.name}`, filter: 'select', cell: (x) => x.from.name },
         { id: 'to', label: t('inv.col.to'), value: (x) => x.to.code, searchText: (x) => `${x.to.code} ${x.to.name}`, filter: 'select', cell: (x) => x.to.name },
         { id: 'lines', label: t('inv.col.lines'), value: (x) => x.lines.map((l) => l.item_code).join(' '), cell: (x) => x.lines.map((l) => `${l.item_code} ${qty(l.unit_qty_milli)} ${l.unit}`).join(', ') },
@@ -105,7 +120,7 @@ export default function TransfersPage({ overview, catalog, status }: { overview:
                 </>}
                 onClose={() => setForm(null)}
                 open={form !== null}
-                title={t('inv.trf.new')}
+                title={form?.return_of ? t('inv.ret.new') : t('inv.trf.new')}
             >
                 {form !== null && (
                     <div className="grid gap-3 sm:grid-cols-2">
@@ -156,6 +171,7 @@ export default function TransfersPage({ overview, catalog, status }: { overview:
             <Dialog
                 footer={<>
                     <Button disabled={action.busy} onClick={() => setOpenId(null)} type="button" variant="outline">{t('inv.trf.back')}</Button>
+                    {current?.status === 'received' && overview.may.send ? <Button disabled={action.busy} onClick={() => openReturn(current)} type="button" variant="outline">{t('inv.ret.new')}</Button> : null}
                     {current?.may_cancel ? <Button disabled={action.busy} onClick={() => void decide('cancel')} type="button" variant="outline">{t('inv.trf.cancel')}</Button> : null}
                     {current?.may_receive && !showReject ? <Button disabled={action.busy} onClick={() => setShowReject(true)} type="button" variant="outline">{t('inv.trf.reject')}</Button> : null}
                     {current?.may_receive && showReject ? <Button disabled={action.busy} loading={action.busy} onClick={() => void decide('reject')} type="button" variant="outline">{t('inv.trf.reject')}</Button> : null}
@@ -170,6 +186,7 @@ export default function TransfersPage({ overview, catalog, status }: { overview:
                         {action.error !== null ? <ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /> : null}
                         <p><StatusBadge label={label(current.status)} tone={tone[current.status] ?? 'neutral'} /></p>
                         <p>{current.from.name} → {current.to.name}</p>
+                        {current.return_of_number !== null ? <p className="text-muted-foreground">{t('inv.ret.returnOf', { number: current.return_of_number })}</p> : null}
                         <p className="text-muted-foreground">{t('inv.trf.sent')}: {current.created_by_name ?? '—'}{current.created_at ? ` · ${format.instant(current.created_at)}` : ''}</p>
                         {current.decided_by_name !== null ? <p className="text-muted-foreground">{current.status === 'received' ? t('inv.trf.received') : label(current.status)}: {current.decided_by_name}{current.decided_at ? ` · ${format.instant(current.decided_at)}` : ''}{current.decision_note ? ` · ${current.decision_note}` : ''}</p> : null}
                         {current.note ? <p>{current.note}</p> : null}

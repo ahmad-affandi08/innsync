@@ -11,18 +11,16 @@ import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
-import { StatusBadge } from '@/components/ui/status-badge';
+import { StatusBadge, type StatusTone } from '@/components/ui/status-badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { InventoryShell } from '@/modules/inventory-purchasing/components/inventory-shell';
 import { minorToInput } from '@/modules/inventory-purchasing/lib/amounts';
-import { INVOICE_TONE } from '@/modules/inventory-purchasing/lib/purchasing';
 import { formatMilli, plainMilli } from '@/modules/inventory-purchasing/lib/quantity';
 import { newIdempotencyKey } from '@/shared/api/http';
 import { useServerAction } from '@/shared/api/use-server-action';
 import { useFormatters, useTranslation } from '@/shared/i18n/i18n';
 import { useErrorStateCopy } from '@/shared/i18n/use-ui-copy';
 import { parseMajorToMinor } from '@/shared/money/money';
-import { toCalendarDate } from '@/shared/time/calendar-date';
 import type { MessageKey } from '@/locales/en/index';
 
 type Invoice = {
@@ -35,7 +33,9 @@ type Overview = { currency: string; invoices: Invoice[]; invoiceable: Invoiceabl
 type LineEntry = { quantity: string; price: string };
 type Form = { orderId: string; invoiceNumber: string; invoiceDate: string; taxNumber: string; note: string; tax: string; total: string; lines: Record<string, LineEntry> };
 
+const INVOICE_TONE: Record<string, StatusTone> = { matched: 'success', variance: 'warning', approved: 'success', rejected: 'danger' };
 const STATUSES = ['matched', 'variance', 'approved', 'rejected'] as const;
+const CELL = '[&_[data-required]]:hidden';
 const emptyToNull = (s: string) => (s.trim() === '' ? null : s.trim());
 
 export default function InvoicesPage({ overview, status }: { overview: Overview; status: string }) {
@@ -55,7 +55,7 @@ export default function InvoicesPage({ overview, status }: { overview: Overview;
         const next = overview.invoiceable.find((o) => o.id === orderId);
         setAmountError(false);
         setForm({
-            orderId, invoiceNumber: base?.invoiceNumber ?? '', invoiceDate: base?.invoiceDate ?? toCalendarDate(new Date()), taxNumber: base?.taxNumber ?? '', note: base?.note ?? '', tax: base?.tax ?? '', total: base?.total ?? '',
+            orderId, invoiceNumber: base?.invoiceNumber ?? '', invoiceDate: base?.invoiceDate ?? '', taxNumber: base?.taxNumber ?? '', note: base?.note ?? '', tax: base?.tax ?? '', total: base?.total ?? '',
             lines: Object.fromEntries((next?.lines ?? []).map((l) => [l.id, { quantity: plainMilli(l.open_milli), price: minorToInput(l.unit_price_minor, overview.currency) }])),
         });
     }
@@ -157,8 +157,8 @@ export default function InvoicesPage({ overview, status }: { overview: Overview;
                                                     <TableHead>{t('inv.col.item')}</TableHead>
                                                     <TableHead className="text-right">{t('inv.inv.openQty')}</TableHead>
                                                     <TableHead className="text-right">{t('inv.inv.orderPrice')}</TableHead>
-                                                    <TableHead>{t('inv.inv.invoiceQty')}</TableHead>
-                                                    <TableHead>{t('inv.inv.invoicePrice')}</TableHead>
+                                                    <TableHead>{t('inv.inv.invoiceQty')} *</TableHead>
+                                                    <TableHead>{t('inv.inv.invoicePrice')} *</TableHead>
                                                 </TableRow>
                                             </TableHeader>
                                             <TableBody>
@@ -171,12 +171,12 @@ export default function InvoicesPage({ overview, status }: { overview: Overview;
                                                             <TableCell className="text-right">{qty(l.open_milli)} {l.unit}</TableCell>
                                                             <TableCell className="text-right">{money(l.unit_price_minor)}</TableCell>
                                                             <TableCell>
-                                                                <FormField field="lines.*.quantity" label={<span className="sr-only">{t('inv.inv.invoiceQty')} {l.item_code}</span>}>
+                                                                <FormField className={CELL} field="lines.*.quantity" label={<span className="sr-only">{t('inv.inv.invoiceQty')} {l.item_code}</span>}>
                                                                     <Input className="w-28" inputMode="decimal" onChange={(ev) => setLine(l.id, { quantity: ev.target.value })} value={e.quantity} />
                                                                 </FormField>
                                                             </TableCell>
                                                             <TableCell>
-                                                                <FormField field="lines.*.unit_price_minor" label={<span className="sr-only">{t('inv.inv.invoicePrice')} {l.item_code}</span>}>
+                                                                <FormField className={CELL} field="lines.*.unit_price_minor" label={<span className="sr-only">{t('inv.inv.invoicePrice')} {l.item_code}</span>}>
                                                                     <Input className="w-32" inputMode="decimal" onChange={(ev) => setLine(l.id, { price: ev.target.value })} value={e.price} />
                                                                 </FormField>
                                                             </TableCell>

@@ -24,11 +24,15 @@ type Choice = { id: string; code: string; name: string; base_unit: string; units
 type Supplier = {
     id: string; code: string; name: string; contact_name: string | null; phone: string | null; email: string | null; address: string | null; tax_id: string | null;
     payment_terms_days: number; note: string | null; is_active: boolean; lock_version: number; rating_avg: number | null; rating_count: number;
-    currency: string; aspects: string[]; items: Choice[]; prices: Price[]; ratings: Rating[]; may: { manage: boolean; rate: boolean };
+    currency: string; aspects: string[]; items: Choice[]; prices: Price[]; ratings: Rating[]; payable_minor: number; ledger: LedgerEntry[]; may: { manage: boolean; rate: boolean };
 };
 type Edit = { name: string; contact_name: string; phone: string; email: string; address: string; tax_id: string; payment_terms_days: string; note: string; active: boolean };
 type PriceForm = { item_id: string; unit: string; amount: string; valid_from: string; reason: string };
 type RatingForm = { score: string; aspect: string; comment: string };
+type LedgerEntry = { id: string; kind: string; amount_minor: number; ref_type: string; ref_id: string; ref_number: string; business_date: string };
+
+/** Where the document behind a ledger entry is shown. */
+const LEDGER_LINK: Record<string, string> = { goods_receipt: '/inventory/receipts', supplier_invoice: '/inventory/invoices', purchase_return: '/inventory/returns' };
 
 const reload = ['supplier'];
 const stars = (score: number) => `${'★'.repeat(score)}${'☆'.repeat(Math.max(0, 5 - score))} ${score}/5`;
@@ -113,6 +117,15 @@ export default function SupplierPage({ supplier }: { supplier: Supplier }) {
         { id: 'by', label: t('inv.sup.col.ratedBy'), value: (r) => r.created_by_name ?? '', cell: (r) => r.created_by_name ?? '—' },
         { id: 'when', label: t('inv.sup.col.when'), value: (r) => r.created_at, cell: (r) => format.instant(r.created_at) },
     ];
+    const ledgerColumns: DataGridColumn<LedgerEntry>[] = [
+        { id: 'date', label: t('inv.col.date'), value: (e) => e.business_date, rowHeader: true, cell: (e) => format.date(e.business_date) },
+        { id: 'kind', label: t('inv.led.col.kind'), value: (e) => e.kind, filter: 'select', filterLabel: (k) => t(`inv.led.kind.${k}` as MessageKey), cell: (e) => t(`inv.led.kind.${e.kind}` as MessageKey) },
+        {
+            id: 'ref', label: t('inv.led.col.document'), value: (e) => e.ref_number,
+            cell: (e) => (LEDGER_LINK[e.ref_type] === undefined ? e.ref_number : <Link className="underline" href={`${LEDGER_LINK[e.ref_type]}/${e.ref_id}`}>{e.ref_number}</Link>),
+        },
+        { id: 'amount', label: t('inv.led.col.amount'), align: 'right', value: (e) => e.amount_minor, cell: (e) => <span className={e.amount_minor < 0 ? 'text-danger' : undefined}>{money(e.amount_minor)}</span> },
+    ];
     const facts: [string, string][] = [
         [t('inv.sup.f.contactName'), supplier.contact_name ?? '—'],
         [t('inv.sup.col.phone'), supplier.phone ?? '—'],
@@ -147,6 +160,15 @@ export default function SupplierPage({ supplier }: { supplier: Supplier }) {
                         </div>
                     ))}
                 </dl>
+            </section>
+
+            <section aria-labelledby="sup-payable-h" className="flex flex-col gap-3">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                    <h2 className="text-lg font-semibold" id="sup-payable-h">{t('inv.led.heading')}</h2>
+                    <span className="text-sm">{t('inv.led.balance')}: <strong className="text-base" data-testid="supplier-payable">{money(supplier.payable_minor)}</strong></span>
+                </div>
+                <p className="text-sm text-muted-foreground">{t('inv.led.hint')}</p>
+                <DataGrid caption={t('inv.led.heading')} columns={ledgerColumns} empty={<EmptyState title={t('inv.led.empty')} />} getRowId={(e) => e.id} id="inv.supplier.ledger" rows={supplier.ledger} testId="supplier-ledger" />
             </section>
 
             <section aria-labelledby="sup-prices-h" className="flex flex-col gap-3">

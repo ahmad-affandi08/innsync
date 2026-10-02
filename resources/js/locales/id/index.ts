@@ -2,9 +2,11 @@ import type { MessageKey } from '../en/index.ts'
 import { frontOffice } from './frontoffice.ts'
 import { housekeeping } from './housekeeping.ts'
 import { inventory } from './inventory.ts'
+import { purchasingReceiving } from './purchasing-receiving.ts'
 import { laundry } from './laundry.ts'
 import { offline } from './offline.ts'
 import { property } from './property.ts'
+import { purchasingReports } from './purchasing-reports.ts'
 import { rates } from './rates.ts'
 import { reporting } from './reporting.ts'
 
@@ -14,7 +16,8 @@ export const id: Record<MessageKey, string> = {
     ...property,
     ...frontOffice,
     ...housekeeping,
-    ...inventory,
+    ...inventory, ...purchasingReceiving,
+    ...purchasingReports,
     ...laundry,
     ...rates,
     ...reporting,
