@@ -20,7 +20,7 @@
 | TASK-RPT-005 | FR-RPT-005 | Wajib | Menyediakan laporan ringkas harian untuk manajemen (flash report) yang memuat okupansi, pendapatan, biaya utama, dan kejadian penting. | IN_PROGRESS |
 | TASK-RPT-006 | FR-RPT-006 | Sebaiknya | Menyediakan pembanding antar periode: hari ini dibanding kemarin, bulan ini dibanding bulan lalu, dan tahun berjalan dibanding tahun sebelumnya. | REVIEW |
 | TASK-RPT-007 | FR-RPT-007 | Wajib | Menyediakan jejak audit yang dapat dicari berdasarkan pengguna, modul, dan rentang waktu. | REVIEW |
-| TASK-RPT-008 | FR-RPT-008 | Bisa | Menyediakan pembuat laporan sederhana bagi pengguna mahir untuk memilih kolom dan penyaring sendiri. | TODO |
+| TASK-RPT-008 | FR-RPT-008 | Bisa | Menyediakan pembuat laporan sederhana bagi pengguna mahir untuk memilih kolom dan penyaring sendiri. | REVIEW |
 | TASK-RPT-009 | FR-RPT-009 | Wajib | Setiap laporan menampilkan generated-at time, business date/periode, filter yang digunakan, dan sumber data utama sehingga hasil dapat direproduksi. | REVIEW |
 | TASK-RPT-010 | FR-RPT-010 | Wajib | Kolom PII pada laporan mengikuti hak akses dan dapat dimasking; ekspor data sensitif dicatat pada audit log dengan pengguna, waktu, filter, dan tujuan. | REVIEW |
 | TASK-RPT-011 | FR-RPT-011 | Sebaiknya | Ekspor besar diproses asynchronous dengan status pekerjaan dan notifikasi selesai agar tidak membebani transaksi operasional. | REVIEW |

@@ -251,7 +251,7 @@
 | TASK-RPT-005 | FR-RPT-005 | Reporting & Analytics | Wajib | IN_PROGRESS |
 | TASK-RPT-006 | FR-RPT-006 | Reporting & Analytics | Sebaiknya | REVIEW |
 | TASK-RPT-007 | FR-RPT-007 | Reporting & Analytics | Wajib | REVIEW |
-| TASK-RPT-008 | FR-RPT-008 | Reporting & Analytics | Bisa | TODO |
+| TASK-RPT-008 | FR-RPT-008 | Reporting & Analytics | Bisa | REVIEW |
 | TASK-RPT-009 | FR-RPT-009 | Reporting & Analytics | Wajib | REVIEW |
 | TASK-RPT-010 | FR-RPT-010 | Reporting & Analytics | Wajib | REVIEW |
 | TASK-RPT-011 | FR-RPT-011 | Reporting & Analytics | Sebaiknya | REVIEW |

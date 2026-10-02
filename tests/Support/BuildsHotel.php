@@ -40,6 +40,7 @@ use App\Modules\Property\Application\Settings\PropertySettingsService;
 use App\Modules\Reporting\Application\DashboardService;
 use App\Modules\Reporting\Application\ObligationService;
 use App\Modules\Reporting\Application\OutletService;
+use App\Modules\Reporting\Application\ReportBuilderService;
 use App\Modules\Reporting\Application\ReportService;
 use App\Shared\Application\Idempotency\IdempotencyKey;
 use App\Shared\Application\Tenancy\PropertyContext;
@@ -121,6 +122,9 @@ trait BuildsHotel
     private string $companyViewerId;
 
     private string $companyLinkerId;
+
+    /** The report builder (FR-RPT-008): someone who may use it. */
+    private string $builderId;
 
     /** Par levels (FR-HK-019): someone who sets them. */
     private string $parManagerId;
@@ -249,6 +253,7 @@ trait BuildsHotel
         $groupManager = UserRecord::factory()->create();
         $outletManager = UserRecord::factory()->create();
         $parManager = UserRecord::factory()->create();
+        $builder = UserRecord::factory()->create();
         $claimClerk = UserRecord::factory()->create();
         $claimDutyManager = UserRecord::factory()->create();
         $claimBoth = UserRecord::factory()->create();
@@ -315,6 +320,7 @@ trait BuildsHotel
         $this->grant($groupViewer, self::PROPERTY, [GroupBookingService::VIEW_PERMISSION]);
         $this->grant($outletManager, self::PROPERTY, [OutletService::MANAGE_PERMISSION]);
         $this->grant($parManager, self::PROPERTY, [ParLevelService::MANAGE_PERMISSION]);
+        $this->grant($builder, self::PROPERTY, [ReportBuilderService::PERMISSION]);
         $this->grant($claimClerk, self::PROPERTY, [ClaimService::RECORD_PERMISSION]);
         $this->grant($claimDutyManager, self::PROPERTY, [ClaimService::APPROVE_PERMISSION]);
         $this->grant($claimBoth, self::PROPERTY, [ClaimService::RECORD_PERMISSION, ClaimService::APPROVE_PERMISSION]);
@@ -378,6 +384,7 @@ trait BuildsHotel
         $this->groupViewerId = strtolower((string) $groupViewer->getKey());
         $this->outletManagerId = strtolower((string) $outletManager->getKey());
         $this->parManagerId = strtolower((string) $parManager->getKey());
+        $this->builderId = strtolower((string) $builder->getKey());
         $this->claimClerkId = strtolower((string) $claimClerk->getKey());
         $this->claimDutyManagerId = strtolower((string) $claimDutyManager->getKey());
         $this->claimBothId = strtolower((string) $claimBoth->getKey());

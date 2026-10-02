@@ -45,6 +45,7 @@ use App\Modules\Reporting\Presentation\Http\Controllers\DashboardController;
 use App\Modules\Reporting\Presentation\Http\Controllers\ExportJobController;
 use App\Modules\Reporting\Presentation\Http\Controllers\ObligationController;
 use App\Modules\Reporting\Presentation\Http\Controllers\OutletController;
+use App\Modules\Reporting\Presentation\Http\Controllers\ReportBuilderController;
 use App\Modules\Reporting\Presentation\Http\Controllers\ReportController;
 use App\Shared\Infrastructure\Localization\SetLocaleController;
 use App\Shared\Infrastructure\Offline\SyncController;
@@ -401,6 +402,9 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->group(
         Route::get('/housekeeping/export', [ReportController::class, 'exportHousekeeping'])->name('reports.housekeeping.export');
         Route::get('/comparison', [ReportController::class, 'comparison'])->name('reports.comparison');
         Route::get('/comparison/export', [ReportController::class, 'exportComparison'])->name('reports.comparison.export');
+        Route::get('/builder', [ReportBuilderController::class, 'index'])->name('reports.builder');
+        Route::get('/builder/run', [ReportBuilderController::class, 'run'])->name('reports.builder.run');
+        Route::get('/builder/export', [ReportBuilderController::class, 'export'])->name('reports.builder.export');
         Route::get('/exports', [ExportJobController::class, 'index'])->name('reports.exports');
         Route::post('/exports', [ExportJobController::class, 'store'])->middleware('throttle:bookings')->name('reports.exports.store');
         Route::post('/exports/seen', [ExportJobController::class, 'seen'])->name('reports.exports.seen');

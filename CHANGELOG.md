@@ -55,6 +55,7 @@ Release notes for every release (NFR-14). Newest first. Each entry names the tas
 - TASK-LDY-006 (BR-003): claims for damaged or lost guest laundry with a photo and the value claimed, decided once by a Manager on Duty who did not record it, the compensation capped at ten times the laundry price of a named item (adjustable); nothing is posted to the folio.
 - TASK-HK-019 (BR-003): par levels of linen and amenities per room type and area, with what to bring to the floor against the store, and consumption by shift (morning, afternoon, night) against the standard use times the rooms serviced.
 - TASK-RPT-011 (BR-009, NFR-24): large report exports built in the background by a scheduled worker as the requester, with a status page, a private expiring file only the requester can download, and an in-application notice when ready or failed; no e-mail is sent.
+- TASK-RPT-008 (BR-009): a simple report builder over four datasets that hold no personal data (reservations, folio postings, guest laundry orders, housekeeping tasks) with chosen columns, filters, range and sort, a table and an audited CSV; everything is checked against a catalogue.
 
 ### Known limitations
 
