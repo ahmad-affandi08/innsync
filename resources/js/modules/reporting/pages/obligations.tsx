@@ -3,6 +3,7 @@ import { useState } from 'react';
 
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
+import { DataGrid, type DataGridColumn } from '@/components/ui/data-grid';
 import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
@@ -47,30 +48,54 @@ export default function ObligationsPage({ context, timeline: tl }: { context: { 
         if (done !== null) { setFiling(null); router.reload({ only: ['timeline'] }); }
     }
 
+    const col = (k: string) => t(`rpt.obl.col.${k}` as 'rpt.obl.col.month');
+    const columns: DataGridColumn<Row>[] = [
+        { id: 'month', label: col('month'), value: (r) => r.month, rowHeader: true },
+        { id: 'taxRooms', label: col('taxRooms'), align: 'right', value: (r) => r.tax.room, cell: (r) => money(r.tax.room) },
+        { id: 'taxLaundry', label: col('taxLaundry'), align: 'right', value: (r) => r.tax.laundry, cell: (r) => money(r.tax.laundry) },
+        ...tl.outlets.map((o): DataGridColumn<Row> => ({ id: `outlet-${o.code}`, label: t('rpt.obl.col.outlet', { name: o.name }), align: 'right', value: (r) => r.tax.outlets[o.code] ?? 0, cell: (r) => money(r.tax.outlets[o.code] ?? 0), hidden: true })),
+        { id: 'taxOther', label: col('taxOther'), align: 'right', value: (r) => r.tax.other, cell: (r) => money(r.tax.other) },
+        { id: 'taxTotal', label: col('taxTotal'), align: 'right', className: 'font-medium', value: (r) => r.tax.total, cell: (r) => money(r.tax.total), footer: <span data-testid="total-tax">{money(tl.totals.tax)}</span> },
+        { id: 'service', label: col('service'), align: 'right', value: (r) => r.service_charge.total, cell: (r) => money(r.service_charge.total), footer: <span data-testid="total-service">{money(tl.totals.service_charge)}</span> },
+        { id: 'staff', label: col('staff'), align: 'right', value: (r) => r.employee_estimate_minor, cell: (r) => money(r.employee_estimate_minor), footer: money(tl.totals.employee_estimate) },
+        { id: 'due', label: col('due'), value: (r) => r.due_date, searchText: (r) => `${r.due_date} ${format.date(r.due_date)}`, cell: (r) => format.date(r.due_date) },
+        {
+            id: 'status',
+            label: col('status'),
+            value: (r) => r.status,
+            filter: 'select',
+            filterLabel: (v) => t(`rpt.obl.status.${v}` as 'rpt.obl.status.open'),
+            searchText: (r) => `${t(`rpt.obl.status.${r.status}` as 'rpt.obl.status.open')} ${r.filing?.reference ?? ''}`,
+            cell: (r) => (
+                <>
+                    <StatusBadge label={t(`rpt.obl.status.${r.status}` as 'rpt.obl.status.open')} tone={TONE[r.status]} />
+                    {r.filing !== null ? <span className="block text-xs text-muted-foreground">{t('rpt.obl.reportedOn', { date: format.date(r.filing.reported_on), reference: r.filing.reference })}</span> : null}
+                </>
+            ),
+        },
+        {
+            id: 'action',
+            label: t('rpt.obl.markReported'),
+            header: <span className="sr-only">{t('rpt.obl.markReported')}</span>,
+            cell: (r) => (tl.may_manage && (r.status === 'due' || r.status === 'overdue') ? <Button onClick={() => setFiling({ month: r.month, date: tl.business_date, reference: '' })} size="sm" type="button" variant="outline">{t('rpt.obl.markReported')}</Button> : null),
+        },
+    ];
+
     return (
         <ReportingShell description={t('rpt.obl.description')} title={t('rpt.obl.title')} wide>
             {action.error !== null ? <ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /> : null}
             {!tl.settings.configured ? <Alert title={t('rpt.obl.baseline', { day: tl.settings.tax_report_day, share: tl.settings.service_employee_share_bp / 100 })} tone="warning" /> : null}
 
-            <div className="overflow-x-auto">
-                <table className="w-full text-left text-sm" data-testid="obligations">
-                    <thead><tr className="text-xs text-muted-foreground">{['month', 'taxRooms', 'taxLaundry'].map((k, i) => <th className={i === 0 ? 'py-1 font-medium' : undefined} key={k} scope="col">{t(`rpt.obl.col.${k}` as 'rpt.obl.col.month')}</th>)}{tl.outlets.map((o) => <th key={o.code} scope="col">{t('rpt.obl.col.outlet', { name: o.name })}</th>)}{['taxOther', 'taxTotal', 'service', 'staff', 'due', 'status'].map((k) => <th key={k} scope="col">{t(`rpt.obl.col.${k}` as 'rpt.obl.col.month')}</th>)}<th scope="col" /></tr></thead>
-                    <tbody>{tl.rows.map((r) => (
-                        <tr className="border-t border-border align-top" data-testid={`month-${r.month}`} key={r.month}>
-                            <th className="py-2 font-medium" scope="row">{r.month}</th>
-                            <td>{money(r.tax.room)}</td><td>{money(r.tax.laundry)}</td>{tl.outlets.map((o) => <td key={o.code}>{money(r.tax.outlets[o.code] ?? 0)}</td>)}<td>{money(r.tax.other)}</td><td className="font-medium">{money(r.tax.total)}</td>
-                            <td>{money(r.service_charge.total)}</td><td>{money(r.employee_estimate_minor)}</td>
-                            <td>{format.date(r.due_date)}</td>
-                            <td>
-                                <StatusBadge label={t(`rpt.obl.status.${r.status}` as 'rpt.obl.status.open')} tone={TONE[r.status]} />
-                                {r.filing !== null ? <span className="block text-xs text-muted-foreground">{t('rpt.obl.reportedOn', { date: format.date(r.filing.reported_on), reference: r.filing.reference })}</span> : null}
-                            </td>
-                            <td>{tl.may_manage && (r.status === 'due' || r.status === 'overdue') ? <Button onClick={() => setFiling({ month: r.month, date: tl.business_date, reference: '' })} size="sm" type="button" variant="outline">{t('rpt.obl.markReported')}</Button> : null}</td>
-                        </tr>
-                    ))}</tbody>
-                    <tfoot><tr className="border-t border-border font-medium"><th className="py-1" scope="row">{t('rpt.flash.total')}</th><td colSpan={3} /><td data-testid="total-tax">{money(tl.totals.tax)}</td><td data-testid="total-service">{money(tl.totals.service_charge)}</td><td>{money(tl.totals.employee_estimate)}</td><td colSpan={3} /></tr></tfoot>
-                </table>
-            </div>
+            <DataGrid
+                caption={t('rpt.obl.title')}
+                columns={columns}
+                footerLabel={t('rpt.flash.total')}
+                getRowId={(r) => r.month}
+                id="rpt.obligations"
+                rowTestId={(r) => `month-${r.month}`}
+                rows={tl.rows}
+                testId="obligations"
+            />
             <ul className="list-disc pl-5 text-xs text-muted-foreground">{[t('rpt.obl.note.definition'), t('rpt.obl.note.outlets'), t('rpt.obl.note.baseline')].map((n) => <li key={n}>{n}</li>)}</ul>
 
             {filing !== null && (

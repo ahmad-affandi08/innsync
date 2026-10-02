@@ -1,5 +1,7 @@
 import { Button } from '@/components/ui/button';
+import { DataGrid, type DataGridColumn } from '@/components/ui/data-grid';
 import { EmptyState } from '@/components/ui/empty-state';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { PeriodPicker } from '@/modules/reporting/components/period-picker';
 import { ReportMeta, type Meta } from '@/modules/reporting/components/report-meta';
 import { ReportingShell } from '@/modules/reporting/components/reporting-shell';
@@ -21,6 +23,11 @@ export default function HousekeepingReportPage({ report: r }: { report: Report }
     const q = new URLSearchParams({ from: r.meta.period.from, to: r.meta.period.to }).toString();
     const minutes = (seconds: number) => t('rpt.hk.minutes', { minutes: format.number(Math.round(seconds / 60)) });
     const percent = (bp: number | null) => (bp === null ? '—' : `${format.number(Math.round(bp / 100))}%`);
+    const staffColumns: DataGridColumn<Report['staff'][number]>[] = [
+        { id: 'person', label: t('rpt.hk.person'), value: (s) => s.name ?? '—', rowHeader: true },
+        { id: 'rooms', label: t('rpt.hk.rooms'), align: 'right', value: (s) => s.rooms },
+        { id: 'average', label: t('rpt.hk.average'), align: 'right', value: (s) => s.average_seconds, cell: (s) => minutes(s.average_seconds) },
+    ];
 
     return (
         <ReportingShell description={t('rpt.hk.description')} title={t('rpt.hk.title')}>
@@ -40,21 +47,38 @@ export default function HousekeepingReportPage({ report: r }: { report: Report }
 
             <section aria-labelledby="hk-staff-h" className="flex flex-col gap-1">
                 <h2 className="text-lg font-semibold" id="hk-staff-h">{t('rpt.hk.staff')}</h2>
-                {r.staff.length === 0 ? <EmptyState title={t('rpt.hk.empty')} /> : (
-                    <table className="w-full text-left text-sm" data-testid="hk-staff">
-                        <thead><tr className="text-xs text-muted-foreground"><th className="py-1 font-medium" scope="col">{t('rpt.hk.person')}</th><th scope="col">{t('rpt.hk.rooms')}</th><th scope="col">{t('rpt.hk.average')}</th></tr></thead>
-                        <tbody>{r.staff.map((s) => <tr className="border-t border-border" key={s.user_id}><th className="py-1 font-medium" scope="row">{s.name ?? '—'}</th><td>{s.rooms}</td><td>{minutes(s.average_seconds)}</td></tr>)}</tbody>
-                    </table>
-                )}
+                <DataGrid
+                    caption={t('rpt.hk.staff')}
+                    columns={staffColumns}
+                    empty={<EmptyState title={t('rpt.hk.empty')} />}
+                    getRowId={(s) => s.user_id}
+                    id="rpt.hk.staff"
+                    rows={r.staff}
+                    testId="hk-staff"
+                />
             </section>
 
             {r.kinds.length > 0 && (
                 <section aria-labelledby="hk-kinds-h" className="flex flex-col gap-1">
                     <h2 className="text-lg font-semibold" id="hk-kinds-h">{t('rpt.hk.kinds')}</h2>
-                    <table className="w-full text-left text-sm" data-testid="hk-kinds">
-                        <thead><tr className="text-xs text-muted-foreground"><th className="py-1 font-medium" scope="col">{t('rpt.hk.kind')}</th><th scope="col">{t('rpt.hk.rooms')}</th><th scope="col">{t('rpt.hk.average')}</th></tr></thead>
-                        <tbody>{r.kinds.map((k) => <tr className="border-t border-border" key={k.kind}><th className="py-1 font-medium" scope="row">{t(`hk.kind.${k.kind}` as 'hk.kind.departure')}</th><td>{k.rooms}</td><td>{minutes(k.average_seconds)}</td></tr>)}</tbody>
-                    </table>
+                    <Table data-testid="hk-kinds">
+                        <TableHeader>
+                            <TableRow className="hover:bg-transparent">
+                                <TableHead scope="col">{t('rpt.hk.kind')}</TableHead>
+                                <TableHead className="text-right" scope="col">{t('rpt.hk.rooms')}</TableHead>
+                                <TableHead className="text-right" scope="col">{t('rpt.hk.average')}</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {r.kinds.map((k) => (
+                                <TableRow key={k.kind}>
+                                    <TableHead className="font-medium text-foreground" scope="row">{t(`hk.kind.${k.kind}` as 'hk.kind.departure')}</TableHead>
+                                    <TableCell className="text-right tabular-nums">{k.rooms}</TableCell>
+                                    <TableCell className="text-right tabular-nums">{minutes(k.average_seconds)}</TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
                 </section>
             )}
         </ReportingShell>

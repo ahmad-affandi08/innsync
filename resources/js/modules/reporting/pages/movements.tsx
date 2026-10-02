@@ -3,6 +3,7 @@ import { useState } from 'react';
 
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
+import { DataGrid, type DataGridColumn } from '@/components/ui/data-grid';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
 import { ReportMeta, type Meta } from '@/modules/reporting/components/report-meta';
@@ -24,7 +25,33 @@ export default function MovementsPage({ context, may_export, report: r }: { cont
     const [purpose, setPurpose] = useState('');
     const query = new URLSearchParams({ date: r.date, purpose }).toString();
     const pax = (a: number, c: number) => t('rpt.mov.guests', { adults: a, children: c });
-    const head = (keys: string[]) => <thead><tr className="text-xs text-muted-foreground">{keys.map((k, i) => <th className={i === 0 ? 'py-1 font-medium' : undefined} key={k} scope="col">{t(`rpt.mov.col.${k}` as 'rpt.mov.col.room')}</th>)}</tr></thead>;
+    const col = (k: string) => t(`rpt.mov.col.${k}` as 'rpt.mov.col.room');
+    const none = <p className="text-sm text-muted-foreground">{t('rpt.mov.empty')}</p>;
+    const money = (minor: number) => format.money(minor, context.currency);
+    const arrivalColumns: DataGridColumn<Arrival>[] = [
+        { id: 'reservation', label: col('reservation'), value: (a) => a.reservation, rowHeader: true },
+        { id: 'guest', label: col('guest'), value: (a) => a.guest },
+        { id: 'type', label: col('type'), value: (a) => a.room_type, filter: 'select' },
+        { id: 'room', label: col('room'), value: (a) => a.room, cell: (a) => a.room ?? '—' },
+        { id: 'guests', label: col('guests'), value: (a) => a.adults + a.children, searchText: (a) => pax(a.adults, a.children), cell: (a) => pax(a.adults, a.children) },
+        { id: 'until', label: col('until'), value: (a) => a.departure, searchText: (a) => `${a.departure} ${format.date(a.departure)}`, cell: (a) => format.date(a.departure) },
+        { id: 'status', label: col('status'), value: (a) => a.status, filter: 'select', filterLabel: (v) => t(`fo.status.${v}` as 'fo.status.tentative'), cell: (a) => t(`fo.status.${a.status}` as 'fo.status.tentative'), hidden: true },
+    ];
+    const departureColumns: DataGridColumn<Stay>[] = [
+        { id: 'room', label: col('room'), value: (s) => s.room, rowHeader: true },
+        { id: 'reservation', label: col('reservation'), value: (s) => s.reservation },
+        { id: 'guest', label: col('guest'), value: (s) => s.guest },
+        { id: 'status', label: col('status'), value: (s) => s.status, filter: 'select', filterLabel: (v) => t(`rpt.mov.status.${v}` as 'rpt.mov.status.in_house'), cell: (s) => t(`rpt.mov.status.${s.status}` as 'rpt.mov.status.in_house') },
+        { id: 'balance', label: col('balance'), align: 'right', value: (s) => s.balance_minor, cell: (s) => money(s.balance_minor) },
+    ];
+    const inHouseColumns: DataGridColumn<Stay>[] = [
+        { id: 'room', label: col('room'), value: (s) => s.room, rowHeader: true },
+        { id: 'reservation', label: col('reservation'), value: (s) => s.reservation },
+        { id: 'guest', label: col('guest'), value: (s) => s.guest },
+        { id: 'guests', label: col('guests'), value: (s) => s.adults + s.children, searchText: (s) => pax(s.adults, s.children), cell: (s) => pax(s.adults, s.children) },
+        { id: 'until', label: col('until'), value: (s) => s.checked_out ?? s.expected_departure, searchText: (s) => { const d = s.checked_out ?? s.expected_departure; return `${d} ${format.date(d)}`; }, cell: (s) => format.date(s.checked_out ?? s.expected_departure) },
+        { id: 'balance', label: col('balance'), align: 'right', value: (s) => s.balance_minor, cell: (s) => money(s.balance_minor) },
+    ];
 
     return (
         <ReportingShell description={t('rpt.mov.description')} title={t('rpt.mov.title')} wide>
@@ -44,29 +71,38 @@ export default function MovementsPage({ context, may_export, report: r }: { cont
 
             <section aria-label={t('rpt.mov.arrivals', { n: r.totals.arrivals })} data-testid="arrivals">
                 <h2 className="mb-1 text-lg font-semibold">{t('rpt.mov.arrivals', { n: r.totals.arrivals })}</h2>
-                {r.arrivals.length === 0 ? <p className="text-sm text-muted-foreground">{t('rpt.mov.empty')}</p> : (
-                    <table className="w-full text-left text-sm">{head(['reservation', 'guest', 'type', 'room', 'guests', 'until'])}<tbody>{r.arrivals.map((a) => (
-                        <tr className="border-t border-border" key={a.reservation}><th className="py-1 font-medium" scope="row">{a.reservation}</th><td>{a.guest}</td><td>{a.room_type}</td><td>{a.room ?? '—'}</td><td>{pax(a.adults, a.children)}</td><td>{format.date(a.departure)}</td></tr>
-                    ))}</tbody></table>
-                )}
+                <DataGrid
+                    caption={t('rpt.mov.arrivals', { n: r.totals.arrivals })}
+                    columns={arrivalColumns}
+                    empty={none}
+                    getRowId={(a) => a.reservation}
+                    id="rpt.movements.arrivals"
+                    rows={r.arrivals}
+                />
             </section>
 
             <section aria-label={t('rpt.mov.departures', { n: r.totals.departures })} data-testid="departures">
                 <h2 className="mb-1 text-lg font-semibold">{t('rpt.mov.departures', { n: r.totals.departures })}</h2>
-                {r.departures.length === 0 ? <p className="text-sm text-muted-foreground">{t('rpt.mov.empty')}</p> : (
-                    <table className="w-full text-left text-sm">{head(['room', 'reservation', 'guest', 'status', 'balance'])}<tbody>{r.departures.map((s) => (
-                        <tr className="border-t border-border" key={s.reservation}><th className="py-1 font-medium" scope="row">{s.room}</th><td>{s.reservation}</td><td>{s.guest}</td><td>{t(`rpt.mov.status.${s.status}` as 'rpt.mov.status.in_house')}</td><td>{format.money(s.balance_minor, context.currency)}</td></tr>
-                    ))}</tbody></table>
-                )}
+                <DataGrid
+                    caption={t('rpt.mov.departures', { n: r.totals.departures })}
+                    columns={departureColumns}
+                    empty={none}
+                    getRowId={(s) => s.reservation}
+                    id="rpt.movements.departures"
+                    rows={r.departures}
+                />
             </section>
 
             <section aria-label={t('rpt.mov.inHouse', { n: r.totals.in_house, guests: r.totals.guests_in_house })} data-testid="in-house">
                 <h2 className="mb-1 text-lg font-semibold">{t('rpt.mov.inHouse', { n: r.totals.in_house, guests: r.totals.guests_in_house })}</h2>
-                {r.in_house.length === 0 ? <p className="text-sm text-muted-foreground">{t('rpt.mov.empty')}</p> : (
-                    <table className="w-full text-left text-sm">{head(['room', 'reservation', 'guest', 'guests', 'until', 'balance'])}<tbody>{r.in_house.map((s) => (
-                        <tr className="border-t border-border" key={s.reservation}><th className="py-1 font-medium" scope="row">{s.room}</th><td>{s.reservation}</td><td>{s.guest}</td><td>{pax(s.adults, s.children)}</td><td>{format.date(s.checked_out ?? s.expected_departure)}</td><td>{format.money(s.balance_minor, context.currency)}</td></tr>
-                    ))}</tbody></table>
-                )}
+                <DataGrid
+                    caption={t('rpt.mov.inHouse', { n: r.totals.in_house, guests: r.totals.guests_in_house })}
+                    columns={inHouseColumns}
+                    empty={none}
+                    getRowId={(s) => s.reservation}
+                    id="rpt.movements.in_house"
+                    rows={r.in_house}
+                />
             </section>
         </ReportingShell>
     );

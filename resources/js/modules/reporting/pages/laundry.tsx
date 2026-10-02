@@ -1,4 +1,5 @@
 import { Button } from '@/components/ui/button';
+import { DataGrid, type DataGridColumn } from '@/components/ui/data-grid';
 import { EmptyState } from '@/components/ui/empty-state';
 import { PeriodPicker } from '@/modules/reporting/components/period-picker';
 import { ReportMeta, type Meta } from '@/modules/reporting/components/report-meta';
@@ -18,6 +19,19 @@ export default function LaundryReportPage({ context, report: r }: { context: { c
     const format = useFormatters();
     const q = new URLSearchParams({ from: r.meta.period.from, to: r.meta.period.to }).toString();
     const minutes = (seconds: number | null) => (seconds === null ? '—' : t('rpt.ldy.minutes', { minutes: format.number(Math.round(seconds / 60)) }));
+    const col = (k: string) => t(`rpt.ldy.col.${k}` as 'rpt.ldy.col.date');
+    const columns: DataGridColumn<Report['rows'][number]>[] = [
+        { id: 'date', label: col('date'), value: (x) => x.date, searchText: (x) => `${x.date} ${format.date(x.date)}`, rowHeader: true, cell: (x) => format.date(x.date), footer: <span data-testid="ldy-totals">{t('rpt.flash.total')}</span> },
+        { id: 'received', label: col('received'), align: 'right', value: (x) => x.received, footer: r.totals.received },
+        { id: 'pieces', label: col('pieces'), align: 'right', value: (x) => x.pieces, footer: r.totals.pieces },
+        { id: 'express', label: col('express'), align: 'right', value: (x) => x.express, footer: r.totals.express },
+        { id: 'ready', label: col('ready'), align: 'right', value: (x) => x.ready, footer: r.totals.ready },
+        { id: 'onTime', label: col('onTime'), align: 'right', value: (x) => x.on_time, footer: `${r.totals.on_time}${r.totals.on_time_percent === null ? '' : ` (${r.totals.on_time_percent}%)`}` },
+        { id: 'average', label: col('average'), align: 'right', value: (x) => x.average_seconds, cell: (x) => minutes(x.average_seconds), footer: minutes(r.totals.average_seconds) },
+        { id: 'charged', label: col('charged'), align: 'right', value: (x) => x.charged_minor, cell: (x) => format.money(x.charged_minor, context.currency), footer: format.money(r.totals.charged_minor, context.currency) },
+        { id: 'difference', label: col('difference'), align: 'right', value: (x) => x.discrepancies, footer: r.totals.discrepancies },
+        { id: 'cancelled', label: col('cancelled'), align: 'right', value: (x) => x.cancelled, footer: r.totals.cancelled },
+    ];
 
     return (
         <ReportingShell description={t('rpt.ldy.description')} title={t('rpt.ldy.title')} wide>
@@ -28,15 +42,15 @@ export default function LaundryReportPage({ context, report: r }: { context: { c
             </div>
             <ReportMeta meta={r.meta} />
             <p className="text-xs text-muted-foreground">{t('rpt.ldy.costNote')}</p>
-            {r.rows.length === 0 ? <EmptyState title={t('rpt.ldy.empty')} /> : (
-                <table className="w-full text-left text-sm" data-testid="ldy-rows">
-                    <thead><tr className="text-xs text-muted-foreground">{['date', 'received', 'pieces', 'express', 'ready', 'onTime', 'average', 'charged', 'difference', 'cancelled'].map((k, i) => <th className={i === 0 ? 'py-1 font-medium' : undefined} key={k} scope="col">{t(`rpt.ldy.col.${k}` as 'rpt.ldy.col.date')}</th>)}</tr></thead>
-                    <tbody>{r.rows.map((x) => (
-                        <tr className="border-t border-border" key={x.date}><th className="py-1 font-medium" scope="row">{format.date(x.date)}</th><td>{x.received}</td><td>{x.pieces}</td><td>{x.express}</td><td>{x.ready}</td><td>{x.on_time}</td><td>{minutes(x.average_seconds)}</td><td>{format.money(x.charged_minor, context.currency)}</td><td>{x.discrepancies}</td><td>{x.cancelled}</td></tr>
-                    ))}</tbody>
-                    <tfoot><tr className="border-t border-border font-medium" data-testid="ldy-totals"><th className="py-1" scope="row">{t('rpt.flash.total')}</th><td>{r.totals.received}</td><td>{r.totals.pieces}</td><td>{r.totals.express}</td><td>{r.totals.ready}</td><td>{r.totals.on_time}{r.totals.on_time_percent === null ? '' : ` (${r.totals.on_time_percent}%)`}</td><td>{minutes(r.totals.average_seconds)}</td><td>{format.money(r.totals.charged_minor, context.currency)}</td><td>{r.totals.discrepancies}</td><td>{r.totals.cancelled}</td></tr></tfoot>
-                </table>
-            )}
+            <DataGrid
+                caption={t('rpt.ldy.title')}
+                columns={columns}
+                empty={<EmptyState title={t('rpt.ldy.empty')} />}
+                getRowId={(x) => x.date}
+                id="rpt.laundry"
+                rows={r.rows}
+                testId="ldy-rows"
+            />
         </ReportingShell>
     );
 }
