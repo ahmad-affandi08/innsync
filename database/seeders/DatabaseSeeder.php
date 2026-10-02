@@ -10,6 +10,6 @@ final class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        // Reference and development seed data will be added by its owning context.
+        $this->call(DevelopmentSeeder::class);
     }
 }
