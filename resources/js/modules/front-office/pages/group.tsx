@@ -2,6 +2,7 @@ import { Link } from '@inertiajs/react';
 import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
+import { DataGrid, type DataGridColumn } from '@/components/ui/data-grid';
 import { ErrorState } from '@/components/ui/error-state';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { blankLine, GroupRoomLines, roomBody, type GroupLookups, type RoomLine } from '@/modules/front-office/components/group-room-lines';
@@ -44,6 +45,21 @@ export default function GroupPage({ group: view, lookups }: Props) {
         }
     }
 
+    const columns: DataGridColumn<Member>[] = [
+        { id: 'line', label: '#', value: (m) => m.line },
+        { id: 'number', label: t('fo.res.number'), value: (m) => m.number, rowHeader: true, cell: (m) => <Link className="font-medium underline-offset-2 hover:underline" href={`/front-office/reservations/${m.reservation_id}`}>{m.number}</Link> },
+        { id: 'guest', label: t('fo.res.guest'), value: (m) => m.guest_name },
+        { id: 'roomType', label: t('fo.res.roomType'), value: (m) => m.room_type, filter: 'select' },
+        { id: 'room', label: t('fo.group.room'), value: (m) => m.room, cell: (m) => m.room ?? '—' },
+        { id: 'status', label: t('fo.res.status'), value: (m) => m.status, filter: 'select', filterLabel: (v) => t(`fo.status.${v}` as 'fo.status.confirmed'), cell: (m) => <StatusBadge label={t(`fo.status.${m.status}` as 'fo.status.confirmed')} tone={statusTone[m.status] ?? 'neutral'} /> },
+        { id: 'arrival', label: t('fo.res.arrival'), value: (m) => m.arrival, searchText: (m) => `${m.arrival} ${format.date(m.arrival)}`, cell: (m) => format.date(m.arrival), hidden: true },
+        { id: 'departure', label: t('fo.res.departure'), value: (m) => m.departure, searchText: (m) => `${m.departure} ${format.date(m.departure)}`, cell: (m) => format.date(m.departure), hidden: true },
+        { id: 'adults', label: t('fo.res.adults'), align: 'right', value: (m) => m.adults, hidden: true },
+        { id: 'children', label: t('fo.res.children'), align: 'right', value: (m) => m.children, hidden: true },
+        { id: 'total', label: t('fo.group.stayTotal'), align: 'right', value: (m) => m.total_minor, cell: (m) => format.money(m.total_minor, m.currency) },
+        { id: 'balance', label: t('fo.group.ownBalance'), align: 'right', value: (m) => m.own_balance_minor, cell: (m) => format.money(m.own_balance_minor, m.currency) },
+    ];
+
     return (
         <FrontOfficeShell description={`${g.name} · ${g.booker_name}`} title={g.number} wide>
             {action.error !== null && !adding ? <ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /> : null}
@@ -70,20 +86,14 @@ export default function GroupPage({ group: view, lookups }: Props) {
                     <h2 className="text-lg font-semibold" id="grp-rooms-h">{t('fo.group.rooms')}</h2>
                     {view.may.manage && lookups !== null ? <Button onClick={() => { action.clear(); setAdding(true); }} size="sm" type="button" variant="outline">{t('fo.group.addRooms')}</Button> : null}
                 </div>
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left text-sm" data-testid="members">
-                        <thead><tr className="text-xs text-muted-foreground"><th className="py-1 font-medium" scope="col">#</th><th scope="col">{t('fo.res.number')}</th><th scope="col">{t('fo.res.guest')}</th><th scope="col">{t('fo.res.roomType')}</th><th scope="col">{t('fo.group.room')}</th><th scope="col">{t('fo.res.status')}</th><th scope="col">{t('fo.group.stayTotal')}</th><th scope="col">{t('fo.group.ownBalance')}</th></tr></thead>
-                        <tbody>{view.members.map((m) => (
-                            <tr className="border-t border-border" key={m.reservation_id}>
-                                <td className="py-2">{m.line}</td>
-                                <th scope="row"><Link className="font-medium underline-offset-2 hover:underline" href={`/front-office/reservations/${m.reservation_id}`}>{m.number}</Link></th>
-                                <td>{m.guest_name}</td><td>{m.room_type}</td><td>{m.room ?? '—'}</td>
-                                <td><StatusBadge label={t(`fo.status.${m.status}` as 'fo.status.confirmed')} tone={statusTone[m.status] ?? 'neutral'} /></td>
-                                <td>{format.money(m.total_minor, m.currency)}</td><td>{format.money(m.own_balance_minor, m.currency)}</td>
-                            </tr>
-                        ))}</tbody>
-                    </table>
-                </div>
+                <DataGrid
+                    caption={t('fo.group.rooms')}
+                    columns={columns}
+                    getRowId={(m) => m.reservation_id}
+                    id="fo.group.members"
+                    rows={view.members}
+                    testId="members"
+                />
             </section>
 
             {adding && lookups !== null && (

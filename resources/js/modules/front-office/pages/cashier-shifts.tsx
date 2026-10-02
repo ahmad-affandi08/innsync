@@ -3,6 +3,7 @@ import { useState } from 'react';
 
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
+import { DataGrid, type DataGridColumn } from '@/components/ui/data-grid';
 import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
@@ -37,6 +38,17 @@ export default function CashierShiftsPage({ filters, list, settings }: Props) {
         if (done !== null) { setSaved(true); setReason(''); }
     }
 
+    const columns: DataGridColumn<Row>[] = [
+        { id: 'number', label: t('fo.cash.list.col.number'), value: (s) => s.number, rowHeader: true, cell: (s) => <Link className="underline-offset-2 hover:underline" href={`/front-office/cashier/shifts/${s.id}`}>{s.number}</Link> },
+        { id: 'cashier', label: t('fo.cash.list.col.cashier'), value: (s) => s.cashier_name, cell: (s) => s.cashier_name ?? '—' },
+        { id: 'opened', label: t('fo.cash.list.col.opened'), value: (s) => s.opened_at, searchText: (s) => `${s.opened_at} ${format.instant(s.opened_at)}`, cell: (s) => format.instant(s.opened_at) },
+        { id: 'status', label: t('fo.cash.list.col.status'), value: (s) => s.status, filter: 'select', filterLabel: (v) => t(`fo.cash.status.${v}` as 'fo.cash.status.open'), cell: (s) => <StatusBadge label={t(`fo.cash.status.${s.status}` as 'fo.cash.status.open')} tone={s.status === 'open' ? 'info' : 'neutral'} /> },
+        {
+            id: 'variance', label: t('fo.cash.list.col.variance'), align: 'right', value: (s) => s.variance_minor,
+            cell: (s) => <span className={s.variance_minor !== null && s.variance_minor !== 0 ? 'font-medium text-danger' : undefined}>{s.variance_minor === null ? '—' : format.money(s.variance_minor, list.currency)}</span>,
+        },
+    ];
+
     return (
         <FrontOfficeShell description={t('fo.cash.list.description')} title={t('fo.cash.list.title')} wide>
             <div><Button asChild size="sm" variant="outline"><Link href="/front-office/cashier">{t('fo.cash.mine')}</Link></Button></div>
@@ -49,19 +61,15 @@ export default function CashierShiftsPage({ filters, list, settings }: Props) {
                 <Button size="sm" type="submit" variant="outline">{t('fo.cash.list.apply')}</Button>
             </form>
 
-            {list.shifts.length === 0 ? <EmptyState title={t('fo.cash.list.empty')} /> : (
-                <table className="w-full text-left text-sm" data-testid="shift-list">
-                    <thead><tr className="text-xs text-muted-foreground"><th className="py-1 font-medium" scope="col">{t('fo.cash.list.col.number')}</th><th scope="col">{t('fo.cash.list.col.cashier')}</th><th scope="col">{t('fo.cash.list.col.opened')}</th><th scope="col">{t('fo.cash.list.col.status')}</th><th scope="col">{t('fo.cash.list.col.variance')}</th></tr></thead>
-                    <tbody>{list.shifts.map((s) => (
-                        <tr className="border-t border-border" key={s.id}>
-                            <th className="py-1 font-medium" scope="row"><Link className="underline-offset-2 hover:underline" href={`/front-office/cashier/shifts/${s.id}`}>{s.number}</Link></th>
-                            <td>{s.cashier_name ?? '—'}</td><td>{format.instant(s.opened_at)}</td>
-                            <td><StatusBadge label={t(`fo.cash.status.${s.status}` as 'fo.cash.status.open')} tone={s.status === 'open' ? 'info' : 'neutral'} /></td>
-                            <td className={s.variance_minor !== null && s.variance_minor !== 0 ? 'font-medium text-danger' : undefined}>{s.variance_minor === null ? '—' : format.money(s.variance_minor, list.currency)}</td>
-                        </tr>
-                    ))}</tbody>
-                </table>
-            )}
+            <DataGrid
+                caption={t('fo.cash.list.title')}
+                columns={columns}
+                empty={<EmptyState title={t('fo.cash.list.empty')} />}
+                getRowId={(s) => s.id}
+                id="fo.cashier.shifts"
+                rows={list.shifts}
+                testId="shift-list"
+            />
 
             {settings !== null && (
                 <section aria-labelledby="cash-set-h" className="flex max-w-lg flex-col gap-3 border-t border-border pt-4">

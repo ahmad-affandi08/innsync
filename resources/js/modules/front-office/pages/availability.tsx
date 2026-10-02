@@ -6,6 +6,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { FrontOfficeShell } from '@/modules/front-office/components/front-office-shell';
 import { useFormatters, useTranslation } from '@/shared/i18n/i18n';
 
@@ -59,20 +60,21 @@ export default function AvailabilityPage({ calendar, plans, selected_plan }: { c
             {calendar.types.length === 0 ? <EmptyState title={t('fo.availability.empty')} /> : calendar.types.map((type) => (
                 <section aria-labelledby={`t-${type.id}`} className="flex flex-col gap-2" key={type.id}>
                     <h2 className="text-lg font-semibold" id={`t-${type.id}`}>{type.code} · {type.name}</h2>
-                    <div className="overflow-x-auto" role="region" tabIndex={0} aria-label={`${type.code} ${t('fo.availability.title')}`}>
-                        <table className="w-full min-w-max border-collapse text-center text-sm">
-                            <thead>
-                                <tr>{type.nights.map((n) => (
-                                    <th className="border border-border px-2 py-1 text-xs font-medium text-muted-foreground" key={n.date} scope="col">{format.date(n.date, 'short')}</th>
-                                ))}</tr>
-                            </thead>
-                            <tbody>
-                                <tr>{type.nights.map((n) => {
+                    {/* The region is the scroller (keyboard focusable), so the table's own container must not scroll. */}
+                    <div className="overflow-x-auto [&_[data-slot=table-container]]:overflow-visible" role="region" tabIndex={0} aria-label={`${type.code} ${t('fo.availability.title')}`}>
+                        <Table className="w-full min-w-max border-collapse text-center">
+                            <TableHeader>
+                                <TableRow className="hover:bg-transparent">{type.nights.map((n) => (
+                                    <TableHead className="border border-border px-2 py-1 text-center" key={n.date} scope="col">{format.date(n.date, 'short')}</TableHead>
+                                ))}</TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                <TableRow className="hover:bg-transparent">{type.nights.map((n) => {
                                     const state = stateOf(n);
                                     const r = n.restrictions;
 
                                     return (
-                                        <td
+                                        <TableCell
                                             aria-label={t('fo.availability.cellLabel', { type: type.code, date: format.date(n.date), available: n.available, total: n.total, sold: n.sold, blocked: n.blocked, held: n.held, allowance: n.allowance })}
                                             className={`border border-border px-2 py-2 align-top ${cellStyle[state]}`}
                                             key={n.date}
@@ -87,11 +89,11 @@ export default function AvailabilityPage({ calendar, plans, selected_plan }: { c
                                                     {!r.has_price && <span>{t('fo.availability.marker.noPrice')}</span>}
                                                 </div>
                                             )}
-                                        </td>
+                                        </TableCell>
                                     );
-                                })}</tr>
-                            </tbody>
-                        </table>
+                                })}</TableRow>
+                            </TableBody>
+                        </Table>
                     </div>
                 </section>
             ))}

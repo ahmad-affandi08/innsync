@@ -3,6 +3,7 @@ import { Head, Link } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/empty-state';
 import { LanguageSwitcher } from '@/components/ui/language-switcher';
+import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useFormatters, useTranslation } from '@/shared/i18n/i18n';
 
 type Line = { date: string; description: string; reversal: boolean; base_minor: number; service_charge_minor: number; tax_minor: number; total_minor: number };
@@ -48,26 +49,49 @@ export default function BillPage({ bill, folio_id: folioId }: { bill: Bill; foli
                     {bill.outlets.length === 0 ? <EmptyState title={t('fo.bill.empty')} /> : bill.outlets.map((o) => (
                         <section aria-label={t(`fo.bill.outlet.${o.outlet}` as 'fo.bill.outlet.rooms')} data-testid={`outlet-${o.outlet}`} key={o.outlet}>
                             <h2 className="mb-1 font-semibold">{t(`fo.bill.outlet.${o.outlet}`as 'fo.bill.outlet.rooms')}</h2>
-                            <table className="w-full text-left">
-                                <thead><tr className="text-xs text-muted-foreground"><th className="py-1 font-medium" scope="col">{t('fo.bill.date')}</th><th scope="col">{t('fo.bill.description')}</th><th className="text-right" scope="col">{t('fo.bill.base')}</th><th className="text-right" scope="col">{t('fo.bill.serviceCharge')}</th><th className="text-right" scope="col">{t('fo.bill.tax')}</th><th className="text-right" scope="col">{t('fo.bill.total')}</th></tr></thead>
-                                <tbody>{o.lines.map((l, i) => (
-                                    <tr className="border-t border-border" key={i}>
-                                        <td className="py-1">{format.date(l.date)}</td>
-                                        <td>{l.description}{l.reversal ? <span className="ml-1 text-xs text-muted-foreground">({t('fo.bill.reversal')})</span> : null}</td>
-                                        <td className="text-right">{money(l.base_minor)}</td><td className="text-right">{money(l.service_charge_minor)}</td><td className="text-right">{money(l.tax_minor)}</td><td className="text-right">{money(l.total_minor)}</td>
-                                    </tr>
-                                ))}</tbody>
-                                <tfoot><tr className="border-t border-border font-medium"><td className="py-1" colSpan={5}>{t('fo.bill.outlet.' + o.outlet as 'fo.bill.outlet.rooms')}</td><td className="text-right">{money(o.total_minor)}</td></tr></tfoot>
-                            </table>
+                            <Table>
+                                <TableHeader>
+                                    <TableRow className="hover:bg-transparent">
+                                        <TableHead scope="col">{t('fo.bill.date')}</TableHead>
+                                        <TableHead scope="col">{t('fo.bill.description')}</TableHead>
+                                        <TableHead className="text-right" scope="col">{t('fo.bill.base')}</TableHead>
+                                        <TableHead className="text-right" scope="col">{t('fo.bill.serviceCharge')}</TableHead>
+                                        <TableHead className="text-right" scope="col">{t('fo.bill.tax')}</TableHead>
+                                        <TableHead className="text-right" scope="col">{t('fo.bill.total')}</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>{o.lines.map((l, i) => (
+                                    <TableRow key={i}>
+                                        <TableCell className="py-1">{format.date(l.date)}</TableCell>
+                                        <TableCell className="py-1">{l.description}{l.reversal ? <span className="ml-1 text-xs text-muted-foreground">({t('fo.bill.reversal')})</span> : null}</TableCell>
+                                        <TableCell className="py-1 text-right tabular-nums">{money(l.base_minor)}</TableCell>
+                                        <TableCell className="py-1 text-right tabular-nums">{money(l.service_charge_minor)}</TableCell>
+                                        <TableCell className="py-1 text-right tabular-nums">{money(l.tax_minor)}</TableCell>
+                                        <TableCell className="py-1 text-right tabular-nums">{money(l.total_minor)}</TableCell>
+                                    </TableRow>
+                                ))}</TableBody>
+                                <TableFooter>
+                                    <TableRow className="hover:bg-transparent">
+                                        <TableCell className="py-1" colSpan={5}>{t('fo.bill.outlet.' + o.outlet as 'fo.bill.outlet.rooms')}</TableCell>
+                                        <TableCell className="py-1 text-right tabular-nums">{money(o.total_minor)}</TableCell>
+                                    </TableRow>
+                                </TableFooter>
+                            </Table>
                         </section>
                     ))}
 
                     {bill.payments.length > 0 && (
                         <section aria-label={t('fo.bill.payments')} data-testid="bill-payments">
                             <h2 className="mb-1 font-semibold">{t('fo.bill.payments')}</h2>
-                            <table className="w-full text-left"><tbody>{bill.payments.map((p, i) => (
-                                <tr className="border-t border-border" key={i}><td className="py-1">{format.date(p.date)}</td><td>{method(p.method)}{p.reference ? ` · ${p.reference}` : ''}</td><td className="text-right">{money(p.amount_minor)}</td></tr>
-                            ))}</tbody></table>
+                            <Table>
+                                <TableBody>{bill.payments.map((p, i) => (
+                                    <TableRow key={i}>
+                                        <TableCell className="py-1">{format.date(p.date)}</TableCell>
+                                        <TableCell className="py-1">{method(p.method)}{p.reference ? ` · ${p.reference}` : ''}</TableCell>
+                                        <TableCell className="py-1 text-right tabular-nums">{money(p.amount_minor)}</TableCell>
+                                    </TableRow>
+                                ))}</TableBody>
+                            </Table>
                         </section>
                     )}
 

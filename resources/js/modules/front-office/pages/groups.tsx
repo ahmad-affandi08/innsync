@@ -2,6 +2,7 @@ import { Link, router } from '@inertiajs/react';
 import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
+import { DataGrid, type DataGridColumn } from '@/components/ui/data-grid';
 import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
@@ -47,6 +48,17 @@ export default function GroupsPage({ lookups, overview, query }: Props) {
         }
     }
 
+    const columns: DataGridColumn<Row>[] = [
+        { id: 'number', label: t('fo.group.number'), value: (g) => g.number, rowHeader: true, cell: (g) => <Link className="underline-offset-2 hover:underline" href={`/front-office/groups/${g.id}`}>{g.number}</Link> },
+        { id: 'name', label: t('fo.group.name'), value: (g) => g.name },
+        { id: 'booker', label: t('fo.group.booker'), value: (g) => g.booker_name },
+        { id: 'arrival', label: t('fo.res.arrival'), value: (g) => g.arrival, searchText: (g) => `${g.arrival} ${format.date(g.arrival)}`, cell: (g) => format.date(g.arrival) },
+        { id: 'departure', label: t('fo.res.departure'), value: (g) => g.departure, searchText: (g) => `${g.departure} ${format.date(g.departure)}`, cell: (g) => format.date(g.departure) },
+        { id: 'rooms', label: t('fo.group.roomCount'), align: 'right', value: (g) => g.rooms },
+        { id: 'billing', label: t('fo.group.billing'), value: (g) => g.billing_mode, filter: 'select', filterLabel: (v) => t(`fo.group.mode.${v}` as 'fo.group.mode.master'), cell: (g) => t(`fo.group.mode.${g.billing_mode}` as 'fo.group.mode.master'), hidden: true },
+        { id: 'owed', label: t('fo.group.masterOwed'), align: 'right', value: (g) => g.master_balance_minor, cell: (g) => (g.master_balance_minor === null ? '—' : format.money(g.master_balance_minor, 'IDR')) },
+    ];
+
     return (
         <FrontOfficeShell description={t('fo.group.description')} title={t('fo.group.title')} wide>
             {action.error !== null && !open ? <ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /> : null}
@@ -56,18 +68,15 @@ export default function GroupsPage({ lookups, overview, query }: Props) {
                 {overview.may.manage && lookups !== null ? <Button onClick={() => { action.clear(); setOpen(true); }} type="button">{t('fo.group.new')}</Button> : null}
             </form>
 
-            {overview.groups.length === 0 ? <EmptyState title={t('fo.group.empty')} /> : (
-                <table className="w-full text-left text-sm" data-testid="groups">
-                    <thead><tr className="text-xs text-muted-foreground"><th className="py-1 font-medium" scope="col">{t('fo.group.number')}</th><th scope="col">{t('fo.group.name')}</th><th scope="col">{t('fo.group.booker')}</th><th scope="col">{t('fo.res.arrival')}</th><th scope="col">{t('fo.res.departure')}</th><th scope="col">{t('fo.group.roomCount')}</th><th scope="col">{t('fo.group.billing')}</th><th scope="col">{t('fo.group.masterOwed')}</th></tr></thead>
-                    <tbody>{overview.groups.map((g) => (
-                        <tr className="border-t border-border" key={g.id}>
-                            <th className="py-2 font-medium" scope="row"><Link className="underline-offset-2 hover:underline" href={`/front-office/groups/${g.id}`}>{g.number}</Link></th>
-                            <td>{g.name}</td><td>{g.booker_name}</td><td>{format.date(g.arrival)}</td><td>{format.date(g.departure)}</td><td>{g.rooms}</td>
-                            <td>{t(`fo.group.mode.${g.billing_mode}` as 'fo.group.mode.master')}</td><td>{g.master_balance_minor === null ? '—' : format.money(g.master_balance_minor, 'IDR')}</td>
-                        </tr>
-                    ))}</tbody>
-                </table>
-            )}
+            <DataGrid
+                caption={t('fo.group.title')}
+                columns={columns}
+                empty={<EmptyState title={t('fo.group.empty')} />}
+                getRowId={(g) => g.id}
+                id="fo.groups"
+                rows={overview.groups}
+                testId="groups"
+            />
 
             {open && lookups !== null && (
                 <section aria-labelledby="grp-new-h" className="flex max-w-4xl flex-col gap-3 border border-border p-4" data-testid="group-form">

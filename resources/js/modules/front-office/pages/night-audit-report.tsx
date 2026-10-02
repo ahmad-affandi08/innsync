@@ -1,6 +1,7 @@
 import { Link } from '@inertiajs/react';
 
 import { Button } from '@/components/ui/button';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { FrontOfficeShell } from '@/modules/front-office/components/front-office-shell';
 import { useFormatters, useTranslation } from '@/shared/i18n/i18n';
 
@@ -36,14 +37,26 @@ export default function NightAuditReportPage({ audit: a }: { audit: Audit }) {
             <section aria-labelledby="rev-h" className="flex flex-col gap-2">
                 <h2 className="text-lg font-semibold" id="rev-h">{t('fo.audit.report.revenue')}</h2>
                 <p className="text-xs text-muted-foreground">{t('fo.audit.report.revenueNote')}</p>
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left text-sm">
-                        <thead><tr className="text-xs text-muted-foreground"><th className="py-1 font-medium" scope="col" /><th scope="col">{t('rates.quote.base')}</th><th scope="col">{t('rates.quote.service')}</th><th scope="col">{t('rates.quote.tax')}</th><th scope="col">{t('rates.quote.total')}</th></tr></thead>
-                        <tbody>{rows.map(([label, m]) => (
-                            <tr className="border-t border-border" key={label}><th className="py-1 font-medium" scope="row">{label}</th><td>{format.money(m.base, r.currency)}</td><td>{format.money(m.service_charge, r.currency)}</td><td>{format.money(m.tax, r.currency)}</td><td className="font-medium">{format.money(m.total, r.currency)}</td></tr>
-                        ))}</tbody>
-                    </table>
-                </div>
+                <Table>
+                    <TableHeader>
+                        <TableRow className="hover:bg-transparent">
+                            <TableHead scope="col"><span className="sr-only">{t('fo.audit.report.revenue')}</span></TableHead>
+                            <TableHead className="text-right" scope="col">{t('rates.quote.base')}</TableHead>
+                            <TableHead className="text-right" scope="col">{t('rates.quote.service')}</TableHead>
+                            <TableHead className="text-right" scope="col">{t('rates.quote.tax')}</TableHead>
+                            <TableHead className="text-right" scope="col">{t('rates.quote.total')}</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>{rows.map(([label, m]) => (
+                        <TableRow key={label}>
+                            <TableHead className="font-medium text-foreground" scope="row">{label}</TableHead>
+                            <TableCell className="text-right tabular-nums">{format.money(m.base, r.currency)}</TableCell>
+                            <TableCell className="text-right tabular-nums">{format.money(m.service_charge, r.currency)}</TableCell>
+                            <TableCell className="text-right tabular-nums">{format.money(m.tax, r.currency)}</TableCell>
+                            <TableCell className="text-right font-medium tabular-nums">{format.money(m.total, r.currency)}</TableCell>
+                        </TableRow>
+                    ))}</TableBody>
+                </Table>
             </section>
 
             <section aria-labelledby="col-h" className="flex flex-col gap-2">

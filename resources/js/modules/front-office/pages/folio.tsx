@@ -1,8 +1,9 @@
 import { Link } from '@inertiajs/react';
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
+import { DataGrid, type DataGridColumn } from '@/components/ui/data-grid';
 import { ConfirmDialog, Dialog } from '@/components/ui/dialog';
 import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
@@ -163,6 +164,36 @@ export default function FolioPage({ approvals, folio, foreign, may_late_charge: 
         <Button loading={action.busy} onClick={onSave} type="button">{t('property.action.save')}</Button>
     </>);
 
+    // A reversed posting stays on the list, struck through, so the record reads as it happened.
+    const struck = (p: Posting, node: ReactNode) => (p.is_reversed ? <span className="text-muted-foreground line-through">{node}</span> : node);
+    const amountCell = (p: Posting, v: number) => struck(p, v === 0 ? '' : money(v));
+    const methodLabel = (m: string) => ((METHODS as readonly string[]).includes(m) ? t(`fo.folio.method.${m}` as 'fo.folio.method.cash') : m);
+    const columns: DataGridColumn<Posting>[] = [
+        { id: 'seq', label: t('fo.folio.col.seq'), value: (p) => p.seq, rowHeader: true, cell: (p) => struck(p, p.seq) },
+        { id: 'date', label: t('fo.folio.col.date'), value: (p) => p.business_date, searchText: (p) => `${p.business_date} ${format.date(p.business_date)}`, cell: (p) => struck(p, format.date(p.business_date)) },
+        {
+            id: 'description', label: t('fo.folio.col.description'), value: (p) => p.description, searchText: (p) => `${p.description} ${p.payment_reference ?? ''}`,
+            cell: (p) => struck(p, <><span className="mr-2 text-xs">[{t(`fo.folio.type.${p.type}` as 'fo.folio.type.charge')}]</span>{p.description}{p.payment_reference ? ` · ${p.payment_reference}` : ''}{p.is_reversed ? <em className="ml-2 text-xs">({t('fo.folio.reversed')})</em> : null}</>),
+        },
+        { id: 'type', label: t('fo.folio.col.type'), value: (p) => p.type, filter: 'select', filterLabel: (v) => t(`fo.folio.type.${v}` as 'fo.folio.type.charge'), cell: (p) => struck(p, t(`fo.folio.type.${p.type}` as 'fo.folio.type.charge')), hidden: true },
+        { id: 'code', label: t('fo.folio.chargeCode'), value: (p) => p.code, cell: (p) => struck(p, p.code), hidden: true },
+        { id: 'method', label: t('fo.folio.method'), value: (p) => p.payment_method, filter: 'select', filterLabel: methodLabel, cell: (p) => struck(p, p.payment_method === null ? '' : methodLabel(p.payment_method)), hidden: true },
+        { id: 'reason', label: t('fo.folio.reason'), value: (p) => p.reason, cell: (p) => struck(p, p.reason ?? ''), hidden: true },
+        { id: 'base', label: t('fo.folio.col.base'), align: 'right', value: (p) => p.base_minor, cell: (p) => amountCell(p, p.base_minor) },
+        { id: 'service', label: t('fo.folio.col.service'), align: 'right', value: (p) => p.service_charge_minor, cell: (p) => amountCell(p, p.service_charge_minor) },
+        { id: 'tax', label: t('fo.folio.col.tax'), align: 'right', value: (p) => p.tax_minor, cell: (p) => amountCell(p, p.tax_minor) },
+        { id: 'total', label: t('fo.folio.col.total'), align: 'right', value: (p) => p.total_minor, cell: (p) => struck(p, <span className="font-medium">{p.total_minor < 0 ? `−${money(-p.total_minor)}` : money(p.total_minor)}</span>) },
+        {
+            id: 'actions', label: t('fo.folio.col.actions'), align: 'right', header: <span className="sr-only">{t('fo.folio.col.actions')}</span>,
+            cell: (p) => (
+                <div className="flex justify-end gap-1">
+                    {open && p.type === 'charge' && !p.is_reversed ? <Button onClick={() => void startMove(p)} size="sm" type="button" variant="outline">{t('fo.folio.move')}</Button> : null}
+                    {open && p.type !== 'reversal' && !p.is_reversed ? <Button onClick={() => { action.clear(); setReverse({ posting: p, reason: '' }); }} size="sm" type="button" variant="outline">{t('fo.folio.reverse')}</Button> : null}
+                </div>
+            ),
+        },
+    ];
+
     return (
         <FrontOfficeShell description={t('fo.folio.description', { label: folio.label, reservation: reservation.number, guest: reservation.guest_name })} title={t('fo.folio.title', { number: folio.number })} wide>
             <div className="flex flex-wrap items-center justify-between gap-2">
@@ -204,28 +235,14 @@ export default function FolioPage({ approvals, folio, foreign, may_late_charge: 
 
             <section aria-labelledby="posts-h" className="flex flex-col gap-2">
                 <h2 className="text-lg font-semibold" id="posts-h">{t('fo.folio.postings')}</h2>
-                {folio.postings.length === 0 ? <EmptyState title={t('fo.folio.empty')} /> : (
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-left text-sm">
-                            <thead><tr className="text-xs text-muted-foreground"><th className="py-1 font-medium" scope="col">{t('fo.folio.col.seq')}</th><th scope="col">{t('fo.folio.col.date')}</th><th scope="col">{t('fo.folio.col.description')}</th><th className="text-right" scope="col">{t('fo.folio.col.base')}</th><th className="text-right" scope="col">{t('fo.folio.col.service')}</th><th className="text-right" scope="col">{t('fo.folio.col.tax')}</th><th className="text-right" scope="col">{t('fo.folio.col.total')}</th><th scope="col"><span className="sr-only">{t('fo.folio.reverse')}</span></th></tr></thead>
-                            <tbody>{folio.postings.map((p) => (
-                                <tr className={`border-t border-border ${p.is_reversed ? 'text-muted-foreground line-through' : ''}`} key={p.id}>
-                                    <td className="py-2">{p.seq}</td>
-                                    <td>{format.date(p.business_date)}</td>
-                                    <td className="no-underline"><span className="mr-2 text-xs">[{t(`fo.folio.type.${p.type}` as 'fo.folio.type.charge')}]</span>{p.description}{p.payment_reference ? ` · ${p.payment_reference}` : ''}{p.is_reversed ? <em className="ml-2 text-xs">({t('fo.folio.reversed')})</em> : null}</td>
-                                    <td className="text-right">{p.base_minor === 0 ? '' : money(p.base_minor)}</td>
-                                    <td className="text-right">{p.service_charge_minor === 0 ? '' : money(p.service_charge_minor)}</td>
-                                    <td className="text-right">{p.tax_minor === 0 ? '' : money(p.tax_minor)}</td>
-                                    <td className="text-right font-medium">{p.total_minor < 0 ? `−${money(-p.total_minor)}` : money(p.total_minor)}</td>
-                                    <td className="text-right"><div className="flex justify-end gap-1">
-                                        {open && p.type === 'charge' && !p.is_reversed ? <Button onClick={() => void startMove(p)} size="sm" type="button" variant="outline">{t('fo.folio.move')}</Button> : null}
-                                        {open && p.type !== 'reversal' && !p.is_reversed ? <Button onClick={() => { action.clear(); setReverse({ posting: p, reason: '' }); }} size="sm" type="button" variant="outline">{t('fo.folio.reverse')}</Button> : null}
-                                    </div></td>
-                                </tr>
-                            ))}</tbody>
-                        </table>
-                    </div>
-                )}
+                <DataGrid
+                    caption={t('fo.folio.postings')}
+                    columns={columns}
+                    empty={<EmptyState title={t('fo.folio.empty')} />}
+                    getRowId={(p) => p.id}
+                    id="fo.folio.lines"
+                    rows={folio.postings}
+                />
             </section>
 
             {approvals.length > 0 && (

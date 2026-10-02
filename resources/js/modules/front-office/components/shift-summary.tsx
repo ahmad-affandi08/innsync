@@ -1,4 +1,5 @@
 import { StatusBadge } from '@/components/ui/status-badge';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useFormatters, useTranslation } from '@/shared/i18n/i18n';
 
 export type Shift = {
@@ -50,12 +51,24 @@ export function ShiftSummary({ currency, shift: s }: { currency: string; shift: 
             <section aria-labelledby="rec-h" className="flex flex-col gap-1">
                 <h2 className="text-lg font-semibold" id="rec-h">{t('fo.cash.receipts')}</h2>
                 {s.receipts.length === 0 ? <p className="text-sm text-muted-foreground">{t('fo.cash.noReceipts')}</p> : (
-                    <table className="w-full text-left text-sm">
-                        <thead><tr className="text-xs text-muted-foreground"><th className="py-1 font-medium" scope="col">{t('fo.cash.col.method')}</th><th scope="col">{t('fo.cash.col.received')}</th><th scope="col">{t('fo.cash.col.paidBack')}</th><th scope="col">{t('fo.cash.col.count')}</th></tr></thead>
-                        <tbody>{s.receipts.map((r) => (
-                            <tr className="border-t border-border" key={r.method}><th className="py-1 font-medium" scope="row">{method(r.method)}</th><td>{money(r.received_minor)}</td><td>{money(r.paid_back_minor)}</td><td>{r.count}</td></tr>
-                        ))}</tbody>
-                    </table>
+                    <Table>
+                        <TableHeader>
+                            <TableRow className="hover:bg-transparent">
+                                <TableHead scope="col">{t('fo.cash.col.method')}</TableHead>
+                                <TableHead className="text-right" scope="col">{t('fo.cash.col.received')}</TableHead>
+                                <TableHead className="text-right" scope="col">{t('fo.cash.col.paidBack')}</TableHead>
+                                <TableHead className="text-right" scope="col">{t('fo.cash.col.count')}</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>{s.receipts.map((r) => (
+                            <TableRow key={r.method}>
+                                <TableHead className="font-medium text-foreground" scope="row">{method(r.method)}</TableHead>
+                                <TableCell className="text-right tabular-nums">{money(r.received_minor)}</TableCell>
+                                <TableCell className="text-right tabular-nums">{money(r.paid_back_minor)}</TableCell>
+                                <TableCell className="text-right tabular-nums">{r.count}</TableCell>
+                            </TableRow>
+                        ))}</TableBody>
+                    </Table>
                 )}
                 <p className="text-xs text-muted-foreground">{t('fo.cash.receiptsNote')}</p>
             </section>

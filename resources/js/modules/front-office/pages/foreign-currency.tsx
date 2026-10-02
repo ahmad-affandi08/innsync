@@ -9,6 +9,7 @@ import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
 import { StatusBadge } from '@/components/ui/status-badge';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { FrontOfficeShell } from '@/modules/front-office/components/front-office-shell';
 import { useServerAction } from '@/shared/api/use-server-action';
 import { useFormatters, useTranslation } from '@/shared/i18n/i18n';
@@ -68,10 +69,24 @@ export default function ForeignCurrencyPage({ overview }: { overview: Overview }
             <section aria-labelledby="fx-rates-h" className="flex flex-col gap-2">
                 <h2 className="text-lg font-semibold" id="fx-rates-h">{t('fo.foreign.rates')}</h2>
                 {overview.rates.length === 0 ? <EmptyState title={t('fo.foreign.noRates')} /> : (
-                    <table className="w-full text-left text-sm" data-testid="rates">
-                        <thead><tr className="text-xs text-muted-foreground"><th className="py-1 font-medium" scope="col">{t('fo.foreign.currency')}</th><th scope="col">{t('fo.foreign.rate', { currency: overview.home_currency })}</th><th scope="col">{t('fo.foreign.version')}</th><th scope="col">{t('fo.folio.reason')}</th></tr></thead>
-                        <tbody>{overview.rates.map((r) => <tr className="border-t border-border" key={r.currency}><th className="py-2 font-medium" scope="row">{r.currency}</th><td>{rateText(r.rate_e4)}</td><td>{r.version}</td><td>{r.reason}</td></tr>)}</tbody>
-                    </table>
+                    <Table data-testid="rates">
+                        <TableHeader>
+                            <TableRow className="hover:bg-transparent">
+                                <TableHead scope="col">{t('fo.foreign.currency')}</TableHead>
+                                <TableHead className="text-right" scope="col">{t('fo.foreign.rate', { currency: overview.home_currency })}</TableHead>
+                                <TableHead className="text-right" scope="col">{t('fo.foreign.version')}</TableHead>
+                                <TableHead scope="col">{t('fo.folio.reason')}</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>{overview.rates.map((r) => (
+                            <TableRow key={r.currency}>
+                                <TableHead className="font-medium text-foreground" scope="row">{r.currency}</TableHead>
+                                <TableCell className="text-right tabular-nums">{rateText(r.rate_e4)}</TableCell>
+                                <TableCell className="text-right tabular-nums">{r.version}</TableCell>
+                                <TableCell>{r.reason}</TableCell>
+                            </TableRow>
+                        ))}</TableBody>
+                    </Table>
                 )}
                 <form className="grid gap-3 sm:grid-cols-4" onSubmit={(e) => { e.preventDefault(); void saveRate(); }}>
                     <FormField error={action.fieldError('currency')} label={t('fo.foreign.currency')}><Select onChange={(e) => setRate({ ...rate, currency: e.target.value })} value={rate.currency}>{overview.currencies.map((c) => <option key={c} value={c}>{c}</option>)}</Select></FormField>

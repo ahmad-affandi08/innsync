@@ -8,6 +8,7 @@ import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
 import { StatusBadge } from '@/components/ui/status-badge';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { FrontOfficeShell } from '@/modules/front-office/components/front-office-shell';
 import { RateChangePanel, type Rates } from '@/modules/front-office/components/rate-change';
 import { statusTone } from '@/modules/front-office/pages/reservations';
@@ -140,14 +141,26 @@ export default function ReservationPage({ billing, folios, group, lookups, polic
             <section aria-labelledby="snap-h" className="flex flex-col gap-2">
                 <h2 className="text-lg font-semibold" id="snap-h">{t('fo.res.snapshot')}</h2>
                 <p className="text-xs text-muted-foreground">{t('fo.res.snapshotNote')}</p>
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left text-sm">
-                        <thead><tr className="text-xs text-muted-foreground"><th className="py-1 font-medium" scope="col">{t('fo.res.arrival')}</th><th scope="col">{t('rates.quote.base')}</th><th scope="col">{t('rates.quote.service')}</th><th scope="col">{t('rates.quote.tax')}</th><th scope="col">{t('rates.quote.total')}</th></tr></thead>
-                        <tbody>{r.price_snapshot.nights.map((n) => (
-                            <tr className="border-t border-border" key={n.date}><td className="py-1">{format.date(n.date)}</td><td>{format.money(n.base_minor, r.currency)}</td><td>{format.money(n.service_charge_minor, r.currency)}</td><td>{format.money(n.tax_minor, r.currency)}</td><td>{format.money(n.total_minor, r.currency)}</td></tr>
-                        ))}</tbody>
-                    </table>
-                </div>
+                <Table>
+                    <TableHeader>
+                        <TableRow className="hover:bg-transparent">
+                            <TableHead scope="col">{t('fo.res.arrival')}</TableHead>
+                            <TableHead className="text-right" scope="col">{t('rates.quote.base')}</TableHead>
+                            <TableHead className="text-right" scope="col">{t('rates.quote.service')}</TableHead>
+                            <TableHead className="text-right" scope="col">{t('rates.quote.tax')}</TableHead>
+                            <TableHead className="text-right" scope="col">{t('rates.quote.total')}</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>{r.price_snapshot.nights.map((n) => (
+                        <TableRow key={n.date}>
+                            <TableCell>{format.date(n.date)}</TableCell>
+                            <TableCell className="text-right tabular-nums">{format.money(n.base_minor, r.currency)}</TableCell>
+                            <TableCell className="text-right tabular-nums">{format.money(n.service_charge_minor, r.currency)}</TableCell>
+                            <TableCell className="text-right tabular-nums">{format.money(n.tax_minor, r.currency)}</TableCell>
+                            <TableCell className="text-right tabular-nums">{format.money(n.total_minor, r.currency)}</TableCell>
+                        </TableRow>
+                    ))}</TableBody>
+                </Table>
             </section>
 
             <RateChangePanel currency={r.currency} rates={rates} reservationId={r.id} />
