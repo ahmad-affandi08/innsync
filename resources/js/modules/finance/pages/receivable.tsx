@@ -12,7 +12,7 @@ import { StatusBadge } from '@/components/ui/status-badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Textarea } from '@/components/ui/textarea';
 import { FinanceShell } from '@/modules/finance/components/finance-shell';
-import { NOTE_TONE, PromiseBadge, ReceivableStatus, useCustomerKindLabel, type ReceivableRow } from '@/modules/finance/lib/finance';
+import { NOTE_TONE, PromiseBadge, RECEIPT_KIND_TONE, ReceivableStatus, useCustomerKindLabel, type ReceivableRow } from '@/modules/finance/lib/finance';
 import { minorToInput } from '@/modules/inventory-purchasing/lib/amounts';
 import { newIdempotencyKey } from '@/shared/api/http';
 import { useServerAction } from '@/shared/api/use-server-action';
@@ -21,13 +21,17 @@ import { useErrorStateCopy } from '@/shared/i18n/use-ui-copy';
 import { parseMajorToMinor } from '@/shared/money/money';
 import type { MessageKey } from '@/locales/en/index';
 
-type Receipt = { id: string; number: string; amount_minor: number; method: string; received_on: string; reference: string; note: string | null; by: string | null };
+type Receipt = {
+    id: string; number: string; kind: 'receipt' | 'reversal' | 'credit_note' | 'write_off'; amount_minor: number; method: string | null; received_on: string; reference: string | null; note: string | null; by: string | null;
+    reversal_number: string | null; reverses_number: string | null; may_reverse: boolean;
+};
 type CollectionNote = { id: string; kind: string; note: string; promised_on: string | null; promised_minor: number | null; by: string | null; at: string };
 type Receivable = ReceivableRow & {
     reference: string | null; business_date: string; booked_by: string | null; customer_kind: string; receipts: Receipt[]; notes: CollectionNote[];
-    methods: string[]; note_kinds: string[]; may_receive: boolean; may_note: boolean;
+    methods: string[]; note_kinds: string[]; may_receive: boolean; may_note: boolean; may_adjust: boolean; adjust_kinds: string[];
 };
 type ReceiptForm = { amount: string; method: string; received_on: string; reference: string; note: string };
+type AdjustForm = { kind: string; amount: string; reason: string };
 type NoteForm = { kind: string; note: string; promised_on: string; promised_minor: string };
 
 /** The property's business date, worked back from the due date and the days left to it. */
@@ -46,15 +50,21 @@ export default function ReceivablePage({ receivable }: { receivable: Receivable 
     const errorCopy = useErrorStateCopy();
     const receive = useServerAction();
     const note = useServerAction();
+    const adjust = useServerAction();
+    const reverse = useServerAction();
     const kindLabel = useCustomerKindLabel();
     const [receiptForm, setReceiptForm] = useState<ReceiptForm | null>(null);
     const [noteForm, setNoteForm] = useState<NoteForm | null>(null);
+    const [adjustForm, setAdjustForm] = useState<AdjustForm | null>(null);
+    const [reversing, setReversing] = useState<Receipt | null>(null);
+    const [reverseReason, setReverseReason] = useState('');
     const [badAmount, setBadAmount] = useState(false);
     const [badPromised, setBadPromised] = useState(false);
     const money = (minor: number) => format.money(minor, receivable.currency);
     const intent = useMemo(() => newIdempotencyKey(), [JSON.stringify(receiptForm)]);
     const reload = ['receivable'];
     const methodLabel = (m: string) => t(`fin.ar.method.${m}` as MessageKey);
+    const entryKind = (k: string) => t(`fin.ar.kind.${k}` as MessageKey);
     const noteKind = (k: string) => t(`fin.ar.noteKind.${k}` as MessageKey);
     const timeline = useMemo(() => [...receivable.notes].sort((a, b) => b.at.localeCompare(a.at)), [receivable.notes]);
     const isFolio = receivable.source_type === 'company_folio';
@@ -86,6 +96,34 @@ export default function ReceivablePage({ receivable }: { receivable: Receivable 
             reload,
         });
         if (done !== null) setReceiptForm(null);
+    }
+
+    function openAdjust() {
+        adjust.clear();
+        setBadAmount(false);
+        setAdjustForm({ kind: receivable.adjust_kinds[0] ?? 'credit_note', amount: minorToInput(receivable.balance_minor, receivable.currency), reason: '' });
+    }
+
+    function openReverse(receipt: Receipt) {
+        reverse.clear();
+        setReverseReason('');
+        setReversing(receipt);
+    }
+
+    async function saveAdjustment() {
+        if (adjustForm === null) return;
+        const minor = parseMajorToMinor(adjustForm.amount, receivable.currency);
+
+        setBadAmount(minor === null);
+        if (minor === null) return;
+        const done = await adjust.run(`/finance/receivables/${receivable.id}/adjustments`, { body: { kind: adjustForm.kind, amount_minor: minor, reason: adjustForm.reason.trim() }, reload });
+        if (done !== null) setAdjustForm(null);
+    }
+
+    async function saveReversal() {
+        if (reversing === null) return;
+        const done = await reverse.run(`/finance/receivables/receipts/${reversing.id}/reverse`, { body: { reason: reverseReason.trim() }, reload });
+        if (done !== null) { setReversing(null); setReverseReason(''); }
     }
 
     async function saveNote() {
@@ -123,6 +161,7 @@ export default function ReceivablePage({ receivable }: { receivable: Receivable 
             actions={<div className="flex flex-wrap gap-2 print:hidden">
                 <Button asChild variant="outline"><Link href="/finance/receivables">{t('fin.ar.back')}</Link></Button>
                 {receivable.may_note ? <Button onClick={openNote} type="button" variant="outline">{t('fin.ar.addNote')}</Button> : null}
+                {receivable.may_adjust ? <Button onClick={openAdjust} type="button" variant="outline">{t('fin.ar.adjust')}</Button> : null}
                 {receivable.may_receive ? <Button onClick={openReceive} type="button">{t('fin.ar.record')}</Button> : null}
             </div>}
             description={t('fin.ar.detailDescription')}
@@ -165,30 +204,43 @@ export default function ReceivablePage({ receivable }: { receivable: Receivable 
                             <TableHeader>
                                 <TableRow>
                                     <TableHead>{t('fin.ar.receipt')}</TableHead>
+                                    <TableHead>{t('fin.ar.entryKind')}</TableHead>
                                     <TableHead className="text-right">{t('fin.col.amount')}</TableHead>
                                     <TableHead>{t('fin.col.method')}</TableHead>
-                                    <TableHead>{t('fin.ar.receivedOn')}</TableHead>
+                                    <TableHead>{t('fin.ar.entryDate')}</TableHead>
                                     <TableHead>{t('fin.col.reference')}</TableHead>
-                                    <TableHead>{t('fin.ar.note')}</TableHead>
+                                    <TableHead>{t('fin.ar.noteOrReason')}</TableHead>
                                     <TableHead>{t('fin.ar.recordedBy')}</TableHead>
+                                    {receivable.receipts.some((r) => r.may_reverse) ? <TableHead><span className="sr-only">{t('inv.col.actions')}</span></TableHead> : null}
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
                                 {receivable.receipts.map((r) => (
                                     <TableRow key={r.id}>
-                                        <TableCell className="font-medium">{r.number}</TableCell>
-                                        <TableCell className="text-right">{money(r.amount_minor)}</TableCell>
-                                        <TableCell>{methodLabel(r.method)}</TableCell>
+                                        <TableCell>
+                                            <span className="font-medium">{r.number}</span>
+                                            {r.reverses_number !== null ? <span className="block text-xs text-muted-foreground">{t('fin.ar.takesBack', { number: r.reverses_number })}</span> : null}
+                                            {r.reversal_number !== null ? <span className="block text-xs text-muted-foreground">{t('fin.ar.reversedBy', { number: r.reversal_number })}</span> : null}
+                                        </TableCell>
+                                        <TableCell><StatusBadge label={entryKind(r.kind)} tone={RECEIPT_KIND_TONE[r.kind] ?? 'neutral'} /></TableCell>
+                                        <TableCell className="text-right">{money(r.kind === 'reversal' ? -r.amount_minor : r.amount_minor)}</TableCell>
+                                        <TableCell>{r.method === null ? '—' : methodLabel(r.method)}</TableCell>
                                         <TableCell>{format.date(r.received_on)}</TableCell>
-                                        <TableCell>{r.reference}</TableCell>
+                                        <TableCell>{r.reference ?? '—'}</TableCell>
                                         <TableCell>{r.note ?? '—'}</TableCell>
                                         <TableCell>{r.by ?? '—'}</TableCell>
+                                        {receivable.receipts.some((o) => o.may_reverse) ? (
+                                            <TableCell className="text-right print:hidden">
+                                                {r.may_reverse ? <Button onClick={() => openReverse(r)} size="sm" type="button" variant="outline">{t('fin.ar.reverse')}</Button> : null}
+                                            </TableCell>
+                                        ) : null}
                                     </TableRow>
                                 ))}
                             </TableBody>
                         </Table>
                     </div>
                 )}
+                {isFolio && receivable.receipts.length > 0 ? <p className="text-sm text-muted-foreground">{t('fin.ar.reverseFolioNote')}</p> : null}
             </section>
 
             <section aria-labelledby="fin-ar-notes-h" className="flex flex-col gap-3">
@@ -250,6 +302,63 @@ export default function ReceivablePage({ receivable }: { receivable: Receivable 
                         <div className="sm:col-span-2">
                             <FormField error={receive.fieldError('note')} field="note" label={t('fin.ar.note')}>
                                 <Input maxLength={200} onChange={(e) => setReceiptForm({ ...receiptForm, note: e.target.value })} value={receiptForm.note} />
+                            </FormField>
+                        </div>
+                    </div>
+                )}
+            </Dialog>
+
+            <Dialog
+                footer={<>
+                    <Button disabled={reverse.busy} onClick={() => setReversing(null)} type="button" variant="outline">{t('ui.dialog.cancel')}</Button>
+                    <Button loading={reverse.busy} onClick={() => void saveReversal()} type="button">{t('fin.ar.reverse')}</Button>
+                </>}
+                onClose={() => setReversing(null)}
+                open={reversing !== null}
+                title={t('fin.ar.reverseTitle', { number: reversing?.number ?? '' })}
+            >
+                <div className="flex flex-col gap-3">
+                    <p className="text-sm text-muted-foreground">{t('fin.ar.reverseHint')}</p>
+                    {reverse.error !== null ? <ErrorState {...errorCopy} error={reverse.error} onRefresh={() => window.location.reload()} /> : null}
+                    <FormField error={reverse.fieldError('reason')} field="reason" label={t('fin.ar.reverseReason')}>
+                        <Input maxLength={200} onChange={(e) => setReverseReason(e.target.value)} value={reverseReason} />
+                    </FormField>
+                </div>
+            </Dialog>
+
+            <Dialog
+                footer={<>
+                    <Button disabled={adjust.busy} onClick={() => setAdjustForm(null)} type="button" variant="outline">{t('ui.dialog.cancel')}</Button>
+                    <Button loading={adjust.busy} onClick={() => void saveAdjustment()} type="button">{t('fin.ar.adjust')}</Button>
+                </>}
+                onClose={() => setAdjustForm(null)}
+                open={adjustForm !== null}
+                title={t('fin.ar.adjustTitle', { number: receivable.number })}
+            >
+                {adjustForm !== null && (
+                    <div className="grid gap-3 sm:grid-cols-2">
+                        <p className="text-sm text-muted-foreground sm:col-span-2">{t('fin.ar.adjustHint')}</p>
+                        {adjust.error !== null ? <div className="sm:col-span-2"><ErrorState {...errorCopy} error={adjust.error} onRefresh={() => window.location.reload()} /></div> : null}
+                        <div className="sm:col-span-2">
+                            <FormField error={adjust.fieldError('kind')} field="kind" hint={t(`fin.ar.adjustKindHint.${adjustForm.kind}` as MessageKey)} label={t('fin.ar.adjustKindField')}>
+                                <Select onChange={(e) => setAdjustForm({ ...adjustForm, kind: e.target.value })} searchable={false} value={adjustForm.kind}>
+                                    {receivable.adjust_kinds.map((k) => <option key={k} value={k}>{entryKind(k)}</option>)}
+                                </Select>
+                            </FormField>
+                        </div>
+                        <div className="sm:col-span-2">
+                            <FormField
+                                error={badAmount ? t('fo.folio.invalidAmount') : adjust.fieldError('amount_minor')}
+                                field="amount_minor"
+                                hint={t('fin.ar.receiveMax', { amount: money(receivable.balance_minor) })}
+                                label={t('fin.ar.amountField', { currency: receivable.currency })}
+                            >
+                                <Input inputMode="decimal" onChange={(e) => { setBadAmount(false); setAdjustForm({ ...adjustForm, amount: e.target.value }); }} value={adjustForm.amount} />
+                            </FormField>
+                        </div>
+                        <div className="sm:col-span-2">
+                            <FormField error={adjust.fieldError('reason')} field="reason" label={t('fin.ar.adjustReason')}>
+                                <Input maxLength={200} onChange={(e) => setAdjustForm({ ...adjustForm, reason: e.target.value })} value={adjustForm.reason} />
                             </FormField>
                         </div>
                     </div>

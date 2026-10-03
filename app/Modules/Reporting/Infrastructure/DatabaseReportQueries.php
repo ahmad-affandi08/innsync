@@ -148,7 +148,7 @@ final readonly class DatabaseReportQueries implements ReportQueries
 
         // What is owed to suppliers (FR-FIN-012): payables past their due date, and those that fall due in the next seven days. What is owed is the amount
         // less the payments that were made and the credits applied.
-        $paid = DB::table('ap_payments')->where('status', 'paid')->groupBy('payable_id')->selectRaw('payable_id, SUM(amount_minor) as paid');
+        $paid = DB::table('ap_payments')->whereIn('status', ['paid', 'reversal'])->groupBy('payable_id')->selectRaw("payable_id, SUM(CASE WHEN status = 'reversal' THEN -amount_minor ELSE amount_minor END) as paid");
         $credited = DB::table('ap_credit_applications')->groupBy('payable_id')->selectRaw('payable_id, SUM(amount_minor) as credit');
         $owed = DB::table('ap_payables as p')->leftJoinSub($paid, 'x', 'x.payable_id', '=', 'p.id')->leftJoinSub($credited, 'y', 'y.payable_id', '=', 'p.id')->where('p.property_id', $pid)
             ->whereRaw('(p.amount_minor - COALESCE(x.paid, 0) - COALESCE(y.credit, 0)) > 0');
@@ -159,7 +159,7 @@ final readonly class DatabaseReportQueries implements ReportQueries
         $alerts['payables_due_soon'] = ['count' => (clone $soon)->count(), 'items' => (clone $soon)->orderBy('p.due_date')->limit(self::ALERT_EXAMPLES)->get(['p.supplier_name', 'p.document_number'])->map($label)->all()];
 
         // What customers owe past the due date (FR-FIN-014): the amount of a receivable less the receipts against it.
-        $received = DB::table('ar_receipts')->groupBy('receivable_id')->selectRaw('receivable_id, SUM(amount_minor) as received');
+        $received = DB::table('ar_receipts')->groupBy('receivable_id')->selectRaw("receivable_id, SUM(CASE WHEN kind = 'reversal' THEN -amount_minor ELSE amount_minor END) as received");
         $unpaid = DB::table('ar_receivables as r')->join('fin_customers as c', 'c.id', '=', 'r.customer_id')->leftJoinSub($received, 'x', 'x.receivable_id', '=', 'r.id')->where('r.property_id', $pid)
             ->whereRaw('(r.amount_minor - COALESCE(x.received, 0)) > 0')->where('r.due_date', '<', $today->toString());
         $alerts['receivables_overdue'] = ['count' => (clone $unpaid)->count(), 'items' => (clone $unpaid)->orderBy('r.due_date')->limit(self::ALERT_EXAMPLES)->get(['c.name', 'r.number'])->map(static fn ($r): string => $r->name.' · '.$r->number)->all()];

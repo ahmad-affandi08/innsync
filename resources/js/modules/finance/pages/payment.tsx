@@ -1,4 +1,4 @@
-import { Link } from '@inertiajs/react';
+import { Link, router } from '@inertiajs/react';
 import { useState } from 'react';
 
 import { Alert } from '@/components/ui/alert';
@@ -22,6 +22,7 @@ type Payment = {
     id: string; number: string; status: string; supplier_name: string; supplier_code: string; payable_number: string; document_number: string; amount_minor: number; currency: string; method: string;
     paid_on: string; reference: string | null; created_by_name: string | null; mine: boolean; note: string | null; decision_note: string | null; business_date: string; payable_id: string;
     max_proofs: number; approval: ApprovalSummary | null; proofs: Proof[]; may_proof: boolean; may_release: boolean; may_cancel: boolean;
+    reversal_number: string | null; reverses_number: string | null; may_reverse: boolean; reason: string | null;
 };
 
 const isImage = (name: string | null) => /\.(png|jpe?g)$/i.test(name ?? '');
@@ -33,6 +34,7 @@ export default function PaymentPage({ payment }: { payment: Payment }) {
     const errorCopy = useErrorStateCopy();
     const action = useServerAction();
     const [cancelling, setCancelling] = useState(false);
+    const [reversing, setReversing] = useState(false);
     const [reason, setReason] = useState('');
     const [pickerKey, setPickerKey] = useState(0);
     const reload = ['payment'];
@@ -54,6 +56,17 @@ export default function PaymentPage({ payment }: { payment: Payment }) {
         if (done !== null) { setCancelling(false); setReason(''); }
     }
 
+    function openReverse() {
+        action.clear();
+        setReason('');
+        setReversing(true);
+    }
+
+    async function reverse() {
+        const done = await action.run<{ payment: { id: string } }>(`/finance/payments/${payment.id}/reverse`, { body: { reason: reason.trim() } });
+        if (done !== null) { setReversing(false); router.visit(`/finance/payments/${done.payment.id}`); }
+    }
+
     async function upload(file: File | undefined) {
         if (file === undefined) return;
         const body = new FormData();
@@ -62,11 +75,12 @@ export default function PaymentPage({ payment }: { payment: Payment }) {
         setPickerKey((k) => k + 1);
     }
 
+    const isReversal = payment.status === 'reversal';
     const facts: [string, string][] = [
         [t('fin.col.supplier'), `${payment.supplier_code} · ${payment.supplier_name}`],
         [t('fin.col.document'), payment.document_number],
         [t('fin.col.ourNumber'), payment.payable_number],
-        [t('fin.col.amount'), format.money(payment.amount_minor, payment.currency)],
+        [t('fin.col.amount'), format.money(isReversal ? -payment.amount_minor : payment.amount_minor, payment.currency)],
         [t('fin.col.method'), t(`fin.method.${payment.method}` as MessageKey)],
         [t('fin.col.paidOn'), format.date(payment.paid_on)],
         [t('fin.col.reference'), payment.reference ?? '—'],
@@ -81,6 +95,7 @@ export default function PaymentPage({ payment }: { payment: Payment }) {
                 <Button asChild variant="outline"><Link href="/finance/payments">{t('fin.pm.back')}</Link></Button>
                 <Button asChild variant="outline"><Link href={`/finance/payables/${payment.payable_id}`}>{t('fin.pm.toPayable')}</Link></Button>
                 {payment.may_cancel ? <Button onClick={openCancel} type="button" variant="outline">{t('fin.pm.cancel')}</Button> : null}
+                {payment.may_reverse ? <Button onClick={openReverse} type="button" variant="outline">{t('fin.pm.reverse')}</Button> : null}
                 {payment.may_release ? <Button loading={action.busy} onClick={() => void release()} type="button">{t('fin.pm.release')}</Button> : null}
                 <Button onClick={() => window.print()} type="button" variant="outline">{t('fin.print')}</Button>
             </div>}
@@ -93,8 +108,14 @@ export default function PaymentPage({ payment }: { payment: Payment }) {
                 {payment.may_release ? <span className="text-muted-foreground">{t('fin.pm.releaseHint')}</span> : null}
             </div>
 
-            {action.error !== null && !cancelling ? <ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /> : null}
+            {action.error !== null && !cancelling && !reversing ? <ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /> : null}
             {waiting && payment.mine === false ? <Alert title={t('fin.pm.selfOnly')} tone="info" /> : null}
+            {payment.reversal_number !== null ? <Alert title={t('fin.pm.reversedBy', { number: payment.reversal_number })} tone="warning"><p>{t('fin.pm.reversedHint')}</p></Alert> : null}
+            {payment.reverses_number !== null ? (
+                <Alert title={t('fin.pm.takesBack', { number: payment.reverses_number })} tone="info">
+                    <p data-testid="reversal-reason">{t('fin.pm.reversalReason')}: {payment.reason ?? '—'}</p>
+                </Alert>
+            ) : null}
             {payment.decision_note !== null ? (
                 <Alert title={label(payment.status)} tone={payment.status === 'rejected' ? 'danger' : 'info'}>
                     <p data-testid="decision-note">{t('fin.pm.decisionNote')}: {payment.decision_note}</p>
@@ -110,10 +131,12 @@ export default function PaymentPage({ payment }: { payment: Payment }) {
                 ))}
             </dl>
 
-            <section aria-labelledby="fin-approval-h" className="flex flex-col gap-3">
-                <h2 className="text-lg font-semibold" id="fin-approval-h">{t('fin.pm.approval')}</h2>
-                {payment.approval === null ? <p className="text-sm text-muted-foreground">{t('fin.pm.noApproval')}</p> : <ApprovalProgress approval={payment.approval} />}
-            </section>
+            {isReversal ? null : (
+                <section aria-labelledby="fin-approval-h" className="flex flex-col gap-3">
+                    <h2 className="text-lg font-semibold" id="fin-approval-h">{t('fin.pm.approval')}</h2>
+                    {payment.approval === null ? <p className="text-sm text-muted-foreground">{t('fin.pm.noApproval')}</p> : <ApprovalProgress approval={payment.approval} />}
+                </section>
+            )}
 
             <section aria-labelledby="fin-proofs-h" className="flex flex-col gap-3">
                 <h2 className="text-lg font-semibold" id="fin-proofs-h">{t('fin.pm.proofs')}</h2>
@@ -153,6 +176,24 @@ export default function PaymentPage({ payment }: { payment: Payment }) {
                     <p className="text-sm text-muted-foreground">{t('fin.pm.cancelHint')}</p>
                     {action.error !== null ? <ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /> : null}
                     <FormField error={action.fieldError('reason')} field="reason" label={t('fin.pm.cancelReason')}>
+                        <Input maxLength={200} onChange={(e) => setReason(e.target.value)} value={reason} />
+                    </FormField>
+                </div>
+            </Dialog>
+
+            <Dialog
+                footer={<>
+                    <Button disabled={action.busy} onClick={() => setReversing(false)} type="button" variant="outline">{t('ui.dialog.cancel')}</Button>
+                    <Button loading={action.busy} onClick={() => void reverse()} type="button">{t('fin.pm.reverse')}</Button>
+                </>}
+                onClose={() => setReversing(false)}
+                open={reversing}
+                title={t('fin.pm.reverseTitle', { number: payment.number })}
+            >
+                <div className="flex flex-col gap-3">
+                    <p className="text-sm text-muted-foreground">{t('fin.pm.reverseHint')}</p>
+                    {action.error !== null ? <ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /> : null}
+                    <FormField error={action.fieldError('reason')} field="reason" label={t('fin.pm.reverseReason')}>
                         <Input maxLength={200} onChange={(e) => setReason(e.target.value)} value={reason} />
                     </FormField>
                 </div>

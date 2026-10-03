@@ -39,7 +39,10 @@ interface ReceivableStore
     /** Locks a receivable for the rest of the transaction, so receipts against it run one after the other. */
     public function lockReceivable(PropertyId $property, string $id): void;
 
-    /** @param array<string, mixed> $row @return bool false when the receipt number is taken */
+    /** @return array<string, mixed>|null a receipt row (of any kind) with its receivable's `source_type`, `number` as `receivable_number`, `customer_code` and, when it was reversed, `reversal_number` */
+    public function receipt(PropertyId $property, string $id): ?array;
+
+    /** @param array<string, mixed> $row @return bool false when the receipt number is taken or the receipt was reversed already */
     public function addReceipt(PropertyId $property, array $row, DateTimeImmutable $at): bool;
 
     /** @param array<string, mixed> $row */

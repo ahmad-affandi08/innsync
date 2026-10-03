@@ -59,6 +59,20 @@ final readonly class ReceivableController
         return $this->json(['receivable' => $this->receivables->note($this->property->current(), $this->actor($request), $id, $data['kind'], $data['note'], $data['promised_on'] ?? null, isset($data['promised_minor']) ? (int) $data['promised_minor'] : null)], 201);
     }
 
+    public function adjust(Request $request, string $id): JsonResponse
+    {
+        $data = $request->validate(['kind' => ['required', 'string', 'in:credit_note,write_off'], 'amount_minor' => ['required', 'integer', 'min:1', 'max:9000000000000'], 'reason' => ['required', 'string', 'max:200']]);
+
+        return $this->json(['receivable' => $this->receivables->adjust($this->property->current(), $this->actor($request), $id, $data['kind'], (int) $data['amount_minor'], $data['reason'])], 201);
+    }
+
+    public function reverseReceipt(Request $request, string $id): JsonResponse
+    {
+        $data = $request->validate(['reason' => ['required', 'string', 'max:200']]);
+
+        return $this->json(['receivable' => $this->receivables->reverseReceipt($this->property->current(), $this->actor($request), $id, $data['reason'])], 201);
+    }
+
     public function aging(Request $request): Response
     {
         $data = $request->validate(['as_of' => ['nullable', 'date_format:Y-m-d']]);

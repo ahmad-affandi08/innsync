@@ -21,7 +21,7 @@ import { parseMajorToMinor } from '@/shared/money/money';
 import type { MessageKey } from '@/locales/en/index';
 
 type Payment = {
-    id: string; number: string; amount_minor: number; method: string; paid_on: string; reference: string | null; status: string; created_by_name: string | null; proofs: { id: string; name: string | null }[];
+    id: string; number: string; amount_minor: number; method: string; paid_on: string; reference: string | null; status: string; reverses_id: string | null; created_by_name: string | null; proofs: { id: string; name: string | null }[];
 };
 type Application = { id: string; credit_note_number: string; source_number: string; amount_minor: number; business_date: string };
 type Credit = { id: string; supplier_name: string; credit_note_number: string; source_number: string; amount_minor: number; applied_minor: number; available_minor: number; business_date: string; currency: string };
@@ -183,17 +183,27 @@ export default function PayablePage({ payable }: { payable: Payable }) {
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {payable.payments.map((p) => (
-                                    <TableRow key={p.id}>
-                                        <TableCell><Link className="font-medium underline" href={`/finance/payments/${p.id}`}>{p.number}</Link></TableCell>
-                                        <TableCell className="text-right">{money(p.amount_minor)}</TableCell>
-                                        <TableCell>{methodLabel(p.method)}</TableCell>
-                                        <TableCell>{format.date(p.paid_on)}</TableCell>
-                                        <TableCell>{p.reference ?? '—'}</TableCell>
-                                        <TableCell><StatusBadge label={t(`fin.pmt.status.${p.status}` as MessageKey)} tone={PAYMENT_TONE[p.status] ?? 'neutral'} /></TableCell>
-                                        <TableCell className="text-right">{p.proofs.length}</TableCell>
-                                    </TableRow>
-                                ))}
+                                {payable.payments.map((p) => {
+                                    const reversal = p.status === 'reversal';
+                                    const takenBack = reversal ? payable.payments.find((o) => o.id === p.reverses_id) : undefined;
+                                    const reversedBy = payable.payments.find((o) => o.reverses_id === p.id);
+
+                                    return (
+                                        <TableRow key={p.id}>
+                                            <TableCell>
+                                                <Link className="font-medium underline" href={`/finance/payments/${p.id}`}>{p.number}</Link>
+                                                {takenBack !== undefined ? <span className="block text-xs text-muted-foreground">{t('fin.pmt.takesBack', { number: takenBack.number })}</span> : null}
+                                                {reversedBy !== undefined ? <span className="block text-xs text-muted-foreground">{t('fin.pmt.reversedBy', { number: reversedBy.number })}</span> : null}
+                                            </TableCell>
+                                            <TableCell className="text-right">{money(reversal ? -p.amount_minor : p.amount_minor)}</TableCell>
+                                            <TableCell>{methodLabel(p.method)}</TableCell>
+                                            <TableCell>{format.date(p.paid_on)}</TableCell>
+                                            <TableCell>{p.reference ?? '—'}</TableCell>
+                                            <TableCell><StatusBadge label={t(`fin.pmt.status.${p.status}` as MessageKey)} tone={PAYMENT_TONE[p.status] ?? 'neutral'} /></TableCell>
+                                            <TableCell className="text-right">{p.proofs.length}</TableCell>
+                                        </TableRow>
+                                    );
+                                })}
                             </TableBody>
                         </Table>
                     </div>

@@ -125,15 +125,16 @@ final readonly class DatabaseManagementReportQueries implements ManagementReport
 
     public function manualReceipts(PropertyId $property, string $from, string $to): array
     {
-        return DB::table('ar_receipts as x')->join('ar_receivables as r', 'r.id', '=', 'x.receivable_id')->where('x.property_id', $property->toString())->where('r.source_type', 'manual')->whereBetween('x.received_on', [$from, $to])
-            ->groupBy('x.method')->orderBy('x.method')->get(['x.method', DB::raw('SUM(x.amount_minor) as amount')])
+        return DB::table('ar_receipts as x')->join('ar_receivables as r', 'r.id', '=', 'x.receivable_id')->where('x.property_id', $property->toString())->where('r.source_type', 'manual')->whereIn('x.kind', ['receipt', 'reversal'])->whereBetween('x.received_on', [$from, $to])
+            ->groupBy('x.method')->orderBy('x.method')->get(['x.method', DB::raw("SUM(CASE WHEN x.kind = 'reversal' THEN -x.amount_minor ELSE x.amount_minor END) as amount")])
             ->map(static fn ($r): array => ['method' => (string) $r->method, 'amount_minor' => (int) $r->amount])->all();
     }
 
     public function supplierPayments(PropertyId $property, string $from, string $to): array
     {
-        return DB::table('ap_payments')->where('property_id', $property->toString())->where('status', 'paid')->whereBetween('paid_on', [$from, $to])->groupBy('method')->orderBy('method')
-            ->get(['method', DB::raw('SUM(amount_minor) as amount')])->map(static fn ($r): array => ['method' => (string) $r->method, 'amount_minor' => (int) $r->amount])->all();
+        // A reversal takes a payment back on the day it was reversed, so the amount of a method is net of them.
+        return DB::table('ap_payments')->where('property_id', $property->toString())->whereIn('status', ['paid', 'reversal'])->whereBetween('paid_on', [$from, $to])->groupBy('method')->orderBy('method')
+            ->get(['method', DB::raw("SUM(CASE WHEN status = 'reversal' THEN -amount_minor ELSE amount_minor END) as amount")])->map(static fn ($r): array => ['method' => (string) $r->method, 'amount_minor' => (int) $r->amount])->all();
     }
 
     public function pettySpent(PropertyId $property, string $from, string $to): int

@@ -74,6 +74,7 @@
         "amount_minor",
         "kind",
         "method",
+        "reason",
         "reference"
     ],
     "finance/pages/receivables": [

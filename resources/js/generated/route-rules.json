@@ -797,6 +797,14 @@
             "proof"
         ]
     },
+    "POST /finance/payments/{id}/reverse": {
+        "required": [
+            "reason"
+        ],
+        "declared": [
+            "reason"
+        ]
+    },
     "POST /finance/petty": {
         "required": [
             "code",
@@ -903,6 +911,26 @@
             "due_date",
             "issued_on",
             "reference"
+        ]
+    },
+    "POST /finance/receivables/receipts/{id}/reverse": {
+        "required": [
+            "reason"
+        ],
+        "declared": [
+            "reason"
+        ]
+    },
+    "POST /finance/receivables/{id}/adjustments": {
+        "required": [
+            "amount_minor",
+            "kind",
+            "reason"
+        ],
+        "declared": [
+            "amount_minor",
+            "kind",
+            "reason"
         ]
     },
     "POST /finance/receivables/{id}/notes": {

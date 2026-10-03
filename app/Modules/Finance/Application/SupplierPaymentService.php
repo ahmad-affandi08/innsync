@@ -71,7 +71,7 @@ final readonly class SupplierPaymentService
     {
         $this->access->requireView($property, $actorId);
 
-        if ($status !== null && $status !== '' && ! in_array($status, ['pending_approval', 'paid', 'rejected', 'cancelled'], true)) {
+        if ($status !== null && $status !== '' && ! in_array($status, ['pending_approval', 'paid', 'rejected', 'cancelled', 'reversal'], true)) {
             throw Refusal::invalid('Choose a status from the list.', ['status']);
         }
 
@@ -99,6 +99,7 @@ final readonly class SupplierPaymentService
             'proofs' => array_map(static fn (array $pr): array => ['id' => $pr['id'], 'name' => $pr['display_name']], $p['proofs']),
             'may_proof' => $this->access->may($property, $actorId, FinanceAccess::PAYMENT_RECORD) && in_array($p['status'], ['pending_approval', 'paid'], true),
             'may_release' => $mine && $p['status'] === 'pending_approval', 'may_cancel' => $mine && $p['status'] === 'pending_approval',
+            'may_reverse' => $p['status'] === 'paid' && ($p['reversal_number'] ?? null) === null && ! $mine && $this->access->may($property, $actorId, FinanceAccess::PAYMENT_REVERSE), 'reason' => $p['status'] === 'reversal' ? $p['note'] : null,
         ];
     }
 
@@ -266,6 +267,58 @@ final readonly class SupplierPaymentService
         return $this->show($property, $actorId, $p['id']);
     }
 
+    /**
+     * Takes a paid payment back, in full, when it was recorded in error or the money came back. The payment is never changed: a reversal is a new payment row of
+     * status `reversal` for the same amount that points at it, dated today, and what the payable has paid is the paid payments less their reversals. Someone other
+     * than the person who recorded the payment reverses it, with the reason; a payment is reversed once.
+     *
+     * @return array<string, mixed> the reversal
+     */
+    public function reverse(PropertyId $property, string $actorId, string $paymentId, string $reason): array
+    {
+        $this->access->require($property, $actorId, FinanceAccess::PAYMENT_REVERSE, 'This person may not reverse payments.');
+        $reason = trim($reason);
+
+        if ($reason === '' || mb_strlen($reason) > 200) {
+            throw Refusal::invalid('Say why the payment is reversed, in at most 200 characters.', ['reason']);
+        }
+
+        $actor = strtolower($actorId);
+        $id = $this->ids->next();
+
+        $this->transactions->run(function () use ($property, $actor, $id, $paymentId, $reason): void {
+            $first = $this->store->payment($property, strtolower($paymentId)) ?? throw Refusal::notFound('Payment not found.');
+            $this->store->lockPayable($property, $first['payable_id']);
+            $p = $this->store->payment($property, $first['id']) ?? throw Refusal::notFound('Payment not found.');
+
+            if ($p['status'] !== 'paid') {
+                throw Refusal::stateConflict('Only a payment that was paid can be reversed.');
+            }
+
+            if (($p['reversal_number'] ?? null) !== null) {
+                throw Refusal::stateConflict('This payment was reversed already.');
+            }
+
+            if ($p['created_by'] === $actor) {
+                throw Refusal::forbidden('A payment is reversed by someone other than the person who recorded it.');
+            }
+
+            $today = $this->businessDate->current($property)->toString();
+            $number = $this->numbers->next($property, 'PAY');
+            $row = ['id' => $id, 'number' => $number, 'payable_id' => $p['payable_id'], 'reverses_id' => $p['id'], 'supplier_id' => $p['supplier_id'], 'amount_minor' => (int) $p['amount_minor'], 'method' => $p['method'], 'paid_on' => $today, 'reference' => null, 'note' => $reason,
+                'status' => 'reversal', 'approval_id' => null, 'created_by' => $actor, 'business_date' => $today];
+
+            if (! $this->store->addPayment($property, $row, $this->clock->nowUtc())) {
+                throw Refusal::stateConflict('This payment was reversed already.');
+            }
+
+            $this->audit->record(new AuditEntry($property->toString(), $actor, 'supplier_payment.reversed', 'supplier_payment', $p['id'], ['status' => 'paid', 'amount_minor' => (int) $p['amount_minor']], ['reversal' => $number, 'payable' => $p['source_number'], 'amount_minor' => (int) $p['amount_minor'], 'method' => $p['method']], $reason));
+            $this->outbox->publish(new OutboxEvent($property, 'finance.supplier.payment_reversed', $id, 1, ['reversal_id' => $id, 'number' => $number, 'payment_id' => $p['id'], 'payment_number' => $p['number'], 'payable_id' => $p['payable_id'], 'supplier_id' => $p['supplier_id'], 'amount_minor' => (int) $p['amount_minor'], 'currency' => $p['currency'], 'business_date' => $today, 'actor_id' => $actor]));
+        });
+
+        return $this->show($property, $actorId, $id);
+    }
+
     /** Adds the proof of payment (a transfer slip, a receipt) to a payment. @return array<string, mixed> */
     public function addProof(PropertyId $property, string $actorId, string $paymentId, string $contents, ?string $name): array
     {
@@ -363,7 +416,7 @@ final readonly class SupplierPaymentService
         return [
             'id' => $p['id'], 'number' => $p['number'], 'status' => $p['status'], 'supplier_name' => $p['supplier_name'], 'supplier_code' => $p['supplier_code'], 'payable_number' => $p['source_number'], 'document_number' => $p['document_number'],
             'amount_minor' => (int) $p['amount_minor'], 'currency' => $p['currency'], 'method' => $p['method'], 'paid_on' => substr((string) $p['paid_on'], 0, 10), 'reference' => $p['reference'], 'created_by_name' => $names[$p['created_by']] ?? null,
-            'lock_version' => (int) $p['lock_version'], 'mine' => $p['created_by'] === $actor,
+            'lock_version' => (int) $p['lock_version'], 'mine' => $p['created_by'] === $actor, 'reversal_number' => $p['reversal_number'] ?? null, 'reverses_number' => $p['reverses_number'] ?? null,
         ];
     }
 }

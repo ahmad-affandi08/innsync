@@ -45,6 +45,13 @@ final readonly class SupplierPaymentController
         return $this->json(['payment' => $this->payments->release($this->property->current(), $this->actor($request), $id)]);
     }
 
+    public function reverse(Request $request, string $id): JsonResponse
+    {
+        $data = $request->validate(['reason' => ['required', 'string', 'max:200']]);
+
+        return $this->json(['payment' => $this->payments->reverse($this->property->current(), $this->actor($request), $id, $data['reason'])], 201);
+    }
+
     public function cancel(Request $request, string $id): JsonResponse
     {
         $data = $request->validate(['reason' => ['required', 'string', 'max:200']]);

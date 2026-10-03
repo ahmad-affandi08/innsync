@@ -37,6 +37,8 @@ final readonly class ReceivableService
 
     public const NOTE_KINDS = ['reminder', 'call', 'promise', 'dispute', 'note'];
 
+    public const ADJUSTMENTS = ['credit_note', 'write_off'];
+
     private const MAX_MINOR = 9_000_000_000_000;
 
     public function __construct(
@@ -109,11 +111,16 @@ final readonly class ReceivableService
         return [
             ...$shape, 'source_type' => $r['source_type'], 'source_number' => $r['source_number'], 'description' => $r['description'], 'reference' => $r['reference'], 'issued_on' => substr((string) $r['issued_on'], 0, 10), 'business_date' => substr((string) $r['business_date'], 0, 10),
             'booked_by' => $names[$r['actor_id'] ?? ''] ?? null, 'customer_kind' => $r['customer_kind'],
-            'receipts' => array_map(static fn (array $x): array => ['id' => $x['id'], 'number' => $x['number'], 'amount_minor' => (int) $x['amount_minor'], 'method' => $x['method'], 'received_on' => substr((string) $x['received_on'], 0, 10), 'reference' => $x['reference'], 'note' => $x['note'], 'by' => $names[$x['created_by']] ?? null], $r['receipts']),
+            'receipts' => array_map(fn (array $x): array => [
+                'id' => $x['id'], 'number' => $x['number'], 'kind' => $x['kind'], 'amount_minor' => (int) $x['amount_minor'], 'method' => $x['method'], 'received_on' => substr((string) $x['received_on'], 0, 10), 'reference' => $x['reference'], 'note' => $x['note'], 'by' => $names[$x['created_by']] ?? null,
+                'reversal_number' => $x['reversal_number'] ?? null, 'reverses_number' => $x['reverses_number'] ?? null,
+                'may_reverse' => $x['kind'] === 'receipt' && ($x['reversal_number'] ?? null) === null && $r['source_type'] === 'manual' && $x['created_by'] !== strtolower($actorId) && $this->access->may($property, $actorId, FinanceAccess::RECEIPT_REVERSE),
+            ], $r['receipts']),
             'notes' => array_map(fn (array $n): array => ['id' => $n['id'], 'kind' => $n['kind'], 'note' => $n['note'], 'promised_on' => $n['promised_on'] === null ? null : substr((string) $n['promised_on'], 0, 10), 'promised_minor' => $n['promised_minor'] === null ? null : (int) $n['promised_minor'], 'by' => $names[$n['created_by']] ?? null, 'at' => $this->iso((string) $n['created_at'])], $r['notes']),
             'methods' => self::METHODS, 'note_kinds' => self::NOTE_KINDS,
             'may_receive' => $shape['balance_minor'] > 0 && $this->access->may($property, $actorId, FinanceAccess::RECEIPT_RECORD),
             'may_note' => $shape['balance_minor'] > 0 && $this->access->may($property, $actorId, FinanceAccess::RECEIVABLE_MANAGE),
+            'may_adjust' => $shape['balance_minor'] > 0 && $r['source_type'] === 'manual' && ($r['actor_id'] ?? null) !== strtolower($actorId) && $this->access->may($property, $actorId, FinanceAccess::RECEIVABLE_ADJUST), 'adjust_kinds' => self::ADJUSTMENTS,
         ];
     }
 
@@ -235,6 +242,119 @@ final readonly class ReceivableService
         };
 
         $this->once($property, $actor, $key, 'finance.receivable.receive', ['receivable' => strtolower($id), 'amount' => $amountMinor, 'method' => $method, 'received_on' => $receivedOn, 'reference' => $reference], $receiptId, $operation);
+
+        return $this->show($property, $actorId, $id);
+    }
+
+    /**
+     * Takes a receipt back, in full (it was recorded in error or the money came back). The receipt is never changed: a reversal is a new row for the same amount that
+     * points at it, dated today, and the receivable owes it again. Only a receivable made by hand: the receipt of a company folio was posted on the folio, which is
+     * corrected in the front office. Someone other than the person who recorded the receipt reverses it, with the reason; a receipt is reversed once.
+     *
+     * @return array<string, mixed> the receivable
+     */
+    public function reverseReceipt(PropertyId $property, string $actorId, string $receiptId, string $reason): array
+    {
+        $this->access->require($property, $actorId, FinanceAccess::RECEIPT_REVERSE, 'This person may not reverse receipts.');
+        $reason = trim($reason);
+
+        if ($reason === '' || mb_strlen($reason) > 200) {
+            throw Refusal::invalid('Say why the receipt is reversed, in at most 200 characters.', ['reason']);
+        }
+
+        $actor = strtolower($actorId);
+        $receivableId = '';
+
+        $this->transactions->run(function () use ($property, $actor, $receiptId, $reason, &$receivableId): void {
+            $first = $this->store->receipt($property, strtolower($receiptId)) ?? throw Refusal::notFound('Receipt not found.');
+            $this->store->lockReceivable($property, $first['receivable_id']);
+            $x = $this->store->receipt($property, $first['id']) ?? throw Refusal::notFound('Receipt not found.');
+            $receivableId = $x['receivable_id'];
+
+            if ($x['kind'] !== 'receipt') {
+                throw Refusal::stateConflict('Only a receipt can be reversed.');
+            }
+
+            if ($x['source_type'] !== 'manual') {
+                throw Refusal::stateConflict('This receipt settled a company folio; it is corrected in the front office, where the folio holds the payment.');
+            }
+
+            if (($x['reversal_number'] ?? null) !== null) {
+                throw Refusal::stateConflict('This receipt was reversed already.');
+            }
+
+            if ($x['created_by'] === $actor) {
+                throw Refusal::forbidden('A receipt is reversed by someone other than the person who recorded it.');
+            }
+
+            $today = $this->businessDate->current($property)->toString();
+            $number = $this->numbers->next($property, 'RCP');
+            $id = $this->ids->next();
+
+            if (! $this->store->addReceipt($property, ['id' => $id, 'number' => $number, 'kind' => 'reversal', 'receivable_id' => $x['receivable_id'], 'reverses_id' => $x['id'], 'amount_minor' => (int) $x['amount_minor'], 'method' => $x['method'], 'received_on' => $today, 'reference' => null, 'note' => $reason, 'business_date' => $today, 'created_by' => $actor], $this->clock->nowUtc())) {
+                throw Refusal::stateConflict('This receipt was reversed already.');
+            }
+
+            $this->audit->record(new AuditEntry($property->toString(), $actor, 'receipt.reversed', 'receivable', $x['receivable_id'], ['receipt' => $x['number'], 'amount_minor' => (int) $x['amount_minor']], ['reversal' => $number, 'receivable' => $x['receivable_number'], 'customer' => $x['customer_code'], 'method' => $x['method']], $reason));
+            $this->outbox->publish(new OutboxEvent($property, 'finance.receivable.receipt_reversed', $id, 1, ['reversal_id' => $id, 'number' => $number, 'receipt_id' => $x['id'], 'receipt_number' => $x['number'], 'receivable_id' => $x['receivable_id'], 'amount_minor' => (int) $x['amount_minor'], 'method' => $x['method'], 'business_date' => $today, 'actor_id' => $actor]));
+        });
+
+        return $this->show($property, $actorId, $receivableId);
+    }
+
+    /**
+     * Settles part or all of a receivable made by hand without money: a credit note (the amount was billed wrongly) or a write-off (it will not be collected). Someone
+     * other than the person who made the receivable does it, with the reason, and never for more than is owed. A receivable billed from a company folio is not adjusted
+     * here: its folio is the ledger and is corrected in the front office.
+     *
+     * @return array<string, mixed> the receivable
+     */
+    public function adjust(PropertyId $property, string $actorId, string $id, string $kind, int $amountMinor, string $reason): array
+    {
+        $this->access->require($property, $actorId, FinanceAccess::RECEIVABLE_ADJUST, 'This person may not give credit notes or write receivables off.');
+        $reason = trim($reason);
+
+        if (! in_array($kind, self::ADJUSTMENTS, true)) {
+            throw Refusal::invalid('Choose a credit note or a write-off.', ['kind']);
+        }
+
+        if ($amountMinor < 1 || $amountMinor > self::MAX_MINOR) {
+            throw Refusal::invalid('Give an amount above zero.', ['amount_minor']);
+        }
+
+        if ($reason === '' || mb_strlen($reason) > 200) {
+            throw Refusal::invalid('Say why, in at most 200 characters.', ['reason']);
+        }
+
+        $actor = strtolower($actorId);
+
+        $this->transactions->run(function () use ($property, $actor, $id, $kind, $amountMinor, $reason): void {
+            $this->store->lockReceivable($property, strtolower($id));
+            $r = $this->store->receivable($property, strtolower($id)) ?? throw Refusal::notFound('Receivable not found.');
+            $left = (int) $r['amount_minor'] - (int) $r['received_minor'];
+
+            if ($r['source_type'] !== 'manual') {
+                throw Refusal::stateConflict('This receivable was billed from a company folio; it is corrected in the front office, where the folio is the ledger.');
+            }
+
+            if ($r['actor_id'] === $actor) {
+                throw Refusal::forbidden('A receivable is adjusted by someone other than the person who made it.');
+            }
+
+            if ($amountMinor > $left) {
+                throw Refusal::stateConflict('The adjustment is more than the customer still owes ('.$left.').');
+            }
+
+            $today = $this->businessDate->current($property)->toString();
+            $number = $this->numbers->next($property, 'ADJ');
+
+            if (! $this->store->addReceipt($property, ['id' => $this->ids->next(), 'number' => $number, 'kind' => $kind, 'receivable_id' => $r['id'], 'reverses_id' => null, 'amount_minor' => $amountMinor, 'method' => null, 'received_on' => $today, 'reference' => null, 'note' => $reason, 'business_date' => $today, 'created_by' => $actor], $this->clock->nowUtc())) {
+                throw Refusal::stateConflict('An adjustment with this number already exists. Try again.');
+            }
+
+            $this->audit->record(new AuditEntry($property->toString(), $actor, 'receivable.'.$kind, 'receivable', $r['id'], ['left_minor' => $left], ['number' => $number, 'receivable' => $r['number'], 'customer' => $r['customer_code'], 'amount_minor' => $amountMinor, 'left_minor' => $left - $amountMinor], $reason));
+            $this->outbox->publish(new OutboxEvent($property, 'finance.receivable.adjusted', $r['id'], 1, ['receivable_id' => $r['id'], 'number' => $number, 'kind' => $kind, 'amount_minor' => $amountMinor, 'currency' => $r['currency'], 'business_date' => $today, 'actor_id' => $actor]));
+        });
 
         return $this->show($property, $actorId, $id);
     }

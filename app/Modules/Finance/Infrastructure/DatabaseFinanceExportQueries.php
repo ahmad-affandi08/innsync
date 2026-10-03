@@ -34,20 +34,20 @@ final readonly class DatabaseFinanceExportQueries implements FinanceExportQuerie
                     ->get(['p.issued_on', 'p.due_date', 'p.source_number', 'p.supplier_code', 'p.supplier_name', 'p.document_number', 'a.code as account_code', 'a.department', 'a.category', 'p.amount_minor', 'p.tax_minor', DB::raw('COALESCE(x.paid, 0) as paid'), DB::raw('COALESCE(y.credit, 0) as credit'), DB::raw('(p.amount_minor - COALESCE(x.paid, 0) - COALESCE(y.credit, 0)) as balance')]),
             ),
             'supplier_payments' => $this->shape(
-                ['Paid on', 'Payment', 'Payable', 'Supplier code', 'Supplier', 'Method', 'Reference', 'Amount'], [7],
-                $take(DB::table('ap_payments as m')->join('ap_payables as p', 'p.id', '=', 'm.payable_id')->where('m.property_id', $pid)->where('m.status', 'paid')->whereBetween('m.paid_on', [$from, $to])->orderBy('m.paid_on')->orderBy('m.number'))
-                    ->get(['m.paid_on', 'm.number', 'p.source_number', 'p.supplier_code', 'p.supplier_name', 'm.method', 'm.reference', 'm.amount_minor']),
+                ['Paid on', 'Payment', 'Payable', 'Supplier code', 'Supplier', 'Method', 'Reference', 'Amount', 'Kind'], [7],
+                $take(DB::table('ap_payments as m')->join('ap_payables as p', 'p.id', '=', 'm.payable_id')->where('m.property_id', $pid)->whereIn('m.status', ['paid', 'reversal'])->whereBetween('m.paid_on', [$from, $to])->orderBy('m.paid_on')->orderBy('m.number'))
+                    ->get(['m.paid_on', 'm.number', 'p.source_number', 'p.supplier_code', 'p.supplier_name', 'm.method', 'm.reference', DB::raw("(CASE WHEN m.status = 'reversal' THEN -m.amount_minor ELSE m.amount_minor END) as amount"), DB::raw("(CASE WHEN m.status = 'reversal' THEN 'reversal' ELSE 'payment' END) as kind")]),
             ),
             'receivables' => $this->shape(
                 ['Issued on', 'Due date', 'Receivable', 'Customer code', 'Customer', 'Customer kind', 'Source', 'Source number', 'Amount', 'Received', 'Balance'], [8, 9, 10],
-                $take(DB::table('ar_receivables as r')->join('fin_customers as c', 'c.id', '=', 'r.customer_id')->leftJoinSub(DB::table('ar_receipts')->groupBy('receivable_id')->selectRaw('receivable_id, SUM(amount_minor) as received'), 'x', 'x.receivable_id', '=', 'r.id')
+                $take(DB::table('ar_receivables as r')->join('fin_customers as c', 'c.id', '=', 'r.customer_id')->leftJoinSub(DB::table('ar_receipts')->groupBy('receivable_id')->selectRaw("receivable_id, SUM(CASE WHEN kind = 'reversal' THEN -amount_minor ELSE amount_minor END) as received"), 'x', 'x.receivable_id', '=', 'r.id')
                     ->where('r.property_id', $pid)->whereBetween('r.issued_on', [$from, $to])->orderBy('r.issued_on')->orderBy('r.number'))
                     ->get(['r.issued_on', 'r.due_date', 'r.number', 'c.code', 'c.name', 'c.kind', 'r.source_type', 'r.source_number', 'r.amount_minor', DB::raw('COALESCE(x.received, 0) as received'), DB::raw('(r.amount_minor - COALESCE(x.received, 0)) as balance')]),
             ),
             'receipts' => $this->shape(
-                ['Received on', 'Receipt', 'Receivable', 'Customer code', 'Customer', 'Method', 'Reference', 'Amount'], [7],
+                ['Received on', 'Receipt', 'Receivable', 'Customer code', 'Customer', 'Method', 'Reference', 'Amount', 'Kind'], [7],
                 $take(DB::table('ar_receipts as x')->join('ar_receivables as r', 'r.id', '=', 'x.receivable_id')->join('fin_customers as c', 'c.id', '=', 'r.customer_id')->where('x.property_id', $pid)->whereBetween('x.received_on', [$from, $to])->orderBy('x.received_on')->orderBy('x.number'))
-                    ->get(['x.received_on', 'x.number', 'r.number as receivable', 'c.code', 'c.name', 'x.method', 'x.reference', 'x.amount_minor']),
+                    ->get(['x.received_on', 'x.number', 'r.number as receivable', 'c.code', 'c.name', 'x.method', 'x.reference', DB::raw("(CASE WHEN x.kind = 'reversal' THEN -x.amount_minor ELSE x.amount_minor END) as amount"), 'x.kind']),
             ),
             'petty_vouchers' => $this->shape(
                 ['Voucher date', 'Voucher', 'Fund', 'Paid to', 'Description', 'Account code', 'Department', 'Category', 'Receipt number', 'Voided', 'Amount'], [10],
@@ -71,7 +71,7 @@ final readonly class DatabaseFinanceExportQueries implements FinanceExportQuerie
 
     private function payables(string $pid): Builder
     {
-        $paid = DB::table('ap_payments')->where('status', 'paid')->groupBy('payable_id')->selectRaw('payable_id, SUM(amount_minor) as paid');
+        $paid = DB::table('ap_payments')->whereIn('status', ['paid', 'reversal'])->groupBy('payable_id')->selectRaw("payable_id, SUM(CASE WHEN status = 'reversal' THEN -amount_minor ELSE amount_minor END) as paid");
         $credit = DB::table('ap_credit_applications')->groupBy('payable_id')->selectRaw('payable_id, SUM(amount_minor) as credit');
 
         return DB::table('ap_payables as p')->leftJoin('finance_expense_accounts as a', 'a.id', '=', 'p.expense_account_id')->leftJoinSub($paid, 'x', 'x.payable_id', '=', 'p.id')->leftJoinSub($credit, 'y', 'y.payable_id', '=', 'p.id')->where('p.property_id', $pid);

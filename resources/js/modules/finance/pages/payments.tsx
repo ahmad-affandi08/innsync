@@ -12,7 +12,7 @@ import type { MessageKey } from '@/locales/en/index';
 
 type Payment = {
     id: string; number: string; status: string; supplier_name: string; payable_number: string; document_number: string; amount_minor: number; currency: string; method: string;
-    paid_on: string; reference: string | null; created_by_name: string | null; mine: boolean;
+    paid_on: string; reference: string | null; created_by_name: string | null; mine: boolean; reversal_number: string | null; reverses_number: string | null;
 };
 type Overview = { payments: Payment[]; methods: string[]; may: { record: boolean } };
 
@@ -23,17 +23,21 @@ export default function PaymentsPage({ overview, status }: { overview: Overview;
     const label = (s: string) => t(`fin.pmt.status.${s}` as MessageKey);
     const method = (m: string) => t(`fin.method.${m}` as MessageKey);
 
+    const signed = (p: Payment) => (p.status === 'reversal' ? -p.amount_minor : p.amount_minor);
+    const related = (p: Payment) => (p.reversal_number !== null ? t('fin.pmt.reversedBy', { number: p.reversal_number }) : p.reverses_number !== null ? t('fin.pmt.takesBack', { number: p.reverses_number }) : '');
+
     const columns: DataGridColumn<Payment>[] = [
         { id: 'number', label: t('fin.col.number'), value: (p) => p.number, rowHeader: true },
         { id: 'supplier', label: t('fin.col.supplier'), value: (p) => p.supplier_name },
         { id: 'document', label: t('fin.col.document'), value: (p) => p.document_number },
         { id: 'ours', label: t('fin.col.ourNumber'), value: (p) => p.payable_number, hidden: true },
-        { id: 'amount', label: t('fin.col.amount'), align: 'right', value: (p) => p.amount_minor, cell: (p) => format.money(p.amount_minor, p.currency) },
+        { id: 'amount', label: t('fin.col.amount'), align: 'right', value: (p) => signed(p), cell: (p) => format.money(signed(p), p.currency) },
         { id: 'method', label: t('fin.col.method'), value: (p) => p.method, filter: 'select', filterLabel: method, cell: (p) => method(p.method) },
         { id: 'paidOn', label: t('fin.col.paidOn'), value: (p) => p.paid_on, cell: (p) => format.date(p.paid_on) },
         { id: 'reference', label: t('fin.col.reference'), value: (p) => p.reference ?? '', cell: (p) => p.reference ?? '—' },
         { id: 'by', label: t('fin.col.madeBy'), value: (p) => p.created_by_name ?? '', cell: (p) => p.created_by_name ?? '—', hidden: true },
         { id: 'state', label: t('inv.col.status'), value: (p) => p.status, filter: 'select', filterLabel: label, cell: (p) => <StatusBadge label={label(p.status)} tone={PAYMENT_TONE[p.status] ?? 'neutral'} /> },
+        { id: 'related', label: t('fin.pmt.related'), value: related, cell: (p) => related(p) || '—' },
         { id: 'actions', label: t('inv.col.actions'), cell: (p) => <Button onClick={() => router.visit(`/finance/payments/${p.id}`)} size="sm" type="button" variant="outline">{t('fin.pmt.open')}</Button> },
     ];
 

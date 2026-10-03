@@ -112,12 +112,12 @@ final readonly class DatabasePayableStore implements PayableStore
     public function payments(PropertyId $property, ?string $status, int $limit): array
     {
         return $this->rows(DB::table('ap_payments as pay')->join('ap_payables as p', 'p.id', '=', 'pay.payable_id')->where('pay.property_id', $property->toString())->when($status !== null, static fn ($q) => $q->where('pay.status', $status))
-            ->orderByDesc('pay.created_at')->orderByDesc('pay.id')->limit($limit)->get(['pay.*', 'p.supplier_name', 'p.supplier_code', 'p.document_number', 'p.source_number', 'p.currency']));
+            ->orderByDesc('pay.created_at')->orderByDesc('pay.id')->limit($limit)->get(['pay.*', 'p.supplier_name', 'p.supplier_code', 'p.document_number', 'p.source_number', 'p.currency', DB::raw('(SELECT r.number FROM ap_payments r WHERE r.reverses_id = pay.id) as reversal_number'), DB::raw('(SELECT o.number FROM ap_payments o WHERE o.id = pay.reverses_id) as reverses_number')]));
     }
 
     public function payment(PropertyId $property, string $id): ?array
     {
-        $row = DB::table('ap_payments as pay')->join('ap_payables as p', 'p.id', '=', 'pay.payable_id')->where('pay.property_id', $property->toString())->where('pay.id', $id)->first(['pay.*', 'p.supplier_name', 'p.supplier_code', 'p.document_number', 'p.source_number', 'p.currency']);
+        $row = DB::table('ap_payments as pay')->join('ap_payables as p', 'p.id', '=', 'pay.payable_id')->where('pay.property_id', $property->toString())->where('pay.id', $id)->first(['pay.*', 'p.supplier_name', 'p.supplier_code', 'p.document_number', 'p.source_number', 'p.currency', DB::raw('(SELECT r.number FROM ap_payments r WHERE r.reverses_id = pay.id) as reversal_number'), DB::raw('(SELECT o.number FROM ap_payments o WHERE o.id = pay.reverses_id) as reverses_number')]);
 
         return $row === null ? null : [...(array) $row, 'proofs' => $this->rows(DB::table('ap_payment_proofs')->where('payment_id', $id)->orderBy('created_at')->get())];
     }
@@ -134,7 +134,7 @@ final readonly class DatabasePayableStore implements PayableStore
 
     public function outstandingAsOf(PropertyId $property, string $asOf): array
     {
-        $paid = DB::table('ap_payments')->where('status', 'paid')->where('paid_on', '<=', $asOf)->groupBy('payable_id')->selectRaw('payable_id, SUM(amount_minor) as paid');
+        $paid = DB::table('ap_payments')->whereIn('status', ['paid', 'reversal'])->where('paid_on', '<=', $asOf)->groupBy('payable_id')->selectRaw("payable_id, SUM(CASE WHEN status = 'reversal' THEN -amount_minor ELSE amount_minor END) as paid");
         $credit = DB::table('ap_credit_applications')->where('business_date', '<=', $asOf)->groupBy('payable_id')->selectRaw('payable_id, SUM(amount_minor) as credit');
 
         return $this->rows(DB::table('ap_payables as p')->leftJoinSub($paid, 'x', 'x.payable_id', '=', 'p.id')->leftJoinSub($credit, 'y', 'y.payable_id', '=', 'p.id')->where('p.property_id', $property->toString())->where('p.issued_on', '<=', $asOf)
@@ -144,7 +144,7 @@ final readonly class DatabasePayableStore implements PayableStore
 
     private function withBalances(PropertyId $property): Builder
     {
-        $paid = DB::table('ap_payments')->where('status', 'paid')->groupBy('payable_id')->selectRaw('payable_id, SUM(amount_minor) as paid');
+        $paid = DB::table('ap_payments')->whereIn('status', ['paid', 'reversal'])->groupBy('payable_id')->selectRaw("payable_id, SUM(CASE WHEN status = 'reversal' THEN -amount_minor ELSE amount_minor END) as paid");
         $pending = DB::table('ap_payments')->where('status', 'pending_approval')->groupBy('payable_id')->selectRaw('payable_id, SUM(amount_minor) as pending');
         $credit = DB::table('ap_credit_applications')->groupBy('payable_id')->selectRaw('payable_id, SUM(amount_minor) as credit');
 

@@ -51,6 +51,12 @@ final readonly class FinanceAccess
 
     public const AUDIT_VIEW = 'finance.audit.view';
 
+    public const PAYMENT_REVERSE = 'finance.payment.reverse';
+
+    public const RECEIPT_REVERSE = 'finance.receipt.reverse';
+
+    public const RECEIVABLE_ADJUST = 'finance.receivable.adjust';
+
     private const VIEWERS = [self::PAYABLE_VIEW, self::PAYABLE_MANAGE, self::PAYMENT_RECORD, self::ACCOUNT_MANAGE];
 
     public function __construct(private PermissionChecker $permissions, private PropertyContext $property) {}

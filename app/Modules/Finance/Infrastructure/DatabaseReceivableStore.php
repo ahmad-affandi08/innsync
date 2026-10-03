@@ -61,7 +61,7 @@ final readonly class DatabaseReceivableStore implements ReceivableStore
             return null;
         }
 
-        $row['receipts'] = $this->rows(DB::table('ar_receipts')->where('receivable_id', $id)->orderBy('created_at')->orderBy('id')->get());
+        $row['receipts'] = $this->rows(DB::table('ar_receipts as x')->where('x.receivable_id', $id)->orderBy('x.created_at')->orderBy('x.id')->get(['x.*', DB::raw('(SELECT v.number FROM ar_receipts v WHERE v.reverses_id = x.id) as reversal_number'), DB::raw('(SELECT o.number FROM ar_receipts o WHERE o.id = x.reverses_id) as reverses_number')]));
         $row['notes'] = $this->rows(DB::table('ar_notes')->where('receivable_id', $id)->orderByDesc('created_at')->orderByDesc('id')->get());
 
         return $row;
@@ -70,6 +70,14 @@ final readonly class DatabaseReceivableStore implements ReceivableStore
     public function lockReceivable(PropertyId $property, string $id): void
     {
         DB::table('ar_receivables')->where('property_id', $property->toString())->where('id', $id)->lockForUpdate()->first();
+    }
+
+    public function receipt(PropertyId $property, string $id): ?array
+    {
+        $row = DB::table('ar_receipts as x')->join('ar_receivables as r', 'r.id', '=', 'x.receivable_id')->join('fin_customers as c', 'c.id', '=', 'r.customer_id')->where('x.property_id', $property->toString())->where('x.id', $id)
+            ->first(['x.*', 'r.source_type', 'r.number as receivable_number', 'c.code as customer_code', DB::raw('(SELECT v.number FROM ar_receipts v WHERE v.reverses_id = x.id) as reversal_number')]);
+
+        return $row === null ? null : (array) $row;
     }
 
     public function addReceipt(PropertyId $property, array $row, DateTimeImmutable $at): bool
@@ -84,7 +92,7 @@ final readonly class DatabaseReceivableStore implements ReceivableStore
 
     public function outstandingAsOf(PropertyId $property, string $asOf): array
     {
-        $received = DB::table('ar_receipts')->where('received_on', '<=', $asOf)->groupBy('receivable_id')->selectRaw('receivable_id, SUM(amount_minor) as received');
+        $received = DB::table('ar_receipts')->where('received_on', '<=', $asOf)->groupBy('receivable_id')->selectRaw("receivable_id, SUM(CASE WHEN kind = 'reversal' THEN -amount_minor ELSE amount_minor END) as received");
 
         return $this->rows(DB::table('ar_receivables as r')->join('fin_customers as c', 'c.id', '=', 'r.customer_id')->leftJoinSub($received, 'x', 'x.receivable_id', '=', 'r.id')
             ->where('r.property_id', $property->toString())->where('r.issued_on', '<=', $asOf)->whereRaw('(r.amount_minor - COALESCE(x.received, 0)) > 0')->orderBy('r.due_date')
@@ -93,7 +101,7 @@ final readonly class DatabaseReceivableStore implements ReceivableStore
 
     private function withBalances(PropertyId $property): Builder
     {
-        $received = DB::table('ar_receipts')->groupBy('receivable_id')->selectRaw('receivable_id, SUM(amount_minor) as received');
+        $received = DB::table('ar_receipts')->groupBy('receivable_id')->selectRaw("receivable_id, SUM(CASE WHEN kind = 'reversal' THEN -amount_minor ELSE amount_minor END) as received");
         $notes = DB::table('ar_notes')->groupBy('receivable_id')->selectRaw('receivable_id, MAX(created_at) as last_note_at, MAX(promised_on) as promised_on, COUNT(*) as note_count');
 
         return DB::table('ar_receivables as r')->join('fin_customers as c', 'c.id', '=', 'r.customer_id')->leftJoinSub($received, 'x', 'x.receivable_id', '=', 'r.id')->leftJoinSub($notes, 'n', 'n.receivable_id', '=', 'r.id')

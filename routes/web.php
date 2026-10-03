@@ -548,6 +548,7 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
     Route::post('/payments', [SupplierPaymentController::class, 'store'])->middleware(['idempotent'])->name('finance.payments.store');
     Route::post('/payments/{id}/release', [SupplierPaymentController::class, 'release'])->where('id', $id)->name('finance.payments.release');
     Route::post('/payments/{id}/cancel', [SupplierPaymentController::class, 'cancel'])->where('id', $id)->name('finance.payments.cancel');
+    Route::post('/payments/{id}/reverse', [SupplierPaymentController::class, 'reverse'])->where('id', $id)->name('finance.payments.reverse');
     Route::post('/payments/{id}/proofs', [SupplierPaymentController::class, 'addProof'])->where('id', $id)->name('finance.payments.proofs.store');
     Route::get('/payments/{id}/proofs/{proof}', [SupplierPaymentController::class, 'proof'])->where('id', $id)->where('proof', $id)->name('finance.payments.proofs.show');
     Route::get('/accounts', [ExpenseAccountController::class, 'index'])->name('finance.accounts');
@@ -565,6 +566,8 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
     Route::get('/receivables/{id}', [ReceivableController::class, 'show'])->where('id', $id)->name('finance.receivables.show');
     Route::post('/receivables/{id}/receipts', [ReceivableController::class, 'receive'])->where('id', $id)->middleware(['idempotent'])->name('finance.receivables.receive');
     Route::post('/receivables/{id}/notes', [ReceivableController::class, 'note'])->where('id', $id)->name('finance.receivables.note');
+    Route::post('/receivables/{id}/adjustments', [ReceivableController::class, 'adjust'])->where('id', $id)->name('finance.receivables.adjust');
+    Route::post('/receivables/receipts/{id}/reverse', [ReceivableController::class, 'reverseReceipt'])->where('id', $id)->name('finance.receivables.receipts.reverse');
     Route::get('/customers', [ReceivableController::class, 'customers'])->name('finance.customers');
     Route::post('/customers', [ReceivableController::class, 'storeCustomer'])->name('finance.customers.store');
     Route::post('/customers/{id}', [ReceivableController::class, 'updateCustomer'])->where('id', $id)->name('finance.customers.update');

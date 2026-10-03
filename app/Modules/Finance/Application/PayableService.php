@@ -101,7 +101,7 @@ final readonly class PayableService
             'occurred_at' => $utc($p['occurred_at']), 'correlation_id' => $p['correlation_id'], 'expense_account_id' => $p['expense_account_id'], 'expense_account' => $p['expense_account_id'] === null ? null : ($accounts[$p['expense_account_id']]['code'] ?? null),
             'accounts' => array_values(array_map(static fn (array $a): array => ['id' => $a['id'], 'code' => $a['code'], 'name' => $a['name']], array_filter($accounts, static fn (array $a): bool => (bool) $a['is_active']))),
             'payments' => array_map(static fn (array $pay): array => [
-                'id' => $pay['id'], 'number' => $pay['number'], 'amount_minor' => (int) $pay['amount_minor'], 'method' => $pay['method'], 'paid_on' => substr((string) $pay['paid_on'], 0, 10), 'reference' => $pay['reference'], 'status' => $pay['status'], 'created_by_name' => $names[$pay['created_by']] ?? null,
+                'id' => $pay['id'], 'number' => $pay['number'], 'amount_minor' => (int) $pay['amount_minor'], 'method' => $pay['method'], 'paid_on' => substr((string) $pay['paid_on'], 0, 10), 'reference' => $pay['reference'], 'status' => $pay['status'], 'reverses_id' => $pay['reverses_id'] ?? null, 'created_by_name' => $names[$pay['created_by']] ?? null,
                 'proofs' => array_map(static fn (array $pr): array => ['id' => $pr['id'], 'name' => $pr['display_name']], $pay['proofs']),
             ], $p['payments']),
             'applications' => array_map(static fn (array $a): array => ['id' => $a['id'], 'credit_note_number' => $a['credit_note_number'], 'source_number' => $a['source_number'], 'amount_minor' => (int) $a['amount_minor'], 'business_date' => substr((string) $a['business_date'], 0, 10)], $p['applications']),

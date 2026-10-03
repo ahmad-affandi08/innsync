@@ -13,8 +13,8 @@ export type PayableRow = {
 };
 
 export const PAYABLE_TONE: Record<string, StatusTone> = { open: 'info', partial: 'pending', paid: 'success' };
-export const PAYMENT_TONE: Record<string, StatusTone> = { pending_approval: 'pending', paid: 'success', rejected: 'danger', cancelled: 'neutral' };
-export const PAYMENT_STATUSES = ['pending_approval', 'paid', 'rejected', 'cancelled'] as const;
+export const PAYMENT_TONE: Record<string, StatusTone> = { pending_approval: 'pending', paid: 'success', rejected: 'danger', cancelled: 'neutral', reversal: 'warning' };
+export const PAYMENT_STATUSES = ['pending_approval', 'paid', 'rejected', 'cancelled', 'reversal'] as const;
 export const PAYMENT_METHODS = ['transfer', 'cash', 'giro', 'other'] as const;
 
 /** The state of a payable, with an extra red badge showing how late it is when something is owed after the due date. */
@@ -73,6 +73,8 @@ export type ReceivableRow = {
 
 export const RECEIVABLE_TONE: Record<string, StatusTone> = { open: 'info', partial: 'pending', paid: 'success' };
 export const CUSTOMER_KINDS = ['company', 'agent', 'ota', 'other'] as const;
+/** The kinds of line a receivable's receipts table lists: what was received, what took it back, and the two adjustments. */
+export const RECEIPT_KIND_TONE: Record<string, StatusTone> = { receipt: 'success', reversal: 'warning', credit_note: 'info', write_off: 'neutral' };
 export const NOTE_TONE: Record<string, StatusTone> = { reminder: 'info', call: 'info', promise: 'warning', dispute: 'danger', note: 'neutral' };
 
 /** The state of a receivable, with a red badge showing how late it is when something is still owed after the due date. */
