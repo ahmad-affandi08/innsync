@@ -147,12 +147,12 @@ Every row must eventually point to implementation evidence and tests. Status is 
 | FR-KIT-013 | F&B Product / Kitchen | Wajib | ../TASK/MODULE-06-KITCHEN.md | REVIEW |
 | FR-KIT-014 | F&B Product / Kitchen | Sebaiknya | ../TASK/MODULE-06-KITCHEN.md | TODO |
 | FR-KIT-015 | F&B Product / Kitchen | Wajib | ../TASK/MODULE-06-KITCHEN.md | IN_PROGRESS |
-| FR-MTC-001 | Maintenance / Engineering | Wajib | ../TASK/MODULE-07-MAINTENANCE.md | TODO |
-| FR-MTC-002 | Maintenance / Engineering | Wajib | ../TASK/MODULE-07-MAINTENANCE.md | TODO |
-| FR-MTC-003 | Maintenance / Engineering | Wajib | ../TASK/MODULE-07-MAINTENANCE.md | TODO |
-| FR-MTC-004 | Maintenance / Engineering | Wajib | ../TASK/MODULE-07-MAINTENANCE.md | TODO |
-| FR-MTC-005 | Maintenance / Engineering | Wajib | ../TASK/MODULE-07-MAINTENANCE.md | TODO |
-| FR-MTC-006 | Maintenance / Engineering | Wajib | ../TASK/MODULE-07-MAINTENANCE.md | TODO |
+| FR-MTC-001 | Maintenance / Engineering | Wajib | ../TASK/MODULE-07-MAINTENANCE.md | REVIEW |
+| FR-MTC-002 | Maintenance / Engineering | Wajib | ../TASK/MODULE-07-MAINTENANCE.md | REVIEW |
+| FR-MTC-003 | Maintenance / Engineering | Wajib | ../TASK/MODULE-07-MAINTENANCE.md | REVIEW |
+| FR-MTC-004 | Maintenance / Engineering | Wajib | ../TASK/MODULE-07-MAINTENANCE.md | REVIEW |
+| FR-MTC-005 | Maintenance / Engineering | Wajib | ../TASK/MODULE-07-MAINTENANCE.md | REVIEW |
+| FR-MTC-006 | Maintenance / Engineering | Wajib | ../TASK/MODULE-07-MAINTENANCE.md | REVIEW |
 | FR-MTC-007 | Maintenance / Engineering | Sebaiknya | ../TASK/MODULE-07-MAINTENANCE.md | TODO |
 | FR-MTC-008 | Maintenance / Engineering | Sebaiknya | ../TASK/MODULE-07-MAINTENANCE.md | TODO |
 | FR-MTC-009 | Maintenance / Engineering | Sebaiknya | ../TASK/MODULE-07-MAINTENANCE.md | TODO |

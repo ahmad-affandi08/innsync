@@ -66,6 +66,7 @@ use App\Modules\Kitchen\Presentation\Http\Controllers\RecipeController;
 use App\Modules\Kitchen\Presentation\Http\Controllers\WasteController;
 use App\Modules\Laundry\Presentation\Http\Controllers\ClaimController;
 use App\Modules\Laundry\Presentation\Http\Controllers\LaundryController;
+use App\Modules\Maintenance\Presentation\Http\Controllers\WorkOrderController;
 use App\Modules\Property\Presentation\Http\Controllers\BookingPolicyController;
 use App\Modules\Property\Presentation\Http\Controllers\ChargeSchemeController;
 use App\Modules\Property\Presentation\Http\Controllers\PropertySettingsController;
@@ -668,4 +669,23 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
     Route::get('/recipes', [RecipeController::class, 'index'])->name('kitchen.recipes');
     Route::get('/recipes/{id}', [RecipeController::class, 'show'])->where('id', $id)->name('kitchen.recipes.show');
     Route::post('/recipes/{id}', [RecipeController::class, 'save'])->where('id', $id)->name('kitchen.recipes.save');
+});
+
+Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix('maintenance')->group(function (): void {
+    $id = '[0-9a-z]{26}';
+
+    Route::get('/', [WorkOrderController::class, 'index'])->name('maintenance.work-orders');
+    Route::post('/work-orders', [WorkOrderController::class, 'report'])->name('maintenance.work-orders.report');
+    Route::get('/work-orders/{id}', [WorkOrderController::class, 'show'])->where('id', $id)->name('maintenance.work-orders.show');
+    Route::get('/work-orders/{id}/photo/{which}', [WorkOrderController::class, 'photo'])->where('id', $id)->where('which', 'report|done')->name('maintenance.work-orders.photo');
+    Route::post('/work-orders/{id}/assign', [WorkOrderController::class, 'assign'])->where('id', $id)->name('maintenance.work-orders.assign');
+    Route::post('/work-orders/{id}/priority', [WorkOrderController::class, 'priority'])->where('id', $id)->name('maintenance.work-orders.priority');
+    Route::post('/work-orders/{id}/start', [WorkOrderController::class, 'start'])->where('id', $id)->name('maintenance.work-orders.start');
+    Route::post('/work-orders/{id}/hold', [WorkOrderController::class, 'hold'])->where('id', $id)->name('maintenance.work-orders.hold');
+    Route::post('/work-orders/{id}/resume', [WorkOrderController::class, 'resume'])->where('id', $id)->name('maintenance.work-orders.resume');
+    Route::post('/work-orders/{id}/complete', [WorkOrderController::class, 'complete'])->where('id', $id)->name('maintenance.work-orders.complete');
+    Route::post('/work-orders/{id}/cancel', [WorkOrderController::class, 'cancel'])->where('id', $id)->name('maintenance.work-orders.cancel');
+    Route::post('/work-orders/{id}/block', [WorkOrderController::class, 'block'])->where('id', $id)->name('maintenance.work-orders.block');
+    Route::post('/work-orders/{id}/release-room', [WorkOrderController::class, 'releaseRoom'])->where('id', $id)->name('maintenance.work-orders.release-room');
+    Route::post('/sla', [WorkOrderController::class, 'sla'])->name('maintenance.sla');
 });

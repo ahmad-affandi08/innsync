@@ -1,5 +1,5 @@
 import { Link } from '@inertiajs/react';
-import { ArrowUpRight, BedDouble, ChartNoAxesCombined, ChefHat, ConciergeBell, Landmark, LayoutDashboard, Settings2, ShieldCheck, Shirt, UtensilsCrossed, Warehouse, type LucideIcon } from 'lucide-react';
+import { ArrowUpRight, BedDouble, ChartNoAxesCombined, ChefHat, ConciergeBell, Landmark, LayoutDashboard, Settings2, ShieldCheck, Shirt, UtensilsCrossed, Warehouse, Wrench, type LucideIcon } from 'lucide-react';
 
 import { AppFrame } from '@/components/layout/app-frame';
 import { Card } from '@/components/ui/card';
@@ -17,6 +17,7 @@ const CARDS: readonly Module[] = [
     { href: '/laundry', icon: Shirt, label: 'ldy.nav.label', about: 'home.about.laundry' },
     { href: '/fnb/pos', icon: UtensilsCrossed, label: 'fnb.nav.label', about: 'home.about.fnb' },
     { href: '/kitchen', icon: ChefHat, label: 'kitchen.nav.label', about: 'home.about.kitchen' },
+    { href: '/maintenance', icon: Wrench, label: 'mtc.nav.label', about: 'home.about.maintenance' },
     { href: '/inventory/stock', icon: Warehouse, label: 'inv.nav.label', about: 'home.about.inventory' },
     { href: '/finance/payables', icon: Landmark, label: 'fin.nav.label', about: 'home.about.finance' },
     { href: '/reports', icon: ChartNoAxesCombined, label: 'rpt.nav.reports', about: 'home.about.reports' },

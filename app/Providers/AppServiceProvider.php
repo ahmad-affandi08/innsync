@@ -50,6 +50,8 @@ use App\Modules\FrontOffice\Application\ForeignPayments\ForeignPaymentRepository
 use App\Modules\FrontOffice\Application\Groups\GroupRepository;
 use App\Modules\FrontOffice\Application\Inventory\InventoryHoldRepository;
 use App\Modules\FrontOffice\Application\Inventory\InventoryRepository;
+use App\Modules\FrontOffice\Application\Inventory\RoomBlocking;
+use App\Modules\FrontOffice\Application\Inventory\RoomBlockingService;
 use App\Modules\FrontOffice\Application\Inventory\RoomBlockRepository;
 use App\Modules\FrontOffice\Application\NightAudit\NightAuditRepository;
 use App\Modules\FrontOffice\Application\Requests\GuestRequestRepository;
@@ -139,6 +141,8 @@ use App\Modules\Laundry\Application\LaundryRepository;
 use App\Modules\Laundry\Application\LaundryService;
 use App\Modules\Laundry\Infrastructure\DatabaseClaimRepository;
 use App\Modules\Laundry\Infrastructure\DatabaseLaundryRepository;
+use App\Modules\Maintenance\Application\WorkOrderStore;
+use App\Modules\Maintenance\Infrastructure\DatabaseWorkOrderStore;
 use App\Modules\Property\Application\Catalog\RoomCatalogReader;
 use App\Modules\Property\Application\Catalog\RoomCatalogRepository;
 use App\Modules\Property\Application\Catalog\RoomCatalogService;
@@ -421,6 +425,8 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(TicketStore::class, DatabaseTicketStore::class);
         $this->app->bind(RecipeStore::class, DatabaseRecipeStore::class);
         $this->app->bind(WasteStore::class, DatabaseWasteStore::class);
+        $this->app->bind(WorkOrderStore::class, DatabaseWorkOrderStore::class);
+        $this->app->bind(RoomBlocking::class, RoomBlockingService::class);
         $this->app->bind(IngredientCatalog::class, IngredientCatalogService::class);
         $this->app->bind(PaymentStore::class, DatabasePaymentStore::class);
         $this->app->bind(FinanceExportQueries::class, DatabaseFinanceExportQueries::class);

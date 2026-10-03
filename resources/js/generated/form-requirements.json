@@ -499,6 +499,14 @@
         "unit_price_minor",
         "value"
     ],
+    "maintenance/pages/work-orders": [
+        "category",
+        "priority",
+        "reason",
+        "reporter_department",
+        "title",
+        "until"
+    ],
     "property/pages/booking-policies": [
         "cancel_free_days",
         "cancel_penalty_kind",

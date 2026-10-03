@@ -21,6 +21,7 @@ return [
         'lost_found_photo' => ['default_days' => 90, 'minimum_days' => 0, 'maximum_days' => 365, 'statutory' => false, 'anchor' => 'closed_at', 'purgeable' => true],
         'laundry_claim_photo' => ['default_days' => 365, 'minimum_days' => 0, 'maximum_days' => 1095, 'statutory' => false, 'anchor' => 'decided_at', 'purgeable' => true],
         'checklist_photo' => ['default_days' => 90, 'minimum_days' => 0, 'maximum_days' => 365, 'statutory' => false, 'anchor' => 'completed_at', 'purgeable' => true],
+        'maintenance_photo' => ['default_days' => 365, 'minimum_days' => 0, 'maximum_days' => 1095, 'statutory' => false, 'anchor' => 'closed_at', 'purgeable' => true],
         'sensitive_export_file' => ['default_days' => 1, 'minimum_days' => 0, 'maximum_days' => 7, 'statutory' => false, 'anchor' => 'issued_at', 'purgeable' => true],
     ],
 

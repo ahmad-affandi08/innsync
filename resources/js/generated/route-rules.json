@@ -3416,6 +3416,127 @@
             "password"
         ]
     },
+    "POST /maintenance/sla": {
+        "required": [
+            "high",
+            "low",
+            "normal",
+            "urgent"
+        ],
+        "declared": [
+            "high",
+            "lock_version",
+            "low",
+            "normal",
+            "urgent"
+        ]
+    },
+    "POST /maintenance/work-orders": {
+        "required": [
+            "category",
+            "priority",
+            "reporter_department",
+            "title"
+        ],
+        "declared": [
+            "area",
+            "category",
+            "description",
+            "photo",
+            "priority",
+            "reporter_department",
+            "room_id",
+            "title"
+        ]
+    },
+    "POST /maintenance/work-orders/{id}/assign": {
+        "required": [
+            "lock_version",
+            "technician_id"
+        ],
+        "declared": [
+            "lock_version",
+            "technician_id"
+        ]
+    },
+    "POST /maintenance/work-orders/{id}/block": {
+        "required": [
+            "kind",
+            "lock_version",
+            "until"
+        ],
+        "declared": [
+            "kind",
+            "lock_version",
+            "until"
+        ]
+    },
+    "POST /maintenance/work-orders/{id}/cancel": {
+        "required": [
+            "lock_version",
+            "reason"
+        ],
+        "declared": [
+            "lock_version",
+            "reason"
+        ]
+    },
+    "POST /maintenance/work-orders/{id}/complete": {
+        "required": [
+            "lock_version",
+            "note"
+        ],
+        "declared": [
+            "lock_version",
+            "note",
+            "photo"
+        ]
+    },
+    "POST /maintenance/work-orders/{id}/hold": {
+        "required": [
+            "lock_version",
+            "reason"
+        ],
+        "declared": [
+            "lock_version",
+            "note",
+            "reason"
+        ]
+    },
+    "POST /maintenance/work-orders/{id}/priority": {
+        "required": [
+            "lock_version",
+            "priority"
+        ],
+        "declared": [
+            "lock_version",
+            "priority"
+        ]
+    },
+    "POST /maintenance/work-orders/{id}/release-room": {
+        "required": [
+            "lock_version"
+        ],
+        "declared": [
+            "lock_version"
+        ]
+    },
+    "POST /maintenance/work-orders/{id}/resume": {
+        "required": [
+            "lock_version"
+        ],
+        "declared": [
+            "lock_version"
+        ]
+    },
+    "POST /maintenance/work-orders/{id}/start": {
+        "required": [
+            "lock_version"
+        ],
+        "declared": [
+            "lock_version"
+        ]
+    },
     "POST /mfa/challenge": {
         "required": [
             "code"

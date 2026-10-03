@@ -92,6 +92,17 @@ final readonly class InventoryAdminService
     public function blockRoom(PropertyId $property, string $actorId, string $roomId, string $kind, string $from, string $to, string $reason): array
     {
         $this->authorize($property, $actorId, self::BLOCK_PERMISSION);
+
+        return $this->placeBlock($property, $actorId, $roomId, $kind, $from, $to, $reason);
+    }
+
+    /**
+     * The block itself, for a caller that has checked its own permission (maintenance takes a room off sale for a work order).
+     *
+     * @return array{block: RoomBlock, oversold_nights: list<string>}
+     */
+    public function placeBlock(PropertyId $property, string $actorId, string $roomId, string $kind, string $from, string $to, string $reason): array
+    {
         $this->assertReason($reason);
 
         if (! in_array($kind, [RoomBlock::OUT_OF_ORDER, RoomBlock::OUT_OF_SERVICE], true)) {
@@ -129,6 +140,12 @@ final readonly class InventoryAdminService
     public function releaseBlock(PropertyId $property, string $actorId, string $blockId, string $reason): void
     {
         $this->authorize($property, $actorId, self::BLOCK_PERMISSION);
+        $this->removeBlock($property, $actorId, $blockId, $reason);
+    }
+
+    /** Releases a block for a caller that has checked its own permission. */
+    public function removeBlock(PropertyId $property, string $actorId, string $blockId, string $reason): void
+    {
         $this->assertReason($reason);
         $block = $this->blocks->find($property, strtolower($blockId)) ?? throw Refusal::notFound('Block not found.');
         $room = $this->rooms->room($property, $block->roomId);
