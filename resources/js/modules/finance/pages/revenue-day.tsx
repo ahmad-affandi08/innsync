@@ -11,6 +11,7 @@ import { FormField } from '@/components/ui/form-field';
 import { Metric } from '@/components/ui/metric';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { Textarea } from '@/components/ui/textarea';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { FinanceShell } from '@/modules/finance/components/finance-shell';
 import { CORRECTION_TONE, DEFAULT_CURRENCY, REVENUE_TONE, signClass, useOutletLabel, useReceiptMethodLabel, useSignedMoney, type MethodTotals, type RevenueAmounts } from '@/modules/finance/lib/finance';
 import { useServerAction } from '@/shared/api/use-server-action';
@@ -147,24 +148,32 @@ export default function RevenueDayPage({ day }: { day: Day }) {
                 <Metric label={t('fin.rev.collected')} value={money(day.collected_minor)} />
             </section>
 
-            <section aria-labelledby="fin-day-lines-h" className="flex flex-col gap-3">
-                <h2 className="text-lg font-semibold" id="fin-day-lines-h">{t('fin.day.lines')}</h2>
+            <Tabs defaultValue="fin-day-lines-h">
+                <TabsList>
+                    <TabsTrigger value="fin-day-lines-h">{t('fin.day.lines')}</TabsTrigger>
+                    <TabsTrigger value="fin-day-payments-h">{t('fin.day.payments')}</TabsTrigger>
+                    <TabsTrigger value="fin-day-corrections-h">{t('fin.day.corrections')}</TabsTrigger>
+                </TabsList>
+
+            <TabsContent className="flex flex-col gap-3" value="fin-day-lines-h">
+                <h2 className="sr-only" id="fin-day-lines-h">{t('fin.day.lines')}</h2>
                 <DataGrid caption={t('fin.day.lines')} columns={lineColumns} empty={<EmptyState title={t('fin.day.linesEmpty')} />} footerLabel={t('fin.age.total')} getRowId={(l) => `${l.source}:${l.outlet_code}`} id="fin.revenue.day.lines" rows={day.lines} testId="revenue-day-lines" />
-            </section>
+            </TabsContent>
 
-            <section aria-labelledby="fin-day-payments-h" className="flex flex-col gap-3">
-                <h2 className="text-lg font-semibold" id="fin-day-payments-h">{t('fin.day.payments')}</h2>
+            <TabsContent className="flex flex-col gap-3" value="fin-day-payments-h">
+                <h2 className="sr-only" id="fin-day-payments-h">{t('fin.day.payments')}</h2>
                 <DataGrid caption={t('fin.day.payments')} columns={paymentColumns} empty={<EmptyState title={t('fin.day.paymentsEmpty')} />} footerLabel={t('fin.age.total')} getRowId={(p) => p.method} id="fin.revenue.day.payments" rows={day.payments} testId="revenue-day-payments" />
-            </section>
+            </TabsContent>
 
-            <section aria-labelledby="fin-day-corrections-h" className="flex flex-col gap-3">
-                <h2 className="text-lg font-semibold" id="fin-day-corrections-h">{t('fin.day.corrections')}</h2>
+            <TabsContent className="flex flex-col gap-3" value="fin-day-corrections-h">
+                <h2 className="sr-only" id="fin-day-corrections-h">{t('fin.day.corrections')}</h2>
                 <p className="text-sm text-muted-foreground">{t(verified ? 'fin.day.correctionsVerified' : 'fin.day.correctionsHint')}</p>
                 {day.corrections.length === 0 ? <p className="text-sm text-muted-foreground">{t('fin.day.correctionsEmpty')}</p> : (
                     <DataGrid caption={t('fin.day.corrections')} columns={correctionColumns} getRowId={(c) => c.id} id="fin.revenue.day.corrections" rows={day.corrections} testId="revenue-day-corrections" />
                 )}
                 <p className="print:hidden"><Link className="underline" href={`/finance/corrections?date=${day.date}`}>{t('fin.day.correct')}</Link></p>
-            </section>
+            </TabsContent>
+            </Tabs>
 
             <Dialog
                 footer={<>

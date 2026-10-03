@@ -12,6 +12,7 @@ import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
 import { StatusBadge } from '@/components/ui/status-badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { FnbShell } from '@/modules/fnb-sales/components/fnb-shell';
 import type { Category, MenuItem, MenuView, ModifierGroup } from '@/modules/fnb-sales/lib/fnb';
 import { useServerAction } from '@/shared/api/use-server-action';
@@ -209,34 +210,46 @@ export default function MenuPage({ menu }: { menu: MenuView }) {
 
             {action.error !== null && category === null && item === null && group === null ? failure : null}
 
-            {outlet === null ? <Alert title={t('fnb.menu.noOutlet')} tone="info" /> : (
-                <>
-                    <section aria-labelledby="fnb-cat-h" className="flex flex-col gap-3">
+            {outlet === null ? <Alert title={t('fnb.menu.noOutlet')} tone="info" /> : null}
+
+            <Tabs defaultValue={outlet === null ? 'groups' : 'items'}>
+                <TabsList aria-label={t('fnb.menu.title')}>
+                    {outlet !== null ? <TabsTrigger value="categories">{t('fnb.menu.tabCategories', { count: menu.categories.length })}</TabsTrigger> : null}
+                    {outlet !== null ? <TabsTrigger value="items">{t('fnb.menu.tabItems', { count: menu.items.length })}</TabsTrigger> : null}
+                    <TabsTrigger value="groups">{t('fnb.menu.tabGroups', { count: menu.groups.length })}</TabsTrigger>
+                </TabsList>
+
+                {outlet !== null ? (
+                    <TabsContent className="flex flex-col gap-3" value="categories">
                         <div className="flex items-center justify-between gap-3">
-                            <h2 className="text-lg font-semibold" id="fnb-cat-h">{t('fnb.menu.categories')}</h2>
+                            <h2 className="sr-only">{t('fnb.menu.categories')}</h2>
+                            <span />
                             {menu.may.manage ? <Button onClick={() => openCategory(null)} size="sm" type="button">{t('fnb.menu.newCategory')}</Button> : null}
                         </div>
                         <DataGrid caption={t('fnb.menu.categories')} columns={categoryColumns} empty={<EmptyState illustration="bell" title={t('fnb.menu.categoryEmpty')} />} getRowId={(c) => c.id} id="fnb.menu.categories" rows={menu.categories} testId="menu-categories" />
-                    </section>
+                    </TabsContent>
+                ) : null}
 
-                    <section aria-labelledby="fnb-item-h" className="flex flex-col gap-3">
+                {outlet !== null ? (
+                    <TabsContent className="flex flex-col gap-3" value="items">
                         <div className="flex items-center justify-between gap-3">
-                            <h2 className="text-lg font-semibold" id="fnb-item-h">{t('fnb.menu.items')}</h2>
+                            <h2 className="sr-only">{t('fnb.menu.items')}</h2>
+                            {menu.categories.filter((c) => c.is_active).length === 0 && menu.may.manage ? <p className="text-sm text-muted-foreground">{t('fnb.menu.needCategory')}</p> : <span />}
                             {menu.may.manage ? <Button disabled={menu.categories.filter((c) => c.is_active).length === 0} onClick={() => openItem(null)} size="sm" type="button">{t('fnb.menu.newItem')}</Button> : null}
                         </div>
-                        {menu.categories.filter((c) => c.is_active).length === 0 && menu.may.manage ? <p className="text-sm text-muted-foreground">{t('fnb.menu.needCategory')}</p> : null}
                         <DataGrid caption={t('fnb.menu.items')} columns={itemColumns} empty={<EmptyState illustration="coffee" title={t('fnb.menu.itemEmpty')} />} getRowId={(i) => i.id} id="fnb.menu.items" rows={menu.items} testId="menu-items" />
-                    </section>
-                </>
-            )}
+                    </TabsContent>
+                ) : null}
 
-            <section aria-labelledby="fnb-group-h" className="flex flex-col gap-3">
-                <div className="flex items-center justify-between gap-3">
-                    <h2 className="text-lg font-semibold" id="fnb-group-h">{t('fnb.menu.groupSection')}</h2>
-                    {menu.may.manage ? <Button onClick={() => openGroup(null)} size="sm" type="button">{t('fnb.menu.newGroup')}</Button> : null}
-                </div>
-                <DataGrid caption={t('fnb.menu.groupSection')} columns={groupColumns} empty={<EmptyState illustration="checklist" title={t('fnb.menu.groupEmpty')} />} getRowId={(g) => g.id} id="fnb.menu.groups" rows={menu.groups} testId="menu-groups" />
-            </section>
+                <TabsContent className="flex flex-col gap-3" value="groups">
+                    <div className="flex items-center justify-between gap-3">
+                        <h2 className="sr-only">{t('fnb.menu.groupSection')}</h2>
+                        <span />
+                        {menu.may.manage ? <Button onClick={() => openGroup(null)} size="sm" type="button">{t('fnb.menu.newGroup')}</Button> : null}
+                    </div>
+                    <DataGrid caption={t('fnb.menu.groupSection')} columns={groupColumns} empty={<EmptyState illustration="checklist" title={t('fnb.menu.groupEmpty')} />} getRowId={(g) => g.id} id="fnb.menu.groups" rows={menu.groups} testId="menu-groups" />
+                </TabsContent>
+            </Tabs>
 
             <Dialog footer={category === null ? undefined : saveBar(action.busy, () => setCategory(null), () => void saveCategory())} onClose={() => setCategory(null)} open={category !== null} title={category === null || category.id === null ? t('fnb.menu.newCategory') : t('fnb.menu.categoryTitle', { code: category.code })}>
                 {category !== null && (

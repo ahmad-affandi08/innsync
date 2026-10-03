@@ -7,6 +7,7 @@ import { DateRangePicker } from '@/components/ui/date-picker';
 import { EmptyState } from '@/components/ui/empty-state';
 import { FormField } from '@/components/ui/form-field';
 import { StatusBadge, type StatusTone } from '@/components/ui/status-badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { InventoryShell } from '@/modules/inventory-purchasing/components/inventory-shell';
 import { ORDER_TONE } from '@/modules/inventory-purchasing/lib/purchasing';
 import { formatMilli } from '@/modules/inventory-purchasing/lib/quantity';
@@ -80,15 +81,22 @@ export default function DeliveryReportPage({ report }: { report: Report }) {
                 </FormField>
             </div>
 
-            <section aria-labelledby="del-suppliers-h" className="flex flex-col gap-3">
-                <h2 className="text-lg font-semibold" id="del-suppliers-h">{t('inv.rep.del.suppliers')}</h2>
-                <DataGrid caption={t('inv.rep.del.suppliers')} columns={supplierColumns} empty={<EmptyState title={t('inv.rep.del.noSuppliers')} />} getRowId={(s) => s.supplier_id} id="inv.report.deliveries.suppliers" rows={report.suppliers} testId="delivery-suppliers" />
-            </section>
+            <Tabs defaultValue="del-suppliers-h">
+                <TabsList>
+                    <TabsTrigger value="del-suppliers-h">{t('inv.rep.del.suppliers')}</TabsTrigger>
+                    <TabsTrigger value="del-orders-h">{t('inv.rep.del.orders')}</TabsTrigger>
+                </TabsList>
 
-            <section aria-labelledby="del-orders-h" className="flex flex-col gap-3">
-                <h2 className="text-lg font-semibold" id="del-orders-h">{t('inv.rep.del.orders')}</h2>
+            <TabsContent className="flex flex-col gap-3" value="del-suppliers-h">
+                <h2 className="sr-only" id="del-suppliers-h">{t('inv.rep.del.suppliers')}</h2>
+                <DataGrid caption={t('inv.rep.del.suppliers')} columns={supplierColumns} empty={<EmptyState title={t('inv.rep.del.noSuppliers')} />} getRowId={(s) => s.supplier_id} id="inv.report.deliveries.suppliers" rows={report.suppliers} testId="delivery-suppliers" />
+            </TabsContent>
+
+            <TabsContent className="flex flex-col gap-3" value="del-orders-h">
+                <h2 className="sr-only" id="del-orders-h">{t('inv.rep.del.orders')}</h2>
                 <DataGrid caption={t('inv.rep.del.orders')} columns={orderColumns} empty={<EmptyState title={t('inv.rep.del.noOrders')} />} getRowId={(o) => o.id} id="inv.report.deliveries.orders" rows={report.orders} testId="delivery-orders" />
-            </section>
+            </TabsContent>
+            </Tabs>
         </InventoryShell>
     );
 }

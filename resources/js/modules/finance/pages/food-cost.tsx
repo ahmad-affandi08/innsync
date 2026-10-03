@@ -13,6 +13,7 @@ import { Input } from '@/components/ui/input';
 import { Metric } from '@/components/ui/metric';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { Textarea } from '@/components/ui/textarea';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { FinanceShell } from '@/modules/finance/components/finance-shell';
 import { REPORT_MAX_DAYS, spanDays, useDepartmentLabel, useMarginLabel, type FoodCostDepartment, type FoodCostReport } from '@/modules/finance/lib/finance';
 import { useServerAction } from '@/shared/api/use-server-action';
@@ -126,21 +127,28 @@ export default function FoodCostPage({ report }: { report: FoodCostReport }) {
             {report.status === 'over' ? <Alert title={t('fin.fc.overHint', { amount: money(report.over_minor) })} tone="warning" /> : null}
             {report.status === 'within' ? <p className="text-sm text-muted-foreground">{t('fin.fc.withinHint')}</p> : null}
 
-            <section aria-labelledby="fin-fc-outlets-h" className="flex flex-col gap-3">
-                <h2 className="text-lg font-semibold" id="fin-fc-outlets-h">{t('fin.fc.outlets')}</h2>
+            <Tabs defaultValue="departments">
+                <TabsList>
+                    <TabsTrigger value="outlets">{t('fin.fc.outlets')}</TabsTrigger>
+                    <TabsTrigger value="departments">{t('fin.fc.departments')}</TabsTrigger>
+                </TabsList>
+
+            <TabsContent className="flex flex-col gap-3" value="outlets">
+                <h2 className="sr-only" id="fin-fc-outlets-h">{t('fin.fc.outlets')}</h2>
                 <DataGrid
                     caption={t('fin.fc.outlets')} columns={outletColumns} empty={<EmptyState title={t('fin.fc.emptyOutlets')} />} footerLabel={t('fin.age.total')}
                     getRowId={(o) => o.code} id="fin.foodcost.outlets" rows={report.outlets} testId="food-cost-outlets"
                 />
-            </section>
+            </TabsContent>
 
-            <section aria-labelledby="fin-fc-dept-h" className="flex flex-col gap-3">
-                <h2 className="text-lg font-semibold" id="fin-fc-dept-h">{t('fin.fc.departments')}</h2>
+            <TabsContent className="flex flex-col gap-3" value="departments">
+                <h2 className="sr-only" id="fin-fc-dept-h">{t('fin.fc.departments')}</h2>
                 <DataGrid
                     caption={t('fin.fc.departments')} columns={departmentColumns} footerLabel={t('fin.age.total')}
                     getRowId={(d) => d.department} id="fin.foodcost.departments" rows={report.departments} testId="food-cost-departments"
                 />
-            </section>
+            </TabsContent>
+            </Tabs>
 
             <Dialog
                 footer={<>

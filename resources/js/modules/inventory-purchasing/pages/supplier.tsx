@@ -11,6 +11,7 @@ import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
 import { StatusBadge } from '@/components/ui/status-badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { InventoryShell } from '@/modules/inventory-purchasing/components/inventory-shell';
 import { useServerAction } from '@/shared/api/use-server-action';
 import { useFormatters, useTranslation } from '@/shared/i18n/i18n';
@@ -144,9 +145,17 @@ export default function SupplierPage({ supplier }: { supplier: Supplier }) {
             title={`${supplier.code} · ${supplier.name}`}
             wide
         >
-            <section aria-labelledby="sup-details-h" className="flex flex-col gap-3">
+            <Tabs defaultValue="sup-details-h">
+                <TabsList>
+                    <TabsTrigger value="sup-details-h">{t('inv.sup.details')}</TabsTrigger>
+                    <TabsTrigger value="sup-payable-h">{t('inv.led.heading')}</TabsTrigger>
+                    <TabsTrigger value="sup-prices-h">{t('inv.sup.prices')}</TabsTrigger>
+                    <TabsTrigger value="sup-ratings-h">{t('inv.sup.ratings')}</TabsTrigger>
+                </TabsList>
+
+            <TabsContent className="flex flex-col gap-3" value="sup-details-h">
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                    <h2 className="text-lg font-semibold" id="sup-details-h">{t('inv.sup.details')}</h2>
+                    <h2 className="sr-only" id="sup-details-h">{t('inv.sup.details')}</h2>
                     <div className="flex items-center gap-2">
                         <StatusBadge label={t(supplier.is_active ? 'inv.status.active' : 'inv.status.inactive')} tone={supplier.is_active ? 'success' : 'neutral'} />
                         {supplier.may.manage ? <Button onClick={openEdit} size="sm" type="button" variant="outline">{t('inv.sup.edit')}</Button> : null}
@@ -160,36 +169,37 @@ export default function SupplierPage({ supplier }: { supplier: Supplier }) {
                         </div>
                     ))}
                 </dl>
-            </section>
+            </TabsContent>
 
-            <section aria-labelledby="sup-payable-h" className="flex flex-col gap-3">
+            <TabsContent className="flex flex-col gap-3" value="sup-payable-h">
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                    <h2 className="text-lg font-semibold" id="sup-payable-h">{t('inv.led.heading')}</h2>
+                    <h2 className="sr-only" id="sup-payable-h">{t('inv.led.heading')}</h2>
                     <span className="text-sm">{t('inv.led.balance')}: <strong className="text-base" data-testid="supplier-payable">{money(supplier.payable_minor)}</strong></span>
                 </div>
                 <p className="text-sm text-muted-foreground">{t('inv.led.hint')}</p>
                 <DataGrid caption={t('inv.led.heading')} columns={ledgerColumns} empty={<EmptyState title={t('inv.led.empty')} />} getRowId={(e) => e.id} id="inv.supplier.ledger" rows={supplier.ledger} testId="supplier-ledger" />
-            </section>
+            </TabsContent>
 
-            <section aria-labelledby="sup-prices-h" className="flex flex-col gap-3">
+            <TabsContent className="flex flex-col gap-3" value="sup-prices-h">
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                    <h2 className="text-lg font-semibold" id="sup-prices-h">{t('inv.sup.prices')}</h2>
+                    <h2 className="sr-only" id="sup-prices-h">{t('inv.sup.prices')}</h2>
                     {supplier.may.manage ? <Button onClick={openPrice} size="sm" type="button">{t('inv.sup.addPrice')}</Button> : null}
                 </div>
                 <p className="text-sm text-muted-foreground">{t('inv.sup.pricesHint')}</p>
                 <DataGrid caption={t('inv.sup.prices')} columns={priceColumns} empty={<EmptyState title={t('inv.sup.noPrices')} />} getRowId={(p) => p.id} id="inv.supplier.prices" rows={supplier.prices} testId="supplier-prices" />
-            </section>
+            </TabsContent>
 
-            <section aria-labelledby="sup-ratings-h" className="flex flex-col gap-3">
+            <TabsContent className="flex flex-col gap-3" value="sup-ratings-h">
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                    <h2 className="text-lg font-semibold" id="sup-ratings-h">{t('inv.sup.ratings')}</h2>
+                    <h2 className="sr-only" id="sup-ratings-h">{t('inv.sup.ratings')}</h2>
                     <div className="flex items-center gap-3">
                         {supplier.rating_avg !== null && supplier.rating_count > 0 ? <span className="text-sm" data-testid="supplier-average">{t('inv.sup.average')}: {format.number(supplier.rating_avg)} / 5 ({format.number(supplier.rating_count)})</span> : null}
                         {mayRate ? <Button onClick={openRating} size="sm" type="button">{t('inv.sup.addRating')}</Button> : null}
                     </div>
                 </div>
                 <DataGrid caption={t('inv.sup.ratings')} columns={ratingColumns} empty={<EmptyState title={t('inv.sup.noRatings')} />} getRowId={(r) => r.id} id="inv.supplier.ratings" rows={supplier.ratings} testId="supplier-ratings" />
-            </section>
+            </TabsContent>
+            </Tabs>
 
             <Dialog
                 footer={<>

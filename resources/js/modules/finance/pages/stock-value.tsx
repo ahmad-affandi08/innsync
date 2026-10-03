@@ -6,6 +6,7 @@ import { DateRangePicker } from '@/components/ui/date-picker';
 import { EmptyState } from '@/components/ui/empty-state';
 import { FormField } from '@/components/ui/form-field';
 import { Metric } from '@/components/ui/metric';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { FinanceShell } from '@/modules/finance/components/finance-shell';
 import { REPORT_MAX_DAYS, signClass, spanDays, useDepartmentLabel, type StockValueAmounts, type StockValueReport } from '@/modules/finance/lib/finance';
 import { useFormatters, useTranslation } from '@/shared/i18n/i18n';
@@ -73,21 +74,28 @@ export default function StockValuePage({ report }: { report: StockValueReport })
                 <Metric label={t('fin.sv.closing')} value={signed(totals.closing_minor)} />
             </section>
 
-            <section aria-labelledby="fin-sv-dept-h" className="flex flex-col gap-3">
-                <h2 className="text-lg font-semibold" id="fin-sv-dept-h">{t('fin.sv.byDepartment')}</h2>
+            <Tabs defaultValue="departments">
+                <TabsList>
+                    <TabsTrigger value="departments">{t('fin.sv.byDepartment')}</TabsTrigger>
+                    <TabsTrigger value="locations">{t('fin.sv.byLocation')}</TabsTrigger>
+                </TabsList>
+
+            <TabsContent className="flex flex-col gap-3" value="departments">
+                <h2 className="sr-only" id="fin-sv-dept-h">{t('fin.sv.byDepartment')}</h2>
                 <DataGrid
                     caption={t('fin.sv.byDepartment')} columns={columns} empty={<EmptyState title={t('fin.sv.empty')} />} footerLabel={t('fin.age.total')}
                     getRowId={(r) => r.department} id="fin.stockvalue.departments" rows={report.departments} testId="stock-value-departments"
                 />
-            </section>
+            </TabsContent>
 
-            <section aria-labelledby="fin-sv-loc-h" className="flex flex-col gap-3">
-                <h2 className="text-lg font-semibold" id="fin-sv-loc-h">{t('fin.sv.byLocation')}</h2>
+            <TabsContent className="flex flex-col gap-3" value="locations">
+                <h2 className="sr-only" id="fin-sv-loc-h">{t('fin.sv.byLocation')}</h2>
                 <DataGrid
                     caption={t('fin.sv.byLocation')} columns={locationColumns} empty={<EmptyState title={t('fin.sv.emptyLocations')} />} footerLabel={t('fin.age.total')}
                     getRowId={(l) => l.id} id="fin.stockvalue.locations" rows={report.locations} testId="stock-value-locations"
                 />
-            </section>
+            </TabsContent>
+            </Tabs>
         </FinanceShell>
     );
 }

@@ -110,4 +110,7 @@ export const fnb = {
     "fnb.menu.removeChoice": "Remove choice",
     "fnb.menu.colChoices": "Choices",
     "fnb.menu.colRange": "How many",
+    "fnb.menu.tabCategories": "Categories ({count})",
+    "fnb.menu.tabItems": "Items ({count})",
+    "fnb.menu.tabGroups": "Groups of choices ({count})",
 } as const

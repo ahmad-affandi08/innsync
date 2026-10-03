@@ -9,6 +9,7 @@ import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
 import { StatusBadge } from '@/components/ui/status-badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { InventoryShell } from '@/modules/inventory-purchasing/components/inventory-shell';
 import { useServerAction } from '@/shared/api/use-server-action';
 import { useTranslation } from '@/shared/i18n/i18n';
@@ -79,21 +80,28 @@ export default function LocationsPage({ catalog }: { catalog: Catalog }) {
 
     return (
         <InventoryShell description={t('inv.loc.description')} title={t('inv.loc.title')} wide>
-            <section aria-labelledby="loc-h" className="flex flex-col gap-3">
+            <Tabs defaultValue="loc-h">
+                <TabsList>
+                    <TabsTrigger value="loc-h">{t('inv.loc.locations')}</TabsTrigger>
+                    <TabsTrigger value="cat-h">{t('inv.loc.categories')}</TabsTrigger>
+                </TabsList>
+
+            <TabsContent className="flex flex-col gap-3" value="loc-h">
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                    <h2 className="text-lg font-semibold" id="loc-h">{t('inv.loc.locations')}</h2>
+                    <h2 className="sr-only" id="loc-h">{t('inv.loc.locations')}</h2>
                     {catalog.may.manage ? <Button onClick={() => open({ what: 'location', id: null, code: '', name: '', kind: 'main', active: true, blocked: false, lock: 0 })} type="button">{t('inv.loc.addLocation')}</Button> : null}
                 </div>
                 <DataGrid caption={t('inv.loc.locations')} columns={locationColumns} empty={<EmptyState title={t('inv.loc.emptyLocations')} />} getRowId={(l) => l.id} id="inv.locations" rows={catalog.locations} />
-            </section>
+            </TabsContent>
 
-            <section aria-labelledby="cat-h" className="flex flex-col gap-3">
+            <TabsContent className="flex flex-col gap-3" value="cat-h">
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                    <h2 className="text-lg font-semibold" id="cat-h">{t('inv.loc.categories')}</h2>
+                    <h2 className="sr-only" id="cat-h">{t('inv.loc.categories')}</h2>
                     {catalog.may.manage ? <Button onClick={() => open({ what: 'category', id: null, code: '', name: '', active: true, blocked: false, lock: 0 })} type="button">{t('inv.loc.addCategory')}</Button> : null}
                 </div>
                 <DataGrid caption={t('inv.loc.categories')} columns={categoryColumns} empty={<EmptyState title={t('inv.loc.emptyCategories')} />} getRowId={(c) => c.id} id="inv.categories" rows={catalog.categories} />
-            </section>
+            </TabsContent>
+            </Tabs>
 
             <Dialog
                 footer={<>

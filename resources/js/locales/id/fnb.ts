@@ -110,4 +110,7 @@ export const fnb = {
     "fnb.menu.removeChoice": "Hapus pilihan",
     "fnb.menu.colChoices": "Pilihan",
     "fnb.menu.colRange": "Berapa",
+    "fnb.menu.tabCategories": "Kategori ({count})",
+    "fnb.menu.tabItems": "Item ({count})",
+    "fnb.menu.tabGroups": "Kelompok pilihan ({count})",
 } as const

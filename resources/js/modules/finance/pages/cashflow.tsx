@@ -13,6 +13,7 @@ import { Input } from '@/components/ui/input';
 import { Metric } from '@/components/ui/metric';
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Textarea } from '@/components/ui/textarea';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { FinanceShell } from '@/modules/finance/components/finance-shell';
 import {
     minorToMajorText, parseSignedMajorToMinor, REPORT_MAX_DAYS, signClass, spanDays, useCashMethodLabel,
@@ -184,21 +185,28 @@ export default function CashFlowPage({ report }: { report: CashFlowReport }) {
                 <p className="text-sm text-muted-foreground">{t('fin.cf.openingFrom', { date: format.date(balances.opening_date) })}</p>
             )}
 
-            <section aria-labelledby="fin-cf-in-h" className="flex flex-col gap-3">
-                <h2 className="text-lg font-semibold" id="fin-cf-in-h">{t('fin.cf.receipts')}</h2>
+            <Tabs defaultValue="fin-cf-in-h">
+                <TabsList>
+                    <TabsTrigger value="fin-cf-in-h">{t('fin.cf.receipts')}</TabsTrigger>
+                    <TabsTrigger value="fin-cf-out-h">{t('fin.cf.payments')}</TabsTrigger>
+                </TabsList>
+
+            <TabsContent className="flex flex-col gap-3" value="fin-cf-in-h">
+                <h2 className="sr-only" id="fin-cf-in-h">{t('fin.cf.receipts')}</h2>
                 <DataGrid
                     caption={t('fin.cf.receipts')} columns={lineColumns(receipts, report.totals.in.total, true)} empty={<EmptyState title={t('fin.cf.emptyReceipts')} />}
                     footerLabel={t('fin.age.total')} getRowId={(l) => l.id} id="fin.cashflow.receipts" rows={receipts} testId="cashflow-receipts"
                 />
-            </section>
+            </TabsContent>
 
-            <section aria-labelledby="fin-cf-out-h" className="flex flex-col gap-3">
-                <h2 className="text-lg font-semibold" id="fin-cf-out-h">{t('fin.cf.payments')}</h2>
+            <TabsContent className="flex flex-col gap-3" value="fin-cf-out-h">
+                <h2 className="sr-only" id="fin-cf-out-h">{t('fin.cf.payments')}</h2>
                 <DataGrid
                     caption={t('fin.cf.payments')} columns={lineColumns(payments, report.totals.out.total, false)} empty={<EmptyState title={t('fin.cf.emptyPayments')} />}
                     footerLabel={t('fin.age.total')} getRowId={(l) => l.id} id="fin.cashflow.payments" rows={payments} testId="cashflow-payments"
                 />
-            </section>
+            </TabsContent>
+            </Tabs>
 
             <Dialog
                 footer={<>

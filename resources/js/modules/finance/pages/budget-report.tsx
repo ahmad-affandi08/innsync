@@ -9,6 +9,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { FormField } from '@/components/ui/form-field';
 import { Metric } from '@/components/ui/metric';
 import { StatusBadge } from '@/components/ui/status-badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { FinanceShell } from '@/modules/finance/components/finance-shell';
 import { MonthPicker } from '@/modules/finance/components/month-picker';
 import { signClass, useDepartmentLabel, useMarginLabel, useMonthLabel, useSignedMoney, type BudgetDepartment, type BudgetMonth, type BudgetReport } from '@/modules/finance/lib/finance';
@@ -186,21 +187,28 @@ export default function BudgetReportPage({ report }: { report: BudgetReport }) {
 
             <p className="text-sm text-muted-foreground">{t('fin.bud.rep.how')}</p>
 
-            <section aria-labelledby="fin-bud-rep-dept-h" className="flex flex-col gap-3">
-                <h2 className="text-lg font-semibold" id="fin-bud-rep-dept-h">{t('fin.bud.rep.byDepartment')}</h2>
+            <Tabs defaultValue="fin-bud-rep-dept-h">
+                <TabsList>
+                    <TabsTrigger value="fin-bud-rep-dept-h">{t('fin.bud.rep.byDepartment')}</TabsTrigger>
+                    <TabsTrigger value="fin-bud-rep-month-h">{t('fin.bud.rep.byMonth')}</TabsTrigger>
+                </TabsList>
+
+            <TabsContent className="flex flex-col gap-3" value="fin-bud-rep-dept-h">
+                <h2 className="sr-only" id="fin-bud-rep-dept-h">{t('fin.bud.rep.byDepartment')}</h2>
                 <DataGrid
                     caption={t('fin.bud.rep.byDepartment')} columns={columns} empty={<EmptyState title={t('fin.bud.rep.empty')} />} footerLabel={t('fin.age.total')}
                     getRowId={(d) => d.department} id="fin.budget.report.departments" rows={report.departments} testId="budget-departments"
                 />
-            </section>
+            </TabsContent>
 
-            <section aria-labelledby="fin-bud-rep-month-h" className="flex flex-col gap-3">
-                <h2 className="text-lg font-semibold" id="fin-bud-rep-month-h">{t('fin.bud.rep.byMonth')}</h2>
+            <TabsContent className="flex flex-col gap-3" value="fin-bud-rep-month-h">
+                <h2 className="sr-only" id="fin-bud-rep-month-h">{t('fin.bud.rep.byMonth')}</h2>
                 <DataGrid
                     caption={t('fin.bud.rep.byMonth')} columns={monthlyColumns} empty={<EmptyState title={t('fin.bud.rep.empty')} />} footerLabel={t('fin.age.total')}
                     getRowId={(m) => m.month} id="fin.budget.report.months" rows={report.monthly} testId="budget-months"
                 />
-            </section>
+            </TabsContent>
+            </Tabs>
         </FinanceShell>
     );
 }

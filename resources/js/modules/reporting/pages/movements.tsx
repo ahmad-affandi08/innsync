@@ -7,6 +7,7 @@ import { DataGrid, type DataGridColumn } from '@/components/ui/data-grid';
 import { DatePicker } from '@/components/ui/date-picker';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ReportMeta, type Meta } from '@/modules/reporting/components/report-meta';
 import { ReportingShell } from '@/modules/reporting/components/reporting-shell';
 import { useFormatters, useTranslation } from '@/shared/i18n/i18n';
@@ -70,8 +71,15 @@ export default function MovementsPage({ context, may_export, report: r }: { cont
             {r.expected ? <Alert title={t('rpt.mov.expected')} tone="info" /> : null}
             <ReportMeta meta={r.meta} />
 
-            <section aria-label={t('rpt.mov.arrivals', { n: r.totals.arrivals })} data-testid="arrivals">
-                <h2 className="mb-1 text-lg font-semibold">{t('rpt.mov.arrivals', { n: r.totals.arrivals })}</h2>
+            <Tabs defaultValue="arrivals">
+                <TabsList>
+                    <TabsTrigger value="arrivals">{t('rpt.mov.arrivals', { n: r.totals.arrivals })}</TabsTrigger>
+                    <TabsTrigger value="departures">{t('rpt.mov.departures', { n: r.totals.departures })}</TabsTrigger>
+                    <TabsTrigger value="in-house">{t('rpt.mov.inHouse', { n: r.totals.in_house, guests: r.totals.guests_in_house })}</TabsTrigger>
+                </TabsList>
+
+            <TabsContent className="flex flex-col gap-3" data-testid="arrivals" value="arrivals">
+                <h2 className="sr-only">{t('rpt.mov.arrivals', { n: r.totals.arrivals })}</h2>
                 <DataGrid
                     caption={t('rpt.mov.arrivals', { n: r.totals.arrivals })}
                     columns={arrivalColumns}
@@ -80,10 +88,10 @@ export default function MovementsPage({ context, may_export, report: r }: { cont
                     id="rpt.movements.arrivals"
                     rows={r.arrivals}
                 />
-            </section>
+            </TabsContent>
 
-            <section aria-label={t('rpt.mov.departures', { n: r.totals.departures })} data-testid="departures">
-                <h2 className="mb-1 text-lg font-semibold">{t('rpt.mov.departures', { n: r.totals.departures })}</h2>
+            <TabsContent className="flex flex-col gap-3" data-testid="departures" value="departures">
+                <h2 className="sr-only">{t('rpt.mov.departures', { n: r.totals.departures })}</h2>
                 <DataGrid
                     caption={t('rpt.mov.departures', { n: r.totals.departures })}
                     columns={departureColumns}
@@ -92,10 +100,10 @@ export default function MovementsPage({ context, may_export, report: r }: { cont
                     id="rpt.movements.departures"
                     rows={r.departures}
                 />
-            </section>
+            </TabsContent>
 
-            <section aria-label={t('rpt.mov.inHouse', { n: r.totals.in_house, guests: r.totals.guests_in_house })} data-testid="in-house">
-                <h2 className="mb-1 text-lg font-semibold">{t('rpt.mov.inHouse', { n: r.totals.in_house, guests: r.totals.guests_in_house })}</h2>
+            <TabsContent className="flex flex-col gap-3" data-testid="in-house" value="in-house">
+                <h2 className="sr-only">{t('rpt.mov.inHouse', { n: r.totals.in_house, guests: r.totals.guests_in_house })}</h2>
                 <DataGrid
                     caption={t('rpt.mov.inHouse', { n: r.totals.in_house, guests: r.totals.guests_in_house })}
                     columns={inHouseColumns}
@@ -104,7 +112,8 @@ export default function MovementsPage({ context, may_export, report: r }: { cont
                     id="rpt.movements.in_house"
                     rows={r.in_house}
                 />
-            </section>
+            </TabsContent>
+            </Tabs>
         </ReportingShell>
     );
 }

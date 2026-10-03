@@ -9,6 +9,7 @@ import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { HousekeepingShell } from '@/modules/housekeeping/components/housekeeping-shell';
 import { useServerAction } from '@/shared/api/use-server-action';
 import { useFormatters, useTranslation } from '@/shared/i18n/i18n';
@@ -88,8 +89,15 @@ export default function ParLevelsPage({ overview }: { overview: Overview }) {
         <HousekeepingShell description={t('hk.par.description')} title={t('hk.par.title')} wide>
             {action.error !== null ? <ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /> : null}
 
-            <section aria-labelledby="par-need-h" className="flex flex-col gap-2">
-                <h2 className="text-lg font-semibold" id="par-need-h">{t('hk.par.need')}</h2>
+            <Tabs defaultValue="par-need-h">
+                <TabsList>
+                    <TabsTrigger value="par-need-h">{t('hk.par.need')}</TabsTrigger>
+                    <TabsTrigger value="par-use-h">{t('hk.par.consumption')}</TabsTrigger>
+                    <TabsTrigger value="par-set-h">{t('hk.par.levels')}</TabsTrigger>
+                </TabsList>
+
+            <TabsContent className="flex flex-col gap-3" value="par-need-h">
+                <h2 className="sr-only" id="par-need-h">{t('hk.par.need')}</h2>
                 <DataGrid
                     caption={t('hk.par.need')}
                     columns={needColumns}
@@ -99,10 +107,10 @@ export default function ParLevelsPage({ overview }: { overview: Overview }) {
                     rows={overview.replenishment}
                     testId="need"
                 />
-            </section>
+            </TabsContent>
 
-            <section aria-labelledby="par-use-h" className="flex flex-col gap-2">
-                <h2 className="text-lg font-semibold" id="par-use-h">{t('hk.par.consumption')}</h2>
+            <TabsContent className="flex flex-col gap-3" value="par-use-h">
+                <h2 className="sr-only" id="par-use-h">{t('hk.par.consumption')}</h2>
                 <p className="text-sm text-muted-foreground">{t('hk.par.shiftNote')}</p>
                 <div className="flex flex-wrap items-end gap-2">
                     <FormField label={t('hk.par.date')}><DatePicker onChange={(e) => setWhen({ ...when, date: e.target.value })} value={when.date} /></FormField>
@@ -120,10 +128,10 @@ export default function ParLevelsPage({ overview }: { overview: Overview }) {
                         testId="use"
                     />
                 )}
-            </section>
+            </TabsContent>
 
-            <section aria-labelledby="par-set-h" className="flex flex-col gap-2">
-                <h2 className="text-lg font-semibold" id="par-set-h">{t('hk.par.levels')}</h2>
+            <TabsContent className="flex flex-col gap-3" value="par-set-h">
+                <h2 className="sr-only" id="par-set-h">{t('hk.par.levels')}</h2>
                 <DataGrid
                     caption={t('hk.par.levels')}
                     columns={levelColumns}
@@ -133,7 +141,8 @@ export default function ParLevelsPage({ overview }: { overview: Overview }) {
                     rows={overview.levels}
                     testId="levels"
                 />
-            </section>
+            </TabsContent>
+            </Tabs>
 
             {overview.may.manage && (
                 <section aria-labelledby="par-form-h" className="flex max-w-3xl flex-col gap-3 border-t border-border pt-4">

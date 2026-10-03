@@ -33,3 +33,11 @@
 - **Top bar**: modules across the top, the pages of the active module as tabs under them, the property and business date at the right of the tab row; the page takes the whole width; an **All pages** menu lists every page of the module when the tabs do not fit.
 
 Below `lg` every layout uses the same drawer. Pages are not aware of the layout.
+
+## Sections of one page: tabs
+
+A page that holds several independent lists or reports (the menu's categories, items and groups of choices; the cash flow's receipts and payments; a stock report by department and by location) shows them as tabs, not stacked one under the other. The tabs (`components/ui/tabs.tsx`) are a toolbar under the page header and above the content: navy, with the tab being shown in orange and navy text. Rules:
+
+- Tabs split lists and reports. They do not split one document (a bill, an order, a reservation) whose parts are read together, and they are not for the pages of a module, which stay in the sidebar or the rail.
+- Every panel stays mounted, so what was typed in one is kept when another is shown. The tab bar is hidden when printing and a printout has all the panels.
+- A tab says what is in it and, where it helps, how many (`Items (12)`).
