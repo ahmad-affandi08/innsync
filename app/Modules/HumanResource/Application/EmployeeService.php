@@ -44,6 +44,7 @@ final readonly class EmployeeService
         private HrAccess $access,
         private StaffDirectory $staff,
         private StaffAccess $staffAccess,
+        private RosterService $roster,
         private BusinessDateProvider $businessDate,
         private DocumentNumbers $numbers,
         private StoredFileRepository $files,
@@ -221,6 +222,7 @@ final readonly class EmployeeService
                 $this->store->addOffboardItem($property, ['id' => $this->ids->next(), 'employee_id' => $e['id'], ...$i], $now);
             }
 
+            $closed = $this->roster->closeFor($property, $e['id'], $on);
             $revoked = $e['user_id'] === null ? 0 : $this->staffAccess->revokeInProperty($property, (string) $e['user_id']);
             $anchor = new DateTimeImmutable($on.' 00:00:00', new DateTimeZone('UTC'));
 
@@ -229,7 +231,7 @@ final readonly class EmployeeService
             }
 
             $this->audit->record(new AuditEntry($property->toString(), $actor, 'employee.offboarded', 'employee', $e['id'], ['status' => 'active'], [
-                'status' => 'offboarded', 'number' => $e['number'], 'kind' => $kind, 'offboarded_on' => $on, 'access_ended' => $revoked, 'items' => count($clean), 'not_returned' => count(array_filter($clean, static fn (array $i): bool => ! $i['returned'])), 'reassigned' => count($team),
+                'status' => 'offboarded', 'number' => $e['number'], 'kind' => $kind, 'offboarded_on' => $on, 'access_ended' => $revoked, 'items' => count($clean), 'not_returned' => count(array_filter($clean, static fn (array $i): bool => ! $i['returned'])), 'reassigned' => count($team), 'shifts_closed' => $closed,
             ], $reason));
         });
 

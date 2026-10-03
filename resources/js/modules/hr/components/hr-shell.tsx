@@ -2,7 +2,10 @@ import type { ReactNode } from 'react';
 
 import { AppFrame } from '@/components/layout/app-frame';
 
-const LINKS = [{ href: '/hr/employees', label: 'hr.nav.employees' }] as const;
+const LINKS = [
+    { href: '/hr/employees', label: 'hr.nav.employees' },
+    { href: '/hr/roster', label: 'hr.nav.roster' },
+] as const;
 
 type Props = { title: string; description: string; children: ReactNode; actions?: ReactNode };
 

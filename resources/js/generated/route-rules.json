@@ -272,6 +272,14 @@
             "status"
         ]
     },
+    "GET /hr/roster": {
+        "required": [],
+        "declared": [
+            "department",
+            "from",
+            "to"
+        ]
+    },
     "GET /inventory/counts": {
         "required": [],
         "declared": [
@@ -2588,6 +2596,41 @@
             "reassign_to"
         ]
     },
+    "POST /hr/roster/assign": {
+        "required": [
+            "dates",
+            "employee_ids"
+        ],
+        "declared": [
+            "dates",
+            "dates.*",
+            "employee_ids",
+            "employee_ids.*",
+            "pattern_id"
+        ]
+    },
+    "POST /hr/roster/copy": {
+        "required": [
+            "from_start",
+            "to_start"
+        ],
+        "declared": [
+            "department",
+            "from_start",
+            "to_start"
+        ]
+    },
+    "POST /hr/roster/minimums": {
+        "required": [
+            "department",
+            "minimums"
+        ],
+        "declared": [
+            "department",
+            "minimums",
+            "minimums.*"
+        ]
+    },
     "POST /hr/settings": {
         "required": [
             "warn_days"
@@ -2597,6 +2640,46 @@
             "required_kinds",
             "required_kinds.*",
             "warn_days"
+        ]
+    },
+    "POST /hr/shift-patterns": {
+        "required": [
+            "name"
+        ],
+        "declared": [
+            "code",
+            "ends2_at",
+            "ends_at",
+            "name",
+            "off",
+            "starts2_at",
+            "starts_at"
+        ]
+    },
+    "POST /hr/shift-patterns/{id}": {
+        "required": [
+            "lock_version",
+            "name"
+        ],
+        "declared": [
+            "code",
+            "ends2_at",
+            "ends_at",
+            "lock_version",
+            "name",
+            "off",
+            "starts2_at",
+            "starts_at"
+        ]
+    },
+    "POST /hr/shift-patterns/{id}/active": {
+        "required": [
+            "active",
+            "lock_version"
+        ],
+        "declared": [
+            "active",
+            "lock_version"
         ]
     },
     "POST /inventory/categories": {

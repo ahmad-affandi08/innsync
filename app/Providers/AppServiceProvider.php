@@ -100,7 +100,9 @@ use App\Modules\Housekeeping\Infrastructure\DatabaseLinenRepository;
 use App\Modules\Housekeeping\Infrastructure\DatabaseLostFoundRepository;
 use App\Modules\Housekeeping\Infrastructure\DatabaseParLevelRepository;
 use App\Modules\HumanResource\Application\EmployeeStore;
+use App\Modules\HumanResource\Application\RosterStore;
 use App\Modules\HumanResource\Infrastructure\DatabaseEmployeeStore;
+use App\Modules\HumanResource\Infrastructure\DatabaseRosterStore;
 use App\Modules\IdentityAccess\Application\Approval\ApprovalPolicyRepository;
 use App\Modules\IdentityAccess\Application\Approval\ApprovalRepository;
 use App\Modules\IdentityAccess\Application\Approval\ApprovalService;
@@ -361,6 +363,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(StaffDirectory::class, DatabaseStaffDirectory::class);
         $this->app->bind(StaffAccess::class, DatabaseStaffAccess::class);
         $this->app->bind(EmployeeStore::class, DatabaseEmployeeStore::class);
+        $this->app->bind(RosterStore::class, DatabaseRosterStore::class);
         $this->app->bind(PermissionChecker::class, ScopedPermissionChecker::class);
         $this->app->bind(ApprovalRepository::class, DatabaseApprovalRepository::class);
         $this->app->bind(ApprovalPolicyRepository::class, DatabaseApprovalPolicyRepository::class);

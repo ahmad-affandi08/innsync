@@ -20,3 +20,14 @@ export type HrOverview = {
 };
 
 export type HrDocument = { id: string; kind: string; title: string; issued_on: string | null; valid_until: string | null; current: boolean; expired: boolean; by: string | null; at: string };
+
+export type ShiftPattern = { id: string; code: string; name: string; off: boolean; starts_at: string | null; ends_at: string | null; starts2_at: string | null; ends2_at: string | null; minutes: number; active: boolean; lock_version: number };
+
+export type RosterOverview = {
+    from: string; to: string; days: string[]; department: string | null; business_date: string;
+    employees: { id: string; number: string; name: string; department: string; position: string; joined_on: string; contract_end_on: string | null }[];
+    cells: Record<string, Record<string, { pattern_id: string; code: string; off: boolean }>>;
+    patterns: ShiftPattern[]; minimums: { department: string; pattern_id: string; minimum: number }[];
+    shortages: { date: string; department: string; pattern_id: string; code: string; have: number; need: number }[];
+    departments: string[]; may: { view: boolean; roster: boolean };
+};

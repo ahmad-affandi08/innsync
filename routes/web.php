@@ -42,6 +42,7 @@ use App\Modules\Housekeeping\Presentation\Http\Controllers\LinenController;
 use App\Modules\Housekeeping\Presentation\Http\Controllers\LostFoundController;
 use App\Modules\Housekeeping\Presentation\Http\Controllers\ParLevelController;
 use App\Modules\HumanResource\Presentation\Http\Controllers\EmployeeController;
+use App\Modules\HumanResource\Presentation\Http\Controllers\RosterController;
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\ApprovalController;
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\ApprovalPolicyController;
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\AuthenticatedSessionController;
@@ -688,6 +689,15 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
     Route::post('/employees/{id}/offboard', [EmployeeController::class, 'offboard'])->where('id', $id)->name('hr.employees.offboard');
     Route::get('/employees/{id}/documents', [EmployeeController::class, 'documents'])->where('id', $id)->name('hr.documents');
     Route::post('/employees/{id}/documents', [EmployeeController::class, 'addDocument'])->where('id', $id)->name('hr.documents.add');
+    Route::get('/roster', [RosterController::class, 'index'])->name('hr.roster');
+    Route::post('/roster/assign', [RosterController::class, 'assign'])->name('hr.roster.assign');
+    Route::post('/roster/copy', [RosterController::class, 'copy'])->name('hr.roster.copy');
+    Route::post('/roster/minimums', [RosterController::class, 'minimums'])->name('hr.roster.minimums');
+    Route::get('/shift-patterns', [RosterController::class, 'patterns'])->name('hr.patterns');
+    Route::post('/shift-patterns', [RosterController::class, 'createPattern'])->name('hr.patterns.create');
+    Route::post('/shift-patterns/baseline', [RosterController::class, 'baseline'])->name('hr.patterns.baseline');
+    Route::post('/shift-patterns/{id}', [RosterController::class, 'updatePattern'])->where('id', $id)->name('hr.patterns.update');
+    Route::post('/shift-patterns/{id}/active', [RosterController::class, 'patternActive'])->where('id', $id)->name('hr.patterns.active');
     Route::get('/documents/{document}/file', [EmployeeController::class, 'download'])->where('document', $id)->name('hr.documents.file');
 });
 

@@ -189,9 +189,9 @@
 | TASK-HR-002 | FR-HR-002 | Human Resource | Wajib | REVIEW |
 | TASK-HR-003 | FR-HR-003 | Human Resource | Sebaiknya | REVIEW |
 | TASK-HR-004 | FR-HR-004 | Human Resource | Sebaiknya | TODO |
-| TASK-HR-005 | FR-HR-005 | Human Resource | Wajib | IN_PROGRESS |
-| TASK-HR-010 | FR-HR-010 | Human Resource | Wajib | TODO |
-| TASK-HR-011 | FR-HR-011 | Human Resource | Sebaiknya | TODO |
+| TASK-HR-005 | FR-HR-005 | Human Resource | Wajib | REVIEW |
+| TASK-HR-010 | FR-HR-010 | Human Resource | Wajib | REVIEW |
+| TASK-HR-011 | FR-HR-011 | Human Resource | Sebaiknya | REVIEW |
 | TASK-HR-012 | FR-HR-012 | Human Resource | Wajib | TODO |
 | TASK-HR-013 | FR-HR-013 | Human Resource | Wajib | TODO |
 | TASK-HR-014 | FR-HR-014 | Human Resource | Wajib | TODO |

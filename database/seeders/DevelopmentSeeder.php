@@ -125,6 +125,7 @@ final class DevelopmentSeeder extends Seeder
         'hr.document.manage',
         'hr.employee.manage',
         'hr.employee.view',
+        'hr.roster.manage',
         'inventory.catalog.manage',
         'inventory.catalog.view',
         'inventory.count.approve',

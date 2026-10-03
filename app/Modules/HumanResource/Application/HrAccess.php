@@ -22,6 +22,9 @@ final readonly class HrAccess
     /** Sees, adds and downloads the personnel papers: contracts, identity, certificates and medical checks. Sensitive: held by few. */
     public const DOCUMENTS = 'hr.document.manage';
 
+    /** Configures the shifts, plans the roster and sets how many people each department needs on a shift. */
+    public const ROSTER = 'hr.roster.manage';
+
     public function __construct(private PermissionChecker $permissions, private PropertyContext $property) {}
 
     public function assertProperty(PropertyId $property): void

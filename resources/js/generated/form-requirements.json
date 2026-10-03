@@ -327,6 +327,9 @@
         "title",
         "warn_days"
     ],
+    "hr/pages/roster": [
+        "name"
+    ],
     "identity-access/pages/approval-policies": [
         "band_min_amount_minor",
         "reason",

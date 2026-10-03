@@ -191,9 +191,9 @@ Every row must eventually point to implementation evidence and tests. Status is 
 | FR-HR-002 | Human Resource | Wajib | ../TASK/MODULE-09-HUMAN-RESOURCE.md | REVIEW |
 | FR-HR-003 | Human Resource | Sebaiknya | ../TASK/MODULE-09-HUMAN-RESOURCE.md | REVIEW |
 | FR-HR-004 | Human Resource | Sebaiknya | ../TASK/MODULE-09-HUMAN-RESOURCE.md | TODO |
-| FR-HR-005 | Human Resource | Wajib | ../TASK/MODULE-09-HUMAN-RESOURCE.md | IN_PROGRESS |
-| FR-HR-010 | Human Resource | Wajib | ../TASK/MODULE-09-HUMAN-RESOURCE.md | TODO |
-| FR-HR-011 | Human Resource | Sebaiknya | ../TASK/MODULE-09-HUMAN-RESOURCE.md | TODO |
+| FR-HR-005 | Human Resource | Wajib | ../TASK/MODULE-09-HUMAN-RESOURCE.md | REVIEW |
+| FR-HR-010 | Human Resource | Wajib | ../TASK/MODULE-09-HUMAN-RESOURCE.md | REVIEW |
+| FR-HR-011 | Human Resource | Sebaiknya | ../TASK/MODULE-09-HUMAN-RESOURCE.md | REVIEW |
 | FR-HR-012 | Human Resource | Wajib | ../TASK/MODULE-09-HUMAN-RESOURCE.md | TODO |
 | FR-HR-013 | Human Resource | Wajib | ../TASK/MODULE-09-HUMAN-RESOURCE.md | TODO |
 | FR-HR-014 | Human Resource | Wajib | ../TASK/MODULE-09-HUMAN-RESOURCE.md | TODO |
