@@ -13,6 +13,7 @@ const LINKS = [
     { href: '/finance/revenue', label: 'fin.nav.revenue' },
     { href: '/finance/cash', label: 'fin.nav.cash' },
     { href: '/finance/corrections', label: 'fin.nav.corrections' },
+    { href: '/finance/settlements', label: 'fin.nav.settlements' },
     { href: '/finance/exceptions', label: 'fin.nav.exceptions' },
     { href: '/finance/audit', label: 'fin.nav.audit' },
     { href: '/finance/petty', label: 'fin.nav.petty' },

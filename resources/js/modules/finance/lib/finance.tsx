@@ -410,3 +410,12 @@ export type BudgetReport = {
     from: string; to: string; currency: string; departments: BudgetDepartment[]; totals: BudgetComparison; monthly: BudgetMonth[];
     notes: { unverified_days: number; unclassified_payables_minor: number }; may: { manage: boolean };
 };
+
+/** What a payment provider or an acquirer settled to the bank, against what the books hold. */
+export type SettlementRow = {
+    id: string; number: string; method: 'qris' | 'card'; provider: string; covers_from: string; covers_to: string; settled_on: string; gross_minor: number; fee_minor: number; net_minor: number; bank_reference: string;
+    system_minor: number; gross_diff_minor: number; net_diff_minor: number; fee_bp: number; fee_high: boolean; matched: boolean; exception_id: string | null; note: string | null; by: string | null; at: string;
+};
+export type SettlementOverview = {
+    currency: string; today: string; methods: ('qris' | 'card')[]; high_fee_bp: Record<string, number>; settlements: SettlementRow[]; pending: { business_date: string; method: 'qris' | 'card'; net_minor: number }[]; may: { record: boolean };
+};

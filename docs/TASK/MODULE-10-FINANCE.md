@@ -20,7 +20,7 @@
 | TASK-FIN-001 | FR-FIN-001 | Wajib | Menerima pembukuan pendapatan otomatis dari Front Office dan seluruh POS outlet, terpisah antara nilai dasar, pajak, dan service charge. | REVIEW |
 | TASK-FIN-002 | FR-FIN-002 | Wajib | Menerbitkan laporan pendapatan harian per outlet dan per metode pembayaran, serta rekapitulasi bulanan. | REVIEW |
 | TASK-FIN-003 | FR-FIN-003 | Wajib | Melakukan rekonsiliasi setoran kasir: kas fisik yang disetor dibandingkan dengan kas sistem per shift dan per kasir, dengan pencatatan selisih. | REVIEW |
-| TASK-FIN-004 | FR-FIN-004 | Sebaiknya | Merekonsiliasi penerimaan QRIS dan kartu terhadap mutasi rekening bank, termasuk pemotongan biaya transaksi. | TODO |
+| TASK-FIN-004 | FR-FIN-004 | Sebaiknya | Merekonsiliasi penerimaan QRIS dan kartu terhadap mutasi rekening bank, termasuk pemotongan biaya transaksi. | REVIEW |
 | TASK-FIN-005 | FR-FIN-005 | Wajib | Memverifikasi dan mengunci transaksi hari sebelumnya setelah night audit sehingga tidak dapat diubah tanpa jurnal koreksi. | REVIEW |
 | TASK-FIN-006 | FR-FIN-006 | Wajib | Setiap posting keuangan menyimpan property, business date, event time, source document, actor, dan correlation ID agar rekonsiliasi lintas modul dapat dilakukan tanpa ambigu. | IN_PROGRESS |
 | TASK-FIN-010 | FR-FIN-010 | Wajib | Mengelola daftar akun biaya sederhana yang dikelompokkan per department dan per kategori. | REVIEW |
@@ -57,6 +57,16 @@
 - **FIN-024** — Kept apart from the taxed revenue, month by month: revenue booked without tax (a base with no tax), complimentary items, other discounts, lines voided, bills cancelled, and charges reversed, so the tax base can be explained.
 - Not yet: the monthly rules of a particular region (rates by outlet type are the scopes; the filing format of a given office), corrections of a month that was already reported (shown as a difference), rounding rules that change by date (the rounding is a property setting snapshotted on every posting).
 - Tests: `TaxHttpTest`. The audit trail test of Finance no longer depends on the real clock passing midnight.
+
+### Slice 62 (2026-10-03): card and QRIS settlements against the books and the bank
+
+- Status: `TASK-FIN-004` is `REVIEW`; `TASK-FIN-037` stays `IN_PROGRESS` (the provider/EDC and bank record are now entered by hand per settlement; they are not read from a file or an API).
+- Context: migration 108 (`fin_settlements`, append-only), `SettlementStore`/`DatabaseSettlementStore`, `SettlementService`, `SettlementController`, page `finance/pages/settlements.tsx`; it reuses the exception list of `FR-FIN-019` and the booked `fin_payment_lines` of `FR-FIN-001`.
+- **Recording.** Finance (`finance.reconcile.manage`) records each settlement a provider or acquirer made: method (QRIS or card), provider, the stretch of business days it covers (1–31), the date credited, the gross the provider reports, the fee it kept, the net that reached the bank and the bank reference (recorded once). Every day covered must be booked (after its night audit) so the books' figure is final, and a day is covered by one settlement of a provider only.
+- **Two comparisons.** The gross against what the books hold as received by that method in those days (received less paid back): a difference means a payment one side does not have. The credit against the gross less the fee: a difference means the bank did not receive what the provider reported. Either difference raises a `settlement_discrepancy` exception dated the last covered day (the amount of the gross difference, else of the credit difference), reconciled by someone other than the person who recorded it, and holds the day from being verified like any open exception. The fee is shown as a share of the gross and flagged above the usual (QRIS 1%, card 3%, baselines to be set by the owner's contract).
+- **What is pending.** The page lists the booked days of the last 45 days that received by card or QRIS and are not covered by a settlement, so the person sees what to expect and what is late.
+- Not yet: importing a provider or bank statement file, matching individual payments to the provider's lines, fee rates per provider, and chargebacks netted in a settlement (they are raised as their own exceptions).
+- Evidence: `tests/Feature/Finance/SettlementHttpTest.php` (a matching settlement, differences of the gross and of the credit raising exceptions of the last day with the right amount, a high fee, overlap, unbooked days and duplicate references, every validation, append-only triggers, rights).
 
 ## Required engineering checks
 

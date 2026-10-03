@@ -15,6 +15,7 @@ use App\Modules\Finance\Presentation\Http\Controllers\PettyCashController;
 use App\Modules\Finance\Presentation\Http\Controllers\ReceivableController;
 use App\Modules\Finance\Presentation\Http\Controllers\RecurringExpenseController;
 use App\Modules\Finance\Presentation\Http\Controllers\RevenueController;
+use App\Modules\Finance\Presentation\Http\Controllers\SettlementController;
 use App\Modules\Finance\Presentation\Http\Controllers\SupplierPaymentController;
 use App\Modules\Finance\Presentation\Http\Controllers\TaxController;
 use App\Modules\FnbSales\Presentation\Http\Controllers\BillController;
@@ -732,6 +733,8 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
     Route::post('/corrections', [CorrectionController::class, 'store'])->middleware(['idempotent'])->name('finance.corrections.store');
     Route::get('/corrections/{id}', [CorrectionController::class, 'show'])->where('id', $id)->name('finance.corrections.show');
     Route::post('/corrections/{id}/decide', [CorrectionController::class, 'decide'])->where('id', $id)->name('finance.corrections.decide');
+    Route::get('/settlements', [SettlementController::class, 'index'])->name('finance.settlements');
+    Route::post('/settlements', [SettlementController::class, 'store'])->name('finance.settlements.store');
     Route::get('/exceptions', [ExceptionController::class, 'index'])->name('finance.exceptions');
     Route::post('/exceptions', [ExceptionController::class, 'store'])->middleware(['idempotent'])->name('finance.exceptions.store');
     Route::post('/exceptions/{id}/reconcile', [ExceptionController::class, 'reconcile'])->where('id', $id)->name('finance.exceptions.reconcile');

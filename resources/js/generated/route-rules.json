@@ -1255,6 +1255,31 @@
             "note"
         ]
     },
+    "POST /finance/settlements": {
+        "required": [
+            "bank_reference",
+            "covers_from",
+            "covers_to",
+            "fee_minor",
+            "gross_minor",
+            "method",
+            "net_minor",
+            "provider",
+            "settled_on"
+        ],
+        "declared": [
+            "bank_reference",
+            "covers_from",
+            "covers_to",
+            "fee_minor",
+            "gross_minor",
+            "method",
+            "net_minor",
+            "note",
+            "provider",
+            "settled_on"
+        ]
+    },
     "POST /finance/tax/settings": {
         "required": [
             "report_day"

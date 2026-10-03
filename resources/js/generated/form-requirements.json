@@ -105,6 +105,17 @@
         "name",
         "remind_days"
     ],
+    "finance/pages/settlements": [
+        "bank_reference",
+        "covers_from",
+        "covers_to",
+        "fee_minor",
+        "gross_minor",
+        "method",
+        "net_minor",
+        "provider",
+        "settled_on"
+    ],
     "finance/pages/tax": [
         "amount_minor",
         "deposited_on",

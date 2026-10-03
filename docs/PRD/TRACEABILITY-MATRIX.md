@@ -219,7 +219,7 @@ Every row must eventually point to implementation evidence and tests. Status is 
 | FR-FIN-001 | Finance | Wajib | ../TASK/MODULE-10-FINANCE.md | TODO |
 | FR-FIN-002 | Finance | Wajib | ../TASK/MODULE-10-FINANCE.md | TODO |
 | FR-FIN-003 | Finance | Wajib | ../TASK/MODULE-10-FINANCE.md | TODO |
-| FR-FIN-004 | Finance | Sebaiknya | ../TASK/MODULE-10-FINANCE.md | TODO |
+| FR-FIN-004 | Finance | Sebaiknya | ../TASK/MODULE-10-FINANCE.md | REVIEW |
 | FR-FIN-005 | Finance | Wajib | ../TASK/MODULE-10-FINANCE.md | TODO |
 | FR-FIN-006 | Finance | Wajib | ../TASK/MODULE-10-FINANCE.md | TODO |
 | FR-FIN-010 | Finance | Wajib | ../TASK/MODULE-10-FINANCE.md | TODO |
