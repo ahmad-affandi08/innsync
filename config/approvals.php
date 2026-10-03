@@ -42,5 +42,7 @@ return [
         'hr.attendance-correction' => ['mandatory' => true],
         // FR-HR-015: a request for leave, a permit or sick leave needs the approval chain the owner configures. Mandatory: with no policy configured the request is refused, never taken.
         'hr.leave' => ['mandatory' => true],
+        // FR-HR-037: a payroll run is approved before it goes to Finance to be paid. Mandatory: with no policy configured the run cannot be approved, never paid. The amount band is the net pay of the run.
+        'hr.payroll-run' => ['mandatory' => true],
     ],
 ];

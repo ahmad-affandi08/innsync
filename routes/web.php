@@ -48,6 +48,7 @@ use App\Modules\HumanResource\Presentation\Http\Controllers\AttendanceController
 use App\Modules\HumanResource\Presentation\Http\Controllers\EmployeeController;
 use App\Modules\HumanResource\Presentation\Http\Controllers\LeaveController;
 use App\Modules\HumanResource\Presentation\Http\Controllers\PayrollController;
+use App\Modules\HumanResource\Presentation\Http\Controllers\PayrollRunController;
 use App\Modules\HumanResource\Presentation\Http\Controllers\PerformanceController;
 use App\Modules\HumanResource\Presentation\Http\Controllers\RosterController;
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\ApprovalController;
@@ -753,6 +754,15 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
     Route::get('/attendance/{id}/photo/{which}', [AttendanceController::class, 'photo'])->where('id', $id)->where('which', 'in|out')->name('hr.attendance.photo');
     Route::get('/performance', [PerformanceController::class, 'index'])->name('hr.performance');
     Route::get('/payroll', [PayrollController::class, 'index'])->name('hr.payroll');
+    Route::get('/payroll/runs', [PayrollRunController::class, 'index'])->name('hr.payroll.runs');
+    Route::post('/payroll/runs', [PayrollRunController::class, 'create'])->name('hr.payroll.runs.create');
+    Route::post('/payroll/runs/{id}/calculate', [PayrollRunController::class, 'calculate'])->where('id', $id)->name('hr.payroll.runs.calculate');
+    Route::post('/payroll/runs/{id}/review', [PayrollRunController::class, 'review'])->where('id', $id)->name('hr.payroll.runs.review');
+    Route::post('/payroll/runs/{id}/approve', [PayrollRunController::class, 'approve'])->where('id', $id)->name('hr.payroll.runs.approve');
+    Route::post('/payroll/runs/{id}/reopen', [PayrollRunController::class, 'reopen'])->where('id', $id)->name('hr.payroll.runs.reopen');
+    Route::post('/payroll/runs/{id}/discard', [PayrollRunController::class, 'discard'])->where('id', $id)->name('hr.payroll.runs.discard');
+    Route::post('/payroll/adjustments', [PayrollRunController::class, 'adjust'])->name('hr.payroll.adjustments.create');
+    Route::post('/payroll/adjustments/{id}/cancel', [PayrollRunController::class, 'cancelAdjustment'])->where('id', $id)->name('hr.payroll.adjustments.cancel');
     Route::post('/payroll/pay', [PayrollController::class, 'setPay'])->middleware(['idempotent'])->name('hr.payroll.pay');
     Route::post('/payroll/profile', [PayrollController::class, 'saveProfile'])->name('hr.payroll.profile');
     Route::post('/payroll/settings', [PayrollController::class, 'saveSettings'])->name('hr.payroll.settings');

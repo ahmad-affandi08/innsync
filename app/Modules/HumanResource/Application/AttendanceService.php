@@ -626,7 +626,7 @@ final readonly class AttendanceService
             }
 
             $p = &$per[$e['employee_id']];
-            $p ??= ['employee' => ['id' => $e['employee_id'], 'number' => $e['number'], 'name' => $e['full_name'], 'department' => $e['department']], 'scheduled' => 0, 'present' => 0, 'late_days' => 0, 'late_minutes' => 0, 'early_days' => 0, 'early_minutes' => 0, 'absent' => 0, 'extra_minutes' => 0, 'overtime_minutes' => 0, 'unapproved_minutes' => 0, 'worked_minutes' => 0];
+            $p ??= ['employee' => ['id' => $e['employee_id'], 'number' => $e['number'], 'name' => $e['full_name'], 'department' => $e['department']], 'scheduled' => 0, 'present' => 0, 'late_days' => 0, 'late_minutes' => 0, 'early_days' => 0, 'early_minutes' => 0, 'absent' => 0, 'extra_minutes' => 0, 'overtime_minutes' => 0, 'overtime_first_minutes' => 0, 'overtime_next_minutes' => 0, 'unapproved_minutes' => 0, 'worked_minutes' => 0];
 
             $v = $this->evaluate($e, $records[$e['employee_id'].'|'.substr((string) $e['work_date'], 0, 10)] ?? null, $settings, $now, $tz, $grants[$e['employee_id'].'|'.substr((string) $e['work_date'], 0, 10)] ?? null);
             $p['scheduled']++;
@@ -638,6 +638,9 @@ final readonly class AttendanceService
             $p['early_minutes'] += $v['early_minutes'];
             $p['extra_minutes'] += $v['extra_minutes'];
             $p['overtime_minutes'] += $v['overtime_minutes'];
+            // The first hour of a day is paid at the first multiple, the rest of it at the next.
+            $p['overtime_first_minutes'] += min(60, $v['overtime_minutes']);
+            $p['overtime_next_minutes'] += max(0, $v['overtime_minutes'] - 60);
             $p['unapproved_minutes'] += $v['unapproved_minutes'];
             $p['worked_minutes'] += $v['worked_minutes'] ?? 0;
             unset($p);

@@ -127,4 +127,16 @@ final class DatabaseLeaveStore implements LeaveStore
     {
         return DB::table('hr_leave_requests as l')->join('hr_employees as e', 'e.id', '=', 'l.employee_id')->select('l.*', 'e.number', 'e.full_name', 'e.department');
     }
+
+    public function unpaidDaysBetween(PropertyId $property, string $from, string $to): array
+    {
+        $out = [];
+
+        foreach (DB::table('hr_leave_days as d')->join('hr_leave_requests as r', 'r.id', '=', 'd.leave_id')->join('hr_leave_types as t', 't.id', '=', 'r.leave_type_id')
+            ->where('d.property_id', $property->toString())->whereBetween('d.work_date', [$from, $to])->where('t.paid', false)->groupBy('d.employee_id')->selectRaw('d.employee_id, COUNT(*) as days')->get() as $row) {
+            $out[(string) $row->employee_id] = (int) $row->days;
+        }
+
+        return $out;
+    }
 }

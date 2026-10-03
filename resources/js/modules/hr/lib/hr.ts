@@ -127,3 +127,22 @@ export type PayrollOverview = {
     currency: string; today: string; earliest: string; components: PayComponent[]; employees: PayPerson[]; statuses: string[]; settings: PayrollSettings; selected: string | null;
     history: { component_id: string; amount_minor: number; effective_from: string; reason: string }[];
 };
+
+export type PayrollRunStatus = 'draft' | 'calculated' | 'reviewed' | 'approved' | 'paid' | 'locked';
+
+export type PayrollLine = {
+    id: string; employee: { id: string; number: string; name: string; department: string; position: string }; ptkp_status: string; scheduled_days: number; present_days: number; absent_days: number; unpaid_leave_days: number; late_minutes: number; overtime_minutes: number;
+    gross_minor: number; tax_minor: number; employee_social_minor: number; employer_social_minor: number; other_deductions_minor: number; net_minor: number;
+    items: { code: string; label: string; kind: 'earning' | 'deduction' | 'employer'; amount_minor: number }[]; warnings: string[];
+};
+
+export type PayrollRun = {
+    id: string; number: string; period: string; status: PayrollRunStatus; employees: number; gross_minor: number; deductions_minor: number; net_minor: number; tax_minor: number; employee_social_minor: number; employer_social_minor: number; revision: number; lock_version: number;
+    approval: { id: string; status: string; consumed: boolean } | null; paid_reference: string | null; may: { calculate: boolean; review: boolean; approve: boolean; reopen: boolean; discard: boolean };
+};
+
+export type PayrollAdjustment = { id: string; employee: { id: string; number: string; name: string }; amount_minor: number; taxable: boolean; label: string; reason: string; source_period: string | null; status: 'open' | 'applied' | 'cancelled'; lock_version: number };
+
+export type PayrollRunOverview = {
+    currency: string; today: string; period: string; runs: PayrollRun[]; run: (PayrollRun & { lines: PayrollLine[] }) | null; adjustments: PayrollAdjustment[]; without_pay: { id: string; number: string; name: string }[]; employees: { id: string; number: string; name: string }[];
+};

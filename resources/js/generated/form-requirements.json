@@ -366,6 +366,13 @@
         "ptkp_status",
         "reason"
     ],
+    "hr/pages/payroll-runs": [
+        "amount_minor",
+        "employee_id",
+        "label",
+        "period",
+        "reason"
+    ],
     "hr/pages/roster": [
         "name"
     ],

@@ -61,4 +61,7 @@ interface LeaveStore
 
     /** @return list<array<string, mixed>> days asked for in a year by person, type and status, for the requests that start in it */
     public function daysTaken(PropertyId $property, int $year, ?string $employeeId): array;
+
+    /** The days of leave that are not paid, by person, between two dates. @return array<string, int> */
+    public function unpaidDaysBetween(PropertyId $property, string $from, string $to): array;
 }

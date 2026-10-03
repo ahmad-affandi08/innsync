@@ -37,6 +37,9 @@ final readonly class HrAccess
     /** Sets what each person earns, the status for tax and the parameters of the tax and the social security. Sensitive: held by very few. */
     public const PAYROLL = 'hr.payroll.manage';
 
+    /** Reopens an approved payroll run that was not paid yet. High privilege: held by the owner only. */
+    public const PAYROLL_REOPEN = 'hr.payroll.reopen';
+
     public function __construct(private PermissionChecker $permissions, private PropertyContext $property) {}
 
     public function assertProperty(PropertyId $property): void

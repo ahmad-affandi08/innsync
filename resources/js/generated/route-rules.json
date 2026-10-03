@@ -308,6 +308,12 @@
             "employee"
         ]
     },
+    "GET /hr/payroll/runs": {
+        "required": [],
+        "declared": [
+            "run"
+        ]
+    },
     "GET /hr/performance": {
         "required": [],
         "declared": [
@@ -2913,6 +2919,31 @@
             "work_date"
         ]
     },
+    "POST /hr/payroll/adjustments": {
+        "required": [
+            "amount_minor",
+            "employee_id",
+            "label",
+            "reason",
+            "taxable"
+        ],
+        "declared": [
+            "amount_minor",
+            "employee_id",
+            "label",
+            "reason",
+            "source_run_id",
+            "taxable"
+        ]
+    },
+    "POST /hr/payroll/adjustments/{id}/cancel": {
+        "required": [
+            "lock_version"
+        ],
+        "declared": [
+            "lock_version"
+        ]
+    },
     "POST /hr/payroll/components": {
         "required": [
             "code",
@@ -2984,6 +3015,48 @@
             "in_health",
             "lock_version",
             "ptkp_status"
+        ]
+    },
+    "POST /hr/payroll/runs": {
+        "required": [
+            "period"
+        ],
+        "declared": [
+            "period"
+        ]
+    },
+    "POST /hr/payroll/runs/{id}/approve": {
+        "required": [
+            "lock_version"
+        ],
+        "declared": [
+            "lock_version"
+        ]
+    },
+    "POST /hr/payroll/runs/{id}/calculate": {
+        "required": [
+            "lock_version"
+        ],
+        "declared": [
+            "lock_version"
+        ]
+    },
+    "POST /hr/payroll/runs/{id}/reopen": {
+        "required": [
+            "lock_version",
+            "reason"
+        ],
+        "declared": [
+            "lock_version",
+            "reason"
+        ]
+    },
+    "POST /hr/payroll/runs/{id}/review": {
+        "required": [
+            "lock_version"
+        ],
+        "declared": [
+            "lock_version"
         ]
     },
     "POST /hr/payroll/settings": {
