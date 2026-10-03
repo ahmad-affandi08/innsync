@@ -41,6 +41,7 @@ use App\Modules\Housekeeping\Presentation\Http\Controllers\HousekeepingControlle
 use App\Modules\Housekeeping\Presentation\Http\Controllers\LinenController;
 use App\Modules\Housekeeping\Presentation\Http\Controllers\LostFoundController;
 use App\Modules\Housekeeping\Presentation\Http\Controllers\ParLevelController;
+use App\Modules\HumanResource\Presentation\Http\Controllers\AttendanceController;
 use App\Modules\HumanResource\Presentation\Http\Controllers\EmployeeController;
 use App\Modules\HumanResource\Presentation\Http\Controllers\RosterController;
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\ApprovalController;
@@ -693,6 +694,12 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
     Route::post('/roster/assign', [RosterController::class, 'assign'])->name('hr.roster.assign');
     Route::post('/roster/copy', [RosterController::class, 'copy'])->name('hr.roster.copy');
     Route::post('/roster/minimums', [RosterController::class, 'minimums'])->name('hr.roster.minimums');
+    Route::get('/attendance', [AttendanceController::class, 'index'])->name('hr.attendance');
+    Route::post('/attendance/clock-in', [AttendanceController::class, 'clockIn'])->middleware(['idempotent'])->name('hr.attendance.in');
+    Route::post('/attendance/clock-out', [AttendanceController::class, 'clockOut'])->middleware(['idempotent'])->name('hr.attendance.out');
+    Route::post('/attendance/manual', [AttendanceController::class, 'manual'])->middleware(['idempotent'])->name('hr.attendance.manual');
+    Route::post('/attendance/settings', [AttendanceController::class, 'settings'])->name('hr.attendance.settings');
+    Route::get('/attendance/{id}/photo/{which}', [AttendanceController::class, 'photo'])->where('id', $id)->where('which', 'in|out')->name('hr.attendance.photo');
     Route::get('/shift-patterns', [RosterController::class, 'patterns'])->name('hr.patterns');
     Route::post('/shift-patterns', [RosterController::class, 'createPattern'])->name('hr.patterns.create');
     Route::post('/shift-patterns/baseline', [RosterController::class, 'baseline'])->name('hr.patterns.baseline');

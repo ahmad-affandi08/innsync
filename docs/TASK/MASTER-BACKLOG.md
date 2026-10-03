@@ -192,9 +192,9 @@
 | TASK-HR-005 | FR-HR-005 | Human Resource | Wajib | REVIEW |
 | TASK-HR-010 | FR-HR-010 | Human Resource | Wajib | REVIEW |
 | TASK-HR-011 | FR-HR-011 | Human Resource | Sebaiknya | REVIEW |
-| TASK-HR-012 | FR-HR-012 | Human Resource | Wajib | TODO |
-| TASK-HR-013 | FR-HR-013 | Human Resource | Wajib | TODO |
-| TASK-HR-014 | FR-HR-014 | Human Resource | Wajib | TODO |
+| TASK-HR-012 | FR-HR-012 | Human Resource | Wajib | REVIEW |
+| TASK-HR-013 | FR-HR-013 | Human Resource | Wajib | REVIEW |
+| TASK-HR-014 | FR-HR-014 | Human Resource | Wajib | REVIEW |
 | TASK-HR-015 | FR-HR-015 | Human Resource | Wajib | TODO |
 | TASK-HR-016 | FR-HR-016 | Human Resource | Wajib | TODO |
 | TASK-HR-017 | FR-HR-017 | Human Resource | Bisa | TODO |

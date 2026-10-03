@@ -266,6 +266,15 @@
             "shift"
         ]
     },
+    "GET /hr/attendance": {
+        "required": [],
+        "declared": [
+            "date",
+            "department",
+            "from",
+            "to"
+        ]
+    },
     "GET /hr/employees": {
         "required": [],
         "declared": [
@@ -2516,6 +2525,56 @@
         ],
         "declared": [
             "lock_version"
+        ]
+    },
+    "POST /hr/attendance/clock-in": {
+        "required": [],
+        "declared": [
+            "latitude",
+            "longitude",
+            "photo"
+        ]
+    },
+    "POST /hr/attendance/clock-out": {
+        "required": [],
+        "declared": [
+            "latitude",
+            "longitude",
+            "photo"
+        ]
+    },
+    "POST /hr/attendance/manual": {
+        "required": [
+            "employee_id",
+            "in_time",
+            "reason",
+            "work_date"
+        ],
+        "declared": [
+            "employee_id",
+            "in_time",
+            "out_time",
+            "reason",
+            "work_date"
+        ]
+    },
+    "POST /hr/attendance/settings": {
+        "required": [
+            "early_grace_minutes",
+            "extra_after_minutes",
+            "late_grace_minutes",
+            "radius_m",
+            "require_selfie"
+        ],
+        "declared": [
+            "early_grace_minutes",
+            "extra_after_minutes",
+            "late_grace_minutes",
+            "latitude",
+            "lock_version",
+            "longitude",
+            "radius_m",
+            "require_selfie"
         ]
     },
     "POST /hr/employees": {

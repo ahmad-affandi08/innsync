@@ -316,6 +316,16 @@
         "scope_ref",
         "use_quantity"
     ],
+    "hr/pages/attendance": [
+        "early_grace_minutes",
+        "employee_id",
+        "extra_after_minutes",
+        "in_time",
+        "late_grace_minutes",
+        "radius_m",
+        "reason",
+        "work_date"
+    ],
     "hr/pages/employees": [
         "contract_type",
         "department",

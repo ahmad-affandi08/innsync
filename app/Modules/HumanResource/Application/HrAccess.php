@@ -25,6 +25,9 @@ final readonly class HrAccess
     /** Configures the shifts, plans the roster and sets how many people each department needs on a shift. */
     public const ROSTER = 'hr.roster.manage';
 
+    /** Sees the attendance of everyone, records a clock-in or clock-out for a person with a reason, and sets how attendance is taken. */
+    public const ATTENDANCE = 'hr.attendance.manage';
+
     public function __construct(private PermissionChecker $permissions, private PropertyContext $property) {}
 
     public function assertProperty(PropertyId $property): void

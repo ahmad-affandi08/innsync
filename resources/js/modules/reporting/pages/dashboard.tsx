@@ -75,6 +75,7 @@ export default function DashboardPage({ currency, preferences, snapshot: s, tv }
                                 {c.key === 'occupancy' && <p className="text-5xl font-semibold">{percent(c.values.occupancy_bp)} <span className="text-2xl font-normal">{c.values.occupied}/{c.values.sellable}</span></p>}
                                 {c.key === 'movements' && <><p>{t('rpt.card.movements.arrivals', { waiting: c.values.arrivals_expected, done: c.values.arrivals_checked_in })}</p><p>{t('rpt.card.movements.departures', { waiting: c.values.departures_expected, done: c.values.departures_done })}</p></>}
                                 {c.key === 'activity' && <p>{t('rpt.card.activity.line', { in: c.values.checked_in, out: c.values.checked_out, new: c.values.new_reservations })}</p>}
+                                {c.key === 'staff' && <p className="text-5xl font-semibold">{c.values.present}<span className="text-2xl font-normal"> / {c.values.expected}</span></p>}
                                 {c.key === 'revenue' && <p className="text-5xl font-semibold">{format.money((c.values.net as Money).total, currency)}</p>}
                             </article>
                         ))}
@@ -146,6 +147,12 @@ export default function DashboardPage({ currency, preferences, snapshot: s, tv }
                                     </div>
                                 ))}
                             </dl>
+                        )}
+                        {c.key === 'staff' && (
+                            <>
+                                <p className="text-3xl font-semibold tabular-nums tracking-tight" data-testid="staff-line">{t('rpt.card.staff.line', { present: c.values.present, expected: c.values.expected })}</p>
+                                <ul className="flex flex-col gap-1 text-sm">{((c.values.groups ?? []) as { department: string; code: string; expected: number; present: number }[]).map((g) => <li className="flex justify-between" key={`${g.department}-${g.code}`}><span>{t(`hr.department.${g.department}` as 'hr.department.general')} · {g.code}</span><span className="tabular-nums">{g.present}/{g.expected}</span></li>)}</ul>
+                            </>
                         )}
                         {c.key === 'revenue' && (
                             <>

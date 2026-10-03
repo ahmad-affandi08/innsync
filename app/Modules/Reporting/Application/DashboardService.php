@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\Reporting\Application;
 
+use App\Modules\HumanResource\Application\StaffOnDuty;
 use App\Modules\Property\Application\Ports\PropertyTimeZoneReader;
 use App\Modules\Property\Application\Settings\BusinessDateProvider;
 use App\Modules\Reporting\Domain\ReportPeriod;
@@ -31,6 +32,7 @@ final readonly class DashboardService
         private ReportQueries $queries,
         private BusinessDateProvider $businessDate,
         private PropertyTimeZoneReader $zones,
+        private StaffOnDuty $staff,
         private PermissionChecker $permissions,
         private Clock $clock,
         private PropertyContext $property,
@@ -80,6 +82,15 @@ final readonly class DashboardService
                 'room' => $rev['room'], 'laundry' => $rev['laundry'], 'outlets' => $rev['outlets'], 'other' => $rev['other'], 'net' => $rev['net'],
                 'previous' => $compare($period->previous()), 'week_earlier' => $compare($period->weekEarlier()), 'month_earlier' => $compare($period->monthEarlier()),
             ]);
+        }
+
+        // FR-HR-014: who is at work now, by department and shift, for people who see the staff of the property.
+        foreach (['hr.employee.view', 'hr.employee.manage', 'hr.roster.manage', 'hr.attendance.manage'] as $hr) {
+            if ($this->permissions->allowsInProperty($actorId, $hr, $property)) {
+                $cards[] = $this->card('staff', 'now', $today->toString(), $asOf, '/hr/attendance', $this->staff->now($property));
+
+                break;
+            }
         }
 
         $alerts = [];

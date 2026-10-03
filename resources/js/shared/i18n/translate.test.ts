@@ -98,6 +98,7 @@ describe('dictionaries', () => {
             'recipes.outlet',
             'mtc.asset.meter',
             'hr.col.status',
+            'hr.att.shift',
             'hr.department.front_office',
             'hr.department.housekeeping',
             'hr.department.laundry',

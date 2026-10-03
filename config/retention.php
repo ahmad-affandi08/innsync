@@ -18,6 +18,7 @@ return [
         'security_event' => ['default_days' => 1825, 'minimum_days' => 365, 'maximum_days' => null, 'statutory' => false, 'anchor' => 'occurred_at', 'purgeable' => false],
         'guest_identity_document' => ['default_days' => 90, 'minimum_days' => 0, 'maximum_days' => 365, 'statutory' => false, 'anchor' => 'check_out_date', 'purgeable' => true],
         'hr_personnel_document' => ['default_days' => 1825, 'minimum_days' => 0, 'maximum_days' => 3650, 'statutory' => false, 'anchor' => 'employment_end_date', 'purgeable' => true],
+        'hr_attendance_photo' => ['default_days' => 90, 'minimum_days' => 0, 'maximum_days' => 365, 'statutory' => false, 'anchor' => 'recorded_at', 'purgeable' => true],
         'lost_found_photo' => ['default_days' => 90, 'minimum_days' => 0, 'maximum_days' => 365, 'statutory' => false, 'anchor' => 'closed_at', 'purgeable' => true],
         'laundry_claim_photo' => ['default_days' => 365, 'minimum_days' => 0, 'maximum_days' => 1095, 'statutory' => false, 'anchor' => 'decided_at', 'purgeable' => true],
         'checklist_photo' => ['default_days' => 90, 'minimum_days' => 0, 'maximum_days' => 365, 'statutory' => false, 'anchor' => 'completed_at', 'purgeable' => true],

@@ -63,22 +63,22 @@ final class DashboardPreferenceTest extends TestCase
     {
         $default = $this->prefs()->get($this->property(), $this->analystId);
 
-        self::assertSame([['occupancy', 'movements', 'activity', 'revenue'], [], false], [$default['order'], $default['hidden'], $default['saved']]);
+        self::assertSame([['occupancy', 'movements', 'activity', 'revenue', 'staff'], [], false], [$default['order'], $default['hidden'], $default['saved']]);
     }
 
     public function test_a_person_saves_their_own_order_and_hidden_cards_and_nobody_else_sees_them(): void
     {
         $saved = $this->prefs()->save($this->property(), $this->analystId, ['revenue', 'occupancy'], ['activity']);
 
-        self::assertSame([['revenue', 'occupancy', 'movements', 'activity'], ['activity'], true], [$saved['order'], $saved['hidden'], $saved['saved']], 'a card left out of the order goes to the end');
+        self::assertSame([['revenue', 'occupancy', 'movements', 'activity', 'staff'], ['activity'], true], [$saved['order'], $saved['hidden'], $saved['saved']], 'a card left out of the order goes to the end');
         self::assertSame($saved, $this->prefs()->get($this->property(), $this->analystId));
         self::assertFalse($this->prefs()->get($this->property(), $this->dashOnlyId)['saved']);
 
-        $this->prefs()->save($this->property(), $this->analystId, ['movements', 'revenue', 'occupancy', 'activity'], []);
+        $this->prefs()->save($this->property(), $this->analystId, ['movements', 'revenue', 'occupancy', 'activity', 'staff'], []);
         self::assertSame(1, DB::table('dashboard_preferences')->count(), 'saving again replaces the layout');
 
         $reset = $this->prefs()->reset($this->property(), $this->analystId);
-        self::assertSame([['occupancy', 'movements', 'activity', 'revenue'], false], [$reset['order'], $reset['saved']]);
+        self::assertSame([['occupancy', 'movements', 'activity', 'revenue', 'staff'], false], [$reset['order'], $reset['saved']]);
         self::assertSame(0, DB::table('dashboard_preferences')->count());
     }
 
@@ -87,7 +87,7 @@ final class DashboardPreferenceTest extends TestCase
         $this->refused(fn () => $this->prefs()->save($this->property(), $this->analystId, ['occupancy', 'occupancy'], []), 422);
         $this->refused(fn () => $this->prefs()->save($this->property(), $this->analystId, ['secret'], []), 422);
         $this->refused(fn () => $this->prefs()->save($this->property(), $this->analystId, ['occupancy'], ['unknown']), 422);
-        $this->refused(fn () => $this->prefs()->save($this->property(), $this->analystId, ['occupancy'], ['occupancy', 'movements', 'activity', 'revenue']), 422);
+        $this->refused(fn () => $this->prefs()->save($this->property(), $this->analystId, ['occupancy'], ['occupancy', 'movements', 'activity', 'revenue', 'staff']), 422);
         $this->refused(fn () => $this->prefs()->save($this->property(), $this->clerkId, ['occupancy'], []), 403);
         $this->refused(fn () => $this->prefs()->get($this->property(), $this->clerkId), 403);
         $this->refused(fn () => $this->prefs()->reset($this->property(), $this->clerkId), 403);

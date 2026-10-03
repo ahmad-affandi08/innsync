@@ -31,3 +31,29 @@ export type RosterOverview = {
     shortages: { date: string; department: string; pattern_id: string; code: string; have: number; need: number }[];
     departments: string[]; may: { view: boolean; roster: boolean };
 };
+
+export type AttendanceStatus = 'upcoming' | 'not_in' | 'on_duty' | 'present' | 'missing_out' | 'absent';
+
+export type AttendanceRecord = { id: string; in_at: string; in_method: 'mobile' | 'manual'; in_distance_m: number | null; has_in_photo: boolean; out_at: string | null; out_method: 'mobile' | 'manual' | null; out_distance_m: number | null; has_out_photo: boolean; manual_reason: string | null; lock_version: number };
+
+export type AttendanceEvaluation = { status: AttendanceStatus; late_minutes: number; early_minutes: number; extra_minutes: number; worked_minutes: number | null; planned_start: string; planned_end: string };
+
+export type AttendanceRow = AttendanceEvaluation & {
+    employee: { id: string; number: string; name: string; department: string };
+    shift: { code: string; date: string; starts_at: string; ends_at: string; starts2_at: string | null; ends2_at: string | null };
+    record: AttendanceRecord | null;
+};
+
+export type AttendanceSummaryRow = { employee: { id: string; number: string; name: string; department: string }; scheduled: number; present: number; late_days: number; late_minutes: number; early_days: number; early_minutes: number; absent: number; extra_minutes: number; worked_minutes: number };
+
+export type AttendanceSettings = { latitude: number | null; longitude: number | null; radius_m: number; require_selfie: boolean; late_grace: number; early_grace: number; extra_after: number; geofence: boolean; is_baseline: boolean; lock_version: number | null };
+
+export type AttendanceMe = {
+    employee: { id: string; number: string; name: string; department: string }; active: boolean; may_clock_in: boolean; may_clock_out: boolean;
+    shift: (AttendanceEvaluation & { date: string; code: string; starts_at: string; ends_at: string; starts2_at: string | null; ends2_at: string | null; record: AttendanceRecord | null }) | null;
+};
+
+export type AttendanceOverview = {
+    now: string; today: string; settings: AttendanceSettings; me: AttendanceMe | null; may: { manage: boolean }; departments: string[];
+    day: { date: string; rows: AttendanceRow[] } | null; summary: { from: string; to: string; department: string | null; rows: AttendanceSummaryRow[] } | null;
+};
