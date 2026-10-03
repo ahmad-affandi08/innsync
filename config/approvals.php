@@ -24,5 +24,9 @@ return [
         'inventory.purchase-order' => ['mandatory' => false],
         // FR-FIN-018: a payment to a supplier above the threshold the owner sets needs a second person; with no policy for the amount it is paid when recorded.
         'finance.supplier-payment' => ['mandatory' => false],
+        // FR-FBS-005: voiding an item that was already sent to the kitchen or the bar, and cancelling a bill that has such items, need a supervisor. Mandatory: with
+        // no policy configured the void is refused, never allowed. The owner configures who approves, and from what amount, per property.
+        'fnb.item.void' => ['mandatory' => true],
+        'fnb.bill.cancel' => ['mandatory' => true],
     ],
 ];

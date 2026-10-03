@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Modules\FnbSales\Presentation\Http\Controllers\BillController;
 use App\Modules\FnbSales\Presentation\Http\Controllers\SetupController;
 use App\Modules\Finance\Presentation\Http\Controllers\BudgetController;
 use App\Modules\Finance\Presentation\Http\Controllers\CashReconciliationController;
@@ -537,6 +538,16 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->group(
 Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix('fnb')->group(function (): void {
     $id = '[0-9a-z]{26}';
 
+    Route::get('/pos', [BillController::class, 'floor'])->name('fnb.pos');
+    Route::post('/bills', [BillController::class, 'open'])->middleware(['idempotent'])->name('fnb.bills.open');
+    Route::get('/bills/{id}', [BillController::class, 'show'])->where('id', $id)->name('fnb.bills.show');
+    Route::post('/bills/{id}/lines', [BillController::class, 'addLine'])->where('id', $id)->middleware(['idempotent'])->name('fnb.bills.lines.store');
+    Route::post('/bills/{id}/lines/{line}/remove', [BillController::class, 'removeLine'])->where('id', $id)->where('line', $id)->name('fnb.bills.lines.remove');
+    Route::post('/bills/{id}/send', [BillController::class, 'send'])->where('id', $id)->middleware(['idempotent'])->name('fnb.bills.send');
+    Route::post('/bills/{id}/lines/{line}/void-request', [BillController::class, 'requestVoid'])->where('id', $id)->where('line', $id)->middleware(['idempotent'])->name('fnb.bills.lines.void-request');
+    Route::post('/bills/{id}/lines/{line}/void', [BillController::class, 'voidLine'])->where('id', $id)->where('line', $id)->middleware(['idempotent'])->name('fnb.bills.lines.void');
+    Route::post('/bills/{id}/cancel-request', [BillController::class, 'requestCancel'])->where('id', $id)->middleware(['idempotent'])->name('fnb.bills.cancel-request');
+    Route::post('/bills/{id}/cancel', [BillController::class, 'cancel'])->where('id', $id)->middleware(['idempotent'])->name('fnb.bills.cancel');
     Route::get('/outlets', [SetupController::class, 'outlets'])->name('fnb.outlets');
     Route::post('/outlets', [SetupController::class, 'storeOutlet'])->name('fnb.outlets.store');
     Route::post('/outlets/{id}', [SetupController::class, 'updateOutlet'])->where('id', $id)->name('fnb.outlets.update');

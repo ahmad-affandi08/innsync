@@ -100,6 +100,12 @@
         "name",
         "remind_days"
     ],
+    "fnb-sales/pages/bill": [
+        "reason"
+    ],
+    "fnb-sales/pages/floor": [
+        "covers"
+    ],
     "fnb-sales/pages/menu": [
         "category_id",
         "code",

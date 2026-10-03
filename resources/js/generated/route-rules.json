@@ -139,6 +139,12 @@
             "outlet"
         ]
     },
+    "GET /fnb/pos": {
+        "required": [],
+        "declared": [
+            "outlet"
+        ]
+    },
     "GET /front-office/availability": {
         "required": [],
         "declared": [
@@ -1048,6 +1054,89 @@
         "required": [],
         "declared": [
             "note"
+        ]
+    },
+    "POST /fnb/bills": {
+        "required": [
+            "covers",
+            "outlet_id"
+        ],
+        "declared": [
+            "covers",
+            "note",
+            "outlet_id",
+            "room_id",
+            "table_id"
+        ]
+    },
+    "POST /fnb/bills/{id}/cancel": {
+        "required": [
+            "lock_version",
+            "reason"
+        ],
+        "declared": [
+            "approval_id",
+            "lock_version",
+            "reason"
+        ]
+    },
+    "POST /fnb/bills/{id}/cancel-request": {
+        "required": [
+            "reason"
+        ],
+        "declared": [
+            "reason"
+        ]
+    },
+    "POST /fnb/bills/{id}/lines": {
+        "required": [
+            "item_id",
+            "lock_version",
+            "quantity"
+        ],
+        "declared": [
+            "item_id",
+            "lock_version",
+            "modifier_ids",
+            "modifier_ids.*",
+            "note",
+            "quantity",
+            "variant_id"
+        ]
+    },
+    "POST /fnb/bills/{id}/lines/{line}/remove": {
+        "required": [
+            "lock_version"
+        ],
+        "declared": [
+            "lock_version"
+        ]
+    },
+    "POST /fnb/bills/{id}/lines/{line}/void": {
+        "required": [
+            "lock_version",
+            "reason"
+        ],
+        "declared": [
+            "approval_id",
+            "lock_version",
+            "reason"
+        ]
+    },
+    "POST /fnb/bills/{id}/lines/{line}/void-request": {
+        "required": [
+            "reason"
+        ],
+        "declared": [
+            "reason"
+        ]
+    },
+    "POST /fnb/bills/{id}/send": {
+        "required": [
+            "lock_version"
+        ],
+        "declared": [
+            "lock_version"
         ]
     },
     "POST /fnb/categories/{id}": {

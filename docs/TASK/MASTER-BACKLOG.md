@@ -106,16 +106,16 @@
 | TASK-LDY-012 | FR-LDY-012 | Laundry | Wajib | IN_PROGRESS |
 | TASK-FBS-001 | FR-FBS-001 | F&B Service | Wajib | IN_PROGRESS |
 | TASK-FBS-002 | FR-FBS-002 | F&B Service | Wajib | IN_PROGRESS |
-| TASK-FBS-003 | FR-FBS-003 | F&B Service | Wajib | TODO |
+| TASK-FBS-003 | FR-FBS-003 | F&B Service | Wajib | IN_PROGRESS |
 | TASK-FBS-004 | FR-FBS-004 | F&B Service | Sebaiknya | TODO |
-| TASK-FBS-005 | FR-FBS-005 | F&B Service | Wajib | TODO |
+| TASK-FBS-005 | FR-FBS-005 | F&B Service | Wajib | IN_PROGRESS |
 | TASK-FBS-006 | FR-FBS-006 | F&B Service | Wajib | TODO |
 | TASK-FBS-007 | FR-FBS-007 | F&B Service | Wajib | TODO |
 | TASK-FBS-008 | FR-FBS-008 | F&B Service | Wajib | IN_PROGRESS |
 | TASK-FBS-009 | FR-FBS-009 | F&B Service | Wajib | TODO |
 | TASK-FBS-010 | FR-FBS-010 | F&B Service | Wajib | TODO |
 | TASK-FBS-011 | FR-FBS-011 | F&B Service | Wajib | IN_PROGRESS |
-| TASK-FBS-012 | FR-FBS-012 | F&B Service | Wajib | TODO |
+| TASK-FBS-012 | FR-FBS-012 | F&B Service | Wajib | REVIEW |
 | TASK-FBS-013 | FR-FBS-013 | F&B Service | Wajib | TODO |
 | TASK-FBS-014 | FR-FBS-014 | F&B Service | Wajib | TODO |
 | TASK-FBS-015 | FR-FBS-015 | F&B Service | Sebaiknya | TODO |

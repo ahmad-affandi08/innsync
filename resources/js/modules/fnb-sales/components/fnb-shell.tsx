@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import { AppFrame } from '@/components/layout/app-frame';
 
 const LINKS = [
+    { href: '/fnb/pos', label: 'fnb.nav.pos' },
     { href: '/fnb/outlets', label: 'fnb.nav.outlets' },
     { href: '/fnb/menu', label: 'fnb.nav.menu' },
 ] as const;
