@@ -19,11 +19,25 @@
         "opening_date",
         "reason"
     ],
+    "finance/pages/correction": [
+        "decision"
+    ],
+    "finance/pages/corrections": [
+        "date",
+        "reason"
+    ],
     "finance/pages/customers": [
         "code",
         "kind",
         "name",
         "terms_days"
+    ],
+    "finance/pages/exceptions": [
+        "amount_minor",
+        "description",
+        "kind",
+        "resolution",
+        "status"
     ],
     "finance/pages/payable": [
         "amount_minor",

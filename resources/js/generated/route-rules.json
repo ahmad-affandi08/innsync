@@ -14,6 +14,17 @@
             "as_of"
         ]
     },
+    "GET /finance/audit": {
+        "required": [],
+        "declared": [
+            "action",
+            "from",
+            "group",
+            "page",
+            "to",
+            "user"
+        ]
+    },
     "GET /finance/budget": {
         "required": [],
         "declared": [
@@ -40,6 +51,18 @@
         "declared": [
             "from",
             "to"
+        ]
+    },
+    "GET /finance/corrections": {
+        "required": [],
+        "declared": [
+            "status"
+        ]
+    },
+    "GET /finance/exceptions": {
+        "required": [],
+        "declared": [
+            "status"
         ]
     },
     "GET /finance/export/{dataset}": {
@@ -639,6 +662,37 @@
             "reason"
         ]
     },
+    "POST /finance/corrections": {
+        "required": [
+            "date",
+            "lines",
+            "lines.*.kind",
+            "reason"
+        ],
+        "declared": [
+            "date",
+            "lines",
+            "lines.*.base_minor",
+            "lines.*.kind",
+            "lines.*.method",
+            "lines.*.outlet_code",
+            "lines.*.received_minor",
+            "lines.*.service_charge_minor",
+            "lines.*.tax_minor",
+            "reason"
+        ]
+    },
+    "POST /finance/corrections/{id}/decide": {
+        "required": [
+            "decision",
+            "lock_version"
+        ],
+        "declared": [
+            "decision",
+            "lock_version",
+            "note"
+        ]
+    },
     "POST /finance/customers": {
         "required": [
             "code",
@@ -665,6 +719,35 @@
             "lock_version",
             "name",
             "terms_days"
+        ]
+    },
+    "POST /finance/exceptions": {
+        "required": [
+            "amount_minor",
+            "description",
+            "kind"
+        ],
+        "declared": [
+            "amount_minor",
+            "business_date",
+            "description",
+            "folio_ref",
+            "kind",
+            "method",
+            "reference"
+        ]
+    },
+    "POST /finance/exceptions/{id}/reconcile": {
+        "required": [
+            "lock_version",
+            "resolution",
+            "status"
+        ],
+        "declared": [
+            "correction_number",
+            "lock_version",
+            "resolution",
+            "status"
         ]
     },
     "POST /finance/payables/{id}/classify": {

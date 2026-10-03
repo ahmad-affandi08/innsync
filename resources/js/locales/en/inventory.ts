@@ -105,7 +105,7 @@ export const inventory = {
     "inv.limits.min": "Minimum stock",
     "inv.limits.max": "Maximum stock (optional)",
     "home.about.inventory": "Items, storage locations and the stock ledger.",
-    "home.about.finance": "What is owed to suppliers and by customers, payments, receipts, the due schedule, aging, revenue, cash, petty cash, the management P&L, cash flow, recurring expenses, budgets and exports.",
+    "home.about.finance": "What is owed to suppliers and by customers, payments, receipts, the due schedule, aging, revenue and its corrections, cash, reconciliation exceptions, petty cash, the management P&L, cash flow, recurring expenses, budgets, exports and the audit trail.",
     "inv.nav.transfers": "Transfers",
     "inv.stock.kind.receipt": "Receipt",
     "inv.stock.kind.issue": "Issue",

@@ -105,7 +105,7 @@ export const inventory = {
     "inv.limits.min": "Stok minimum",
     "inv.limits.max": "Stok maksimum (opsional)",
     "home.about.inventory": "Barang, lokasi penyimpanan, dan buku besar stok.",
-    "home.about.finance": "Utang ke pemasok dan piutang dari pelanggan, pembayaran, penerimaan, jadwal jatuh tempo, umur utang, pendapatan, kas, kas kecil, laba rugi manajemen, arus kas, biaya berulang, anggaran, dan ekspor.",
+    "home.about.finance": "Utang ke pemasok dan piutang dari pelanggan, pembayaran, penerimaan, jadwal jatuh tempo, umur utang, pendapatan beserta koreksinya, kas, pengecualian rekonsiliasi, kas kecil, laba rugi manajemen, arus kas, biaya berulang, anggaran, ekspor, dan jejak audit.",
     "inv.nav.transfers": "Transfer",
     "inv.stock.kind.receipt": "Penerimaan",
     "inv.stock.kind.issue": "Pengeluaran",

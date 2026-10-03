@@ -287,6 +287,20 @@ export function useCashMethodLabel() {
     };
 }
 
+/** A correction to a booked revenue day as the corrections list, the correction page and the revenue day send it. */
+export type CorrectionHead = {
+    id: string; number: string; status: 'pending' | 'approved' | 'rejected'; day_date: string; reason: string; line_count: number; revenue_minor: number; received_minor: number;
+    requested_by: string | null; requested_at: string; decided_by: string | null; effective_date: string | null;
+};
+
+export const CORRECTION_STATUSES = ['pending', 'approved', 'rejected'] as const;
+export const CORRECTION_TONE: Record<string, StatusTone> = { pending: 'pending', approved: 'success', rejected: 'danger' };
+
+/** A reconciliation exception (refund, chargeback, settlement difference or payment of unknown status). Not the cash differences of shifts, which have their own tab. */
+export const RECON_KINDS = ['refund', 'chargeback', 'settlement_discrepancy', 'unknown_payment'] as const;
+export const RECON_STATUSES = ['open', 'matched', 'adjusted', 'waived'] as const;
+export const RECON_TONE: Record<string, StatusTone> = { open: 'danger', matched: 'success', adjusted: 'info', waived: 'neutral' };
+
 /** The currency of a page whose props carry none (recurring expenses and the budget grid): the property's own. */
 export const DEFAULT_CURRENCY = 'IDR';
 

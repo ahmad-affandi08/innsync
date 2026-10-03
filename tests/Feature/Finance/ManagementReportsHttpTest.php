@@ -273,7 +273,7 @@ final class ManagementReportsHttpTest extends TestCase
         $this->get('/finance/export/revenue')->assertForbidden();
 
         $this->actAs($this->exporter);
-        $this->get('/finance/export')->assertOk()->assertInertia(fn (Assert $page) => $page->component('finance/pages/export')->has('overview.datasets', 7));
+        $this->get('/finance/export')->assertOk()->assertInertia(fn (Assert $page) => $page->component('finance/pages/export')->has('overview.datasets', 9));
         $csv = $this->get('/finance/export/revenue?from=2026-10-01&to=2026-10-01')->assertOk()->assertHeader('Content-Type', 'text/csv; charset=UTF-8');
         $text = $csv->getContent();
         self::assertStringStartsWith("\xEF\xBB\xBF\"Business date\",\"Source\",\"Outlet code\",\"Outlet\",\"Base\",\"Service charge\",\"Tax\",\"Total\"", $text);

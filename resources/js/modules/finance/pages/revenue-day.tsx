@@ -12,17 +12,18 @@ import { Metric } from '@/components/ui/metric';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { Textarea } from '@/components/ui/textarea';
 import { FinanceShell } from '@/modules/finance/components/finance-shell';
-import { REVENUE_TONE, useOutletLabel, useReceiptMethodLabel, type MethodTotals, type RevenueAmounts } from '@/modules/finance/lib/finance';
+import { CORRECTION_TONE, DEFAULT_CURRENCY, REVENUE_TONE, signClass, useOutletLabel, useReceiptMethodLabel, useSignedMoney, type MethodTotals, type RevenueAmounts } from '@/modules/finance/lib/finance';
 import { useServerAction } from '@/shared/api/use-server-action';
 import { useFormatters, useTranslation } from '@/shared/i18n/i18n';
 import { useErrorStateCopy } from '@/shared/i18n/use-ui-copy';
 import type { MessageKey } from '@/locales/en/index';
 
 type Line = RevenueAmounts & { source: string; outlet_code: string; outlet_name: string | null };
+type DayCorrection = { id: string; number: string; status: 'pending' | 'approved' | 'rejected'; reason: string; revenue_minor: number; received_minor: number; effective_date: string | null };
 type Day = RevenueAmounts & {
     id: string; date: string; currency: string; collected_minor: number; status: 'recorded' | 'verified'; verified_at: string | null;
     lines: Line[]; payments: MethodTotals[]; night_audit_id: string | null; occurred_at: string; booked_by: string | null; verified_by: string | null; verification_note: string | null;
-    blockers: { waiting: number; open: number }; may_verify: boolean; may: { verify: boolean };
+    blockers: { waiting: number; open: number; exceptions: number }; corrections: DayCorrection[]; may_verify: boolean; may: { verify: boolean };
 };
 
 /** One closed day: its statement, what stops it being verified, and the verification itself. */
@@ -33,11 +34,12 @@ export default function RevenueDayPage({ day }: { day: Day }) {
     const action = useServerAction();
     const outletLabel = useOutletLabel();
     const methodLabel = useReceiptMethodLabel();
+    const signed = useSignedMoney();
     const [verifying, setVerifying] = useState(false);
     const [note, setNote] = useState('');
     const money = (minor: number) => format.money(minor, day.currency);
     const verified = day.status === 'verified';
-    const blocked = !verified && (day.blockers.waiting > 0 || day.blockers.open > 0);
+    const blocked = !verified && (day.blockers.waiting > 0 || day.blockers.open > 0 || day.blockers.exceptions > 0);
     const date = format.date(day.date, 'long');
 
     function openVerify() {
@@ -67,6 +69,15 @@ export default function RevenueDayPage({ day }: { day: Day }) {
         { id: 'paidBack', label: t('fin.rev.colPaidBack'), align: 'right', value: (p) => p.paid_back_minor, cell: (p) => money(p.paid_back_minor) },
         { id: 'net', label: t('fin.rev.colNet'), align: 'right', value: (p) => p.net_minor, cell: (p) => money(p.net_minor), footer: money(day.collected_minor) },
         { id: 'entries', label: t('fin.rev.colEntries'), align: 'right', value: (p) => p.entries },
+    ];
+
+    const correctionColumns: DataGridColumn<DayCorrection>[] = [
+        { id: 'number', label: t('fin.cor.colNumber'), value: (c) => c.number, cell: (c) => <Link className="font-medium underline" href={`/finance/corrections/${c.id}`}>{c.number}</Link>, rowHeader: true },
+        { id: 'status', label: t('fin.cor.colStatus'), value: (c) => c.status, cell: (c) => <StatusBadge label={t(`fin.cor.status.${c.status}` as MessageKey)} tone={CORRECTION_TONE[c.status] ?? 'neutral'} /> },
+        { id: 'reason', label: t('fin.cor.colReason'), value: (c) => c.reason },
+        { id: 'revenue', label: t('fin.cor.colRevenue'), align: 'right', value: (c) => c.revenue_minor, cell: (c) => <span className={signClass(c.revenue_minor)}>{signed(c.revenue_minor, day.currency || DEFAULT_CURRENCY)}</span> },
+        { id: 'received', label: t('fin.cor.colReceived'), align: 'right', value: (c) => c.received_minor, cell: (c) => <span className={signClass(c.received_minor)}>{signed(c.received_minor, day.currency || DEFAULT_CURRENCY)}</span> },
+        { id: 'effective', label: t('fin.cor.colEffective'), value: (c) => c.effective_date ?? '', cell: (c) => (c.effective_date === null ? '—' : format.date(c.effective_date)) },
     ];
 
     const facts: [string, string][] = [
@@ -108,6 +119,12 @@ export default function RevenueDayPage({ day }: { day: Day }) {
                                 <Link className="underline" href="/finance/cash?tab=exceptions">{t('fin.day.toOpen')}</Link>
                             </p>
                         ) : null}
+                        {day.blockers.exceptions > 0 ? (
+                            <p className="flex flex-wrap items-center gap-x-3">
+                                <span>{t('fin.day.exceptions', { count: day.blockers.exceptions })}</span>
+                                <Link className="underline" href="/finance/exceptions?status=open">{t('fin.day.toExceptions')}</Link>
+                            </p>
+                        ) : null}
                     </div>
                 </Alert>
             ) : null}
@@ -138,6 +155,15 @@ export default function RevenueDayPage({ day }: { day: Day }) {
             <section aria-labelledby="fin-day-payments-h" className="flex flex-col gap-3">
                 <h2 className="text-lg font-semibold" id="fin-day-payments-h">{t('fin.day.payments')}</h2>
                 <DataGrid caption={t('fin.day.payments')} columns={paymentColumns} empty={<EmptyState title={t('fin.day.paymentsEmpty')} />} footerLabel={t('fin.age.total')} getRowId={(p) => p.method} id="fin.revenue.day.payments" rows={day.payments} testId="revenue-day-payments" />
+            </section>
+
+            <section aria-labelledby="fin-day-corrections-h" className="flex flex-col gap-3">
+                <h2 className="text-lg font-semibold" id="fin-day-corrections-h">{t('fin.day.corrections')}</h2>
+                <p className="text-sm text-muted-foreground">{t(verified ? 'fin.day.correctionsVerified' : 'fin.day.correctionsHint')}</p>
+                {day.corrections.length === 0 ? <p className="text-sm text-muted-foreground">{t('fin.day.correctionsEmpty')}</p> : (
+                    <DataGrid caption={t('fin.day.corrections')} columns={correctionColumns} getRowId={(c) => c.id} id="fin.revenue.day.corrections" rows={day.corrections} testId="revenue-day-corrections" />
+                )}
+                <p className="print:hidden"><Link className="underline" href={`/finance/corrections?date=${day.date}`}>{t('fin.day.correct')}</Link></p>
             </section>
 
             <Dialog

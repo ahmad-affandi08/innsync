@@ -11,14 +11,17 @@ import { Select } from '@/components/ui/select';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { FinanceShell } from '@/modules/finance/components/finance-shell';
-import { REVENUE_TONE, useOutletLabel, useReceiptMethodLabel, type MethodTotals, type OutletRevenue, type RevenueAmounts } from '@/modules/finance/lib/finance';
+import { REVENUE_TONE, signClass, useOutletLabel, useReceiptMethodLabel, useSignedMoney, type MethodTotals, type OutletRevenue, type RevenueAmounts } from '@/modules/finance/lib/finance';
 import { useFormatters, useTranslation } from '@/shared/i18n/i18n';
 import type { MessageKey } from '@/locales/en/index';
 
 type Totals = RevenueAmounts & { collected_minor: number };
 type Day = Totals & { id: string; date: string; currency: string; status: 'recorded' | 'verified'; verified_at: string | null };
+type CorrectionPayment = { method: string; received_minor: number };
+type CorrectionOutlet = RevenueAmounts & { outlet_code: string; outlet_name: string | null };
+type Corrections = { count: number; revenue: CorrectionOutlet[]; payments: CorrectionPayment[]; totals: RevenueAmounts & { received_minor: number } };
 type Report = {
-    from: string; to: string; today: string; days: Day[]; totals: Totals; outlets: OutletRevenue[]; methods: MethodTotals[]; unverified: number; may: { verify: boolean };
+    from: string; to: string; today: string; days: Day[]; totals: Totals; outlets: OutletRevenue[]; methods: MethodTotals[]; unverified: number; corrections: Corrections; may: { verify: boolean };
 };
 type Month = Totals & { month: string; days: number; outlets: OutletRevenue[] };
 type Monthly = { year: number; months: Month[]; totals: Totals };
@@ -36,6 +39,7 @@ export default function RevenuePage({ monthly, report }: { monthly: Monthly; rep
     const format = useFormatters();
     const outletLabel = useOutletLabel();
     const methodLabel = useReceiptMethodLabel();
+    const signed = useSignedMoney();
     const [tab, setTab] = useState('daily');
     const [period, setPeriod] = useState({ from: report.from, to: report.to });
     const [tooLong, setTooLong] = useState(false);
@@ -113,6 +117,20 @@ export default function RevenuePage({ monthly, report }: { monthly: Monthly; rep
         ...amountColumns<MonthOutlet>(),
     ];
 
+    const net = (minor: number) => <span className={signClass(minor)}>{signed(minor, currency)}</span>;
+    const corrections = report.corrections;
+    const correctionOutletColumns: DataGridColumn<CorrectionOutlet>[] = [
+        { id: 'outlet', label: t('fin.rev.colOutlet'), value: (o) => outletLabel(o.outlet_code, o.outlet_name), rowHeader: true },
+        { id: 'base', label: t('fin.rev.base'), align: 'right', value: (o) => o.base_minor, cell: (o) => net(o.base_minor) },
+        { id: 'service', label: t('fin.rev.service'), align: 'right', value: (o) => o.service_charge_minor, cell: (o) => net(o.service_charge_minor) },
+        { id: 'tax', label: t('fin.rev.tax'), align: 'right', value: (o) => o.tax_minor, cell: (o) => net(o.tax_minor) },
+        { id: 'total', label: t('fin.rev.billed'), align: 'right', value: (o) => o.total_minor, cell: (o) => net(o.total_minor) },
+    ];
+    const correctionPaymentColumns: DataGridColumn<CorrectionPayment>[] = [
+        { id: 'method', label: t('fin.col.method'), value: (p) => methodLabel(p.method), rowHeader: true },
+        { id: 'received', label: t('fin.rev.colReceived'), align: 'right', value: (p) => p.received_minor, cell: (p) => net(p.received_minor) },
+    ];
+
     const kpis: [string, number][] = [
         [t('fin.rev.base'), report.totals.base_minor],
         [t('fin.rev.service'), report.totals.service_charge_minor],
@@ -133,6 +151,26 @@ export default function RevenuePage({ monthly, report }: { monthly: Monthly; rep
                 {kpis.map(([label, minor]) => <Metric key={label} label={label} value={money(minor)} />)}
                 <Metric detail={t('fin.rev.unverifiedHint')} label={t('fin.rev.unverified')} value={format.number(report.unverified)} />
             </section>
+
+            {corrections.count > 0 ? (
+                <section aria-labelledby="fin-rev-corrections-h" className="flex flex-col gap-3" data-testid="revenue-corrections">
+                    <h2 className="text-lg font-semibold" id="fin-rev-corrections-h">{t('fin.rev.corrections')}</h2>
+                    <p className="text-sm text-muted-foreground">{t('fin.rev.correctionsHint', { count: corrections.count })} <Link className="underline" href="/finance/corrections?status=approved">{t('fin.rev.correctionsLink')}</Link></p>
+                    <dl className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+                        {([[t('fin.rev.base'), corrections.totals.base_minor], [t('fin.rev.service'), corrections.totals.service_charge_minor], [t('fin.rev.tax'), corrections.totals.tax_minor], [t('fin.rev.billed'), corrections.totals.total_minor], [t('fin.rev.collected'), corrections.totals.received_minor]] as [string, number][]).map(([label, minor]) => (
+                            <div className="border border-border bg-surface p-3" key={label}>
+                                <dt className="text-xs text-muted-foreground">{label}</dt>
+                                <dd className="mt-1 text-base font-semibold tabular-nums">{net(minor)}</dd>
+                            </div>
+                        ))}
+                    </dl>
+                    <div className="grid gap-4 lg:grid-cols-2">
+                        <DataGrid caption={t('fin.rev.correctionsOutlets')} columns={correctionOutletColumns} getRowId={(o) => o.outlet_code} id="fin.revenue.corrections.outlets" rows={corrections.revenue} testId="revenue-correction-outlets" />
+                        <DataGrid caption={t('fin.rev.correctionsMethods')} columns={correctionPaymentColumns} getRowId={(p) => p.method} id="fin.revenue.corrections.methods" rows={corrections.payments} testId="revenue-correction-methods" />
+                    </div>
+                    <p className="text-sm text-muted-foreground">{t('fin.rev.correctionsBefore')}</p>
+                </section>
+            ) : null}
 
             <Tabs onValueChange={setTab} value={tab}>
                 <TabsList>
