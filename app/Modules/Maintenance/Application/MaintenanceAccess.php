@@ -22,6 +22,9 @@ final readonly class MaintenanceAccess
     /** Sees every work order, assigns them, sets their priority, cancels them, takes rooms off sale and sets the service levels. */
     public const MANAGE = 'maintenance.work.manage';
 
+    /** Asks vendors for quotations, chooses one, schedules their work and records what it cost. */
+    public const VENDOR = 'maintenance.vendor.manage';
+
     /** Is told when a work order is escalated beyond the supervisor, as the manager on duty is. */
     public const ESCALATION_RECEIVE = 'maintenance.escalation.receive';
 

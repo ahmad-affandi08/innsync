@@ -29,6 +29,7 @@ export type MaintenanceReport = {
     from: string; to: string; reported: number; by_status: Partial<Record<Status, number>>; by_department: Record<string, number>;
     completion: { done: number; average_hours: number | null; on_time: number; on_time_percent: number | null; by_priority: { priority: Priority; done: number; average_hours: number | null }[] };
     repeat_rooms: { room: string; count: number; categories: string[] }[]; unsellable: { total_days: number; rooms: { room: string; days: number }[] };
+    vendor: { currency: string; total_minor: number; jobs: number; over_quote: number; by_supplier: { supplier: string; value_minor: number }[]; by_category: { category: string; value_minor: number }[] };
     parts: { currency: string; total_minor: number; uses: number; complete: boolean; by_category: { category: string; value_minor: number }[]; top_items: { item: string; value_minor: number }[] };
 };
 
@@ -59,4 +60,23 @@ export type PartsPanel = {
     requests: { id: string; number: string; status: string | null; total_minor: number | null; by: string | null; at: string }[];
     items: { id: string; code: string; name: string; base_unit: string; units: string[] }[]; locations: { id: string; code: string; name: string; kind: string }[];
     urgencies: Priority[]; business_date: string; may: { use: boolean; request: boolean };
+};
+
+export type VendorStatus = 'quoting' | 'pending_approval' | 'approved' | 'scheduled' | 'done' | 'rejected' | 'cancelled';
+
+export type VendorJob = {
+    id: string; number: string; work_order_id: string; work_order_number: string; work_order_title: string; scope: string; status: VendorStatus; supplier: string | null; agreed_minor: number | null; choice_reason: string | null;
+    scheduled_on: string | null; schedule_note: string | null; actual_minor: number | null; invoice_ref: string | null; done_note: string | null; over_quote: boolean; has_proof: boolean; done_on: string | null; cancel_reason: string | null;
+    lock_version: number; created_at: string;
+};
+
+export type VendorOverview = {
+    currency: string; jobs: VendorJob[]; work_orders: { id: string; number: string; title: string }[]; suppliers: { id: string; code: string; name: string }[]; may: { act: boolean };
+};
+
+export type VendorJobDetail = VendorJob & {
+    currency: string; created_by: string | null; business_date: string; suppliers: { id: string; code: string; name: string }[];
+    quotes: { id: string; supplier_id: string; supplier: string; amount_minor: number; valid_until: string | null; note: string | null; by: string | null; at: string; chosen: boolean; lowest: boolean }[];
+    approval: { id: string; status: string; consumed: boolean } | null;
+    may: { quote: boolean; choose: boolean; release: boolean; schedule: boolean; complete: boolean; cancel: boolean };
 };

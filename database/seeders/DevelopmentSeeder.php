@@ -148,6 +148,7 @@ final class DevelopmentSeeder extends Seeder
         'laundry.prices.manage',
         'laundry.view',
         'maintenance.escalation.receive',
+        'maintenance.vendor.manage',
         'maintenance.work.manage',
         'maintenance.work.perform',
         'maintenance.work.report',

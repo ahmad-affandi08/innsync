@@ -13,13 +13,13 @@ use DateTimeZone;
 /**
  * The work order reports (FR-MTC-012): what was reported in a period by status and by the department that reported it; how long the work that was finished took, on average and by
  * priority, and how much of it was done by its deadline; the rooms that broke again and again; and the days rooms could not be sold because of a work order. The cost of the spare parts used in the
- * period is here, by kind of work and by item; the work of vendors is not.
+ * period is here, by kind of work and by item; the cost of the work of vendors that was finished in it is too.
  */
 final readonly class ReportService
 {
     private const MAX_DAYS = 366;
 
-    public function __construct(private WorkOrderStore $store, private PartsStore $parts, private MaintenanceAccess $access, private PropertyCurrencyReader $currencies) {}
+    public function __construct(private WorkOrderStore $store, private PartsStore $parts, private VendorJobStore $vendors, private MaintenanceAccess $access, private PropertyCurrencyReader $currencies) {}
 
     /** @return array<string, mixed> */
     public function report(PropertyId $property, string $actorId, string $from, string $to): array
@@ -73,6 +73,34 @@ final readonly class ReportService
             'repeat_rooms' => $repeat,
             'unsellable' => $this->unsellable($property, $start, $end),
             'parts' => $this->parts($property, $from, $to),
+            'vendor' => $this->vendor($property, $from, $to),
+        ];
+    }
+
+    /** @return array{currency: string, total_minor: int, jobs: int, over_quote: int, by_supplier: list<array{supplier: string, value_minor: int}>, by_category: list<array{category: string, value_minor: int}>} */
+    private function vendor(PropertyId $property, string $from, string $to): array
+    {
+        $bySupplier = [];
+        $byCategory = [];
+        $total = 0;
+        $over = 0;
+        $rows = $this->vendors->doneBetween($property, $from, $to);
+
+        foreach ($rows as $r) {
+            $value = (int) $r['actual_minor'];
+            $total += $value;
+            $over += (bool) $r['over_quote'] ? 1 : 0;
+            $bySupplier[$r['supplier_name']] = ($bySupplier[$r['supplier_name']] ?? 0) + $value;
+            $byCategory[$r['category']] = ($byCategory[$r['category']] ?? 0) + $value;
+        }
+
+        arsort($bySupplier);
+        arsort($byCategory);
+
+        return [
+            'currency' => $this->currencies->currencyOf($property), 'total_minor' => $total, 'jobs' => count($rows), 'over_quote' => $over,
+            'by_supplier' => array_map(static fn (string $s, int $v): array => ['supplier' => $s, 'value_minor' => $v], array_keys($bySupplier), array_values($bySupplier)),
+            'by_category' => array_map(static fn (string $c, int $v): array => ['category' => $c, 'value_minor' => $v], array_keys($byCategory), array_values($byCategory)),
         ];
     }
 

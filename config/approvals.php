@@ -32,6 +32,8 @@ return [
         // complimentary item is mandatory: with no policy it is refused, never given.
         'fnb.discount' => ['mandatory' => false],
         'fnb.comp' => ['mandatory' => true],
+        // FR-MTC-015: giving work to an outside vendor at the price of the chosen quotation. The owner configures the chain by amount band; with no policy for the amount, the work needs no approval.
+        'maintenance.vendor-job' => ['mandatory' => false],
         // FR-FBS-014: giving a settled bill back needs a supervisor. Mandatory: with no policy configured the refund is refused, never made.
         'fnb.bill.refund' => ['mandatory' => true],
     ],

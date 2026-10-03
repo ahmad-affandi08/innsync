@@ -511,6 +511,15 @@
         "title",
         "trigger_kind"
     ],
+    "maintenance/pages/vendor-work": [
+        "actual_minor",
+        "amount_minor",
+        "quote_id",
+        "scheduled_on",
+        "scope",
+        "supplier_id",
+        "work_order_id"
+    ],
     "maintenance/pages/work-orders": [
         "category",
         "escalate_percent",

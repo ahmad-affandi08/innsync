@@ -65,6 +65,7 @@ final readonly class WorkOrderService
     public function __construct(
         private WorkOrderStore $store,
         private AssetStore $assets,
+        private VendorJobStore $vendorJobs,
         private MaintenanceAccess $access,
         private RoomCatalogReader $rooms,
         private RoomBlocking $blocking,
@@ -335,6 +336,7 @@ final readonly class WorkOrderService
 
         $row = $this->visible($property, $actorId, $caps, strtolower($id));
         $this->mayWork($row, $actorId);
+        $this->noOpenVendorJobs($property, $row);
         $file = $this->storePhoto($property, strtolower($actorId), $row['id'], $photo, $photoName, 'photo') ?? throw Refusal::invalid('Attach a photo of the finished work.', ['photo']);
 
         return $this->change($property, $actorId, $id, $lock, ['in_progress'], function (array $w) use ($property, $actorId, $note, $file): array {
@@ -364,6 +366,8 @@ final readonly class WorkOrderService
         }
 
         return $this->change($property, $actorId, $id, $lock, self::OPEN, function (array $w) use ($property, $actorId, $reason): array {
+            $this->noOpenVendorJobs($property, $w);
+
             if ($w['block_id'] !== null) {
                 $this->releaseQuietly($property, strtolower($actorId), $w, "Work order {$w['number']} was cancelled", 'Back on sale: the work order was cancelled');
             }
@@ -562,6 +566,14 @@ final readonly class WorkOrderService
         }
 
         return $row;
+    }
+
+    /** A work order is not finished or cancelled while the work of a vendor on it is still going on. @param array<string, mixed> $w */
+    private function noOpenVendorJobs(PropertyId $property, array $w): void
+    {
+        if ($this->vendorJobs->openCount($property, $w['id']) > 0) {
+            throw Refusal::stateConflict('A vendor job of this work order is still open. Finish or cancel it first.');
+        }
     }
 
     /** @param array<string, mixed> $w */

@@ -97,6 +97,8 @@ describe('dictionaries', () => {
             'kitchen.station.bar',
             'recipes.outlet',
             'mtc.asset.meter',
+            'mtc.vendor.workOrder',
+            'mtc.vendor.supplier',
             'mtc.asset.unit.km',
             'mtc.asset.category.it',
             'mtc.col.status',

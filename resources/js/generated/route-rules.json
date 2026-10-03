@@ -375,6 +375,12 @@
             "to"
         ]
     },
+    "GET /maintenance/vendor-work": {
+        "required": [],
+        "declared": [
+            "status"
+        ]
+    },
     "GET /reports/audit": {
         "required": [],
         "declared": [
@@ -3516,6 +3522,74 @@
             "normal",
             "urgent",
             "warn_percent"
+        ]
+    },
+    "POST /maintenance/vendor-jobs": {
+        "required": [
+            "scope",
+            "work_order_id"
+        ],
+        "declared": [
+            "scope",
+            "work_order_id"
+        ]
+    },
+    "POST /maintenance/vendor-jobs/{id}/cancel": {
+        "required": [
+            "lock_version",
+            "reason"
+        ],
+        "declared": [
+            "lock_version",
+            "reason"
+        ]
+    },
+    "POST /maintenance/vendor-jobs/{id}/choose": {
+        "required": [
+            "lock_version",
+            "quote_id"
+        ],
+        "declared": [
+            "lock_version",
+            "quote_id",
+            "reason"
+        ]
+    },
+    "POST /maintenance/vendor-jobs/{id}/complete": {
+        "required": [
+            "actual_minor",
+            "lock_version",
+            "note"
+        ],
+        "declared": [
+            "actual_minor",
+            "invoice_ref",
+            "lock_version",
+            "note",
+            "photo"
+        ]
+    },
+    "POST /maintenance/vendor-jobs/{id}/quotes": {
+        "required": [
+            "amount_minor",
+            "supplier_id"
+        ],
+        "declared": [
+            "amount_minor",
+            "note",
+            "supplier_id",
+            "valid_until"
+        ]
+    },
+    "POST /maintenance/vendor-jobs/{id}/schedule": {
+        "required": [
+            "lock_version",
+            "scheduled_on"
+        ],
+        "declared": [
+            "lock_version",
+            "note",
+            "scheduled_on"
         ]
     },
     "POST /maintenance/work-orders": {

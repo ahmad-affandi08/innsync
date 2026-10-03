@@ -156,12 +156,12 @@ Every row must eventually point to implementation evidence and tests. Status is 
 | FR-MTC-007 | Maintenance / Engineering | Sebaiknya | ../TASK/MODULE-07-MAINTENANCE.md | REVIEW |
 | FR-MTC-008 | Maintenance / Engineering | Sebaiknya | ../TASK/MODULE-07-MAINTENANCE.md | REVIEW |
 | FR-MTC-009 | Maintenance / Engineering | Sebaiknya | ../TASK/MODULE-07-MAINTENANCE.md | REVIEW |
-| FR-MTC-010 | Maintenance / Engineering | Wajib | ../TASK/MODULE-07-MAINTENANCE.md | IN_PROGRESS |
+| FR-MTC-010 | Maintenance / Engineering | Wajib | ../TASK/MODULE-07-MAINTENANCE.md | REVIEW |
 | FR-MTC-011 | Maintenance / Engineering | Wajib | ../TASK/MODULE-07-MAINTENANCE.md | TODO |
-| FR-MTC-012 | Maintenance / Engineering | Wajib | ../TASK/MODULE-07-MAINTENANCE.md | IN_PROGRESS |
+| FR-MTC-012 | Maintenance / Engineering | Wajib | ../TASK/MODULE-07-MAINTENANCE.md | REVIEW |
 | FR-MTC-013 | Maintenance / Engineering | Wajib | ../TASK/MODULE-07-MAINTENANCE.md | REVIEW |
 | FR-MTC-014 | Maintenance / Engineering | Sebaiknya | ../TASK/MODULE-07-MAINTENANCE.md | REVIEW |
-| FR-MTC-015 | Maintenance / Engineering | Sebaiknya | ../TASK/MODULE-07-MAINTENANCE.md | TODO |
+| FR-MTC-015 | Maintenance / Engineering | Sebaiknya | ../TASK/MODULE-07-MAINTENANCE.md | REVIEW |
 | FR-INV-001 | Inventory | Wajib | ../TASK/MODULE-08-INVENTORY-PURCHASING.md | TODO |
 | FR-INV-002 | Inventory | Wajib | ../TASK/MODULE-08-INVENTORY-PURCHASING.md | TODO |
 | FR-INV-003 | Inventory | Wajib | ../TASK/MODULE-08-INVENTORY-PURCHASING.md | TODO |

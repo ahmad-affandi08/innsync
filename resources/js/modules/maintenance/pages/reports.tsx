@@ -40,12 +40,13 @@ export default function MaintenanceReportsPage({ report }: { report: Maintenance
                 <FormField label={t('mtc.rep.to')}><DatePicker onChange={(e) => setTo(e.target.value)} value={to} /></FormField>
                 <Button disabled={from === '' || to === ''} onClick={() => router.get('/maintenance/reports', { from, to })} type="button">{t('mtc.rep.show')}</Button>
             </div>
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5" data-testid="mtc-rep-kpis">
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6" data-testid="mtc-rep-kpis">
                 <Metric label={t('mtc.rep.reported')} value={String(report.reported)} />
                 <Metric detail={t('mtc.rep.doneCount', { n: report.completion.done })} label={t('mtc.rep.average')} value={hours(report.completion.average_hours)} />
                 <Metric detail={t('mtc.rep.onTimeOf', { on: report.completion.on_time, of: report.completion.done })} label={t('mtc.rep.onTime')} value={report.completion.on_time_percent === null ? '—' : `${report.completion.on_time_percent}%`} />
                 <Metric label={t('mtc.rep.unsellable')} value={t('mtc.rep.nights', { n: report.unsellable.total_days })} />
                 <Metric detail={t('mtc.rep.partsUses', { n: report.parts.uses })} label={t('mtc.rep.parts')} value={format.money(report.parts.total_minor, report.parts.currency)} />
+                <Metric detail={t('mtc.rep.vendorJobs', { n: report.vendor.jobs, over: report.vendor.over_quote })} label={t('mtc.rep.vendor')} value={format.money(report.vendor.total_minor, report.vendor.currency)} />
             </div>
             <div className="grid gap-4 lg:grid-cols-2">
                 <section aria-labelledby="mtc-rep-status" className="flex flex-col gap-2 border border-border bg-surface p-3">
@@ -73,6 +74,22 @@ export default function MaintenanceReportsPage({ report }: { report: Maintenance
                         <section aria-labelledby="mtc-rep-parts-top" className="flex flex-col gap-2 border border-border bg-surface p-3">
                             <h3 className="font-semibold" id="mtc-rep-parts-top">{t('mtc.rep.partsTop')}</h3>
                             <ul className="text-sm">{report.parts.top_items.map((i) => <li className="flex justify-between" key={i.item}><span>{i.item}</span><span className="tabular-nums">{format.money(i.value_minor, report.parts.currency)}</span></li>)}</ul>
+                        </section>
+                    </div>
+                )}
+            </section>
+            <section aria-labelledby="mtc-rep-vendor" className="flex flex-col gap-2" data-testid="mtc-rep-vendor">
+                <h2 className="font-semibold" id="mtc-rep-vendor">{t('mtc.rep.vendor')}</h2>
+                <p className="text-sm text-muted-foreground">{t('mtc.rep.vendorHint')}</p>
+                {report.vendor.jobs === 0 ? <p className="text-sm text-muted-foreground">{t('mtc.rep.noVendor')}</p> : (
+                    <div className="grid gap-4 lg:grid-cols-2">
+                        <section aria-labelledby="mtc-rep-vendor-sup" className="flex flex-col gap-2 border border-border bg-surface p-3">
+                            <h3 className="font-semibold" id="mtc-rep-vendor-sup">{t('mtc.rep.vendorBySupplier')}</h3>
+                            <ul className="text-sm">{report.vendor.by_supplier.map((s) => <li className="flex justify-between" key={s.supplier}><span>{s.supplier}</span><span className="tabular-nums">{format.money(s.value_minor, report.vendor.currency)}</span></li>)}</ul>
+                        </section>
+                        <section aria-labelledby="mtc-rep-vendor-cat" className="flex flex-col gap-2 border border-border bg-surface p-3">
+                            <h3 className="font-semibold" id="mtc-rep-vendor-cat">{t('mtc.rep.partsByCategory')}</h3>
+                            <ul className="text-sm">{report.vendor.by_category.map((c) => <li className="flex justify-between" key={c.category}><span>{label('mtc.category', c.category)}</span><span className="tabular-nums">{format.money(c.value_minor, report.vendor.currency)}</span></li>)}</ul>
                         </section>
                     </div>
                 )}
