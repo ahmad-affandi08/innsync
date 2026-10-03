@@ -107,6 +107,8 @@ final readonly class DashboardService
         'payables_overdue' => '/finance/payables?status=overdue',
         'payables_due_soon' => '/finance/schedule',
         'receivables_overdue' => '/finance/receivables?status=overdue',
+        'recurring_overdue' => '/finance/recurring',
+        'recurring_due_soon' => '/finance/recurring',
     ];
 
     /**

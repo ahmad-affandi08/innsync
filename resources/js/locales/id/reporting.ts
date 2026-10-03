@@ -57,6 +57,8 @@ export const reporting = {
     'rpt.alert.payables_overdue': 'Faktur pemasok yang lewat jatuh tempo',
     'rpt.alert.payables_due_soon': 'Faktur pemasok yang jatuh tempo dalam tujuh hari',
     'rpt.alert.receivables_overdue': 'Piutang pelanggan yang lewat jatuh tempo',
+    'rpt.alert.recurring_overdue': 'Biaya berulang yang lewat jatuh tempo',
+    'rpt.alert.recurring_due_soon': 'Biaya berulang yang segera jatuh tempo',
     'rpt.centre.title': 'Laporan',
     'rpt.centre.description': 'Laporan dikelompokkan menurut tema. Setiap laporan menyebut kapan dibuat, business date yang dicakup, filter dan sumbernya.',
     'rpt.centre.empty': 'Anda tidak memiliki laporan yang tersedia.',

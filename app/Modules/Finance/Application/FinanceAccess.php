@@ -41,6 +41,12 @@ final readonly class FinanceAccess
 
     public const EXPORT = 'finance.export';
 
+    public const RECURRING_VIEW = 'finance.recurring.view';
+
+    public const RECURRING_MANAGE = 'finance.recurring.manage';
+
+    public const BUDGET_MANAGE = 'finance.budget.manage';
+
     private const VIEWERS = [self::PAYABLE_VIEW, self::PAYABLE_MANAGE, self::PAYMENT_RECORD, self::ACCOUNT_MANAGE];
 
     public function __construct(private PermissionChecker $permissions, private PropertyContext $property) {}
@@ -153,6 +159,15 @@ final readonly class FinanceAccess
 
         if (! $this->mayViewReports($property, $actorId)) {
             throw Refusal::forbidden('This person may not see the management reports.');
+        }
+    }
+
+    public function requireRecurringView(PropertyId $property, string $actorId): void
+    {
+        $this->assertProperty($property);
+
+        if (! $this->may($property, $actorId, self::RECURRING_VIEW) && ! $this->may($property, $actorId, self::RECURRING_MANAGE)) {
+            throw Refusal::forbidden('This person may not see recurring expenses.');
         }
     }
 }

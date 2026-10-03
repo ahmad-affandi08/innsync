@@ -164,6 +164,13 @@ final readonly class DatabaseReportQueries implements ReportQueries
             ->whereRaw('(r.amount_minor - COALESCE(x.received, 0)) > 0')->where('r.due_date', '<', $today->toString());
         $alerts['receivables_overdue'] = ['count' => (clone $unpaid)->count(), 'items' => (clone $unpaid)->orderBy('r.due_date')->limit(self::ALERT_EXAMPLES)->get(['c.name', 'r.number'])->map(static fn ($r): string => $r->name.' · '.$r->number)->all()];
 
+        // Fixed costs that come round (FR-FIN-016): the oldest due date nobody has settled is past, or falls within the days of notice the expense asks for.
+        $recurring = DB::table('fin_recurring_expenses')->where('property_id', $pid)->where('is_active', true)->where(static fn ($q) => $q->whereNull('end_date')->orWhereColumn('next_due', '<=', 'end_date'));
+        $late = (clone $recurring)->where('next_due', '<', $today->toString());
+        $alerts['recurring_overdue'] = ['count' => (clone $late)->count(), 'items' => (clone $late)->orderBy('next_due')->limit(self::ALERT_EXAMPLES)->pluck('name')->all()];
+        $coming = (clone $recurring)->where('next_due', '>=', $today->toString())->whereRaw('next_due <= DATE_ADD(?, INTERVAL remind_days DAY)', [$today->toString()]);
+        $alerts['recurring_due_soon'] = ['count' => (clone $coming)->count(), 'items' => (clone $coming)->orderBy('next_due')->limit(self::ALERT_EXAMPLES)->pluck('name')->all()];
+
         return $alerts;
     }
 

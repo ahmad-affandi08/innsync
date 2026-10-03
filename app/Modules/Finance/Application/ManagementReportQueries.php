@@ -26,6 +26,12 @@ interface ManagementReportQueries
     /** @return list<array{account_id: string, code: string, name: string, department: string, category: string, amount_minor: int}> petty cash vouchers that were not voided, by expense account */
     public function pettyCosts(PropertyId $property, string $from, string $to): array;
 
+    /** @return list<array{account_id: string, code: string, name: string, department: string, category: string, amount_minor: int}> recurring expenses that were paid in the range (by the date paid), by expense account */
+    public function recurringCosts(PropertyId $property, string $from, string $to): array;
+
+    /** @return list<array{method: string, amount_minor: int}> recurring expenses paid in the range, by method */
+    public function recurringPayments(PropertyId $property, string $from, string $to): array;
+
     /** @return array<string, int> department to the value of stock issued, written off or adjusted out, less what was adjusted in */
     public function stockConsumption(PropertyId $property, string $from, string $to): array;
 

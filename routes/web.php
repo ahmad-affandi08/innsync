@@ -2,12 +2,14 @@
 
 declare(strict_types=1);
 
+use App\Modules\Finance\Presentation\Http\Controllers\BudgetController;
 use App\Modules\Finance\Presentation\Http\Controllers\CashReconciliationController;
 use App\Modules\Finance\Presentation\Http\Controllers\ExpenseAccountController;
 use App\Modules\Finance\Presentation\Http\Controllers\ManagementReportController;
 use App\Modules\Finance\Presentation\Http\Controllers\PayableController;
 use App\Modules\Finance\Presentation\Http\Controllers\PettyCashController;
 use App\Modules\Finance\Presentation\Http\Controllers\ReceivableController;
+use App\Modules\Finance\Presentation\Http\Controllers\RecurringExpenseController;
 use App\Modules\Finance\Presentation\Http\Controllers\RevenueController;
 use App\Modules\Finance\Presentation\Http\Controllers\SupplierPaymentController;
 use App\Modules\FrontOffice\Presentation\Http\Controllers\AvailabilityController;
@@ -580,4 +582,12 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
     Route::post('/cashflow/opening', [ManagementReportController::class, 'setOpening'])->name('finance.cashflow.opening');
     Route::get('/export', [ManagementReportController::class, 'exportPage'])->name('finance.export');
     Route::get('/export/{dataset}', [ManagementReportController::class, 'export'])->where('dataset', '[a-z_]{3,24}')->name('finance.export.download');
+    Route::get('/recurring', [RecurringExpenseController::class, 'index'])->name('finance.recurring');
+    Route::post('/recurring', [RecurringExpenseController::class, 'store'])->name('finance.recurring.store');
+    Route::get('/recurring/{id}', [RecurringExpenseController::class, 'show'])->where('id', $id)->name('finance.recurring.show');
+    Route::post('/recurring/{id}', [RecurringExpenseController::class, 'update'])->where('id', $id)->name('finance.recurring.update');
+    Route::post('/recurring/{id}/settle', [RecurringExpenseController::class, 'settle'])->where('id', $id)->middleware(['idempotent'])->name('finance.recurring.settle');
+    Route::get('/budget', [BudgetController::class, 'index'])->name('finance.budget');
+    Route::post('/budget', [BudgetController::class, 'save'])->name('finance.budget.save');
+    Route::get('/budget/report', [BudgetController::class, 'report'])->name('finance.budget.report');
 });

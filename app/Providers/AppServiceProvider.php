@@ -4,17 +4,21 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Modules\Finance\Application\BudgetStore;
 use App\Modules\Finance\Application\FinanceExportQueries;
 use App\Modules\Finance\Application\ManagementReportQueries;
 use App\Modules\Finance\Application\PayableStore;
 use App\Modules\Finance\Application\PettyCashStore;
 use App\Modules\Finance\Application\ReceivableStore;
+use App\Modules\Finance\Application\RecurringExpenseStore;
 use App\Modules\Finance\Application\RevenueStore;
+use App\Modules\Finance\Infrastructure\DatabaseBudgetStore;
 use App\Modules\Finance\Infrastructure\DatabaseFinanceExportQueries;
 use App\Modules\Finance\Infrastructure\DatabaseManagementReportQueries;
 use App\Modules\Finance\Infrastructure\DatabasePayableStore;
 use App\Modules\Finance\Infrastructure\DatabasePettyCashStore;
 use App\Modules\Finance\Infrastructure\DatabaseReceivableStore;
+use App\Modules\Finance\Infrastructure\DatabaseRecurringExpenseStore;
 use App\Modules\Finance\Infrastructure\DatabaseRevenueStore;
 use App\Modules\FrontOffice\Application\Cashier\CashierRepository;
 use App\Modules\FrontOffice\Application\Cashier\CashierService;
@@ -387,6 +391,8 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(PettyCashStore::class, DatabasePettyCashStore::class);
         $this->app->bind(ManagementReportQueries::class, DatabaseManagementReportQueries::class);
         $this->app->bind(FinanceExportQueries::class, DatabaseFinanceExportQueries::class);
+        $this->app->bind(RecurringExpenseStore::class, DatabaseRecurringExpenseStore::class);
+        $this->app->bind(BudgetStore::class, DatabaseBudgetStore::class);
         $this->app->bind(ParLevelRepository::class, DatabaseParLevelRepository::class);
         $this->app->bind(CompanyRouting::class, ChargeRoutingChain::class);
         $this->app->bind(DocumentNumbers::class, DatabaseDocumentNumbers::class);

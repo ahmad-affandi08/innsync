@@ -57,6 +57,8 @@ export const reporting = {
     'rpt.alert.payables_overdue': 'Supplier invoices past their due date',
     'rpt.alert.payables_due_soon': 'Supplier invoices due in the next seven days',
     'rpt.alert.receivables_overdue': 'Customer receivables past their due date',
+    'rpt.alert.recurring_overdue': 'Recurring expenses past their due date',
+    'rpt.alert.recurring_due_soon': 'Recurring expenses falling due soon',
     'rpt.centre.title': 'Reports',
     'rpt.centre.description': 'Reports grouped by theme. Each states when it was made, the business dates it covers, its filters and its source.',
     'rpt.centre.empty': 'You have no reports available.',

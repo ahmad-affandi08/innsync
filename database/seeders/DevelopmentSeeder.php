@@ -35,6 +35,7 @@ final class DevelopmentSeeder extends Seeder
     /** @var list<string> */
     private const PERMISSIONS = [
         'finance.account.manage',
+        'finance.budget.manage',
         'finance.export',
         'finance.payable.manage',
         'finance.payable.view',
@@ -46,6 +47,8 @@ final class DevelopmentSeeder extends Seeder
         'finance.receivable.manage',
         'finance.receivable.view',
         'finance.reconcile.manage',
+        'finance.recurring.manage',
+        'finance.recurring.view',
         'finance.report.view',
         'finance.revenue.view',
         'front-office.availability.view',

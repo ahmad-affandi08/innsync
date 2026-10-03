@@ -42,6 +42,20 @@ final readonly class DatabaseManagementReportQueries implements ManagementReport
             ->map(static fn ($r): array => ['account_id' => (string) $r->account_id, 'code' => (string) $r->code, 'name' => (string) $r->name, 'department' => (string) $r->department, 'category' => (string) $r->category, 'amount_minor' => (int) $r->amount])->all();
     }
 
+    public function recurringCosts(PropertyId $property, string $from, string $to): array
+    {
+        return DB::table('fin_recurring_occurrences as o')->join('fin_recurring_expenses as r', 'r.id', '=', 'o.recurring_id')->join('finance_expense_accounts as a', 'a.id', '=', 'r.expense_account_id')
+            ->where('o.property_id', $property->toString())->where('o.status', 'paid')->whereBetween('o.paid_on', [$from, $to])->groupBy('a.id', 'a.code', 'a.name', 'a.department', 'a.category')->orderBy('a.code')
+            ->get(['a.id as account_id', 'a.code', 'a.name', 'a.department', 'a.category', DB::raw('SUM(o.amount_minor) as amount')])
+            ->map(static fn ($r): array => ['account_id' => (string) $r->account_id, 'code' => (string) $r->code, 'name' => (string) $r->name, 'department' => (string) $r->department, 'category' => (string) $r->category, 'amount_minor' => (int) $r->amount])->all();
+    }
+
+    public function recurringPayments(PropertyId $property, string $from, string $to): array
+    {
+        return DB::table('fin_recurring_occurrences')->where('property_id', $property->toString())->where('status', 'paid')->whereBetween('paid_on', [$from, $to])->groupBy('method')->orderBy('method')
+            ->get(['method', DB::raw('SUM(amount_minor) as amount')])->map(static fn ($r): array => ['method' => (string) $r->method, 'amount_minor' => (int) $r->amount])->all();
+    }
+
     public function stockConsumption(PropertyId $property, string $from, string $to): array
     {
         $out = [];

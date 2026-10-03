@@ -21,7 +21,7 @@ use DateTimeZone;
  *
  * The management P&L is, per department, the net revenue the department earned (base of the charges, apart from service charge and tax) less its direct
  * costs: supplier invoices of the period by invoice date without their tax, classified under an expense account of the department; petty cash vouchers;
- * and the value of stock the department consumed (issued, written off or adjusted out, less adjusted in). An invoice for goods for resale is left out of
+ * recurring expenses that were paid, and the value of stock the department consumed (issued, written off or adjusted out, less adjusted in). An invoice for goods for resale is left out of
  * the first cost, because those goods are costed when they are consumed; an invoice not yet classified is shown apart. The revenue of an outlet goes to the
  * department the owner mapped it to (rooms to front office, laundry to laundry and the rest to general by default).
  *
@@ -54,7 +54,7 @@ final readonly class ManagementReportService
         [$from, $to, $today] = $this->range($property, $from, $to);
         $mapping = $this->queries->outletMap($property);
         $rows = [];
-        $blank = static fn (string $department): array => ['department' => $department, 'revenue_minor' => 0, 'service_charge_minor' => 0, 'expenses_minor' => 0, 'petty_minor' => 0, 'stock_minor' => 0, 'outlets' => [], 'accounts' => []];
+        $blank = static fn (string $department): array => ['department' => $department, 'revenue_minor' => 0, 'service_charge_minor' => 0, 'expenses_minor' => 0, 'petty_minor' => 0, 'recurring_minor' => 0, 'stock_minor' => 0, 'outlets' => [], 'accounts' => []];
         $unmapped = [];
 
         foreach ($this->queries->revenueByOutlet($property, $from, $to) as $o) {
@@ -89,14 +89,22 @@ final readonly class ManagementReportService
             $d = (string) $c['department'];
             $rows[$d] ??= $blank($d);
             $rows[$d]['expenses_minor'] += $c['amount_minor'];
-            $rows[$d]['accounts'][(string) $c['code']] = ['code' => $c['code'], 'name' => $c['name'], 'category' => $c['category'], 'expenses_minor' => $c['amount_minor'], 'petty_minor' => 0];
+            $rows[$d]['accounts'][(string) $c['code']] = ['code' => $c['code'], 'name' => $c['name'], 'category' => $c['category'], 'expenses_minor' => $c['amount_minor'], 'petty_minor' => 0, 'recurring_minor' => 0];
         }
 
         foreach ($this->queries->pettyCosts($property, $from, $to) as $c) {
             $rows[$c['department']] ??= $blank($c['department']);
             $rows[$c['department']]['petty_minor'] += $c['amount_minor'];
-            $a = $rows[$c['department']]['accounts'][$c['code']] ?? ['code' => $c['code'], 'name' => $c['name'], 'category' => $c['category'], 'expenses_minor' => 0, 'petty_minor' => 0];
+            $a = $rows[$c['department']]['accounts'][$c['code']] ?? ['code' => $c['code'], 'name' => $c['name'], 'category' => $c['category'], 'expenses_minor' => 0, 'petty_minor' => 0, 'recurring_minor' => 0];
             $a['petty_minor'] += $c['amount_minor'];
+            $rows[$c['department']]['accounts'][$c['code']] = $a;
+        }
+
+        foreach ($this->queries->recurringCosts($property, $from, $to) as $c) {
+            $rows[$c['department']] ??= $blank($c['department']);
+            $rows[$c['department']]['recurring_minor'] += $c['amount_minor'];
+            $a = $rows[$c['department']]['accounts'][$c['code']] ?? ['code' => $c['code'], 'name' => $c['name'], 'category' => $c['category'], 'expenses_minor' => 0, 'petty_minor' => 0, 'recurring_minor' => 0];
+            $a['recurring_minor'] += $c['amount_minor'];
             $rows[$c['department']]['accounts'][$c['code']] = $a;
         }
 
@@ -110,15 +118,15 @@ final readonly class ManagementReportService
         $order = array_flip(ExpenseAccountService::DEPARTMENTS);
         uksort($rows, static fn (string $a, string $b): int => ($order[$a] ?? 99) <=> ($order[$b] ?? 99));
         $departments = [];
-        $totals = ['revenue_minor' => 0, 'service_charge_minor' => 0, 'expenses_minor' => 0, 'petty_minor' => 0, 'stock_minor' => 0, 'cost_total_minor' => 0, 'result_minor' => 0];
+        $totals = ['revenue_minor' => 0, 'service_charge_minor' => 0, 'expenses_minor' => 0, 'petty_minor' => 0, 'recurring_minor' => 0, 'stock_minor' => 0, 'cost_total_minor' => 0, 'result_minor' => 0];
 
         foreach ($rows as $r) {
-            $cost = $r['expenses_minor'] + $r['petty_minor'] + $r['stock_minor'];
+            $cost = $r['expenses_minor'] + $r['petty_minor'] + $r['recurring_minor'] + $r['stock_minor'];
             $result = $r['revenue_minor'] - $cost;
             ksort($r['accounts']);
             $departments[] = [...$r, 'accounts' => array_values($r['accounts']), 'cost_total_minor' => $cost, 'result_minor' => $result, 'margin_bp' => $r['revenue_minor'] > 0 ? intdiv($result * 10_000, $r['revenue_minor']) : null];
 
-            foreach (['revenue_minor', 'service_charge_minor', 'expenses_minor', 'petty_minor', 'stock_minor'] as $k) {
+            foreach (['revenue_minor', 'service_charge_minor', 'expenses_minor', 'petty_minor', 'recurring_minor', 'stock_minor'] as $k) {
                 $totals[$k] += $r[$k];
             }
 
@@ -249,6 +257,11 @@ final readonly class ManagementReportService
 
         foreach ($this->queries->supplierPayments($property, $from, $to) as $p) {
             $payments[] = ['source' => 'supplier', 'method' => $p['method'], 'group' => $group($p['method']), 'amount_minor' => $p['amount_minor']];
+            $out[$group($p['method'])] += $p['amount_minor'];
+        }
+
+        foreach ($this->queries->recurringPayments($property, $from, $to) as $p) {
+            $payments[] = ['source' => 'recurring', 'method' => $p['method'], 'group' => $group($p['method']), 'amount_minor' => $p['amount_minor']];
             $out[$group($p['method'])] += $p['amount_minor'];
         }
 
