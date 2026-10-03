@@ -18,3 +18,15 @@ export type QueueOrder = {
     room_charge: 'none' | 'pending' | 'verified' | 'rejected'; verify_note: string | null; subtotal_minor: number; note: string | null; bill_status: string; lines: number; lock_version: number;
 };
 export type QueueOverview = { orders: QueueOrder[]; pending: number };
+
+export type GuestHelp = {
+    hotel: string; label: string; verified: boolean; locked: boolean; categories: string[];
+    requests: { id: string; kind: 'request' | 'complaint'; category: string | null; title: string; number: string; status: 'open' | 'in_progress' | 'done' | 'cancelled'; resolution: string | null; sent_at: string }[];
+};
+export type GuestBill = {
+    hotel: string; label: string; verified: boolean; locked: boolean; departure?: string | null;
+    bill: { currency: string; outlets: { outlet: string; lines: { date: string; description: string; total_minor: number }[]; total_minor: number }[]; payments: { date: string; method: string; amount_minor: number }[]; total_minor: number; paid_minor: number; balance_minor: number } | null;
+};
+export type GuestSurvey = { hotel: string; label: string; verified: boolean; locked: boolean; open: boolean; answered: boolean; departure: string | null };
+export type SurveyRow = { id: string; overall: number; room: number | null; service: number | null; food: number | null; value: number | null; comment: string | null; complaint_opened: boolean; at: string };
+export type SurveyOverview = { days: number; count: number; averages: Record<'overall' | 'room_rating' | 'service_rating' | 'food_rating' | 'value_rating', number | null>; surveys: SurveyRow[] };

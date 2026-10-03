@@ -267,11 +267,11 @@
 | TASK-GST-012 | FR-GST-012 | Guest Self-Service | Wajib | REVIEW |
 | TASK-GST-013 | FR-GST-013 | Guest Self-Service | Wajib | REVIEW |
 | TASK-GST-014 | FR-GST-014 | Guest Self-Service | Wajib | REVIEW |
-| TASK-GST-015 | FR-GST-015 | Guest Self-Service | Sebaiknya | TODO |
-| TASK-GST-016 | FR-GST-016 | Guest Self-Service | Sebaiknya | TODO |
+| TASK-GST-015 | FR-GST-015 | Guest Self-Service | Sebaiknya | REVIEW |
+| TASK-GST-016 | FR-GST-016 | Guest Self-Service | Sebaiknya | REVIEW |
 | TASK-GST-017 | FR-GST-017 | Guest Self-Service | Wajib | TODO |
 | TASK-GST-018 | FR-GST-018 | Guest Self-Service | Wajib | REVIEW |
-| TASK-GST-019 | FR-GST-019 | Guest Self-Service | Sebaiknya | TODO |
+| TASK-GST-019 | FR-GST-019 | Guest Self-Service | Sebaiknya | REVIEW |
 | TASK-NFR-01 | NFR-01 | Foundation / Cross-cutting | Kinerja | TODO |
 | TASK-NFR-02 | NFR-02 | Foundation / Cross-cutting | Kapasitas | TODO |
 | TASK-NFR-03 | NFR-03 | Foundation / Cross-cutting | Ketersediaan | TODO |

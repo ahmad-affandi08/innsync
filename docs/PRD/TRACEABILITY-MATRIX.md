@@ -269,11 +269,11 @@ Every row must eventually point to implementation evidence and tests. Status is 
 | FR-GST-012 | Guest Self-Service | Wajib | ../TASK/MODULE-12-GUEST-SELF-SERVICE.md | REVIEW |
 | FR-GST-013 | Guest Self-Service | Wajib | ../TASK/MODULE-12-GUEST-SELF-SERVICE.md | REVIEW |
 | FR-GST-014 | Guest Self-Service | Wajib | ../TASK/MODULE-12-GUEST-SELF-SERVICE.md | REVIEW |
-| FR-GST-015 | Guest Self-Service | Sebaiknya | ../TASK/MODULE-12-GUEST-SELF-SERVICE.md | TODO |
-| FR-GST-016 | Guest Self-Service | Sebaiknya | ../TASK/MODULE-12-GUEST-SELF-SERVICE.md | TODO |
+| FR-GST-015 | Guest Self-Service | Sebaiknya | ../TASK/MODULE-12-GUEST-SELF-SERVICE.md | REVIEW |
+| FR-GST-016 | Guest Self-Service | Sebaiknya | ../TASK/MODULE-12-GUEST-SELF-SERVICE.md | REVIEW |
 | FR-GST-017 | Guest Self-Service | Wajib | ../TASK/MODULE-12-GUEST-SELF-SERVICE.md | TODO |
 | FR-GST-018 | Guest Self-Service | Wajib | ../TASK/MODULE-12-GUEST-SELF-SERVICE.md | REVIEW |
-| FR-GST-019 | Guest Self-Service | Sebaiknya | ../TASK/MODULE-12-GUEST-SELF-SERVICE.md | TODO |
+| FR-GST-019 | Guest Self-Service | Sebaiknya | ../TASK/MODULE-12-GUEST-SELF-SERVICE.md | REVIEW |
 | NFR-01 | Cross-cutting | Kinerja | ../TASK/PHASE-0-FOUNDATION.md | TODO |
 | NFR-02 | Cross-cutting | Kapasitas | ../TASK/PHASE-0-FOUNDATION.md | TODO |
 | NFR-03 | Cross-cutting | Ketersediaan | ../TASK/PHASE-0-FOUNDATION.md | TODO |

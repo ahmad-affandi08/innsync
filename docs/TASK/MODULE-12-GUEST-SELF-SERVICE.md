@@ -26,11 +26,11 @@
 | TASK-GST-012 | FR-GST-012 | Wajib | Pesanan dari menu QR masuk ke POS outlet dan layar dapur seperti pesanan yang diambil pelayan, dengan penanda sumber pesanan. | REVIEW |
 | TASK-GST-013 | FR-GST-013 | Wajib | Menu yang ditandai habis oleh dapur otomatis tidak dapat dipesan melalui menu QR. | REVIEW |
 | TASK-GST-014 | FR-GST-014 | Wajib | Tamu memilih pembayaran langsung melalui QRIS atau pembebanan ke kamar; pembebanan ke kamar memerlukan verifikasi petugas. | REVIEW |
-| TASK-GST-015 | FR-GST-015 | Sebaiknya | Tamu dapat mengirim permintaan layanan dan keluhan dari halaman yang sama, yang langsung masuk ke antrean department terkait. | TODO |
-| TASK-GST-016 | FR-GST-016 | Sebaiknya | Tamu dapat melihat rincian tagihan berjalan dan mengisi survei kepuasan menjelang keberangkatan. | TODO |
+| TASK-GST-015 | FR-GST-015 | Sebaiknya | Tamu dapat mengirim permintaan layanan dan keluhan dari halaman yang sama, yang langsung masuk ke antrean department terkait. | REVIEW |
+| TASK-GST-016 | FR-GST-016 | Sebaiknya | Tamu dapat melihat rincian tagihan berjalan dan mengisi survei kepuasan menjelang keberangkatan. | REVIEW |
 | TASK-GST-017 | FR-GST-017 | Wajib | Halaman tamu tersedia dalam Bahasa Indonesia dan Bahasa Inggris, ringan dibuka pada jaringan lambat, dan tidak memerlukan pemasangan aplikasi. | TODO |
 | TASK-GST-018 | FR-GST-018 | Wajib | QR kamar/meja tidak mengekspos identifier internal yang mudah ditebak. Session tamu berumur terbatas dan aksi sensitif seperti room charge memerlukan verifikasi konteks stay. | REVIEW |
-| TASK-GST-019 | FR-GST-019 | Sebaiknya | Tamu dapat melihat status pesanan/permintaan layanan tanpa memperoleh akses ke data tamu lain atau histori stay sebelumnya. | TODO |
+| TASK-GST-019 | FR-GST-019 | Sebaiknya | Tamu dapat melihat status pesanan/permintaan layanan tanpa memperoleh akses ke data tamu lain atau histori stay sebelumnya. | REVIEW |
 
 ### Slice 64 (2026-10-03): QR menu, guest session and orders from the phone
 
@@ -45,6 +45,17 @@
 - Dependency: `qrcode-generator` 2.0.4 (MIT, no dependencies, about 20 kB) draws the QR codes in the browser of the staff who print them; rationale: `FR-GST-010` needs a printable code per room and table, drawing it in the browser keeps the token off any third-party service and needs no server library; it is used by the print page only.
 - Not yet: paying by QRIS from the guest's own phone (needs a payment provider), a different room service outlet per room, the order status as push notification, a QR code on the bill, and the guest's language remembered between sessions (the choice lasts the session).
 - Evidence: `tests/Feature/GuestExperience/QrMenuHttpTest.php` (the codes and their tokens, a table order reaching the bill and the kitchen as the guest's and placed once, a switched-off and a renewed code, a sold-out dish and every refusal, the room proof and its lock, the charge to the room waiting for verification and the cashier refused until then, a session that ends).
+
+### Slice 65 (2026-10-03): requests, complaints, bill and survey from the phone
+
+- Status: `TASK-GST-015`, `-016` and `-019` are `REVIEW`. `TASK-GST-017` follows with the self check-in.
+- Context: migration 111 (`ge_requests`, `ge_surveys`, append-only), contract `GuestStayDesk` (front office; asked by the guest self-service account), `GuestHelpService`, `GuestSurveyReport`, config keys `requests_per_hour`, `survey_days_before`, `survey_complaint_at_or_below` in `config/guest.php`, pages `/g/help`, `/g/bill`, `/g/survey` and the staff page `/guest/surveys`.
+- **Requests and complaints (GST-015).** From the same page the guest, after the same stay proof as for a room order, asks for a service (housekeeping, front office, maintenance, laundry or other) or reports a complaint. The front office opens the request in the department queue it belongs to (the same queue the desk uses, `FR-FO-…` requests) and records the complaint as a feedback entry (medium priority, channel online) in the guest feedback queue; nothing is created without a verified stay, at most 5 requests an hour for a session and a repeat of the same tap by the same key is placed once. The work is recorded under the guest self-service account, which holds only the right to open a request and a feedback entry and to see a folio.
+- **The bill so far (GST-016).** The guest sees the charges of the running folio (window 1) of the verified stay, with tax and service charge, and what was paid; the page only shows, it never posts or pays. Nothing of another stay or room is reachable: the stay comes from the verified session, never from the request.
+- **The survey (GST-016).** From `survey_days_before` days before the departure date the guest is asked for a rating (1–5) and a comment, once for the stay; a rating of 2 or less opens a complaint for the front office at once. The answers cannot be changed or deleted (database triggers); the owner sees the average, the count and the low ratings in `/guest/surveys`.
+- **Status (GST-019).** The page lists the requests of this session with where each stands (received, in progress, done) and the orders of slice 64; only those of the verified stay of the session.
+- Not yet: a push when a request is done, attaching a photo to a complaint, a survey link sent by e-mail after departure.
+- Evidence: `tests/Feature/GuestExperience/HelpAndSurveyHttpTest.php` (6 tests: a request reaching the queue, a complaint, the proof needed, the rate limit and the repeat, the bill of the stay only, the survey once and its low-rating complaint) and `tests/Integration/FrontOffice/GuestStayDeskTest.php` (4 tests).
 
 ## Required engineering checks
 

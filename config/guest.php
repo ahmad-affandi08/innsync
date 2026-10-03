@@ -18,4 +18,13 @@ return [
     'order_max_lines' => (int) env('GUEST_ORDER_MAX_LINES', 30),
     'order_max_quantity' => (int) env('GUEST_ORDER_MAX_QUANTITY', 20),
     'orders_per_hour' => (int) env('GUEST_ORDERS_PER_HOUR', 6),
+
+    // A session may send this many requests and complaints in an hour.
+    'requests_per_hour' => (int) env('GUEST_REQUESTS_PER_HOUR', 6),
+
+    // The survey opens this many days before the day of departure, and on that day.
+    'survey_days_before' => (int) env('GUEST_SURVEY_DAYS_BEFORE', 1),
+
+    // An overall rating up to this opens a complaint at front office for someone to follow up.
+    'survey_complaint_at_or_below' => (int) env('GUEST_SURVEY_COMPLAINT_AT_OR_BELOW', 2),
 ];

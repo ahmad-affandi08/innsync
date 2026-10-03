@@ -232,6 +232,7 @@ describe('dictionaries', () => {
             'fo.audit.report.waiverRow',
             'fnb.px.outlet',
             'fnb.px.status',
+            'guest.nav.menu',
             'guest.pay.qris',
             'guest.qr.colStatus',
             'rpt.sch.colStatus',

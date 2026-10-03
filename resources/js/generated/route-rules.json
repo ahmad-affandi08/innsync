@@ -2690,6 +2690,17 @@
             "reason"
         ]
     },
+    "POST /g/complaint": {
+        "required": [
+            "client_key",
+            "summary"
+        ],
+        "declared": [
+            "client_key",
+            "detail",
+            "summary"
+        ]
+    },
     "POST /g/order": {
         "required": [
             "client_key",
@@ -2709,6 +2720,32 @@
             "lines.*.variant_id",
             "note",
             "payment"
+        ]
+    },
+    "POST /g/request": {
+        "required": [
+            "category",
+            "client_key",
+            "title"
+        ],
+        "declared": [
+            "category",
+            "client_key",
+            "detail",
+            "title"
+        ]
+    },
+    "POST /g/survey": {
+        "required": [
+            "overall"
+        ],
+        "declared": [
+            "comment",
+            "food_rating",
+            "overall",
+            "room_rating",
+            "service_rating",
+            "value_rating"
         ]
     },
     "POST /g/verify": {
