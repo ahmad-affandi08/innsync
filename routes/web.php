@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Modules\Finance\Presentation\Http\Controllers\CashReconciliationController;
 use App\Modules\Finance\Presentation\Http\Controllers\ExpenseAccountController;
+use App\Modules\Finance\Presentation\Http\Controllers\ManagementReportController;
 use App\Modules\Finance\Presentation\Http\Controllers\PayableController;
 use App\Modules\Finance\Presentation\Http\Controllers\PettyCashController;
 use App\Modules\Finance\Presentation\Http\Controllers\ReceivableController;
@@ -573,4 +574,10 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
     Route::post('/petty/vouchers/{id}/proofs', [PettyCashController::class, 'addProof'])->where('id', $id)->name('finance.petty.proofs.store');
     Route::get('/petty/vouchers/{id}/proofs/{proof}', [PettyCashController::class, 'proof'])->where('id', $id)->where('proof', $id)->name('finance.petty.proofs.show');
     Route::post('/petty/vouchers/{id}/void', [PettyCashController::class, 'void'])->where('id', $id)->name('finance.petty.vouchers.void');
+    Route::get('/pnl', [ManagementReportController::class, 'pnl'])->name('finance.pnl');
+    Route::post('/pnl/mappings', [ManagementReportController::class, 'mapOutlet'])->name('finance.pnl.mappings');
+    Route::get('/cashflow', [ManagementReportController::class, 'cashFlow'])->name('finance.cashflow');
+    Route::post('/cashflow/opening', [ManagementReportController::class, 'setOpening'])->name('finance.cashflow.opening');
+    Route::get('/export', [ManagementReportController::class, 'exportPage'])->name('finance.export');
+    Route::get('/export/{dataset}', [ManagementReportController::class, 'export'])->where('dataset', '[a-z_]{3,24}')->name('finance.export.download');
 });

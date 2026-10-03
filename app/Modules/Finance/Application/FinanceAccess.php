@@ -37,6 +37,10 @@ final readonly class FinanceAccess
 
     public const PETTY_MANAGE = 'finance.petty.manage';
 
+    public const REPORT_VIEW = 'finance.report.view';
+
+    public const EXPORT = 'finance.export';
+
     private const VIEWERS = [self::PAYABLE_VIEW, self::PAYABLE_MANAGE, self::PAYMENT_RECORD, self::ACCOUNT_MANAGE];
 
     public function __construct(private PermissionChecker $permissions, private PropertyContext $property) {}
@@ -135,6 +139,20 @@ final readonly class FinanceAccess
 
         if (! $this->mayViewPetty($property, $actorId)) {
             throw Refusal::forbidden('This person may not see petty cash.');
+        }
+    }
+
+    public function mayViewReports(PropertyId $property, string $actorId): bool
+    {
+        return $this->may($property, $actorId, self::REPORT_VIEW) || $this->may($property, $actorId, self::ACCOUNT_MANAGE);
+    }
+
+    public function requireReportView(PropertyId $property, string $actorId): void
+    {
+        $this->assertProperty($property);
+
+        if (! $this->mayViewReports($property, $actorId)) {
+            throw Refusal::forbidden('This person may not see the management reports.');
         }
     }
 }

@@ -11,6 +11,7 @@ use App\Modules\Reporting\Domain\ReportPeriod;
 use App\Shared\Application\Audit\AuditEntry;
 use App\Shared\Application\Audit\AuditTrail;
 use App\Shared\Application\Errors\Refusal;
+use App\Shared\Application\Export\CsvWriter;
 use App\Shared\Application\Identifiers\IdentifierGenerator;
 use App\Shared\Application\Privacy\PiiAccessAudit;
 use App\Shared\Application\Security\PermissionChecker;

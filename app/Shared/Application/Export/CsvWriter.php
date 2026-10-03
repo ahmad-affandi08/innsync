@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Modules\Reporting\Application;
+namespace App\Shared\Application\Export;
 
 /** Builds a spreadsheet-safe CSV: UTF-8 with a byte order mark, quoted cells, and no cell that a spreadsheet could run as a formula. */
 final class CsvWriter
