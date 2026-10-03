@@ -225,7 +225,7 @@
 | TASK-FIN-012 | FR-FIN-012 | Finance | Wajib | REVIEW |
 | TASK-FIN-013 | FR-FIN-013 | Finance | Wajib | REVIEW |
 | TASK-FIN-014 | FR-FIN-014 | Finance | Wajib | REVIEW |
-| TASK-FIN-015 | FR-FIN-015 | Finance | Wajib | TODO |
+| TASK-FIN-015 | FR-FIN-015 | Finance | Wajib | REVIEW |
 | TASK-FIN-016 | FR-FIN-016 | Finance | Sebaiknya | TODO |
 | TASK-FIN-017 | FR-FIN-017 | Finance | Sebaiknya | TODO |
 | TASK-FIN-018 | FR-FIN-018 | Finance | Wajib | REVIEW |

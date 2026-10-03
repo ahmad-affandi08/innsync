@@ -31,6 +31,12 @@ final readonly class FinanceAccess
 
     public const RECEIPT_RECORD = 'finance.receipt.record';
 
+    public const PETTY_VIEW = 'finance.petty.view';
+
+    public const PETTY_OPERATE = 'finance.petty.operate';
+
+    public const PETTY_MANAGE = 'finance.petty.manage';
+
     private const VIEWERS = [self::PAYABLE_VIEW, self::PAYABLE_MANAGE, self::PAYMENT_RECORD, self::ACCOUNT_MANAGE];
 
     public function __construct(private PermissionChecker $permissions, private PropertyContext $property) {}
@@ -109,6 +115,26 @@ final readonly class FinanceAccess
 
         if (! $this->mayViewReceivables($property, $actorId)) {
             throw Refusal::forbidden('This person may not see accounts receivable.');
+        }
+    }
+
+    public function mayViewPetty(PropertyId $property, string $actorId): bool
+    {
+        foreach ([self::PETTY_VIEW, self::PETTY_OPERATE, self::PETTY_MANAGE] as $permission) {
+            if ($this->may($property, $actorId, $permission)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public function requirePettyView(PropertyId $property, string $actorId): void
+    {
+        $this->assertProperty($property);
+
+        if (! $this->mayViewPetty($property, $actorId)) {
+            throw Refusal::forbidden('This person may not see petty cash.');
         }
     }
 }
