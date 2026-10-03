@@ -1,7 +1,9 @@
 <?php
 
+use App\Modules\Finance\Application\CompanyReceivableConsumer;
 use App\Modules\Finance\Application\FrontOfficeRevenueConsumer;
 use App\Modules\Finance\Application\PurchasingPayableConsumer;
+use App\Modules\FrontOffice\Application\Companies\CompanyReceiptConsumer;
 use App\Shared\Application\Outbox\OutboxConsumer;
 
 $retryDelays = array_values(array_filter(
@@ -32,6 +34,8 @@ return [
 
     /** @var list<class-string<OutboxConsumer>> */
     'consumers' => [
+        CompanyReceiptConsumer::class,
+        CompanyReceivableConsumer::class,
         FrontOfficeRevenueConsumer::class,
         PurchasingPayableConsumer::class,
     ],

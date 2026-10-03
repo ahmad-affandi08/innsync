@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\FrontOffice\Application\Stays;
 
+use App\Modules\FrontOffice\Application\Companies\CompanyRepository;
 use App\Modules\FrontOffice\Application\Companies\CompanyRouting;
 use App\Modules\FrontOffice\Application\Folios\FolioRepository;
 use App\Modules\FrontOffice\Application\Folios\FolioService;
@@ -80,6 +81,7 @@ final readonly class StayService
         private StayRepository $stays,
         private RegistrationCardRepository $cards,
         private CompanyRouting $companies,
+        private CompanyRepository $companyProfiles,
         private GuestRepository $guests,
         private ReservationRepository $reservations,
         private InventoryRepository $inventory,
@@ -327,9 +329,14 @@ final readonly class StayService
                 }
             }
 
+            // What the company owes stays on its folio; finance bills it (FR-FIN-014). The folio is announced once, when the guest leaves.
+            $billable = [];
+
             foreach ($this->folioStore->byReservation($property, $reservation->id) as $folio) {
                 if (! $folio->isClosed && ! ($folio->balance->amountMinor !== 0 && $this->companies->isCompanyFolio($property, $folio->id))) {
                     $this->folios->close($property, $actor, $folio->id, $folio->lockVersion);
+                } elseif (! $folio->isClosed && $folio->balance->amountMinor > 0) {
+                    $billable[] = $folio;
                 }
             }
 
@@ -360,6 +367,16 @@ final readonly class StayService
                 'stay_id' => $stay->id, 'reservation_id' => $reservation->id, 'room_id' => $stay->roomId,
                 'business_date' => $today->toString(), 'departure' => $kind, 'actor_id' => $actor,
             ]));
+
+            $company = $billable === [] ? null : $this->companyProfiles->companyOf($property, $reservation->id);
+
+            foreach ($company === null ? [] : $billable as $folio) {
+                $this->outbox->publish(new OutboxEvent($property, 'frontoffice.company_folio.billable', $folio->id, 1, [
+                    'folio_id' => $folio->id, 'folio_number' => $folio->number, 'reservation_id' => $reservation->id, 'reservation_number' => $reservation->number, 'guest_name' => $reservation->guestName,
+                    'company_id' => $company['id'], 'company_code' => $company['code'], 'company_name' => $company['name'], 'company_kind' => $company['kind'],
+                    'balance_minor' => $folio->balance->amountMinor, 'currency' => $folio->currency, 'business_date' => $today->toString(), 'actor_id' => $actor,
+                ]));
+            }
         });
 
         return $this->view($property, $actorId, $before->id);

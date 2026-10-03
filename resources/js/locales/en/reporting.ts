@@ -56,6 +56,7 @@ export const reporting = {
     'rpt.alert.stock_below_minimum': 'Items below their minimum stock',
     'rpt.alert.payables_overdue': 'Supplier invoices past their due date',
     'rpt.alert.payables_due_soon': 'Supplier invoices due in the next seven days',
+    'rpt.alert.receivables_overdue': 'Customer receivables past their due date',
     'rpt.centre.title': 'Reports',
     'rpt.centre.description': 'Reports grouped by theme. Each states when it was made, the business dates it covers, its filters and its source.',
     'rpt.centre.empty': 'You have no reports available.',

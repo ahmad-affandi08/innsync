@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace App\Providers;
 
 use App\Modules\Finance\Application\PayableStore;
+use App\Modules\Finance\Application\ReceivableStore;
 use App\Modules\Finance\Application\RevenueStore;
 use App\Modules\Finance\Infrastructure\DatabasePayableStore;
+use App\Modules\Finance\Infrastructure\DatabaseReceivableStore;
 use App\Modules\Finance\Infrastructure\DatabaseRevenueStore;
 use App\Modules\FrontOffice\Application\Cashier\CashierRepository;
 use App\Modules\FrontOffice\Application\Cashier\CashierService;
@@ -375,6 +377,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(PurchasingStore::class, DatabasePurchasingStore::class);
         $this->app->bind(PayableStore::class, DatabasePayableStore::class);
         $this->app->bind(RevenueStore::class, DatabaseRevenueStore::class);
+        $this->app->bind(ReceivableStore::class, DatabaseReceivableStore::class);
         $this->app->bind(ParLevelRepository::class, DatabaseParLevelRepository::class);
         $this->app->bind(CompanyRouting::class, ChargeRoutingChain::class);
         $this->app->bind(DocumentNumbers::class, DatabaseDocumentNumbers::class);

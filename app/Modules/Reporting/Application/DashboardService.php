@@ -106,6 +106,7 @@ final readonly class DashboardService
         'stock_below_minimum' => '/inventory/stock',
         'payables_overdue' => '/finance/payables?status=overdue',
         'payables_due_soon' => '/finance/schedule',
+        'receivables_overdue' => '/finance/receivables?status=overdue',
     ];
 
     /**
