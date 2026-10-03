@@ -41,7 +41,7 @@ export default function PayablesPage({ overview, status }: { overview: Overview;
         { id: 'amount', label: t('fin.col.amount'), align: 'right', value: (p) => p.amount_minor, cell: (p) => money(p.amount_minor, p.currency) },
         { id: 'paid', label: t('fin.col.paid'), align: 'right', value: (p) => p.paid_minor, cell: (p) => money(p.paid_minor, p.currency) },
         { id: 'balance', label: t('fin.col.balance'), align: 'right', value: (p) => p.balance_minor, cell: (p) => money(p.balance_minor, p.currency) },
-        { id: 'state', label: t('fin.col.status'), value: (p) => (p.overdue ? 'overdue' : p.status), cell: (p) => <PayableStatus row={p} /> },
+        { id: 'state', label: t('inv.col.status'), value: (p) => (p.overdue ? 'overdue' : p.status), cell: (p) => <PayableStatus row={p} /> },
         { id: 'actions', label: t('inv.col.actions'), cell: (p) => <Button onClick={() => router.visit(`/finance/payables/${p.id}`)} size="sm" type="button" variant="outline">{t('fin.pay.open')}</Button> },
     ];
 

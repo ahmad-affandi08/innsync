@@ -8,6 +8,31 @@
             "tv"
         ]
     },
+    "GET /finance/aging": {
+        "required": [],
+        "declared": [
+            "as_of"
+        ]
+    },
+    "GET /finance/payables": {
+        "required": [],
+        "declared": [
+            "status",
+            "supplier"
+        ]
+    },
+    "GET /finance/payments": {
+        "required": [],
+        "declared": [
+            "status"
+        ]
+    },
+    "GET /finance/schedule": {
+        "required": [],
+        "declared": [
+            "days"
+        ]
+    },
     "GET /front-office/availability": {
         "required": [],
         "declared": [
@@ -462,6 +487,83 @@
             "hidden.*",
             "order",
             "order.*"
+        ]
+    },
+    "POST /finance/accounts": {
+        "required": [
+            "category",
+            "code",
+            "department",
+            "name"
+        ],
+        "declared": [
+            "category",
+            "code",
+            "department",
+            "name"
+        ]
+    },
+    "POST /finance/accounts/{id}": {
+        "required": [
+            "active",
+            "category",
+            "department",
+            "lock_version",
+            "name"
+        ],
+        "declared": [
+            "active",
+            "category",
+            "department",
+            "lock_version",
+            "name"
+        ]
+    },
+    "POST /finance/payables/{id}/classify": {
+        "required": [],
+        "declared": [
+            "expense_account_id"
+        ]
+    },
+    "POST /finance/payables/{id}/credits": {
+        "required": [
+            "amount_minor",
+            "credit_id"
+        ],
+        "declared": [
+            "amount_minor",
+            "credit_id"
+        ]
+    },
+    "POST /finance/payments": {
+        "required": [
+            "amount_minor",
+            "method",
+            "payable_id"
+        ],
+        "declared": [
+            "amount_minor",
+            "method",
+            "note",
+            "paid_on",
+            "payable_id",
+            "reference"
+        ]
+    },
+    "POST /finance/payments/{id}/cancel": {
+        "required": [
+            "reason"
+        ],
+        "declared": [
+            "reason"
+        ]
+    },
+    "POST /finance/payments/{id}/proofs": {
+        "required": [
+            "proof"
+        ],
+        "declared": [
+            "proof"
         ]
     },
     "POST /front-office/cashier/settings": {

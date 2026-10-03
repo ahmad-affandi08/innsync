@@ -1,4 +1,19 @@
 {
+    "finance/pages/accounts": [
+        "category",
+        "code",
+        "department",
+        "name"
+    ],
+    "finance/pages/payable": [
+        "amount_minor",
+        "credit_id",
+        "method"
+    ],
+    "finance/pages/payment": [
+        "proof",
+        "reason"
+    ],
     "front-office/pages/cashier": [
         "amount_minor",
         "counted_cash_minor",
