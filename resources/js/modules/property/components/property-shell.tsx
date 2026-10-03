@@ -8,6 +8,7 @@ const LINKS = [
     { href: '/property/rates', label: 'property.action.rates' },
     { href: '/property/tax', label: 'property.action.tax' },
     { href: '/property/policies', label: 'policy.nav' },
+    { href: '/sync/exceptions', label: 'sync.nav' },
 ] as const;
 
 type Props = { title: string; description: string; children: ReactNode; actions?: ReactNode; };

@@ -15,6 +15,7 @@ return [
     'conflict_night_audit' => 'Night audit cannot run yet, or some checks still need a decision. Review the checks and try again.',
     'conflict_cashier' => 'The cashier shift does not allow that: open your shift first, close the one that is open, or refresh and review it.',
     'conflict_booking' => 'No room of this type can be sold for those nights, or the booking needs a decision. Review the dates and the room type.',
+    'conflict_business_date' => 'The property has no business date yet. Set it under Property settings when the hotel goes live.',
     'conflict_state' => 'This record changed or its state does not allow that. Refresh and review it.',
     'conflict_privacy_state' => 'This action conflicts with the current state of the privacy record. Refresh and review it.',
     'conflict_approval_state' => 'This approval request already changed. Refresh and review it.',

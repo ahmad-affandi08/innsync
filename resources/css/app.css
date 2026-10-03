@@ -161,3 +161,22 @@
         text-underline-offset: 3px;
     }
 }
+
+/* A receipt is printed on the 80 mm thermal printer of the till (NFR-13): the OS driver of any ESC/POS printer takes this page size, and the rest of the page is hidden when printing. */
+@page receipt {
+    size: 80mm auto;
+    margin: 3mm;
+}
+
+@media print {
+    .receipt-page {
+        page: receipt;
+        font-size: 11px;
+        line-height: 1.35;
+        color: #000;
+    }
+
+    .receipt-page * {
+        box-shadow: none !important;
+    }
+}

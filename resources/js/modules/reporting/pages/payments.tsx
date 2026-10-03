@@ -20,6 +20,7 @@ export default function PaymentsPage({ context, report: r }: { context: { curren
             <PeriodPicker from={r.meta.period.from} path="/reports/payments" preset={r.meta.period.preset} to={r.meta.period.to} />
             <div className="flex flex-wrap gap-2 print:hidden">
                 <Button asChild size="sm" variant="outline"><a href={`/reports/payments/export?${q}`}>{t('rpt.export.csv')}</a></Button>
+                <Button asChild size="sm" variant="outline"><a href={`/reports/payments/export?${q}&format=pdf`}>{t('rpt.export.pdf')}</a></Button>
                 <Button onClick={() => window.print()} size="sm" type="button" variant="outline">{t('rpt.export.print')}</Button>
             </div>
             <ReportMeta meta={r.meta} />

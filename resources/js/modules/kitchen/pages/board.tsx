@@ -42,6 +42,7 @@ export default function KitchenBoardPage(props: BoardPageProps) {
     const [form, setForm] = useState({ minutes: String(props.settings.late_after_minutes), location: props.settings.stock_location_id ?? '', reason: '' });
     const [badMinutes, setBadMinutes] = useState(false);
     const [saved, setSaved] = useState(false);
+    const [printing, setPrinting] = useState<Ticket[] | null>(null);
     const skew = useRef(new Date(props.board.loaded_at).getTime() - Date.now());
     const [now, setNow] = useState(() => Date.now() + skew.current);
     const station = tab === 'sold-out' ? board.station : (tab as Board['station']);
@@ -87,6 +88,20 @@ export default function KitchenBoardPage(props: BoardPageProps) {
         void done;
         await load(station);
     }
+
+    /** A paper ticket for the station's printer, from what the screen already holds: it works when the network is down and the screen cannot be trusted (FR-KIT-015). */
+    function printTickets(list: Ticket[]) {
+        setPrinting(list);
+        window.setTimeout(() => window.print(), 150);
+    }
+
+    useEffect(() => {
+        const done = () => setPrinting(null);
+
+        window.addEventListener('afterprint', done);
+
+        return () => window.removeEventListener('afterprint', done);
+    }, []);
 
     async function mark(item: SoldOutItem, available: boolean) {
         const done = await action.run<{ items: SoldOutItem[] }>(`/kitchen/items/${item.id}/availability`, { body: { available } });
@@ -135,7 +150,10 @@ export default function KitchenBoardPage(props: BoardPageProps) {
                         </li>
                     ))}
                 </ul>
-                {next !== null ? <div><Button disabled={action.busy} onClick={() => void move(tk, next.action)} size="sm" type="button">{t(next.label)}</Button></div> : null}
+                <div className="flex flex-wrap gap-2">
+                    {next !== null ? <Button disabled={action.busy} onClick={() => void move(tk, next.action)} size="sm" type="button">{t(next.label)}</Button> : null}
+                    <Button onClick={() => printTickets([tk])} size="sm" type="button" variant="outline">{t('kitchen.print.one')}</Button>
+                </div>
             </li>
         );
     };
@@ -143,7 +161,7 @@ export default function KitchenBoardPage(props: BoardPageProps) {
     const boardPanel = (
         <div className="flex flex-col gap-4">
             {failure}
-            {board.tickets.length === 0 ? <EmptyState illustration="coffee" title={t('kitchen.empty.board')} /> : null}
+            {board.tickets.length === 0 ? <EmptyState illustration="coffee" title={t('kitchen.empty.board')} /> : <div><Button onClick={() => printTickets(board.tickets)} size="sm" type="button" variant="outline">{t('kitchen.print.all', { count: board.tickets.length })}</Button></div>}
             <div className="grid gap-4 lg:grid-cols-3" data-testid="kitchen-board">
                 {COLUMNS.map((c) => {
                     const list = board.tickets.filter((tk) => tk.status === c);
@@ -179,12 +197,15 @@ export default function KitchenBoardPage(props: BoardPageProps) {
 
     return (
         <KitchenShell
+            printClass={printing !== null ? 'receipt-page' : undefined}
+            printHead={printing === null}
             actions={board.may.settings ? <Button onClick={() => { setSaved(false); setDialog(true); }} type="button" variant="outline">{t('kitchen.settings.open')}</Button> : undefined}
             description={t('kitchen.description')}
             title={t('kitchen.title')}
         >
             {saved ? <Alert title={t('kitchen.settings.saved')} tone="success" /> : null}
             {offline ? <Alert title={t('kitchen.live.offline', { time: stamp })} tone="warning" /> : <p className="text-xs text-muted-foreground" data-testid="kitchen-updated">{t('kitchen.live.updated', { time: stamp })}</p>}
+            <div className={printing !== null ? 'print:hidden' : undefined}>
             <Tabs onValueChange={pickStation} value={tab}>
                 <TabsList aria-label={t('kitchen.title')}>
                     {board.stations.map((s) => <TabsTrigger key={s.key} value={s.key}>{t(`kitchen.station.${s.key}` as MessageKey)} ({s.open})</TabsTrigger>)}
@@ -197,6 +218,30 @@ export default function KitchenBoardPage(props: BoardPageProps) {
                     <DataGrid caption={t('kitchen.soldOut.title')} columns={itemColumns} empty={<EmptyState illustration="bell" title={t('kitchen.soldOut.empty')} />} getRowId={(i) => i.id} id="kitchen.soldout" rows={items} testId="kitchen-soldout" />
                 </TabsContent>
             </Tabs>
+            </div>
+
+            {printing !== null ? (
+                <div className="hidden print:block" data-testid="ticket-print">
+                    {printing.map((tk) => (
+                        <article className="break-after-page pb-4 text-black" key={tk.id}>
+                            <h2 className="text-center text-base font-bold uppercase">{t(`kitchen.station.${tk.station}` as MessageKey)}</h2>
+                            <p className="text-center text-lg font-bold">{place(tk)}</p>
+                            <p className="text-center text-xs">{t('kitchen.ticket.meta', { bill: tk.bill_number, batch: tk.batch_number, outlet: tk.outlet_code })}{tk.source === 'qr' ? ` · ${t('kitchen.ticket.sourceQr')}` : ''}</p>
+                            <p className="text-center text-xs">{format.instant(tk.received_at)}</p>
+                            <hr className="my-2 border-black" />
+                            <ul className="flex flex-col gap-1.5">
+                                {tk.lines.filter((l) => !l.cancelled).map((l) => (
+                                    <li key={l.id}>
+                                        <span className="font-bold">{l.quantity} × {l.name}{l.variant !== null ? ` (${l.variant})` : ''}</span>
+                                        {l.modifiers.length > 0 ? <span className="block text-xs">{l.modifiers.join(', ')}</span> : null}
+                                        {l.note !== null ? <span className="block text-xs">“{l.note}”</span> : null}
+                                    </li>
+                                ))}
+                            </ul>
+                        </article>
+                    ))}
+                </div>
+            ) : null}
 
             <Dialog
                 footer={<>

@@ -62,7 +62,7 @@ export default function ExportsPage({ overview }: { overview: Overview }) {
             cell: (j) => <><StatusBadge label={t(`rpt.exports.status.${j.status}` as 'rpt.exports.status.queued')} tone={TONE[j.status]} />{j.error !== null ? <span className="block text-xs text-danger">{j.error}</span> : null}</>,
         },
         { id: 'lines', label: t('rpt.exports.lines'), align: 'right', value: (j) => j.rows, cell: (j) => j.rows ?? '—' },
-        { id: 'download', label: t('rpt.exports.download'), cell: (j) => (j.status === 'done' ? <Button asChild size="sm" variant="outline"><a href={`/reports/exports/${j.id}/download`}>{t('rpt.exports.download')}</a></Button> : null) },
+        { id: 'download', label: t('rpt.exports.download'), cell: (j) => (j.status === 'done' ? <span className="flex gap-2"><Button asChild size="sm" variant="outline"><a href={`/reports/exports/${j.id}/download`}>{t('rpt.exports.download')}</a></Button><Button asChild size="sm" variant="outline"><a href={`/reports/exports/${j.id}/download?format=pdf`}>{t('rpt.export.pdf')}</a></Button></span> : null) },
     ];
 
     return (

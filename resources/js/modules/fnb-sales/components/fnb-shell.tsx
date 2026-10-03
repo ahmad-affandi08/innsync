@@ -19,12 +19,12 @@ const LINKS = [
     { href: '/inventory/requests?department=fnb', label: 'fnb.nav.purchasing' },
 ] as const;
 
-type Props = { title: string; description: string; children: ReactNode; actions?: ReactNode; wide?: boolean };
+type Props = { title: string; description: string; children: ReactNode; actions?: ReactNode; wide?: boolean; printClass?: string };
 
 /** Common frame of the F&B pages. */
-export function FnbShell({ actions, children, description, title, wide }: Props) {
+export function FnbShell({ actions, children, description, printClass, title, wide }: Props) {
     return (
-        <AppFrame actions={actions} description={description} links={LINKS} title={title} wide={wide}>
+        <AppFrame actions={actions} description={description} links={LINKS} printClass={printClass} title={title} wide={wide}>
             {children}
         </AppFrame>
     );

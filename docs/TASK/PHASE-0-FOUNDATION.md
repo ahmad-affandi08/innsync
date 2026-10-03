@@ -307,6 +307,8 @@ These tasks exist before business modules can safely scale.
 
 ## NFR coverage
 
+Status `REVIEW` for all thirty: the evidence for each requirement, what was measured on 2026-10-03 and what is not shown (and who owns it) is in `docs/OPERATIONS/NFR-EVIDENCE.md`. The requirements stay in `REVIEW`, not `DONE`, because several rest on the hotel's own environment (availability, the recovery point, devices, browsers other than Chromium, a screen reader) and one first-visit load time is above its limit on the slowest 4G profile.
+
 | NFR | Category | Requirement |
 | --- | --- | --- |
 | NFR-01 | Kinerja | Halaman POS dan pelacak Housekeeping merespons dalam waktu kurang dari 2 detik; dashboard selesai dimuat kurang dari 3 detik pada koneksi 4G. |

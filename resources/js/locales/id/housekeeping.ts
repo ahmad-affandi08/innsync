@@ -278,4 +278,8 @@ export const housekeeping = {
     'hk.par.parAreaHint': "Total di area itu.",
     'hk.par.useHint': "Per kali kerja kamar.",
     'hk.par.save': "Simpan par level",
+    "hk.mine.queued": "Tersimpan di ponsel ini. Dikirim saat jaringan kembali; lanjutkan bekerja.",
+    "hk.mine.notSaved": "Tidak dapat disimpan di ponsel. Coba lagi.",
+    "hk.mine.waiting": "Menunggu dikirim",
+    "hk.mine.waitingHint": "Selesai di ponsel ini; resepsionis melihatnya saat jaringan kembali.",
 } as const;

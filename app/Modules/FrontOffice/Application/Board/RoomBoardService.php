@@ -58,12 +58,13 @@ final readonly class RoomBoardService
         }
 
         $openRequests = $this->requests->openCountsByRoom($property);
+        $blockedRooms = $this->blocks->blockedRooms($property, $today->toString(), $today->toString());
         $rows = [];
         $counts = ['occupied' => 0, 'vacant_ready' => 0, 'vacant_not_ready' => 0, 'blocked' => 0];
 
         foreach ($this->rooms->activeRooms($property) as $room) {
             $stay = $occupied[$room->id] ?? null;
-            $blocked = $this->blocks->overlapping($property, $room->id, $today->toString(), $today->toString()) !== [];
+            $blocked = isset($blockedRooms[$room->id]);
             $hk = $statuses[$room->id] ?? 'ready';
             $counts[match (true) {
                 $stay !== null => 'occupied',

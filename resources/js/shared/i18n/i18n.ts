@@ -35,19 +35,26 @@ declare module '@inertiajs/core' {
 const loaded = new Map<Locale, Dictionary>();
 
 /**
- * Loads the requested dictionary plus the English source (used for fallback)
- * before a page renders, so no component ever flashes raw keys.
+ * Loads the requested dictionary before a page renders, so no component ever flashes raw keys. The English source is only a fallback for a key a
+ * dictionary lacks, and the dictionary tests keep every locale on exactly the same keys, so it is fetched after the first paint instead of in front of it:
+ * a person reading Indonesian does not wait for a second dictionary (NFR-01).
  */
 export async function ensureMessages(locale: Locale): Promise<void> {
-    const wanted = Array.from(new Set<Locale>([locale, FALLBACK_LOCALE]));
+    if (!loaded.has(locale)) {
+        loaded.set(locale, await loaders[locale]());
+    }
 
-    await Promise.all(
-        wanted
-            .filter((candidate) => !loaded.has(candidate))
-            .map(async (candidate) => {
-                loaded.set(candidate, await loaders[candidate]());
-            }),
-    );
+    if (locale !== FALLBACK_LOCALE && !loaded.has(FALLBACK_LOCALE)) {
+        const fetchFallback = () => {
+            void loaders[FALLBACK_LOCALE]().then((dictionary) => loaded.set(FALLBACK_LOCALE, dictionary));
+        };
+
+        if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+            window.requestIdleCallback(fetchFallback, { timeout: 5000 });
+        } else {
+            setTimeout(fetchFallback, 2000);
+        }
+    }
 }
 
 export function localeFromProps(value: unknown): Locale {

@@ -13,6 +13,7 @@ export default function EndedPage({ reason }: { reason: 'code' | 'session' | 'li
             <Head title={t('guest.ended.title')} />
             <main className="mx-auto flex min-h-screen max-w-md flex-col justify-center gap-4 px-4">
                 <div className="flex justify-end"><LanguageSwitcher /></div>
+                <h1 className="sr-only">{t('guest.ended.title')}</h1>
                 <EmptyState illustration="reception" title={reason === 'code' ? t('guest.ended.code') : reason === 'link' ? t('guest.checkin.linkEnded') : t('guest.ended.session')} />
                 <p className="text-center text-sm text-muted-foreground">{reason === 'link' ? t('guest.checkin.linkEndedHint') : t('guest.ended.hint')}</p>
             </main>

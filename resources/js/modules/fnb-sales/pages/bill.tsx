@@ -261,6 +261,7 @@ export default function BillPage({ targets, view }: { targets: RearrangeTargets;
         <FnbShell
             actions={<Button asChild variant="outline"><Link href={`/fnb/pos?outlet=${outlet.id}`}>{t('fnb.bill.back')}</Link></Button>}
             description={t('fnb.bill.where', { outlet: outlet.name, place }) + ' · ' + t('fnb.bill.guests', { count: bill.covers }) + ' · ' + t('fnb.bill.dateNote', { date: format.date(bill.business_date) })}
+            printClass={bill.status === 'settled' || bill.status === 'refunded' ? 'receipt-page' : undefined}
             title={t('fnb.bill.title', { number: bill.number })}
             wide
         >

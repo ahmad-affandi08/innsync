@@ -51,6 +51,8 @@ final class ExportJobHttpTest extends TestCase
         $this->get('/reports')->assertInertia(fn (Assert $p) => $p->where('exports_unseen', 1));
         $this->get('/reports/exports')->assertInertia(fn (Assert $p) => $p->where('overview.jobs.0.status', 'done')->where('overview.jobs.0.ready', true));
         $this->get("/reports/exports/{$job['id']}/download")->assertOk()->assertHeader('Content-Type', 'text/csv; charset=UTF-8')->assertHeader('Content-Disposition', 'attachment; filename="'.DB::table('report_export_jobs')->where('id', $job['id'])->value('filename').'"');
+        $pdf = $this->get("/reports/exports/{$job['id']}/download?format=pdf")->assertOk()->assertHeader('Content-Type', 'application/pdf');
+        self::assertStringStartsWith('%PDF-1.4', (string) $pdf->getContent());
         $this->postJson('/reports/exports/seen')->assertOk();
         $this->get('/reports')->assertInertia(fn (Assert $p) => $p->where('exports_unseen', 0));
 

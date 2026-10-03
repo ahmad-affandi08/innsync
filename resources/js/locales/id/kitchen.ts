@@ -233,4 +233,6 @@ export const kitchen = {
     "kitchen.prod.saveFormula": "Simpan formula",
     "kitchen.prod.badFormula": "Isi produk, hasil satu batch, dan setiap bahan beserta jumlahnya.",
     "kitchen.ticket.sourceQr": "ponsel tamu",
+    "kitchen.print.one": "Cetak tiket",
+    "kitchen.print.all": "Cetak tiket yang terbuka ({count})",
 } as const

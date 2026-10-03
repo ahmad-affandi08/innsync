@@ -467,4 +467,6 @@ export const reporting = {
     "rpt.sch.day.5": "Jumat",
     "rpt.sch.day.6": "Sabtu",
     "rpt.sch.day.7": "Minggu",
+    "rpt.export.pdf": "PDF",
+    "rpt.builder.pdf": "Unduh PDF",
 } as const;

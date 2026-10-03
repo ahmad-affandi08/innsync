@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\Finance\Application;
 
+use App\Modules\Property\Application\Rates\PropertyCurrencyReader;
 use App\Modules\Property\Application\Settings\BusinessDateProvider;
 use App\Shared\Application\Audit\AuditEntry;
 use App\Shared\Application\Audit\AuditTrail;
@@ -32,6 +33,7 @@ final readonly class PayableService
         private PayableStore $store,
         private FinanceAccess $access,
         private BusinessDateProvider $businessDate,
+        private PropertyCurrencyReader $currencies,
         private StaffDirectory $staff,
         private TransactionRunner $transactions,
         private AuditTrail $audit,
@@ -55,7 +57,8 @@ final readonly class PayableService
         $owed = 0;
         $overdue = 0;
         $dueSoon = 0;
-        $currency = '';
+        // A property with no documents yet still has a currency: the page formats zero in it.
+        $currency = $this->currencies->currencyOf($property);
 
         foreach ($this->store->payables($property, $supplierId === '' ? null : $supplierId) as $p) {
             $shape = $this->shape($p, $today);
@@ -187,7 +190,8 @@ final readonly class PayableService
 
         $per = [];
         $totals = array_fill_keys(self::BUCKETS, 0);
-        $currency = '';
+        // A property with no documents yet still has a currency: the page formats zero in it.
+        $currency = $this->currencies->currencyOf($property);
 
         foreach ($this->store->outstandingAsOf($property, $date) as $p) {
             $left = (int) $p['amount_minor'] - (int) $p['paid_minor'] - (int) $p['credit_minor'];

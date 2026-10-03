@@ -15,6 +15,9 @@ interface GuestRepository
 
     public function find(PropertyId $property, string $id): ?GuestProfile;
 
+    /** Several registrations in one query (a list of stays). @param list<string> $ids @return array<string, GuestProfile> by guest id */
+    public function findMany(PropertyId $property, array $ids): array;
+
     /** Replaces the registration details of a guest (a correction, FR-FO-039). The identity details stay protected at rest. */
     public function replace(PropertyId $property, GuestProfile $guest, DateTimeImmutable $at): void;
 

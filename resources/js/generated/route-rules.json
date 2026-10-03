@@ -734,6 +734,12 @@
             "to"
         ]
     },
+    "GET /sync/exceptions": {
+        "required": [],
+        "declared": [
+            "status"
+        ]
+    },
     "POST /approvals/policies": {
         "required": [
             "band_min_amount_minor",
@@ -5758,6 +5764,16 @@
             "client_status.pending",
             "device_id",
             "items"
+        ]
+    },
+    "POST /sync/exceptions/{id}/resolve": {
+        "required": [
+            "lock_version",
+            "note"
+        ],
+        "declared": [
+            "lock_version",
+            "note"
         ]
     },
     "PUT /account/password": {

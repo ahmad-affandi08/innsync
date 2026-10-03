@@ -126,6 +126,7 @@ export default function BuilderPage({ catalogue }: { catalogue: Catalogue }) {
                     <FormField label={t('rpt.builder.direction')}><Select onChange={(e) => setSort({ ...sort, direction: e.target.value })} value={sort.direction}><option value="asc">{t('rpt.builder.asc')}</option><option value="desc">{t('rpt.builder.desc')}</option></Select></FormField>
                     <Button disabled={columns.length === 0} loading={action.busy} type="submit">{t('rpt.builder.run')}</Button>
                     <Button asChild variant="outline"><a aria-disabled={columns.length === 0} href={`/reports/builder/export?${query()}`}>{t('rpt.builder.csv')}</a></Button>
+                    <Button asChild variant="outline"><a aria-disabled={columns.length === 0} href={`/reports/builder/export?${query()}&format=pdf`}>{t('rpt.builder.pdf')}</a></Button>
                 </div>
             </form>
 

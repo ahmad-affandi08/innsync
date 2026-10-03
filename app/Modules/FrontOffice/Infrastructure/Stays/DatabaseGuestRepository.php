@@ -43,10 +43,24 @@ final readonly class DatabaseGuestRepository implements GuestRepository
     {
         $row = DB::table('guests')->where('property_id', $property->toString())->where('id', $id)->first();
 
-        if ($row === null) {
-            return null;
+        return $row === null ? null : $this->hydrate($row);
+    }
+
+    public function findMany(PropertyId $property, array $ids): array
+    {
+        $found = [];
+
+        foreach (array_chunk(array_values(array_unique($ids)), 500) as $chunk) {
+            foreach (DB::table('guests')->where('property_id', $property->toString())->whereIn('id', $chunk)->get() as $row) {
+                $found[(string) $row->id] = $this->hydrate($row);
+            }
         }
 
+        return $found;
+    }
+
+    private function hydrate(object $row): GuestProfile
+    {
         return new GuestProfile(
             $row->id,
             $row->full_name,

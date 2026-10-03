@@ -54,6 +54,7 @@ export default function RegistrationsPage({ foreign, may_export, report: r }: { 
                 <div className="flex flex-wrap items-end gap-3 print:hidden">
                     <FormField hint={t('rpt.export.piiNote')} label={t('rpt.export.purpose')}><Input maxLength={300} onChange={(e) => setPurpose(e.target.value)} value={purpose} /></FormField>
                     <Button asChild={purpose.trim() !== ''} disabled={purpose.trim() === ''} size="sm" variant="outline">{purpose.trim() === '' ? <span>{t('rpt.export.csv')}</span> : <a href={`${path}/export?${query}`}>{t('rpt.export.csv')}</a>}</Button>
+                    <Button asChild={purpose.trim() !== ''} disabled={purpose.trim() === ''} size="sm" variant="outline">{purpose.trim() === '' ? <span>{t('rpt.export.pdf')}</span> : <a href={`${path}/export?${query}&format=pdf`}>{t('rpt.export.pdf')}</a>}</Button>
                 </div>
             )}
             <ReportMeta meta={r.meta} />

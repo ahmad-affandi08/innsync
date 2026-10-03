@@ -233,4 +233,6 @@ export const kitchen = {
     "kitchen.prod.saveFormula": "Save the formula",
     "kitchen.prod.badFormula": "Give the product, what one batch makes and every ingredient with a quantity.",
     "kitchen.ticket.sourceQr": "guest's phone",
+    "kitchen.print.one": "Print ticket",
+    "kitchen.print.all": "Print the open tickets ({count})",
 } as const

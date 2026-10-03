@@ -278,4 +278,8 @@ export const housekeeping = {
     'hk.par.parAreaHint': "In total in the area.",
     'hk.par.useHint': "Per room service.",
     'hk.par.save': "Save the par level",
+    "hk.mine.queued": "Saved on this phone. It is sent when the network is back; keep working.",
+    "hk.mine.notSaved": "This could not be saved on the phone. Try again.",
+    "hk.mine.waiting": "Waiting to send",
+    "hk.mine.waitingHint": "Finished on this phone; the front desk sees it when the network is back.",
 } as const;

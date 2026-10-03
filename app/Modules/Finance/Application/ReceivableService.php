@@ -71,7 +71,8 @@ final readonly class ReceivableService
         $owed = 0;
         $overdue = 0;
         $dueSoon = 0;
-        $currency = '';
+        // A property with no documents yet still has a currency: the page formats zero in it.
+        $currency = $this->currencies->currencyOf($property);
 
         foreach ($this->store->receivables($property, $customerId === '' ? null : $customerId) as $r) {
             $shape = $this->shape($r, $today);
@@ -416,7 +417,8 @@ final readonly class ReceivableService
         $date = $asOf === null || $asOf === '' ? $this->businessDate->current($property)->toString() : $this->date($asOf, 'as_of');
         $per = [];
         $totals = array_fill_keys(self::BUCKETS, 0);
-        $currency = '';
+        // A property with no documents yet still has a currency: the page formats zero in it.
+        $currency = $this->currencies->currencyOf($property);
 
         foreach ($this->store->outstandingAsOf($property, $date) as $r) {
             $left = (int) $r['amount_minor'] - (int) $r['received_minor'];

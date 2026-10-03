@@ -16,12 +16,12 @@ const LINKS = [
     { href: '/inventory/requests?department=kitchen', label: 'kitchen.nav.purchasing' },
 ] as const;
 
-type Props = { title: string; description: string; children: ReactNode; actions?: ReactNode };
+type Props = { title: string; description: string; children: ReactNode; actions?: ReactNode; printClass?: string; printHead?: boolean };
 
 /** Common frame of the kitchen pages. */
-export function KitchenShell({ actions, children, description, title }: Props) {
+export function KitchenShell({ actions, children, description, printClass, printHead, title }: Props) {
     return (
-        <AppFrame actions={actions} description={description} links={LINKS} title={title} wide>
+        <AppFrame actions={actions} description={description} links={LINKS} printClass={printClass} printHead={printHead} title={title} wide>
             {children}
         </AppFrame>
     );

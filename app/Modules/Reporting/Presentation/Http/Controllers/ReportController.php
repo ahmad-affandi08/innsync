@@ -6,6 +6,7 @@ namespace App\Modules\Reporting\Presentation\Http\Controllers;
 
 use App\Modules\Reporting\Application\ExportJobService;
 use App\Modules\Reporting\Application\ReportService;
+use App\Modules\Reporting\Presentation\Http\ReportFile;
 use App\Shared\Application\Tenancy\PropertyContext;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response as HttpResponse;
@@ -60,7 +61,7 @@ final readonly class ReportController
     {
         $data = $request->validate(['date' => ['nullable', 'string', 'size:10'], 'purpose' => ['required', 'string', 'max:300']]);
 
-        return $this->download($this->reports->exportMovements($this->property->current(), $this->actor($request), $data['date'] ?? null, $data['purpose']));
+        return ReportFile::respond($request, $this->reports->exportMovements($this->property->current(), $this->actor($request), $data['date'] ?? null, $data['purpose']));
     }
 
     public function exportPerformance(Request $request): HttpResponse
@@ -68,7 +69,7 @@ final readonly class ReportController
         $data = $request->validate(['by' => ['nullable', 'string', 'max:5'], 'year' => ['nullable', 'integer', 'min:2000', 'max:2100']]);
         [$preset, $from, $to] = $this->range($request);
 
-        return $this->download($this->reports->exportPerformance($this->property->current(), $this->actor($request), $data['by'] ?? 'day', $preset, $from, $to, isset($data['year']) ? (int) $data['year'] : null));
+        return ReportFile::respond($request, $this->reports->exportPerformance($this->property->current(), $this->actor($request), $data['by'] ?? 'day', $preset, $from, $to, isset($data['year']) ? (int) $data['year'] : null));
     }
 
     public function housekeeping(Request $request): Response
@@ -82,7 +83,7 @@ final readonly class ReportController
     {
         [$preset, $from, $to] = $this->range($request);
 
-        return $this->download($this->reports->exportHousekeeping($this->property->current(), $this->actor($request), $preset, $from, $to));
+        return ReportFile::respond($request, $this->reports->exportHousekeeping($this->property->current(), $this->actor($request), $preset, $from, $to));
     }
 
     public function laundry(Request $request): Response
@@ -96,7 +97,7 @@ final readonly class ReportController
     {
         [$preset, $from, $to] = $this->range($request);
 
-        return $this->download($this->reports->exportLaundry($this->property->current(), $this->actor($request), $preset, $from, $to));
+        return ReportFile::respond($request, $this->reports->exportLaundry($this->property->current(), $this->actor($request), $preset, $from, $to));
     }
 
     public function comparison(Request $request): Response
@@ -110,7 +111,7 @@ final readonly class ReportController
     {
         $data = $request->validate(['kind' => ['nullable', 'string', 'max:5']]);
 
-        return $this->download($this->reports->exportComparison($this->property->current(), $this->actor($request), $data['kind'] ?? 'month'));
+        return ReportFile::respond($request, $this->reports->exportComparison($this->property->current(), $this->actor($request), $data['kind'] ?? 'month'));
     }
 
     public function payments(Request $request): Response
@@ -149,14 +150,14 @@ final readonly class ReportController
         [$preset, $from, $to] = $this->range($request);
         $file = $this->reports->exportFlash($this->property->current(), $this->actor($request), $preset, $from, $to);
 
-        return $this->download($file);
+        return ReportFile::respond($request, $file);
     }
 
     public function exportPayments(Request $request): HttpResponse
     {
         [$preset, $from, $to] = $this->range($request);
 
-        return $this->download($this->reports->exportPayments($this->property->current(), $this->actor($request), $preset, $from, $to));
+        return ReportFile::respond($request, $this->reports->exportPayments($this->property->current(), $this->actor($request), $preset, $from, $to));
     }
 
     public function exportRegistrations(Request $request, bool $foreign = false): HttpResponse
@@ -164,7 +165,7 @@ final readonly class ReportController
         [$preset, $from, $to] = $this->range($request);
         $data = $request->validate(['nationality' => ['nullable', 'string', 'max:2'], 'purpose' => ['required', 'string', 'max:300']]);
 
-        return $this->download($this->reports->exportRegistrations($this->property->current(), $this->actor($request), $preset, $from, $to, $data['nationality'] ?? null, $foreign, $data['purpose']));
+        return ReportFile::respond($request, $this->reports->exportRegistrations($this->property->current(), $this->actor($request), $preset, $from, $to, $data['nationality'] ?? null, $foreign, $data['purpose']));
     }
 
     public function exportForeignGuests(Request $request): HttpResponse
@@ -183,17 +184,6 @@ final readonly class ReportController
     private function mayExport(Request $request): bool
     {
         return $this->reports->mayExportGuests($this->property->current(), $this->actor($request));
-    }
-
-    /** @param array{filename: string, contents: string} $file */
-    private function download(array $file): HttpResponse
-    {
-        return response($file['contents'], 200, [
-            'Content-Type' => 'text/csv; charset=UTF-8',
-            'Content-Disposition' => 'attachment; filename="'.$file['filename'].'"',
-            'Cache-Control' => 'no-store, private',
-            'X-Content-Type-Options' => 'nosniff',
-        ]);
     }
 
     private function actor(Request $request): string

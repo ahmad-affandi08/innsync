@@ -47,6 +47,17 @@ final readonly class DatabaseRoomBlockRepository implements RoomBlockRepository
             ->map(static fn (stdClass $r): RoomBlock => self::hydrate($r))->all();
     }
 
+    public function blockedRooms(PropertyId $property, string $from, string $to): array
+    {
+        $blocked = [];
+
+        foreach (DB::table('room_blocks')->where('property_id', $property->toString())->whereNull('released_at')->where('start_date', '<=', $to)->where('end_date', '>=', $from)->distinct()->pluck('room_id') as $roomId) {
+            $blocked[(string) $roomId] = true;
+        }
+
+        return $blocked;
+    }
+
     private static function hydrate(stdClass $r): RoomBlock
     {
         return new RoomBlock($r->id, $r->room_id, $r->kind, substr((string) $r->start_date, 0, 10), substr((string) $r->end_date, 0, 10), $r->reason, $r->released_at === null);

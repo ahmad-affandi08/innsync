@@ -30,6 +30,7 @@ export default function ComparisonPage({ context, report: r }: { context: { curr
             <nav aria-label={t('rpt.cmp.title')} className="flex flex-wrap gap-2 print:hidden">
                 {(['day', 'month', 'year'] as const).map((k) => <Button aria-pressed={r.kind === k} asChild key={k} size="sm" variant={r.kind === k ? 'default' : 'outline'}><Link href={`/reports/comparison?kind=${k}`}>{t(`rpt.cmp.kind.${k}` as 'rpt.cmp.kind.day')}</Link></Button>)}
                 <Button asChild size="sm" variant="outline"><a href={`/reports/comparison/export?kind=${r.kind}`}>{t('rpt.export.csv')}</a></Button>
+                <Button asChild size="sm" variant="outline"><a href={`/reports/comparison/export?kind=${r.kind}&format=pdf`}>{t('rpt.export.pdf')}</a></Button>
                 <Button onClick={() => window.print()} size="sm" type="button" variant="outline">{t('rpt.export.print')}</Button>
             </nav>
             <ReportMeta meta={r.meta} />

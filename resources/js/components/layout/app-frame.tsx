@@ -1,6 +1,7 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import {
     BedDouble,
+    BookOpen,
     CalendarDays,
     ChartNoAxesCombined,
     ChefHat,
@@ -61,7 +62,7 @@ const MODULES: ModuleEntry[] = [
     { key: 'dashboard', href: '/dashboard', icon: LayoutDashboard, label: 'rpt.nav.dashboard', prefixes: ['/dashboard'], group: 'insight' },
     { key: 'reports', href: '/reports', icon: ChartNoAxesCombined, label: 'rpt.nav.reports', prefixes: ['/reports'], group: 'insight' },
     { key: 'approvals', href: '/approvals', icon: ShieldCheck, label: 'identity.approvals.title', prefixes: ['/approvals'], group: 'control' },
-    { key: 'property', href: '/property/settings', icon: Settings2, label: 'property.nav.label', prefixes: ['/property'], group: 'control' },
+    { key: 'property', href: '/property/settings', icon: Settings2, label: 'property.nav.label', prefixes: ['/property', '/sync'], group: 'control' },
 ];
 
 const GROUPS = ['start', 'operations', 'insight', 'control'] as const;
@@ -89,6 +90,10 @@ type FrameProps = {
     children: ReactNode;
     /** Pages that are mostly tables take the whole width; forms stay readable. */
     wide?: boolean;
+    /** A class for the page when it is printed, for a page that is a receipt (`receipt-page` prints on 80 mm paper). */
+    printClass?: string;
+    /** False for a page that prints something other than itself (the tickets of the kitchen): the title and the description stay out of the printout. */
+    printHead?: boolean;
 };
 
 function initials(name: string): string {
@@ -98,12 +103,13 @@ function initials(name: string): string {
 }
 
 /** Persistent sidebar, a header with the property, the business date and the person, and the page itself (docs/DESIGN/03-LAYOUT-NAVIGATION.md). */
-export function AppFrame({ actions, children, description, links = [], title, wide = true }: FrameProps) {
+export function AppFrame({ actions, children, description, links = [], printClass, printHead = true, title, wide = true }: FrameProps) {
     const { t } = useTranslation();
     const format = useFormatters();
     const page = usePage();
     const path = new URL(page.url, 'http://x').pathname;
     const shell = (page.props as { shell?: Shell }).shell ?? null;
+    const version = (page.props as { app?: { version?: string } }).app?.version ?? '';
     const current = activeModule(path);
     const [open, setOpen] = useState(false);
     const [layout, setLayout] = useLayout();
@@ -206,6 +212,9 @@ export function AppFrame({ actions, children, description, links = [], title, wi
                 <DropdownMenuLabel className="truncate">{shell.userName}</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
+                    <Link href="/help"><BookOpen aria-hidden="true" />{t('shell.help')}</Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
                     <Link href="/account/sessions"><MonitorSmartphone aria-hidden="true" />{t('shell.sessions')}</Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
@@ -244,7 +253,7 @@ export function AppFrame({ actions, children, description, links = [], title, wi
     );
 
     const pageHead = (
-        <div className="flex flex-wrap items-start justify-between gap-4">
+        <div className={cn('flex flex-wrap items-start justify-between gap-4', !printHead && 'print:hidden')}>
             <div className="min-w-0">
                 <h1 className="text-2xl font-semibold tracking-tight text-foreground">{title}</h1>
                 {description ? <p className="mt-1.5 max-w-3xl text-sm leading-6 text-muted-foreground">{description}</p> : null}
@@ -254,7 +263,7 @@ export function AppFrame({ actions, children, description, links = [], title, wi
     );
 
     const body = (
-        <main className={cn('mx-auto flex w-full flex-1 flex-col gap-8 px-4 py-8 lg:px-8', wide ? 'max-w-[90rem]' : 'max-w-5xl')} id="content" tabIndex={-1}>
+        <main className={cn('mx-auto flex w-full flex-1 flex-col gap-8 px-4 py-8 lg:px-8', wide ? 'max-w-[90rem]' : 'max-w-5xl', printClass)} id="content" tabIndex={-1}>
             {pageHead}
             <div className="flex flex-col gap-8">{children}</div>
         </main>
@@ -418,11 +427,14 @@ export function AppFrame({ actions, children, description, links = [], title, wi
                         </header>
                     )}
                     {layout === 'topbar' ? (
-                        <main className={cn('mx-auto flex w-full flex-1 flex-col gap-8 px-4 py-8 lg:px-8', wide ? 'max-w-[100rem]' : 'max-w-5xl')} id="content" tabIndex={-1}>
+                        <main className={cn('mx-auto flex w-full flex-1 flex-col gap-8 px-4 py-8 lg:px-8', wide ? 'max-w-[100rem]' : 'max-w-5xl', printClass)} id="content" tabIndex={-1}>
                             {pageHead}
                             <div className="flex flex-col gap-8">{children}</div>
                         </main>
                     ) : body}
+                    <footer className="px-4 pb-6 text-xs text-muted-foreground lg:px-8 print:hidden" data-testid="app-version">
+                        {version !== '' ? t('shell.version', { version }) : null}{version !== '' ? ' · ' : null}<Link className="underline underline-offset-2" href="/help">{t('shell.help')}</Link>
+                    </footer>
                 </div>
             </div>
         </>

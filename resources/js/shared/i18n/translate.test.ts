@@ -248,6 +248,11 @@ describe('dictionaries', () => {
             'guest.checkin.deposit',
             'guest.ck.colDeposit',
             'guest.ck.roomReady',
+            'guide.housekeeping.title',
+            'guide.laundry.title',
+            'guide.maintenance.title',
+            'shell.version',
+            'rpt.export.pdf',
         ])
         const identical = (Object.keys(en) as (keyof typeof en)[]).filter(
             (key) => en[key] === id[key] && !allowedSame.has(key),

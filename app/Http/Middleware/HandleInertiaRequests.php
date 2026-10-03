@@ -34,6 +34,7 @@ final class HandleInertiaRequests extends Middleware
             'shell' => fn (): ?array => $this->shell($request),
             'app' => [
                 'name' => (string) config('app.name'),
+                'version' => (string) config('app.version'),
             ],
         ];
     }

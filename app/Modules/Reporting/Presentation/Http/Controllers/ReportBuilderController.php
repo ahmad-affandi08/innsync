@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Modules\Reporting\Presentation\Http\Controllers;
 
 use App\Modules\Reporting\Application\ReportBuilderService;
+use App\Modules\Reporting\Presentation\Http\ReportFile;
 use App\Shared\Application\Tenancy\PropertyContext;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -34,10 +35,7 @@ final readonly class ReportBuilderController
         $d = $this->input($request);
         $file = $this->builder->export($this->property->current(), $this->actor($request), $d['dataset'], $d['columns'], $d['filters'], $d['from'], $d['to'], $d['sort'], $d['direction']);
 
-        return response($file['contents'], 200, [
-            'Content-Type' => 'text/csv; charset=UTF-8', 'Content-Disposition' => 'attachment; filename="'.preg_replace('/[^A-Za-z0-9._-]/', '_', $file['filename']).'"',
-            'Cache-Control' => 'no-store, private', 'X-Content-Type-Options' => 'nosniff',
-        ]);
+        return ReportFile::respond($request, $file);
     }
 
     /** @return array{dataset: string, columns: list<string>, filters: array<string, string>, from: string|null, to: string|null, sort: string|null, direction: string} */

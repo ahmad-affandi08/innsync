@@ -125,6 +125,7 @@ use App\Modules\Reporting\Presentation\Http\Controllers\ReportScheduleController
 use App\Modules\Routines\Presentation\Http\Controllers\RoutineController;
 use App\Shared\Infrastructure\Localization\SetLocaleController;
 use App\Shared\Infrastructure\Offline\SyncController;
+use App\Shared\Infrastructure\Offline\SyncExceptionController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -214,11 +215,20 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->get('/
     ]);
 })->name('home');
 
+// The guide of the product by role, inside the product (NFR-15).
+Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->get('/help', fn () => Inertia::render('foundation/pages/guide'))->name('help');
+
 // Offline queue synchronization (TASK-FND-017): signed in, MFA satisfied, property selected. Each item is
 // authorized again on the server and applied idempotently by its client-generated operation ID.
 Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property', 'throttle:sync'])
     ->post('/sync/batch', SyncController::class)
     ->name('sync.batch');
+
+// What the server could not apply of the offline entries, for a manager to reconcile (NFR-04).
+Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix('sync/exceptions')->group(function (): void {
+    Route::get('/', [SyncExceptionController::class, 'index'])->name('sync.exceptions');
+    Route::post('/{id}/resolve', [SyncExceptionController::class, 'resolve'])->where('id', '[0-9a-fA-F]{26}|[0-9a-zA-Z]{26}')->name('sync.exceptions.resolve');
+});
 
 // Field test for the offline queue (TASK-FND-017): staff and IT use it to prove a device can work offline.
 Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])

@@ -9,6 +9,7 @@ return [
     'conflict_night_audit' => 'Night audit belum dapat dijalankan, atau masih ada pemeriksaan yang perlu keputusan. Tinjau pemeriksaan lalu coba lagi.',
     'conflict_cashier' => 'Shift kasir tidak mengizinkan hal itu: buka shift Anda dahulu, tutup shift yang sedang terbuka, atau segarkan dan tinjau.',
     'conflict_booking' => 'Tidak ada kamar tipe ini yang dapat dijual untuk malam tersebut, atau pemesanan memerlukan keputusan. Tinjau tanggal dan tipe kamar.',
+    'conflict_business_date' => 'Properti belum memiliki tanggal bisnis. Tetapkan pada Pengaturan properti saat hotel mulai beroperasi.',
     'conflict_state' => 'Data ini berubah atau statusnya tidak mengizinkan tindakan itu. Muat ulang dan tinjau.',
     'conflict_privacy_state' => 'Tindakan ini bertentangan dengan keadaan terkini catatan privasi. Muat ulang dan tinjau.',
     'conflict_approval_state' => 'Permintaan persetujuan ini sudah berubah. Muat ulang dan tinjau.',

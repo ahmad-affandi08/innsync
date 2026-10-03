@@ -272,35 +272,35 @@
 | TASK-GST-017 | FR-GST-017 | Guest Self-Service | Wajib | REVIEW |
 | TASK-GST-018 | FR-GST-018 | Guest Self-Service | Wajib | REVIEW |
 | TASK-GST-019 | FR-GST-019 | Guest Self-Service | Sebaiknya | REVIEW |
-| TASK-NFR-01 | NFR-01 | Foundation / Cross-cutting | Kinerja | TODO |
-| TASK-NFR-02 | NFR-02 | Foundation / Cross-cutting | Kapasitas | TODO |
-| TASK-NFR-03 | NFR-03 | Foundation / Cross-cutting | Ketersediaan | TODO |
-| TASK-NFR-04 | NFR-04 | Foundation / Cross-cutting | Ketahanan luring | TODO |
-| TASK-NFR-05 | NFR-05 | Foundation / Cross-cutting | Keamanan akses | TODO |
-| TASK-NFR-06 | NFR-06 | Foundation / Cross-cutting | Otorisasi | TODO |
-| TASK-NFR-07 | NFR-07 | Foundation / Cross-cutting | Kerahasiaan data | TODO |
-| TASK-NFR-08 | NFR-08 | Foundation / Cross-cutting | Kepatuhan privasi | TODO |
-| TASK-NFR-09 | NFR-09 | Foundation / Cross-cutting | Pembayaran | TODO |
-| TASK-NFR-10 | NFR-10 | Foundation / Cross-cutting | Jejak audit | TODO |
-| TASK-NFR-11 | NFR-11 | Foundation / Cross-cutting | Cadangan data | TODO |
-| TASK-NFR-12 | NFR-12 | Foundation / Cross-cutting | Kegunaan | TODO |
-| TASK-NFR-13 | NFR-13 | Foundation / Cross-cutting | Kompatibilitas | TODO |
-| TASK-NFR-14 | NFR-14 | Foundation / Cross-cutting | Terpelihara | TODO |
-| TASK-NFR-15 | NFR-15 | Foundation / Cross-cutting | Dokumentasi | TODO |
-| TASK-NFR-16 | NFR-16 | Foundation / Cross-cutting | Skalabilitas | TODO |
-| TASK-NFR-17 | NFR-17 | Foundation / Cross-cutting | Konsistensi transaksi | TODO |
-| TASK-NFR-18 | NFR-18 | Foundation / Cross-cutting | Idempotensi | TODO |
-| TASK-NFR-19 | NFR-19 | Foundation / Cross-cutting | Konkurensi | TODO |
-| TASK-NFR-20 | NFR-20 | Foundation / Cross-cutting | Observability | TODO |
-| TASK-NFR-21 | NFR-21 | Foundation / Cross-cutting | Disaster recovery | TODO |
-| TASK-NFR-22 | NFR-22 | Foundation / Cross-cutting | Keamanan sesi | TODO |
-| TASK-NFR-23 | NFR-23 | Foundation / Cross-cutting | Manajemen rahasia | TODO |
-| TASK-NFR-24 | NFR-24 | Foundation / Cross-cutting | Keamanan ekspor | TODO |
-| TASK-NFR-25 | NFR-25 | Foundation / Cross-cutting | Ketahanan integrasi | TODO |
-| TASK-NFR-26 | NFR-26 | Foundation / Cross-cutting | Waktu & zona | TODO |
-| TASK-NFR-27 | NFR-27 | Foundation / Cross-cutting | Aksesibilitas | TODO |
-| TASK-NFR-28 | NFR-28 | Foundation / Cross-cutting | API & kompatibilitas | TODO |
-| TASK-NFR-29 | NFR-29 | Foundation / Cross-cutting | Retensi audit | TODO |
-| TASK-NFR-30 | NFR-30 | Foundation / Cross-cutting | Pemulihan operasional | TODO |
+| TASK-NFR-01 | NFR-01 | Foundation / Cross-cutting | Kinerja | REVIEW |
+| TASK-NFR-02 | NFR-02 | Foundation / Cross-cutting | Kapasitas | REVIEW |
+| TASK-NFR-03 | NFR-03 | Foundation / Cross-cutting | Ketersediaan | REVIEW |
+| TASK-NFR-04 | NFR-04 | Foundation / Cross-cutting | Ketahanan luring | REVIEW |
+| TASK-NFR-05 | NFR-05 | Foundation / Cross-cutting | Keamanan akses | REVIEW |
+| TASK-NFR-06 | NFR-06 | Foundation / Cross-cutting | Otorisasi | REVIEW |
+| TASK-NFR-07 | NFR-07 | Foundation / Cross-cutting | Kerahasiaan data | REVIEW |
+| TASK-NFR-08 | NFR-08 | Foundation / Cross-cutting | Kepatuhan privasi | REVIEW |
+| TASK-NFR-09 | NFR-09 | Foundation / Cross-cutting | Pembayaran | REVIEW |
+| TASK-NFR-10 | NFR-10 | Foundation / Cross-cutting | Jejak audit | REVIEW |
+| TASK-NFR-11 | NFR-11 | Foundation / Cross-cutting | Cadangan data | REVIEW |
+| TASK-NFR-12 | NFR-12 | Foundation / Cross-cutting | Kegunaan | REVIEW |
+| TASK-NFR-13 | NFR-13 | Foundation / Cross-cutting | Kompatibilitas | REVIEW |
+| TASK-NFR-14 | NFR-14 | Foundation / Cross-cutting | Terpelihara | REVIEW |
+| TASK-NFR-15 | NFR-15 | Foundation / Cross-cutting | Dokumentasi | REVIEW |
+| TASK-NFR-16 | NFR-16 | Foundation / Cross-cutting | Skalabilitas | REVIEW |
+| TASK-NFR-17 | NFR-17 | Foundation / Cross-cutting | Konsistensi transaksi | REVIEW |
+| TASK-NFR-18 | NFR-18 | Foundation / Cross-cutting | Idempotensi | REVIEW |
+| TASK-NFR-19 | NFR-19 | Foundation / Cross-cutting | Konkurensi | REVIEW |
+| TASK-NFR-20 | NFR-20 | Foundation / Cross-cutting | Observability | REVIEW |
+| TASK-NFR-21 | NFR-21 | Foundation / Cross-cutting | Disaster recovery | REVIEW |
+| TASK-NFR-22 | NFR-22 | Foundation / Cross-cutting | Keamanan sesi | REVIEW |
+| TASK-NFR-23 | NFR-23 | Foundation / Cross-cutting | Manajemen rahasia | REVIEW |
+| TASK-NFR-24 | NFR-24 | Foundation / Cross-cutting | Keamanan ekspor | REVIEW |
+| TASK-NFR-25 | NFR-25 | Foundation / Cross-cutting | Ketahanan integrasi | REVIEW |
+| TASK-NFR-26 | NFR-26 | Foundation / Cross-cutting | Waktu & zona | REVIEW |
+| TASK-NFR-27 | NFR-27 | Foundation / Cross-cutting | Aksesibilitas | REVIEW |
+| TASK-NFR-28 | NFR-28 | Foundation / Cross-cutting | API & kompatibilitas | REVIEW |
+| TASK-NFR-29 | NFR-29 | Foundation / Cross-cutting | Retensi audit | REVIEW |
+| TASK-NFR-30 | NFR-30 | Foundation / Cross-cutting | Pemulihan operasional | REVIEW |
 
 Functional: 270 | NFR: 30 | Total tracked requirement rows: 300

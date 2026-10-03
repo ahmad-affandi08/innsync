@@ -189,7 +189,18 @@ final readonly class StayService
     {
         $this->authorize($property, $actorId, self::VIEW_PERMISSION);
 
-        return array_map(fn (Stay $s): array => $this->describe($property, $actorId, $s, false), $this->stays->inHouse($property));
+        $stays = $this->stays->inHouse($property);
+        // One query for the guests and one for the rooms, not one of each for every stay.
+        $guests = $this->guests->findMany($property, array_map(static fn (Stay $s): string => $s->guestId, $stays));
+        $roomNumbers = [];
+
+        foreach ($this->rooms->activeRooms($property) as $room) {
+            $roomNumbers[$room->id] = $room->number;
+        }
+
+        $mayReadIdentity = $this->permissions->allowsInProperty($actorId, self::IDENTITY_PERMISSION, $property);
+
+        return array_map(fn (Stay $s): array => $this->describe($property, $actorId, $s, false, $guests[$s->guestId] ?? null, $roomNumbers, $mayReadIdentity), $stays);
     }
 
     // ---- check-in ----
@@ -474,20 +485,25 @@ final readonly class StayService
     }
 
     /** @return array<string, mixed> */
-    private function describe(PropertyId $property, string $actorId, Stay $stay, bool $audited = true): array
+    /**
+     * @param  array<string, string>|null  $roomNumbers  the numbers of the rooms by id when the caller already has them (a list)
+     * @param  bool|null  $mayRead  whether the actor may read identity, when the caller already asked (a list)
+     * @return array<string, mixed>
+     */
+    private function describe(PropertyId $property, string $actorId, Stay $stay, bool $audited = true, ?GuestProfile $known = null, ?array $roomNumbers = null, ?bool $mayRead = null): array
     {
-        $guest = $this->guests->find($property, $stay->guestId) ?? throw Refusal::notFound('Guest not found.');
-        $mayReadIdentity = $this->permissions->allowsInProperty($actorId, self::IDENTITY_PERMISSION, $property);
+        $guest = $known ?? $this->guests->find($property, $stay->guestId) ?? throw Refusal::notFound('Guest not found.');
+        $mayReadIdentity = $mayRead ?? $this->permissions->allowsInProperty($actorId, self::IDENTITY_PERMISSION, $property);
 
         if ($mayReadIdentity && $audited) {
             $this->piiAccess->record($property, strtolower($actorId), 'stay', $stay->id, 'Viewed the guest registration', ['id_number', 'address']);
         }
 
-        $room = $this->rooms->room($property, $stay->roomId);
+        $roomNumber = $roomNumbers !== null && isset($roomNumbers[$stay->roomId]) ? $roomNumbers[$stay->roomId] : $this->rooms->room($property, $stay->roomId)?->number;
 
         return [
             ...$stay->toArray(),
-            'room_number' => $room?->number,
+            'room_number' => $roomNumber,
             'guest' => [
                 'full_name' => $guest->fullName,
                 'nationality' => $guest->nationality,

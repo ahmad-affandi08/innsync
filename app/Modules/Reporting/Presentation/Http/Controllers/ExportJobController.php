@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Modules\Reporting\Presentation\Http\Controllers;
 
 use App\Modules\Reporting\Application\ExportJobService;
+use App\Modules\Reporting\Presentation\Http\ReportFile;
 use App\Shared\Application\Tenancy\PropertyContext;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -43,12 +44,8 @@ final readonly class ExportJobController
     public function download(Request $request, string $id): HttpResponse
     {
         $result = $this->exports->download($this->property->current(), $this->actor($request), $id);
-        $name = preg_replace('/[^A-Za-z0-9._-]/', '_', $result['filename']);
 
-        return response($result['file']->contents, 200, [
-            'Content-Type' => 'text/csv; charset=UTF-8', 'Content-Disposition' => 'attachment; filename="'.$name.'"',
-            'Cache-Control' => 'no-store, private', 'X-Content-Type-Options' => 'nosniff',
-        ]);
+        return ReportFile::respond($request, ['filename' => $result['filename'], 'contents' => $result['file']->contents]);
     }
 
     private function actor(Request $request): string
