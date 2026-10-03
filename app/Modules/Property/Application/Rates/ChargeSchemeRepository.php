@@ -15,4 +15,7 @@ interface ChargeSchemeRepository
 
     /** Newest start date first. @return list<ChargeSchemeConfig> */
     public function forScope(PropertyId $property, string $scope): array;
+
+    /** The scopes that have a scheme. @return list<string> */
+    public function scopes(PropertyId $property): array;
 }

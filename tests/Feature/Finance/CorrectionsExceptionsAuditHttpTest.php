@@ -334,7 +334,7 @@ final class CorrectionsExceptionsAuditHttpTest extends TestCase
         $this->get('/finance/audit')->assertForbidden();
 
         $this->actAs($this->auditor);
-        $this->get('/finance/audit?from=2026-10-01&to=2026-10-03')->assertOk()->assertInertia(fn (Assert $page) => $page
+        $this->get('/finance/audit?from=2026-10-01&to=2026-10-31')->assertOk()->assertInertia(fn (Assert $page) => $page
             ->component('finance/pages/audit')
             ->where('trail.group', 'finance')
             ->where('trail.total', 3)
@@ -344,8 +344,8 @@ final class CorrectionsExceptionsAuditHttpTest extends TestCase
             ->where('trail.rows.2.action', 'correction.requested')
             ->where('trail.rows.2.reason', 'Rooms charged twice for one guest')
             ->where('trail.rows.2.after.revenue_minor', -1_210_000));
-        $this->get('/finance/audit?from=2026-10-01&to=2026-10-03&action=correction.requested')->assertInertia(fn (Assert $page) => $page->where('trail.total', 1));
-        $this->get('/finance/audit?from=2026-10-01&to=2026-10-03&user='.$this->maker->getKey())->assertInertia(fn (Assert $page) => $page->where('trail.total', 2));
+        $this->get('/finance/audit?from=2026-10-01&to=2026-10-31&action=correction.requested')->assertInertia(fn (Assert $page) => $page->where('trail.total', 1));
+        $this->get('/finance/audit?from=2026-10-01&to=2026-10-31&user='.$this->maker->getKey())->assertInertia(fn (Assert $page) => $page->where('trail.total', 2));
         $this->get('/finance/audit?group=front_office')->assertInertia(fn (Assert $page) => $page->where('trail.total', 0));
         $this->get('/finance/audit?group=everything')->assertStatus(422);
         $this->get('/finance/audit?from=2026-01-01&to=2026-10-03')->assertStatus(422);

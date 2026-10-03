@@ -1235,6 +1235,35 @@
             "note"
         ]
     },
+    "POST /finance/tax/settings": {
+        "required": [
+            "report_day"
+        ],
+        "declared": [
+            "lock_version",
+            "report_day"
+        ]
+    },
+    "POST /finance/tax/{period}/deposit": {
+        "required": [
+            "amount_minor",
+            "deposited_on",
+            "lock_version",
+            "reference"
+        ],
+        "declared": [
+            "amount_minor",
+            "deposited_on",
+            "lock_version",
+            "reference"
+        ]
+    },
+    "POST /finance/tax/{period}/report": {
+        "required": [],
+        "declared": [
+            "reference"
+        ]
+    },
     "POST /fnb/bills": {
         "required": [
             "covers",

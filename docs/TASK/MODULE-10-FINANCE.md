@@ -33,12 +33,12 @@
 | TASK-FIN-017 | FR-FIN-017 | Sebaiknya | Menyusun anggaran per department dan menampilkan perbandingan anggaran terhadap realisasi. | REVIEW |
 | TASK-FIN-018 | FR-FIN-018 | Wajib | Pembayaran vendor/pengeluaran di atas threshold menggunakan maker-checker; pembuat transaksi tidak boleh menjadi satu-satunya penyetuju. | REVIEW |
 | TASK-FIN-019 | FR-FIN-019 | Wajib | Refund tamu, chargeback, settlement discrepancy, dan pembayaran berstatus unknown dikelola sebagai exception sampai direkonsiliasi, bukan diedit langsung pada transaksi asal. | REVIEW |
-| TASK-FIN-020 | FR-FIN-020 | Wajib | Menghitung pajak daerah atas jasa perhotelan dan makanan minuman secara otomatis per outlet dengan tarif yang dapat dikonfigurasi. | TODO |
-| TASK-FIN-021 | FR-FIN-021 | Wajib | Menyajikan lini masa kewajiban pajak: nilai terkumpul berjalan, periode pelaporan, tanggal jatuh tempo, dan status penyetoran. | TODO |
-| TASK-FIN-022 | FR-FIN-022 | Wajib | Menghitung akumulasi service charge dari kamar dan outlet serta menyiapkan nilai yang akan didistribusikan melalui modul Human Resource. | TODO |
-| TASK-FIN-023 | FR-FIN-023 | Wajib | Menerbitkan berkas rekapitulasi pajak yang siap dilaporkan kepada instansi pajak daerah. | TODO |
-| TASK-FIN-024 | FR-FIN-024 | Sebaiknya | Memisahkan pencatatan pendapatan yang tidak dikenai pajak, kompliment, dan penghapusan tagihan agar dasar pengenaan pajak tetap akurat. | TODO |
-| TASK-FIN-025 | FR-FIN-025 | Wajib | Tarif pajak, service charge, dan aturan pembulatan memiliki tanggal efektif; perubahan konfigurasi tidak boleh mengubah perhitungan transaksi historis. | TODO |
+| TASK-FIN-020 | FR-FIN-020 | Wajib | Menghitung pajak daerah atas jasa perhotelan dan makanan minuman secara otomatis per outlet dengan tarif yang dapat dikonfigurasi. | REVIEW |
+| TASK-FIN-021 | FR-FIN-021 | Wajib | Menyajikan lini masa kewajiban pajak: nilai terkumpul berjalan, periode pelaporan, tanggal jatuh tempo, dan status penyetoran. | REVIEW |
+| TASK-FIN-022 | FR-FIN-022 | Wajib | Menghitung akumulasi service charge dari kamar dan outlet serta menyiapkan nilai yang akan didistribusikan melalui modul Human Resource. | REVIEW |
+| TASK-FIN-023 | FR-FIN-023 | Wajib | Menerbitkan berkas rekapitulasi pajak yang siap dilaporkan kepada instansi pajak daerah. | REVIEW |
+| TASK-FIN-024 | FR-FIN-024 | Sebaiknya | Memisahkan pencatatan pendapatan yang tidak dikenai pajak, kompliment, dan penghapusan tagihan agar dasar pengenaan pajak tetap akurat. | REVIEW |
+| TASK-FIN-025 | FR-FIN-025 | Wajib | Tarif pajak, service charge, dan aturan pembulatan memiliki tanggal efektif; perubahan konfigurasi tidak boleh mengubah perhitungan transaksi historis. | REVIEW |
 | TASK-FIN-030 | FR-FIN-030 | Wajib | Menerbitkan management P&L operasional per department berdasarkan pemetaan pendapatan dan biaya yang tersedia. Laporan diberi label jelas sebagai laporan manajemen, bukan laporan keuangan statutori pengganti buku besar akuntansi. | REVIEW |
 | TASK-FIN-031 | FR-FIN-031 | Wajib | Menerbitkan laporan arus kas ringkas: penerimaan, pengeluaran, dan saldo kas serta bank. | REVIEW |
 | TASK-FIN-032 | FR-FIN-032 | Sebaiknya | Menerbitkan laporan biaya bahan terhadap penjualan untuk outlet makanan dan minuman. | REVIEW |
@@ -47,6 +47,16 @@
 | TASK-FIN-035 | FR-FIN-035 | Wajib | Menyimpan jejak audit atas seluruh perubahan angka keuangan beserta pelaku dan waktunya. | REVIEW |
 | TASK-FIN-036 | FR-FIN-036 | Wajib | Transaksi keuangan yang telah locked hanya dapat dikoreksi melalui reversal/adjustment yang menaut ke transaksi asal dan memerlukan alasan serta otorisasi. | REVIEW |
 | TASK-FIN-037 | FR-FIN-037 | Wajib | Rekonsiliasi harian menghasilkan daftar exception antara POS/folio, payment provider/EDC, kas fisik, dan bank; hari dianggap clean hanya bila exception telah diselesaikan atau di-waive. | IN_PROGRESS |
+
+### Slice 57 (2026-10-03): regional tax and service charge
+
+- **FIN-020, -025** — The tax is worked out when a charge is posted, per outlet, from the scheme of the scope of the outlet (`rooms` or an outlet's scope) in force on the business date: service charge and tax rates and whether the tax is charged on the service charge, each scheme with the day it starts from, append-only (a change is a new scheme, never an edit; the database refuses edits). Every posting keeps the rates and the rounding it was made with, so a change never touches what was posted before. `/finance/tax` shows the rates in force for each scope with their history, and the rounding rule of the property.
+- **FIN-021** — `TaxService` (`/finance/tax`, rights `finance.tax.view` and `finance.tax.manage`): for each of the last twelve months and each outlet, the base the tax was charged on, the service charge, the tax and the total, from the revenue Finance booked; each month has a deadline (a day of the next month the owner sets, 1 to 28, the 15th until then) and a status: collecting, to be reported, reported, deposited, and overdue when the deadline passed without a deposit. Recording a report (after the month is over) keeps the amounts the books showed that day; recording the deposit keeps the day, the amount and a reference and shows the difference to the books. These records are never changed or deleted (triggers); revenue booked after a month was reported shows as the books' figure beside what was reported. Audited; `finance.tax.reported` goes out.
+- **FIN-022** — the service charge collected shows by month and outlet beside the tax, and is what Human Resource shares among the staff (`ServiceChargeCollected`).
+- **FIN-023** — `GET /finance/tax/{month}/recap` is a spreadsheet-safe CSV of the month: the taxed revenue by outlet with the service charge, the tax and the total, a total line, and the part kept apart; each file taken is audited.
+- **FIN-024** — Kept apart from the taxed revenue, month by month: revenue booked without tax (a base with no tax), complimentary items, other discounts, lines voided, bills cancelled, and charges reversed, so the tax base can be explained.
+- Not yet: the monthly rules of a particular region (rates by outlet type are the scopes; the filing format of a given office), corrections of a month that was already reported (shown as a difference), rounding rules that change by date (the rounding is a property setting snapshotted on every posting).
+- Tests: `TaxHttpTest`. The audit trail test of Finance no longer depends on the real clock passing midnight.
 
 ## Required engineering checks
 

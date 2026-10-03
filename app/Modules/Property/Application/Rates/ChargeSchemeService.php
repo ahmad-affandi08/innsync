@@ -86,6 +86,20 @@ final readonly class ChargeSchemeService implements ChargeCalculator
         ];
     }
 
+    /** Every scheme of every scope, newest start first within a scope, and the rounding rule in force. No permission: callers authorize their own use. @return array{rounding_increment_minor: int, rounding_mode: string, scopes: array<string, list<ChargeSchemeConfig>>} */
+    public function all(PropertyId $property): array
+    {
+        $this->assertProperty($property);
+        $rounding = $this->settings->get($property)->rounding;
+        $scopes = [];
+
+        foreach ($this->schemes->scopes($property) as $scope) {
+            $scopes[$scope] = $this->schemes->forScope($property, $scope);
+        }
+
+        return ['rounding_increment_minor' => $rounding->incrementMinor, 'rounding_mode' => $rounding->mode->value, 'scopes' => $scopes];
+    }
+
     /** @return list<ChargeSchemeConfig> */
     public function history(PropertyId $property, string $actorId, string $scope): array
     {

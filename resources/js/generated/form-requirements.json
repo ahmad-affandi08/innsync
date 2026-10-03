@@ -105,6 +105,11 @@
         "name",
         "remind_days"
     ],
+    "finance/pages/tax": [
+        "amount_minor",
+        "deposited_on",
+        "report_day"
+    ],
     "fnb-sales/pages/bill": [
         "amount_minor",
         "kind",

@@ -63,6 +63,12 @@ final readonly class FinanceAccess
     /** Pays an approved payroll run. Held by someone else than the person who verifies it. */
     public const PAYROLL_PAY = 'finance.payroll.pay';
 
+    /** Sees the tax and service charge collected, the deadlines and the recap files. */
+    public const TAX_VIEW = 'finance.tax.view';
+
+    /** Sets the day the tax is reported by, records that a month was reported and deposited. */
+    public const TAX_MANAGE = 'finance.tax.manage';
+
     private const VIEWERS = [self::PAYABLE_VIEW, self::PAYABLE_MANAGE, self::PAYMENT_RECORD, self::ACCOUNT_MANAGE];
 
     public function __construct(private PermissionChecker $permissions, private PropertyContext $property) {}

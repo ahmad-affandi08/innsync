@@ -39,4 +39,9 @@ final readonly class DatabaseChargeSchemeRepository implements ChargeSchemeRepos
                 Percentage::ofBasisPoints((int) $r->service_charge_bp), Percentage::ofBasisPoints((int) $r->tax_bp), (bool) $r->tax_on_service_charge,
             ))->all();
     }
+
+    public function scopes(PropertyId $property): array
+    {
+        return DB::table('charge_schemes')->where('property_id', $property->toString())->distinct()->orderBy('scope')->pluck('scope')->map(static fn ($v): string => (string) $v)->all();
+    }
 }
