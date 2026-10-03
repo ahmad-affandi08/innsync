@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\Maintenance\Presentation\Http\Controllers;
 
+use App\Modules\Maintenance\Application\EscalationService;
 use App\Modules\Maintenance\Application\WorkOrderService;
 use App\Shared\Application\Tenancy\PropertyContext;
 use Illuminate\Http\JsonResponse;
@@ -15,11 +16,14 @@ use Inertia\Response;
 /** The work orders of maintenance. Every rule and permission lives in the application service. */
 final readonly class WorkOrderController
 {
-    public function __construct(private WorkOrderService $orders, private PropertyContext $property) {}
+    public function __construct(private WorkOrderService $orders, private EscalationService $escalations, private PropertyContext $property) {}
 
     public function index(Request $request): Response
     {
-        return Inertia::render('maintenance/pages/work-orders', ['overview' => $this->orders->overview($this->property->current(), $this->actor($request))]);
+        $property = $this->property->current();
+        $this->escalations->run($property);
+
+        return Inertia::render('maintenance/pages/work-orders', ['overview' => [...$this->orders->overview($property, $this->actor($request)), ...$this->escalations->waitingFor($property, $this->actor($request))]]);
     }
 
     public function show(Request $request, string $id): JsonResponse
@@ -105,9 +109,16 @@ final readonly class WorkOrderController
 
     public function sla(Request $request): JsonResponse
     {
-        $data = $request->validate(['urgent' => ['required', 'integer', 'min:5', 'max:43200'], 'high' => ['required', 'integer', 'min:5', 'max:43200'], 'normal' => ['required', 'integer', 'min:5', 'max:43200'], 'low' => ['required', 'integer', 'min:5', 'max:43200'], 'lock_version' => ['nullable', 'integer', 'min:0']]);
+        $data = $request->validate([
+            'urgent' => ['required', 'integer', 'min:5', 'max:43200'], 'high' => ['required', 'integer', 'min:5', 'max:43200'], 'normal' => ['required', 'integer', 'min:5', 'max:43200'], 'low' => ['required', 'integer', 'min:5', 'max:43200'],
+            'warn_percent' => ['required', 'integer', 'min:10', 'max:100'], 'escalate_percent' => ['required', 'integer', 'min:50', 'max:300'], 'night_from_hour' => ['required', 'integer', 'min:0', 'max:23'], 'night_to_hour' => ['required', 'integer', 'min:0', 'max:23'],
+            'lock_version' => ['nullable', 'integer', 'min:0'],
+        ]);
 
-        return $this->json($this->orders->saveSla($this->property->current(), $this->actor($request), (int) $data['urgent'], (int) $data['high'], (int) $data['normal'], (int) $data['low'], isset($data['lock_version']) ? (int) $data['lock_version'] : null));
+        return $this->json($this->orders->saveSla($this->property->current(), $this->actor($request), [
+            'urgent' => (int) $data['urgent'], 'high' => (int) $data['high'], 'normal' => (int) $data['normal'], 'low' => (int) $data['low'],
+            'warn' => (int) $data['warn_percent'], 'escalate' => (int) $data['escalate_percent'], 'night_from' => (int) $data['night_from_hour'], 'night_to' => (int) $data['night_to_hour'],
+        ], isset($data['lock_version']) ? (int) $data['lock_version'] : null));
     }
 
     public function photo(Request $request, string $id, string $which): HttpResponse

@@ -8,6 +8,7 @@ export type WorkOrderSummary = {
 
 export type Overview = {
     work_orders: WorkOrderSummary[]; counts: Record<Status, number>; overdue: number; me: string; rooms: { id: string; number: string }[]; technicians: { id: string; name: string }[];
+    escalations: Escalation[]; escalation: { warn: number; escalate: number; night_from: number; night_to: number };
     categories: string[]; departments: string[]; priorities: Priority[]; hold_reasons: string[]; sla: Record<Priority, number>; sla_is_baseline: boolean; sla_lock_version: number | null; business_date: string;
     may: { report: boolean; manage: boolean; perform: boolean };
 };
@@ -20,4 +21,12 @@ export type WorkOrderDetail = {
     events: { kind: string; note: string | null; by: string | null; at: string }[];
     may: { assign: boolean; prioritize: boolean; cancel: boolean; start: boolean; hold: boolean; resume: boolean; complete: boolean; block: boolean; release: boolean };
     technicians: { id: string; name: string }[]; business_date: string; oversold_nights?: string[];
+};
+
+export type Escalation = { id: string; work_order_id: string; number: string; title: string; priority: Priority; place: string | null; level: 1 | 2; target: 'supervisor' | 'mod'; shift: 'day' | 'night'; raised_at: string; overdue: boolean; assigned: boolean };
+
+export type MaintenanceReport = {
+    from: string; to: string; reported: number; by_status: Partial<Record<Status, number>>; by_department: Record<string, number>;
+    completion: { done: number; average_hours: number | null; on_time: number; on_time_percent: number | null; by_priority: { priority: Priority; done: number; average_hours: number | null }[] };
+    repeat_rooms: { room: string; count: number; categories: string[] }[]; unsellable: { total_days: number; rooms: { room: string; days: number }[] };
 };

@@ -22,6 +22,9 @@ final readonly class MaintenanceAccess
     /** Sees every work order, assigns them, sets their priority, cancels them, takes rooms off sale and sets the service levels. */
     public const MANAGE = 'maintenance.work.manage';
 
+    /** Is told when a work order is escalated beyond the supervisor, as the manager on duty is. */
+    public const ESCALATION_RECEIVE = 'maintenance.escalation.receive';
+
     public function __construct(private PermissionChecker $permissions, private PropertyContext $property) {}
 
     public function assertProperty(PropertyId $property): void

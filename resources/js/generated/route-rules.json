@@ -368,6 +368,13 @@
             "status"
         ]
     },
+    "GET /maintenance/reports": {
+        "required": [],
+        "declared": [
+            "from",
+            "to"
+        ]
+    },
     "GET /reports/audit": {
         "required": [],
         "declared": [
@@ -3416,19 +3423,33 @@
             "password"
         ]
     },
+    "POST /maintenance/escalations/{id}/acknowledge": {
+        "required": [],
+        "declared": [
+            "note"
+        ]
+    },
     "POST /maintenance/sla": {
         "required": [
+            "escalate_percent",
             "high",
             "low",
+            "night_from_hour",
+            "night_to_hour",
             "normal",
-            "urgent"
+            "urgent",
+            "warn_percent"
         ],
         "declared": [
+            "escalate_percent",
             "high",
             "lock_version",
             "low",
+            "night_from_hour",
+            "night_to_hour",
             "normal",
-            "urgent"
+            "urgent",
+            "warn_percent"
         ]
     },
     "POST /maintenance/work-orders": {

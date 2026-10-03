@@ -27,6 +27,8 @@ final class WorkOrderHttpTest extends TestCase
 
     private const PNG = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==';
 
+    private const ESC = ['warn_percent' => 75, 'escalate_percent' => 100, 'night_from_hour' => 22, 'night_to_hour' => 6];
+
     private UserRecord $manager;
 
     private UserRecord $tech;
@@ -186,10 +188,10 @@ final class WorkOrderHttpTest extends TestCase
     public function test_the_priority_sets_the_deadline_and_a_late_work_order_is_flagged(): void
     {
         $this->actAs($this->manager);
-        $this->postJson('/maintenance/sla', ['urgent' => 30, 'high' => 120, 'normal' => 600, 'low' => 3000, 'lock_version' => 0])->assertStatus(409);
-        $this->postJson('/maintenance/sla', ['urgent' => 300, 'high' => 120, 'normal' => 600, 'low' => 3000, 'lock_version' => null])->assertStatus(422);
-        $this->postJson('/maintenance/sla', ['urgent' => 30, 'high' => 120, 'normal' => 600, 'low' => 3000, 'lock_version' => null])->assertOk()->assertJsonPath('sla.urgent', 30)->assertJsonPath('sla_lock_version', 0);
-        $this->postJson('/maintenance/sla', ['urgent' => 20, 'high' => 120, 'normal' => 600, 'low' => 3000, 'lock_version' => null])->assertStatus(409);
+        $this->postJson('/maintenance/sla', ['urgent' => 30, 'high' => 120, 'normal' => 600, 'low' => 3000, 'lock_version' => 0, ...self::ESC])->assertStatus(409);
+        $this->postJson('/maintenance/sla', ['urgent' => 300, 'high' => 120, 'normal' => 600, 'low' => 3000, 'lock_version' => null, ...self::ESC])->assertStatus(422);
+        $this->postJson('/maintenance/sla', ['urgent' => 30, 'high' => 120, 'normal' => 600, 'low' => 3000, 'lock_version' => null, ...self::ESC])->assertOk()->assertJsonPath('sla.urgent', 30)->assertJsonPath('sla_lock_version', 0);
+        $this->postJson('/maintenance/sla', ['urgent' => 20, 'high' => 120, 'normal' => 600, 'low' => 3000, 'lock_version' => null, ...self::ESC])->assertStatus(409);
         self::assertSame(2, DB::table('audit_entries')->where('action', 'maintenance_sla.changed')->count() + 1);
 
         $id = $this->report(['priority' => 'urgent', 'title' => 'Short circuit']);

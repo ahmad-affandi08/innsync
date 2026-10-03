@@ -501,11 +501,15 @@
     ],
     "maintenance/pages/work-orders": [
         "category",
+        "escalate_percent",
+        "night_from_hour",
+        "night_to_hour",
         "priority",
         "reason",
         "reporter_department",
         "title",
-        "until"
+        "until",
+        "warn_percent"
     ],
     "property/pages/booking-policies": [
         "cancel_free_days",

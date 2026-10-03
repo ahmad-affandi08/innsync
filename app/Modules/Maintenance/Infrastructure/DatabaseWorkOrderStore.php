@@ -64,16 +64,22 @@ final readonly class DatabaseWorkOrderStore implements WorkOrderStore
     {
         $r = DB::table('maintenance_settings')->where('property_id', $property->toString())->first();
 
-        return $r === null ? null : ['urgent' => (int) $r->sla_urgent_minutes, 'high' => (int) $r->sla_high_minutes, 'normal' => (int) $r->sla_normal_minutes, 'low' => (int) $r->sla_low_minutes, 'lock_version' => (int) $r->lock_version];
+        return $r === null ? null : [
+            'urgent' => (int) $r->sla_urgent_minutes, 'high' => (int) $r->sla_high_minutes, 'normal' => (int) $r->sla_normal_minutes, 'low' => (int) $r->sla_low_minutes,
+            'warn' => (int) $r->warn_percent, 'escalate' => (int) $r->escalate_percent, 'night_from' => (int) $r->night_from_hour, 'night_to' => (int) $r->night_to_hour, 'lock_version' => (int) $r->lock_version,
+        ];
     }
 
-    public function saveSettings(PropertyId $property, array $minutes, ?int $expectedLock, string $by, DateTimeImmutable $at): bool
+    public function saveSettings(PropertyId $property, array $values, ?int $expectedLock, string $by, DateTimeImmutable $at): bool
     {
-        $values = ['sla_urgent_minutes' => $minutes['urgent'], 'sla_high_minutes' => $minutes['high'], 'sla_normal_minutes' => $minutes['normal'], 'sla_low_minutes' => $minutes['low']];
+        $row = [
+            'sla_urgent_minutes' => $values['urgent'], 'sla_high_minutes' => $values['high'], 'sla_normal_minutes' => $values['normal'], 'sla_low_minutes' => $values['low'],
+            'warn_percent' => $values['warn'], 'escalate_percent' => $values['escalate'], 'night_from_hour' => $values['night_from'], 'night_to_hour' => $values['night_to'],
+        ];
 
         if ($expectedLock === null) {
             try {
-                DB::table('maintenance_settings')->insert([...$values, 'property_id' => $property->toString(), 'lock_version' => 0, 'updated_by' => $by, 'created_at' => $at, 'updated_at' => $at]);
+                DB::table('maintenance_settings')->insert([...$row, 'property_id' => $property->toString(), 'lock_version' => 0, 'updated_by' => $by, 'created_at' => $at, 'updated_at' => $at]);
 
                 return true;
             } catch (QueryException $e) {
@@ -85,6 +91,72 @@ final readonly class DatabaseWorkOrderStore implements WorkOrderStore
             }
         }
 
-        return DB::table('maintenance_settings')->where('property_id', $property->toString())->where('lock_version', $expectedLock)->update([...$values, 'lock_version' => $expectedLock + 1, 'updated_by' => $by, 'updated_at' => $at]) === 1;
+        return DB::table('maintenance_settings')->where('property_id', $property->toString())->where('lock_version', $expectedLock)->update([...$row, 'lock_version' => $expectedLock + 1, 'updated_by' => $by, 'updated_at' => $at]) === 1;
+    }
+
+    public function addRoomBlock(PropertyId $property, array $row): void
+    {
+        DB::table('maintenance_room_blocks')->insert([...$row, 'property_id' => $property->toString()]);
+    }
+
+    public function releaseRoomBlock(PropertyId $property, string $blockId, string $date): void
+    {
+        DB::table('maintenance_room_blocks')->where('property_id', $property->toString())->where('block_id', $blockId)->whereNull('released_on')->update(['released_on' => $date]);
+    }
+
+    public function roomBlocksBetween(PropertyId $property, string $from, string $to): array
+    {
+        return DB::table('maintenance_room_blocks')->where('property_id', $property->toString())->where('from_date', '<=', $to)->where(static fn ($q) => $q->whereNull('released_on')->orWhere('released_on', '>', $from))
+            ->get()->map(static fn (object $r): array => (array) $r)->all();
+    }
+
+    public function reportedBetween(PropertyId $property, string $from, string $to): array
+    {
+        return DB::table('maintenance_work_orders')->where('property_id', $property->toString())->where('reported_at', '>=', $from.' 00:00:00')->where('reported_at', '<', date('Y-m-d', strtotime($to.' +1 day')).' 00:00:00')
+            ->get()->map(static fn (object $r): array => (array) $r)->all();
+    }
+
+    public function doneBetween(PropertyId $property, string $from, string $to): array
+    {
+        return DB::table('maintenance_work_orders')->where('property_id', $property->toString())->where('status', 'done')->where('done_at', '>=', $from.' 00:00:00')->where('done_at', '<', date('Y-m-d', strtotime($to.' +1 day')).' 00:00:00')
+            ->get()->map(static fn (object $r): array => (array) $r)->all();
+    }
+
+    public function addEscalation(PropertyId $property, array $row, DateTimeImmutable $at): bool
+    {
+        try {
+            DB::table('maintenance_escalations')->insert([...$row, 'property_id' => $property->toString(), 'raised_at' => $at]);
+
+            return true;
+        } catch (QueryException $e) {
+            if (($e->errorInfo[1] ?? null) === 1062) {
+                return false;
+            }
+
+            throw $e;
+        }
+    }
+
+    public function openEscalations(PropertyId $property): array
+    {
+        return DB::table('maintenance_escalations as e')->join('maintenance_work_orders as w', 'w.id', '=', 'e.work_order_id')->where('e.property_id', $property->toString())->whereNull('e.acknowledged_at')->whereIn('w.status', ['open', 'assigned', 'in_progress', 'on_hold'])
+            ->orderBy('e.raised_at')->orderBy('e.level')->get(['e.*', 'w.number', 'w.title', 'w.priority', 'w.room_number', 'w.area', 'w.due_at', 'w.assigned_to'])->map(static fn (object $r): array => (array) $r)->all();
+    }
+
+    public function escalation(PropertyId $property, string $id): ?array
+    {
+        $r = DB::table('maintenance_escalations')->where('property_id', $property->toString())->where('id', $id)->first();
+
+        return $r === null ? null : (array) $r;
+    }
+
+    public function acknowledgeEscalation(PropertyId $property, string $id, string $by, ?string $note, DateTimeImmutable $at): bool
+    {
+        return DB::table('maintenance_escalations')->where('property_id', $property->toString())->where('id', $id)->whereNull('acknowledged_at')->update(['acknowledged_by' => $by, 'acknowledged_at' => $at, 'note' => $note]) === 1;
+    }
+
+    public function propertiesWithOpenWork(): array
+    {
+        return DB::table('maintenance_work_orders')->whereIn('status', ['open', 'assigned', 'in_progress', 'on_hold'])->distinct()->pluck('property_id')->map(static fn ($p): string => (string) $p)->all();
     }
 }

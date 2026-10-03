@@ -28,6 +28,10 @@ Schedule::command('reports:run-exports')
     ->everyMinute()
     ->withoutOverlapping(10);
 
+Schedule::command('maintenance:escalate')
+    ->everyFiveMinutes()
+    ->withoutOverlapping(10);
+
 Schedule::command('health:heartbeat')->everyMinute();
 
 Schedule::command('health:alerts')

@@ -53,6 +53,9 @@ final readonly class WorkOrderService
     /** The minutes each priority may take until the owner sets them: an hour, four hours, a day and three days. */
     public const BASELINE_SLA = ['urgent' => 60, 'high' => 240, 'normal' => 1440, 'low' => 4320];
 
+    /** Until the owner sets them: warn at 75 percent of the time, escalate at 100, and the night shift from 22:00 to 06:00. */
+    public const BASELINE_ESCALATION = ['warn' => 75, 'escalate' => 100, 'night_from' => 22, 'night_to' => 6];
+
     public const PHOTO_PURPOSE = 'maintenance.workorder';
 
     public const PHOTO_MAX_BYTES = 5_242_880;
@@ -99,7 +102,7 @@ final readonly class WorkOrderService
             'rooms' => $caps['may_report'] ? array_values(array_map(static fn ($r): array => ['id' => $r->id, 'number' => $r->number], $this->rooms->activeRooms($property))) : [],
             'technicians' => $caps['manage'] ? $this->staff->withPermission($property, MaintenanceAccess::PERFORM) : [],
             'categories' => self::CATEGORIES, 'departments' => self::DEPARTMENTS, 'priorities' => self::PRIORITIES, 'hold_reasons' => self::HOLD_REASONS,
-            'sla' => $this->sla($property), 'sla_is_baseline' => $this->store->settings($property) === null, 'sla_lock_version' => $this->store->settings($property)['lock_version'] ?? null,
+            'sla' => $this->sla($property), 'sla_is_baseline' => $this->store->settings($property) === null, 'sla_lock_version' => $this->store->settings($property)['lock_version'] ?? null, 'escalation' => $this->escalationSettings($property),
             'business_date' => $this->businessDate->current($property)->toString(),
             'may' => ['report' => $caps['may_report'], 'manage' => $caps['manage'], 'perform' => $caps['perform']],
         ];
@@ -342,6 +345,7 @@ final readonly class WorkOrderService
             $from = $this->businessDate->current($property)->toString();
             $done = $this->blocking->block($property, strtolower($actorId), $w['room_id'], $kind, $from, $until, "Work order {$w['number']}: {$w['title']}");
             $oversold = $done['oversold_nights'];
+            $this->store->addRoomBlock($property, ['id' => $this->ids->next(), 'work_order_id' => $w['id'], 'block_id' => $done['block_id'], 'room_id' => $w['room_id'], 'room_number' => (string) $w['room_number'], 'kind' => $kind, 'from_date' => $from, 'until_date' => $until]);
 
             return [['block_id' => $done['block_id'], 'block_kind' => $kind], 'room_blocked', $kind.' until '.$until];
         }, 'work_order.room_blocked');
@@ -360,37 +364,49 @@ final readonly class WorkOrderService
             }
 
             $this->blocking->release($property, strtolower($actorId), $w['block_id'], "Work order {$w['number']}: put back on sale");
+            $this->store->releaseRoomBlock($property, $w['block_id'], $this->businessDate->current($property)->toString());
 
             return [['block_id' => null, 'block_kind' => null], 'room_released', null];
         }, 'work_order.room_released');
     }
 
-    /** @return array<string, mixed> */
-    public function saveSla(PropertyId $property, string $actorId, int $urgent, int $high, int $normal, int $low, ?int $lock): array
+    /**
+     * @param  array{urgent: int, high: int, normal: int, low: int, warn: int, escalate: int, night_from: int, night_to: int}  $v
+     * @return array<string, mixed>
+     */
+    public function saveSla(PropertyId $property, string $actorId, array $v, ?int $lock): array
     {
         $this->access->require($property, $actorId, MaintenanceAccess::MANAGE, 'This person may not set the service levels.');
 
-        foreach ([$urgent, $high, $normal, $low] as $m) {
+        foreach ([$v['urgent'], $v['high'], $v['normal'], $v['low']] as $m) {
             if ($m < 5 || $m > 43200) {
                 throw Refusal::invalid('Each time is between 5 minutes and 30 days.', ['sla']);
             }
         }
 
-        if (! ($urgent <= $high && $high <= $normal && $normal <= $low)) {
+        if (! ($v['urgent'] <= $v['high'] && $v['high'] <= $v['normal'] && $v['normal'] <= $v['low'])) {
             throw Refusal::invalid('A more urgent priority may not take longer than a less urgent one.', ['sla']);
+        }
+
+        if ($v['warn'] < 10 || $v['warn'] > 100 || $v['escalate'] < 50 || $v['escalate'] > 300 || $v['warn'] > $v['escalate']) {
+            throw Refusal::invalid('Warn between 10 and 100 percent of the time, and escalate between 50 and 300 percent, never before the warning.', ['warn_percent', 'escalate_percent']);
+        }
+
+        if ($v['night_from'] < 0 || $v['night_from'] > 23 || $v['night_to'] < 0 || $v['night_to'] > 23) {
+            throw Refusal::invalid('The night shift starts and ends at an hour from 0 to 23.', ['night_from_hour', 'night_to_hour']);
         }
 
         $before = $this->store->settings($property);
 
-        $this->transactions->run(function () use ($property, $actorId, $urgent, $high, $normal, $low, $lock, $before): void {
-            if (($before['lock_version'] ?? null) !== $lock || ! $this->store->saveSettings($property, ['urgent' => $urgent, 'high' => $high, 'normal' => $normal, 'low' => $low], $before === null ? null : $before['lock_version'], strtolower($actorId), $this->clock->nowUtc())) {
+        $this->transactions->run(function () use ($property, $actorId, $v, $lock, $before): void {
+            if (($before['lock_version'] ?? null) !== $lock || ! $this->store->saveSettings($property, $v, $before === null ? null : $before['lock_version'], strtolower($actorId), $this->clock->nowUtc())) {
                 throw Refusal::stateConflict('The service levels changed after you opened them. Reload them.');
             }
 
-            $this->audit->record(new AuditEntry($property->toString(), strtolower($actorId), 'maintenance_sla.changed', 'maintenance_settings', $property->toString(), $before === null ? self::BASELINE_SLA : array_diff_key($before, ['lock_version' => 1]), ['urgent' => $urgent, 'high' => $high, 'normal' => $normal, 'low' => $low]));
+            $this->audit->record(new AuditEntry($property->toString(), strtolower($actorId), 'maintenance_sla.changed', 'maintenance_settings', $property->toString(), $before === null ? [...self::BASELINE_SLA, ...self::BASELINE_ESCALATION] : array_diff_key($before, ['lock_version' => 1]), $v));
         });
 
-        return ['sla' => $this->sla($property), 'sla_lock_version' => $this->store->settings($property)['lock_version'] ?? null];
+        return ['sla' => $this->sla($property), 'escalation' => $this->escalationSettings($property), 'sla_lock_version' => $this->store->settings($property)['lock_version'] ?? null];
     }
 
     public function photo(PropertyId $property, string $actorId, string $id, string $which): FileContent
@@ -512,10 +528,22 @@ final readonly class WorkOrderService
         try {
             $this->blocking->release($property, $actor, $w['block_id'], $reason);
         } catch (Refusal) {
+            $this->store->releaseRoomBlock($property, $w['block_id'], $this->businessDate->current($property)->toString());
+
             return;
         }
 
+        $this->store->releaseRoomBlock($property, $w['block_id'], $this->businessDate->current($property)->toString());
+
         $this->event($property, $w['id'], 'room_released', $note, $actor, $this->clock->nowUtc());
+    }
+
+    /** @return array{warn: int, escalate: int, night_from: int, night_to: int} */
+    private function escalationSettings(PropertyId $property): array
+    {
+        $s = $this->store->settings($property);
+
+        return $s === null ? self::BASELINE_ESCALATION : ['warn' => $s['warn'], 'escalate' => $s['escalate'], 'night_from' => $s['night_from'], 'night_to' => $s['night_to']];
     }
 
     /** @return array{urgent: int, high: int, normal: int, low: int} */

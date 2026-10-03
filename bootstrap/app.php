@@ -5,6 +5,7 @@ use App\Modules\IdentityAccess\Presentation\Http\Middleware\EnsureActiveUser;
 use App\Modules\IdentityAccess\Presentation\Http\Middleware\EnsureMfaVerified;
 use App\Modules\IdentityAccess\Presentation\Http\Middleware\RequirePermission;
 use App\Modules\IdentityAccess\Presentation\Http\Middleware\ResolvePropertyContext;
+use App\Modules\Maintenance\Infrastructure\EscalateWorkOrdersCommand;
 use App\Modules\Property\Infrastructure\Migration\ImportRoomMasterCommand;
 use App\Modules\Reporting\Infrastructure\RunReportExportsCommand;
 use App\Shared\Application\Observability\CorrelationId;
@@ -57,6 +58,7 @@ return Application::configure(basePath: dirname(__DIR__))
         SmokeCommand::class,
         RetentionPurgeCommand::class,
         RunReportExportsCommand::class,
+        EscalateWorkOrdersCommand::class,
     ])
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->prepend(AssignCorrelationId::class);

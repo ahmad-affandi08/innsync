@@ -40,7 +40,8 @@ export default function WorkOrdersPage({ overview }: { overview: Overview }) {
     const [pickerKey, setPickerKey] = useState(0);
     const [detail, setDetail] = useState<WorkOrderDetail | null>(null);
     const [loadFailed, setLoadFailed] = useState(false);
-    const [sla, setSla] = useState<Record<Priority, string> | null>(null);
+    const [sla, setSla] = useState<(Record<Priority, string> & { warn: string; escalate: string; nightFrom: string; nightTo: string }) | null>(null);
+    const [ackNote, setAckNote] = useState('');
     const [hold, setHold] = useState({ reason: 'waiting_parts', note: '' });
     const [done, setDone] = useState({ note: '' });
     const [doneFile, setDoneFile] = useState<File | null>(null);
@@ -123,7 +124,7 @@ export default function WorkOrdersPage({ overview }: { overview: Overview }) {
     async function saveSla() {
         if (sla === null) return;
         const n = (p: Priority) => Number(sla[p]);
-        const result = await action.run('/maintenance/sla', { body: { urgent: n('urgent'), high: n('high'), normal: n('normal'), low: n('low'), lock_version: overview.sla_lock_version }, reload: ['overview'] });
+        const result = await action.run('/maintenance/sla', { body: { urgent: n('urgent'), high: n('high'), normal: n('normal'), low: n('low'), warn_percent: Number(sla.warn), escalate_percent: Number(sla.escalate), night_from_hour: Number(sla.nightFrom), night_to_hour: Number(sla.nightTo), lock_version: overview.sla_lock_version }, reload: ['overview'] });
 
         if (result !== null) setSla(null);
     }
@@ -146,11 +147,28 @@ export default function WorkOrdersPage({ overview }: { overview: Overview }) {
 
     return (
         <MaintenanceShell
-            actions={<div className="flex gap-2">{overview.may.manage ? <Button onClick={() => setSla({ urgent: String(overview.sla.urgent), high: String(overview.sla.high), normal: String(overview.sla.normal), low: String(overview.sla.low) })} type="button" variant="outline">{t('mtc.sla.open')}</Button> : null}{overview.may.report ? <Button onClick={() => { action.clear(); setReport(BLANK); }} type="button">{t('mtc.report')}</Button> : null}</div>}
+            actions={<div className="flex gap-2">{overview.may.manage ? <Button onClick={() => setSla({ urgent: String(overview.sla.urgent), high: String(overview.sla.high), normal: String(overview.sla.normal), low: String(overview.sla.low), warn: String(overview.escalation.warn), escalate: String(overview.escalation.escalate), nightFrom: String(overview.escalation.night_from), nightTo: String(overview.escalation.night_to) })} type="button" variant="outline">{t('mtc.sla.open')}</Button> : null}{overview.may.report ? <Button onClick={() => { action.clear(); setReport(BLANK); }} type="button">{t('mtc.report')}</Button> : null}</div>}
             description={t('mtc.description')}
             title={t('mtc.title')}
         >
             {loadFailed ? <Alert title={t('mtc.loadFailed')} tone="danger" /> : null}
+            {overview.escalations.length > 0 ? (
+                <section aria-labelledby="mtc-esc-h" className="flex flex-col gap-2 border border-warning bg-surface p-3" data-testid="mtc-escalations">
+                    <h2 className="font-semibold" id="mtc-esc-h">{t('mtc.esc.title', { count: overview.escalations.length })}</h2>
+                    <Input aria-label={t('mtc.esc.note')} maxLength={200} onChange={(e) => setAckNote(e.target.value)} placeholder={t('mtc.esc.note')} value={ackNote} />
+                    <ul className="flex flex-col divide-y divide-border">
+                        {overview.escalations.map((e) => (
+                            <li className="flex flex-wrap items-center justify-between gap-2 py-2 text-sm" key={e.id}>
+                                <span><span className="font-medium">{e.number}</span> · {e.title} · {e.place ?? '—'} <StatusBadge label={label('mtc.priority', e.priority)} tone={PRIORITY_TONE[e.priority]} /> <StatusBadge label={t(e.overdue ? 'mtc.esc.overdue' : 'mtc.esc.near')} tone={e.overdue ? 'danger' : 'warning'} /> <span className="text-xs text-muted-foreground">{t('mtc.esc.level', { level: e.level, target: label('mtc.esc.target', e.target), shift: label('mtc.esc.shift', e.shift) })}{!e.assigned ? ` · ${t('mtc.esc.unassigned')}` : ''}</span></span>
+                                <span className="flex gap-2">
+                                    <Button onClick={() => void open({ id: e.work_order_id })} size="sm" type="button" variant="outline">{t('mtc.open')}</Button>
+                                    <Button disabled={action.busy} onClick={async () => { const done = await action.run(`/maintenance/escalations/${e.id}/acknowledge`, { body: { note: ackNote.trim() === '' ? null : ackNote.trim() }, reload: ['overview'] }); if (done !== null) setAckNote(''); }} size="sm" type="button">{t('mtc.esc.ack')}</Button>
+                                </span>
+                            </li>
+                        ))}
+                    </ul>
+                </section>
+            ) : null}
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4" data-testid="mtc-kpis">
                 <Metric label={t('mtc.kpi.open')} value={String(overview.counts.open + overview.counts.assigned)} />
                 <Metric label={t('mtc.kpi.progress')} value={String(overview.counts.in_progress + overview.counts.on_hold)} />
@@ -296,6 +314,14 @@ export default function WorkOrdersPage({ overview }: { overview: Overview }) {
                         <p className="text-sm text-muted-foreground">{overview.sla_is_baseline ? t('mtc.sla.baseline') : t('mtc.sla.hint')}</p>
                         {failure}
                         {overview.priorities.map((p) => <FormField error={p === 'urgent' ? action.fieldError('sla') : undefined} key={p} label={t('mtc.sla.minutes', { priority: label('mtc.priority', p) })}><Input inputMode="numeric" onChange={(e) => setSla({ ...sla, [p]: e.target.value })} value={sla[p]} /></FormField>)}
+                        <h3 className="pt-2 font-semibold">{t('mtc.esc.settings')}</h3>
+                        <p className="text-xs text-muted-foreground">{t('mtc.esc.matrix')}</p>
+                        <div className="grid gap-3 sm:grid-cols-2">
+                            <FormField error={action.fieldError('warn_percent')} field="warn_percent" label={t('mtc.esc.warn')}><Input inputMode="numeric" onChange={(e) => setSla({ ...sla, warn: e.target.value })} value={sla.warn} /></FormField>
+                            <FormField error={action.fieldError('escalate_percent')} field="escalate_percent" label={t('mtc.esc.escalate')}><Input inputMode="numeric" onChange={(e) => setSla({ ...sla, escalate: e.target.value })} value={sla.escalate} /></FormField>
+                            <FormField error={action.fieldError('night_from_hour')} field="night_from_hour" label={t('mtc.esc.nightFrom')}><Input inputMode="numeric" onChange={(e) => setSla({ ...sla, nightFrom: e.target.value })} value={sla.nightFrom} /></FormField>
+                            <FormField error={action.fieldError('night_to_hour')} field="night_to_hour" label={t('mtc.esc.nightTo')}><Input inputMode="numeric" onChange={(e) => setSla({ ...sla, nightTo: e.target.value })} value={sla.nightTo} /></FormField>
+                        </div>
                     </div>
                 )}
             </Dialog>

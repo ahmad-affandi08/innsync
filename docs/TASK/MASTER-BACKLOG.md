@@ -156,8 +156,8 @@
 | TASK-MTC-009 | FR-MTC-009 | Maintenance / Engineering | Sebaiknya | TODO |
 | TASK-MTC-010 | FR-MTC-010 | Maintenance / Engineering | Wajib | TODO |
 | TASK-MTC-011 | FR-MTC-011 | Maintenance / Engineering | Wajib | TODO |
-| TASK-MTC-012 | FR-MTC-012 | Maintenance / Engineering | Wajib | TODO |
-| TASK-MTC-013 | FR-MTC-013 | Maintenance / Engineering | Wajib | TODO |
+| TASK-MTC-012 | FR-MTC-012 | Maintenance / Engineering | Wajib | IN_PROGRESS |
+| TASK-MTC-013 | FR-MTC-013 | Maintenance / Engineering | Wajib | REVIEW |
 | TASK-MTC-014 | FR-MTC-014 | Maintenance / Engineering | Sebaiknya | TODO |
 | TASK-MTC-015 | FR-MTC-015 | Maintenance / Engineering | Sebaiknya | TODO |
 | TASK-INV-001 | FR-INV-001 | Inventory | Wajib | REVIEW |

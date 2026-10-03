@@ -66,6 +66,7 @@ use App\Modules\Kitchen\Presentation\Http\Controllers\RecipeController;
 use App\Modules\Kitchen\Presentation\Http\Controllers\WasteController;
 use App\Modules\Laundry\Presentation\Http\Controllers\ClaimController;
 use App\Modules\Laundry\Presentation\Http\Controllers\LaundryController;
+use App\Modules\Maintenance\Presentation\Http\Controllers\ReportController as MaintenanceReportController;
 use App\Modules\Maintenance\Presentation\Http\Controllers\WorkOrderController;
 use App\Modules\Property\Presentation\Http\Controllers\BookingPolicyController;
 use App\Modules\Property\Presentation\Http\Controllers\ChargeSchemeController;
@@ -688,4 +689,6 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
     Route::post('/work-orders/{id}/block', [WorkOrderController::class, 'block'])->where('id', $id)->name('maintenance.work-orders.block');
     Route::post('/work-orders/{id}/release-room', [WorkOrderController::class, 'releaseRoom'])->where('id', $id)->name('maintenance.work-orders.release-room');
     Route::post('/sla', [WorkOrderController::class, 'sla'])->name('maintenance.sla');
+    Route::get('/reports', [MaintenanceReportController::class, 'index'])->name('maintenance.reports');
+    Route::post('/escalations/{id}/acknowledge', [MaintenanceReportController::class, 'acknowledge'])->where('id', $id)->name('maintenance.escalations.acknowledge');
 });
