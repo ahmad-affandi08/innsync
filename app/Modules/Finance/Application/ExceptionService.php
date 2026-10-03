@@ -30,7 +30,10 @@ use DateTimeZone;
  */
 final readonly class ExceptionService
 {
-    public const KINDS = ['refund', 'chargeback', 'settlement_discrepancy', 'unknown_payment'];
+    public const KINDS = ['refund', 'chargeback', 'settlement_discrepancy', 'unknown_payment', 'late_sale'];
+
+    /** The kinds a person raises; a late sale is raised by finance itself when a bill arrives after its day was booked. */
+    public const MANUAL_KINDS = ['refund', 'chargeback', 'settlement_discrepancy', 'unknown_payment'];
 
     public const RESOLUTIONS = ['matched', 'adjusted', 'waived'];
 
@@ -69,7 +72,7 @@ final readonly class ExceptionService
 
         return [
             'exceptions' => array_map(fn (array $e): array => $this->shape($e, $names, $actor, $may), $rows), 'open_count' => $this->store->openCount($property),
-            'kinds' => self::KINDS, 'resolutions' => self::RESOLUTIONS, 'methods' => self::METHODS, 'today' => $this->businessDate->current($property)->toString(), 'may' => ['reconcile' => $may],
+            'kinds' => self::MANUAL_KINDS, 'resolutions' => self::RESOLUTIONS, 'methods' => self::METHODS, 'today' => $this->businessDate->current($property)->toString(), 'may' => ['reconcile' => $may],
         ];
     }
 
@@ -83,7 +86,7 @@ final readonly class ExceptionService
         $today = $this->businessDate->current($property)->toString();
         $businessDate = $businessDate === null || $businessDate === '' ? $today : $this->date($businessDate, 'business_date');
 
-        if (! in_array($kind, self::KINDS, true)) {
+        if (! in_array($kind, self::MANUAL_KINDS, true)) {
             throw Refusal::invalid('Choose the kind of exception from the list.', ['kind']);
         }
 

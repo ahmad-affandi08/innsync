@@ -1037,6 +1037,7 @@ export const finance = {
     "fin.exc.kind.chargeback": "Sengketa kartu (chargeback)",
     "fin.exc.kind.settlement_discrepancy": "Selisih penyelesaian",
     "fin.exc.kind.unknown_payment": "Pembayaran status belum diketahui",
+    "fin.exc.kind.late_sale": "Penjualan yang terlambat sampai ke keuangan",
     "fin.exc.colNumber": "Pengecualian",
     "fin.exc.colKind": "Jenis",
     "fin.exc.colDate": "Tanggal bisnis",

@@ -1,6 +1,7 @@
 <?php
 
 use App\Modules\Finance\Application\CompanyReceivableConsumer;
+use App\Modules\Finance\Application\FnbSalesRevenueConsumer;
 use App\Modules\Finance\Application\FrontOfficeRevenueConsumer;
 use App\Modules\Finance\Application\PurchasingPayableConsumer;
 use App\Modules\FrontOffice\Application\Companies\CompanyReceiptConsumer;
@@ -36,6 +37,7 @@ return [
     'consumers' => [
         CompanyReceiptConsumer::class,
         CompanyReceivableConsumer::class,
+        FnbSalesRevenueConsumer::class,
         FrontOfficeRevenueConsumer::class,
         PurchasingPayableConsumer::class,
     ],

@@ -202,4 +202,36 @@ final readonly class DatabaseRevenueStore implements RevenueStore
 
         return $out;
     }
+
+    public function addPosSale(PropertyId $property, array $row, DateTimeImmutable $at): bool
+    {
+        return $this->insert('fin_pos_sales', [...$row, 'property_id' => $property->toString(), 'created_at' => $at]);
+    }
+
+    public function dayExists(PropertyId $property, string $date): bool
+    {
+        return DB::table('fin_revenue_days')->where('property_id', $property->toString())->where('business_date', $date)->exists();
+    }
+
+    public function posSalesOf(PropertyId $property, string $date): array
+    {
+        return DB::table('fin_pos_sales')->where('property_id', $property->toString())->where('business_date', $date)->where('room_minor', 0)->where('late', false)->groupBy('source')->orderBy('source')
+            ->get(['source', DB::raw('SUM(base_minor) as base'), DB::raw('SUM(service_charge_minor) as sc'), DB::raw('SUM(tax_minor) as tax'), DB::raw('SUM(total_minor) as total')])
+            ->map(static fn ($r): array => ['source' => (string) $r->source, 'base_minor' => (int) $r->base, 'service_charge_minor' => (int) $r->sc, 'tax_minor' => (int) $r->tax, 'total_minor' => (int) $r->total])->all();
+    }
+
+    public function posPaymentsOf(PropertyId $property, string $date): array
+    {
+        $row = DB::table('fin_pos_sales')->where('property_id', $property->toString())->where('business_date', $date)->where('room_minor', 0)->where('late', false)
+            ->first([DB::raw('COALESCE(SUM(cash_minor), 0) as cash'), DB::raw('COALESCE(SUM(cash_minor > 0), 0) as cash_n'), DB::raw('COALESCE(SUM(card_minor), 0) as card'), DB::raw('COALESCE(SUM(card_minor > 0), 0) as card_n'), DB::raw('COALESCE(SUM(qris_minor), 0) as qris'), DB::raw('COALESCE(SUM(qris_minor > 0), 0) as qris_n')]);
+        $out = [];
+
+        foreach (['cash', 'card', 'qris'] as $method) {
+            if ((int) ($row->{$method} ?? 0) !== 0) {
+                $out[] = ['method' => $method, 'amount_minor' => (int) $row->{$method}, 'count' => (int) $row->{$method.'_n'}];
+            }
+        }
+
+        return $out;
+    }
 }
