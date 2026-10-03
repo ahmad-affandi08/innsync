@@ -3,8 +3,6 @@ import {
     BedDouble,
     CalendarDays,
     ChartNoAxesCombined,
-    ChevronDown,
-    ChevronRight,
     ConciergeBell,
     Hotel,
     Landmark,
@@ -28,10 +26,10 @@ import favicon from '@/assets/brand/Favicon.svg';
 import logo from '@/assets/brand/LogoHorizontal.svg';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { LanguageSwitcher } from '@/components/ui/language-switcher';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { NavTabs } from '@/components/ui/nav-tabs';
 import { Separator } from '@/components/ui/separator';
 import { Sheet, SheetContent, SheetDescription, SheetTitle } from '@/components/ui/sheet';
 import { useFormatters, useTranslation } from '@/shared/i18n/i18n';
@@ -103,44 +101,21 @@ export function AppFrame({ actions, children, description, links = [], title, wi
                     {MODULES.filter((m) => m.group === group).map((m) => {
                         const Icon = m.icon;
                         const isActive = m.key === current.key;
-                        const expandable = isActive && links.length > 0;
 
                         return (
-                            <Collapsible key={m.key} open={expandable}>
-                                <Link
-                                    aria-current={isActive && !expandable ? 'page' : undefined}
-                                    className={cn(
-                                        'group flex items-center gap-3 border-l-2 px-3 py-2 text-sm transition-colors',
-                                        isActive ? 'border-brand bg-surface-muted font-semibold text-foreground' : 'border-transparent text-muted-foreground hover:bg-surface-muted hover:text-foreground',
-                                    )}
-                                    href={m.href}
-                                    onClick={() => setOpen(false)}
-                                >
-                                    <Icon aria-hidden="true" className={cn('size-[1.125rem] shrink-0', isActive ? 'text-brand' : 'text-muted-foreground group-hover:text-foreground')} strokeWidth={1.75} />
-                                    <span className="flex-1 truncate">{t(m.label)}</span>
-                                    {expandable ? <ChevronRight aria-hidden="true" className="size-3.5 rotate-90 text-muted-foreground" /> : null}
-                                </Link>
-                                <CollapsibleContent>
-                                    <ul className="ml-[1.4rem] flex flex-col border-l border-border py-1">
-                                        {links.map((l) => {
-                                            const here = path === l.href || path.startsWith(`${l.href}/`);
-
-                                            return (
-                                                <li key={l.href}>
-                                                    <Link
-                                                        aria-current={here ? 'page' : undefined}
-                                                        className={cn('-ml-px block border-l-2 px-4 py-1.5 text-[0.8125rem] transition-colors', here ? 'border-brand font-semibold text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground')}
-                                                        href={l.href}
-                                                        onClick={() => setOpen(false)}
-                                                    >
-                                                        {t(l.label as MessageKey)}
-                                                    </Link>
-                                                </li>
-                                            );
-                                        })}
-                                    </ul>
-                                </CollapsibleContent>
-                            </Collapsible>
+                            <Link
+                                aria-current={isActive ? 'page' : undefined}
+                                className={cn(
+                                    'group flex items-center gap-3 border-l-2 px-3 py-2 text-sm transition-colors',
+                                    isActive ? 'border-brand bg-surface-muted font-semibold text-foreground' : 'border-transparent text-muted-foreground hover:bg-surface-muted hover:text-foreground',
+                                )}
+                                href={m.href}
+                                key={m.key}
+                                onClick={() => setOpen(false)}
+                            >
+                                <Icon aria-hidden="true" className={cn('size-[1.125rem] shrink-0', isActive ? 'text-brand' : 'text-muted-foreground group-hover:text-foreground')} strokeWidth={1.75} />
+                                <span className="flex-1 truncate">{t(m.label)}</span>
+                            </Link>
                         );
                     })}
                 </div>
@@ -262,7 +237,7 @@ export function AppFrame({ actions, children, description, links = [], title, wi
 
                         return (
                             <Link
-                                aria-current={isActive && !hasLinks ? 'page' : undefined}
+                                aria-current={isActive ? 'page' : undefined}
                                 aria-label={t(m.label)}
                                 className={cn('flex flex-col items-center gap-1 border-l-2 px-1 py-2 text-[0.625rem] leading-tight tracking-tight transition-colors', isActive ? 'border-brand bg-surface-muted font-medium text-foreground' : 'border-transparent text-muted-foreground hover:bg-surface-muted hover:text-foreground')}
                                 href={m.href}
@@ -276,26 +251,6 @@ export function AppFrame({ actions, children, description, links = [], title, wi
                     })}
                 </nav>
             </aside>
-            {hasLinks ? (
-                <aside aria-label={t(current.label)} className="fixed inset-y-0 left-20 z-20 hidden w-56 flex-col border-r border-border bg-surface lg:flex print:hidden">
-                    <p className="flex h-14 items-center border-b border-border px-5 text-sm font-semibold">{t(current.label)}</p>
-                    <ScrollArea className="flex-1">
-                        <ul className="flex flex-col gap-0.5 p-3">
-                            {links.map((l) => (
-                                <li key={l.href}>
-                                    <Link
-                                        aria-current={here(l.href) ? 'page' : undefined}
-                                        className={cn('block border-l-2 px-3 py-2 text-sm transition-colors', here(l.href) ? 'border-brand bg-surface-muted font-semibold text-foreground' : 'border-transparent text-muted-foreground hover:bg-surface-muted hover:text-foreground')}
-                                        href={l.href}
-                                    >
-                                        {t(l.label as MessageKey)}
-                                    </Link>
-                                </li>
-                            ))}
-                        </ul>
-                    </ScrollArea>
-                </aside>
-            ) : null}
         </>
     );
 
@@ -312,7 +267,7 @@ export function AppFrame({ actions, children, description, links = [], title, wi
 
                         return (
                             <Link
-                                aria-current={isActive && !hasLinks ? 'page' : undefined}
+                                aria-current={isActive ? 'page' : undefined}
                                 className={cn('flex items-center gap-2 whitespace-nowrap border-b-2 px-3 text-sm transition-colors', isActive ? 'border-brand font-semibold text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground')}
                                 href={m.href}
                                 key={m.key}
@@ -330,37 +285,6 @@ export function AppFrame({ actions, children, description, links = [], title, wi
                     {layoutSwitcher}
                     {userMenu}
                 </div>
-            </div>
-            <div className="hidden h-10 items-center gap-4 border-t border-border bg-surface-muted px-6 lg:flex">
-                {hasLinks ? (
-                    <ul className="flex min-w-0 flex-1 items-stretch gap-1 self-stretch overflow-x-auto">
-                        {links.map((l) => (
-                            <li className="flex" key={l.href}>
-                                <Link
-                                    aria-current={here(l.href) ? 'page' : undefined}
-                                    className={cn('flex items-center whitespace-nowrap border-b-2 px-3 text-[0.8125rem] transition-colors', here(l.href) ? 'border-brand font-semibold text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground')}
-                                    href={l.href}
-                                >
-                                    {t(l.label as MessageKey)}
-                                </Link>
-                            </li>
-                        ))}
-                    </ul>
-                ) : <span className="flex-1" />}
-                {hasLinks ? (
-                    <DropdownMenu>
-                        <DropdownMenuTrigger className="flex items-center gap-1 whitespace-nowrap px-2 py-1 text-[0.8125rem] text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" type="button">
-                            {t('shell.allPages')}<ChevronDown aria-hidden="true" className="size-3.5" />
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-60">
-                            {links.map((l) => (
-                                <DropdownMenuItem asChild key={l.href}><Link href={l.href}>{t(l.label as MessageKey)}</Link></DropdownMenuItem>
-                            ))}
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-                ) : null}
-                {shell?.propertyName ? <span className="max-w-[14rem] truncate text-sm font-medium">{shell.propertyName}</span> : null}
-                {dateChip}
             </div>
         </header>
     );
@@ -392,7 +316,7 @@ export function AppFrame({ actions, children, description, links = [], title, wi
                     </SheetContent>
                 </Sheet>
 
-                <div className={cn('flex min-w-0 flex-1 flex-col bg-surface-muted', layout === 'sidebar' && 'lg:pl-64', layout === 'rail' && (hasLinks ? 'lg:pl-[19rem]' : 'lg:pl-20'))}>
+                <div className={cn('flex min-w-0 flex-1 flex-col bg-surface-muted', layout === 'sidebar' && 'lg:pl-64', layout === 'rail' && 'lg:pl-20')}>
                     {layout === 'topbar' ? topbar : (
                         <header className="sticky top-0 z-20 flex h-14 items-center gap-3 border-b border-border bg-surface px-4 lg:px-8 print:hidden">
                             {menuButton}
@@ -403,6 +327,7 @@ export function AppFrame({ actions, children, description, links = [], title, wi
                             {userMenu}
                         </header>
                     )}
+                    {hasLinks ? <NavTabs allLabel={t('shell.allPages')} className="sticky top-14 z-10" label={t(current.label)} path={path} tabs={links.map((l) => ({ href: l.href, label: t(l.label as MessageKey) }))} /> : null}
                     {layout === 'topbar' ? (
                         <main className={cn('mx-auto flex w-full flex-1 flex-col gap-8 px-4 py-8 lg:px-8', wide ? 'max-w-[100rem]' : 'max-w-5xl')} id="content" tabIndex={-1}>
                             {pageHead}
