@@ -33,12 +33,3 @@
 - **Top bar**: modules across the top, the pages of the active module as tabs under them, the property and business date at the right of the tab row; the page takes the whole width; an **All pages** menu lists every page of the module when the tabs do not fit.
 
 Below `lg` every layout uses the same drawer. Pages are not aware of the layout.
-
-## Pages of a module: tabs under the header
-
-The pages of a module are never a stacked list in the sidebar, in the icon rail's second panel or in a second row of the top bar. In every layout they are one strip of tabs directly under the header (`components/ui/nav-tabs.tsx`, fed by the `links` of `AppFrame`):
-
-- Tabs are navy with white text; the page being shown is orange with navy text. Only one tab is active: the one with the longest address that matches the page (so "Receivables" is not active on "Receivable aging").
-- The strip scrolls sideways when the pages do not fit, scrolls the active tab into view, and, with more than eight pages, ends in an "All pages" list.
-- It stays under the header while the page scrolls and is hidden when printing.
-- The sidebar and the rail list only the modules; the pages of the active module are the tabs.
