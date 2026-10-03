@@ -14,6 +14,14 @@
             "as_of"
         ]
     },
+    "GET /finance/cash": {
+        "required": [],
+        "declared": [
+            "from",
+            "only",
+            "to"
+        ]
+    },
     "GET /finance/payables": {
         "required": [],
         "declared": [
@@ -25,6 +33,14 @@
         "required": [],
         "declared": [
             "status"
+        ]
+    },
+    "GET /finance/revenue": {
+        "required": [],
+        "declared": [
+            "from",
+            "to",
+            "year"
         ]
     },
     "GET /finance/schedule": {
@@ -519,6 +535,28 @@
             "name"
         ]
     },
+    "POST /finance/cash/exceptions/{id}/settle": {
+        "required": [
+            "lock_version",
+            "resolution",
+            "status"
+        ],
+        "declared": [
+            "lock_version",
+            "resolution",
+            "status"
+        ]
+    },
+    "POST /finance/cash/shifts/{id}/receive": {
+        "required": [
+            "deposited_minor"
+        ],
+        "declared": [
+            "deposited_minor",
+            "note",
+            "reason"
+        ]
+    },
     "POST /finance/payables/{id}/classify": {
         "required": [],
         "declared": [
@@ -564,6 +602,12 @@
         ],
         "declared": [
             "proof"
+        ]
+    },
+    "POST /finance/revenue/{date}/verify": {
+        "required": [],
+        "declared": [
+            "note"
         ]
     },
     "POST /front-office/cashier/settings": {

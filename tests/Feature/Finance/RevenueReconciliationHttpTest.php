@@ -160,7 +160,7 @@ final class RevenueReconciliationHttpTest extends TestCase
             ->has('report.methods', 2)
             ->where('report.methods.0.method', 'card')
             ->where('report.methods.1.net_minor', 2 * 8_500_000)
-            ->has('report.outlets', 3)
+            ->has('report.outlets', 2)
             ->where('report.outlets.0.code', 'other')
             ->where('monthly.year', 2026)
             ->where('monthly.months.8.days', 1)

@@ -5,6 +5,11 @@
         "department",
         "name"
     ],
+    "finance/pages/cash": [
+        "deposited_minor",
+        "resolution",
+        "status"
+    ],
     "finance/pages/payable": [
         "amount_minor",
         "credit_id",

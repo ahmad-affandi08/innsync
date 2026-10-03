@@ -7,6 +7,8 @@ const LINKS = [
     { href: '/finance/payments', label: 'fin.nav.payments' },
     { href: '/finance/schedule', label: 'fin.nav.schedule' },
     { href: '/finance/aging', label: 'fin.nav.aging' },
+    { href: '/finance/revenue', label: 'fin.nav.revenue' },
+    { href: '/finance/cash', label: 'fin.nav.cash' },
     { href: '/finance/accounts', label: 'fin.nav.accounts' },
 ] as const;
 
