@@ -7,6 +7,7 @@ import { DataGrid, type DataGridColumn } from '@/components/ui/data-grid';
 import { Dialog } from '@/components/ui/dialog';
 import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
+import { DatePicker } from '@/components/ui/date-picker';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
@@ -28,7 +29,7 @@ type Movement = { value_minor: number | null; id: string; kind: string; reason_c
 type CatalogItem = { id: string; code: string; name: string; base_unit: string; is_active: boolean; units: { unit: string; factor_milli: number }[] };
 type Catalog = { items: CatalogItem[]; locations: { id: string; code: string; name: string; is_active: boolean }[]; may: { manage: boolean; stock: boolean } };
 type Position = { currency: string; reasons: { adjust: string[]; write_off: string[]; departments: string[] }; rows: Row[]; below_minimum: number; may: { post: boolean; adjust: boolean; negative: boolean; transfer: boolean; limits: boolean; valuation: boolean } };
-type Move = { kind: string; item_id: string; location_id: string; unit: string; quantity: string; reason_code: string; reference: string; note: string; negative_reason: string; unit_cost: string };
+type Move = { kind: string; item_id: string; location_id: string; unit: string; quantity: string; reason_code: string; reference: string; note: string; negative_reason: string; unit_cost: string; lot_number: string; expires_on: string };
 
 const OUTFLOWS = ['issue', 'adjustment_out', 'write_off'];
 
@@ -59,7 +60,7 @@ export default function StockPage({ position, movements, catalog, filters }: { p
         setPosted(false);
         setCostError(false);
         const item = catalog.items.find((i) => i.is_active);
-        setMove({ kind: kinds[0] ?? 'receipt', item_id: item?.id ?? '', location_id: catalog.locations.find((l) => l.is_active)?.id ?? '', unit: item?.base_unit ?? '', quantity: '', reason_code: '', reference: '', note: '', negative_reason: '', unit_cost: '' });
+        setMove({ kind: kinds[0] ?? 'receipt', item_id: item?.id ?? '', location_id: catalog.locations.find((l) => l.is_active)?.id ?? '', unit: item?.base_unit ?? '', quantity: '', reason_code: '', reference: '', note: '', negative_reason: '', unit_cost: '', lot_number: '', expires_on: '' });
     }
 
     const moveItem = move === null ? null : catalog.items.find((i) => i.id === move.item_id) ?? null;
@@ -80,7 +81,7 @@ export default function StockPage({ position, movements, catalog, filters }: { p
         setCostError(move.unit_cost.trim() !== '' && cost === null);
         if (move.unit_cost.trim() !== '' && cost === null) return;
         const done = await action.run('/inventory/stock/movements', {
-            body: { kind: move.kind, item_id: move.item_id, location_id: move.location_id, unit: move.unit, quantity: move.quantity, reason_code: move.reason_code || null, reference: move.reference || null, note: move.note || null, negative_reason: move.negative_reason || null, unit_cost_minor: cost },
+            body: { kind: move.kind, item_id: move.item_id, location_id: move.location_id, unit: move.unit, quantity: move.quantity, reason_code: move.reason_code || null, reference: move.reference || null, note: move.note || null, negative_reason: move.negative_reason || null, unit_cost_minor: cost, lot_number: move.lot_number.trim() || null, expires_on: move.expires_on || null },
             idempotencyKey: intent,
             reload,
         });
@@ -184,6 +185,16 @@ export default function StockPage({ position, movements, catalog, filters }: { p
                                     <Input inputMode="decimal" onChange={(e) => setMove({ ...move, unit_cost: e.target.value })} value={move.unit_cost} />
                                 </FormField>
                             </div>
+                        ) : null}
+                        {['opening', 'receipt', 'adjustment_in'].includes(move.kind) ? (
+                            <>
+                                <FormField error={action.fieldError('lot_number')} field="lot_number" hint={t('inv.lot.hint')} label={t('inv.lot.number')}>
+                                    <Input maxLength={40} onChange={(e) => setMove({ ...move, lot_number: e.target.value })} value={move.lot_number} />
+                                </FormField>
+                                <FormField error={action.fieldError('expires_on')} field="expires_on" label={t('inv.lot.expires')}>
+                                    <DatePicker onChange={(e) => setMove({ ...move, expires_on: e.target.value })} value={move.expires_on} />
+                                </FormField>
+                            </>
                         ) : null}
                         {preview !== null && moveItem !== null ? <p className="text-sm sm:col-span-2" data-testid="opening-preview">{t(OUTFLOWS.includes(move.kind) ? 'inv.move.out' : 'inv.move.in', { qty: qty(preview), unit: moveItem.base_unit })}</p> : null}
                         {reasons.length > 0 ? (

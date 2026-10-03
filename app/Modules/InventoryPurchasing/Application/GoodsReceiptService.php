@@ -232,7 +232,7 @@ final readonly class GoodsReceiptService
 
             foreach ($prepared as &$p) {
                 if ($p['accepted_qty_milli'] > 0) {
-                    $moved = $this->poster->post($property, $actor, $p['_item'], $location, 'receipt', $p['unit'], $p['accepted_qty_milli'], null, $number, null, 'goods_receipt', $p['id'], null, null, false, null, $p['unit_price_minor']);
+                    $moved = $this->poster->post($property, $actor, $p['_item'], $location, 'receipt', $p['unit'], $p['accepted_qty_milli'], null, $number, null, 'goods_receipt', $p['id'], null, null, false, null, $p['unit_price_minor'], null, false, $p['expires_on'] === null ? null : ['number' => $number, 'expires_on' => $p['expires_on']]);
                     $p['movement_id'] = $moved['movement']['id'];
                 }
             }

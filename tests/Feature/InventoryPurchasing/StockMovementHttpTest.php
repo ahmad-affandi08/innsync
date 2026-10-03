@@ -89,6 +89,43 @@ final class StockMovementHttpTest extends TestCase
         $this->assertSame(1, DB::table('audit_entries')->where('action', 'stock.receipt_posted')->count());
     }
 
+    public function test_stock_that_comes_in_with_a_batch_is_taken_out_first_expired_first_and_flagged_before_it_expires(): void
+    {
+        $this->as([StockService::POST_PERMISSION, StockService::VIEW_PERMISSION]);
+        // Opening stock has no batch; two batches come in, the later one first.
+        $this->move(['kind' => 'receipt', 'unit_cost_minor' => 1_000, 'item_id' => $this->item, 'location_id' => $this->main, 'unit' => 'BTL', 'quantity' => '10', 'lot_number' => 'B-LATE', 'expires_on' => '2026-12-01']);
+        $this->move(['kind' => 'receipt', 'unit_cost_minor' => 1_000, 'item_id' => $this->item, 'location_id' => $this->main, 'unit' => 'BTL', 'quantity' => '5', 'lot_number' => 'B-SOON', 'expires_on' => '2026-10-10']);
+        $this->move(['kind' => 'receipt', 'unit_cost_minor' => 1_000, 'item_id' => $this->item, 'location_id' => $this->main, 'unit' => 'BTL', 'quantity' => '3', 'expires_on' => '2026-09-01'], 422);
+        $this->move(['kind' => 'receipt', 'unit_cost_minor' => 1_000, 'item_id' => $this->item, 'location_id' => $this->main, 'unit' => 'BTL', 'quantity' => '3', 'lot_number' => str_repeat('x', 41)], 422);
+        $this->move(['kind' => 'issue', 'item_id' => $this->item, 'location_id' => $this->main, 'unit' => 'BTL', 'quantity' => '4', 'reason_code' => 'fnb', 'lot_number' => 'B-X']);
+        self::assertSame(0, DB::table('inventory_lots')->where('lot_number', 'B-X')->count(), 'a batch is not made by an outflow');
+
+        // Four bottles go out: they come from the batch that expires first.
+        $remaining = fn (): array => DB::table('inventory_lots')->orderBy('expires_on')->pluck('remaining_milli', 'lot_number')->map(fn ($v): int => (int) $v)->all();
+        self::assertSame(['B-SOON' => 1_000, 'B-LATE' => 10_000], $remaining());
+
+        // Three more: one is left of the first batch, two come from the next; stock that is in no batch is not touched.
+        $this->move(['kind' => 'issue', 'item_id' => $this->item, 'location_id' => $this->main, 'unit' => 'BTL', 'quantity' => '3', 'reason_code' => 'fnb']);
+        self::assertSame(['B-SOON' => 0, 'B-LATE' => 8_000], $remaining());
+        self::assertSame(['B-LATE'], array_column($this->getJson('/inventory/lots')->assertOk()->viewData('page')['props']['overview']['lots'], 'lot_number'));
+
+        // 2026-10-01: the batch in December is in date; moving the day on makes it expire soon, then expired.
+        $overview = fn (string $q = ''): array => $this->get('/inventory/lots'.$q)->assertOk()->viewData('page')['props']['overview'];
+        self::assertSame(['ok', 0, 0], [$overview()['lots'][0]['status'], $overview()['counts']['expired'], $overview()['counts']['expiring']]);
+        DB::table('inventory_lots')->where('lot_number', 'B-LATE')->update(['expires_on' => '2026-10-08']);
+        self::assertSame(['expiring', 7, 1], [$overview()['lots'][0]['status'], $overview()['lots'][0]['days_left'], $overview()['counts']['expiring']]);
+        DB::table('inventory_lots')->where('lot_number', 'B-LATE')->update(['expires_on' => '2026-09-30']);
+        self::assertSame(['expired', 1], [$overview('?status=expired')['lots'][0]['status'], $overview()['counts']['expired']]);
+        self::assertSame([], $overview('?status=ok')['lots']);
+        self::assertSame([], $overview('?department=kitchen')['lots']);
+        $this->getJson('/inventory/lots?department=wizardry')->assertStatus(422);
+        $this->getJson('/inventory/lots?status=maybe')->assertStatus(422);
+
+        // Nobody without the privilege sees the batches.
+        $this->as(['housekeeping.view']);
+        $this->getJson('/inventory/lots')->assertStatus(403);
+    }
+
     public function test_an_issue_needs_a_department_and_takes_stock_out_as_a_negative_movement(): void
     {
         $this->move(['kind' => 'issue', 'item_id' => $this->item, 'location_id' => $this->main, 'unit' => 'BTL', 'quantity' => '30'], 422);

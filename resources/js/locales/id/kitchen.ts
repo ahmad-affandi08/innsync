@@ -110,6 +110,7 @@ export const kitchen = {
     "kitchen.nav.purchasing": "Permintaan pembelian",
     "kitchen.damage.title": "Lapor kerusakan",
     "kitchen.damage.description": "Peralatan dapur atau bar yang rusak: sebutkan yang mana dan kerusakannya, tambahkan foto, dan Maintenance langsung mendapat work order.",
+    "kitchen.nav.lots": "Batch dan kedaluwarsa",
     "kitchen.nav.waste": "Waste",
     "waste.title": "Catatan waste",
     "waste.description": "Apa yang dibuang dapur, alasannya, dan biayanya. Setiap catatan mengurangi stok gudang.",

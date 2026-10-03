@@ -138,7 +138,7 @@
 | TASK-KIT-006 | FR-KIT-006 | F&B Product / Kitchen | Wajib | IN_PROGRESS |
 | TASK-KIT-007 | FR-KIT-007 | F&B Product / Kitchen | Wajib | TODO |
 | TASK-KIT-008 | FR-KIT-008 | F&B Product / Kitchen | Wajib | TODO |
-| TASK-KIT-009 | FR-KIT-009 | F&B Product / Kitchen | Sebaiknya | TODO |
+| TASK-KIT-009 | FR-KIT-009 | F&B Product / Kitchen | Sebaiknya | REVIEW |
 | TASK-KIT-010 | FR-KIT-010 | F&B Product / Kitchen | Wajib | REVIEW |
 | TASK-KIT-011 | FR-KIT-011 | F&B Product / Kitchen | Wajib | REVIEW |
 | TASK-KIT-012 | FR-KIT-012 | F&B Product / Kitchen | Sebaiknya | TODO |
@@ -167,7 +167,7 @@
 | TASK-INV-005 | FR-INV-005 | Inventory | Wajib | REVIEW |
 | TASK-INV-006 | FR-INV-006 | Inventory | Wajib | REVIEW |
 | TASK-INV-007 | FR-INV-007 | Inventory | Sebaiknya | REVIEW |
-| TASK-INV-008 | FR-INV-008 | Inventory | Sebaiknya | TODO |
+| TASK-INV-008 | FR-INV-008 | Inventory | Sebaiknya | REVIEW |
 | TASK-INV-009 | FR-INV-009 | Inventory | Wajib | REVIEW |
 | TASK-INV-010 | FR-INV-010 | Inventory | Wajib | IN_PROGRESS |
 | TASK-INV-011 | FR-INV-011 | Inventory | Wajib | REVIEW |

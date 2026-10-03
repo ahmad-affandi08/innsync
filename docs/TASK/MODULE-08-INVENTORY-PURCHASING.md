@@ -24,7 +24,7 @@
 | TASK-INV-005 | FR-INV-005 | Wajib | Melakukan pemindahan barang antar gudang dengan dokumen serah terima dan konfirmasi penerima. | REVIEW |
 | TASK-INV-006 | FR-INV-006 | Wajib | Melakukan stock opname terjadwal maupun mendadak, membandingkan stok fisik dengan stok sistem, dan menghasilkan berita acara selisih beserta nilai kerugian. | REVIEW |
 | TASK-INV-007 | FR-INV-007 | Sebaiknya | Menghitung nilai persediaan menggunakan metode rata-rata bergerak dan menyajikannya sebagai laporan nilai persediaan per tanggal. | REVIEW |
-| TASK-INV-008 | FR-INV-008 | Sebaiknya | Mengelola tanggal kedaluwarsa dan nomor batch untuk barang konsumsi. | TODO |
+| TASK-INV-008 | FR-INV-008 | Sebaiknya | Mengelola tanggal kedaluwarsa dan nomor batch untuk barang konsumsi. | REVIEW |
 | TASK-INV-009 | FR-INV-009 | Wajib | Konversi satuan bersifat berversi dan tidak boleh mengubah histori transaksi; setiap mutasi menyimpan kuantitas satuan transaksi dan ekuivalen satuan dasar. | REVIEW |
 | TASK-INV-010 | FR-INV-010 | Wajib | Stock adjustment, write-off, dan pembukaan stok negatif memerlukan reason code dan otorisasi sesuai threshold. Kebijakan stok negatif dapat diblokir per kategori/lokasi. | IN_PROGRESS |
 | TASK-INV-011 | FR-INV-011 | Wajib | Mendukung retur ke pemasok dan retur antar gudang dengan dokumen referensi sehingga stok, hutang/kredit, dan histori barang tetap dapat direkonsiliasi. | REVIEW |
@@ -42,6 +42,13 @@
 | TASK-PUR-011 | FR-PUR-011 | Wajib | Perubahan PO yang sudah disetujui menghasilkan revisi bernomor dan memerlukan persetujuan ulang bila mengubah nilai, pemasok, atau kuantitas di atas toleransi. | REVIEW |
 | TASK-PUR-012 | FR-PUR-012 | Wajib | Faktur pemasok mencatat nomor unik pemasok, tanggal, pajak, dan dokumen pendukung; sistem mencegah duplikasi invoice dan menjaga relasi ke PO serta penerimaan barang. | REVIEW |
 | TASK-PUR-013 | FR-PUR-013 | Sebaiknya | Permintaan dan PO menampilkan sisa budget department; kebijakan dapat berupa warning atau hard block sesuai threshold yang dikonfigurasi. | REVIEW |
+
+### Slice 44 (2026-10-03): batches and expiry dates of stock
+
+- Status: `TASK-INV-008` is `REVIEW`. ADR/BR (baselines): stock that comes in with a batch number or an expiry date is kept as a batch; an outflow always takes from the batch that expires first (then the ones with no expiry); stock that came in with no batch belongs to none; a batch is flagged when it expires within 14 days; stock that has already expired is not received.
+- Context: migration 93 (`inventory_lots`: batch number, expiry date, quantity received and left), `StockPoster` (makes the batch on an inflow, takes from batches on an outflow), `StockLotService` and page `inventory-purchasing/pages/lots`; a goods receipt line with an expiry date makes a batch numbered with the receipt; the stock movement form takes a batch number and an expiry date for an opening, a receipt and an adjustment in; the dashboard has an alert for batches expired or about to expire.
+- Not yet: carrying a batch with a transfer to another location, choosing the batch of an outflow by hand, writing a batch off as a whole.
+- Evidence: `tests/Feature/InventoryPurchasing/StockMovementHttpTest.php` (batches made by inflows, first-expired-first-out across batches, expired stock refused, the list with its states and filters, who may see it).
 
 ## Required engineering checks
 

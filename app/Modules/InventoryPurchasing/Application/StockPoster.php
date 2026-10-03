@@ -54,9 +54,10 @@ final readonly class StockPoster
      * @param  int|null  $unitCostMinor  the cost of one `$unit` in minor units; needed for opening and receipt, optional for adjustment in (the average is used)
      * @param  int|null  $fixedValueMinor  the value a transfer in takes over from its transfer out, or the cost a return to a supplier takes out
      * @param  bool  $automatic  a movement the system makes from a sale: it may take the balance below zero (a sale is never refused for stock the books are behind on) unless the location or category blocks it
+     * @param  array{number: string|null, expires_on: string|null}|null  $lot  the batch an inflow came in with; an outflow always takes from the batch that expires first
      * @return array{movement: array<string, mixed>, replayed: bool}
      */
-    public function post(PropertyId $property, string $actorId, array $item, array $location, string $kind, string $unit, int $qtyMilli, ?string $reasonCode, ?string $reference, ?string $note, ?string $sourceType, ?string $sourceRef, ?string $transferId, ?string $overrideReason, bool $allowNegative, ?array $snapshot = null, ?int $unitCostMinor = null, ?int $fixedValueMinor = null, bool $automatic = false): array
+    public function post(PropertyId $property, string $actorId, array $item, array $location, string $kind, string $unit, int $qtyMilli, ?string $reasonCode, ?string $reference, ?string $note, ?string $sourceType, ?string $sourceRef, ?string $transferId, ?string $overrideReason, bool $allowNegative, ?array $snapshot = null, ?int $unitCostMinor = null, ?int $fixedValueMinor = null, bool $automatic = false, ?array $lot = null): array
     {
         $actor = strtolower($actorId);
         $this->inventory->lockItem($property, $item['id']);
@@ -94,6 +95,20 @@ final readonly class StockPoster
         $inflow = in_array($kind, self::INFLOWS, true);
         $override = null;
 
+        if ($lot !== null) {
+            if (! $inflow || $kind === 'transfer_in') {
+                throw Refusal::invalid('A batch and an expiry date are given when stock comes in.', ['lot_number']);
+            }
+
+            if ($lot['number'] !== null && (trim($lot['number']) === '' || mb_strlen($lot['number']) > 40)) {
+                throw Refusal::invalid('The batch number is at most 40 characters.', ['lot_number']);
+            }
+
+            if ($lot['expires_on'] !== null && ($lot['expires_on'] < $this->businessDate->current($property)->toString() || preg_match('/^\d{4}-\d{2}-\d{2}$/', $lot['expires_on']) !== 1)) {
+                throw Refusal::invalid('Stock that has expired is not received; give an expiry date from today.', ['expires_on']);
+            }
+        }
+
         if (! $inflow) {
             $balance = $this->inventory->balanceOf($property, $item['id'], $location['id']);
 
@@ -112,6 +127,12 @@ final readonly class StockPoster
             'override_reason' => $override, 'business_date' => $date, 'posted_by' => $actor,
         ];
         $this->inventory->addMovement($property, $row, $this->clock->nowUtc());
+
+        if ($inflow && $lot !== null && ($lot['number'] !== null || $lot['expires_on'] !== null)) {
+            $this->inventory->addLot($property, ['id' => $this->ids->next(), 'item_id' => $item['id'], 'location_id' => $location['id'], 'movement_id' => $id, 'lot_number' => $lot['number'], 'expires_on' => $lot['expires_on'], 'received_milli' => $base, 'remaining_milli' => $base], $this->clock->nowUtc());
+        } elseif (! $inflow) {
+            $this->inventory->consumeLots($property, $item['id'], $location['id'], $base);
+        }
         $this->audit->record(new AuditEntry($property->toString(), $actor, 'stock.'.$kind.'_posted', 'inventory_item', $item['id'], null, [
             'location' => $location['code'], 'unit' => $unit, 'unit_qty_milli' => $sign * $qtyMilli, 'factor_milli' => $factor, 'base_qty_milli' => $sign * $base, 'value_minor' => $sign * $value, 'reason_code' => $reasonCode, 'source' => $sourceType === null ? null : $sourceType.':'.$sourceRef,
         ], $override));

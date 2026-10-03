@@ -119,4 +119,17 @@ interface InventoryStore
 
     /** Base quantity of an item already sent back by return transfers of a transfer (not cancelled or rejected). */
     public function returnedByTransfer(PropertyId $property, string $transferId, string $itemId): int;
+
+    /** @param array<string, mixed> $row */
+    public function addLot(PropertyId $property, array $row, DateTimeImmutable $at): void;
+
+    /**
+     * Takes `$baseQty` thousandths out of the lots of an item in a location, the batch that expires first, then the one with no expiry; stock that is in no lot is left alone.
+     *
+     * @return int how much was taken out of lots
+     */
+    public function consumeLots(PropertyId $property, string $itemId, string $locationId, int $baseQty): int;
+
+    /** @return list<array<string, mixed>> the lots that still hold stock, with the item and the location, earliest expiry first */
+    public function lots(PropertyId $property, ?string $itemId, ?string $locationId, ?string $department): array;
 }

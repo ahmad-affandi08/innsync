@@ -4,6 +4,7 @@ import { AppFrame } from '@/components/layout/app-frame';
 
 const LINKS = [
     { href: '/inventory/stock', label: 'inv.nav.stock' },
+    { href: '/inventory/lots', label: 'inv.nav.lots' },
     { href: '/inventory/transfers', label: 'inv.nav.transfers' },
     { href: '/inventory/counts', label: 'inv.nav.counts' },
     { href: '/inventory/suppliers', label: 'inv.nav.suppliers' },

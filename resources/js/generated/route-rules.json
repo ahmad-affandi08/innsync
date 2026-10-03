@@ -309,6 +309,13 @@
             "supplier"
         ]
     },
+    "GET /inventory/lots": {
+        "required": [],
+        "declared": [
+            "department",
+            "status"
+        ]
+    },
     "GET /inventory/orders": {
         "required": [],
         "declared": [
@@ -3397,9 +3404,11 @@
             "unit"
         ],
         "declared": [
+            "expires_on",
             "item_id",
             "kind",
             "location_id",
+            "lot_number",
             "negative_reason",
             "note",
             "quantity",

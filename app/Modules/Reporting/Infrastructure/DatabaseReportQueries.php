@@ -146,6 +146,11 @@ final readonly class DatabaseReportQueries implements ReportQueries
             ->where('l.property_id', $pid)->where('i.is_active', true)->where('loc.is_active', true)->where('l.min_milli', '>', 0)->whereRaw('COALESCE(m.balance, 0) < l.min_milli');
         $alerts['stock_below_minimum'] = ['count' => (clone $low)->count(), 'items' => (clone $low)->orderBy('i.code')->limit(self::ALERT_EXAMPLES)->get(['i.code as item', 'loc.code as location'])->map(static fn ($r): string => $r->item.' · '.$r->location)->all()];
 
+        // Batches that hold stock and have expired or expire within the days of notice (FR-INV-008, FR-KIT-009).
+        $expiring = DB::table('inventory_lots as l')->join('inventory_items as i', 'i.id', '=', 'l.item_id')->where('l.property_id', $pid)->where('l.remaining_milli', '>', 0)->whereNotNull('l.expires_on')
+            ->where('l.expires_on', '<=', $today->addDays(14)->toString());
+        $alerts['stock_expiring'] = ['count' => (clone $expiring)->count(), 'items' => (clone $expiring)->orderBy('l.expires_on')->limit(self::ALERT_EXAMPLES)->get(['i.code', 'l.lot_number', 'l.expires_on'])->map(static fn ($r): string => $r->code.' · '.($r->lot_number ?? '—').' · '.$r->expires_on)->all()];
+
         // What is owed to suppliers (FR-FIN-012): payables past their due date, and those that fall due in the next seven days. What is owed is the amount
         // less the payments that were made and the credits applied.
         $paid = DB::table('ap_payments')->whereIn('status', ['paid', 'reversal'])->groupBy('payable_id')->selectRaw("payable_id, SUM(CASE WHEN status = 'reversal' THEN -amount_minor ELSE amount_minor END) as paid");

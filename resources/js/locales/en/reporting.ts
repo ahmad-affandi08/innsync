@@ -75,6 +75,7 @@ export const reporting = {
     'rpt.alert.serious_complaints': 'High or critical complaints still open',
     'rpt.alert.company_over_limit': 'Companies owing more than their credit limit',
     'rpt.alert.rooms_not_ready': 'Vacant rooms still dirty or in rework',
+    'rpt.alert.stock_expiring': 'Batches expired or about to expire',
     'rpt.alert.stock_below_minimum': 'Items below their minimum stock',
     'rpt.alert.payables_overdue': 'Supplier invoices past their due date',
     'rpt.alert.payables_due_soon': 'Supplier invoices due in the next seven days',

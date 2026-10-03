@@ -140,7 +140,7 @@ Every row must eventually point to implementation evidence and tests. Status is 
 | FR-KIT-006 | F&B Product / Kitchen | Wajib | ../TASK/MODULE-06-KITCHEN.md | IN_PROGRESS |
 | FR-KIT-007 | F&B Product / Kitchen | Wajib | ../TASK/MODULE-06-KITCHEN.md | TODO |
 | FR-KIT-008 | F&B Product / Kitchen | Wajib | ../TASK/MODULE-06-KITCHEN.md | TODO |
-| FR-KIT-009 | F&B Product / Kitchen | Sebaiknya | ../TASK/MODULE-06-KITCHEN.md | TODO |
+| FR-KIT-009 | F&B Product / Kitchen | Sebaiknya | ../TASK/MODULE-06-KITCHEN.md | REVIEW |
 | FR-KIT-010 | F&B Product / Kitchen | Wajib | ../TASK/MODULE-06-KITCHEN.md | REVIEW |
 | FR-KIT-011 | F&B Product / Kitchen | Wajib | ../TASK/MODULE-06-KITCHEN.md | REVIEW |
 | FR-KIT-012 | F&B Product / Kitchen | Sebaiknya | ../TASK/MODULE-06-KITCHEN.md | TODO |
@@ -169,7 +169,7 @@ Every row must eventually point to implementation evidence and tests. Status is 
 | FR-INV-005 | Inventory | Wajib | ../TASK/MODULE-08-INVENTORY-PURCHASING.md | TODO |
 | FR-INV-006 | Inventory | Wajib | ../TASK/MODULE-08-INVENTORY-PURCHASING.md | TODO |
 | FR-INV-007 | Inventory | Sebaiknya | ../TASK/MODULE-08-INVENTORY-PURCHASING.md | TODO |
-| FR-INV-008 | Inventory | Sebaiknya | ../TASK/MODULE-08-INVENTORY-PURCHASING.md | TODO |
+| FR-INV-008 | Inventory | Sebaiknya | ../TASK/MODULE-08-INVENTORY-PURCHASING.md | REVIEW |
 | FR-INV-009 | Inventory | Wajib | ../TASK/MODULE-08-INVENTORY-PURCHASING.md | TODO |
 | FR-INV-010 | Inventory | Wajib | ../TASK/MODULE-08-INVENTORY-PURCHASING.md | TODO |
 | FR-INV-011 | Inventory | Wajib | ../TASK/MODULE-08-INVENTORY-PURCHASING.md | TODO |

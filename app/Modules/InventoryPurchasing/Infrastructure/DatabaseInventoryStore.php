@@ -269,4 +269,36 @@ final readonly class DatabaseInventoryStore implements InventoryStore
     {
         return $row === null ? null : (array) $row;
     }
+
+    public function addLot(PropertyId $property, array $row, DateTimeImmutable $at): void
+    {
+        DB::table('inventory_lots')->insert([...$row, 'property_id' => $property->toString(), 'created_at' => $at]);
+    }
+
+    public function consumeLots(PropertyId $property, string $itemId, string $locationId, int $baseQty): int
+    {
+        $left = $baseQty;
+        $lots = DB::table('inventory_lots')->where('property_id', $property->toString())->where('item_id', $itemId)->where('location_id', $locationId)->where('remaining_milli', '>', 0)
+            ->orderByRaw('expires_on IS NULL')->orderBy('expires_on')->orderBy('created_at')->orderBy('id')->lockForUpdate()->get(['id', 'remaining_milli']);
+
+        foreach ($lots as $lot) {
+            if ($left <= 0) {
+                break;
+            }
+
+            $take = min($left, (int) $lot->remaining_milli);
+            DB::table('inventory_lots')->where('id', $lot->id)->update(['remaining_milli' => (int) $lot->remaining_milli - $take]);
+            $left -= $take;
+        }
+
+        return $baseQty - $left;
+    }
+
+    public function lots(PropertyId $property, ?string $itemId, ?string $locationId, ?string $department): array
+    {
+        return DB::table('inventory_lots as l')->join('inventory_items as i', 'i.id', '=', 'l.item_id')->join('inventory_locations as loc', 'loc.id', '=', 'l.location_id')
+            ->where('l.property_id', $property->toString())->where('l.remaining_milli', '>', 0)
+            ->when($itemId !== null, static fn ($q) => $q->where('l.item_id', $itemId))->when($locationId !== null, static fn ($q) => $q->where('l.location_id', $locationId))->when($department !== null, static fn ($q) => $q->where('i.department', $department))
+            ->orderByRaw('l.expires_on IS NULL')->orderBy('l.expires_on')->orderBy('i.code')->get(['l.*', 'i.code as item_code', 'i.name as item_name', 'i.base_unit', 'i.department', 'loc.code as location_code', 'loc.name as location_name'])->map(static fn ($r): array => (array) $r)->all();
+    }
 }

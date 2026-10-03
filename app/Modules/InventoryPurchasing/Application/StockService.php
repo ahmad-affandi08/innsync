@@ -115,7 +115,7 @@ final readonly class StockService
      *
      * @return array<string, mixed> the movement and the new balance
      */
-    public function postOpening(PropertyId $property, string $actorId, string $itemId, string $locationId, string $unit, string $quantity, ?string $reference, ?string $note, ?int $unitCostMinor = null): array
+    public function postOpening(PropertyId $property, string $actorId, string $itemId, string $locationId, string $unit, string $quantity, ?string $reference, ?string $note, ?int $unitCostMinor = null, ?array $lot = null): array
     {
         $this->assertProperty($property);
 
@@ -145,14 +145,14 @@ final readonly class StockService
 
         $unit = strtoupper(trim($unit));
 
-        $movement = $this->transactions->run(function () use ($property, $actorId, $item, $location, $unit, $qty, $reference, $note, $unitCostMinor): array {
+        $movement = $this->transactions->run(function () use ($property, $actorId, $item, $location, $unit, $qty, $reference, $note, $unitCostMinor, $lot): array {
             $this->inventory->lockItem($property, $item['id']);
 
             if ($this->inventory->movementCount($property, $item['id'], $location['id']) > 0) {
                 throw Refusal::stateConflict('Opening stock is posted once, before anything else. Later changes are receipts, issues or adjustments.');
             }
 
-            return $this->poster->post($property, $actorId, $item, $location, 'opening', $unit, $qty, null, $reference, $note, null, null, null, null, false, null, $unitCostMinor)['movement'];
+            return $this->poster->post($property, $actorId, $item, $location, 'opening', $unit, $qty, null, $reference, $note, null, null, null, null, false, null, $unitCostMinor, null, false, $lot)['movement'];
         });
 
         $balance = $this->inventory->balances($property, $item['id'], $location['id'])[0] ?? null;

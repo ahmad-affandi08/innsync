@@ -65,6 +65,7 @@ use App\Modules\InventoryPurchasing\Presentation\Http\Controllers\PurchaseReturn
 use App\Modules\InventoryPurchasing\Presentation\Http\Controllers\PurchasingReportController;
 use App\Modules\InventoryPurchasing\Presentation\Http\Controllers\PurchasingSettingsController;
 use App\Modules\InventoryPurchasing\Presentation\Http\Controllers\StockCountController;
+use App\Modules\InventoryPurchasing\Presentation\Http\Controllers\StockLotController;
 use App\Modules\InventoryPurchasing\Presentation\Http\Controllers\StockMovementController;
 use App\Modules\InventoryPurchasing\Presentation\Http\Controllers\SupplierController;
 use App\Modules\InventoryPurchasing\Presentation\Http\Controllers\SupplierInvoiceController;
@@ -420,6 +421,7 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
     Route::post('/items/{id}/units', [InventoryCatalogController::class, 'addConversion'])->where('id', $id)->name('inventory.items.units');
     Route::post('/stock-limits', [InventoryCatalogController::class, 'setLimits'])->name('inventory.limits');
     Route::post('/stock/opening', [InventoryCatalogController::class, 'postOpening'])->name('inventory.stock.opening');
+    Route::get('/lots', [StockLotController::class, 'index'])->name('inventory.lots');
     Route::post('/stock/movements', [StockMovementController::class, 'store'])->middleware(['idempotent'])->name('inventory.stock.movements');
     Route::get('/transfers', [StockMovementController::class, 'transfersPage'])->name('inventory.transfers');
     Route::post('/transfers', [StockMovementController::class, 'send'])->middleware(['idempotent'])->name('inventory.transfers.send');

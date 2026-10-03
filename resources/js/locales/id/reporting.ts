@@ -75,6 +75,7 @@ export const reporting = {
     'rpt.alert.serious_complaints': 'Keluhan tinggi atau kritis yang masih terbuka',
     'rpt.alert.company_over_limit': 'Perusahaan dengan piutang melebihi batas kreditnya',
     'rpt.alert.rooms_not_ready': 'Kamar kosong yang masih kotor atau perlu dikerjakan ulang',
+    'rpt.alert.stock_expiring': 'Batch kedaluwarsa atau hampir kedaluwarsa',
     'rpt.alert.stock_below_minimum': 'Barang di bawah stok minimum',
     'rpt.alert.payables_overdue': 'Faktur pemasok yang lewat jatuh tempo',
     'rpt.alert.payables_due_soon': 'Faktur pemasok yang jatuh tempo dalam tujuh hari',

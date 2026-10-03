@@ -22,7 +22,7 @@
 | TASK-KIT-006 | FR-KIT-006 | Wajib | Mencatat pemakaian bahan, produksi persiapan, dan pembuangan bahan rusak (waste log) beserta alasan. | IN_PROGRESS |
 | TASK-KIT-007 | FR-KIT-007 | Wajib | Melakukan stock opname bahan dapur dan gudang kering dengan pencatatan selisih dan nilai kerugian. | TODO |
 | TASK-KIT-008 | FR-KIT-008 | Wajib | Menampilkan daftar periksa kebersihan, suhu penyimpanan, dan tugas harian, mingguan, serta bulanan dapur. | TODO |
-| TASK-KIT-009 | FR-KIT-009 | Sebaiknya | Mencatat tanggal kedaluwarsa dan nomor batch bahan sensitif dengan peringatan mendekati kedaluwarsa. | TODO |
+| TASK-KIT-009 | FR-KIT-009 | Sebaiknya | Mencatat tanggal kedaluwarsa dan nomor batch bahan sensitif dengan peringatan mendekati kedaluwarsa. | REVIEW |
 | TASK-KIT-010 | FR-KIT-010 | Wajib | Membuat laporan kerusakan peralatan yang diteruskan ke modul Maintenance. | REVIEW |
 | TASK-KIT-011 | FR-KIT-011 | Wajib | Mengajukan permintaan pembelian bahan dan peralatan ke modul Purchasing. | REVIEW |
 | TASK-KIT-012 | FR-KIT-012 | Sebaiknya | Menerbitkan laporan penjualan menu, rasio biaya bahan terhadap penjualan, dan analisis menu berdasarkan popularitas serta kontribusi margin. | TODO |
@@ -70,6 +70,8 @@
 - Status: `TASK-KIT-010` and `-011` are `REVIEW`. Equipment faults of the kitchen and bar are reported the same way as in housekeeping (department `kitchen`, privilege `kitchen.damage.report`, or the board, waste or recipe privilege) and become work orders of Maintenance. The kitchen menu links to the purchase requests of the department (`/inventory/requests?department=kitchen`): the list shows only the department's requests and a new request starts for it; the request, its approval chain and its ordering are Purchasing's.
 - Context: `EquipmentDamageReportService`, `DamageReportController`, page `kitchen/pages/damage-reports`; `PurchaseRequestService::overview` takes an optional department.
 - Evidence: `tests/Feature/Maintenance/DamageReportHttpTest.php`, `tests/Feature/InventoryPurchasing/PurchasingHttpTest.php` (the department view).
+
+- `TASK-KIT-009` is `REVIEW` (same slice): the kitchen menu links to the batches of kitchen items (`/inventory/lots?department=kitchen`) with the warning of batches that are about to expire or have expired; the batch and expiry rules are Inventory's (`INV-008`).
 
 ## Required engineering checks
 
