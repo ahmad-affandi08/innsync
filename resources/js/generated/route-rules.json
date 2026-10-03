@@ -3191,6 +3191,23 @@
             "lock_version"
         ]
     },
+    "POST /kitchen/waste": {
+        "required": [
+            "item_id",
+            "kind",
+            "reason"
+        ],
+        "declared": [
+            "item_id",
+            "kind",
+            "note",
+            "portions",
+            "quantity_milli",
+            "reason",
+            "reference",
+            "unit"
+        ]
+    },
     "POST /laundry/claims": {
         "required": [
             "claimed_minor",

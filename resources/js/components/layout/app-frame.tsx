@@ -66,6 +66,14 @@ function activeModule(path: string): ModuleEntry {
     return MODULES.find((m) => m.prefixes.some((p) => path === p || path.startsWith(`${p}/`))) ?? MODULES[0]!;
 }
 
+/** The page of the module the person is on: the link with the longest address that matches, so `/kitchen` is not lit while `/kitchen/waste` is open. */
+function isHere(links: readonly NavLink[], href: string, path: string): boolean {
+    const match = (h: string) => path === h || path.startsWith(`${h}/`);
+    const best = links.filter((l) => match(l.href)).sort((a, b) => b.href.length - a.href.length)[0];
+
+    return match(href) && best?.href === href;
+}
+
 type Shell = { propertyName: string | null; businessDate: string | null; userName: string } | null;
 
 type FrameProps = {
@@ -125,7 +133,7 @@ export function AppFrame({ actions, children, description, links = [], title, wi
                                 <CollapsibleContent>
                                     <ul className="ml-[1.4rem] flex flex-col border-l border-border py-1">
                                         {links.map((l) => {
-                                            const here = path === l.href || path.startsWith(`${l.href}/`);
+                                            const here = isHere(links, l.href, path);
 
                                             return (
                                                 <li key={l.href}>
@@ -248,7 +256,7 @@ export function AppFrame({ actions, children, description, links = [], title, wi
         </main>
     );
 
-    const here = (href: string) => path === href || path.startsWith(`${href}/`);
+    const here = (href: string) => isHere(links, href, path);
 
     // Icon rail: modules as icons with a short label, the pages of the active module in a panel beside it.
     const rail = (

@@ -463,6 +463,11 @@
         "reason",
         "yield_portions"
     ],
+    "kitchen/pages/waste": [
+        "item_id",
+        "kind",
+        "reason"
+    ],
     "laundry/pages/claims": [
         "approved_minor",
         "cap_multiple",

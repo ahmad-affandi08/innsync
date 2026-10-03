@@ -129,8 +129,10 @@ use App\Modules\InventoryPurchasing\Infrastructure\DatabasePurchasingStore;
 use App\Modules\InventoryPurchasing\Infrastructure\DatabaseStockCountStore;
 use App\Modules\Kitchen\Application\RecipeStore;
 use App\Modules\Kitchen\Application\TicketStore;
+use App\Modules\Kitchen\Application\WasteStore;
 use App\Modules\Kitchen\Infrastructure\DatabaseRecipeStore;
 use App\Modules\Kitchen\Infrastructure\DatabaseTicketStore;
+use App\Modules\Kitchen\Infrastructure\DatabaseWasteStore;
 use App\Modules\Laundry\Application\ClaimRepository;
 use App\Modules\Laundry\Application\LaundryLiability;
 use App\Modules\Laundry\Application\LaundryRepository;
@@ -418,6 +420,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(MenuAvailability::class, MenuAvailabilityService::class);
         $this->app->bind(TicketStore::class, DatabaseTicketStore::class);
         $this->app->bind(RecipeStore::class, DatabaseRecipeStore::class);
+        $this->app->bind(WasteStore::class, DatabaseWasteStore::class);
         $this->app->bind(IngredientCatalog::class, IngredientCatalogService::class);
         $this->app->bind(PaymentStore::class, DatabasePaymentStore::class);
         $this->app->bind(FinanceExportQueries::class, DatabaseFinanceExportQueries::class);

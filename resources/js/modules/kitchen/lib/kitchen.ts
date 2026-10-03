@@ -70,3 +70,14 @@ export function parsePercentBp(text: string): number | null {
 export function formatBp(bp: number): string {
     return `${(bp / 100).toFixed(bp % 100 === 0 ? 0 : bp % 10 === 0 ? 1 : 2)}`;
 }
+
+export type WasteEntry = {
+    id: string; number: string; kind: 'ingredient' | 'dish'; dish: string | null; portions: number | null; reason: string; reference: string | null; note: string | null; business_date: string;
+    value_minor: number | null; value_complete: boolean; by: string | null; at: string; lines: { name: string; unit: string; quantity_milli: number }[];
+};
+
+export type WasteOverview = {
+    currency: string; business_date: string; reasons: string[]; entries: WasteEntry[];
+    summary: { since: string; by_reason: { reason: string; entries: number; value_minor: number }[]; today_minor: number };
+    ingredients: Ingredient[]; dishes: { id: string; name: string; outlet: string }[]; has_location: boolean; may: { record: boolean };
+};

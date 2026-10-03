@@ -5,6 +5,7 @@ import { AppFrame } from '@/components/layout/app-frame';
 const LINKS = [
     { href: '/kitchen', label: 'kitchen.nav.board' },
     { href: '/kitchen/recipes', label: 'kitchen.nav.recipes' },
+    { href: '/kitchen/waste', label: 'kitchen.nav.waste' },
 ] as const;
 
 type Props = { title: string; description: string; children: ReactNode; actions?: ReactNode };

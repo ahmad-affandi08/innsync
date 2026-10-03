@@ -63,6 +63,7 @@ use App\Modules\InventoryPurchasing\Presentation\Http\Controllers\SupplierContro
 use App\Modules\InventoryPurchasing\Presentation\Http\Controllers\SupplierInvoiceController;
 use App\Modules\Kitchen\Presentation\Http\Controllers\BoardController as KitchenBoardController;
 use App\Modules\Kitchen\Presentation\Http\Controllers\RecipeController;
+use App\Modules\Kitchen\Presentation\Http\Controllers\WasteController;
 use App\Modules\Laundry\Presentation\Http\Controllers\ClaimController;
 use App\Modules\Laundry\Presentation\Http\Controllers\LaundryController;
 use App\Modules\Property\Presentation\Http\Controllers\BookingPolicyController;
@@ -662,6 +663,8 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
     Route::post('/tickets/{id}/advance', [KitchenBoardController::class, 'advance'])->where('id', $id)->name('kitchen.tickets.advance');
     Route::post('/items/{id}/availability', [KitchenBoardController::class, 'availability'])->where('id', $id)->name('kitchen.items.availability');
     Route::post('/settings', [KitchenBoardController::class, 'saveSettings'])->name('kitchen.settings.save');
+    Route::get('/waste', [WasteController::class, 'index'])->name('kitchen.waste');
+    Route::post('/waste', [WasteController::class, 'record'])->middleware(['idempotent'])->name('kitchen.waste.record');
     Route::get('/recipes', [RecipeController::class, 'index'])->name('kitchen.recipes');
     Route::get('/recipes/{id}', [RecipeController::class, 'show'])->where('id', $id)->name('kitchen.recipes.show');
     Route::post('/recipes/{id}', [RecipeController::class, 'save'])->where('id', $id)->name('kitchen.recipes.save');
