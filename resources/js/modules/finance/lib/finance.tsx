@@ -1,6 +1,7 @@
 import { type DataGridColumn } from '@/components/ui/data-grid';
 import { StatusBadge, type StatusTone } from '@/components/ui/status-badge';
 import { useFormatters, useTranslation } from '@/shared/i18n/i18n';
+import { currencyExponent, parseMajorToMinor } from '@/shared/money/money';
 import type { MessageKey } from '@/locales/en/index';
 
 /** A payable as the overview, the schedule and the payable page send it. */
@@ -194,4 +195,93 @@ export function usePettyVoucherColumns(currency: string, actions?: DataGridColum
         { id: 'by', label: t('fin.petty.v.by'), value: (v) => v.by ?? '', cell: (v) => v.by ?? '—', hidden: true },
         ...(actions === undefined ? [] : [actions]),
     ];
+}
+
+/** The longest range the management reports and the exports answer: a range of a year (366 days) or more is refused with a 422. */
+export const REPORT_MAX_DAYS = 366;
+
+/** The days between two calendar dates (`YYYY-MM-DD`). */
+export const spanDays = (from: string, to: string): number => Math.round((Date.parse(to) - Date.parse(from)) / 86_400_000);
+
+const KNOWN_DEPARTMENTS = ['front_office', 'housekeeping', 'laundry', 'fnb', 'kitchen', 'maintenance', 'hr', 'finance', 'purchasing', 'general'];
+const SUPPLIER_METHODS = ['transfer', 'cash', 'giro', 'other'];
+const RECEIVABLE_METHODS = ['transfer', 'giro', 'online'];
+
+/** A department in the words the owners use, the same as on the expense accounts. */
+export function useDepartmentLabel() {
+    const { t } = useTranslation();
+
+    return (department: string): string => {
+        return KNOWN_DEPARTMENTS.includes(department) ? t(`inv.dept.${department}` as MessageKey) : department;
+    };
+}
+
+/** A margin sent in basis points (hundredths of a percent) as a percentage; a dash when there is no revenue to measure it against. */
+export function useMarginLabel() {
+    const { locale } = useTranslation();
+    const percent = new Intl.NumberFormat(locale, { style: 'percent', minimumFractionDigits: 1, maximumFractionDigits: 1 });
+
+    return (basisPoints: number | null): string => (basisPoints === null ? '—' : percent.format(basisPoints / 10_000));
+}
+
+/** Text colour of a result or a movement: red when negative. */
+export const signClass = (minor: number): string => (minor < 0 ? 'text-danger' : '');
+
+/** An amount typed by a person that may be negative ("-1500,50" or "−1500"), in minor units; null when it is not a clear amount. */
+export function parseSignedMajorToMinor(text: string, currency: string): number | null {
+    const trimmed = text.trim();
+    const negative = trimmed.startsWith('-') || trimmed.startsWith('\u2212');
+    const minor = parseMajorToMinor(negative ? trimmed.slice(1).trim() : trimmed, currency);
+
+    return minor === null ? null : negative && minor !== 0 ? -minor : minor;
+}
+
+/** Minor units as the text of an input: "-1500.5" for -150050 in a currency with two decimals. */
+export function minorToMajorText(minor: number, currency: string): string {
+    const exponent = currencyExponent(currency);
+    const absolute = Math.abs(minor);
+    const whole = Math.trunc(absolute / 10 ** exponent);
+    const fraction = String(absolute % 10 ** exponent).padStart(exponent, '0').replace(/0+$/, '');
+
+    return `${minor < 0 ? '-' : ''}${whole}${fraction === '' ? '' : `.${fraction}`}`;
+}
+
+/** The management P&L as the server sends it. Money is in minor units; a margin in basis points. */
+export type PnlOutlet = { code: string; name: string | null; revenue_minor: number };
+export type PnlAccount = { code: string; name: string; category: string; expenses_minor: number; petty_minor: number };
+export type PnlAmounts = {
+    revenue_minor: number; service_charge_minor: number; expenses_minor: number; petty_minor: number; stock_minor: number; cost_total_minor: number; result_minor: number; margin_bp: number | null;
+};
+export type PnlDepartment = PnlAmounts & { department: string; outlets: PnlOutlet[]; accounts: PnlAccount[] };
+export type PnlMapping = { code: string; name: string | null; department: string; mapped: boolean };
+export type PnlReport = {
+    from: string; to: string; today: string; currency: string; departments: PnlDepartment[]; totals: PnlAmounts;
+    notes: { unclassified_payables_minor: number; goods_payables_minor: number; unmapped_outlets: string[]; unverified_days: number };
+    mapping: PnlMapping[]; department_list: string[]; may: { manage: boolean };
+};
+
+/** The cash flow summary as the server sends it. */
+export type CashGroup = 'cash' | 'bank';
+export type CashReceipt = { source: 'guest' | 'receivable'; method: string; group: CashGroup; amount_minor: number; received_minor: number; paid_back_minor: number };
+export type CashPayment = { source: 'supplier' | 'petty'; method: string; group: CashGroup; amount_minor: number };
+export type CashSplit = { cash: number; bank: number; total: number };
+export type CashBalance = { opening_minor: number; closing_minor: number | null };
+export type CashBalances = { opening_date: string; lock_version: number; reached: boolean; cash: CashBalance; bank: CashBalance };
+export type CashFlowReport = {
+    from: string; to: string; today: string; currency: string; receipts: CashReceipt[]; payments: CashPayment[];
+    totals: { in: CashSplit; out: CashSplit }; net: CashSplit; balances: CashBalances | null; may: { manage: boolean };
+};
+
+/** How a cash flow line was paid, in the words of the screen it came from. */
+export function useCashMethodLabel() {
+    const { t } = useTranslation();
+    const receiptMethod = useReceiptMethodLabel();
+
+    return (source: string, method: string): string => {
+        if (source === 'guest') return receiptMethod(method);
+
+        if (source === 'receivable') return RECEIVABLE_METHODS.includes(method) ? t(`fin.ar.method.${method}` as MessageKey) : method;
+
+        return SUPPLIER_METHODS.includes(method) ? t(`fin.method.${method}` as MessageKey) : method;
+    };
 }

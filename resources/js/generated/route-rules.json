@@ -22,6 +22,20 @@
             "to"
         ]
     },
+    "GET /finance/cashflow": {
+        "required": [],
+        "declared": [
+            "from",
+            "to"
+        ]
+    },
+    "GET /finance/export/{dataset}": {
+        "required": [],
+        "declared": [
+            "from",
+            "to"
+        ]
+    },
     "GET /finance/payables": {
         "required": [],
         "declared": [
@@ -33,6 +47,13 @@
         "required": [],
         "declared": [
             "status"
+        ]
+    },
+    "GET /finance/pnl": {
+        "required": [],
+        "declared": [
+            "from",
+            "to"
         ]
     },
     "GET /finance/receivables": {
@@ -570,6 +591,21 @@
             "reason"
         ]
     },
+    "POST /finance/cashflow/opening": {
+        "required": [
+            "bank_opening_minor",
+            "cash_opening_minor",
+            "opening_date",
+            "reason"
+        ],
+        "declared": [
+            "bank_opening_minor",
+            "cash_opening_minor",
+            "lock_version",
+            "opening_date",
+            "reason"
+        ]
+    },
     "POST /finance/customers": {
         "required": [
             "code",
@@ -726,6 +762,16 @@
             "payee",
             "receipt_ref",
             "voucher_date"
+        ]
+    },
+    "POST /finance/pnl/mappings": {
+        "required": [
+            "department",
+            "outlet_code"
+        ],
+        "declared": [
+            "department",
+            "outlet_code"
         ]
     },
     "POST /finance/receivables": {

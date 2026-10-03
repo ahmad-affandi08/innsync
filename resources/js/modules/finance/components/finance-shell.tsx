@@ -13,6 +13,9 @@ const LINKS = [
     { href: '/finance/revenue', label: 'fin.nav.revenue' },
     { href: '/finance/cash', label: 'fin.nav.cash' },
     { href: '/finance/petty', label: 'fin.nav.petty' },
+    { href: '/finance/pnl', label: 'fin.nav.pnl' },
+    { href: '/finance/cashflow', label: 'fin.nav.cashflow' },
+    { href: '/finance/export', label: 'fin.nav.export' },
     { href: '/finance/accounts', label: 'fin.nav.accounts' },
 ] as const;
 

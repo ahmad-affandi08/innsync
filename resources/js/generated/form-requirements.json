@@ -10,6 +10,12 @@
         "resolution",
         "status"
     ],
+    "finance/pages/cashflow": [
+        "bank_opening_minor",
+        "cash_opening_minor",
+        "opening_date",
+        "reason"
+    ],
     "finance/pages/customers": [
         "code",
         "kind",
@@ -43,6 +49,9 @@
     ],
     "finance/pages/petty-settlement": [
         "decision"
+    ],
+    "finance/pages/pnl": [
+        "department"
     ],
     "finance/pages/receivable": [
         "amount_minor",
