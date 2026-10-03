@@ -124,7 +124,7 @@ export default function KitchenBoardPage(props: BoardPageProps) {
                         <span className="whitespace-nowrap text-sm tabular-nums text-muted-foreground">{t('kitchen.ticket.waiting', { time: clock(waited(tk)) })}</span>
                     </span>
                 </div>
-                <p className="text-xs text-muted-foreground">{t('kitchen.ticket.meta', { bill: tk.bill_number, batch: tk.batch_number, outlet: tk.outlet_code })}</p>
+                <p className="text-xs text-muted-foreground">{t('kitchen.ticket.meta', { bill: tk.bill_number, batch: tk.batch_number, outlet: tk.outlet_code })}{tk.source === 'qr' ? ` · ${t('kitchen.ticket.sourceQr')}` : ''}</p>
                 <ul className="flex flex-col gap-1 text-sm">
                     {tk.lines.map((l) => (
                         <li className={l.cancelled ? 'text-muted-foreground line-through' : ''} key={l.id}>

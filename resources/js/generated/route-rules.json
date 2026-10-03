@@ -2690,6 +2690,66 @@
             "reason"
         ]
     },
+    "POST /g/order": {
+        "required": [
+            "client_key",
+            "lines",
+            "lines.*.item_id",
+            "lines.*.quantity",
+            "payment"
+        ],
+        "declared": [
+            "client_key",
+            "lines",
+            "lines.*.item_id",
+            "lines.*.modifier_ids",
+            "lines.*.modifier_ids.*",
+            "lines.*.note",
+            "lines.*.quantity",
+            "lines.*.variant_id",
+            "note",
+            "payment"
+        ]
+    },
+    "POST /g/verify": {
+        "required": [
+            "room_number",
+            "surname"
+        ],
+        "declared": [
+            "room_number",
+            "surname"
+        ]
+    },
+    "POST /guest/orders/{id}/decide": {
+        "required": [
+            "accept",
+            "lock_version"
+        ],
+        "declared": [
+            "accept",
+            "lock_version",
+            "note"
+        ]
+    },
+    "POST /guest/qr/{id}/active": {
+        "required": [
+            "active",
+            "lock_version"
+        ],
+        "declared": [
+            "active",
+            "lock_version"
+        ]
+    },
+    "POST /guest/qr/{id}/rotate": {
+        "required": [
+            "lock_version"
+        ],
+        "declared": [
+            "lock_version"
+        ]
+    },
     "POST /housekeeping/checklists/templates": {
         "required": [
             "active",

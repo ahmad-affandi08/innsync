@@ -39,6 +39,9 @@ interface MinibarStore
     /** @return array<string, mixed>|null the order with the bill's number and state */
     public function order(PropertyId $property, string $id): ?array;
 
+    /** @return array<string, mixed>|null the room service order of a bill, if it has one */
+    public function orderOfBill(PropertyId $property, string $billId): ?array;
+
     /** @param array<string, mixed> $fields */
     public function updateOrder(PropertyId $property, string $id, int $lock, array $fields, DateTimeImmutable $at): bool;
 

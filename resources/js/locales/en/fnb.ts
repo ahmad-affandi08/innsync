@@ -481,4 +481,5 @@ export const fnb = {
     "fnb.reg.cashShort": "The cash handed over is less than the items come to.",
     "fnb.reg.cardCode": "Give the approval code of the card terminal.",
     "fnb.reg.waiting": "{count} sales on this device are not booked yet.",
+    "fnb.pos.sourceQr": "Guest's phone",
 } as const

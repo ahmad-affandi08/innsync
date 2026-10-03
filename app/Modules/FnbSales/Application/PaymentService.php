@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Modules\FnbSales\Application;
 
 use App\Modules\FrontOffice\Application\Charging\GuestCharging;
+use App\Modules\GuestExperience\Application\GuestRoomCharges;
 use App\Modules\Property\Application\Catalog\RoomCatalogReader;
 use App\Modules\Property\Application\Rates\PropertyCurrencyReader;
 use App\Modules\Property\Application\Settings\BusinessDateProvider;
@@ -51,6 +52,7 @@ final readonly class PaymentService
         private BusinessDateProvider $businessDate,
         private RoomCatalogReader $rooms,
         private GuestCharging $guests,
+        private GuestRoomCharges $guestCharges,
         private TransactionRunner $transactions,
         private AuditTrail $audit,
         private OutboxPublisher $outbox,
@@ -107,6 +109,16 @@ final readonly class PaymentService
             } else {
                 if ($paid > 0 || $reserved > 0 || $amountMinor !== $totals['total_minor']) {
                     throw Refusal::invalid('A bill is charged to a room in full.', ['amount_minor']);
+                }
+
+                $verdict = $this->guestCharges->verdict($property, $bill['id']);
+
+                if ($verdict === 'pending') {
+                    throw Refusal::stateConflict('A guest asked to charge this bill to the room and a person has not verified the guest yet. Verify the guest first.');
+                }
+
+                if ($verdict === 'rejected') {
+                    throw Refusal::stateConflict('The charge to the room of this guest order was refused. Take another way of payment.');
                 }
 
                 $stay = $this->roomStay($property, $roomId ?? $bill['room_id'], $guestName);

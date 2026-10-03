@@ -84,7 +84,7 @@ final readonly class TicketIntakeConsumer implements OutboxConsumer
         foreach ($byStation as $station => $lines) {
             $this->store->addTicket($event->propertyId, [
                 'id' => $this->ids->next(), 'outlet_id' => (string) $d['outlet_id'], 'outlet_code' => (string) $d['outlet_code'], 'station' => $station, 'batch_id' => strtolower((string) $d['batch_id']), 'batch_number' => (int) $d['batch_number'],
-                'bill_id' => strtolower((string) $d['bill_id']), 'bill_number' => (string) $d['bill_number'], 'place_kind' => $table !== null ? 'table' : ($room !== null ? 'room' : 'counter'), 'place' => $table ?? $room,
+                'source' => ($d['source'] ?? 'staff') === 'qr' ? 'qr' : 'staff', 'bill_id' => strtolower((string) $d['bill_id']), 'bill_number' => (string) $d['bill_number'], 'place_kind' => $table !== null ? 'table' : ($room !== null ? 'room' : 'counter'), 'place' => $table ?? $room,
                 'business_date' => (string) $d['business_date'], 'received_at' => $at->format('Y-m-d H:i:s.u'),
             ], array_map(fn (array $l): array => [
                 'id' => $this->ids->next(), 'line_id' => strtolower((string) $l['line_id']), 'name' => (string) $l['name'], 'variant' => $l['variant'] ?? null, 'modifiers' => array_values(array_map('strval', $l['modifiers'] ?? [])), 'quantity' => (int) $l['quantity'], 'note' => $l['note'] ?? null,

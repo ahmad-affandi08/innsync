@@ -62,7 +62,7 @@ final readonly class RoomServiceService
     }
 
     /** @return array<string, mixed> */
-    public function place(PropertyId $property, string $actorId, string $outletId, string $roomId, string $promisedTime, int $covers, ?string $note): array
+    public function place(PropertyId $property, string $actorId, string $outletId, string $roomId, string $promisedTime, int $covers, ?string $note, string $source = 'staff'): array
     {
         $this->access->require($property, $actorId, FnbAccess::POS_OPERATE, 'This person may not take orders.');
         $actor = strtolower($actorId);
@@ -93,8 +93,8 @@ final readonly class RoomServiceService
 
         $id = $this->ids->next();
 
-        $this->transactions->run(function () use ($property, $actor, $actorId, $outlet, $room, $stay, $promised, $covers, $note, $id, $now): void {
-            $bill = $this->bills->open($property, $actorId, $outlet['id'], null, $room->id, $covers, $note);
+        $this->transactions->run(function () use ($property, $actor, $actorId, $outlet, $room, $stay, $promised, $covers, $note, $id, $now, $source): void {
+            $bill = $this->bills->open($property, $actorId, $outlet['id'], null, $room->id, $covers, $note, $source);
             $this->store->addOrder($property, ['id' => $id, 'bill_id' => $bill['bill']['id'], 'room_id' => $room->id, 'room_number' => $room->number, 'guest_name' => $stay['guest_name'] ?? null, 'promised_at' => $promised->format('Y-m-d H:i:s.u'), 'status' => 'ordered', 'status_changed_by' => $actor, 'status_changed_at' => $now->format('Y-m-d H:i:s.u'), 'created_by' => $actor], $now);
             $this->audit->record(new AuditEntry($property->toString(), $actor, 'room_service.ordered', 'room_service_order', $id, null, ['room' => $room->number, 'bill' => $bill['bill']['number'], 'promised_at' => $promised->format('Y-m-d\TH:i:s\Z')]));
         });

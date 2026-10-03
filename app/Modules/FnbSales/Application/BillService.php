@@ -121,7 +121,7 @@ final readonly class BillService
             foreach ($open as $b) {
                 $bills[] = [
                     'id' => $b['id'], 'number' => $b['number'], 'table' => $b['table_id'] === null ? null : ($tableCode[$b['table_id']] ?? null), 'room' => $b['room_id'] === null ? null : ($roomNumber[$b['room_id']] ?? null),
-                    'covers' => (int) $b['covers'], 'lines' => (int) $b['line_count'], 'sent' => (int) $b['sent_lines'] > 0, 'ready_lines' => (int) $b['ready_lines'], 'subtotal_minor' => (int) $b['subtotal_minor'], 'opened_at' => FnbTime::utc($b['opened_at']),
+                    'covers' => (int) $b['covers'], 'source' => $b['source'] ?? 'staff', 'lines' => (int) $b['line_count'], 'sent' => (int) $b['sent_lines'] > 0, 'ready_lines' => (int) $b['ready_lines'], 'subtotal_minor' => (int) $b['subtotal_minor'], 'opened_at' => FnbTime::utc($b['opened_at']),
                 ];
             }
         }
@@ -159,7 +159,7 @@ final readonly class BillService
     // ---- opening ----
 
     /** @return array<string, mixed> */
-    public function open(PropertyId $property, string $actorId, string $outletId, ?string $tableId, ?string $roomId, int $covers, ?string $note): array
+    public function open(PropertyId $property, string $actorId, string $outletId, ?string $tableId, ?string $roomId, int $covers, ?string $note, string $source = 'staff'): array
     {
         $this->access->require($property, $actorId, FnbAccess::POS_OPERATE, 'This person may not take orders.');
         $outlet = $this->setup->outlet($property, strtolower($outletId)) ?? throw Refusal::invalid('Choose an outlet.', ['outlet_id']);
@@ -198,18 +198,18 @@ final readonly class BillService
         $id = $this->ids->next();
         $date = $this->businessDate->current($property)->toString();
 
-        $this->transactions->run(function () use ($property, $actor, $id, $outlet, $table, $roomId, $stay, $covers, $note, $date): void {
+        $this->transactions->run(function () use ($property, $actor, $id, $outlet, $table, $roomId, $stay, $covers, $note, $date, $source): void {
             $number = $this->numbers->next($property, 'BILL');
             $row = [
                 'id' => $id, 'outlet_id' => $outlet['id'], 'number' => $number, 'table_id' => $table['id'] ?? null, 'room_id' => $roomId === null ? null : strtolower($roomId), 'stay_id' => $stay['stay_id'] ?? null, 'reservation_id' => $stay['reservation_id'] ?? null,
-                'covers' => $covers, 'note' => $note, 'status' => 'open', 'business_date' => $date, 'opened_by' => $actor, 'opened_at' => $this->clock->nowUtc(),
+                'covers' => $covers, 'note' => $note, 'status' => 'open', 'source' => $source, 'business_date' => $date, 'opened_by' => $actor, 'opened_at' => $this->clock->nowUtc(),
             ];
 
             if (! $this->bills->addBill($property, $row, $this->clock->nowUtc())) {
                 throw Refusal::stateConflict('This table has an open bill already. Open it instead.');
             }
 
-            $this->audit->record(new AuditEntry($property->toString(), $actor, 'fnb_bill.opened', 'fnb_bill', $id, null, ['number' => $number, 'outlet' => $outlet['code'], 'table' => $table['code'] ?? null, 'room_id' => $row['room_id'], 'covers' => $covers]));
+            $this->audit->record(new AuditEntry($property->toString(), $actor, 'fnb_bill.opened', 'fnb_bill', $id, null, ['number' => $number, 'outlet' => $outlet['code'], 'table' => $table['code'] ?? null, 'room_id' => $row['room_id'], 'covers' => $covers, 'source' => $source]));
         });
 
         return $this->show($property, $actorId, $id);
@@ -271,7 +271,7 @@ final readonly class BillService
         return [
             'currency' => $this->currencies->currencyOf($property),
             'bill' => [
-                'id' => $bill['id'], 'number' => $bill['number'], 'status' => $bill['status'], 'covers' => (int) $bill['covers'], 'note' => $bill['note'], 'business_date' => $bill['business_date'], 'opened_at' => FnbTime::utc($bill['opened_at']), 'closed_at' => FnbTime::utc($bill['closed_at']),
+                'id' => $bill['id'], 'number' => $bill['number'], 'status' => $bill['status'], 'source' => $bill['source'] ?? 'staff', 'covers' => (int) $bill['covers'], 'note' => $bill['note'], 'business_date' => $bill['business_date'], 'opened_at' => FnbTime::utc($bill['opened_at']), 'closed_at' => FnbTime::utc($bill['closed_at']),
                 'table' => $table['code'] ?? null, 'room_id' => $bill['room_id'], 'room' => $room?->number, 'lock_version' => (int) $bill['lock_version'], 'cancel_reason' => $bill['cancel_reason'], 'reprint_count' => (int) $bill['reprint_count'],
                 'refund' => $refund === null ? null : ['number' => $refund['number'], 'reason' => $refund['reason'], 'total_minor' => (int) $refund['total_minor'], 'business_date' => $refund['business_date'], 'at' => FnbTime::utc($refund['created_at']), 'payments' => array_map(static fn (array $p): array => ['method' => $p['method'], 'amount_minor' => (int) $p['amount_minor'], 'reference' => $p['reference']], $refund['payments'])],
                 'lines' => array_map($this->shapeLine(...), $bill['lines']),
@@ -406,7 +406,7 @@ final readonly class BillService
             $this->audit->record(new AuditEntry($property->toString(), $actor, 'fnb_bill.sent', 'fnb_bill', $bill['id'], null, ['number' => $bill['number'], 'batch' => $number, 'lines' => count($pending)]));
             $this->outbox->publish(new OutboxEvent($property, 'fnb.order.sent', $batchId, 1, [
                 'batch_id' => $batchId, 'batch_number' => $number, 'bill_id' => $bill['id'], 'bill_number' => $bill['number'], 'outlet_id' => $outlet['id'], 'outlet_code' => $outlet['code'], 'table' => $table['code'] ?? null,
-                'room_id' => $bill['room_id'], 'room' => $bill['room_id'] === null ? null : $this->rooms->room($property, $bill['room_id'])?->number, 'outlet_name' => $outlet['name'], 'business_date' => $bill['business_date'], 'actor_id' => $actor, 'lines' => $lines,
+                'room_id' => $bill['room_id'], 'room' => $bill['room_id'] === null ? null : $this->rooms->room($property, $bill['room_id'])?->number, 'outlet_name' => $outlet['name'], 'business_date' => $bill['business_date'], 'actor_id' => $actor, 'source' => $bill['source'] ?? 'staff', 'lines' => $lines,
             ]));
         });
 

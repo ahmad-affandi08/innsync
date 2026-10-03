@@ -96,6 +96,13 @@ final class DatabaseMinibarStore implements MinibarStore
         return $r === null ? null : (array) $r;
     }
 
+    public function orderOfBill(PropertyId $property, string $billId): ?array
+    {
+        $r = $this->orderQuery()->where('o.property_id', $property->toString())->where('o.bill_id', $billId)->first();
+
+        return $r === null ? null : (array) $r;
+    }
+
     public function updateOrder(PropertyId $property, string $id, int $lock, array $fields, DateTimeImmutable $at): bool
     {
         return DB::table('fnb_room_service_orders')->where('property_id', $property->toString())->where('id', $id)->where('lock_version', $lock)->update([...$fields, 'lock_version' => $lock + 1, 'updated_at' => $at->format('Y-m-d H:i:s.u')]) === 1;

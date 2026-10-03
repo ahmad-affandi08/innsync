@@ -19,7 +19,7 @@ export type MenuView = {
 
 /** The floor of an outlet and a bill, as the server sends them. */
 export type FloorTable = { id: string; code: string; area: string | null; seats: number; status: 'free' | 'occupied' | 'ordered'; bill_id: string | null; bill_number: string | null; subtotal_minor: number; ready_lines: number; opened_at: string | null };
-export type FloorBill = { id: string; number: string; table: string | null; room: string | null; covers: number; lines: number; sent: boolean; ready_lines: number; subtotal_minor: number; opened_at: string };
+export type FloorBill = { id: string; number: string; table: string | null; room: string | null; covers: number; source: 'staff' | 'qr'; lines: number; sent: boolean; ready_lines: number; subtotal_minor: number; opened_at: string };
 export type Floor = {
     currency: string; outlets: { id: string; code: string; name: string; kind: string }[]; outlet: { id: string; code: string; name: string } | null;
     tables: FloorTable[]; bills: FloorBill[]; rooms: { id: string; number: string }[]; may: { operate: boolean };
@@ -38,7 +38,7 @@ export type OrderCategory = { id: string; name: string; station: string; items: 
 export type BillApproval = { id: string; subject_type: string; subject_ref: string; status: string; consumed: boolean };
 export type BillView = {
     currency: string;
-    bill: { id: string; number: string; status: 'open' | 'settled' | 'cancelled' | 'refunded'; covers: number; note: string | null; business_date: string; opened_at: string; closed_at: string | null; table: string | null; room_id: string | null; room: string | null; lock_version: number; cancel_reason: string | null; reprint_count: number; refund: { number: string; reason: string; total_minor: number; business_date: string; at: string; payments: { method: string; amount_minor: number; reference: string | null }[] } | null; lines: BillLine[] };
+    bill: { id: string; number: string; status: 'open' | 'settled' | 'cancelled' | 'refunded'; source: 'staff' | 'qr'; covers: number; note: string | null; business_date: string; opened_at: string; closed_at: string | null; table: string | null; room_id: string | null; room: string | null; lock_version: number; cancel_reason: string | null; reprint_count: number; refund: { number: string; reason: string; total_minor: number; business_date: string; at: string; payments: { method: string; amount_minor: number; reference: string | null }[] } | null; lines: BillLine[] };
     outlet: { id: string; code: string; name: string; prices_include_charges: boolean };
     totals: { subtotal_minor: number; base_minor: number; service_charge_minor: number; tax_minor: number; total_minor: number; scheme_missing: boolean; discount_minor: number };
     payments: BillPayment[]; paid_minor: number; reserved_minor: number; left_minor: number; shift: { id: string; number: string } | null; rooms: { id: string; number: string }[];

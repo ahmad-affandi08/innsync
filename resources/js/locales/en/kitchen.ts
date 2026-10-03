@@ -232,4 +232,5 @@ export const kitchen = {
     "kitchen.prod.standardHint": "In the unit chosen. The yield of a batch is measured against this.",
     "kitchen.prod.saveFormula": "Save the formula",
     "kitchen.prod.badFormula": "Give the product, what one batch makes and every ingredient with a quantity.",
+    "kitchen.ticket.sourceQr": "guest's phone",
 } as const

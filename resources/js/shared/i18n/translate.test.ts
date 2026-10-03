@@ -232,6 +232,8 @@ describe('dictionaries', () => {
             'fo.audit.report.waiverRow',
             'fnb.px.outlet',
             'fnb.px.status',
+            'guest.pay.qris',
+            'guest.qr.colStatus',
             'rpt.sch.colStatus',
             'rpt.sch.by',
             'fin.set.method.qris',

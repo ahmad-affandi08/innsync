@@ -204,7 +204,7 @@ final readonly class BoardService
         $waiting = max(0, $end->getTimestamp() - $received->getTimestamp());
 
         return [
-            'id' => $t['id'], 'station' => $t['station'], 'status' => $t['status'], 'bill_number' => $t['bill_number'], 'batch_number' => (int) $t['batch_number'], 'outlet_code' => $t['outlet_code'], 'place_kind' => $t['place_kind'], 'place' => $t['place'],
+            'id' => $t['id'], 'station' => $t['station'], 'source' => $t['source'] ?? 'staff', 'status' => $t['status'], 'bill_number' => $t['bill_number'], 'batch_number' => (int) $t['batch_number'], 'outlet_code' => $t['outlet_code'], 'place_kind' => $t['place_kind'], 'place' => $t['place'],
             'received_at' => FnbTime::utc($t['received_at']), 'started_at' => FnbTime::utc($t['started_at']), 'ready_at' => FnbTime::utc($t['ready_at']), 'served_at' => FnbTime::utc($t['served_at']),
             'waiting_seconds' => $waiting, 'is_late' => in_array($t['status'], ['new', 'preparing'], true) && $waiting >= $lateAfter * 60, 'lock_version' => (int) $t['lock_version'],
             'lines' => array_map(static fn (array $l): array => ['id' => $l['line_id'], 'name' => $l['name'], 'variant' => $l['variant'], 'modifiers' => $l['modifiers'], 'quantity' => (int) $l['quantity'], 'note' => $l['note'], 'cancelled' => (bool) $l['cancelled']], $t['lines']),

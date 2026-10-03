@@ -41,6 +41,8 @@ use App\Modules\Finance\Infrastructure\DatabaseStockReportQueries;
 use App\Modules\Finance\Infrastructure\DatabaseTaxQueries;
 use App\Modules\Finance\Infrastructure\DatabaseTaxStore;
 use App\Modules\FnbSales\Application\BillStore;
+use App\Modules\FnbSales\Application\GuestOrdering;
+use App\Modules\FnbSales\Application\GuestOrderingService;
 use App\Modules\FnbSales\Application\MenuAvailability;
 use App\Modules\FnbSales\Application\MenuAvailabilityService;
 use App\Modules\FnbSales\Application\MenuSales;
@@ -103,6 +105,16 @@ use App\Modules\FrontOffice\Infrastructure\Stays\DatabaseGuestRepository;
 use App\Modules\FrontOffice\Infrastructure\Stays\DatabaseRegistrationCardRepository;
 use App\Modules\FrontOffice\Infrastructure\Stays\DatabaseStayRepository;
 use App\Modules\FrontOffice\Infrastructure\Stays\DatabaseStayTimeFeeRepository;
+use App\Modules\GuestExperience\Application\GuestOrderStore;
+use App\Modules\GuestExperience\Application\GuestRoomCharges;
+use App\Modules\GuestExperience\Application\GuestRoomChargeVerdict;
+use App\Modules\GuestExperience\Application\GuestSessionStore;
+use App\Modules\GuestExperience\Application\GuestTokens;
+use App\Modules\GuestExperience\Application\QrPointStore;
+use App\Modules\GuestExperience\Infrastructure\DatabaseGuestOrderStore;
+use App\Modules\GuestExperience\Infrastructure\DatabaseGuestSessionStore;
+use App\Modules\GuestExperience\Infrastructure\DatabaseQrPointStore;
+use App\Modules\GuestExperience\Infrastructure\RandomGuestTokens;
 use App\Modules\Housekeeping\Application\ChecklistRepository;
 use App\Modules\Housekeeping\Application\GuestServiceRequests;
 use App\Modules\Housekeeping\Application\HousekeepingRepository;
@@ -167,6 +179,7 @@ use App\Modules\IdentityAccess\Infrastructure\Authentication\EloquentUserPasswor
 use App\Modules\IdentityAccess\Infrastructure\Authorization\DatabaseStaffAccess;
 use App\Modules\IdentityAccess\Infrastructure\Authorization\DatabaseStaffContacts;
 use App\Modules\IdentityAccess\Infrastructure\Authorization\DatabaseStaffDirectory;
+use App\Modules\IdentityAccess\Infrastructure\Authorization\DatabaseSystemActors;
 use App\Modules\IdentityAccess\Infrastructure\Authorization\EloquentPermissionGrantReader;
 use App\Modules\IdentityAccess\Infrastructure\Authorization\EloquentUserAccessReader;
 use App\Modules\IdentityAccess\Infrastructure\Authorization\ScopedPermissionChecker;
@@ -317,6 +330,7 @@ use App\Shared\Application\Security\SecurityLog;
 use App\Shared\Application\Security\StaffAccess;
 use App\Shared\Application\Security\StaffContacts;
 use App\Shared\Application\Security\StaffDirectory;
+use App\Shared\Application\Security\SystemActors;
 use App\Shared\Application\Tenancy\PropertyContext;
 use App\Shared\Application\Time\Clock;
 use App\Shared\Application\Transactions\TransactionRunner;
@@ -535,6 +549,13 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(PriceRuleStore::class, DatabasePriceRuleStore::class);
         $this->app->bind(MenuAvailability::class, MenuAvailabilityService::class);
         $this->app->bind(MenuSales::class, DatabaseMenuSales::class);
+        $this->app->bind(GuestOrdering::class, GuestOrderingService::class);
+        $this->app->bind(GuestTokens::class, RandomGuestTokens::class);
+        $this->app->bind(QrPointStore::class, DatabaseQrPointStore::class);
+        $this->app->bind(GuestSessionStore::class, DatabaseGuestSessionStore::class);
+        $this->app->bind(GuestOrderStore::class, DatabaseGuestOrderStore::class);
+        $this->app->bind(GuestRoomCharges::class, GuestRoomChargeVerdict::class);
+        $this->app->bind(SystemActors::class, DatabaseSystemActors::class);
         $this->app->bind(TicketStore::class, DatabaseTicketStore::class);
         $this->app->bind(RecipeStore::class, DatabaseRecipeStore::class);
         $this->app->bind(WasteStore::class, DatabaseWasteStore::class);
@@ -610,6 +631,12 @@ class AppServiceProvider extends ServiceProvider
             ->mixedCase()
             ->numbers()
             ->symbols());
+
+        RateLimiter::for('guest', static fn (Request $request): Limit => Limit::perMinute(120)
+            ->by((string) $request->ip()));
+
+        RateLimiter::for('guest-write', static fn (Request $request): Limit => Limit::perMinute(20)
+            ->by(hash('sha256', (string) $request->cookie('ge_session').'|'.$request->ip())));
 
         RateLimiter::for('approvals', static fn (Request $request): Limit => Limit::perMinute(30)
             ->by((string) $request->user()?->getAuthIdentifier().'|'.$request->ip()));

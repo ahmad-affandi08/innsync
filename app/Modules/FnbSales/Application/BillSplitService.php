@@ -251,7 +251,7 @@ final readonly class BillSplitService
             $number = $this->numbers->next($property, 'BILL');
             $new = [
                 'id' => $newId, 'outlet_id' => $bill['outlet_id'], 'number' => $number, 'table_id' => $table['id'] ?? null, 'room_id' => $bill['room_id'], 'stay_id' => $bill['stay_id'], 'reservation_id' => $bill['reservation_id'],
-                'split_from_id' => $bill['id'], 'covers' => $covers, 'note' => $bill['note'], 'status' => 'open', 'business_date' => $bill['business_date'], 'opened_by' => $actor, 'opened_at' => $now,
+                'split_from_id' => $bill['id'], 'source' => $bill['source'] ?? 'staff', 'covers' => $covers, 'note' => $bill['note'], 'status' => 'open', 'business_date' => $bill['business_date'], 'opened_by' => $actor, 'opened_at' => $now,
             ];
 
             if (! $this->bills->addBill($property, $new, $now)) {

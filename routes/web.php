@@ -44,6 +44,10 @@ use App\Modules\FrontOffice\Presentation\Http\Controllers\ReservationController;
 use App\Modules\FrontOffice\Presentation\Http\Controllers\RoomBoardController;
 use App\Modules\FrontOffice\Presentation\Http\Controllers\StayController;
 use App\Modules\FrontOffice\Presentation\Http\Controllers\StayFeePolicyController;
+use App\Modules\GuestExperience\Presentation\Http\Controllers\GuestEntryController;
+use App\Modules\GuestExperience\Presentation\Http\Controllers\GuestMenuController;
+use App\Modules\GuestExperience\Presentation\Http\Controllers\GuestOrderQueueController;
+use App\Modules\GuestExperience\Presentation\Http\Controllers\QrPointController;
 use App\Modules\Housekeeping\Presentation\Http\Controllers\ChecklistController as HousekeepingChecklistController;
 use App\Modules\Housekeeping\Presentation\Http\Controllers\DamageReportController as HousekeepingDamageReportController;
 use App\Modules\Housekeeping\Presentation\Http\Controllers\HousekeepingController;
@@ -122,6 +126,18 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 Route::post('/locale', SetLocaleController::class)->middleware('throttle:60,1')->name('locale.update');
+
+// What a guest reaches with a scanned code (FR-GST): no account, no staff session; a short-lived session of the code, a limit on how fast it can be asked, and nothing but the guest's own orders.
+Route::prefix('g')->middleware(['throttle:guest'])->group(function (): void {
+    Route::get('/ended', [GuestEntryController::class, 'ended'])->name('guest.ended');
+    Route::middleware(['guest.session'])->group(function (): void {
+        Route::get('/menu', [GuestMenuController::class, 'menu'])->name('guest.menu');
+        Route::get('/orders', [GuestMenuController::class, 'orders'])->name('guest.orders');
+        Route::post('/verify', [GuestMenuController::class, 'verify'])->middleware('throttle:guest-write')->name('guest.verify');
+        Route::post('/order', [GuestMenuController::class, 'order'])->middleware('throttle:guest-write')->name('guest.order');
+    });
+    Route::get('/{token}', [GuestEntryController::class, 'enter'])->where('token', '[A-Za-z0-9_-]{32}')->name('guest.enter');
+});
 
 Route::middleware('guest')->group(function (): void {
     Route::get('/login', [AuthenticatedSessionController::class, 'create'])->name('login');
@@ -744,6 +760,18 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
     Route::post('/exceptions', [ExceptionController::class, 'store'])->middleware(['idempotent'])->name('finance.exceptions.store');
     Route::post('/exceptions/{id}/reconcile', [ExceptionController::class, 'reconcile'])->where('id', $id)->name('finance.exceptions.reconcile');
     Route::get('/audit', [FinanceAuditController::class, 'index'])->name('finance.audit');
+});
+
+Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix('guest')->group(function (): void {
+    $id = '[0-9a-z]{26}';
+
+    Route::get('/qr', [QrPointController::class, 'index'])->name('guest.qr');
+    Route::post('/qr', [QrPointController::class, 'provision'])->name('guest.qr.provision');
+    Route::get('/qr/print', [QrPointController::class, 'print'])->name('guest.qr.print');
+    Route::post('/qr/{id}/rotate', [QrPointController::class, 'rotate'])->where('id', $id)->name('guest.qr.rotate');
+    Route::post('/qr/{id}/active', [QrPointController::class, 'active'])->where('id', $id)->name('guest.qr.active');
+    Route::get('/orders', [GuestOrderQueueController::class, 'index'])->name('guest.orders.queue');
+    Route::post('/orders/{id}/decide', [GuestOrderQueueController::class, 'decide'])->where('id', $id)->name('guest.orders.decide');
 });
 
 Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix('kitchen')->group(function (): void {

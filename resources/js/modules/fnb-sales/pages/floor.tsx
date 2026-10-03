@@ -55,7 +55,7 @@ export default function FloorPage({ floor }: { floor: Floor }) {
 
     const place = (b: FloorBill) => (b.table !== null ? t('fnb.pos.tableLabel', { code: b.table }) : b.room !== null ? t('fnb.pos.roomLabel', { number: b.room }) : t('fnb.pos.counter'));
     const columns: DataGridColumn<FloorBill>[] = [
-        { id: 'number', label: t('fnb.pos.colBill'), value: (b) => b.number, rowHeader: true },
+        { id: 'number', label: t('fnb.pos.colBill'), value: (b) => b.number, rowHeader: true, cell: (b) => (b.source === 'qr' ? <span>{b.number} <StatusBadge label={t('fnb.pos.sourceQr')} tone="info" /></span> : b.number) },
         { id: 'place', label: t('fnb.pos.colPlace'), value: place },
         { id: 'covers', label: t('fnb.pos.colGuests'), align: 'right', value: (b) => b.covers },
         { id: 'lines', label: t('fnb.pos.colLines'), align: 'right', value: (b) => b.lines },

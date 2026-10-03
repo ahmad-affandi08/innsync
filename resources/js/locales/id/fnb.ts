@@ -481,4 +481,5 @@ export const fnb = {
     "fnb.reg.cashShort": "Uang tunai yang diterima kurang dari jumlah pesanan.",
     "fnb.reg.cardCode": "Isi kode persetujuan terminal kartu.",
     "fnb.reg.waiting": "{count} penjualan di perangkat ini belum dibukukan.",
+    "fnb.pos.sourceQr": "Ponsel tamu",
 } as const

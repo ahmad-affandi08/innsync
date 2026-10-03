@@ -232,4 +232,5 @@ export const kitchen = {
     "kitchen.prod.standardHint": "Dalam satuan yang dipilih. Hasil sebuah batch diukur terhadap ini.",
     "kitchen.prod.saveFormula": "Simpan formula",
     "kitchen.prod.badFormula": "Isi produk, hasil satu batch, dan setiap bahan beserta jumlahnya.",
+    "kitchen.ticket.sourceQr": "ponsel tamu",
 } as const
