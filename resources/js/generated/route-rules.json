@@ -368,6 +368,13 @@
             "status"
         ]
     },
+    "GET /maintenance/duties": {
+        "required": [],
+        "declared": [
+            "from",
+            "to"
+        ]
+    },
     "GET /maintenance/reports": {
         "required": [],
         "declared": [
@@ -3483,6 +3490,78 @@
         "declared": [
             "lock_version",
             "reason"
+        ]
+    },
+    "POST /maintenance/duties": {
+        "required": [
+            "category",
+            "frequency",
+            "shift",
+            "steps",
+            "title"
+        ],
+        "declared": [
+            "area",
+            "asset_id",
+            "category",
+            "frequency",
+            "month_day",
+            "shift",
+            "steps",
+            "steps.*",
+            "title",
+            "weekday"
+        ]
+    },
+    "POST /maintenance/duties/{id}": {
+        "required": [
+            "category",
+            "frequency",
+            "lock_version",
+            "shift",
+            "steps",
+            "title"
+        ],
+        "declared": [
+            "area",
+            "asset_id",
+            "category",
+            "frequency",
+            "lock_version",
+            "month_day",
+            "shift",
+            "steps",
+            "steps.*",
+            "title",
+            "weekday"
+        ]
+    },
+    "POST /maintenance/duties/{id}/active": {
+        "required": [
+            "active",
+            "lock_version"
+        ],
+        "declared": [
+            "active",
+            "lock_version"
+        ]
+    },
+    "POST /maintenance/duty-runs/{id}/complete": {
+        "required": [
+            "lock_version"
+        ],
+        "declared": [
+            "lock_version",
+            "note"
+        ]
+    },
+    "POST /maintenance/duty-runs/{id}/steps/{step}": {
+        "required": [
+            "result"
+        ],
+        "declared": [
+            "note",
+            "result"
         ]
     },
     "POST /maintenance/escalations/{id}/acknowledge": {

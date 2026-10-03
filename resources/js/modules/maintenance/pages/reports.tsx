@@ -40,13 +40,14 @@ export default function MaintenanceReportsPage({ report }: { report: Maintenance
                 <FormField label={t('mtc.rep.to')}><DatePicker onChange={(e) => setTo(e.target.value)} value={to} /></FormField>
                 <Button disabled={from === '' || to === ''} onClick={() => router.get('/maintenance/reports', { from, to })} type="button">{t('mtc.rep.show')}</Button>
             </div>
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6" data-testid="mtc-rep-kpis">
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" data-testid="mtc-rep-kpis">
                 <Metric label={t('mtc.rep.reported')} value={String(report.reported)} />
                 <Metric detail={t('mtc.rep.doneCount', { n: report.completion.done })} label={t('mtc.rep.average')} value={hours(report.completion.average_hours)} />
                 <Metric detail={t('mtc.rep.onTimeOf', { on: report.completion.on_time, of: report.completion.done })} label={t('mtc.rep.onTime')} value={report.completion.on_time_percent === null ? '—' : `${report.completion.on_time_percent}%`} />
                 <Metric label={t('mtc.rep.unsellable')} value={t('mtc.rep.nights', { n: report.unsellable.total_days })} />
                 <Metric detail={t('mtc.rep.partsUses', { n: report.parts.uses })} label={t('mtc.rep.parts')} value={format.money(report.parts.total_minor, report.parts.currency)} />
                 <Metric detail={t('mtc.rep.vendorJobs', { n: report.vendor.jobs, over: report.vendor.over_quote })} label={t('mtc.rep.vendor')} value={format.money(report.vendor.total_minor, report.vendor.currency)} />
+                <Metric detail={t('mtc.rep.dutiesDone', { done: report.duties.done, missed: report.duties.missed, issues: report.duties.issues })} label={t('mtc.rep.duties')} value={report.duties.done_percent === null ? '—' : `${report.duties.done_percent}%`} />
             </div>
             <div className="grid gap-4 lg:grid-cols-2">
                 <section aria-labelledby="mtc-rep-status" className="flex flex-col gap-2 border border-border bg-surface p-3">
@@ -93,6 +94,11 @@ export default function MaintenanceReportsPage({ report }: { report: Maintenance
                         </section>
                     </div>
                 )}
+            </section>
+            <section aria-labelledby="mtc-rep-duties" className="flex flex-col gap-2" data-testid="mtc-rep-duties">
+                <h2 className="font-semibold" id="mtc-rep-duties">{t('mtc.rep.duties')}</h2>
+                <p className="text-sm text-muted-foreground">{t('mtc.rep.dutiesHint')}</p>
+                {report.duties.by_duty.length === 0 ? <p className="text-sm text-muted-foreground">{t('mtc.rep.noDuties')}</p> : <ul className="text-sm">{report.duties.by_duty.map((d) => <li className="flex justify-between" key={d.title}><span>{d.title}</span><span className="tabular-nums">{t('mtc.rep.dutyLine', { done: d.done, missed: d.missed })}</span></li>)}</ul>}
             </section>
             <section aria-labelledby="mtc-rep-repeat" className="flex flex-col gap-2">
                 <h2 className="font-semibold" id="mtc-rep-repeat">{t('mtc.rep.repeat')}</h2>

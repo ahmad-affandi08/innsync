@@ -36,6 +36,10 @@ Schedule::command('maintenance:preventive')
     ->hourly()
     ->withoutOverlapping(30);
 
+Schedule::command('maintenance:duties')
+    ->hourly()
+    ->withoutOverlapping(30);
+
 Schedule::command('health:heartbeat')->everyMinute();
 
 Schedule::command('health:alerts')

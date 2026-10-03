@@ -98,6 +98,7 @@ describe('dictionaries', () => {
             'recipes.outlet',
             'mtc.asset.meter',
             'mtc.vendor.workOrder',
+            'mtc.duty.shift',
             'mtc.vendor.supplier',
             'mtc.asset.unit.km',
             'mtc.asset.category.it',

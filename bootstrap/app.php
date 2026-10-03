@@ -6,6 +6,7 @@ use App\Modules\IdentityAccess\Presentation\Http\Middleware\EnsureMfaVerified;
 use App\Modules\IdentityAccess\Presentation\Http\Middleware\RequirePermission;
 use App\Modules\IdentityAccess\Presentation\Http\Middleware\ResolvePropertyContext;
 use App\Modules\Maintenance\Infrastructure\EscalateWorkOrdersCommand;
+use App\Modules\Maintenance\Infrastructure\GenerateDutyRunsCommand;
 use App\Modules\Maintenance\Infrastructure\GenerateRoutineWorkCommand;
 use App\Modules\Property\Infrastructure\Migration\ImportRoomMasterCommand;
 use App\Modules\Reporting\Infrastructure\RunReportExportsCommand;
@@ -61,6 +62,7 @@ return Application::configure(basePath: dirname(__DIR__))
         RunReportExportsCommand::class,
         EscalateWorkOrdersCommand::class,
         GenerateRoutineWorkCommand::class,
+        GenerateDutyRunsCommand::class,
     ])
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->prepend(AssignCorrelationId::class);

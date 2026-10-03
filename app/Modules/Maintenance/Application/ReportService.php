@@ -13,13 +13,13 @@ use DateTimeZone;
 /**
  * The work order reports (FR-MTC-012): what was reported in a period by status and by the department that reported it; how long the work that was finished took, on average and by
  * priority, and how much of it was done by its deadline; the rooms that broke again and again; and the days rooms could not be sold because of a work order. The cost of the spare parts used in the
- * period is here, by kind of work and by item; the cost of the work of vendors that was finished in it is too.
+ * period is here, by kind of work and by item; the cost of the work of vendors that was finished in it is too; and how the routine duties went: done, missed, and the issues they found.
  */
 final readonly class ReportService
 {
     private const MAX_DAYS = 366;
 
-    public function __construct(private WorkOrderStore $store, private PartsStore $parts, private VendorJobStore $vendors, private MaintenanceAccess $access, private PropertyCurrencyReader $currencies) {}
+    public function __construct(private WorkOrderStore $store, private PartsStore $parts, private VendorJobStore $vendors, private DutyRunService $duties, private MaintenanceAccess $access, private PropertyCurrencyReader $currencies) {}
 
     /** @return array<string, mixed> */
     public function report(PropertyId $property, string $actorId, string $from, string $to): array
@@ -74,6 +74,7 @@ final readonly class ReportService
             'unsellable' => $this->unsellable($property, $start, $end),
             'parts' => $this->parts($property, $from, $to),
             'vendor' => $this->vendor($property, $from, $to),
+            'duties' => $this->duties->compliance($property, $from, $to),
         ];
     }
 

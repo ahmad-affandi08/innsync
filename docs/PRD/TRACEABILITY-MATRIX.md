@@ -157,7 +157,7 @@ Every row must eventually point to implementation evidence and tests. Status is 
 | FR-MTC-008 | Maintenance / Engineering | Sebaiknya | ../TASK/MODULE-07-MAINTENANCE.md | REVIEW |
 | FR-MTC-009 | Maintenance / Engineering | Sebaiknya | ../TASK/MODULE-07-MAINTENANCE.md | REVIEW |
 | FR-MTC-010 | Maintenance / Engineering | Wajib | ../TASK/MODULE-07-MAINTENANCE.md | REVIEW |
-| FR-MTC-011 | Maintenance / Engineering | Wajib | ../TASK/MODULE-07-MAINTENANCE.md | TODO |
+| FR-MTC-011 | Maintenance / Engineering | Wajib | ../TASK/MODULE-07-MAINTENANCE.md | REVIEW |
 | FR-MTC-012 | Maintenance / Engineering | Wajib | ../TASK/MODULE-07-MAINTENANCE.md | REVIEW |
 | FR-MTC-013 | Maintenance / Engineering | Wajib | ../TASK/MODULE-07-MAINTENANCE.md | REVIEW |
 | FR-MTC-014 | Maintenance / Engineering | Sebaiknya | ../TASK/MODULE-07-MAINTENANCE.md | REVIEW |

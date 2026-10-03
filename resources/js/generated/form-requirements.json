@@ -511,6 +511,12 @@
         "title",
         "trigger_kind"
     ],
+    "maintenance/pages/duties": [
+        "category",
+        "frequency",
+        "shift",
+        "title"
+    ],
     "maintenance/pages/vendor-work": [
         "actual_minor",
         "amount_minor",

@@ -30,6 +30,7 @@ export type MaintenanceReport = {
     completion: { done: number; average_hours: number | null; on_time: number; on_time_percent: number | null; by_priority: { priority: Priority; done: number; average_hours: number | null }[] };
     repeat_rooms: { room: string; count: number; categories: string[] }[]; unsellable: { total_days: number; rooms: { room: string; days: number }[] };
     vendor: { currency: string; total_minor: number; jobs: number; over_quote: number; by_supplier: { supplier: string; value_minor: number }[]; by_category: { category: string; value_minor: number }[] };
+    duties: { runs: number; done: number; missed: number; open: number; issues: number; done_percent: number | null; by_duty: { title: string; done: number; missed: number }[] };
     parts: { currency: string; total_minor: number; uses: number; complete: boolean; by_category: { category: string; value_minor: number }[]; top_items: { item: string; value_minor: number }[] };
 };
 
@@ -80,3 +81,26 @@ export type VendorJobDetail = VendorJob & {
     approval: { id: string; status: string; consumed: boolean } | null;
     may: { quote: boolean; choose: boolean; release: boolean; schedule: boolean; complete: boolean; cancel: boolean };
 };
+
+export type DutyRunStatus = 'open' | 'done' | 'missed';
+export type DutyResult = 'pending' | 'ok' | 'issue' | 'na';
+
+export type DutyRun = {
+    id: string; title: string; shift: 'any' | 'day' | 'night'; area: string | null; asset_id: string | null; category: string; due_on: string; status: DutyRunStatus; steps: number; pending: number; issues: number;
+    done_by: string | null; done_at: string | null; lock_version: number;
+};
+
+export type DutyRunDetail = Omit<DutyRun, 'steps'> & {
+    steps: { id: string; position: number; text: string; result: DutyResult; note: string | null; work_order_id: string | null; by: string | null; at: string | null }[]; note: string | null; may: { do: boolean };
+};
+
+export type DutiesOverview = {
+    business_date: string; from: string; to: string; counts: Record<DutyRunStatus, number>; runs: DutyRun[]; may: { do: boolean; manage: boolean };
+};
+
+export type Duty = {
+    id: string; title: string; frequency: 'daily' | 'weekly' | 'monthly'; shift: 'any' | 'day' | 'night'; weekday: number | null; month_day: number | null; asset_id: string | null; asset: { number: string; name: string } | null;
+    area: string | null; category: string; starts_on: string; active: boolean; steps: string[]; lock_version: number;
+};
+
+export type DutyChoices = { frequencies: string[]; shifts: string[]; categories: string[]; max_steps: number; assets: { id: string; number: string; name: string }[] };
