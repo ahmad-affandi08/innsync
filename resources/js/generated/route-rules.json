@@ -2543,6 +2543,21 @@
             "photo"
         ]
     },
+    "POST /hr/attendance/corrections": {
+        "required": [
+            "employee_id",
+            "in_time",
+            "reason",
+            "work_date"
+        ],
+        "declared": [
+            "employee_id",
+            "in_time",
+            "out_time",
+            "reason",
+            "work_date"
+        ]
+    },
     "POST /hr/attendance/manual": {
         "required": [
             "employee_id",
@@ -2653,6 +2668,20 @@
             "offboarded_on",
             "reason",
             "reassign_to"
+        ]
+    },
+    "POST /hr/overtime": {
+        "required": [
+            "employee_id",
+            "minutes",
+            "reason",
+            "work_date"
+        ],
+        "declared": [
+            "employee_id",
+            "minutes",
+            "reason",
+            "work_date"
         ]
     },
     "POST /hr/roster/assign": {

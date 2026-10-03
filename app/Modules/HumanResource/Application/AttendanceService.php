@@ -27,7 +27,6 @@ use App\Shared\Application\Security\PermissionChecker;
 use App\Shared\Application\Time\Clock;
 use App\Shared\Application\Transactions\TransactionRunner;
 use App\Shared\Domain\Tenancy\PropertyId;
-use App\Shared\Domain\Time\CalendarDate;
 use App\Shared\Domain\Time\PropertyTimeZone;
 use DateTimeImmutable;
 use DateTimeZone;
@@ -58,6 +57,7 @@ final readonly class AttendanceService
     public function __construct(
         private AttendanceStore $store,
         private RosterStore $roster,
+        private OvertimeStore $overtime,
         private EmployeeStore $employees,
         private HrAccess $access,
         private PropertyTimeZoneReader $zones,
@@ -226,13 +226,7 @@ final readonly class AttendanceService
             throw Refusal::invalid('The roster has no shift for this person on this day.', ['work_date']);
         }
 
-        $inAt = $tz->utcAt(CalendarDate::fromString($date), $in);
-        $outAt = null;
-
-        if ($out !== null && $out !== '') {
-            $outDate = $out <= $in ? date('Y-m-d', strtotime($date.' +1 day')) : $date;
-            $outAt = $tz->utcAt(CalendarDate::fromString($outDate), $out);
-        }
+        [$inAt, $outAt] = ShiftTimes::clocked($tz, $date, $in, $out);
 
         if ($inAt > $now || ($outAt !== null && $outAt > $now)) {
             throw Refusal::invalid('A time that has not come yet cannot be recorded.', ['in_time', 'out_time']);
@@ -392,16 +386,20 @@ final readonly class AttendanceService
      * @param  array<string, mixed>  $entry
      * @param  array<string, mixed>|null  $record
      * @param  array<string, mixed>  $settings
-     * @return array{status: string, late_minutes: int, early_minutes: int, extra_minutes: int, worked_minutes: int|null, planned_start: string, planned_end: string}
+     * @param  array<string, mixed>|null  $grant  the overtime approved for the day: its minutes and when it was approved
+     * @return array{status: string, late_minutes: int, early_minutes: int, extra_minutes: int, overtime_minutes: int, unapproved_minutes: int, overtime_granted: int, worked_minutes: int|null, planned_start: string, planned_end: string}
      */
-    public function evaluate(array $entry, ?array $record, array $settings, DateTimeImmutable $now, PropertyTimeZone $tz): array
+    public function evaluate(array $entry, ?array $record, array $settings, DateTimeImmutable $now, PropertyTimeZone $tz, ?array $grant = null): array
     {
         [$start, $end] = $this->window($entry, $tz);
         $minutes = static fn (DateTimeImmutable $a, DateTimeImmutable $b): int => (int) floor(($b->getTimestamp() - $a->getTimestamp()) / 60);
         $late = 0;
         $early = 0;
         $extra = 0;
+        $overtime = 0;
         $worked = null;
+        // Overtime counts as approved beforehand only when it was approved before the shift ended.
+        $granted = $grant !== null && new DateTimeImmutable((string) $grant['approved_at'], new DateTimeZone('UTC')) <= $end ? (int) $grant['minutes'] : 0;
 
         if ($record === null) {
             $status = $now < $start->modify('+'.$settings['late_grace'].' minutes') ? 'upcoming' : ($now < $end ? 'not_in' : 'absent');
@@ -420,10 +418,11 @@ final readonly class AttendanceService
                 $early = $shortfall > $settings['early_grace'] ? $shortfall : 0;
                 $over = $minutes($end, $out);
                 $extra = $over > 0 && $over >= $settings['extra_after'] ? $over : 0;
+                $overtime = $over > 0 ? min($over, $granted) : 0;
             }
         }
 
-        return ['status' => $status, 'late_minutes' => $late, 'early_minutes' => $early, 'extra_minutes' => $extra, 'worked_minutes' => $worked, 'planned_start' => $start->format('Y-m-d\TH:i:s\Z'), 'planned_end' => $end->format('Y-m-d\TH:i:s\Z')];
+        return ['status' => $status, 'late_minutes' => $late, 'early_minutes' => $early, 'extra_minutes' => $extra, 'overtime_minutes' => $overtime, 'unapproved_minutes' => max(0, $extra - $overtime), 'overtime_granted' => $granted, 'worked_minutes' => $worked, 'planned_start' => $start->format('Y-m-d\TH:i:s\Z'), 'planned_end' => $end->format('Y-m-d\TH:i:s\Z')];
     }
 
     /**
@@ -432,12 +431,7 @@ final readonly class AttendanceService
      */
     private function window(array $entry, PropertyTimeZone $tz): array
     {
-        $date = substr((string) $entry['work_date'], 0, 10);
-        $lastEnd = $entry['starts2_at'] !== null ? $entry['ends2_at'] : $entry['ends_at'];
-        $nextDay = $entry['starts2_at'] === null && $entry['ends_at'] <= $entry['starts_at'];
-        $endDate = $nextDay ? date('Y-m-d', strtotime($date.' +1 day')) : $date;
-
-        return [$tz->utcAt(CalendarDate::fromString($date), $entry['starts_at']), $tz->utcAt(CalendarDate::fromString($endDate), $lastEnd)];
+        return ShiftTimes::window($entry, $tz);
     }
 
     /** The planned shift whose time it is: the day's or the one before it that runs past midnight. @return array{date: string, entry: array<string, mixed>, record: array<string, mixed>|null, window: array{0: DateTimeImmutable, 1: DateTimeImmutable}}|null */
@@ -485,7 +479,7 @@ final readonly class AttendanceService
 
         return [
             'employee' => ['id' => $e['id'], 'number' => $e['number'], 'name' => $e['full_name'], 'department' => $e['department']], 'active' => $e['status'] === 'active',
-            'shift' => $shift === null ? null : ['date' => $shift['date'], 'code' => $shift['entry']['pattern_code'], 'starts_at' => $shift['entry']['starts_at'], 'ends_at' => $shift['entry']['ends_at'], 'starts2_at' => $shift['entry']['starts2_at'], 'ends2_at' => $shift['entry']['ends2_at'], 'record' => $this->recordShape($shift['record']), ...$this->evaluate($shift['entry'], $shift['record'], $settings, $now, $tz)],
+            'shift' => $shift === null ? null : ['date' => $shift['date'], 'code' => $shift['entry']['pattern_code'], 'starts_at' => $shift['entry']['starts_at'], 'ends_at' => $shift['entry']['ends_at'], 'starts2_at' => $shift['entry']['starts2_at'], 'ends2_at' => $shift['entry']['ends2_at'], 'record' => $this->recordShape($shift['record']), ...$this->evaluate($shift['entry'], $shift['record'], $settings, $now, $tz, $this->grants($property, $shift['date'], $shift['date'], $employeeId)[$employeeId.'|'.$shift['date']] ?? null)],
             'may_clock_in' => $shift !== null && $shift['record'] === null, 'may_clock_out' => $shift !== null && $shift['record'] !== null && $shift['record']['out_at'] === null,
         ];
     }
@@ -500,6 +494,7 @@ final readonly class AttendanceService
             $records[$r['employee_id']] = $r;
         }
 
+        $grants = $this->grants($property, $date, $date, null);
         $rows = [];
 
         foreach ($this->roster->entriesBetween($property, $date, $date, $department) as $e) {
@@ -507,7 +502,7 @@ final readonly class AttendanceService
                 continue;
             }
 
-            $rows[] = $this->row($e, $records[$e['employee_id']] ?? null, $settings, $now, $tz);
+            $rows[] = $this->row($e, $records[$e['employee_id']] ?? null, $settings, $now, $tz, $grants[$e['employee_id'].'|'.$date] ?? null);
         }
 
         return $rows;
@@ -529,14 +524,15 @@ final readonly class AttendanceService
      * @param  array<string, mixed>  $e
      * @param  array<string, mixed>|null  $record
      * @param  array<string, mixed>  $settings
+     * @param  array<string, mixed>|null  $grant
      * @return array<string, mixed>
      */
-    private function row(array $e, ?array $record, array $settings, DateTimeImmutable $now, PropertyTimeZone $tz): array
+    private function row(array $e, ?array $record, array $settings, DateTimeImmutable $now, PropertyTimeZone $tz, ?array $grant): array
     {
         return [
             'employee' => ['id' => $e['employee_id'], 'number' => $e['number'], 'name' => $e['full_name'], 'department' => $e['department']],
             'shift' => ['code' => $e['pattern_code'], 'date' => substr((string) $e['work_date'], 0, 10), 'starts_at' => $e['starts_at'], 'ends_at' => $e['ends_at'], 'starts2_at' => $e['starts2_at'], 'ends2_at' => $e['ends2_at']],
-            'record' => $this->recordShape($record), ...$this->evaluate($e, $record, $settings, $now, $tz),
+            'record' => $this->recordShape($record), ...$this->evaluate($e, $record, $settings, $now, $tz, $grant),
         ];
     }
 
@@ -565,6 +561,7 @@ final readonly class AttendanceService
             $records[$r['employee_id'].'|'.substr((string) $r['work_date'], 0, 10)] = $r;
         }
 
+        $grants = $this->grants($property, $from, $to, null);
         $per = [];
 
         foreach ($this->roster->entriesBetween($property, $from, $to, $department) as $e) {
@@ -580,9 +577,9 @@ final readonly class AttendanceService
             }
 
             $p = &$per[$e['employee_id']];
-            $p ??= ['employee' => ['id' => $e['employee_id'], 'number' => $e['number'], 'name' => $e['full_name'], 'department' => $e['department']], 'scheduled' => 0, 'present' => 0, 'late_days' => 0, 'late_minutes' => 0, 'early_days' => 0, 'early_minutes' => 0, 'absent' => 0, 'extra_minutes' => 0, 'worked_minutes' => 0];
+            $p ??= ['employee' => ['id' => $e['employee_id'], 'number' => $e['number'], 'name' => $e['full_name'], 'department' => $e['department']], 'scheduled' => 0, 'present' => 0, 'late_days' => 0, 'late_minutes' => 0, 'early_days' => 0, 'early_minutes' => 0, 'absent' => 0, 'extra_minutes' => 0, 'overtime_minutes' => 0, 'unapproved_minutes' => 0, 'worked_minutes' => 0];
 
-            $v = $this->evaluate($e, $records[$e['employee_id'].'|'.substr((string) $e['work_date'], 0, 10)] ?? null, $settings, $now, $tz);
+            $v = $this->evaluate($e, $records[$e['employee_id'].'|'.substr((string) $e['work_date'], 0, 10)] ?? null, $settings, $now, $tz, $grants[$e['employee_id'].'|'.substr((string) $e['work_date'], 0, 10)] ?? null);
             $p['scheduled']++;
             $p['present'] += in_array($v['status'], ['present', 'on_duty', 'missing_out'], true) ? 1 : 0;
             $p['absent'] += $v['status'] === 'absent' ? 1 : 0;
@@ -591,6 +588,8 @@ final readonly class AttendanceService
             $p['early_days'] += $v['early_minutes'] > 0 ? 1 : 0;
             $p['early_minutes'] += $v['early_minutes'];
             $p['extra_minutes'] += $v['extra_minutes'];
+            $p['overtime_minutes'] += $v['overtime_minutes'];
+            $p['unapproved_minutes'] += $v['unapproved_minutes'];
             $p['worked_minutes'] += $v['worked_minutes'] ?? 0;
             unset($p);
         }
@@ -599,6 +598,18 @@ final readonly class AttendanceService
         usort($rows, static fn (array $a, array $b): int => strcmp($a['employee']['name'], $b['employee']['name']));
 
         return $rows;
+    }
+
+    /** @return array<string, array<string, mixed>> the approved overtime of the days, by person and day */
+    private function grants(PropertyId $property, string $from, string $to, ?string $employeeId): array
+    {
+        $out = [];
+
+        foreach ($this->overtime->approvedBetween($property, $from, $to, $employeeId) as $g) {
+            $out[$g['employee_id'].'|'.substr((string) $g['work_date'], 0, 10)] = $g;
+        }
+
+        return $out;
     }
 
     /** @param array{latitude: float|null, longitude: float|null, radius_m: int, geofence: bool} $settings */

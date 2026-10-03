@@ -36,7 +36,7 @@ export type AttendanceStatus = 'upcoming' | 'not_in' | 'on_duty' | 'present' | '
 
 export type AttendanceRecord = { id: string; in_at: string; in_method: 'mobile' | 'manual'; in_distance_m: number | null; has_in_photo: boolean; out_at: string | null; out_method: 'mobile' | 'manual' | null; out_distance_m: number | null; has_out_photo: boolean; manual_reason: string | null; lock_version: number };
 
-export type AttendanceEvaluation = { status: AttendanceStatus; late_minutes: number; early_minutes: number; extra_minutes: number; worked_minutes: number | null; planned_start: string; planned_end: string };
+export type AttendanceEvaluation = { status: AttendanceStatus; late_minutes: number; early_minutes: number; extra_minutes: number; overtime_minutes: number; unapproved_minutes: number; overtime_granted: number; worked_minutes: number | null; planned_start: string; planned_end: string };
 
 export type AttendanceRow = AttendanceEvaluation & {
     employee: { id: string; number: string; name: string; department: string };
@@ -44,7 +44,7 @@ export type AttendanceRow = AttendanceEvaluation & {
     record: AttendanceRecord | null;
 };
 
-export type AttendanceSummaryRow = { employee: { id: string; number: string; name: string; department: string }; scheduled: number; present: number; late_days: number; late_minutes: number; early_days: number; early_minutes: number; absent: number; extra_minutes: number; worked_minutes: number };
+export type AttendanceSummaryRow = { employee: { id: string; number: string; name: string; department: string }; scheduled: number; present: number; late_days: number; late_minutes: number; early_days: number; early_minutes: number; absent: number; extra_minutes: number; overtime_minutes: number; unapproved_minutes: number; worked_minutes: number };
 
 export type AttendanceSettings = { latitude: number | null; longitude: number | null; radius_m: number; require_selfie: boolean; late_grace: number; early_grace: number; extra_after: number; geofence: boolean; is_baseline: boolean; lock_version: number | null };
 
@@ -57,3 +57,21 @@ export type AttendanceOverview = {
     now: string; today: string; settings: AttendanceSettings; me: AttendanceMe | null; may: { manage: boolean }; departments: string[];
     day: { date: string; rows: AttendanceRow[] } | null; summary: { from: string; to: string; department: string | null; rows: AttendanceSummaryRow[] } | null;
 };
+
+export type OvertimeStatus = 'pending_approval' | 'approved' | 'rejected' | 'cancelled';
+
+export type OvertimeRequest = {
+    id: string; employee: { id: string; number: string; name: string; department: string }; work_date: string; minutes: number; reason: string; status: OvertimeStatus; approved_at: string | null; lock_version: number;
+    approval: { id: string; status: string; consumed: boolean } | null; may_cancel: boolean;
+};
+
+export type OvertimeOverview = { requests: OvertimeRequest[] };
+
+export type CorrectionStatus = 'pending_approval' | 'applied' | 'rejected' | 'cancelled';
+
+export type AttendanceCorrection = {
+    id: string; employee: { id: string; number: string; name: string; department: string }; work_date: string; status: CorrectionStatus; reason: string;
+    old: { in_at: string | null; out_at: string | null }; new: { in_at: string | null; out_at: string | null }; applied_at: string | null; created_at: string; approval: { id: string; status: string; consumed: boolean } | null;
+};
+
+export type CorrectionOverview = { corrections: AttendanceCorrection[]; days_back: number };

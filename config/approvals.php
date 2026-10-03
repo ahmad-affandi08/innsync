@@ -36,5 +36,9 @@ return [
         'maintenance.vendor-job' => ['mandatory' => false],
         // FR-FBS-014: giving a settled bill back needs a supervisor. Mandatory: with no policy configured the refund is refused, never made.
         'fnb.bill.refund' => ['mandatory' => true],
+        // FR-HR-018: overtime asked for before it is worked. The owner may configure a chain; with no policy the supervisor's request is approved when made.
+        'hr.overtime' => ['mandatory' => false],
+        // FR-HR-019: a correction of attendance needs approval. Mandatory: with no policy configured the correction is refused, never made.
+        'hr.attendance-correction' => ['mandatory' => true],
     ],
 ];

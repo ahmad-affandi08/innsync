@@ -41,6 +41,7 @@ use App\Modules\Housekeeping\Presentation\Http\Controllers\HousekeepingControlle
 use App\Modules\Housekeeping\Presentation\Http\Controllers\LinenController;
 use App\Modules\Housekeeping\Presentation\Http\Controllers\LostFoundController;
 use App\Modules\Housekeeping\Presentation\Http\Controllers\ParLevelController;
+use App\Modules\HumanResource\Presentation\Http\Controllers\AttendanceAdjustmentController;
 use App\Modules\HumanResource\Presentation\Http\Controllers\AttendanceController;
 use App\Modules\HumanResource\Presentation\Http\Controllers\EmployeeController;
 use App\Modules\HumanResource\Presentation\Http\Controllers\RosterController;
@@ -699,6 +700,12 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
     Route::post('/attendance/clock-out', [AttendanceController::class, 'clockOut'])->middleware(['idempotent'])->name('hr.attendance.out');
     Route::post('/attendance/manual', [AttendanceController::class, 'manual'])->middleware(['idempotent'])->name('hr.attendance.manual');
     Route::post('/attendance/settings', [AttendanceController::class, 'settings'])->name('hr.attendance.settings');
+    Route::post('/overtime', [AttendanceAdjustmentController::class, 'requestOvertime'])->middleware(['idempotent'])->name('hr.overtime.request');
+    Route::post('/overtime/{id}/release', [AttendanceAdjustmentController::class, 'releaseOvertime'])->where('id', $id)->name('hr.overtime.release');
+    Route::post('/overtime/{id}/cancel', [AttendanceAdjustmentController::class, 'cancelOvertime'])->where('id', $id)->name('hr.overtime.cancel');
+    Route::post('/attendance/corrections', [AttendanceAdjustmentController::class, 'requestCorrection'])->middleware(['idempotent'])->name('hr.attendance.corrections.request');
+    Route::post('/attendance/corrections/{id}/apply', [AttendanceAdjustmentController::class, 'applyCorrection'])->where('id', $id)->name('hr.attendance.corrections.apply');
+    Route::post('/attendance/corrections/{id}/cancel', [AttendanceAdjustmentController::class, 'cancelCorrection'])->where('id', $id)->name('hr.attendance.corrections.cancel');
     Route::get('/attendance/{id}/photo/{which}', [AttendanceController::class, 'photo'])->where('id', $id)->where('which', 'in|out')->name('hr.attendance.photo');
     Route::get('/shift-patterns', [RosterController::class, 'patterns'])->name('hr.patterns');
     Route::post('/shift-patterns', [RosterController::class, 'createPattern'])->name('hr.patterns.create');

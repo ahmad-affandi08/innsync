@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Modules\HumanResource\Presentation\Http\Controllers;
 
+use App\Modules\HumanResource\Application\AttendanceCorrectionService;
 use App\Modules\HumanResource\Application\AttendanceService;
+use App\Modules\HumanResource\Application\OvertimeService;
 use App\Shared\Application\Tenancy\PropertyContext;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -16,13 +18,21 @@ use Inertia\Response;
 /** Attendance: clocking in and out, the day and period views, and how attendance is taken. Every rule and permission lives in `AttendanceService`. */
 final readonly class AttendanceController
 {
-    public function __construct(private AttendanceService $attendance, private PropertyContext $property) {}
+    public function __construct(private AttendanceService $attendance, private OvertimeService $overtime, private AttendanceCorrectionService $corrections, private PropertyContext $property) {}
 
     public function index(Request $request): Response
     {
         $data = $request->validate(['date' => ['nullable', 'date_format:Y-m-d'], 'from' => ['nullable', 'date_format:Y-m-d'], 'to' => ['nullable', 'date_format:Y-m-d'], 'department' => ['nullable', 'string', 'max:16']]);
 
-        return Inertia::render('hr/pages/attendance', ['overview' => $this->attendance->overview($this->property->current(), $this->actor($request), $data['date'] ?? null, $data['from'] ?? null, $data['to'] ?? null, $data['department'] ?? null)]);
+        $property = $this->property->current();
+        $overview = $this->attendance->overview($property, $this->actor($request), $data['date'] ?? null, $data['from'] ?? null, $data['to'] ?? null, $data['department'] ?? null);
+        $manage = $overview['may']['manage'];
+
+        return Inertia::render('hr/pages/attendance', [
+            'overview' => $overview,
+            'overtime' => $manage ? $this->overtime->overview($property, $this->actor($request)) : null,
+            'corrections' => $manage ? $this->corrections->overview($property, $this->actor($request)) : null,
+        ]);
     }
 
     public function clockIn(Request $request): JsonResponse

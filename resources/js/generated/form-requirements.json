@@ -322,6 +322,7 @@
         "extra_after_minutes",
         "in_time",
         "late_grace_minutes",
+        "minutes",
         "radius_m",
         "reason",
         "work_date"

@@ -14,7 +14,7 @@ import { Select } from '@/components/ui/select';
 import { StatusBadge, type StatusTone } from '@/components/ui/status-badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { HrShell } from '@/modules/hr/components/hr-shell';
-import type { AttendanceOverview, AttendanceRow, AttendanceStatus, AttendanceSummaryRow } from '@/modules/hr/lib/hr';
+import type { AttendanceCorrection, AttendanceOverview, AttendanceRow, AttendanceStatus, AttendanceSummaryRow, CorrectionOverview, CorrectionStatus, OvertimeOverview, OvertimeRequest, OvertimeStatus } from '@/modules/hr/lib/hr';
 import { newIdempotencyKey } from '@/shared/api/http';
 import { useServerAction } from '@/shared/api/use-server-action';
 import { useFormatters, useTranslation } from '@/shared/i18n/i18n';
@@ -22,6 +22,8 @@ import { useErrorStateCopy } from '@/shared/i18n/use-ui-copy';
 import type { MessageKey } from '@/locales/en/index';
 
 const TONE: Record<AttendanceStatus, StatusTone> = { upcoming: 'neutral', not_in: 'warning', on_duty: 'info', present: 'success', missing_out: 'warning', absent: 'danger' };
+const OVERTIME_TONE: Record<OvertimeStatus, StatusTone> = { pending_approval: 'pending', approved: 'success', rejected: 'danger', cancelled: 'neutral' };
+const CORRECTION_TONE: Record<CorrectionStatus, StatusTone> = { pending_approval: 'pending', applied: 'success', rejected: 'danger', cancelled: 'neutral' };
 const hm = (minutes: number) => `${Math.floor(minutes / 60)}:${String(minutes % 60).padStart(2, '0')}`;
 
 function position(): Promise<{ latitude: number; longitude: number } | null> {
@@ -32,8 +34,8 @@ function position(): Promise<{ latitude: number; longitude: number } | null> {
 }
 
 /** Attendance: the person's own shift to clock in and out of, who came on a day, and how the period went (for those who manage it). */
-export default function AttendancePage({ overview }: { overview: AttendanceOverview }) {
-    const { t } = useTranslation();
+export default function AttendancePage({ overview, overtime, corrections }: { overview: AttendanceOverview; overtime: OvertimeOverview | null; corrections: CorrectionOverview | null }) {
+    const { t, locale } = useTranslation();
     const format = useFormatters();
     const errorCopy = useErrorStateCopy();
     const action = useServerAction();
@@ -43,6 +45,8 @@ export default function AttendancePage({ overview }: { overview: AttendanceOverv
     const [from, setFrom] = useState(overview.summary?.from ?? overview.today);
     const [to, setTo] = useState(overview.summary?.to ?? overview.today);
     const [manual, setManual] = useState<{ employeeId: string; date: string; inTime: string; outTime: string; reason: string } | null>(null);
+    const [ask, setAsk] = useState<{ employeeId: string; date: string; minutes: string; reason: string } | null>(null);
+    const [fix, setFix] = useState<{ employeeId: string; date: string; inTime: string; outTime: string; reason: string } | null>(null);
     const [settings, setSettings] = useState<{ lat: string; lng: string; radius: string; selfie: boolean; late: string; early: string; extra: string; lock: number | null } | null>(null);
     const failure = action.error !== null ? <ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /> : null;
     const label = (prefix: string, key: string) => t(`${prefix}.${key}` as MessageKey);
@@ -77,6 +81,22 @@ export default function AttendancePage({ overview }: { overview: AttendanceOverv
         if (result !== null) setManual(null);
     }
 
+    async function askOvertime() {
+        if (ask === null) return;
+        const result = await action.run('/hr/overtime', { idempotencyKey: newIdempotencyKey(), body: { employee_id: ask.employeeId, work_date: ask.date, minutes: Number(ask.minutes), reason: ask.reason.trim() }, reload: ['overview', 'overtime'] });
+
+        if (result !== null) setAsk(null);
+    }
+
+    async function correctDay() {
+        if (fix === null) return;
+        const result = await action.run('/hr/attendance/corrections', { idempotencyKey: newIdempotencyKey(), body: { employee_id: fix.employeeId, work_date: fix.date, in_time: fix.inTime, out_time: fix.outTime === '' ? null : fix.outTime, reason: fix.reason.trim() }, reload: ['overview', 'corrections'] });
+
+        if (result !== null) setFix(null);
+    }
+
+    const settle = (url: string, reload: string[]) => action.run(url, { body: {}, reload });
+
     async function saveSettings() {
         if (settings === null) return;
         const result = await action.run('/hr/attendance/settings', {
@@ -87,7 +107,7 @@ export default function AttendancePage({ overview }: { overview: AttendanceOverv
         if (result !== null) setSettings(null);
     }
 
-    const flags = (r: AttendanceRow) => [r.late_minutes > 0 ? t('hr.att.late', { n: r.late_minutes }) : null, r.early_minutes > 0 ? t('hr.att.early', { n: r.early_minutes }) : null, r.extra_minutes > 0 ? t('hr.att.extra', { n: r.extra_minutes }) : null].filter((x) => x !== null).join(' · ');
+    const flags = (r: AttendanceRow) => [r.late_minutes > 0 ? t('hr.att.late', { n: r.late_minutes }) : null, r.early_minutes > 0 ? t('hr.att.early', { n: r.early_minutes }) : null, r.overtime_minutes > 0 ? t('hr.att.overtime', { n: r.overtime_minutes }) : null, r.unapproved_minutes > 0 ? t('hr.att.unapproved', { n: r.unapproved_minutes }) : null].filter((x) => x !== null).join(' · ');
 
     const dayColumns: DataGridColumn<AttendanceRow>[] = [
         { id: 'name', label: t('hr.col.name'), value: (r) => r.employee.name, rowHeader: true, cell: (r) => <span>{r.employee.name}<span className="block text-xs text-muted-foreground">{r.employee.number} · {label('hr.department', r.employee.department)}</span></span> },
@@ -107,7 +127,29 @@ export default function AttendancePage({ overview }: { overview: AttendanceOverv
         { id: 'late', label: t('hr.att.lateDays'), align: 'right', value: (r) => r.late_minutes, cell: (r) => `${r.late_days} · ${hm(r.late_minutes)}` },
         { id: 'early', label: t('hr.att.earlyDays'), align: 'right', value: (r) => r.early_minutes, cell: (r) => `${r.early_days} · ${hm(r.early_minutes)}` },
         { id: 'extra', label: t('hr.att.extraHours'), align: 'right', value: (r) => r.extra_minutes, cell: (r) => hm(r.extra_minutes) },
+        { id: 'overtime', label: t('hr.att.overtimeHours'), align: 'right', value: (r) => r.overtime_minutes, cell: (r) => hm(r.overtime_minutes) },
+        { id: 'unapproved', label: t('hr.att.unapprovedHours'), align: 'right', value: (r) => r.unapproved_minutes, cell: (r) => (r.unapproved_minutes > 0 ? <span className="text-warning">{hm(r.unapproved_minutes)}</span> : hm(0)) },
         { id: 'worked', label: t('hr.att.worked'), align: 'right', value: (r) => r.worked_minutes, cell: (r) => hm(r.worked_minutes) },
+    ];
+
+    const clock = (iso: string | null) => (iso === null ? '—' : new Intl.DateTimeFormat(locale, { hour: '2-digit', minute: '2-digit', timeZone: format.timeZone ?? 'UTC' }).format(new Date(iso)));
+    const range = (x: { in_at: string | null; out_at: string | null }) => `${clock(x.in_at)} → ${clock(x.out_at)}`;
+    const overtimeColumns: DataGridColumn<OvertimeRequest>[] = [
+        { id: 'name', label: t('hr.col.name'), value: (r) => r.employee.name, rowHeader: true, cell: (r) => <span>{r.employee.name}<span className="block text-xs text-muted-foreground">{r.employee.number} · {label('hr.department', r.employee.department)}</span></span> },
+        { id: 'date', label: t('hr.att.date'), value: (r) => r.work_date, cell: (r) => format.date(r.work_date) },
+        { id: 'minutes', label: t('hr.att.overtimeMinutes'), align: 'right', value: (r) => r.minutes, cell: (r) => hm(r.minutes) },
+        { id: 'status', label: t('hr.col.status'), value: (r) => r.status, filter: 'select', filterLabel: (v) => label('hr.att.overtimeStatus', v), cell: (r) => <StatusBadge label={label('hr.att.overtimeStatus', r.status)} tone={OVERTIME_TONE[r.status]} /> },
+        { id: 'reason', label: t('hr.att.reasonShort'), value: (r) => r.reason },
+        { id: 'act', label: '', value: () => '', sortable: false, cell: (r) => <span className="flex gap-2">{r.status === 'pending_approval' ? <Button disabled={action.busy} onClick={() => void settle(`/hr/overtime/${r.id}/release`, ['overtime'])} size="sm" type="button">{t('hr.att.take')}</Button> : null}{r.may_cancel ? <Button disabled={action.busy} onClick={() => void settle(`/hr/overtime/${r.id}/cancel`, ['overtime'])} size="sm" type="button" variant="outline">{t('hr.att.cancelRequest')}</Button> : null}</span> },
+    ];
+    const correctionColumns: DataGridColumn<AttendanceCorrection>[] = [
+        { id: 'name', label: t('hr.col.name'), value: (r) => r.employee.name, rowHeader: true, cell: (r) => <span>{r.employee.name}<span className="block text-xs text-muted-foreground">{r.employee.number} · {label('hr.department', r.employee.department)}</span></span> },
+        { id: 'date', label: t('hr.att.date'), value: (r) => r.work_date, cell: (r) => format.date(r.work_date) },
+        { id: 'before', label: t('hr.att.before'), value: (r) => range(r.old), sortable: false },
+        { id: 'after', label: t('hr.att.after'), value: (r) => range(r.new), sortable: false },
+        { id: 'status', label: t('hr.col.status'), value: (r) => r.status, filter: 'select', filterLabel: (v) => label('hr.att.correctionStatus', v), cell: (r) => <StatusBadge label={label('hr.att.correctionStatus', r.status)} tone={CORRECTION_TONE[r.status]} /> },
+        { id: 'reason', label: t('hr.att.reasonShort'), value: (r) => r.reason },
+        { id: 'act', label: '', value: () => '', sortable: false, cell: (r) => r.status === 'pending_approval' ? <span className="flex gap-2"><Button disabled={action.busy} onClick={() => void settle(`/hr/attendance/corrections/${r.id}/apply`, ['overview', 'corrections'])} size="sm" type="button">{t('hr.att.take')}</Button><Button disabled={action.busy} onClick={() => void settle(`/hr/attendance/corrections/${r.id}/cancel`, ['corrections'])} size="sm" type="button" variant="outline">{t('hr.att.cancelRequest')}</Button></span> : null },
     ];
 
     return (
@@ -116,7 +158,7 @@ export default function AttendancePage({ overview }: { overview: AttendanceOverv
             description={t('hr.att.description')}
             title={t('hr.att.title')}
         >
-            {action.error !== null && manual === null && settings === null ? failure : null}
+            {action.error !== null && manual === null && settings === null && ask === null && fix === null ? failure : null}
             {me !== null ? (
                 <section aria-labelledby="hr-att-me" className="flex flex-col gap-3 border border-border bg-surface p-4" data-testid="hr-att-me">
                     <h2 className="font-semibold" id="hr-att-me">{t('hr.att.mine')}</h2>
@@ -141,6 +183,8 @@ export default function AttendancePage({ overview }: { overview: AttendanceOverv
                     <TabsList aria-label={t('hr.att.title')}>
                         <TabsTrigger value="day">{t('hr.att.dayTab')}</TabsTrigger>
                         <TabsTrigger value="summary">{t('hr.att.summaryTab')}</TabsTrigger>
+                        {overtime !== null ? <TabsTrigger value="overtime">{t('hr.att.overtimeTab')}</TabsTrigger> : null}
+                        {corrections !== null ? <TabsTrigger value="corrections">{t('hr.att.correctionsTab')}</TabsTrigger> : null}
                     </TabsList>
                     <TabsContent className="flex flex-col gap-3" value="day">
                         <div className="flex flex-wrap items-end gap-2">
@@ -159,6 +203,20 @@ export default function AttendancePage({ overview }: { overview: AttendanceOverv
                         <p className="text-xs text-muted-foreground">{t('hr.att.summaryHint')}</p>
                         <DataGrid caption={t('hr.att.summaryTab')} columns={summaryColumns} empty={<EmptyState illustration="checklist" title={t('hr.att.noRows')} />} getRowId={(r) => r.employee.id} id="hr.att.summary" rows={overview.summary.rows} testId="hr-att-summary" />
                     </TabsContent>
+                    {overtime !== null ? (
+                        <TabsContent className="flex flex-col gap-3" value="overtime">
+                            <p className="text-xs text-muted-foreground">{t('hr.att.overtimeHint')}</p>
+                            <div><Button onClick={() => { action.clear(); setAsk({ employeeId: overview.day?.rows[0]?.employee.id ?? '', date: overview.today, minutes: '60', reason: '' }); }} type="button">{t('hr.att.askOvertime')}</Button></div>
+                            <DataGrid caption={t('hr.att.overtimeTab')} columns={overtimeColumns} empty={<EmptyState illustration="checklist" title={t('hr.att.noOvertime')} />} getRowId={(r) => r.id} id="hr.att.overtime" rows={overtime.requests} testId="hr-att-overtime" />
+                        </TabsContent>
+                    ) : null}
+                    {corrections !== null ? (
+                        <TabsContent className="flex flex-col gap-3" value="corrections">
+                            <p className="text-xs text-muted-foreground">{t('hr.att.correctionsHint', { n: corrections.days_back })}</p>
+                            <div><Button onClick={() => { action.clear(); setFix({ employeeId: overview.day?.rows[0]?.employee.id ?? '', date: overview.today, inTime: '', outTime: '', reason: '' }); }} type="button">{t('hr.att.correctDay')}</Button></div>
+                            <DataGrid caption={t('hr.att.correctionsTab')} columns={correctionColumns} empty={<EmptyState illustration="checklist" title={t('hr.att.noCorrections')} />} getRowId={(r) => r.id} id="hr.att.corrections" rows={corrections.corrections} testId="hr-att-corrections" />
+                        </TabsContent>
+                    ) : null}
                 </Tabs>
             ) : null}
             {me === null && !overview.may.manage ? <Alert title={t('hr.att.noEmployee')} tone="warning" /> : null}
@@ -178,6 +236,42 @@ export default function AttendancePage({ overview }: { overview: AttendanceOverv
                         <FormField error={action.fieldError('in_time')} field="in_time" label={t('hr.att.in')}><Input maxLength={5} onChange={(e) => setManual({ ...manual, inTime: e.target.value })} placeholder="07:05" value={manual.inTime} /></FormField>
                         <FormField error={action.fieldError('out_time')} field="out_time" label={t('hr.att.out')}><Input maxLength={5} onChange={(e) => setManual({ ...manual, outTime: e.target.value })} placeholder="15:00" value={manual.outTime} /></FormField>
                         <div className="sm:col-span-2"><FormField error={action.fieldError('reason')} field="reason" label={t('hr.att.reason')}><Input maxLength={200} onChange={(e) => setManual({ ...manual, reason: e.target.value })} value={manual.reason} /></FormField></div>
+                    </div>
+                )}
+            </Dialog>
+
+            <Dialog
+                footer={<><Button disabled={action.busy} onClick={() => setAsk(null)} type="button" variant="outline">{t('ui.dialog.cancel')}</Button><Button disabled={ask?.employeeId === '' || ask?.minutes.trim() === '' || ask?.reason.trim() === ''} loading={action.busy} onClick={() => void askOvertime()} type="button">{t('hr.att.askDo')}</Button></>}
+                onClose={() => setAsk(null)}
+                open={ask !== null}
+                title={t('hr.att.askOvertime')}
+            >
+                {ask !== null && (
+                    <div className="grid gap-3 sm:grid-cols-2">
+                        {failure !== null ? <div className="sm:col-span-2">{failure}</div> : null}
+                        <div className="sm:col-span-2"><FormField error={action.fieldError('employee_id')} field="employee_id" hint={t('hr.att.askHint')} label={t('hr.col.name')}><Select onChange={(e) => setAsk({ ...ask, employeeId: e.target.value })} value={ask.employeeId}>{(overview.day?.rows ?? []).map((r) => <option key={r.employee.id} value={r.employee.id}>{r.employee.name} · {r.shift.code}</option>)}</Select></FormField></div>
+                        <FormField error={action.fieldError('work_date')} field="work_date" label={t('hr.att.date')}><DatePicker onChange={(e) => setAsk({ ...ask, date: e.target.value })} value={ask.date} /></FormField>
+                        <FormField error={action.fieldError('minutes')} field="minutes" label={t('hr.att.overtimeMinutes')}><Input inputMode="numeric" onChange={(e) => setAsk({ ...ask, minutes: e.target.value })} value={ask.minutes} /></FormField>
+                        <div className="sm:col-span-2"><FormField error={action.fieldError('reason')} field="reason" label={t('hr.att.reasonShort')}><Input maxLength={200} onChange={(e) => setAsk({ ...ask, reason: e.target.value })} value={ask.reason} /></FormField></div>
+                    </div>
+                )}
+            </Dialog>
+
+            <Dialog
+                footer={<><Button disabled={action.busy} onClick={() => setFix(null)} type="button" variant="outline">{t('ui.dialog.cancel')}</Button><Button disabled={fix?.employeeId === '' || fix?.inTime === '' || fix?.reason.trim() === ''} loading={action.busy} onClick={() => void correctDay()} type="button">{t('hr.att.correctDo')}</Button></>}
+                onClose={() => setFix(null)}
+                open={fix !== null}
+                title={t('hr.att.correctDay')}
+            >
+                {fix !== null && (
+                    <div className="grid gap-3 sm:grid-cols-2">
+                        {failure !== null ? <div className="sm:col-span-2">{failure}</div> : null}
+                        <div className="sm:col-span-2"><FormField error={action.fieldError('employee_id')} field="employee_id" hint={t('hr.att.correctHint')} label={t('hr.col.name')}><Select onChange={(e) => setFix({ ...fix, employeeId: e.target.value })} value={fix.employeeId}>{(overview.day?.rows ?? []).map((r) => <option key={r.employee.id} value={r.employee.id}>{r.employee.name} · {r.shift.code}</option>)}</Select></FormField></div>
+                        <FormField error={action.fieldError('work_date')} field="work_date" label={t('hr.att.date')}><DatePicker onChange={(e) => setFix({ ...fix, date: e.target.value })} value={fix.date} /></FormField>
+                        <div />
+                        <FormField error={action.fieldError('in_time')} field="in_time" label={t('hr.att.in')}><Input maxLength={5} onChange={(e) => setFix({ ...fix, inTime: e.target.value })} placeholder="07:00" value={fix.inTime} /></FormField>
+                        <FormField error={action.fieldError('out_time')} field="out_time" label={t('hr.att.out')}><Input maxLength={5} onChange={(e) => setFix({ ...fix, outTime: e.target.value })} placeholder="15:00" value={fix.outTime} /></FormField>
+                        <div className="sm:col-span-2"><FormField error={action.fieldError('reason')} field="reason" label={t('hr.att.reasonShort')}><Input maxLength={200} onChange={(e) => setFix({ ...fix, reason: e.target.value })} value={fix.reason} /></FormField></div>
                     </div>
                 )}
             </Dialog>
