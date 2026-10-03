@@ -3423,10 +3423,76 @@
             "password"
         ]
     },
+    "POST /maintenance/assets": {
+        "required": [
+            "acquired_on",
+            "category",
+            "name"
+        ],
+        "declared": [
+            "acquired_on",
+            "area",
+            "category",
+            "meter_unit",
+            "name",
+            "notes",
+            "room_id",
+            "serial",
+            "warranty_until"
+        ]
+    },
+    "POST /maintenance/assets/{id}/plans": {
+        "required": [
+            "category",
+            "interval_value",
+            "lead_days",
+            "priority",
+            "title",
+            "trigger_kind"
+        ],
+        "declared": [
+            "category",
+            "description",
+            "first_due_on",
+            "interval_value",
+            "lead_days",
+            "priority",
+            "title",
+            "trigger_kind"
+        ]
+    },
+    "POST /maintenance/assets/{id}/readings": {
+        "required": [
+            "reading"
+        ],
+        "declared": [
+            "reading"
+        ]
+    },
+    "POST /maintenance/assets/{id}/retire": {
+        "required": [
+            "lock_version",
+            "reason"
+        ],
+        "declared": [
+            "lock_version",
+            "reason"
+        ]
+    },
     "POST /maintenance/escalations/{id}/acknowledge": {
         "required": [],
         "declared": [
             "note"
+        ]
+    },
+    "POST /maintenance/plans/{plan}/active": {
+        "required": [
+            "active",
+            "lock_version"
+        ],
+        "declared": [
+            "active",
+            "lock_version"
         ]
     },
     "POST /maintenance/sla": {
@@ -3461,6 +3527,7 @@
         ],
         "declared": [
             "area",
+            "asset_id",
             "category",
             "description",
             "photo",

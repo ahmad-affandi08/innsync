@@ -64,6 +64,7 @@ final readonly class WorkOrderService
 
     public function __construct(
         private WorkOrderStore $store,
+        private AssetStore $assets,
         private MaintenanceAccess $access,
         private RoomCatalogReader $rooms,
         private RoomBlocking $blocking,
@@ -101,7 +102,7 @@ final readonly class WorkOrderService
             'counts' => $counts, 'overdue' => $overdue, 'me' => strtolower($actorId),
             'rooms' => $caps['may_report'] ? array_values(array_map(static fn ($r): array => ['id' => $r->id, 'number' => $r->number], $this->rooms->activeRooms($property))) : [],
             'technicians' => $caps['manage'] ? $this->staff->withPermission($property, MaintenanceAccess::PERFORM) : [],
-            'categories' => self::CATEGORIES, 'departments' => self::DEPARTMENTS, 'priorities' => self::PRIORITIES, 'hold_reasons' => self::HOLD_REASONS,
+            'assets' => $caps['may_report'] ? array_values(array_map(static fn (array $a): array => ['id' => $a['id'], 'number' => $a['number'], 'name' => $a['name']], array_filter($this->assets->all($property), static fn (array $a): bool => $a['status'] === 'active'))) : [], 'categories' => self::CATEGORIES, 'departments' => self::DEPARTMENTS, 'priorities' => self::PRIORITIES, 'hold_reasons' => self::HOLD_REASONS,
             'sla' => $this->sla($property), 'sla_is_baseline' => $this->store->settings($property) === null, 'sla_lock_version' => $this->store->settings($property)['lock_version'] ?? null, 'escalation' => $this->escalationSettings($property),
             'business_date' => $this->businessDate->current($property)->toString(),
             'may' => ['report' => $caps['may_report'], 'manage' => $caps['manage'], 'perform' => $caps['perform']],
@@ -121,7 +122,7 @@ final readonly class WorkOrderService
         return [
             'work_order' => $this->summary($row, $names, $this->clock->nowUtc()) + [
                 'description' => $row['description'], 'hold_note' => $row['hold_note'], 'done_note' => $row['done_note'], 'cancel_reason' => $row['cancel_reason'], 'has_report_photo' => $row['report_photo_file_id'] !== null, 'has_done_photo' => $row['done_photo_file_id'] !== null,
-                'block' => $row['block_id'] === null ? null : ['id' => $row['block_id'], 'kind' => $row['block_kind']], 'done_by' => $names[$row['done_by'] ?? ''] ?? null, 'done_at' => $this->utc($row['done_at']), 'started_at' => $this->utc($row['started_at']),
+                'block' => $row['block_id'] === null ? null : ['id' => $row['block_id'], 'kind' => $row['block_kind']], 'asset' => $this->assetLabel($property, $row['asset_id']), 'preventive' => $row['plan_id'] !== null, 'done_by' => $names[$row['done_by'] ?? ''] ?? null, 'done_at' => $this->utc($row['done_at']), 'started_at' => $this->utc($row['started_at']),
             ],
             'events' => array_map(fn (array $e): array => ['kind' => $e['kind'], 'note' => $e['note'], 'by' => $names[$e['actor_id']] ?? null, 'at' => $this->utc($e['at'])], $events),
             'may' => [
@@ -136,7 +137,7 @@ final readonly class WorkOrderService
     }
 
     /** @return array<string, mixed> */
-    public function report(PropertyId $property, string $actorId, string $title, ?string $description, string $category, string $department, ?string $roomId, ?string $area, string $priority, ?string $photo, ?string $photoName): array
+    public function report(PropertyId $property, string $actorId, string $title, ?string $description, string $category, string $department, ?string $roomId, ?string $area, string $priority, ?string $photo, ?string $photoName, ?string $assetId = null): array
     {
         $caps = $this->capabilities($property, $actorId);
 
@@ -166,6 +167,21 @@ final readonly class WorkOrderService
         }
 
         $room = null;
+        $asset = null;
+
+        if ($assetId !== null && $assetId !== '') {
+            $asset = $this->assets->find($property, strtolower($assetId));
+
+            if ($asset === null || $asset['status'] !== 'active') {
+                throw Refusal::invalid('Choose an asset that is in use.', ['asset_id']);
+            }
+
+            // Where the asset is, when the report does not say.
+            if ($roomId === null && $area === null) {
+                $roomId = $asset['room_id'];
+                $area = $asset['area'];
+            }
+        }
 
         if ($roomId !== null) {
             $room = $this->rooms->room($property, $roomId) ?? throw Refusal::invalid('Choose a room of this property.', ['room_id']);
@@ -180,18 +196,50 @@ final readonly class WorkOrderService
         $file = $this->storePhoto($property, $actor, $id, $photo, $photoName, 'photo');
         $now = $this->clock->nowUtc();
 
-        $this->transactions->run(function () use ($property, $actor, $id, $title, $description, $category, $department, $room, $area, $priority, $file, $now): void {
+        $this->transactions->run(function () use ($property, $actor, $id, $title, $description, $category, $department, $room, $area, $priority, $file, $now, $asset): void {
             $number = $this->numbers->next($property, 'WO');
             $due = $now->modify('+'.$this->sla($property)[$priority].' minutes');
             $this->store->add($property, [
                 'id' => $id, 'number' => $number, 'title' => $title, 'description' => $description, 'category' => $category, 'reporter_department' => $department, 'room_id' => $room?->id, 'room_number' => $room?->number, 'area' => $area,
-                'priority' => $priority, 'reported_at' => $now, 'reported_by' => $actor, 'due_at' => $due, 'report_photo_file_id' => $file?->id,
+                'priority' => $priority, 'reported_at' => $now, 'reported_by' => $actor, 'due_at' => $due, 'report_photo_file_id' => $file?->id, 'asset_id' => $asset['id'] ?? null,
             ], $now);
             $this->event($property, $id, 'reported', $title, $actor, $now);
             $this->audit->record(new AuditEntry($property->toString(), $actor, 'work_order.reported', 'work_order', $id, null, ['number' => $number, 'title' => $title, 'priority' => $priority, 'room' => $room?->number, 'area' => $area, 'department' => $department, 'has_photo' => $file !== null]));
         });
 
         return $this->show($property, $actorId, $id);
+    }
+
+    /**
+     * The work order a preventive plan calls for. Made by the system for the person who set the plan; once for each cycle of the plan.
+     *
+     * @param  array<string, mixed>  $plan  a plan with the asset's name, number and place, as `AssetStore::plans` gives it
+     * @return bool false when the cycle has its work order already
+     */
+    public function createPreventive(PropertyId $property, array $plan, string $marker): bool
+    {
+        $id = $this->ids->next();
+        $now = $this->clock->nowUtc();
+        $made = false;
+        $title = mb_substr("{$plan['title']} · {$plan['asset_name']}", 0, 80);
+
+        $this->transactions->run(function () use ($property, $plan, $marker, $id, $now, $title, &$made): void {
+            if ($this->store->cycleTaken($property, $plan['id'], $marker)) {
+                return;
+            }
+
+            $number = $this->numbers->next($property, 'WO');
+            $this->store->add($property, [
+                'id' => $id, 'number' => $number, 'title' => $title, 'description' => $plan['description'], 'category' => $plan['category'], 'reporter_department' => 'engineering', 'room_id' => $plan['asset_room_id'], 'room_number' => $plan['asset_room_number'],
+                'area' => $plan['asset_room_id'] === null ? ($plan['asset_area'] ?? "Asset {$plan['asset_number']}") : null, 'priority' => $plan['priority'], 'reported_at' => $now, 'reported_by' => $plan['created_by'],
+                'due_at' => $now->modify('+'.$this->sla($property)[$plan['priority']].' minutes'), 'asset_id' => $plan['asset_id'], 'plan_id' => $plan['id'], 'pm_due' => $marker,
+            ], $now);
+            $this->event($property, $id, 'reported', "Preventive: {$plan['title']}", $plan['created_by'], $now);
+            $this->audit->record(new AuditEntry($property->toString(), null, 'work_order.reported', 'work_order', $id, null, ['number' => $number, 'title' => $title, 'priority' => $plan['priority'], 'preventive_plan' => $plan['id'], 'cycle' => $marker, 'asset' => $plan['asset_number']]));
+            $made = true;
+        });
+
+        return $made;
     }
 
     /** @return array<string, mixed> */
@@ -299,6 +347,7 @@ final readonly class WorkOrderService
             }
 
             $this->setExpiry($property, [$w['report_photo_file_id'], $file->id]);
+            $this->rollPlan($property, $w);
 
             return [$fields, 'done', $note];
         }, 'work_order.done');
@@ -321,7 +370,8 @@ final readonly class WorkOrderService
 
             $this->setExpiry($property, [$w['report_photo_file_id']]);
 
-            return [['status' => 'cancelled', 'cancel_reason' => $reason], 'cancelled', $reason];
+            // The cycle of a preventive plan that was cancelled is free again, so the care falls due again.
+            return [['status' => 'cancelled', 'cancel_reason' => $reason, 'pm_due' => null], 'cancelled', $reason];
         }, 'work_order.cancelled');
     }
 
@@ -522,6 +572,26 @@ final readonly class WorkOrderService
         }
     }
 
+    /** The care of a plan was done: it falls due again an interval from today, or an interval further on the meter. @param array<string, mixed> $w */
+    private function rollPlan(PropertyId $property, array $w): void
+    {
+        if ($w['plan_id'] === null) {
+            return;
+        }
+
+        $plan = $this->assets->plan($property, $w['plan_id']);
+
+        if ($plan === null) {
+            return;
+        }
+
+        $today = $this->businessDate->current($property)->toString();
+        $fields = $plan['trigger_kind'] === 'calendar'
+            ? ['last_done_on' => $today, 'next_due_on' => date('Y-m-d', strtotime($today.' +'.(int) $plan['interval_value'].' days'))]
+            : ['last_done_on' => $today, 'last_meter' => max((int) $plan['last_meter'], $this->assets->currentReading($property, $plan['asset_id']) ?? 0)];
+        $this->assets->updatePlan($property, $plan['id'], (int) $plan['lock_version'], $fields, $this->clock->nowUtc());
+    }
+
     /** Puts the room back on sale; a block the front office released already is not an obstacle to closing the work order. @param array<string, mixed> $w */
     private function releaseQuietly(PropertyId $property, string $actor, array $w, string $reason, string $note): void
     {
@@ -575,6 +645,14 @@ final readonly class WorkOrderService
             'assigned_to' => $w['assigned_to'], 'assigned_name' => $w['assigned_to'] === null ? null : ($names[$w['assigned_to']] ?? null), 'overdue' => $this->isOverdue($w, $now),
             'minutes_left' => in_array($w['status'], self::OPEN, true) ? intdiv($due->getTimestamp() - $now->getTimestamp(), 60) : null, 'lock_version' => (int) $w['lock_version'], 'off_sale' => $w['block_id'] !== null,
         ];
+    }
+
+    /** @return array{id: string, number: string, name: string}|null */
+    private function assetLabel(PropertyId $property, ?string $assetId): ?array
+    {
+        $a = $assetId === null ? null : $this->assets->find($property, $assetId);
+
+        return $a === null ? null : ['id' => $a['id'], 'number' => $a['number'], 'name' => $a['name']];
     }
 
     private function utc(mixed $value): ?string

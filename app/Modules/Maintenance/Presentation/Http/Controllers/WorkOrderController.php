@@ -35,12 +35,12 @@ final readonly class WorkOrderController
     {
         $data = $request->validate([
             'title' => ['required', 'string', 'max:80'], 'description' => ['nullable', 'string', 'max:500'], 'category' => ['required', 'string', 'max:12'], 'reporter_department' => ['required', 'string', 'max:14'],
-            'room_id' => ['nullable', 'string', 'size:26'], 'area' => ['nullable', 'string', 'max:80'], 'priority' => ['required', 'string', 'max:8'], 'photo' => ['nullable', 'file', 'max:5120'],
+            'room_id' => ['nullable', 'string', 'size:26'], 'area' => ['nullable', 'string', 'max:80'], 'priority' => ['required', 'string', 'max:8'], 'photo' => ['nullable', 'file', 'max:5120'], 'asset_id' => ['nullable', 'string', 'size:26'],
         ]);
         $upload = $request->file('photo');
 
         return $this->json($this->orders->report($this->property->current(), $this->actor($request), $data['title'], $data['description'] ?? null, $data['category'], $data['reporter_department'], $data['room_id'] ?? null, $data['area'] ?? null, $data['priority'],
-            $upload === null ? null : (string) $upload->get(), $upload?->getClientOriginalName()), 201);
+            $upload === null ? null : (string) $upload->get(), $upload?->getClientOriginalName(), $data['asset_id'] ?? null), 201);
     }
 
     public function assign(Request $request, string $id): JsonResponse

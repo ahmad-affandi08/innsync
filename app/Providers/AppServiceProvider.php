@@ -141,7 +141,9 @@ use App\Modules\Laundry\Application\LaundryRepository;
 use App\Modules\Laundry\Application\LaundryService;
 use App\Modules\Laundry\Infrastructure\DatabaseClaimRepository;
 use App\Modules\Laundry\Infrastructure\DatabaseLaundryRepository;
+use App\Modules\Maintenance\Application\AssetStore;
 use App\Modules\Maintenance\Application\WorkOrderStore;
+use App\Modules\Maintenance\Infrastructure\DatabaseAssetStore;
 use App\Modules\Maintenance\Infrastructure\DatabaseWorkOrderStore;
 use App\Modules\Property\Application\Catalog\RoomCatalogReader;
 use App\Modules\Property\Application\Catalog\RoomCatalogRepository;
@@ -426,6 +428,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(RecipeStore::class, DatabaseRecipeStore::class);
         $this->app->bind(WasteStore::class, DatabaseWasteStore::class);
         $this->app->bind(WorkOrderStore::class, DatabaseWorkOrderStore::class);
+        $this->app->bind(AssetStore::class, DatabaseAssetStore::class);
         $this->app->bind(RoomBlocking::class, RoomBlockingService::class);
         $this->app->bind(IngredientCatalog::class, IngredientCatalogService::class);
         $this->app->bind(PaymentStore::class, DatabasePaymentStore::class);

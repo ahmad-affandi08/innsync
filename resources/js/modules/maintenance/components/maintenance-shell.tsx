@@ -4,6 +4,7 @@ import { AppFrame } from '@/components/layout/app-frame';
 
 const LINKS = [
     { href: '/maintenance', label: 'mtc.nav.orders' },
+    { href: '/maintenance/assets', label: 'mtc.nav.assets' },
     { href: '/maintenance/reports', label: 'mtc.nav.reports' },
 ] as const;
 

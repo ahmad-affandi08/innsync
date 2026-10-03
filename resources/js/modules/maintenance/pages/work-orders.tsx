@@ -26,8 +26,8 @@ const PRIORITY_TONE: Record<Priority, StatusTone> = { urgent: 'danger', high: 'w
 const STATUS_TONE: Record<Status, StatusTone> = { open: 'info', assigned: 'pending', in_progress: 'warning', on_hold: 'unknown', done: 'success', cancelled: 'neutral' };
 const OPEN: Status[] = ['open', 'assigned', 'in_progress', 'on_hold'];
 
-type Report = { title: string; description: string; category: string; department: string; roomId: string; area: string; priority: Priority };
-const BLANK: Report = { title: '', description: '', category: 'other', department: 'housekeeping', roomId: '', area: '', priority: 'normal' };
+type Report = { title: string; description: string; category: string; department: string; roomId: string; area: string; priority: Priority; assetId: string };
+const BLANK: Report = { title: '', description: '', category: 'other', department: 'housekeeping', roomId: '', area: '', priority: 'normal', assetId: '' };
 
 /** Work orders: report what is broken, see how far each is, and (for a technician or a manager) work them. */
 export default function WorkOrdersPage({ overview }: { overview: Overview }) {
@@ -101,6 +101,7 @@ export default function WorkOrdersPage({ overview }: { overview: Overview }) {
         if (report.roomId !== '') body.set('room_id', report.roomId);
         if (report.area.trim() !== '') body.set('area', report.area.trim());
         body.set('priority', report.priority);
+        if (report.assetId !== '') body.set('asset_id', report.assetId);
         if (photo !== null) body.set('photo', photo);
         const result = await action.run('/maintenance/work-orders', { body, reload: ['overview'] });
 
@@ -210,6 +211,11 @@ export default function WorkOrdersPage({ overview }: { overview: Overview }) {
                         <FormField error={action.fieldError('reporter_department')} field="reporter_department" label={t('mtc.f.department')}>
                             <Select onChange={(e) => setReport({ ...report, department: e.target.value })} value={report.department}>{overview.departments.map((c) => <option key={c} value={c}>{label('mtc.department', c)}</option>)}</Select>
                         </FormField>
+                        {overview.assets.length > 0 ? (
+                            <div className="sm:col-span-2"><FormField error={action.fieldError('asset_id')} field="asset_id" hint={t('mtc.f.assetHint')} label={t('mtc.f.asset')}>
+                                <Select onChange={(e) => setReport({ ...report, assetId: e.target.value })} value={report.assetId}><option value="">{t('mtc.f.noAsset')}</option>{overview.assets.map((a) => <option key={a.id} value={a.id}>{a.number} · {a.name}</option>)}</Select>
+                            </FormField></div>
+                        ) : null}
                         <FormField error={action.fieldError('photo')} field="photo" label={t('mtc.f.photo')}><Input accept="image/jpeg,image/png" capture="environment" key={pickerKey} onChange={(e) => setPhoto(e.target.files?.[0] ?? null)} type="file" /></FormField>
                     </div>
                 )}
@@ -238,6 +244,7 @@ export default function WorkOrdersPage({ overview }: { overview: Overview }) {
                             <div><dt className="text-muted-foreground">{t('mtc.reportedBy')}</dt><dd>{d.reported_by ?? '—'} · {format.instant(d.reported_at)}</dd></div>
                             <div><dt className="text-muted-foreground">{t('mtc.col.due')}</dt><dd className={d.overdue ? 'font-semibold text-danger' : ''}>{format.instant(d.due_at)} · {left(d)}</dd></div>
                             <div><dt className="text-muted-foreground">{t('mtc.col.assigned')}</dt><dd>{d.assigned_name ?? '—'}</dd></div>
+                            {d.asset !== null ? <div><dt className="text-muted-foreground">{t('mtc.f.asset')}</dt><dd>{d.asset.number} · {d.asset.name}{d.preventive ? ` · ${t('mtc.preventive')}` : ''}</dd></div> : null}
                         </dl>
                         {d.description !== null ? <p className="text-sm">{d.description}</p> : null}
                         <div className="flex flex-wrap gap-2">

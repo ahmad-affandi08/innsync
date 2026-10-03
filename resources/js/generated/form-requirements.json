@@ -499,6 +499,18 @@
         "unit_price_minor",
         "value"
     ],
+    "maintenance/pages/assets": [
+        "acquired_on",
+        "category",
+        "interval_value",
+        "lead_days",
+        "name",
+        "priority",
+        "reading",
+        "reason",
+        "title",
+        "trigger_kind"
+    ],
     "maintenance/pages/work-orders": [
         "category",
         "escalate_percent",

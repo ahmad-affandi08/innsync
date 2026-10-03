@@ -68,6 +68,12 @@ interface WorkOrderStore
     /** @return bool false when it was acknowledged already */
     public function acknowledgeEscalation(PropertyId $property, string $id, string $by, ?string $note, DateTimeImmutable $at): bool;
 
+    /** @return array<string, mixed>|null the work order of a preventive plan that is still open */
+    public function openOfPlan(PropertyId $property, string $planId): ?array;
+
+    /** Whether the cycle of a preventive plan, named by its marker, has a work order already (open or not). */
+    public function cycleTaken(PropertyId $property, string $planId, string $marker): bool;
+
     /** @return list<string> the properties that have work orders still open */
     public function propertiesWithOpenWork(): array;
 }

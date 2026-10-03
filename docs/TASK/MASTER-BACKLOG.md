@@ -151,14 +151,14 @@
 | TASK-MTC-004 | FR-MTC-004 | Maintenance / Engineering | Wajib | REVIEW |
 | TASK-MTC-005 | FR-MTC-005 | Maintenance / Engineering | Wajib | REVIEW |
 | TASK-MTC-006 | FR-MTC-006 | Maintenance / Engineering | Wajib | REVIEW |
-| TASK-MTC-007 | FR-MTC-007 | Maintenance / Engineering | Sebaiknya | TODO |
-| TASK-MTC-008 | FR-MTC-008 | Maintenance / Engineering | Sebaiknya | TODO |
+| TASK-MTC-007 | FR-MTC-007 | Maintenance / Engineering | Sebaiknya | REVIEW |
+| TASK-MTC-008 | FR-MTC-008 | Maintenance / Engineering | Sebaiknya | REVIEW |
 | TASK-MTC-009 | FR-MTC-009 | Maintenance / Engineering | Sebaiknya | TODO |
 | TASK-MTC-010 | FR-MTC-010 | Maintenance / Engineering | Wajib | TODO |
 | TASK-MTC-011 | FR-MTC-011 | Maintenance / Engineering | Wajib | TODO |
 | TASK-MTC-012 | FR-MTC-012 | Maintenance / Engineering | Wajib | IN_PROGRESS |
 | TASK-MTC-013 | FR-MTC-013 | Maintenance / Engineering | Wajib | REVIEW |
-| TASK-MTC-014 | FR-MTC-014 | Maintenance / Engineering | Sebaiknya | TODO |
+| TASK-MTC-014 | FR-MTC-014 | Maintenance / Engineering | Sebaiknya | REVIEW |
 | TASK-MTC-015 | FR-MTC-015 | Maintenance / Engineering | Sebaiknya | TODO |
 | TASK-INV-001 | FR-INV-001 | Inventory | Wajib | REVIEW |
 | TASK-INV-002 | FR-INV-002 | Inventory | Wajib | REVIEW |

@@ -155,6 +155,18 @@ final readonly class DatabaseWorkOrderStore implements WorkOrderStore
         return DB::table('maintenance_escalations')->where('property_id', $property->toString())->where('id', $id)->whereNull('acknowledged_at')->update(['acknowledged_by' => $by, 'acknowledged_at' => $at, 'note' => $note]) === 1;
     }
 
+    public function openOfPlan(PropertyId $property, string $planId): ?array
+    {
+        $r = DB::table('maintenance_work_orders')->where('property_id', $property->toString())->where('plan_id', $planId)->whereIn('status', ['open', 'assigned', 'in_progress', 'on_hold'])->first();
+
+        return $r === null ? null : (array) $r;
+    }
+
+    public function cycleTaken(PropertyId $property, string $planId, string $marker): bool
+    {
+        return DB::table('maintenance_work_orders')->where('property_id', $property->toString())->where('plan_id', $planId)->where('pm_due', $marker)->exists();
+    }
+
     public function propertiesWithOpenWork(): array
     {
         return DB::table('maintenance_work_orders')->whereIn('status', ['open', 'assigned', 'in_progress', 'on_hold'])->distinct()->pluck('property_id')->map(static fn ($p): string => (string) $p)->all();
