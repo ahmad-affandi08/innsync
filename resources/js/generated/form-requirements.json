@@ -337,6 +337,14 @@
         "reason",
         "title"
     ],
+    "hr/pages/appraisals": [
+        "employee_id",
+        "form_id",
+        "period_end",
+        "period_label",
+        "period_start",
+        "reason"
+    ],
     "hr/pages/attendance": [
         "early_grace_minutes",
         "employee_id",

@@ -49,6 +49,9 @@ final readonly class HrAccess
     /** Publishes notices and policies to the staff and sees who read them. */
     public const ANNOUNCE = 'hr.announcement.manage';
 
+    /** Makes the appraisal forms and appraises anyone, not only the people the person supervises. Sensitive: held by very few. */
+    public const APPRAISAL = 'hr.appraisal.manage';
+
     public function __construct(private PermissionChecker $permissions, private PropertyContext $property) {}
 
     public function assertProperty(PropertyId $property): void

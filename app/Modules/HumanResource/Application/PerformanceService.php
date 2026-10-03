@@ -46,6 +46,31 @@ final readonly class PerformanceService
             throw Refusal::invalid('Choose a department of the list.', ['department']);
         }
 
+        return $this->build($property, $from, $to, $department);
+    }
+
+    /** The objective figures of one person for a period (the caller has decided that the person may be appraised or see it). @return array<string, mixed>|null */
+    public function snapshot(PropertyId $property, string $employeeId, string $from, string $to): ?array
+    {
+        $this->access->assertProperty($property);
+        $employee = $this->employees->employee($property, $employeeId);
+
+        if ($employee === null) {
+            return null;
+        }
+
+        foreach ($this->build($property, $from, $to, $employee['department'])['board'] as $row) {
+            if ($row['employee']['id'] === $employeeId) {
+                return $row;
+            }
+        }
+
+        return null;
+    }
+
+    /** @return array<string, mixed> */
+    private function build(PropertyId $property, string $from, string $to, ?string $department): array
+    {
         $zone = $this->zones->forProperty($property) ?? throw Refusal::notFound('Property not found.');
         $attendance = [];
 

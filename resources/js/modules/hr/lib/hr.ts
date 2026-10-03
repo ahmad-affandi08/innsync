@@ -201,3 +201,18 @@ export type AnnouncementOverview = {
     feed: (Announcement & { read: boolean; acknowledged: boolean })[];
     board: (Announcement & { audience_size: number; read: number; acknowledged: number; pending: { id: string; number: string; name: string }[]; withdraw_reason: string | null })[] | null;
 };
+
+export type AppraisalStatus = 'draft' | 'signed_appraiser' | 'completed' | 'cancelled';
+
+export type AppraisalForm = { id: string; name: string; criteria: { key: string; label: string; weight: number }[]; active: boolean; lock_version: number };
+
+export type Appraisal = {
+    id: string; number: string; employee: { id: string; number: string; name: string; department: string; position: string }; form_name: string; criteria: { key: string; label: string; weight: number }[]; period_label: string; period_start: string; period_end: string; status: AppraisalStatus;
+    scores: Record<string, number>; comment: string | null; overall_x100: number | null; rating: string | null; metrics: { scheduled: number; present: number; late_days: number; late_minutes: number; absent: number; punctuality: number | null; attendance: number | null; overtime_minutes: number; sop_items: number; sop_by: Record<string, number>; complaints: { total: number; serious: number; resolved: number } } | null;
+    appraiser_signed_at: string | null; appraiser_hash: string | null; employee_agrees: boolean | null; employee_comment: string | null; employee_signed_at: string | null; employee_hash: string | null; cancel_reason: string | null; lock_version: number;
+    may: { edit: boolean; sign_appraiser: boolean; sign_employee: boolean; cancel: boolean };
+};
+
+export type AppraisalOverview = {
+    today: string; linked: boolean; may: { manage: boolean; appraise: boolean }; mine: Appraisal[]; team: Appraisal[]; forms: AppraisalForm[]; employees: { id: string; number: string; name: string; department: string }[];
+};

@@ -2750,6 +2750,86 @@
             "reason"
         ]
     },
+    "POST /hr/appraisals": {
+        "required": [
+            "employee_id",
+            "form_id",
+            "period_end",
+            "period_label",
+            "period_start"
+        ],
+        "declared": [
+            "employee_id",
+            "form_id",
+            "period_end",
+            "period_label",
+            "period_start"
+        ]
+    },
+    "POST /hr/appraisals/forms": {
+        "required": [
+            "criteria",
+            "criteria.*.label",
+            "criteria.*.weight",
+            "name"
+        ],
+        "declared": [
+            "criteria",
+            "criteria.*.label",
+            "criteria.*.weight",
+            "name"
+        ]
+    },
+    "POST /hr/appraisals/forms/{id}/active": {
+        "required": [
+            "active",
+            "lock_version"
+        ],
+        "declared": [
+            "active",
+            "lock_version"
+        ]
+    },
+    "POST /hr/appraisals/{id}": {
+        "required": [
+            "lock_version"
+        ],
+        "declared": [
+            "comment",
+            "lock_version",
+            "scores",
+            "scores.*"
+        ]
+    },
+    "POST /hr/appraisals/{id}/cancel": {
+        "required": [
+            "lock_version",
+            "reason"
+        ],
+        "declared": [
+            "lock_version",
+            "reason"
+        ]
+    },
+    "POST /hr/appraisals/{id}/sign": {
+        "required": [
+            "lock_version"
+        ],
+        "declared": [
+            "lock_version"
+        ]
+    },
+    "POST /hr/appraisals/{id}/sign-employee": {
+        "required": [
+            "agrees",
+            "lock_version"
+        ],
+        "declared": [
+            "agrees",
+            "comment",
+            "lock_version"
+        ]
+    },
     "POST /hr/attendance/clock-in": {
         "required": [],
         "declared": [

@@ -34,7 +34,7 @@
 | TASK-HR-019 | FR-HR-019 | Wajib | Koreksi presensi setelah periode berjalan memerlukan alasan dan approval; nilai sebelum/sesudah disimpan dan perubahan otomatis memicu hitung ulang komponen terkait. | REVIEW |
 | TASK-HR-020 | FR-HR-020 | Wajib | Menerima persentase penyelesaian SOP tugas harian, mingguan, dan bulanan dari seluruh modul operasional sebagai komponen penilaian kinerja objektif. | REVIEW |
 | TASK-HR-021 | FR-HR-021 | Sebaiknya | Menampilkan papan kinerja per karyawan: kehadiran, ketepatan waktu, penyelesaian tugas, jumlah komplain tamu terkait, dan produktivitas department. | REVIEW |
-| TASK-HR-022 | FR-HR-022 | Sebaiknya | Melakukan penilaian kinerja berkala dengan formulir yang dapat dikonfigurasi dan tanda tangan digital atasan serta karyawan. | TODO |
+| TASK-HR-022 | FR-HR-022 | Sebaiknya | Melakukan penilaian kinerja berkala dengan formulir yang dapat dikonfigurasi dan tanda tangan digital atasan serta karyawan. | REVIEW |
 | TASK-HR-023 | FR-HR-023 | Sebaiknya | Mencatat teguran, surat peringatan, dan penghargaan karyawan beserta lampiran dan masa berlaku. | REVIEW |
 | TASK-HR-024 | FR-HR-024 | Bisa | Menyediakan papan pengumuman internal dan distribusi kebijakan yang wajib dibaca dengan pencatatan konfirmasi. | REVIEW |
 | TASK-HR-030 | FR-HR-030 | Wajib | Mengelola komponen pendapatan karyawan: gaji pokok, tunjangan tetap, tunjangan tidak tetap, uang makan, dan uang transport. | REVIEW |
@@ -155,6 +155,12 @@
 - **HR-024** — `AnnouncementService` (`hr_announcements`, `hr_announcement_reads`, `/hr/announcements`, permission `hr.announcement.manage`): a notice or a policy for everyone or one department, with a text, an optional document and an optional last day. Opening it is noted for the person; a policy that asks for it needs the person to confirm they read and understood it, once — the confirmation is never changed (trigger) and is audited. The people with the right see, for each publication, how many of its audience read and confirmed it and the names of those who have not. What is published is not edited: it is withdrawn with a reason and a new one is published, so who read what stays true. The employee's page warns of what waits for their confirmation.
 - Not yet: a notice by e-mail or on the phone when something is published or a warning is issued (needs a notification channel), versions of a policy that ask for a new confirmation, automatic escalation from one warning to the next.
 - Tests: `ConductAndAnnouncementHttpTest`.
+
+### Slice 54 (2026-10-03): performance appraisals with two signatures
+
+- **HR-022** — `AppraisalService` (`/hr/appraisals`): the owner (right `hr.appraisal.manage`) makes forms — 1 to 12 parts, each with a weight, the weights summing to 100 (the usual form has quality of work 30, punctuality and attendance 20, teamwork 20, initiative 15, guest service 15); a form is not edited once made, a new one is made and the old retired, and every appraisal keeps the form as it was. The supervisor of the person, or whoever holds the right, makes an appraisal for a period (one for each person and period label, a period that has ended and lasts at most a year), rates each part from 1 to 5, comments, and signs; nobody appraises themselves. Signing needs a recent password confirmation, works out the result (weighted, 1.00 to 5.00; below 2 poor, 3 fair, 4 good, 4.5 very good, above excellent), takes the objective figures of the period (attendance, punctuality, routine items done per area, complaints owned — from the performance board, `PerformanceService::snapshot`) and freezes what was rated (a trigger refuses any change). The person then reads it — they see it only once the appraiser signed — and signs too, saying whether they agree (a reason is needed if not), also with a recent password. A signature is the account, the time and a SHA-256 hash of what was signed; the employee's hash covers the appraiser's. Cancelling with a reason is possible until it is completed; nothing is deleted. `hr.appraisal.completed` goes out.
+- Not yet: a notice to the person that there is something to sign (needs a notification channel), development plans and goals, a sign-off by a second level of management.
+- Tests: `AppraisalHttpTest`.
 
 ## Required engineering checks
 

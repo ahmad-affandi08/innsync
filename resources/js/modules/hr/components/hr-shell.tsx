@@ -12,6 +12,7 @@ const LINKS = [
     { href: '/hr/announcements', label: 'hr.nav.announcements' },
     { href: '/hr/conduct', label: 'hr.nav.conduct' },
     { href: '/hr/performance', label: 'hr.nav.performance' },
+    { href: '/hr/appraisals', label: 'hr.nav.appraisals' },
     { href: '/hr/payroll', label: 'hr.nav.payroll' },
     { href: '/hr/service-charge', label: 'hr.nav.serviceCharge' },
     { href: '/hr/payroll/runs', label: 'hr.nav.payrollRuns' },
