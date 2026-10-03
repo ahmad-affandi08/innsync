@@ -46,6 +46,7 @@ final readonly class EmployeeService
         private StaffAccess $staffAccess,
         private RosterService $roster,
         private LeaveService $leave,
+        private ConductStore $conduct,
         private BusinessDateProvider $businessDate,
         private DocumentNumbers $numbers,
         private StoredFileRepository $files,
@@ -228,7 +229,7 @@ final readonly class EmployeeService
             $revoked = $e['user_id'] === null ? 0 : $this->staffAccess->revokeInProperty($property, (string) $e['user_id']);
             $anchor = new DateTimeImmutable($on.' 00:00:00', new DateTimeZone('UTC'));
 
-            foreach ([...$this->store->fileIdsOf($property, $e['id']), ...$leave['files']] as $fileId) {
+            foreach ([...$this->store->fileIdsOf($property, $e['id']), ...$leave['files'], ...$this->conduct->fileIdsOf($property, $e['id'])] as $fileId) {
                 $this->files->setExpiryOnce($property, $fileId, $this->retention->expiryFor($property, DocumentService::PURPOSE, $anchor));
             }
 

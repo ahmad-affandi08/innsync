@@ -44,8 +44,10 @@ use App\Modules\Housekeeping\Presentation\Http\Controllers\HousekeepingControlle
 use App\Modules\Housekeeping\Presentation\Http\Controllers\LinenController;
 use App\Modules\Housekeeping\Presentation\Http\Controllers\LostFoundController;
 use App\Modules\Housekeeping\Presentation\Http\Controllers\ParLevelController;
+use App\Modules\HumanResource\Presentation\Http\Controllers\AnnouncementController;
 use App\Modules\HumanResource\Presentation\Http\Controllers\AttendanceAdjustmentController;
 use App\Modules\HumanResource\Presentation\Http\Controllers\AttendanceController;
+use App\Modules\HumanResource\Presentation\Http\Controllers\ConductController;
 use App\Modules\HumanResource\Presentation\Http\Controllers\EmployeeController;
 use App\Modules\HumanResource\Presentation\Http\Controllers\EmployeePortalController;
 use App\Modules\HumanResource\Presentation\Http\Controllers\LeaveController;
@@ -790,6 +792,16 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
     Route::post('/swaps/{id}/approve', [ShiftSwapController::class, 'approve'])->where('id', $id)->name('hr.swaps.approve');
     Route::post('/swaps/{id}/reject', [ShiftSwapController::class, 'reject'])->where('id', $id)->name('hr.swaps.reject');
     Route::post('/swaps/{id}/cancel', [ShiftSwapController::class, 'cancel'])->where('id', $id)->name('hr.swaps.cancel');
+    Route::get('/conduct', [ConductController::class, 'index'])->name('hr.conduct');
+    Route::post('/conduct', [ConductController::class, 'create'])->middleware(['idempotent'])->name('hr.conduct.create');
+    Route::post('/conduct/{id}/revoke', [ConductController::class, 'revoke'])->where('id', $id)->name('hr.conduct.revoke');
+    Route::get('/conduct/{id}/letter', [ConductController::class, 'letter'])->where('id', $id)->name('hr.conduct.letter');
+    Route::get('/announcements', [AnnouncementController::class, 'index'])->name('hr.announcements');
+    Route::post('/announcements', [AnnouncementController::class, 'publish'])->middleware(['idempotent'])->name('hr.announcements.publish');
+    Route::post('/announcements/{id}/withdraw', [AnnouncementController::class, 'withdraw'])->where('id', $id)->name('hr.announcements.withdraw');
+    Route::post('/announcements/{id}/read', [AnnouncementController::class, 'read'])->where('id', $id)->name('hr.announcements.read');
+    Route::post('/announcements/{id}/acknowledge', [AnnouncementController::class, 'acknowledge'])->where('id', $id)->name('hr.announcements.acknowledge');
+    Route::get('/announcements/{id}/document', [AnnouncementController::class, 'document'])->where('id', $id)->name('hr.announcements.document');
     Route::post('/payroll/pay', [PayrollController::class, 'setPay'])->middleware(['idempotent'])->name('hr.payroll.pay');
     Route::post('/payroll/profile', [PayrollController::class, 'saveProfile'])->name('hr.payroll.profile');
     Route::post('/payroll/settings', [PayrollController::class, 'saveSettings'])->name('hr.payroll.settings');

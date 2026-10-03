@@ -35,8 +35,8 @@
 | TASK-HR-020 | FR-HR-020 | Wajib | Menerima persentase penyelesaian SOP tugas harian, mingguan, dan bulanan dari seluruh modul operasional sebagai komponen penilaian kinerja objektif. | REVIEW |
 | TASK-HR-021 | FR-HR-021 | Sebaiknya | Menampilkan papan kinerja per karyawan: kehadiran, ketepatan waktu, penyelesaian tugas, jumlah komplain tamu terkait, dan produktivitas department. | REVIEW |
 | TASK-HR-022 | FR-HR-022 | Sebaiknya | Melakukan penilaian kinerja berkala dengan formulir yang dapat dikonfigurasi dan tanda tangan digital atasan serta karyawan. | TODO |
-| TASK-HR-023 | FR-HR-023 | Sebaiknya | Mencatat teguran, surat peringatan, dan penghargaan karyawan beserta lampiran dan masa berlaku. | TODO |
-| TASK-HR-024 | FR-HR-024 | Bisa | Menyediakan papan pengumuman internal dan distribusi kebijakan yang wajib dibaca dengan pencatatan konfirmasi. | TODO |
+| TASK-HR-023 | FR-HR-023 | Sebaiknya | Mencatat teguran, surat peringatan, dan penghargaan karyawan beserta lampiran dan masa berlaku. | REVIEW |
+| TASK-HR-024 | FR-HR-024 | Bisa | Menyediakan papan pengumuman internal dan distribusi kebijakan yang wajib dibaca dengan pencatatan konfirmasi. | REVIEW |
 | TASK-HR-030 | FR-HR-030 | Wajib | Mengelola komponen pendapatan karyawan: gaji pokok, tunjangan tetap, tunjangan tidak tetap, uang makan, dan uang transport. | REVIEW |
 | TASK-HR-031 | FR-HR-031 | Wajib | Menghitung usulan penggajian periodik berdasarkan kehadiran, lembur, potongan keterlambatan, dan ketidakhadiran, lalu meneruskannya ke modul Finance untuk verifikasi dan pembayaran. | REVIEW |
 | TASK-HR-032 | FR-HR-032 | Wajib | Menghitung distribusi service charge yang terkumpul dari kamar dan outlet berdasarkan sistem poin per jabatan dan proporsi kehadiran, dengan penyisihan untuk kerusakan atau kehilangan sesuai kebijakan properti. | REVIEW |
@@ -148,6 +148,13 @@
 - **HR-004** — `/hr/me` (`EmployeePortalService`) shows the person their own schedule for the next two weeks, what they did over the last month (status, times, late/early/overtime), the leave balances and requests waiting, the payslips of the paid months, and their shift exchanges (open, to answer, to decide), with links to the leave, attendance, payslip and exchange pages. It reads only for the employee the account belongs to; an account not linked to an employee sees nothing. `AttendanceService::historyOf` gives the attendance of one person over a period.
 - Not yet: a swap of a shift for a day off on another date, a notice to the colleague and the supervisor (needs a notification channel), overtime or corrections asked for in the page itself (they are in the attendance page).
 - Tests: `ShiftSwapHttpTest`.
+
+### Slice 53 (2026-10-03): warnings and awards, notices and policies
+
+- **HR-023** — `ConductService` (`hr_conduct_records`, `/hr/conduct`, permission `hr.conduct.manage`, sensitive): a spoken reprimand, a first, second or third warning letter (SP1–SP3) or an award of a person, with the day issued (today or at most 60 days back), the reason, the letter as a private file (PDF or photo, at most 3 MB, sensitive) and, for a warning, the day until which it holds — by default 3 months for a reprimand and 6 for a warning letter, which is also the longest a warning letter may hold; an award never lapses. A warning shows as holding until its day passes, then as expired. Nothing is deleted: a record made by mistake is revoked with a reason and stays on file (triggers refuse deletion). The person sees their own records and opens their own letter; people with the right see everyone's and every letter opened is audited. When a person leaves, the retention of their letters starts with that of their papers. `hr.conduct.recorded` goes out; the employee's own page tells them how many warnings still hold.
+- **HR-024** — `AnnouncementService` (`hr_announcements`, `hr_announcement_reads`, `/hr/announcements`, permission `hr.announcement.manage`): a notice or a policy for everyone or one department, with a text, an optional document and an optional last day. Opening it is noted for the person; a policy that asks for it needs the person to confirm they read and understood it, once — the confirmation is never changed (trigger) and is audited. The people with the right see, for each publication, how many of its audience read and confirmed it and the names of those who have not. What is published is not edited: it is withdrawn with a reason and a new one is published, so who read what stays true. The employee's page warns of what waits for their confirmation.
+- Not yet: a notice by e-mail or on the phone when something is published or a warning is issued (needs a notification channel), versions of a policy that ask for a new confirmation, automatic escalation from one warning to the next.
+- Tests: `ConductAndAnnouncementHttpTest`.
 
 ## Required engineering checks
 

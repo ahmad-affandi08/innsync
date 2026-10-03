@@ -289,6 +289,12 @@
             "to"
         ]
     },
+    "GET /hr/conduct": {
+        "required": [],
+        "declared": [
+            "employee"
+        ]
+    },
     "GET /hr/employees": {
         "required": [],
         "declared": [
@@ -2716,6 +2722,34 @@
             "lock_version"
         ]
     },
+    "POST /hr/announcements": {
+        "required": [
+            "audience",
+            "body",
+            "kind",
+            "requires_ack",
+            "title"
+        ],
+        "declared": [
+            "audience",
+            "body",
+            "document",
+            "expires_on",
+            "kind",
+            "requires_ack",
+            "title"
+        ]
+    },
+    "POST /hr/announcements/{id}/withdraw": {
+        "required": [
+            "lock_version",
+            "reason"
+        ],
+        "declared": [
+            "lock_version",
+            "reason"
+        ]
+    },
     "POST /hr/attendance/clock-in": {
         "required": [],
         "declared": [
@@ -2779,6 +2813,32 @@
             "longitude",
             "radius_m",
             "require_selfie"
+        ]
+    },
+    "POST /hr/conduct": {
+        "required": [
+            "employee_id",
+            "issued_on",
+            "kind",
+            "reason"
+        ],
+        "declared": [
+            "employee_id",
+            "issued_on",
+            "kind",
+            "letter",
+            "reason",
+            "valid_until"
+        ]
+    },
+    "POST /hr/conduct/{id}/revoke": {
+        "required": [
+            "lock_version",
+            "reason"
+        ],
+        "declared": [
+            "lock_version",
+            "reason"
         ]
     },
     "POST /hr/employees": {

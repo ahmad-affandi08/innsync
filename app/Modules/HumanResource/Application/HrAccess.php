@@ -43,6 +43,12 @@ final readonly class HrAccess
     /** Sets how the service charge is shared and works out and approves the distribution of a month. Sensitive: held by very few. */
     public const SERVICE_CHARGE = 'hr.service-charge.manage';
 
+    /** Records and revokes reprimands, warning letters and awards, and opens the letters. Sensitive: held by very few. */
+    public const CONDUCT = 'hr.conduct.manage';
+
+    /** Publishes notices and policies to the staff and sees who read them. */
+    public const ANNOUNCE = 'hr.announcement.manage';
+
     public function __construct(private PermissionChecker $permissions, private PropertyContext $property) {}
 
     public function assertProperty(PropertyId $property): void

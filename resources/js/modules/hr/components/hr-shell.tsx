@@ -9,6 +9,8 @@ const LINKS = [
     { href: '/hr/attendance', label: 'hr.nav.attendance' },
     { href: '/hr/leave', label: 'hr.nav.leave' },
     { href: '/hr/swaps', label: 'hr.nav.swaps' },
+    { href: '/hr/announcements', label: 'hr.nav.announcements' },
+    { href: '/hr/conduct', label: 'hr.nav.conduct' },
     { href: '/hr/performance', label: 'hr.nav.performance' },
     { href: '/hr/payroll', label: 'hr.nav.payroll' },
     { href: '/hr/service-charge', label: 'hr.nav.serviceCharge' },

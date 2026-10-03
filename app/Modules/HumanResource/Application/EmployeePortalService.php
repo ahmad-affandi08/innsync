@@ -24,6 +24,8 @@ final readonly class EmployeePortalService
         private LeaveService $leave,
         private PayslipService $payslips,
         private ShiftSwapService $swaps,
+        private AnnouncementService $announcements,
+        private ConductService $conduct,
         private BusinessDateProvider $businessDate,
         private HrAccess $access,
     ) {}
@@ -54,6 +56,7 @@ final readonly class EmployeePortalService
         $leave = $this->leave->overview($property, $actorId, null, null);
         $swaps = $this->swaps->overview($property, $actorId);
         $slips = $this->payslips->mine($property, $actorId);
+        $feed = $this->announcements->overview($property, $actorId)['feed'];
 
         return [
             'linked' => true, 'today' => $today, 'currency' => $slips['currency'],
@@ -62,6 +65,8 @@ final readonly class EmployeePortalService
             'attendance' => array_map(static fn (array $r): array => ['date' => $r['shift']['date'], 'code' => $r['shift']['code'], 'status' => $r['status'], 'in_at' => $r['record']['in_at'] ?? null, 'out_at' => $r['record']['out_at'] ?? null, 'late_minutes' => $r['late_minutes'], 'early_minutes' => $r['early_minutes'], 'overtime_minutes' => $r['overtime_minutes']], $history),
             'leave' => ['year' => $leave['year'], 'balances' => $leave['mine']['balances'] ?? [], 'pending' => count(array_filter($leave['mine']['requests'] ?? [], static fn (array $r): bool => $r['status'] === 'pending_approval'))],
             'payslips' => array_slice($slips['slips'], 0, 6),
+            'announcements' => ['unread' => count(array_filter($feed, static fn (array $a): bool => ! $a['read'])), 'to_confirm' => count(array_filter($feed, static fn (array $a): bool => $a['requires_ack'] && ! $a['acknowledged']))],
+            'conduct' => ['active_warnings' => count($this->conduct->activeWarnings($property, $employee['id'], $today))],
             'swaps' => ['open' => count(array_filter($swaps['mine'], static fn (array $s): bool => in_array($s['status'], ['awaiting_partner', 'awaiting_supervisor'], true))), 'to_answer' => count(array_filter($swaps['mine'], static fn (array $s): bool => $s['may']['respond'])), 'to_decide' => count($swaps['to_decide'])],
         ];
     }

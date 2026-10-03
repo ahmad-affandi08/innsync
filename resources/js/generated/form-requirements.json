@@ -330,6 +330,13 @@
         "scope_ref",
         "use_quantity"
     ],
+    "hr/pages/announcements": [
+        "audience",
+        "body",
+        "kind",
+        "reason",
+        "title"
+    ],
     "hr/pages/attendance": [
         "early_grace_minutes",
         "employee_id",
@@ -340,6 +347,12 @@
         "radius_m",
         "reason",
         "work_date"
+    ],
+    "hr/pages/conduct": [
+        "employee_id",
+        "issued_on",
+        "kind",
+        "reason"
     ],
     "hr/pages/employees": [
         "contract_type",

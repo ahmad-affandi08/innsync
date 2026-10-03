@@ -176,4 +176,28 @@ export type PortalOverview = {
     leave?: { year: number; balances: LeaveBalanceItem[]; pending: number };
     payslips?: { run_id: string; period: string; number: string; gross_minor: number; net_minor: number }[];
     swaps?: { open: number; to_answer: number; to_decide: number };
+    announcements?: { unread: number; to_confirm: number };
+    conduct?: { active_warnings: number };
+};
+
+export type ConductKind = 'verbal' | 'sp1' | 'sp2' | 'sp3' | 'award';
+
+export type ConductRecord = {
+    id: string; employee: { id: string; number: string; name: string; department: string }; kind: ConductKind; issued_on: string; valid_until: string | null; state: 'active' | 'expired' | 'award' | 'revoked'; reason: string;
+    has_letter: boolean; revoke_reason: string | null; lock_version: number; may: { revoke: boolean };
+};
+
+export type ConductOverview = {
+    today: string; kinds: ConductKind[]; may: { manage: boolean }; linked: boolean; mine: ConductRecord[]; records: ConductRecord[] | null; employees: { id: string; number: string; name: string; department: string }[] | null;
+    default_months: Record<string, number>; selected: string | null;
+};
+
+export type Announcement = {
+    id: string; kind: 'announcement' | 'policy'; title: string; body: string; audience: string; requires_ack: boolean; expires_on: string | null; has_document: boolean; status: 'published' | 'withdrawn'; published_at: string; lock_version: number;
+};
+
+export type AnnouncementOverview = {
+    today: string; linked: boolean; may: { manage: boolean }; kinds: string[]; departments: string[];
+    feed: (Announcement & { read: boolean; acknowledged: boolean })[];
+    board: (Announcement & { audience_size: number; read: number; acknowledged: number; pending: { id: string; number: string; name: string }[]; withdraw_reason: string | null })[] | null;
 };

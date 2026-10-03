@@ -43,6 +43,8 @@ export default function MePage({ portal }: { portal: PortalOverview }) {
     return (
         <HrShell description={t('hr.me.description')} title={t('hr.me.title')}>
             <div className="flex flex-col gap-6" data-testid="hr-me">
+                {(portal.announcements?.to_confirm ?? 0) > 0 ? <Alert title={t('hr.me.toConfirm', { n: portal.announcements?.to_confirm ?? 0 })} tone="warning" /> : null}
+                {(portal.conduct?.active_warnings ?? 0) > 0 ? <Alert title={t('hr.me.warnings', { n: portal.conduct?.active_warnings ?? 0 })} tone="info" /> : null}
                 {e !== undefined ? <p className="text-sm text-muted-foreground">{e.name} · {e.number} · {t(`hr.department.${e.department}` as MessageKey)} · {e.position}</p> : null}
                 <section className="flex flex-col gap-2">
                     <h2 className="text-base font-semibold">{t('hr.me.leave', { year: portal.leave?.year ?? '' })}</h2>

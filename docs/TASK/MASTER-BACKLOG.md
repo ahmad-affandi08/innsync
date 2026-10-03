@@ -203,8 +203,8 @@
 | TASK-HR-020 | FR-HR-020 | Human Resource | Wajib | REVIEW |
 | TASK-HR-021 | FR-HR-021 | Human Resource | Sebaiknya | REVIEW |
 | TASK-HR-022 | FR-HR-022 | Human Resource | Sebaiknya | TODO |
-| TASK-HR-023 | FR-HR-023 | Human Resource | Sebaiknya | TODO |
-| TASK-HR-024 | FR-HR-024 | Human Resource | Bisa | TODO |
+| TASK-HR-023 | FR-HR-023 | Human Resource | Sebaiknya | REVIEW |
+| TASK-HR-024 | FR-HR-024 | Human Resource | Bisa | REVIEW |
 | TASK-HR-030 | FR-HR-030 | Human Resource | Wajib | REVIEW |
 | TASK-HR-031 | FR-HR-031 | Human Resource | Wajib | REVIEW |
 | TASK-HR-032 | FR-HR-032 | Human Resource | Wajib | REVIEW |
