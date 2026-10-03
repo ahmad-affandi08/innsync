@@ -205,13 +205,13 @@
 | TASK-HR-022 | FR-HR-022 | Human Resource | Sebaiknya | TODO |
 | TASK-HR-023 | FR-HR-023 | Human Resource | Sebaiknya | TODO |
 | TASK-HR-024 | FR-HR-024 | Human Resource | Bisa | TODO |
-| TASK-HR-030 | FR-HR-030 | Human Resource | Wajib | TODO |
+| TASK-HR-030 | FR-HR-030 | Human Resource | Wajib | REVIEW |
 | TASK-HR-031 | FR-HR-031 | Human Resource | Wajib | TODO |
 | TASK-HR-032 | FR-HR-032 | Human Resource | Wajib | TODO |
 | TASK-HR-033 | FR-HR-033 | Human Resource | Wajib | TODO |
 | TASK-HR-034 | FR-HR-034 | Human Resource | Wajib | TODO |
 | TASK-HR-035 | FR-HR-035 | Human Resource | Sebaiknya | TODO |
-| TASK-HR-036 | FR-HR-036 | Human Resource | Sebaiknya | TODO |
+| TASK-HR-036 | FR-HR-036 | Human Resource | Sebaiknya | REVIEW |
 | TASK-HR-037 | FR-HR-037 | Human Resource | Wajib | TODO |
 | TASK-HR-038 | FR-HR-038 | Human Resource | Wajib | TODO |
 | TASK-FIN-001 | FR-FIN-001 | Finance | Wajib | REVIEW |

@@ -356,6 +356,16 @@
         "reason",
         "to_date"
     ],
+    "hr/pages/payroll": [
+        "amount_minor",
+        "code",
+        "component_id",
+        "effective_from",
+        "kind",
+        "name",
+        "ptkp_status",
+        "reason"
+    ],
     "hr/pages/roster": [
         "name"
     ],

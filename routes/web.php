@@ -47,6 +47,7 @@ use App\Modules\HumanResource\Presentation\Http\Controllers\AttendanceAdjustment
 use App\Modules\HumanResource\Presentation\Http\Controllers\AttendanceController;
 use App\Modules\HumanResource\Presentation\Http\Controllers\EmployeeController;
 use App\Modules\HumanResource\Presentation\Http\Controllers\LeaveController;
+use App\Modules\HumanResource\Presentation\Http\Controllers\PayrollController;
 use App\Modules\HumanResource\Presentation\Http\Controllers\PerformanceController;
 use App\Modules\HumanResource\Presentation\Http\Controllers\RosterController;
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\ApprovalController;
@@ -751,6 +752,14 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
     Route::post('/attendance/corrections/{id}/cancel', [AttendanceAdjustmentController::class, 'cancelCorrection'])->where('id', $id)->name('hr.attendance.corrections.cancel');
     Route::get('/attendance/{id}/photo/{which}', [AttendanceController::class, 'photo'])->where('id', $id)->where('which', 'in|out')->name('hr.attendance.photo');
     Route::get('/performance', [PerformanceController::class, 'index'])->name('hr.performance');
+    Route::get('/payroll', [PayrollController::class, 'index'])->name('hr.payroll');
+    Route::post('/payroll/pay', [PayrollController::class, 'setPay'])->middleware(['idempotent'])->name('hr.payroll.pay');
+    Route::post('/payroll/profile', [PayrollController::class, 'saveProfile'])->name('hr.payroll.profile');
+    Route::post('/payroll/settings', [PayrollController::class, 'saveSettings'])->name('hr.payroll.settings');
+    Route::post('/payroll/components', [PayrollController::class, 'createComponent'])->name('hr.payroll.components.create');
+    Route::post('/payroll/components/baseline', [PayrollController::class, 'baseline'])->name('hr.payroll.components.baseline');
+    Route::post('/payroll/components/{id}', [PayrollController::class, 'updateComponent'])->where('id', $id)->name('hr.payroll.components.update');
+    Route::post('/payroll/components/{id}/active', [PayrollController::class, 'componentActive'])->where('id', $id)->name('hr.payroll.components.active');
     Route::get('/leave', [LeaveController::class, 'index'])->name('hr.leave');
     Route::post('/leave', [LeaveController::class, 'request'])->middleware(['idempotent'])->name('hr.leave.request');
     Route::post('/leave/adjust', [LeaveController::class, 'adjust'])->middleware(['idempotent'])->name('hr.leave.adjust');

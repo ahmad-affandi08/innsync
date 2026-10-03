@@ -106,3 +106,24 @@ export type PerformanceRow = {
 export type PerformanceSource = { source: string; runs: number; complete: number; items: number; done: number; percent: number };
 
 export type PerformanceOverview = { from: string; to: string; department: string | null; departments: string[]; board: PerformanceRow[]; sources: PerformanceSource[] };
+
+export type PayKind = 'basic' | 'fixed_allowance' | 'variable_allowance' | 'meal' | 'transport';
+
+export type PayComponent = { id: string; code: string; name: string; kind: PayKind; basis: 'monthly' | 'attendance' | 'per_day'; taxable: boolean; social_base: boolean; active: boolean; lock_version: number };
+
+export type PayProfile = { ptkp_status: string; has_npwp: boolean; in_health: boolean; in_employment: boolean; lock_version: number | null };
+
+export type PayPerson = {
+    id: string; number: string; name: string; department: string; position: string; pay: Record<string, { amount_minor: number; effective_from: string }>; monthly_minor: number; per_day_minor: number; profile: PayProfile | null;
+};
+
+export type PayrollSettings = {
+    health_employee_bp: number; health_employer_bp: number; health_cap_minor: number; jht_employee_bp: number; jht_employer_bp: number; jp_employee_bp: number; jp_employer_bp: number; jp_cap_minor: number;
+    jkk_employer_bp: number; jkm_employer_bp: number; job_cost_bp: number; job_cost_cap_year_minor: number; no_npwp_surcharge_bp: number; ptkp: Record<string, number>; brackets: { upto_minor: number | null; rate_bp: number }[];
+    overtime_divisor: number; overtime_first_x100: number; overtime_next_x100: number; absence_divisor: number; late_minute_deduction_minor: number; is_baseline: boolean; lock_version: number | null;
+};
+
+export type PayrollOverview = {
+    currency: string; today: string; earliest: string; components: PayComponent[]; employees: PayPerson[]; statuses: string[]; settings: PayrollSettings; selected: string | null;
+    history: { component_id: string; amount_minor: number; effective_from: string; reason: string }[];
+};

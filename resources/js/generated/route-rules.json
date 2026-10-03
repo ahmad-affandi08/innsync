@@ -302,6 +302,12 @@
             "year"
         ]
     },
+    "GET /hr/payroll": {
+        "required": [],
+        "declared": [
+            "employee"
+        ]
+    },
     "GET /hr/performance": {
         "required": [],
         "declared": [
@@ -2905,6 +2911,131 @@
             "minutes",
             "reason",
             "work_date"
+        ]
+    },
+    "POST /hr/payroll/components": {
+        "required": [
+            "code",
+            "kind",
+            "name",
+            "social_base",
+            "taxable"
+        ],
+        "declared": [
+            "code",
+            "kind",
+            "name",
+            "social_base",
+            "taxable"
+        ]
+    },
+    "POST /hr/payroll/components/{id}": {
+        "required": [
+            "lock_version",
+            "name",
+            "social_base",
+            "taxable"
+        ],
+        "declared": [
+            "lock_version",
+            "name",
+            "social_base",
+            "taxable"
+        ]
+    },
+    "POST /hr/payroll/components/{id}/active": {
+        "required": [
+            "active",
+            "lock_version"
+        ],
+        "declared": [
+            "active",
+            "lock_version"
+        ]
+    },
+    "POST /hr/payroll/pay": {
+        "required": [
+            "amount_minor",
+            "component_id",
+            "effective_from",
+            "employee_id",
+            "reason"
+        ],
+        "declared": [
+            "amount_minor",
+            "component_id",
+            "effective_from",
+            "employee_id",
+            "reason"
+        ]
+    },
+    "POST /hr/payroll/profile": {
+        "required": [
+            "employee_id",
+            "has_npwp",
+            "in_employment",
+            "in_health",
+            "ptkp_status"
+        ],
+        "declared": [
+            "employee_id",
+            "has_npwp",
+            "in_employment",
+            "in_health",
+            "lock_version",
+            "ptkp_status"
+        ]
+    },
+    "POST /hr/payroll/settings": {
+        "required": [
+            "absence_divisor",
+            "brackets",
+            "brackets.*.rate_bp",
+            "health_cap_minor",
+            "health_employee_bp",
+            "health_employer_bp",
+            "jht_employee_bp",
+            "jht_employer_bp",
+            "jkk_employer_bp",
+            "jkm_employer_bp",
+            "job_cost_bp",
+            "job_cost_cap_year_minor",
+            "jp_cap_minor",
+            "jp_employee_bp",
+            "jp_employer_bp",
+            "late_minute_deduction_minor",
+            "no_npwp_surcharge_bp",
+            "overtime_divisor",
+            "overtime_first_x100",
+            "overtime_next_x100",
+            "ptkp",
+            "ptkp.*"
+        ],
+        "declared": [
+            "absence_divisor",
+            "brackets",
+            "brackets.*.rate_bp",
+            "brackets.*.upto_minor",
+            "health_cap_minor",
+            "health_employee_bp",
+            "health_employer_bp",
+            "jht_employee_bp",
+            "jht_employer_bp",
+            "jkk_employer_bp",
+            "jkm_employer_bp",
+            "job_cost_bp",
+            "job_cost_cap_year_minor",
+            "jp_cap_minor",
+            "jp_employee_bp",
+            "jp_employer_bp",
+            "late_minute_deduction_minor",
+            "lock_version",
+            "no_npwp_surcharge_bp",
+            "overtime_divisor",
+            "overtime_first_x100",
+            "overtime_next_x100",
+            "ptkp",
+            "ptkp.*"
         ]
     },
     "POST /hr/roster/assign": {

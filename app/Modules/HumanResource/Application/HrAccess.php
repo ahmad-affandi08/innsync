@@ -34,6 +34,9 @@ final readonly class HrAccess
     /** Configures the kinds of leave, asks for leave for other people, sees everyone's requests and balances, and adjusts a balance. */
     public const LEAVE = 'hr.leave.manage';
 
+    /** Sets what each person earns, the status for tax and the parameters of the tax and the social security. Sensitive: held by very few. */
+    public const PAYROLL = 'hr.payroll.manage';
+
     public function __construct(private PermissionChecker $permissions, private PropertyContext $property) {}
 
     public function assertProperty(PropertyId $property): void
