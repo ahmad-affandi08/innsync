@@ -244,4 +244,12 @@ export const id: Record<MessageKey, string> = {
     'shell.layout.rail': 'Rel ikon',
     'shell.layout.topbar': 'Bilah atas',
     'shell.allPages': 'Semua halaman',
+    'err.page.403.title': 'Anda tidak dapat membuka halaman ini',
+    'err.page.404.title': 'Halaman ini tidak ditemukan',
+    'err.page.409.title': 'Datanya berubah sementara itu',
+    'err.page.422.title': 'Permintaan ini tidak dapat diproses',
+    'err.page.other.title': 'Terjadi kesalahan',
+    'err.page.hint': 'Jika Anda merasa seharusnya punya akses, minta kepada pengelola hak akses di properti Anda.',
+    'err.page.home': 'Kembali ke beranda',
+    'err.page.back': 'Kembali',
 }

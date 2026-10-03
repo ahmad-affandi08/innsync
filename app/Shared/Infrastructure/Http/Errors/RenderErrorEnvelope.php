@@ -9,6 +9,7 @@ use App\Shared\Application\Observability\CorrelationId;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
+use Inertia\Inertia;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Throwable;
@@ -44,14 +45,20 @@ final readonly class RenderErrorEnvelope
             return back(303)->withErrors(['error' => $this->factory->make($e)->message]);
         }
 
-        // A person who opens a screen they may not use sees the framework's own page for that status, not a 500.
+        // A person who opens a screen they may not use sees a page that says so, in the frame of the application, not a 500.
         if ($e instanceof ExpectedFailure) {
             $status = $e->status();
+            $message = __('errors.'.$e->messageKey());
+
+            if ($request->isMethodSafe() && $request->hasSession()) {
+                return Inertia::render('foundation/pages/error', ['status' => $status, 'message' => $message])->toResponse($request)->setStatusCode($status);
+            }
+
             $view = "errors::{$status}";
 
             return view()->exists($view)
                 ? response()->view($view, ['exception' => new HttpException($status)], $status)
-                : response(__('errors.'.$e->messageKey()), $status);
+                : response($message, $status);
         }
 
         return null;

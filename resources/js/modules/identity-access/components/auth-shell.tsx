@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import logo from '@/assets/brand/LogoHorizontal.svg';
 import favicon from '@/assets/brand/Favicon.svg';
 import { Card } from '@/components/ui/card';
+import { Illustration } from '@/components/ui/illustration';
 import { LanguageSwitcher } from '@/components/ui/language-switcher';
 import { useTranslation } from '@/shared/i18n/i18n';
 
@@ -25,6 +26,7 @@ export function AuthShell({ children, description, title }: AuthShellProps) {
                     <span className="text-2xl font-bold tracking-tight">Inn<span className="text-accent">SY</span>nc</span>
                 </div>
                 <div className="relative max-w-md">
+                    <Illustration className="mb-8 w-full max-w-xs" name="reception" />
                     <h2 className="text-4xl font-semibold leading-tight tracking-tight">{t('auth.headline')}</h2>
                     <p className="mt-4 text-base leading-7 text-muted-foreground">{t('auth.tagline')}</p>
                     <ul className="mt-10 grid gap-4 text-sm text-foreground">

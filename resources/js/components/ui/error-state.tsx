@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
+import { Illustration, type IllustrationName } from '@/components/ui/illustration';
 import { toFailure, type Failure, type FailureKind } from '@/shared/lib/api-error';
 
 /** Copy for one failure kind; supplied by the screen until the i18n framework (TASK-FND-013) exists. */
@@ -37,6 +38,22 @@ function toneFor(kind: FailureKind): 'danger' | 'warning' | 'info' {
     }
 
     return 'danger'
+}
+
+function pictureFor(kind: FailureKind): IllustrationName {
+    if (kind === 'forbidden') {
+        return 'forbidden'
+    }
+
+    if (kind === 'offline') {
+        return 'offline'
+    }
+
+    if (kind === 'session-expired' || kind === 'unauthenticated' || kind === 'rate-limited') {
+        return 'session-expired'
+    }
+
+    return kind === 'conflict' ? 'warning' : 'error'
 }
 
 /**
@@ -76,16 +93,21 @@ function ErrorState(props: ErrorStateProps) {
     }
 
     return (
-        <Alert actions={actions.length > 0 ? actions : undefined} title={copy.title} tone={toneFor(failure.kind)}>
-            {copy.description ? <p>{copy.description}</p> : null}
-            {props.children}
-            {failure.correlationId ? (
-                <p className="mt-1 text-xs">
-                    {props.referenceLabel}:{' '}
-                    <code className="font-mono">{failure.correlationId}</code>
-                </p>
-            ) : null}
-        </Alert>
+        <div className="flex items-start gap-3">
+            <Illustration className="hidden w-14 shrink-0 sm:block" name={pictureFor(failure.kind)} />
+            <div className="min-w-0 flex-1">
+                <Alert actions={actions.length > 0 ? actions : undefined} title={copy.title} tone={toneFor(failure.kind)}>
+                    {copy.description ? <p>{copy.description}</p> : null}
+                    {props.children}
+                    {failure.correlationId ? (
+                        <p className="mt-1 text-xs">
+                            {props.referenceLabel}:{' '}
+                            <code className="font-mono">{failure.correlationId}</code>
+                        </p>
+                    ) : null}
+                </Alert>
+            </div>
+        </div>
     );
 }
 

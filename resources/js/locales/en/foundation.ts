@@ -8,4 +8,12 @@ export const foundation = {
     'foundation.welcome.propertyScope': 'Property scope',
     'foundation.welcome.sessions': 'Sessions',
     'foundation.welcome.modules': 'Modules',
+    'err.page.403.title': 'You cannot open this page',
+    'err.page.404.title': 'We could not find this',
+    'err.page.409.title': 'This changed in the meantime',
+    'err.page.422.title': 'This could not be processed',
+    'err.page.other.title': 'Something went wrong',
+    'err.page.hint': 'If you think you should have access, ask the person who manages the permissions of your property.',
+    'err.page.home': 'Back to home',
+    'err.page.back': 'Go back',
 } as const

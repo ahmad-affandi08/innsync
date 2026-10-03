@@ -3,6 +3,7 @@ import { ArrowUpRight, BedDouble, ChartNoAxesCombined, ConciergeBell, Landmark, 
 
 import { AppFrame } from '@/components/layout/app-frame';
 import { Card } from '@/components/ui/card';
+import { Illustration } from '@/components/ui/illustration';
 import type { MessageKey } from '@/locales/en/index';
 import { TodaySummary } from '@/modules/foundation/components/today-summary';
 import { useTranslation } from '@/shared/i18n/i18n';
@@ -38,16 +39,19 @@ export default function WelcomePage({ appVersion, userName }: WelcomePageProps) 
         <AppFrame description={t('home.description')} title={t('foundation.welcome.heading', { name: userName.split(' ')[0] ?? userName })}>
             <TodaySummary />
 
-            <section aria-labelledby="quick-h" className="flex flex-col gap-3">
-                <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground" id="quick-h">{t('home.quick')}</h2>
-                <div className="flex flex-wrap gap-2">
-                    {QUICK.map((q) => (
-                        <Link className="inline-flex items-center gap-2 border border-border bg-surface px-4 py-2 text-sm font-medium transition hover:border-brand hover:text-accent" href={q.href} key={q.href}>
-                            {t(q.label)}
-                            <ArrowUpRight aria-hidden="true" className="size-3.5 text-brand" />
-                        </Link>
-                    ))}
+            <section aria-labelledby="quick-h" className="flex items-end justify-between gap-6">
+                <div className="flex flex-col gap-3">
+                    <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground" id="quick-h">{t('home.quick')}</h2>
+                    <div className="flex flex-wrap gap-2">
+                        {QUICK.map((q) => (
+                            <Link className="inline-flex items-center gap-2 border border-border bg-surface px-4 py-2 text-sm font-medium transition hover:border-brand hover:text-accent" href={q.href} key={q.href}>
+                                {t(q.label)}
+                                <ArrowUpRight aria-hidden="true" className="size-3.5 text-brand" />
+                            </Link>
+                        ))}
+                    </div>
                 </div>
+                <Illustration className="hidden w-44 shrink-0 md:block" name="guest-service" />
             </section>
 
             <section aria-labelledby="mods-h" className="flex flex-col gap-3">
