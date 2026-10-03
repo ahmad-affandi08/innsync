@@ -145,7 +145,9 @@ final readonly class DatabaseRevenueStore implements RevenueStore
         $open = DB::table('fin_cash_exceptions as x')->join('fin_cash_deposits as d', 'd.id', '=', 'x.deposit_id')->join('fin_cash_shifts as s', 's.id', '=', 'd.cash_shift_id')
             ->where('x.property_id', $pid)->where('x.status', 'open')->where('s.closed_business_date', $date)->count();
 
-        return ['waiting' => $waiting, 'open' => $open];
+        $exceptions = DB::table('fin_exceptions')->where('property_id', $pid)->where('status', 'open')->where('business_date', $date)->count();
+
+        return ['waiting' => $waiting, 'open' => $open, 'exceptions' => $exceptions];
     }
 
     public function openExceptionCount(PropertyId $property): int

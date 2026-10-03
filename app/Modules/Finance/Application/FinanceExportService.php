@@ -20,7 +20,7 @@ use DateTimeZone;
  */
 final readonly class FinanceExportService
 {
-    public const DATASETS = ['revenue', 'payments_received', 'payables', 'supplier_payments', 'receivables', 'receipts', 'petty_vouchers'];
+    public const DATASETS = ['revenue', 'payments_received', 'payables', 'supplier_payments', 'receivables', 'receipts', 'petty_vouchers', 'corrections', 'exceptions'];
 
     public const MAX_ROWS = 50_000;
 

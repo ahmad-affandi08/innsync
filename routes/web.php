@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 use App\Modules\Finance\Presentation\Http\Controllers\BudgetController;
 use App\Modules\Finance\Presentation\Http\Controllers\CashReconciliationController;
+use App\Modules\Finance\Presentation\Http\Controllers\CorrectionController;
+use App\Modules\Finance\Presentation\Http\Controllers\ExceptionController;
 use App\Modules\Finance\Presentation\Http\Controllers\ExpenseAccountController;
+use App\Modules\Finance\Presentation\Http\Controllers\FinanceAuditController;
 use App\Modules\Finance\Presentation\Http\Controllers\ManagementReportController;
 use App\Modules\Finance\Presentation\Http\Controllers\PayableController;
 use App\Modules\Finance\Presentation\Http\Controllers\PettyCashController;
@@ -590,4 +593,12 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
     Route::get('/budget', [BudgetController::class, 'index'])->name('finance.budget');
     Route::post('/budget', [BudgetController::class, 'save'])->name('finance.budget.save');
     Route::get('/budget/report', [BudgetController::class, 'report'])->name('finance.budget.report');
+    Route::get('/corrections', [CorrectionController::class, 'index'])->name('finance.corrections');
+    Route::post('/corrections', [CorrectionController::class, 'store'])->middleware(['idempotent'])->name('finance.corrections.store');
+    Route::get('/corrections/{id}', [CorrectionController::class, 'show'])->where('id', $id)->name('finance.corrections.show');
+    Route::post('/corrections/{id}/decide', [CorrectionController::class, 'decide'])->where('id', $id)->name('finance.corrections.decide');
+    Route::get('/exceptions', [ExceptionController::class, 'index'])->name('finance.exceptions');
+    Route::post('/exceptions', [ExceptionController::class, 'store'])->middleware(['idempotent'])->name('finance.exceptions.store');
+    Route::post('/exceptions/{id}/reconcile', [ExceptionController::class, 'reconcile'])->where('id', $id)->name('finance.exceptions.reconcile');
+    Route::get('/audit', [FinanceAuditController::class, 'index'])->name('finance.audit');
 });

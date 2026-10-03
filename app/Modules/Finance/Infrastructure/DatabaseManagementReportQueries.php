@@ -15,9 +15,30 @@ final readonly class DatabaseManagementReportQueries implements ManagementReport
 {
     public function revenueByOutlet(PropertyId $property, string $from, string $to): array
     {
-        return DB::table('fin_revenue_lines')->where('property_id', $property->toString())->whereBetween('business_date', [$from, $to])->groupBy('outlet_code', 'outlet_name')->orderBy('outlet_code')
-            ->get(['outlet_code', 'outlet_name', DB::raw('SUM(base_minor) as base'), DB::raw('SUM(service_charge_minor) as service'), DB::raw('SUM(tax_minor) as tax')])
-            ->map(static fn ($r): array => ['outlet_code' => (string) $r->outlet_code, 'outlet_name' => $r->outlet_name === null ? null : (string) $r->outlet_name, 'base_minor' => (int) $r->base, 'service_charge_minor' => (int) $r->service, 'tax_minor' => (int) $r->tax])->all();
+        $out = [];
+        $add = static function (string $code, ?string $name, int $base, int $service, int $tax) use (&$out): void {
+            $o = $out[$code] ?? ['outlet_code' => $code, 'outlet_name' => $name, 'base_minor' => 0, 'service_charge_minor' => 0, 'tax_minor' => 0];
+            $o['outlet_name'] ??= $name;
+            $o['base_minor'] += $base;
+            $o['service_charge_minor'] += $service;
+            $o['tax_minor'] += $tax;
+            $out[$code] = $o;
+        };
+
+        foreach (DB::table('fin_revenue_lines')->where('property_id', $property->toString())->whereBetween('business_date', [$from, $to])->groupBy('outlet_code', 'outlet_name')
+            ->get(['outlet_code', 'outlet_name', DB::raw('SUM(base_minor) as base'), DB::raw('SUM(service_charge_minor) as service'), DB::raw('SUM(tax_minor) as tax')]) as $r) {
+            $add((string) $r->outlet_code, $r->outlet_name === null ? null : (string) $r->outlet_name, (int) $r->base, (int) $r->service, (int) $r->tax);
+        }
+
+        // What the corrections approved in the range add (a correction is dated the day it was approved, not the day it corrects).
+        foreach (DB::table('fin_correction_lines as l')->join('fin_corrections as c', 'c.id', '=', 'l.correction_id')->where('c.property_id', $property->toString())->where('c.status', 'approved')->whereBetween('c.effective_date', [$from, $to])->where('l.kind', 'revenue')
+            ->groupBy('l.outlet_code', 'l.outlet_name')->get(['l.outlet_code', 'l.outlet_name', DB::raw('SUM(l.base_minor) as base'), DB::raw('SUM(l.service_charge_minor) as service'), DB::raw('SUM(l.tax_minor) as tax')]) as $r) {
+            $add((string) $r->outlet_code, $r->outlet_name === null ? null : (string) $r->outlet_name, (int) $r->base, (int) $r->service, (int) $r->tax);
+        }
+
+        ksort($out);
+
+        return array_values($out);
     }
 
     public function unverifiedDays(PropertyId $property, string $from, string $to): int
@@ -81,9 +102,25 @@ final readonly class DatabaseManagementReportQueries implements ManagementReport
 
     public function guestPayments(PropertyId $property, string $from, string $to): array
     {
-        return DB::table('fin_payment_lines')->where('property_id', $property->toString())->whereBetween('business_date', [$from, $to])->groupBy('method')->orderBy('method')
-            ->get(['method', DB::raw('SUM(received_minor) as received'), DB::raw('SUM(paid_back_minor) as paid_back')])
-            ->map(static fn ($r): array => ['method' => (string) $r->method, 'received_minor' => (int) $r->received, 'paid_back_minor' => (int) $r->paid_back])->all();
+        $out = [];
+
+        foreach (DB::table('fin_payment_lines')->where('property_id', $property->toString())->whereBetween('business_date', [$from, $to])->groupBy('method')->get(['method', DB::raw('SUM(received_minor) as received'), DB::raw('SUM(paid_back_minor) as paid_back')]) as $r) {
+            $out[(string) $r->method] = ['method' => (string) $r->method, 'received_minor' => (int) $r->received, 'paid_back_minor' => (int) $r->paid_back];
+        }
+
+        // A correction adds to what was received when it is positive and to what was paid back when it is negative.
+        foreach (DB::table('fin_correction_lines as l')->join('fin_corrections as c', 'c.id', '=', 'l.correction_id')->where('c.property_id', $property->toString())->where('c.status', 'approved')->whereBetween('c.effective_date', [$from, $to])->where('l.kind', 'payment')
+            ->groupBy('l.method')->get(['l.method', DB::raw('SUM(l.received_minor) as delta')]) as $r) {
+            $o = $out[(string) $r->method] ?? ['method' => (string) $r->method, 'received_minor' => 0, 'paid_back_minor' => 0];
+            $delta = (int) $r->delta;
+            $o['received_minor'] += max(0, $delta);
+            $o['paid_back_minor'] += max(0, -$delta);
+            $out[(string) $r->method] = $o;
+        }
+
+        ksort($out);
+
+        return array_values($out);
     }
 
     public function manualReceipts(PropertyId $property, string $from, string $to): array

@@ -30,6 +30,7 @@ final readonly class RevenueService
 
     public function __construct(
         private RevenueStore $store,
+        private CorrectionStore $corrections,
         private FinanceAccess $access,
         private BusinessDateProvider $businessDate,
         private StaffDirectory $staff,
@@ -62,7 +63,7 @@ final readonly class RevenueService
             'from' => $from, 'to' => $to, 'today' => $today, 'days' => $days, 'totals' => $totals,
             'outlets' => $this->outlets($this->store->lineTotals($property, $from, $to)),
             'methods' => array_map(static fn (array $m): array => ['method' => $m['method'], 'received_minor' => (int) $m['received_minor'], 'paid_back_minor' => (int) $m['paid_back_minor'], 'net_minor' => (int) $m['received_minor'] - (int) $m['paid_back_minor'], 'entries' => (int) $m['entries']], $this->store->paymentTotals($property, $from, $to)),
-            'unverified' => count(array_filter($days, static fn (array $d): bool => $d['status'] !== 'verified')),
+            'unverified' => count(array_filter($days, static fn (array $d): bool => $d['status'] !== 'verified')), 'corrections' => $this->correctionBlock($property, $from, $to),
             'may' => ['verify' => $this->access->may($property, $actorId, FinanceAccess::RECONCILE)],
         ];
     }
@@ -127,7 +128,8 @@ final readonly class RevenueService
             'payments' => array_map(static fn (array $p): array => ['method' => $p['method'], 'received_minor' => (int) $p['received_minor'], 'paid_back_minor' => (int) $p['paid_back_minor'], 'net_minor' => (int) $p['received_minor'] - (int) $p['paid_back_minor'], 'entries' => (int) $p['entries']], $day['payments']),
             'night_audit_id' => $day['night_audit_id'], 'occurred_at' => $this->iso((string) $day['occurred_at']), 'booked_by' => $names[$day['actor_id'] ?? ''] ?? null,
             'verified_by' => $day['verified_by'] === null ? null : ($names[$day['verified_by']] ?? null), 'verification_note' => $day['verification_note'],
-            'blockers' => $blockers, 'may_verify' => $this->access->may($property, $actorId, FinanceAccess::RECONCILE) && $day['status'] !== 'verified' && $blockers['waiting'] === 0 && $blockers['open'] === 0,
+            'blockers' => $blockers, 'corrections' => array_map(static fn (array $c): array => ['id' => $c['id'], 'number' => $c['number'], 'status' => $c['status'], 'reason' => $c['reason'], 'revenue_minor' => (int) $c['revenue_minor'], 'received_minor' => (int) $c['received_minor'], 'effective_date' => $c['effective_date'] === null ? null : substr((string) $c['effective_date'], 0, 10)], $this->corrections->corrections($property, null, substr((string) $day['business_date'], 0, 10))),
+            'may_verify' => $this->access->may($property, $actorId, FinanceAccess::RECONCILE) && $day['status'] !== 'verified' && $blockers['waiting'] === 0 && $blockers['open'] === 0 && $blockers['exceptions'] === 0,
             'may' => ['verify' => $this->access->may($property, $actorId, FinanceAccess::RECONCILE)],
         ];
     }
@@ -156,8 +158,8 @@ final readonly class RevenueService
 
             $blockers = $this->store->dayBlockers($property, $date);
 
-            if ($blockers['waiting'] > 0 || $blockers['open'] > 0) {
-                throw Refusal::stateConflict('The day cannot be verified: '.$blockers['waiting'].' shift(s) closed on it have no cash received and '.$blockers['open'].' cash exception(s) are open.');
+            if ($blockers['waiting'] > 0 || $blockers['open'] > 0 || $blockers['exceptions'] > 0) {
+                throw Refusal::stateConflict('The day cannot be verified: '.$blockers['waiting'].' shift(s) closed on it have no cash received, '.$blockers['open'].' cash exception(s) and '.$blockers['exceptions'].' reconciliation exception(s) are open.');
             }
 
             $this->store->verifyDay($property, $day['id'], $actor, $note, $this->clock->nowUtc());
@@ -166,6 +168,21 @@ final readonly class RevenueService
         });
 
         return $this->show($property, $actorId, $date);
+    }
+
+    /** @return array<string, mixed> what the corrections approved with an effective date in the range add to the revenue and to what was collected */
+    private function correctionBlock(PropertyId $property, string $from, string $to): array
+    {
+        $c = $this->corrections->approvedTotals($property, $from, $to);
+        $sum = ['base_minor' => 0, 'service_charge_minor' => 0, 'tax_minor' => 0, 'total_minor' => 0];
+
+        foreach ($c['revenue'] as $r) {
+            foreach ($sum as $k => $v) {
+                $sum[$k] = $v + $r[$k];
+            }
+        }
+
+        return ['count' => $c['count'], 'revenue' => $c['revenue'], 'payments' => $c['payments'], 'totals' => [...$sum, 'received_minor' => array_sum(array_column($c['payments'], 'received_minor'))]];
     }
 
     /** @param array<string, mixed> $d @return array<string, mixed> */

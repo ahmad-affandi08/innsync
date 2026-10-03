@@ -65,7 +65,7 @@ interface RevenueStore
     /** @return bool false when the exception was settled meanwhile */
     public function settleException(PropertyId $property, string $id, int $lock, string $status, string $resolution, string $by, DateTimeImmutable $at): bool;
 
-    /** What keeps a day from being verified: shifts closed on it that were not received, and exceptions of its shifts that are still open. @return array{waiting: int, open: int} */
+    /** What keeps a day from being verified: shifts closed on it that were not received, cash exceptions of its shifts that are still open, and reconciliation exceptions of the day that are still open. @return array{waiting: int, open: int, exceptions: int} */
     public function dayBlockers(PropertyId $property, string $date): array;
 
     public function openExceptionCount(PropertyId $property): int;

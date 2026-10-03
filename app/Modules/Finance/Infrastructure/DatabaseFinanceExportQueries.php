@@ -55,6 +55,16 @@ final readonly class DatabaseFinanceExportQueries implements FinanceExportQuerie
                     ->where('v.property_id', $pid)->whereBetween('v.voucher_date', [$from, $to])->orderBy('v.voucher_date')->orderBy('v.number'))
                     ->get(['v.voucher_date', 'v.number', 'f.code as fund', 'v.payee', 'v.description', 'a.code as account_code', 'a.department', 'a.category', 'v.receipt_ref', DB::raw("IF(vd.voucher_id IS NULL, 'no', 'yes') as voided"), 'v.amount_minor']),
             ),
+            'corrections' => $this->shape(
+                ['Effective date', 'Correction', 'Corrects day', 'Kind', 'Outlet code', 'Method', 'Base', 'Service charge', 'Tax', 'Total', 'Received', 'Reason'], [6, 7, 8, 9, 10],
+                $take(DB::table('fin_correction_lines as l')->join('fin_corrections as c', 'c.id', '=', 'l.correction_id')->where('c.property_id', $pid)->where('c.status', 'approved')->whereBetween('c.effective_date', [$from, $to])->orderBy('c.effective_date')->orderBy('c.number')->orderBy('l.id'))
+                    ->get(['c.effective_date', 'c.number', 'c.business_date', 'l.kind', 'l.outlet_code', 'l.method', 'l.base_minor', 'l.service_charge_minor', 'l.tax_minor', 'l.total_minor', 'l.received_minor', 'c.reason']),
+            ),
+            'exceptions' => $this->shape(
+                ['Business date', 'Exception', 'Kind', 'Status', 'Method', 'Reference', 'Folio or reservation', 'Description', 'Resolution', 'Amount'], [9],
+                $take(DB::table('fin_exceptions')->where('property_id', $pid)->whereBetween('business_date', [$from, $to])->orderBy('business_date')->orderBy('number'))
+                    ->get(['business_date', 'number', 'kind', 'status', 'method', 'reference', 'folio_ref', 'description', 'resolution', 'amount_minor']),
+            ),
             default => throw new InvalidArgumentException('Unknown data set.'),
         };
     }

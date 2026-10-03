@@ -229,7 +229,7 @@
 | TASK-FIN-016 | FR-FIN-016 | Finance | Sebaiknya | REVIEW |
 | TASK-FIN-017 | FR-FIN-017 | Finance | Sebaiknya | REVIEW |
 | TASK-FIN-018 | FR-FIN-018 | Finance | Wajib | REVIEW |
-| TASK-FIN-019 | FR-FIN-019 | Finance | Wajib | TODO |
+| TASK-FIN-019 | FR-FIN-019 | Finance | Wajib | REVIEW |
 | TASK-FIN-020 | FR-FIN-020 | Finance | Wajib | TODO |
 | TASK-FIN-021 | FR-FIN-021 | Finance | Wajib | TODO |
 | TASK-FIN-022 | FR-FIN-022 | Finance | Wajib | TODO |
@@ -241,8 +241,8 @@
 | TASK-FIN-032 | FR-FIN-032 | Finance | Sebaiknya | TODO |
 | TASK-FIN-033 | FR-FIN-033 | Finance | Sebaiknya | TODO |
 | TASK-FIN-034 | FR-FIN-034 | Finance | Wajib | REVIEW |
-| TASK-FIN-035 | FR-FIN-035 | Finance | Wajib | TODO |
-| TASK-FIN-036 | FR-FIN-036 | Finance | Wajib | TODO |
+| TASK-FIN-035 | FR-FIN-035 | Finance | Wajib | REVIEW |
+| TASK-FIN-036 | FR-FIN-036 | Finance | Wajib | REVIEW |
 | TASK-FIN-037 | FR-FIN-037 | Finance | Wajib | IN_PROGRESS |
 | TASK-RPT-001 | FR-RPT-001 | Reporting & Analytics | Wajib | REVIEW |
 | TASK-RPT-002 | FR-RPT-002 | Reporting & Analytics | Wajib | IN_PROGRESS |

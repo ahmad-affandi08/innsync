@@ -171,6 +171,11 @@ final readonly class DatabaseReportQueries implements ReportQueries
         $coming = (clone $recurring)->where('next_due', '>=', $today->toString())->whereRaw('next_due <= DATE_ADD(?, INTERVAL remind_days DAY)', [$today->toString()]);
         $alerts['recurring_due_soon'] = ['count' => (clone $coming)->count(), 'items' => (clone $coming)->orderBy('next_due')->limit(self::ALERT_EXAMPLES)->pluck('name')->all()];
 
+        // Differences waiting to be reconciled (FR-FIN-019, FR-FIN-037): refunds, chargebacks, settlement discrepancies, payments of unknown status and cash differences.
+        $open = DB::table('fin_exceptions')->where('property_id', $pid)->where('status', 'open');
+        $cash = DB::table('fin_cash_exceptions')->where('property_id', $pid)->where('status', 'open');
+        $alerts['finance_exceptions_open'] = ['count' => (clone $open)->count() + (clone $cash)->count(), 'items' => (clone $open)->orderBy('business_date')->limit(self::ALERT_EXAMPLES)->pluck('number')->all()];
+
         return $alerts;
     }
 

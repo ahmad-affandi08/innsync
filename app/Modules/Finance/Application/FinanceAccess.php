@@ -47,6 +47,10 @@ final readonly class FinanceAccess
 
     public const BUDGET_MANAGE = 'finance.budget.manage';
 
+    public const CORRECTION_APPROVE = 'finance.correction.approve';
+
+    public const AUDIT_VIEW = 'finance.audit.view';
+
     private const VIEWERS = [self::PAYABLE_VIEW, self::PAYABLE_MANAGE, self::PAYMENT_RECORD, self::ACCOUNT_MANAGE];
 
     public function __construct(private PermissionChecker $permissions, private PropertyContext $property) {}
@@ -168,6 +172,15 @@ final readonly class FinanceAccess
 
         if (! $this->may($property, $actorId, self::RECURRING_VIEW) && ! $this->may($property, $actorId, self::RECURRING_MANAGE)) {
             throw Refusal::forbidden('This person may not see recurring expenses.');
+        }
+    }
+
+    public function requireCorrectionView(PropertyId $property, string $actorId): void
+    {
+        $this->assertProperty($property);
+
+        if (! $this->mayViewRevenue($property, $actorId) && ! $this->may($property, $actorId, self::CORRECTION_APPROVE)) {
+            throw Refusal::forbidden('This person may not see corrections and exceptions.');
         }
     }
 }
