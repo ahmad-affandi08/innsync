@@ -6,6 +6,7 @@ export const housekeeping = {
     'hk.nav.damage': 'Lapor kerusakan',
     'hk.damage.title': 'Lapor kerusakan',
     'hk.damage.description': 'Ada yang rusak di kamar atau area umum: sebutkan lokasi dan kerusakannya, tambahkan foto, dan Maintenance langsung mendapat work order.',
+    'hk.nav.purchasing': 'Permintaan pembelian',
     'hk.nav.frontdesk': 'Papan kamar',
     'hk.status.dirty': 'Kotor',
     'hk.status.cleaning': 'Sedang dibersihkan',

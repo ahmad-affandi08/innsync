@@ -38,8 +38,8 @@
 | TASK-FBS-030 | FR-FBS-030 | Wajib | Mengelola persediaan outlet (bar dan gudang outlet) beserta permintaan barang ke gudang utama. | TODO |
 | TASK-FBS-031 | FR-FBS-031 | Wajib | Melakukan stock opname harian untuk minuman dan bahan bar dengan pencatatan selisih. | TODO |
 | TASK-FBS-032 | FR-FBS-032 | Wajib | Menampilkan SOP tugas harian, mingguan, dan bulanan outlet beserta persentase penyelesaian yang dikirim ke Human Resource. | TODO |
-| TASK-FBS-033 | FR-FBS-033 | Wajib | Membuat laporan kerusakan yang diteruskan ke modul Maintenance. | TODO |
-| TASK-FBS-034 | FR-FBS-034 | Wajib | Mengajukan permintaan pembelian alat dan bahan ke modul Purchasing. | TODO |
+| TASK-FBS-033 | FR-FBS-033 | Wajib | Membuat laporan kerusakan yang diteruskan ke modul Maintenance. | REVIEW |
+| TASK-FBS-034 | FR-FBS-034 | Wajib | Mengajukan permintaan pembelian alat dan bahan ke modul Purchasing. | REVIEW |
 
 ## Progress notes
 
@@ -74,6 +74,12 @@
 - **Copies of the receipt.** The person needs `fnb.receipt.reprint` and a reason; each copy is counted on the bill and audited with the reason, and prints marked `COPY n`. A bill that is not paid has no receipt to copy. The first printing is free.
 - Not yet: a refund of part of a bill (by lines or by an amount), a refund by another method than the original, reversing a room charge from here, the provider side of a QRIS or card refund (there is no provider connected; the reference is kept), restoring stock.
 - Evidence: `tests/Feature/FnbSales/RefundHttpTest.php` (refund with approval from the shift, the drawer and the audit; the guards: privilege, shift, owner of the approval, open bill, room bill, once; finance keeps the fact, nets the day and its payments, raises the late exception; copies counted and audited). Seen in the browser: the copy button counting and printing, the refund dialog failing closed without a policy.
+
+### Slice 43 (2026-10-03): faults and purchase requests of the outlets
+
+- Status: `TASK-FBS-033` and `-034` are `REVIEW`. A waiter, cashier or outlet manager reports a fault of an outlet's equipment (which equipment or place, what is wrong, urgent or not, a photo): it becomes a work order of Maintenance with the department `fnb`, and the screen follows its state. The F&B menu links to the purchase requests of the department (`/inventory/requests?department=fnb`), which Purchasing owns.
+- Context: `OutletDamageReportService`, `DamageReportController` (F&B), page `fnb-sales/pages/damage-reports`, the shared `DamageReportPanel` and the Maintenance contract `DamageReporting`.
+- Evidence: `tests/Feature/Maintenance/DamageReportHttpTest.php`.
 
 ## Required engineering checks
 

@@ -50,7 +50,7 @@
 | TASK-FO-024 | FR-FO-024 | Front Office | Wajib | REVIEW |
 | TASK-FO-025 | FR-FO-025 | Front Office | Wajib | REVIEW |
 | TASK-FO-026 | FR-FO-026 | Front Office | Bisa | REVIEW |
-| TASK-FO-027 | FR-FO-027 | Front Office | Wajib | TODO |
+| TASK-FO-027 | FR-FO-027 | Front Office | Wajib | REVIEW |
 | TASK-FO-028 | FR-FO-028 | Front Office | Wajib | REVIEW |
 | TASK-FO-029 | FR-FO-029 | Front Office | Wajib | REVIEW |
 | TASK-FO-030 | FR-FO-030 | Front Office | Wajib | REVIEW |
@@ -81,7 +81,7 @@
 | TASK-HK-011 | FR-HK-011 | Housekeeping | Sebaiknya | REVIEW |
 | TASK-HK-012 | FR-HK-012 | Housekeeping | Sebaiknya | REVIEW |
 | TASK-HK-013 | FR-HK-013 | Housekeeping | Wajib | REVIEW |
-| TASK-HK-014 | FR-HK-014 | Housekeeping | Wajib | TODO |
+| TASK-HK-014 | FR-HK-014 | Housekeeping | Wajib | REVIEW |
 | TASK-HK-015 | FR-HK-015 | Housekeeping | Sebaiknya | REVIEW |
 | TASK-HK-016 | FR-HK-016 | Housekeeping | Wajib | REVIEW |
 | TASK-HK-017 | FR-HK-017 | Housekeeping | Wajib | REVIEW |
@@ -128,8 +128,8 @@
 | TASK-FBS-030 | FR-FBS-030 | F&B Service | Wajib | TODO |
 | TASK-FBS-031 | FR-FBS-031 | F&B Service | Wajib | TODO |
 | TASK-FBS-032 | FR-FBS-032 | F&B Service | Wajib | TODO |
-| TASK-FBS-033 | FR-FBS-033 | F&B Service | Wajib | TODO |
-| TASK-FBS-034 | FR-FBS-034 | F&B Service | Wajib | TODO |
+| TASK-FBS-033 | FR-FBS-033 | F&B Service | Wajib | REVIEW |
+| TASK-FBS-034 | FR-FBS-034 | F&B Service | Wajib | REVIEW |
 | TASK-KIT-001 | FR-KIT-001 | F&B Product / Kitchen | Wajib | REVIEW |
 | TASK-KIT-002 | FR-KIT-002 | F&B Product / Kitchen | Wajib | REVIEW |
 | TASK-KIT-003 | FR-KIT-003 | F&B Product / Kitchen | Wajib | REVIEW |

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Maintenance;
 
+use App\Modules\FnbSales\Application\FnbAccess;
 use App\Modules\Housekeeping\Application\HousekeepingService;
 use App\Modules\IdentityAccess\Infrastructure\Persistence\Eloquent\UserRecord;
 use App\Modules\Kitchen\Application\KitchenAccess;
@@ -31,6 +32,8 @@ final class DamageReportHttpTest extends TestCase
     private UserRecord $attendant;
 
     private UserRecord $cook;
+
+    private UserRecord $waiter;
 
     private UserRecord $tech;
 
@@ -60,6 +63,7 @@ final class DamageReportHttpTest extends TestCase
         $admin = $make([RoomCatalogService::MANAGE_PERMISSION, PropertySettingsService::MANAGE_PERMISSION]);
         $this->attendant = $make([HousekeepingService::PERFORM_PERMISSION]);
         $this->cook = $make([KitchenAccess::BOARD_OPERATE]);
+        $this->waiter = $make([FnbAccess::POS_OPERATE]);
         $this->tech = $make([MaintenanceAccess::MANAGE, MaintenanceAccess::PERFORM]);
         $this->nobody = $make(['housekeeping.view']);
         $this->actAs($admin);
@@ -135,5 +139,20 @@ final class DamageReportHttpTest extends TestCase
         $this->get('/housekeeping/damage-reports')->assertOk()->assertInertia(fn (Assert $p) => $p->has('overview.reports', 1)->where('overview.reports.0.title', 'Door sticks'));
         $this->actAs($this->nobody);
         $this->post('/kitchen/damage-reports', ['area' => 'Oven', 'category' => 'other', 'title' => 'x'], ['Accept' => 'application/json'])->assertStatus(403);
+    }
+
+    public function test_an_outlet_reports_equipment_and_only_people_of_the_outlet_may(): void
+    {
+        $this->actAs($this->waiter);
+        $this->post('/fnb/damage-reports', ['area' => 'Bar ice machine', 'category' => 'appliance', 'title' => 'Makes no ice', 'urgent' => '1'], ['Accept' => 'application/json'])->assertCreated();
+        $this->post('/fnb/damage-reports', ['category' => 'appliance', 'title' => 'x'], ['Accept' => 'application/json'])->assertStatus(422);
+        $wo = (array) DB::table('maintenance_work_orders')->first();
+        self::assertSame(['fnb', 'urgent', 'Bar ice machine'], [$wo['reporter_department'], $wo['priority'], $wo['area']]);
+        $this->get('/fnb/damage-reports')->assertOk()->assertInertia(fn (Assert $p) => $p->has('overview.reports', 1));
+        self::assertSame(1, DB::table('audit_entries')->where('action', 'fnb.damage.reported')->count());
+
+        $this->actAs($this->nobody);
+        $this->post('/fnb/damage-reports', ['area' => 'Bar', 'category' => 'other', 'title' => 'x'], ['Accept' => 'application/json'])->assertStatus(403);
+        $this->get('/fnb/damage-reports')->assertStatus(403);
     }
 }

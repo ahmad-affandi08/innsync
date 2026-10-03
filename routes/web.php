@@ -16,6 +16,7 @@ use App\Modules\Finance\Presentation\Http\Controllers\RecurringExpenseController
 use App\Modules\Finance\Presentation\Http\Controllers\RevenueController;
 use App\Modules\Finance\Presentation\Http\Controllers\SupplierPaymentController;
 use App\Modules\FnbSales\Presentation\Http\Controllers\BillController;
+use App\Modules\FnbSales\Presentation\Http\Controllers\DamageReportController as FnbDamageReportController;
 use App\Modules\FnbSales\Presentation\Http\Controllers\PaymentController;
 use App\Modules\FnbSales\Presentation\Http\Controllers\SetupController;
 use App\Modules\FrontOffice\Presentation\Http\Controllers\AvailabilityController;
@@ -558,6 +559,8 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
     $id = '[0-9a-z]{26}';
 
     Route::get('/pos', [BillController::class, 'floor'])->name('fnb.pos');
+    Route::get('/damage-reports', [FnbDamageReportController::class, 'index'])->name('fnb.damage');
+    Route::post('/damage-reports', [FnbDamageReportController::class, 'store'])->name('fnb.damage.store');
     Route::get('/shift', [PaymentController::class, 'shift'])->name('fnb.shift');
     Route::post('/shift', [PaymentController::class, 'openShift'])->middleware(['idempotent'])->name('fnb.shift.open');
     Route::post('/shift/{id}/close', [PaymentController::class, 'closeShift'])->where('id', $id)->middleware(['idempotent'])->name('fnb.shift.close');

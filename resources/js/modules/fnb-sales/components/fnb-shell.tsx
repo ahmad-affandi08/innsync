@@ -7,6 +7,8 @@ const LINKS = [
     { href: '/fnb/shift', label: 'fnb.nav.shift' },
     { href: '/fnb/outlets', label: 'fnb.nav.outlets' },
     { href: '/fnb/menu', label: 'fnb.nav.menu' },
+    { href: '/fnb/damage-reports', label: 'fnb.nav.damage' },
+    { href: '/inventory/requests?department=fnb', label: 'fnb.nav.purchasing' },
 ] as const;
 
 type Props = { title: string; description: string; children: ReactNode; actions?: ReactNode; wide?: boolean };

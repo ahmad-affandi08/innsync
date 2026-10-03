@@ -6,6 +6,7 @@ export const housekeeping = {
     'hk.nav.damage': 'Report a fault',
     'hk.damage.title': 'Report a fault',
     'hk.damage.description': 'Something broken in a room or a public area: say where and what, add a photo, and Maintenance gets a work order at once.',
+    'hk.nav.purchasing': 'Purchase requests',
     'hk.nav.frontdesk': 'Room board',
     'hk.status.dirty': 'Dirty',
     'hk.status.cleaning': 'Being cleaned',

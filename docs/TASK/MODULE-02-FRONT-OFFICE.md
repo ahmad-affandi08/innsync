@@ -42,7 +42,7 @@
 | TASK-FO-024 | FR-FO-024 | Wajib | Menerima pembayaran melalui tunai, QRIS, kartu melalui EDC, transfer bank, dan pembayaran daring dari kanal pemesanan. | REVIEW |
 | TASK-FO-025 | FR-FO-025 | Wajib | Mencatat deposit di muka dan mengurangkannya secara otomatis pada saat penyelesaian tagihan, termasuk pengembalian sisa deposit. | REVIEW |
 | TASK-FO-026 | FR-FO-026 | Bisa | Mencatat pembayaran dengan mata uang asing beserta kurs yang berlaku bila fitur diaktifkan. | REVIEW |
-| TASK-FO-027 | FR-FO-027 | Wajib | Membukukan pendapatan kamar secara otomatis ke modul Finance beserta pemisahan nilai dasar, pajak, dan service charge. | TODO |
+| TASK-FO-027 | FR-FO-027 | Wajib | Membukukan pendapatan kamar secara otomatis ke modul Finance beserta pemisahan nilai dasar, pajak, dan service charge. | REVIEW |
 | TASK-FO-028 | FR-FO-028 | Wajib | Menjalankan night audit berdasarkan business date properti: melakukan pre-check transaksi tertunda, membukukan room charge, mengunci hari yang selesai, memindahkan business date, dan menghasilkan laporan. Proses harus aman dijalankan ulang tanpa posting ganda. | REVIEW |
 | TASK-FO-029 | FR-FO-029 | Wajib | Pembayaran, refund, reversal, dan koreksi folio memiliki status dan referensi yang jelas. Refund atau reversal setelah settlement memerlukan otorisasi, alasan, jejak audit, dan tidak boleh menghapus transaksi asal. | REVIEW |
 | TASK-FO-030 | FR-FO-030 | Wajib | Mencatat permintaan tamu (guest request) dengan template bebas isi dan meneruskannya otomatis ke Housekeeping, Restoran, atau Maintenance sesuai kategori, lengkap dengan status penyelesaian. | REVIEW |
@@ -60,6 +60,10 @@
 | TASK-FO-042 | FR-FO-042 | Wajib | Menerbitkan laporan pendapatan kamar per metode pembayaran: tunai, QRIS, transfer bank, kartu, dan pembayaran kanal daring. | REVIEW |
 | TASK-FO-043 | FR-FO-043 | Wajib | Menerbitkan laporan kedatangan, keberangkatan, dan tamu menginap untuk keperluan operasional harian. | REVIEW |
 | TASK-FO-044 | FR-FO-044 | Wajib | Menerbitkan laporan okupansi, ADR, dan RevPAR per hari, bulan, dan tahun berjalan. | REVIEW |
+
+### Evidence (2026-10-03): room revenue to Finance (`FO-027`)
+
+- `TASK-FO-027` is `REVIEW`. A completed night audit publishes the revenue of its business date with the base, the service charge and the tax apart, by posting source and payment method; `FrontOfficeRevenueConsumer` books it into Finance once however often the event is delivered, and Finance reads only the event. Evidence: `tests/Feature/Finance/RevenueReconciliationHttpTest.php`, `tests/Feature/Finance/CorrectionsExceptionsAuditHttpTest.php`, `tests/Feature/FnbSales/RefundHttpTest.php`.
 
 ## Required engineering checks
 

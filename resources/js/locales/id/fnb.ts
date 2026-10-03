@@ -1,5 +1,9 @@
 export const fnb = {
     "fnb.nav.label": "Makanan dan Minuman",
+    "fnb.nav.damage": "Lapor kerusakan",
+    "fnb.nav.purchasing": "Permintaan pembelian",
+    "fnb.damage.title": "Lapor kerusakan",
+    "fnb.damage.description": "Peralatan outlet yang rusak: sebutkan yang mana dan kerusakannya, tambahkan foto, dan Maintenance langsung mendapat work order.",
     "fnb.nav.outlets": "Outlet",
     "fnb.nav.menu": "Menu",
     "home.about.fnb": "Outlet, meja dan menu restoran serta bar.",

@@ -10,6 +10,7 @@ const LINKS = [
     { href: '/housekeeping/par-levels', label: 'hk.nav.par' },
     { href: '/housekeeping/lost-found', label: 'hk.nav.lostfound' },
     { href: '/housekeeping/damage-reports', label: 'hk.nav.damage' },
+    { href: '/inventory/requests?department=housekeeping', label: 'hk.nav.purchasing' },
     { href: '/front-office/room-board', label: 'hk.nav.frontdesk' },
     { href: '/laundry/new', label: 'hk.nav.laundry' },
 ] as const;

@@ -28,7 +28,7 @@
 | TASK-HK-011 | FR-HK-011 | Sebaiknya | Sistem menghitung selisih linen yang tidak kembali dan menandainya sebagai kehilangan atau kerusakan untuk ditindaklanjuti. | REVIEW |
 | TASK-HK-012 | FR-HK-012 | Sebaiknya | Mencatat temuan barang tertinggal (lost and found) dengan foto, lokasi, tanggal, penemu, dan status pengembalian. | REVIEW |
 | TASK-HK-013 | FR-HK-013 | Wajib | Menerima permintaan tamu dari Front Office beserta batas waktu penyelesaian dan menandai status penyelesaiannya. | REVIEW |
-| TASK-HK-014 | FR-HK-014 | Wajib | Mengajukan permintaan pembelian alat dan bahan ke modul Purchasing langsung dari modul Housekeeping. | TODO |
+| TASK-HK-014 | FR-HK-014 | Wajib | Mengajukan permintaan pembelian alat dan bahan ke modul Purchasing langsung dari modul Housekeeping. | REVIEW |
 | TASK-HK-015 | FR-HK-015 | Sebaiknya | Menerbitkan laporan produktivitas: jumlah kamar dibersihkan per staf, rata-rata durasi per kamar, dan persentase penyelesaian SOP. | REVIEW |
 | TASK-HK-016 | FR-HK-016 | Wajib | Mendeteksi room status discrepancy antara Front Office dan Housekeeping (misalnya kamar menurut FO vacant tetapi menurut HK occupied/berisi barang) dan mewajibkan resolusi supervisor sebelum kamar dijual. | REVIEW |
 | TASK-HK-017 | FR-HK-017 | Wajib | Mencatat service flag DND, refused service, make-up-room, dan privacy request dengan waktu mulai/selesai tanpa mengubah occupancy status kamar. | REVIEW |
@@ -45,6 +45,8 @@
 - Status: `TASK-HK-008` is `REVIEW`. A room attendant (or anyone who performs, manages or inspects housekeeping work) opens "Report a fault", picks the room or writes the place, chooses the kind of work, says what is wrong, may mark it urgent and attach a photo; Maintenance gets a work order at once, reported for that person with the department `housekeeping`, and the screen lists the faults they reported with the state of each work order (waiting, being fixed, fixed, cancelled). The work order is the record; an audit entry names its number.
 - Context: Maintenance contract `DamageReporting` (implemented by `DamageReportService` over `WorkOrderService::report`, checking no privilege), `RoomDamageReportService`, `DamageReportController`, page `housekeeping/pages/damage-reports` over the shared `DamageReportPanel`.
 - Evidence: `tests/Feature/Maintenance/DamageReportHttpTest.php`.
+
+- `TASK-HK-014` is `REVIEW` (same slice): the housekeeping menu links to the purchase requests of its department (`/inventory/requests?department=housekeeping`), where Purchasing lists only its requests and starts a new one for housekeeping.
 
 ## Required engineering checks
 

@@ -105,6 +105,11 @@
         "kind",
         "method"
     ],
+    "fnb-sales/pages/damage-reports": [
+        "area",
+        "category",
+        "title"
+    ],
     "fnb-sales/pages/floor": [
         "covers"
     ],

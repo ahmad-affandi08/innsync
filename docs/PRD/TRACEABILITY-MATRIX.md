@@ -52,7 +52,7 @@ Every row must eventually point to implementation evidence and tests. Status is 
 | FR-FO-024 | Front Office | Wajib | ../TASK/MODULE-02-FRONT-OFFICE.md | TODO |
 | FR-FO-025 | Front Office | Wajib | ../TASK/MODULE-02-FRONT-OFFICE.md | TODO |
 | FR-FO-026 | Front Office | Bisa | ../TASK/MODULE-02-FRONT-OFFICE.md | TODO |
-| FR-FO-027 | Front Office | Wajib | ../TASK/MODULE-02-FRONT-OFFICE.md | TODO |
+| FR-FO-027 | Front Office | Wajib | ../TASK/MODULE-02-FRONT-OFFICE.md | REVIEW |
 | FR-FO-028 | Front Office | Wajib | ../TASK/MODULE-02-FRONT-OFFICE.md | TODO |
 | FR-FO-029 | Front Office | Wajib | ../TASK/MODULE-02-FRONT-OFFICE.md | TODO |
 | FR-FO-030 | Front Office | Wajib | ../TASK/MODULE-02-FRONT-OFFICE.md | TODO |
@@ -83,7 +83,7 @@ Every row must eventually point to implementation evidence and tests. Status is 
 | FR-HK-011 | Housekeeping | Sebaiknya | ../TASK/MODULE-03-HOUSEKEEPING.md | TODO |
 | FR-HK-012 | Housekeeping | Sebaiknya | ../TASK/MODULE-03-HOUSEKEEPING.md | TODO |
 | FR-HK-013 | Housekeeping | Wajib | ../TASK/MODULE-03-HOUSEKEEPING.md | TODO |
-| FR-HK-014 | Housekeeping | Wajib | ../TASK/MODULE-03-HOUSEKEEPING.md | TODO |
+| FR-HK-014 | Housekeeping | Wajib | ../TASK/MODULE-03-HOUSEKEEPING.md | REVIEW |
 | FR-HK-015 | Housekeeping | Sebaiknya | ../TASK/MODULE-03-HOUSEKEEPING.md | TODO |
 | FR-HK-016 | Housekeeping | Wajib | ../TASK/MODULE-03-HOUSEKEEPING.md | TODO |
 | FR-HK-017 | Housekeeping | Wajib | ../TASK/MODULE-03-HOUSEKEEPING.md | TODO |
@@ -130,8 +130,8 @@ Every row must eventually point to implementation evidence and tests. Status is 
 | FR-FBS-030 | F&B Service | Wajib | ../TASK/MODULE-05-FNB-SERVICE.md | TODO |
 | FR-FBS-031 | F&B Service | Wajib | ../TASK/MODULE-05-FNB-SERVICE.md | TODO |
 | FR-FBS-032 | F&B Service | Wajib | ../TASK/MODULE-05-FNB-SERVICE.md | TODO |
-| FR-FBS-033 | F&B Service | Wajib | ../TASK/MODULE-05-FNB-SERVICE.md | TODO |
-| FR-FBS-034 | F&B Service | Wajib | ../TASK/MODULE-05-FNB-SERVICE.md | TODO |
+| FR-FBS-033 | F&B Service | Wajib | ../TASK/MODULE-05-FNB-SERVICE.md | REVIEW |
+| FR-FBS-034 | F&B Service | Wajib | ../TASK/MODULE-05-FNB-SERVICE.md | REVIEW |
 | FR-KIT-001 | F&B Product / Kitchen | Wajib | ../TASK/MODULE-06-KITCHEN.md | REVIEW |
 | FR-KIT-002 | F&B Product / Kitchen | Wajib | ../TASK/MODULE-06-KITCHEN.md | REVIEW |
 | FR-KIT-003 | F&B Product / Kitchen | Wajib | ../TASK/MODULE-06-KITCHEN.md | REVIEW |

@@ -1310,6 +1310,21 @@
             "station"
         ]
     },
+    "POST /fnb/damage-reports": {
+        "required": [
+            "area",
+            "category",
+            "title"
+        ],
+        "declared": [
+            "area",
+            "category",
+            "detail",
+            "photo",
+            "title",
+            "urgent"
+        ]
+    },
     "POST /fnb/items": {
         "required": [
             "category_id",
