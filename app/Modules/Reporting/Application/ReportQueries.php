@@ -46,6 +46,27 @@ interface ReportQueries
     public function alerts(PropertyId $property, BusinessDate $today, DateTimeImmutable $nowUtc): array;
 
     /**
+     * What was paid to suppliers in the period, what is owed, and what falls due in 7 and 30 days (FR-DSH-006).
+     *
+     * @return array{paid_minor: int, owed_minor: int, overdue_minor: int, due7_minor: int, due30_minor: int, upcoming: list<array{supplier: string, document: string, due: string, owed_minor: int}>}
+     */
+    public function spend(PropertyId $property, ReportPeriod $period, BusinessDate $today): array;
+
+    /**
+     * Items below their minimum, counted by the department of the item (FR-DSH-007).
+     *
+     * @return list<array{department: string, count: int, items: list<string>}>
+     */
+    public function lowStockByDepartment(PropertyId $property): array;
+
+    /**
+     * Maintenance work now (FR-DSH-009): open, done in a window, past its due time, and the rooms out of order.
+     *
+     * @return array{open: int, done_today: int, overdue: int, out_of_order: list<string>}
+     */
+    public function maintenance(PropertyId $property, BusinessDate $today, DateTimeImmutable $fromUtc, DateTimeImmutable $toUtc, DateTimeImmutable $nowUtc): array;
+
+    /**
      * Guests registered at check-in on the dates of the period (FR-FO-040).
      *
      * @return list<array<string, mixed>> identity fields are returned in clear; the caller masks them

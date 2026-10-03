@@ -70,7 +70,7 @@ final class LeaveHttpTest extends TestCase
 
             return $user;
         };
-        $this->manager = $make([HrAccess::MANAGE, HrAccess::ROSTER, HrAccess::ATTENDANCE, HrAccess::LEAVE, PropertySettingsService::MANAGE_PERMISSION, ApprovalPolicyAdmin::MANAGE_PERMISSION]);
+        $this->manager = $make([HrAccess::MANAGE, HrAccess::ROSTER, HrAccess::ATTENDANCE, HrAccess::LEAVE, PropertySettingsService::MANAGE_PERMISSION, ApprovalPolicyAdmin::MANAGE_PERMISSION, 'reporting.dashboard.view']);
         $this->ani = $make(['housekeeping.view']);
         $this->budi = $make(['housekeeping.view']);
         $this->actAs($this->manager);
@@ -265,6 +265,9 @@ final class LeaveHttpTest extends TestCase
         self::assertNull(DB::table('hr_roster_entries')->where('employee_id', $this->emp['candra'])->where('work_date', '2026-10-05')->first());
         $rows = collect($this->get('/hr/attendance?date=2026-10-05')->viewData('page')['props']['overview']['day']['rows'])->pluck('employee.name')->all();
         self::assertNotContains('Candra', $rows);
+        $staff = collect($this->get('/dashboard')->assertOk()->viewData('page')['props']['snapshot']['cards'])->firstWhere('key', 'staff')['values'];
+        self::assertSame([['name' => 'Candra', 'department' => 'housekeeping', 'type' => 'SL']], $staff['leave']);
+        self::assertSame([0, []], [$staff['off'], $staff['absent']]);
 
         // The person who asked for another takes the decision; a day with attendance cannot be taken.
         $this->post('/hr/attendance/manual', ['employee_id' => $this->emp['budi'], 'work_date' => '2026-10-05', 'in_time' => '07:00', 'out_time' => null, 'reason' => 'Phone'], [...$this->key(), 'Accept' => 'application/json'])->assertCreated();

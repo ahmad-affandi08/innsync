@@ -93,6 +93,21 @@ final readonly class DashboardService
             }
         }
 
+        // FR-DSH-006: what was paid to suppliers, what is owed and what falls due, for those who see the payables.
+        if ($this->mayAny($actorId, $property, ['finance.payable.view', 'finance.payable.manage', 'finance.payment.record'])) {
+            $cards[] = $this->card('spend', 'period', $period, $asOf, '/finance/payables', $this->queries->spend($property, $period, $today));
+        }
+
+        // FR-DSH-007: items below their minimum, by department of the item.
+        if ($this->mayAny($actorId, $property, ['inventory.stock.view', 'inventory.catalog.view'])) {
+            $cards[] = $this->card('stock', 'now', $today->toString(), $asOf, '/inventory/stock', ['departments' => $this->queries->lowStockByDepartment($property)]);
+        }
+
+        // FR-DSH-009: maintenance work running, done today, past its time, and the rooms out of order.
+        if ($this->mayAny($actorId, $property, ['maintenance.work.manage', 'maintenance.work.perform', 'maintenance.work.report'])) {
+            $cards[] = $this->card('maintenance', 'now', $today->toString(), $asOf, '/maintenance', $this->queries->maintenance($property, $today, $zone->utcAt(CalendarDate::fromString($today->toString())), $zone->utcAt(CalendarDate::fromString($today->next()->toString())), $now));
+        }
+
         $alerts = [];
 
         foreach ($this->queries->alerts($property, $today, $this->clock->nowUtc()) as $code => $alert) {
@@ -139,6 +154,18 @@ final readonly class DashboardService
             'href' => $href,
             'values' => $values,
         ];
+    }
+
+    /** @param list<string> $permissions */
+    private function mayAny(string $actorId, PropertyId $property, array $permissions): bool
+    {
+        foreach ($permissions as $permission) {
+            if ($this->permissions->allowsInProperty($actorId, $permission, $property)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private function assertProperty(PropertyId $property): void

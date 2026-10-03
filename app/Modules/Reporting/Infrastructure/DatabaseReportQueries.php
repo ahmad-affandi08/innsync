@@ -179,6 +179,59 @@ final readonly class DatabaseReportQueries implements ReportQueries
         return $alerts;
     }
 
+    public function spend(PropertyId $property, ReportPeriod $period, BusinessDate $today): array
+    {
+        $pid = $property->toString();
+        $paid = (int) DB::table('ap_payments')->where('property_id', $pid)->whereIn('status', ['paid', 'reversal'])->whereBetween('paid_on', [$period->from->toString(), $period->to->toString()])
+            ->selectRaw("COALESCE(SUM(CASE WHEN status = 'reversal' THEN -amount_minor ELSE amount_minor END), 0) as n")->value('n');
+        $settled = DB::table('ap_payments')->whereIn('status', ['paid', 'reversal'])->groupBy('payable_id')->selectRaw("payable_id, SUM(CASE WHEN status = 'reversal' THEN -amount_minor ELSE amount_minor END) as paid");
+        $credited = DB::table('ap_credit_applications')->groupBy('payable_id')->selectRaw('payable_id, SUM(amount_minor) as credit');
+        $owed = DB::table('ap_payables as p')->leftJoinSub($settled, 'x', 'x.payable_id', '=', 'p.id')->leftJoinSub($credited, 'y', 'y.payable_id', '=', 'p.id')->where('p.property_id', $pid)
+            ->whereRaw('(p.amount_minor - COALESCE(x.paid, 0) - COALESCE(y.credit, 0)) > 0')->selectRaw('p.supplier_name, p.document_number, p.due_date, (p.amount_minor - COALESCE(x.paid, 0) - COALESCE(y.credit, 0)) as owed');
+        $rows = $owed->get();
+        $day = $today->toString();
+        $sum = static fn (callable $keep): int => (int) $rows->filter($keep)->sum('owed');
+
+        return [
+            'paid_minor' => $paid, 'owed_minor' => (int) $rows->sum('owed'), 'overdue_minor' => $sum(static fn ($r): bool => $r->due_date < $day),
+            'due7_minor' => $sum(static fn ($r): bool => $r->due_date >= $day && $r->due_date <= $today->addDays(7)->toString()), 'due30_minor' => $sum(static fn ($r): bool => $r->due_date >= $day && $r->due_date <= $today->addDays(30)->toString()),
+            'upcoming' => $rows->filter(static fn ($r): bool => $r->due_date >= $day && $r->due_date <= $today->addDays(30)->toString())->sortBy('due_date')->take(self::ALERT_EXAMPLES)
+                ->map(static fn ($r): array => ['supplier' => $r->supplier_name, 'document' => $r->document_number, 'due' => (string) $r->due_date, 'owed_minor' => (int) $r->owed])->values()->all(),
+        ];
+    }
+
+    public function lowStockByDepartment(PropertyId $property): array
+    {
+        $pid = $property->toString();
+        $moved = DB::table('stock_movements')->where('property_id', $pid)->groupBy('item_id', 'location_id')->selectRaw('item_id, location_id, SUM(base_qty_milli) as balance');
+        $rows = DB::table('inventory_stock_limits as l')->join('inventory_items as i', 'i.id', '=', 'l.item_id')->join('inventory_locations as loc', 'loc.id', '=', 'l.location_id')
+            ->leftJoinSub($moved, 'm', fn ($j) => $j->on('m.item_id', '=', 'l.item_id')->on('m.location_id', '=', 'l.location_id'))
+            ->where('l.property_id', $pid)->where('i.is_active', true)->where('loc.is_active', true)->where('l.min_milli', '>', 0)->whereRaw('COALESCE(m.balance, 0) < l.min_milli')
+            ->orderBy('i.department')->orderBy('i.code')->get(['i.department', 'i.code as item', 'loc.code as location']);
+        $out = [];
+
+        foreach ($rows->groupBy('department') as $department => $group) {
+            $out[] = ['department' => (string) $department, 'count' => $group->count(), 'items' => $group->take(self::ALERT_EXAMPLES)->map(static fn ($r): string => $r->item.' · '.$r->location)->values()->all()];
+        }
+
+        return $out;
+    }
+
+    public function maintenance(PropertyId $property, BusinessDate $today, DateTimeImmutable $fromUtc, DateTimeImmutable $toUtc, DateTimeImmutable $nowUtc): array
+    {
+        $pid = $property->toString();
+        $open = DB::table('maintenance_work_orders')->where('property_id', $pid)->whereIn('status', ['open', 'assigned', 'in_progress', 'on_hold']);
+        $rooms = DB::table('room_blocks as b')->join('rooms', 'rooms.id', '=', 'b.room_id')->where('b.property_id', $pid)->where('b.kind', 'out_of_order')->whereNull('b.released_at')
+            ->where('b.start_date', '<=', $today->toString())->where('b.end_date', '>=', $today->toString())->distinct()->orderBy('rooms.number')->pluck('rooms.number');
+
+        return [
+            'open' => (clone $open)->count(),
+            'done_today' => DB::table('maintenance_work_orders')->where('property_id', $pid)->where('status', 'done')->where('done_at', '>=', $fromUtc->format('Y-m-d H:i:s.u'))->where('done_at', '<', $toUtc->format('Y-m-d H:i:s.u'))->count(),
+            'overdue' => (clone $open)->where('due_at', '<', $nowUtc->format('Y-m-d H:i:s.u'))->count(),
+            'out_of_order' => $rooms->map(static fn ($n): string => (string) $n)->all(),
+        ];
+    }
+
     public function registrations(PropertyId $property, ReportPeriod $period, ?string $nationality, bool $foreignOnly): array
     {
         $query = DB::table('stays as s')

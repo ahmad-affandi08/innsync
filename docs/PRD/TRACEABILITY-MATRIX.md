@@ -9,10 +9,10 @@ Every row must eventually point to implementation evidence and tests. Status is 
 | FR-DSH-003 | Dashboard Manajemen | Wajib | ../TASK/MODULE-01-DASHBOARD.md | TODO |
 | FR-DSH-004 | Dashboard Manajemen | Wajib | ../TASK/MODULE-01-DASHBOARD.md | TODO |
 | FR-DSH-005 | Dashboard Manajemen | Wajib | ../TASK/MODULE-01-DASHBOARD.md | TODO |
-| FR-DSH-006 | Dashboard Manajemen | Wajib | ../TASK/MODULE-01-DASHBOARD.md | TODO |
-| FR-DSH-007 | Dashboard Manajemen | Wajib | ../TASK/MODULE-01-DASHBOARD.md | TODO |
-| FR-DSH-008 | Dashboard Manajemen | Wajib | ../TASK/MODULE-01-DASHBOARD.md | TODO |
-| FR-DSH-009 | Dashboard Manajemen | Wajib | ../TASK/MODULE-01-DASHBOARD.md | TODO |
+| FR-DSH-006 | Dashboard Manajemen | Wajib | ../TASK/MODULE-01-DASHBOARD.md | REVIEW |
+| FR-DSH-007 | Dashboard Manajemen | Wajib | ../TASK/MODULE-01-DASHBOARD.md | REVIEW |
+| FR-DSH-008 | Dashboard Manajemen | Wajib | ../TASK/MODULE-01-DASHBOARD.md | REVIEW |
+| FR-DSH-009 | Dashboard Manajemen | Wajib | ../TASK/MODULE-01-DASHBOARD.md | REVIEW |
 | FR-DSH-010 | Dashboard Manajemen | Sebaiknya | ../TASK/MODULE-01-DASHBOARD.md | TODO |
 | FR-DSH-011 | Dashboard Manajemen | Sebaiknya | ../TASK/MODULE-01-DASHBOARD.md | TODO |
 | FR-DSH-012 | Dashboard Manajemen | Sebaiknya | ../TASK/MODULE-01-DASHBOARD.md | TODO |

@@ -58,6 +58,7 @@ final readonly class AttendanceService
         private AttendanceStore $store,
         private RosterStore $roster,
         private OvertimeStore $overtime,
+        private LeaveStore $leave,
         private EmployeeStore $employees,
         private HrAccess $access,
         private PropertyTimeZoneReader $zones,
@@ -341,7 +342,7 @@ final readonly class AttendanceService
         }
     }
 
-    /** @return array{expected: int, present: int, groups: list<array{department: string, code: string, expected: int, present: int}>} */
+    /** @return array{expected: int, present: int, groups: list<array{department: string, code: string, expected: int, present: int}>, off: int, leave: list<array{name: string, department: string, type: string}>, absent: list<array{name: string, department: string}>} */
     public function onDuty(PropertyId $property): array
     {
         $tz = $this->zone($property);
@@ -377,7 +378,43 @@ final readonly class AttendanceService
         ksort($groups);
         $list = array_values($groups);
 
-        return ['expected' => array_sum(array_column($list, 'expected')), 'present' => array_sum(array_column($list, 'present')), 'groups' => $list];
+        // The rest of today's staffing (FR-DSH-008): who has the day off, who is on leave or a permit and of what kind, and who was planned and did not come.
+        $settings = $this->settings($property);
+        $todayRecords = [];
+
+        foreach ($this->store->between($property, $today, $today, null) as $r) {
+            $todayRecords[$r['employee_id']] = $r;
+        }
+
+        $off = 0;
+        $absent = [];
+
+        foreach ($this->roster->entriesBetween($property, $today, $today, null) as $e) {
+            if ($e['employee_status'] !== 'active') {
+                continue;
+            }
+
+            if ((bool) $e['is_off']) {
+                $off++;
+
+                continue;
+            }
+
+            if ($this->evaluate($e, $todayRecords[$e['employee_id']] ?? null, $settings, $now, $tz)['status'] === 'absent') {
+                $absent[] = ['name' => $e['full_name'], 'department' => $e['department']];
+            }
+        }
+
+        $leave = [];
+
+        foreach ($this->leave->daysBetween($property, $today, $today, null) as $l) {
+            $person = $this->employees->employee($property, $l['employee_id']);
+            $leave[] = ['name' => $person['full_name'] ?? '', 'department' => $person['department'] ?? '', 'type' => $l['type_code']];
+        }
+
+        usort($leave, static fn (array $a, array $b): int => strcmp($a['name'], $b['name']));
+
+        return ['expected' => array_sum(array_column($list, 'expected')), 'present' => array_sum(array_column($list, 'present')), 'groups' => $list, 'off' => $off, 'leave' => $leave, 'absent' => $absent];
     }
 
     /**

@@ -77,6 +77,9 @@ export default function DashboardPage({ currency, preferences, snapshot: s, tv }
                                 {c.key === 'activity' && <p>{t('rpt.card.activity.line', { in: c.values.checked_in, out: c.values.checked_out, new: c.values.new_reservations })}</p>}
                                 {c.key === 'staff' && <p className="text-5xl font-semibold">{c.values.present}<span className="text-2xl font-normal"> / {c.values.expected}</span></p>}
                                 {c.key === 'revenue' && <p className="text-5xl font-semibold">{format.money((c.values.net as Money).total, currency)}</p>}
+                                {c.key === 'spend' && <p className="text-5xl font-semibold">{format.money(c.values.owed_minor, currency)}</p>}
+                                {c.key === 'stock' && <p className="text-5xl font-semibold">{((c.values.departments ?? []) as { count: number }[]).reduce((n, d) => n + d.count, 0)}</p>}
+                                {c.key === 'maintenance' && <p className="text-5xl font-semibold">{c.values.open}<span className="text-2xl font-normal"> · {t('rpt.card.maintenance.overdue', { n: c.values.overdue })}</span></p>}
                             </article>
                         ))}
                     </div>
@@ -152,6 +155,41 @@ export default function DashboardPage({ currency, preferences, snapshot: s, tv }
                             <>
                                 <p className="text-3xl font-semibold tabular-nums tracking-tight" data-testid="staff-line">{t('rpt.card.staff.line', { present: c.values.present, expected: c.values.expected })}</p>
                                 <ul className="flex flex-col gap-1 text-sm">{((c.values.groups ?? []) as { department: string; code: string; expected: number; present: number }[]).map((g) => <li className="flex justify-between" key={`${g.department}-${g.code}`}><span>{t(`hr.department.${g.department}` as 'hr.department.general')} · {g.code}</span><span className="tabular-nums">{g.present}/{g.expected}</span></li>)}</ul>
+                                <p className="text-sm" data-testid="staff-off">{t('rpt.card.staff.off', { n: c.values.off ?? 0 })}</p>
+                                {((c.values.leave ?? []) as { name: string; type: string }[]).length > 0 ? <p className="text-sm" data-testid="staff-leave">{t('rpt.card.staff.leave')}: {((c.values.leave ?? []) as { name: string; type: string }[]).map((l) => `${l.name} (${l.type})`).join(', ')}</p> : null}
+                                {((c.values.absent ?? []) as { name: string }[]).length > 0 ? <p className="text-sm text-danger" data-testid="staff-absent">{t('rpt.card.staff.absent')}: {((c.values.absent ?? []) as { name: string }[]).map((a) => a.name).join(', ')}</p> : null}
+                            </>
+                        )}
+                        {c.key === 'spend' && (
+                            <>
+                                <p className="text-3xl font-semibold tabular-nums tracking-tight" data-testid="spend-paid">{format.money(c.values.paid_minor, currency)}</p>
+                                <dl className="grid grid-cols-[1fr_auto] gap-x-4 gap-y-1 text-sm [&>dd]:text-right [&>dd]:tabular-nums">
+                                    <dt>{t('rpt.card.spend.owed')}</dt><dd>{format.money(c.values.owed_minor, currency)}</dd>
+                                    <dt>{t('rpt.card.spend.overdue')}</dt><dd>{format.money(c.values.overdue_minor, currency)}</dd>
+                                    <dt>{t('rpt.card.spend.due7')}</dt><dd>{format.money(c.values.due7_minor, currency)}</dd>
+                                    <dt>{t('rpt.card.spend.due30')}</dt><dd>{format.money(c.values.due30_minor, currency)}</dd>
+                                </dl>
+                                <ul className="flex flex-col gap-1 text-xs text-muted-foreground">{((c.values.upcoming ?? []) as { supplier: string; document: string; due: string; owed_minor: number }[]).map((u) => <li key={`${u.supplier}-${u.document}`}>{format.date(u.due, 'short')} · {u.supplier} · {u.document} · {format.money(u.owed_minor, currency)}</li>)}</ul>
+                            </>
+                        )}
+                        {c.key === 'stock' && (
+                            <>
+                                {((c.values.departments ?? []) as { department: string; count: number; items: string[] }[]).length === 0 ? <p className="text-sm" data-testid="stock-none">{t('rpt.card.stock.none')}</p> : (
+                                    <ul className="flex flex-col gap-2 text-sm" data-testid="stock-departments">{((c.values.departments ?? []) as { department: string; count: number; items: string[] }[]).map((d) => <li key={d.department}><span className="flex justify-between font-medium"><span className="capitalize">{d.department.replace('_', ' ')}</span><span className="tabular-nums">{d.count}</span></span><span className="block text-xs text-muted-foreground">{d.items.join(', ')}</span></li>)}</ul>
+                                )}
+                            </>
+                        )}
+                        {c.key === 'maintenance' && (
+                            <>
+                                <dl className="grid grid-cols-3 gap-4" data-testid="maintenance-line">
+                                    {([['open', c.values.open], ['done', c.values.done_today], ['overdue', c.values.overdue]] as const).map(([k, n]) => (
+                                        <div key={k}>
+                                            <dd className="text-3xl font-semibold tabular-nums tracking-tight">{String(n)}</dd>
+                                            <dt className="text-xs text-muted-foreground">{t(`rpt.card.maintenance.${k}` as 'rpt.card.maintenance.open')}</dt>
+                                        </div>
+                                    ))}
+                                </dl>
+                                <p className="text-sm">{(c.values.out_of_order as string[]).length === 0 ? t('rpt.card.maintenance.noOoo') : t('rpt.card.maintenance.ooo', { rooms: (c.values.out_of_order as string[]).join(', ') })}</p>
                             </>
                         )}
                         {c.key === 'revenue' && (
