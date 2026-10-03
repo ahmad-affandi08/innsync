@@ -26,7 +26,7 @@
 | TASK-INV-007 | FR-INV-007 | Sebaiknya | Menghitung nilai persediaan menggunakan metode rata-rata bergerak dan menyajikannya sebagai laporan nilai persediaan per tanggal. | REVIEW |
 | TASK-INV-008 | FR-INV-008 | Sebaiknya | Mengelola tanggal kedaluwarsa dan nomor batch untuk barang konsumsi. | REVIEW |
 | TASK-INV-009 | FR-INV-009 | Wajib | Konversi satuan bersifat berversi dan tidak boleh mengubah histori transaksi; setiap mutasi menyimpan kuantitas satuan transaksi dan ekuivalen satuan dasar. | REVIEW |
-| TASK-INV-010 | FR-INV-010 | Wajib | Stock adjustment, write-off, dan pembukaan stok negatif memerlukan reason code dan otorisasi sesuai threshold. Kebijakan stok negatif dapat diblokir per kategori/lokasi. | IN_PROGRESS |
+| TASK-INV-010 | FR-INV-010 | Wajib | Stock adjustment, write-off, dan pembukaan stok negatif memerlukan reason code dan otorisasi sesuai threshold. Kebijakan stok negatif dapat diblokir per kategori/lokasi. | REVIEW |
 | TASK-INV-011 | FR-INV-011 | Wajib | Mendukung retur ke pemasok dan retur antar gudang dengan dokumen referensi sehingga stok, hutang/kredit, dan histori barang tetap dapat direkonsiliasi. | REVIEW |
 | TASK-INV-012 | FR-INV-012 | Wajib | Stock opname menggunakan snapshot waktu mulai; mutasi selama opname tetap tercatat dan sistem menghitung expected quantity yang konsisten untuk mencegah selisih semu. | REVIEW |
 | TASK-PUR-001 | FR-PUR-001 | Wajib | Setiap department mengajukan permintaan pembelian (purchase request) berisi barang, jumlah, alasan, dan tingkat urgensi. | REVIEW |
@@ -49,6 +49,12 @@
 - Context: migration 93 (`inventory_lots`: batch number, expiry date, quantity received and left), `StockPoster` (makes the batch on an inflow, takes from batches on an outflow), `StockLotService` and page `inventory-purchasing/pages/lots`; a goods receipt line with an expiry date makes a batch numbered with the receipt; the stock movement form takes a batch number and an expiry date for an opening, a receipt and an adjustment in; the dashboard has an alert for batches expired or about to expire.
 - Not yet: carrying a batch with a transfer to another location, choosing the batch of an outflow by hand, writing a batch off as a whole.
 - Evidence: `tests/Feature/InventoryPurchasing/StockMovementHttpTest.php` (batches made by inflows, first-expired-first-out across batches, expired stock refused, the list with its states and filters, who may see it).
+
+### Evidence (2026-10-03): approval of a large adjustment or write-off (`INV-010`)
+
+- `TASK-INV-010` is `REVIEW`. An adjustment, a write-off and the opening of negative stock already needed the privilege, a reason code and, for the negative balance, the reason of a person with `inventory.stock.negative` (BR-007; the category and the location can forbid it). What was missing was the threshold approval, which waited for valuation (FR-INV-007, now built). The approval subject `inventory.stock.adjust` is declared in `config/approvals.php` (not mandatory): the owner configures the amount band and the approver in the approval policies, and with no policy for the amount nothing more is needed. The amount is the value of the movement at the moving average (or at the cost given, for stock that comes in).
+- When the policy requires it, the posting is refused with 409 `approval_required` and nothing is booked (the check runs inside the transaction of the posting). The person asks with `POST /inventory/stock/adjustment-approval` (what is asked is exactly what is posted later: kind, item, location, unit, quantity and reason are fingerprinted), another person decides, and the same posting sent again uses the approval once: the person's own approved, unused request is found, or it is named with `approval_id`. An approval does not cover another quantity or another kind of movement, and cannot be used twice. The stock page shows the need, offers to ask, and tells the person to post again once decided.
+- Evidence: `tests/Feature/InventoryPurchasing/StockMovementHttpTest.php` (`test_a_large_adjustment_or_write_off_needs_an_approved_request_when_the_policy_says_so_and_uses_it_once`). `TASK-INV-004` stays `IN_PROGRESS`: it still needs its automatic feeders (kitchen, housekeeping and engineering usage).
 
 ## Required engineering checks
 

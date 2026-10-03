@@ -141,6 +141,30 @@ final readonly class StockPoster
         return ['movement' => $this->shape($row, $item), 'replayed' => false];
     }
 
+    /**
+     * What a movement of this quantity is worth, before it is posted, for a person who has to ask for approval first (FR-INV-010). The same figure `post` will book: the moving average, or the
+     * cost given for stock that comes in.
+     *
+     * @param  array<string, mixed>  $item
+     */
+    public function estimate(PropertyId $property, array $item, string $kind, string $unit, int $qtyMilli, ?int $unitCostMinor): int
+    {
+        if ($unit === $item['base_unit']) {
+            $factor = 1000;
+        } else {
+            $current = $this->inventory->currentUnit($property, $item['id'], $unit) ?? throw Refusal::invalid('This item has no conversion for that unit.', ['unit']);
+            $factor = (int) $current['factor_milli'];
+        }
+
+        try {
+            $base = StockQuantity::toBase($qtyMilli, $factor);
+        } catch (InvalidArgumentException $e) {
+            throw Refusal::invalid($e->getMessage(), ['quantity']);
+        }
+
+        return $this->valueOf($property, $item, $kind, $unit, $qtyMilli, $base, $unitCostMinor, null);
+    }
+
     /** The value, a magnitude in minor units, of a movement of `$base` base thousandths. */
     private function valueOf(PropertyId $property, array $item, string $kind, string $unit, int $qtyMilli, int $base, ?int $unitCostMinor, ?int $fixedValueMinor): int
     {

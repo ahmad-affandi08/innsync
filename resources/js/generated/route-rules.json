@@ -4428,6 +4428,28 @@
             "min"
         ]
     },
+    "POST /inventory/stock/adjustment-approval": {
+        "required": [
+            "item_id",
+            "kind",
+            "location_id",
+            "quantity",
+            "reason_code",
+            "unit",
+            "why"
+        ],
+        "declared": [
+            "item_id",
+            "kind",
+            "location_id",
+            "note",
+            "quantity",
+            "reason_code",
+            "unit",
+            "unit_cost_minor",
+            "why"
+        ]
+    },
     "POST /inventory/stock/movements": {
         "required": [
             "item_id",
@@ -4437,6 +4459,7 @@
             "unit"
         ],
         "declared": [
+            "approval_id",
             "expires_on",
             "item_id",
             "kind",

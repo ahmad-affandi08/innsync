@@ -72,6 +72,7 @@ Release notes for every release (NFR-14). Newest first. Each entry names the tas
 - TASK-FO-015 (BR-009): a returning guest found by identity document brings the earlier registration to fill in (for those who may read identity), the earlier stays and the guest's preferences, which are kept for the person, encrypted, saved at check-in and editable on the stay.
 - TASK-LDY-011 (BR-005): the staff who work the laundry are told by e-mail, once, when an order is past its promised time (`laundry:escalate`, every ten minutes).
 - TASK-DSH-002, TASK-DSH-004, TASK-DSH-020: the room board shows sellability and the service flags of the guests; revenue per outlet includes POS sales paid by cash, card or QRIS; the alert centre adds unknown payments, negative stock, work orders past due and offline entries to reconcile.
+- TASK-INV-010 (BR-004, BR-007): a stock adjustment or write-off above the value the owner sets needs an approved request first (approval subject `inventory.stock.adjust`); the approval is for exactly what was asked and is used once; with no policy only the privilege and a reason are needed.
 
 ### Fixed
 

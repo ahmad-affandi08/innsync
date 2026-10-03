@@ -517,4 +517,7 @@ export const inventory = {
     "inv.pset.periodHint": "Year and month, for example 2026-10.",
     "inv.pset.amount": "Budget",
     "inv.pset.amountIn": "Budget for the month ({currency})",
+    "inv.move.approvalNeeded": "This is large enough to need an approval first. Ask for one, then post it again once it is approved.",
+    "inv.move.requestApproval": "Ask for approval",
+    "inv.move.approvalAsked": "Approval asked. Once an approver has decided, post it again.",
 } as const

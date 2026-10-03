@@ -26,7 +26,7 @@ final readonly class StockMovementController
         $data = $request->validate([
             'kind' => ['required', 'string', 'max:14'], 'item_id' => ['required', 'string', 'size:26'], 'location_id' => ['required', 'string', 'size:26'], 'unit' => ['required', 'string', 'max:8'],
             'quantity' => ['required', 'string', 'max:14'], 'reason_code' => ['nullable', 'string', 'max:16'], 'reference' => ['nullable', 'string', 'max:40'], 'note' => ['nullable', 'string', 'max:200'],
-            'negative_reason' => ['nullable', 'string', 'max:200'], 'unit_cost_minor' => ['nullable', 'integer', 'min:0', 'max:10000000000'],
+            'negative_reason' => ['nullable', 'string', 'max:200'], 'unit_cost_minor' => ['nullable', 'integer', 'min:0', 'max:10000000000'], 'approval_id' => ['nullable', 'string', 'size:26'],
             'lot_number' => ['nullable', 'string', 'max:40'], 'expires_on' => ['nullable', 'date_format:Y-m-d'],
         ]);
         $property = $this->property->current();
@@ -43,12 +43,24 @@ final readonly class StockMovementController
             'opening' => $this->stock->postOpening($property, $actor, $data['item_id'], $data['location_id'], $data['unit'], $data['quantity'], $reference, $note, $cost, $lot),
             'receipt' => $this->movements->receive($property, $actor, $data['item_id'], $data['location_id'], $data['unit'], $data['quantity'], $reference, $note, null, null, $key, $cost, $lot),
             'issue' => $this->movements->issue($property, $actor, $data['item_id'], $data['location_id'], $data['unit'], $data['quantity'], (string) $reason, $reference, $note, $negative, null, null, $key),
-            'adjustment_in', 'adjustment_out' => $this->movements->adjust($property, $actor, $data['kind'] === 'adjustment_in', $data['item_id'], $data['location_id'], $data['unit'], $data['quantity'], (string) $reason, $reference, $note, $negative, $key, $cost, $lot),
-            'write_off' => $this->movements->writeOff($property, $actor, $data['item_id'], $data['location_id'], $data['unit'], $data['quantity'], (string) $reason, $reference, $note, $negative, $key),
+            'adjustment_in', 'adjustment_out' => $this->movements->adjust($property, $actor, $data['kind'] === 'adjustment_in', $data['item_id'], $data['location_id'], $data['unit'], $data['quantity'], (string) $reason, $reference, $note, $negative, $key, $cost, $lot, $data['approval_id'] ?? null),
+            'write_off' => $this->movements->writeOff($property, $actor, $data['item_id'], $data['location_id'], $data['unit'], $data['quantity'], (string) $reason, $reference, $note, $negative, $key, $data['approval_id'] ?? null),
             default => throw Refusal::invalid('Choose the kind of movement.', ['kind']),
         };
 
         return $this->json(['movement' => $movement], 201);
+    }
+
+    /** Asks for the approval a large adjustment or write-off needs; the same request is posted again once it is approved. */
+    public function requestApproval(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'kind' => ['required', 'string', 'max:14'], 'item_id' => ['required', 'string', 'size:26'], 'location_id' => ['required', 'string', 'size:26'], 'unit' => ['required', 'string', 'max:8'], 'quantity' => ['required', 'string', 'max:14'],
+            'reason_code' => ['required', 'string', 'max:16'], 'note' => ['nullable', 'string', 'max:200'], 'unit_cost_minor' => ['nullable', 'integer', 'min:0', 'max:10000000000'], 'why' => ['required', 'string', 'max:300'],
+        ]);
+        $approval = $this->movements->requestApproval($this->property->current(), $this->actor($request), $data['kind'], $data['item_id'], $data['location_id'], $data['unit'], $data['quantity'], $data['reason_code'], $data['note'] ?? null, isset($data['unit_cost_minor']) ? (int) $data['unit_cost_minor'] : null, $data['why'], IdempotencyKey::fromString((string) $request->header('Idempotency-Key')));
+
+        return $this->json(['approval' => ['id' => $approval->id, 'status' => $approval->status]], 201);
     }
 
     public function transfersPage(Request $request): Response

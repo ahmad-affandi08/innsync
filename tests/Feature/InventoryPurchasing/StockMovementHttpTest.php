@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\InventoryPurchasing;
 
+use App\Modules\IdentityAccess\Application\Approval\ApprovalPolicyAdmin;
+use App\Modules\IdentityAccess\Application\Approval\ApprovalService;
+use App\Modules\IdentityAccess\Infrastructure\Persistence\Eloquent\UserRecord;
 use App\Modules\InventoryPurchasing\Application\InventoryCatalogService;
 use App\Modules\InventoryPurchasing\Application\StockMovementService;
 use App\Modules\InventoryPurchasing\Application\StockPoster;
@@ -181,6 +184,54 @@ final class StockMovementHttpTest extends TestCase
         $this->postJson("/inventory/categories/{$this->category}", ['name' => 'Beverages', 'active' => true, 'negative_blocked' => true, 'lock_version' => 0])->assertOk();
         $this->move($body, 409);
         $this->assertSame(100_000, $this->balance($this->main));
+    }
+
+    public function test_a_large_adjustment_or_write_off_needs_an_approved_request_when_the_policy_says_so_and_uses_it_once(): void
+    {
+        $this->as([ApprovalPolicyAdmin::MANAGE_PERMISSION]);
+        $this->postJson('/approvals/policies', ['subject_type' => 'inventory.stock.adjust', 'band_min_amount_minor' => 5_000, 'steps' => [['permission' => 'inventory.test.approve']], 'reason' => 'Owner policy'])->assertCreated();
+        $this->as([StockMovementService::ADJUST_PERMISSION]);
+
+        $row = fn (string $kind, string $quantity, string $reason): array => ['kind' => $kind, 'item_id' => $this->item, 'location_id' => $this->main, 'unit' => 'BTL', 'quantity' => $quantity, 'reason_code' => $reason];
+        $ask = fn (array $body, string $why = 'A pallet fell'): TestResponse => $this->postJson('/inventory/stock/adjustment-approval', [...$body, 'why' => $why], ['Idempotency-Key' => 'ask-'.(++$this->keys).'-'.str_repeat('x', 20)]);
+
+        // Below the band it is as before.
+        $this->move($row('adjustment_out', '3', 'damaged'));
+        self::assertSame(97_000, $this->balance($this->main));
+
+        // Above it nothing is posted until an approver has decided, and a refusal leaves the books as they were.
+        $big = $row('adjustment_out', '10', 'damaged');
+        $this->move($big, 409)->assertJsonPath('error.conflict.reason', 'approval_required');
+        self::assertSame(97_000, $this->balance($this->main));
+
+        $ask($row('adjustment_out', '10', 'nonsense'))->assertStatus(422);
+        $ask($big, ' ')->assertStatus(422);
+        $approval = (string) $ask($big)->assertCreated()->assertJsonPath('approval.status', 'pending')->json('approval.id');
+        $this->move($big, 409);
+
+        $approver = UserRecord::factory()->create();
+        $this->grant($approver, self::A, ['inventory.test.approve']);
+        app(PropertyContext::class)->activate(PropertyId::fromString(self::A));
+        app(ApprovalService::class)->approve(PropertyId::fromString(self::A), $approval, strtolower((string) $approver->getKey()));
+
+        // The approval is for exactly what was asked: another quantity or another kind is not covered by it.
+        $this->move($row('adjustment_out', '11', 'damaged'), 409);
+        $this->move($row('write_off', '10', 'damaged'), 409);
+        $this->move($big)->assertJsonPath('movement.base_qty_milli', -10_000);
+        self::assertSame(87_000, $this->balance($this->main));
+
+        // And it is used once.
+        $this->move($big, 409);
+        self::assertSame(87_000, $this->balance($this->main));
+
+        // A write-off is guarded the same way, and the approval can be named.
+        $write = $row('write_off', '8', 'expired');
+        $this->move($write, 409);
+        $second = (string) $ask($write, 'Past the date')->assertCreated()->json('approval.id');
+        app(PropertyContext::class)->activate(PropertyId::fromString(self::A));
+        app(ApprovalService::class)->approve(PropertyId::fromString(self::A), $second, strtolower((string) $approver->getKey()));
+        $this->move([...$write, 'approval_id' => $second])->assertJsonPath('movement.base_qty_milli', -8_000);
+        self::assertSame(79_000, $this->balance($this->main));
     }
 
     public function test_an_adjustment_and_a_write_off_need_the_privilege_and_a_reason(): void

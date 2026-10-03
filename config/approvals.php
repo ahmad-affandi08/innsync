@@ -22,6 +22,9 @@ return [
         // the chain by amount band; with no policy for an amount, the document needs no approval.
         'inventory.purchase-request' => ['mandatory' => false],
         'inventory.purchase-order' => ['mandatory' => false],
+        // FR-INV-010: a stock adjustment or a write-off beyond the value the owner sets needs a second person. The amount band is the value of the movement at the moving average; with no policy for
+        // the amount it needs only the privilege and a reason.
+        'inventory.stock.adjust' => ['mandatory' => false],
         // FR-FIN-018: a payment to a supplier above the threshold the owner sets needs a second person; with no policy for the amount it is paid when recorded.
         'finance.supplier-payment' => ['mandatory' => false],
         // FR-FBS-005: voiding an item that was already sent to the kitchen or the bar, and cancelling a bill that has such items, need a supervisor. Mandatory: with

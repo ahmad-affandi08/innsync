@@ -45,11 +45,14 @@ export default function StockPage({ position, movements, catalog, filters }: { p
     const [posted, setPosted] = useState(false);
     const reload = ['position', 'movements'];
     const [costError, setCostError] = useState(false);
+    const [needsApproval, setNeedsApproval] = useState(false);
+    const [approvalAsked, setApprovalAsked] = useState(false);
     const money = (minor: number) => format.money(minor, position.currency);
     const qty = (n: number) => formatMilli(n, locale);
     const kinds = [...(position.may.post ? ['opening', 'receipt', 'issue'] : []), ...(position.may.adjust ? ['adjustment_in', 'adjustment_out', 'write_off'] : [])];
     const kindLabel = (k: string) => t(`inv.stock.kind.${k}` as MessageKey);
     const intent = useMemo(() => newIdempotencyKey(), [JSON.stringify(move)]);
+    const approvalKey = useMemo(() => newIdempotencyKey(), [JSON.stringify(move)]);
 
     function go(next: { location: string; item: string }) {
         router.get('/inventory/stock', { ...(next.location ? { location: next.location } : {}), ...(next.item ? { item: next.item } : {}) }, { preserveScroll: true });
@@ -59,6 +62,8 @@ export default function StockPage({ position, movements, catalog, filters }: { p
         action.clear();
         setPosted(false);
         setCostError(false);
+        setNeedsApproval(false);
+        setApprovalAsked(false);
         const item = catalog.items.find((i) => i.is_active);
         setMove({ kind: kinds[0] ?? 'receipt', item_id: item?.id ?? '', location_id: catalog.locations.find((l) => l.is_active)?.id ?? '', unit: item?.base_unit ?? '', quantity: '', reason_code: '', reference: '', note: '', negative_reason: '', unit_cost: '', lot_number: '', expires_on: '' });
     }
@@ -83,9 +88,21 @@ export default function StockPage({ position, movements, catalog, filters }: { p
         const done = await action.run('/inventory/stock/movements', {
             body: { kind: move.kind, item_id: move.item_id, location_id: move.location_id, unit: move.unit, quantity: move.quantity, reason_code: move.reason_code || null, reference: move.reference || null, note: move.note || null, negative_reason: move.negative_reason || null, unit_cost_minor: cost, lot_number: move.lot_number.trim() || null, expires_on: move.expires_on || null },
             idempotencyKey: intent,
+            onFailure: (failure) => { if (failure.kind === 'conflict' && failure.conflict?.reason === 'approval_required') setNeedsApproval(true); },
             reload,
         });
-        if (done !== null) { setPosted(true); setMove(null); }
+        if (done !== null) { setPosted(true); setMove(null); setNeedsApproval(false); setApprovalAsked(false); }
+    }
+
+    /** A large adjustment or write-off waits for a second person: ask, and post the same thing again once it is approved. */
+    async function askApproval() {
+        if (move === null) return;
+        const cost = move.unit_cost.trim() === '' ? null : parseMajorToMinor(move.unit_cost, position.currency);
+        const done = await action.run('/inventory/stock/adjustment-approval', {
+            body: { kind: move.kind, item_id: move.item_id, location_id: move.location_id, unit: move.unit, quantity: move.quantity, reason_code: move.reason_code, note: move.note || null, unit_cost_minor: cost, why: move.note.trim() === '' ? t(`inv.reason.${move.reason_code}` as MessageKey) : move.note.trim() },
+            idempotencyKey: approvalKey,
+        });
+        if (done !== null) setApprovalAsked(true);
     }
 
     async function saveLimits() {
@@ -153,7 +170,8 @@ export default function StockPage({ position, movements, catalog, filters }: { p
                 {move !== null && (
                     <div className="grid gap-3 sm:grid-cols-2">
                         {move.kind === 'opening' ? <p className="text-sm text-muted-foreground sm:col-span-2">{t('inv.opening.hint')}</p> : null}
-                        {action.error !== null ? <div className="sm:col-span-2"><ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /></div> : null}
+                        {action.error !== null && !(needsApproval && !approvalAsked) ? <div className="sm:col-span-2"><ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /></div> : null}
+                        {needsApproval ? <div className="sm:col-span-2"><Alert actions={approvalAsked ? undefined : <Button loading={action.busy} onClick={() => void askApproval()} size="sm" type="button">{t('inv.move.requestApproval')}</Button>} title={approvalAsked ? t('inv.move.approvalAsked') : t('inv.move.approvalNeeded')} tone="warning" /></div> : null}
                         <div className="sm:col-span-2">
                             <FormField error={action.fieldError('kind')} field="kind" label={t('inv.col.kind')}>
                                 <Select onChange={(e) => setMove({ ...move, kind: e.target.value, reason_code: '' })} searchable={false} value={move.kind}>

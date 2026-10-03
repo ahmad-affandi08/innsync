@@ -517,4 +517,7 @@ export const inventory = {
     "inv.pset.periodHint": "Tahun dan bulan, misalnya 2026-10.",
     "inv.pset.amount": "Anggaran",
     "inv.pset.amountIn": "Anggaran bulan itu ({currency})",
+    "inv.move.approvalNeeded": "Nilai ini cukup besar sehingga memerlukan persetujuan lebih dulu. Ajukan, lalu kirim lagi setelah disetujui.",
+    "inv.move.requestApproval": "Ajukan persetujuan",
+    "inv.move.approvalAsked": "Persetujuan sudah diajukan. Setelah penyetuju memutuskan, kirim lagi.",
 }

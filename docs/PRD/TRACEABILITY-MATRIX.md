@@ -171,7 +171,7 @@ Every row must eventually point to implementation evidence and tests. Status is 
 | FR-INV-007 | Inventory | Sebaiknya | ../TASK/MODULE-08-INVENTORY-PURCHASING.md | REVIEW |
 | FR-INV-008 | Inventory | Sebaiknya | ../TASK/MODULE-08-INVENTORY-PURCHASING.md | REVIEW |
 | FR-INV-009 | Inventory | Wajib | ../TASK/MODULE-08-INVENTORY-PURCHASING.md | REVIEW |
-| FR-INV-010 | Inventory | Wajib | ../TASK/MODULE-08-INVENTORY-PURCHASING.md | IN_PROGRESS |
+| FR-INV-010 | Inventory | Wajib | ../TASK/MODULE-08-INVENTORY-PURCHASING.md | REVIEW |
 | FR-INV-011 | Inventory | Wajib | ../TASK/MODULE-08-INVENTORY-PURCHASING.md | REVIEW |
 | FR-INV-012 | Inventory | Wajib | ../TASK/MODULE-08-INVENTORY-PURCHASING.md | REVIEW |
 | FR-PUR-001 | Purchasing | Wajib | ../TASK/MODULE-08-INVENTORY-PURCHASING.md | REVIEW |

@@ -494,6 +494,7 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
     Route::post('/requisitions/{id}/reject', [StockRequisitionController::class, 'reject'])->where('id', $id)->name('inventory.requisitions.reject');
     Route::post('/requisitions/{id}/cancel', [StockRequisitionController::class, 'cancel'])->where('id', $id)->name('inventory.requisitions.cancel');
     Route::post('/stock/movements', [StockMovementController::class, 'store'])->middleware(['idempotent'])->name('inventory.stock.movements');
+    Route::post('/stock/adjustment-approval', [StockMovementController::class, 'requestApproval'])->middleware(['idempotent'])->name('inventory.stock.adjustment-approval');
     Route::get('/transfers', [StockMovementController::class, 'transfersPage'])->name('inventory.transfers');
     Route::post('/transfers', [StockMovementController::class, 'send'])->middleware(['idempotent'])->name('inventory.transfers.send');
     Route::post('/transfers/{id}/receive', [StockMovementController::class, 'receive'])->where('id', $id)->name('inventory.transfers.receive');
