@@ -40,6 +40,9 @@ final readonly class HrAccess
     /** Reopens an approved payroll run that was not paid yet. High privilege: held by the owner only. */
     public const PAYROLL_REOPEN = 'hr.payroll.reopen';
 
+    /** Sets how the service charge is shared and works out and approves the distribution of a month. Sensitive: held by very few. */
+    public const SERVICE_CHARGE = 'hr.service-charge.manage';
+
     public function __construct(private PermissionChecker $permissions, private PropertyContext $property) {}
 
     public function assertProperty(PropertyId $property): void

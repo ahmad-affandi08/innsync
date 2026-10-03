@@ -146,3 +146,16 @@ export type PayrollAdjustment = { id: string; employee: { id: string; number: st
 export type PayrollRunOverview = {
     currency: string; today: string; period: string; runs: PayrollRun[]; run: (PayrollRun & { lines: PayrollLine[] }) | null; adjustments: PayrollAdjustment[]; without_pay: { id: string; number: string; name: string }[]; employees: { id: string; number: string; name: string }[];
 };
+
+export type ServiceChargeSettings = { staff_share_bp: number; reserve_bp: number; default_points_x100: number; points: { position: string; points_x100: number }[]; is_baseline: boolean; lock_version: number | null };
+
+export type ServiceChargeLine = { id: string; employee: { id: string; number: string; name: string; position: string }; points_x100: number; scheduled_days: number; present_days: number; attendance_bp: number; share_minor: number; default_points: boolean };
+
+export type ServiceChargeDistribution = {
+    id: string; number: string; period: string; status: 'draft' | 'approved'; days_booked: number; collected_minor: number; pool_minor: number; reserve_minor: number; distributed_minor: number; residue_minor: number; staff_share_bp: number; reserve_bp: number;
+    sources: { outlet: string; minor: number }[]; lock_version: number; month_over: boolean; approval: { id: string; status: string; consumed: boolean } | null; may: { calculate: boolean; approve: boolean; discard: boolean };
+};
+
+export type ServiceChargeOverview = {
+    currency: string; today: string; period: string; settings: ServiceChargeSettings; unlisted_positions: string[]; distributions: ServiceChargeDistribution[]; selected: (ServiceChargeDistribution & { lines: ServiceChargeLine[] }) | null;
+};

@@ -9,6 +9,7 @@ const LINKS = [
     { href: '/hr/leave', label: 'hr.nav.leave' },
     { href: '/hr/performance', label: 'hr.nav.performance' },
     { href: '/hr/payroll', label: 'hr.nav.payroll' },
+    { href: '/hr/service-charge', label: 'hr.nav.serviceCharge' },
     { href: '/hr/payroll/runs', label: 'hr.nav.payrollRuns' },
     { href: '/hr/payslips', label: 'hr.nav.payslips' },
 ] as const;

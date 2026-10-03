@@ -53,6 +53,7 @@ use App\Modules\HumanResource\Presentation\Http\Controllers\PayrollRunController
 use App\Modules\HumanResource\Presentation\Http\Controllers\PayslipController;
 use App\Modules\HumanResource\Presentation\Http\Controllers\PerformanceController;
 use App\Modules\HumanResource\Presentation\Http\Controllers\RosterController;
+use App\Modules\HumanResource\Presentation\Http\Controllers\ServiceChargeController;
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\ApprovalController;
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\ApprovalPolicyController;
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\AuthenticatedSessionController;
@@ -773,6 +774,12 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
     Route::get('/payroll/runs/{id}/payslips/{employee}', [PayslipController::class, 'of'])->where('id', $id)->where('employee', $id)->name('hr.payroll.payslip');
     Route::get('/payslips', [PayslipController::class, 'mine'])->name('hr.payslips');
     Route::get('/payslips/{id}', [PayslipController::class, 'own'])->where('id', $id)->name('hr.payslips.show');
+    Route::get('/service-charge', [ServiceChargeController::class, 'index'])->name('hr.service-charge');
+    Route::post('/service-charge', [ServiceChargeController::class, 'create'])->name('hr.service-charge.create');
+    Route::post('/service-charge/settings', [ServiceChargeController::class, 'saveSettings'])->name('hr.service-charge.settings');
+    Route::post('/service-charge/{id}/calculate', [ServiceChargeController::class, 'calculate'])->where('id', $id)->name('hr.service-charge.calculate');
+    Route::post('/service-charge/{id}/approve', [ServiceChargeController::class, 'approve'])->where('id', $id)->name('hr.service-charge.approve');
+    Route::post('/service-charge/{id}/discard', [ServiceChargeController::class, 'discard'])->where('id', $id)->name('hr.service-charge.discard');
     Route::post('/payroll/pay', [PayrollController::class, 'setPay'])->middleware(['idempotent'])->name('hr.payroll.pay');
     Route::post('/payroll/profile', [PayrollController::class, 'saveProfile'])->name('hr.payroll.profile');
     Route::post('/payroll/settings', [PayrollController::class, 'saveSettings'])->name('hr.payroll.settings');

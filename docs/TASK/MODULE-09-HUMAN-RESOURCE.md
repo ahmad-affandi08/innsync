@@ -39,8 +39,8 @@
 | TASK-HR-024 | FR-HR-024 | Bisa | Menyediakan papan pengumuman internal dan distribusi kebijakan yang wajib dibaca dengan pencatatan konfirmasi. | TODO |
 | TASK-HR-030 | FR-HR-030 | Wajib | Mengelola komponen pendapatan karyawan: gaji pokok, tunjangan tetap, tunjangan tidak tetap, uang makan, dan uang transport. | REVIEW |
 | TASK-HR-031 | FR-HR-031 | Wajib | Menghitung usulan penggajian periodik berdasarkan kehadiran, lembur, potongan keterlambatan, dan ketidakhadiran, lalu meneruskannya ke modul Finance untuk verifikasi dan pembayaran. | REVIEW |
-| TASK-HR-032 | FR-HR-032 | Wajib | Menghitung distribusi service charge yang terkumpul dari kamar dan outlet berdasarkan sistem poin per jabatan dan proporsi kehadiran, dengan penyisihan untuk kerusakan atau kehilangan sesuai kebijakan properti. | TODO |
-| TASK-HR-033 | FR-HR-033 | Wajib | Menampilkan simulasi distribusi service charge sebelum disahkan, dan mengunci nilainya setelah disetujui oleh General Manager. | TODO |
+| TASK-HR-032 | FR-HR-032 | Wajib | Menghitung distribusi service charge yang terkumpul dari kamar dan outlet berdasarkan sistem poin per jabatan dan proporsi kehadiran, dengan penyisihan untuk kerusakan atau kehilangan sesuai kebijakan properti. | REVIEW |
+| TASK-HR-033 | FR-HR-033 | Wajib | Menampilkan simulasi distribusi service charge sebelum disahkan, dan mengunci nilainya setelah disetujui oleh General Manager. | REVIEW |
 | TASK-HR-034 | FR-HR-034 | Wajib | Menerbitkan slip pendapatan elektronik per karyawan yang memuat rincian gaji, lembur, potongan, dan bagian service charge. | REVIEW |
 | TASK-HR-035 | FR-HR-035 | Sebaiknya | Mengekspor data penggajian ke berkas lembar kerja atau format yang dapat diterima sistem penggajian pihak ketiga. | REVIEW |
 | TASK-HR-036 | FR-HR-036 | Sebaiknya | Menyimpan dasar perhitungan pajak penghasilan karyawan dan iuran jaminan sosial sebagai parameter yang dapat dikonfigurasi. | REVIEW |
@@ -133,6 +133,14 @@
 - Note on money: amounts are integer minor units of the property currency, which for the rupiah are sen (Rp 1 = 100): the defaults of the parameters (ceilings, PTKP, brackets) are stored accordingly, and the screens take and show rupiah.
 - Not yet: the service charge (`HR-032/033`), the bank account of each person, a bank file for transfers, proration of a raise or a joiner in the middle of a month.
 - Tests: `PayrollPaymentHttpTest`.
+
+### Slice 51 (2026-10-03): the service charge — collection, points, simulation and approval
+
+- **HR-032** — `ServiceChargeCollected` (Finance contract) gives what the revenue days of a month booked as service charge from the rooms and the outlets, by outlet. `ServiceChargeSettingsService` keeps the property's policy: the staff's share of it (baseline 100%), the reserve kept back for damage and loss (baseline 5%), the points of each position (matched on the position written on the employee record, without regard to case) and the points of a position without any (baseline 1); the screen says when the usual values still apply and lists the positions that have no points. `ServiceChargeService::calculate` takes the collected amount, keeps the staff's share, sets aside the reserve and shares the rest with `ServiceChargeCalculator`: a person's weight is their points times the whole percent of their planned days they were present (paid leave counts as being there), each share is rounded down, and the few units rounding leaves are the residue kept with the reserve; the arithmetic does not overflow for large amounts.
+- **HR-033** — The distribution of a month (`hr_service_distributions`, one per month) is a simulation that can be worked out again as often as needed. Approving it needs a month that is over and the mandatory subject `hr.service-charge` (band = what is shared; with no policy it cannot be approved): the person who asked takes the decision, and from then the figures and every line are locked (triggers refuse any change, and the deletion of an approved distribution). The event `hr.service-charge.approved` goes out. The payroll of the same month then pays each person's share as a taxable earning `SERVICE` outside the social-security wage, and a person whose only income is a share is in the run.
+- Screen `/hr/service-charge` (distribution of a month and the policy). Permission `hr.service-charge.manage` (sensitive).
+- Not yet: points that change during the month, a reserve that is spent (the reserve is kept, not booked against a loss), a share for people who left before the month began, a separate distribution of tips.
+- Tests: `ServiceChargeHttpTest` (calculator included).
 
 ## Required engineering checks
 

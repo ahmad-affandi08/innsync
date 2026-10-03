@@ -105,6 +105,8 @@ describe('dictionaries', () => {
             'mtc.damage.state',
             'hr.department.front_office',
             'hr.perf.source.front_office',
+            'hr.nav.serviceCharge',
+            'hr.sc.title',
             'hr.department.housekeeping',
             'hr.department.laundry',
             'hr.email',

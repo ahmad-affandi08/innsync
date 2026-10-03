@@ -64,4 +64,7 @@ interface LeaveStore
 
     /** The days of leave that are not paid, by person, between two dates. @return array<string, int> */
     public function unpaidDaysBetween(PropertyId $property, string $from, string $to): array;
+
+    /** The days of paid leave, by person, between two dates. @return array<string, int> */
+    public function paidDaysBetween(PropertyId $property, string $from, string $to): array;
 }

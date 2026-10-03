@@ -44,5 +44,7 @@ return [
         'hr.leave' => ['mandatory' => true],
         // FR-HR-037: a payroll run is approved before it goes to Finance to be paid. Mandatory: with no policy configured the run cannot be approved, never paid. The amount band is the net pay of the run.
         'hr.payroll-run' => ['mandatory' => true],
+        // FR-HR-033: the distribution of the service charge is locked once the General Manager approves it. Mandatory: with no policy configured it cannot be approved, never locked. The amount band is what is shared.
+        'hr.service-charge' => ['mandatory' => true],
     ],
 ];

@@ -381,6 +381,12 @@
     "hr/pages/roster": [
         "name"
     ],
+    "hr/pages/service-charge": [
+        "default_points_x100",
+        "period",
+        "reserve_bp",
+        "staff_share_bp"
+    ],
     "identity-access/pages/approval-policies": [
         "band_min_amount_minor",
         "reason",

@@ -34,6 +34,7 @@ final readonly class PayrollRunService
         private PayrollRunStore $store,
         private PayrollStore $pay,
         private PayrollSettingsService $settings,
+        private ServiceChargeStore $serviceCharge,
         private EmployeeStore $employees,
         private AttendanceService $attendance,
         private LeaveStore $leave,
@@ -344,6 +345,7 @@ final readonly class PayrollRunService
         }
 
         $unpaid = $this->leave->unpaidDaysBetween($property, $start, $end);
+        $service = $this->serviceCharge->approvedSharesFor($property, $run['period']);
         $adjustments = [];
 
         foreach ($this->store->adjustments($property, null) as $a) {
@@ -368,6 +370,11 @@ final readonly class PayrollRunService
                 if ($c !== null && $line['amount_minor'] > 0) {
                     $earnings[] = ['code' => $c['code'], 'name' => $c['name'], 'kind' => $c['kind'], 'taxable' => (bool) $c['taxable'], 'social_base' => (bool) $c['social_base'], 'amount_minor' => $line['amount_minor']];
                 }
+            }
+
+            // The share of the service charge of the month, once approved, is paid as an earning (taxable, not part of the social security wage).
+            if (($service[$e['id']] ?? 0) > 0) {
+                $earnings[] = ['code' => 'SERVICE', 'name' => 'Service charge', 'kind' => 'service_charge', 'taxable' => true, 'social_base' => false, 'amount_minor' => $service[$e['id']]];
             }
 
             if ($earnings === []) {

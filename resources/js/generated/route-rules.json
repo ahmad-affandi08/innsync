@@ -330,6 +330,12 @@
             "to"
         ]
     },
+    "GET /hr/service-charge": {
+        "required": [],
+        "declared": [
+            "distribution"
+        ]
+    },
     "GET /inventory/counts": {
         "required": [],
         "declared": [
@@ -3174,6 +3180,48 @@
             "department",
             "minimums",
             "minimums.*"
+        ]
+    },
+    "POST /hr/service-charge": {
+        "required": [
+            "period"
+        ],
+        "declared": [
+            "period"
+        ]
+    },
+    "POST /hr/service-charge/settings": {
+        "required": [
+            "default_points_x100",
+            "points.*.points_x100",
+            "points.*.position",
+            "reserve_bp",
+            "staff_share_bp"
+        ],
+        "declared": [
+            "default_points_x100",
+            "lock_version",
+            "points",
+            "points.*.points_x100",
+            "points.*.position",
+            "reserve_bp",
+            "staff_share_bp"
+        ]
+    },
+    "POST /hr/service-charge/{id}/approve": {
+        "required": [
+            "lock_version"
+        ],
+        "declared": [
+            "lock_version"
+        ]
+    },
+    "POST /hr/service-charge/{id}/calculate": {
+        "required": [
+            "lock_version"
+        ],
+        "declared": [
+            "lock_version"
         ]
     },
     "POST /hr/settings": {
