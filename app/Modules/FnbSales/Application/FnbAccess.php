@@ -31,6 +31,12 @@ final readonly class FnbAccess
     /** Prints another copy of the receipt of a bill that was settled. */
     public const RECEIPT_REPRINT = 'fnb.receipt.reprint';
 
+    /** Checks the mini bars of the rooms, charges what was consumed to the guest and sees the refill list and the history. */
+    public const MINIBAR_OPERATE = 'fnb.minibar.operate';
+
+    /** Sets the items of the mini bar, their prices and how many a room holds. */
+    public const MINIBAR_MANAGE = 'fnb.minibar.manage';
+
     public function __construct(private PermissionChecker $permissions, private PropertyContext $property) {}
 
     public function assertProperty(PropertyId $property): void

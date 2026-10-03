@@ -127,11 +127,23 @@
         "price_minor",
         "sort_order"
     ],
+    "fnb-sales/pages/minibar": [
+        "code",
+        "name",
+        "par_qty",
+        "price_minor"
+    ],
     "fnb-sales/pages/outlets": [
         "charge_scope",
         "code",
         "kind",
         "name"
+    ],
+    "fnb-sales/pages/room-service": [
+        "covers",
+        "outlet_id",
+        "promised_time",
+        "room_id"
     ],
     "fnb-sales/pages/shift": [
         "counted_cash_minor",

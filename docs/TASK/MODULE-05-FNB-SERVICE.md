@@ -29,12 +29,12 @@
 | TASK-FBS-013 | FR-FBS-013 | Wajib | Pembayaran QRIS/daring memiliki state initiated, pending, paid, failed, expired, unknown, dan refunded. Status unknown tidak boleh dianggap lunas sebelum rekonsiliasi atau callback valid diterima. | IN_PROGRESS |
 | TASK-FBS-014 | FR-FBS-014 | Wajib | Refund, void setelah pembayaran, dan reprint struk memerlukan hak akses sesuai kebijakan, alasan, serta referensi transaksi awal pada audit trail. | REVIEW |
 | TASK-FBS-015 | FR-FBS-015 | Sebaiknya | Mendukung price list dan jadwal harga per outlet/channel/waktu, termasuk promo terjadwal, tanpa mengubah histori harga transaksi yang sudah ditutup. | TODO |
-| TASK-FBS-020 | FR-FBS-020 | Wajib | Petugas memeriksa mini bar di kamar tamu dengan memindai barcode kamar lalu memilih menu mini bar. | TODO |
-| TASK-FBS-021 | FR-FBS-021 | Wajib | Jumlah minuman dan makanan yang dikonsumsi tamu diinput di tempat dan otomatis terkirim ke kasir serta folio kamar tanpa input ulang. | TODO |
-| TASK-FBS-022 | FR-FBS-022 | Wajib | Sistem menghasilkan daftar jumlah item yang harus diisi ulang per kamar untuk shift berikutnya. | TODO |
-| TASK-FBS-023 | FR-FBS-023 | Wajib | Riwayat pengisian dan konsumsi mini bar tersimpan per kamar dan per petugas untuk keperluan audit. | TODO |
-| TASK-FBS-024 | FR-FBS-024 | Wajib | Mencatat pesanan room service dengan nomor kamar, waktu janji pengantaran, dan status pengantaran. | TODO |
-| TASK-FBS-025 | FR-FBS-025 | Sebaiknya | Sistem memblokir pembebanan mini bar setelah folio kamar ditutup dan mengarahkannya ke prosedur late charge. | TODO |
+| TASK-FBS-020 | FR-FBS-020 | Wajib | Petugas memeriksa mini bar di kamar tamu dengan memindai barcode kamar lalu memilih menu mini bar. | REVIEW |
+| TASK-FBS-021 | FR-FBS-021 | Wajib | Jumlah minuman dan makanan yang dikonsumsi tamu diinput di tempat dan otomatis terkirim ke kasir serta folio kamar tanpa input ulang. | REVIEW |
+| TASK-FBS-022 | FR-FBS-022 | Wajib | Sistem menghasilkan daftar jumlah item yang harus diisi ulang per kamar untuk shift berikutnya. | REVIEW |
+| TASK-FBS-023 | FR-FBS-023 | Wajib | Riwayat pengisian dan konsumsi mini bar tersimpan per kamar dan per petugas untuk keperluan audit. | REVIEW |
+| TASK-FBS-024 | FR-FBS-024 | Wajib | Mencatat pesanan room service dengan nomor kamar, waktu janji pengantaran, dan status pengantaran. | REVIEW |
+| TASK-FBS-025 | FR-FBS-025 | Sebaiknya | Sistem memblokir pembebanan mini bar setelah folio kamar ditutup dan mengarahkannya ke prosedur late charge. | REVIEW |
 | TASK-FBS-030 | FR-FBS-030 | Wajib | Mengelola persediaan outlet (bar dan gudang outlet) beserta permintaan barang ke gudang utama. | REVIEW |
 | TASK-FBS-031 | FR-FBS-031 | Wajib | Melakukan stock opname harian untuk minuman dan bahan bar dengan pencatatan selisih. | REVIEW |
 | TASK-FBS-032 | FR-FBS-032 | Wajib | Menampilkan SOP tugas harian, mingguan, dan bulanan outlet beserta persentase penyelesaian yang dikirim ke Human Resource. | REVIEW |
@@ -86,6 +86,16 @@
 - Status: `TASK-FBS-030` and `-031` are `REVIEW`. The stock of an outlet is the stock of its stores in Inventory (the bar store, the outlet store), on the stock card with minimums, batches and counts. **Requests to the main store (`FBS-030`)**: the outlet's store asks for items and quantities; the main store answers by sending a transfer (with the quantity it can spare, less than or equal to what was asked) that the outlet then receives, or by refusing with a reason; the requester may withdraw a waiting request. **Daily counts (`FBS-031`)**: the F&B menu opens the counts of the bar's own stores (`/inventory/counts?location_kind=bar`), where the count is blind, reviewed by a second person and its differences become stock adjustments with value (`INV-006`).
 - Context: migration 94 (`inventory_requisitions` and lines, never changed or deleted), `StockRequisitionService`, page `inventory-purchasing/pages/requisitions`, privilege `inventory.requisition.request` (the main store uses the privilege to send transfers); `StockCountService::overview` takes a location kind.
 - Evidence: `tests/Feature/InventoryPurchasing/RequisitionAndSupplyHttpTest.php`.
+
+### Slice 56 (2026-10-03): mini bars and room service
+
+- **FBS-020, -021** — `MinibarService` (`/fnb/minibar`, right `fnb.minibar.operate`): the attendant scans the code of a room (its number, with or without `room:` in front), sees whom it is let to and how many of each item it holds against how many it should, and enters what the guest consumed and what was put back. The consumption goes to the folio of the guest in one posting (`GuestCharging`, scope `fnb`, source `fnb_minibar`, the check as reference so it is posted once however often it is sent, with the service charge and tax of the F&B scheme), the event `fnb.minibar.consumed` goes out for the cashier and the revenue side, and nothing is typed twice. A consumption cannot exceed what the room held; at most 99 of an item. The items, prices and the number a room should hold are set by people with `fnb.minibar.manage` (retired, never deleted).
+- **FBS-022** — what each room holds is kept (a room that was never checked holds its par), so `To refill` lists, room by room and in total, what is missing against what each room should hold.
+- **FBS-023** — every check is kept per room and per person with the guest, the lines (consumed, put back, held after), the amount and the folio posting; it can be filtered by room and by person, and triggers refuse any change or deletion. Audited.
+- **FBS-025** — when nobody is in the room, or the folio does not take the charge, nothing is charged: the check is refused with a message that sends the attendant to the late charge procedure of the front office. What was only put back can still be recorded.
+- **FBS-024** — `RoomServiceService` (`/fnb/room-service`): an order is a bill of an outlet of the kind room service opened for a room with a guest in it; it keeps the room, the time promised (the clock of the property, later than now) and the delivery: ordered, on the way, delivered, one step at a time. The board lists what is still to deliver, soonest promise first, flags what is late and by how many minutes, and shows delivered orders of the last hours; a bill that was cancelled shows as cancelled. The bill is paid as any bill, charged to the room in full when the guest asks. Audited.
+- Not yet: printing the code of each room, a scanner that reads the code by the camera (a keyboard scanner or typing works), items of the mini bar that take stock out of the inventory, an order of room service that is placed by the guest.
+- Tests: `MinibarAndRoomServiceHttpTest`.
 
 ## Required engineering checks
 

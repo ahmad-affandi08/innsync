@@ -18,7 +18,9 @@ use App\Modules\Finance\Presentation\Http\Controllers\RevenueController;
 use App\Modules\Finance\Presentation\Http\Controllers\SupplierPaymentController;
 use App\Modules\FnbSales\Presentation\Http\Controllers\BillController;
 use App\Modules\FnbSales\Presentation\Http\Controllers\DamageReportController as FnbDamageReportController;
+use App\Modules\FnbSales\Presentation\Http\Controllers\MinibarController;
 use App\Modules\FnbSales\Presentation\Http\Controllers\PaymentController;
+use App\Modules\FnbSales\Presentation\Http\Controllers\RoomServiceController;
 use App\Modules\FnbSales\Presentation\Http\Controllers\SetupController;
 use App\Modules\FrontOffice\Presentation\Http\Controllers\AvailabilityController;
 use App\Modules\FrontOffice\Presentation\Http\Controllers\CashierController;
@@ -582,6 +584,16 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
     $id = '[0-9a-z]{26}';
 
     Route::get('/pos', [BillController::class, 'floor'])->name('fnb.pos');
+    // Mini bars of the rooms and room service (FR-FBS-020 to -025, -024).
+    Route::get('/minibar', [MinibarController::class, 'index'])->name('fnb.minibar');
+    Route::get('/minibar/room', [MinibarController::class, 'room'])->name('fnb.minibar.room');
+    Route::post('/minibar/checks', [MinibarController::class, 'check'])->middleware(['idempotent'])->name('fnb.minibar.check');
+    Route::post('/minibar/items', [MinibarController::class, 'createItem'])->name('fnb.minibar.items.create');
+    Route::post('/minibar/items/{id}', [MinibarController::class, 'updateItem'])->where('id', $id)->name('fnb.minibar.items.update');
+    Route::post('/minibar/items/{id}/active', [MinibarController::class, 'itemActive'])->where('id', $id)->name('fnb.minibar.items.active');
+    Route::get('/room-service', [RoomServiceController::class, 'index'])->name('fnb.room-service');
+    Route::post('/room-service', [RoomServiceController::class, 'place'])->middleware(['idempotent'])->name('fnb.room-service.place');
+    Route::post('/room-service/{id}/status', [RoomServiceController::class, 'advance'])->where('id', $id)->name('fnb.room-service.advance');
     // Checklists and storage temperatures of the department (FR-KIT-008, FR-FBS-032).
     Route::get('/routines', [RoutineController::class, 'index'])->defaults('department', 'fnb')->name('fnb.routines');
     Route::get('/routines/templates', [RoutineController::class, 'templates'])->defaults('department', 'fnb')->name('fnb.routines.templates');

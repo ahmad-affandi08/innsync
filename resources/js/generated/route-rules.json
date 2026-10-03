@@ -139,6 +139,24 @@
             "outlet"
         ]
     },
+    "GET /fnb/minibar": {
+        "required": [],
+        "declared": [
+            "code",
+            "from",
+            "room",
+            "staff",
+            "to"
+        ]
+    },
+    "GET /fnb/minibar/room": {
+        "required": [
+            "code"
+        ],
+        "declared": [
+            "code"
+        ]
+    },
     "GET /fnb/pos": {
         "required": [],
         "declared": [
@@ -1485,6 +1503,60 @@
             "lock_version"
         ]
     },
+    "POST /fnb/minibar/checks": {
+        "required": [
+            "lines",
+            "lines.*.consumed",
+            "lines.*.item_id",
+            "lines.*.refilled",
+            "room_code"
+        ],
+        "declared": [
+            "lines",
+            "lines.*.consumed",
+            "lines.*.item_id",
+            "lines.*.refilled",
+            "room_code"
+        ]
+    },
+    "POST /fnb/minibar/items": {
+        "required": [
+            "code",
+            "name",
+            "par_qty",
+            "price_minor"
+        ],
+        "declared": [
+            "code",
+            "name",
+            "par_qty",
+            "price_minor"
+        ]
+    },
+    "POST /fnb/minibar/items/{id}": {
+        "required": [
+            "lock_version",
+            "name",
+            "par_qty",
+            "price_minor"
+        ],
+        "declared": [
+            "lock_version",
+            "name",
+            "par_qty",
+            "price_minor"
+        ]
+    },
+    "POST /fnb/minibar/items/{id}/active": {
+        "required": [
+            "active",
+            "lock_version"
+        ],
+        "declared": [
+            "active",
+            "lock_version"
+        ]
+    },
     "POST /fnb/modifier-groups": {
         "required": [
             "code",
@@ -1586,6 +1658,31 @@
             "area",
             "code",
             "seats"
+        ]
+    },
+    "POST /fnb/room-service": {
+        "required": [
+            "covers",
+            "outlet_id",
+            "promised_time",
+            "room_id"
+        ],
+        "declared": [
+            "covers",
+            "note",
+            "outlet_id",
+            "promised_time",
+            "room_id"
+        ]
+    },
+    "POST /fnb/room-service/{id}/status": {
+        "required": [
+            "lock_version",
+            "status"
+        ],
+        "declared": [
+            "lock_version",
+            "status"
         ]
     },
     "POST /fnb/routines/templates": {

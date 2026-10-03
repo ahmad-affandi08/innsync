@@ -122,7 +122,7 @@ final class DevelopmentSeeder extends Seeder
         'housekeeping.task.perform',
         'housekeeping.view',
         'identity.approval-policy.manage',
-        'hr.attendance.manage', 'hr.leave.manage', 'hr.performance.view', 'hr.payroll.manage', 'hr.payroll.reopen', 'hr.conduct.manage', 'hr.announcement.manage', 'hr.appraisal.manage', 'hr.service-charge.manage', 'finance.payroll.verify', 'finance.payroll.pay',
+        'hr.attendance.manage', 'hr.leave.manage', 'hr.performance.view', 'fnb.minibar.operate', 'fnb.minibar.manage', 'hr.payroll.manage', 'hr.payroll.reopen', 'hr.conduct.manage', 'hr.announcement.manage', 'hr.appraisal.manage', 'hr.service-charge.manage', 'finance.payroll.verify', 'finance.payroll.pay',
         'hr.document.manage',
         'hr.employee.manage',
         'hr.employee.view',
