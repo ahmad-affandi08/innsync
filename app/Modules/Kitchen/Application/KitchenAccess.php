@@ -19,6 +19,9 @@ final readonly class KitchenAccess
     /** Sets how long a ticket may wait. */
     public const SETTINGS_MANAGE = 'kitchen.settings.manage';
 
+    /** Writes the recipes of the dishes: the composition, the yield and the standard waste. */
+    public const RECIPE_MANAGE = 'kitchen.recipe.manage';
+
     public function __construct(private PermissionChecker $permissions, private PropertyContext $property) {}
 
     public function assertProperty(PropertyId $property): void

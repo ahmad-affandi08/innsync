@@ -119,13 +119,17 @@ use App\Modules\IdentityAccess\Infrastructure\Authorization\ScopedPermissionChec
 use App\Modules\IdentityAccess\Infrastructure\Mfa\EloquentMfaStore;
 use App\Modules\IdentityAccess\Infrastructure\Mfa\TotpOneTimePassword;
 use App\Modules\IdentityAccess\Infrastructure\Sessions\DatabaseUserSessionRepository;
+use App\Modules\InventoryPurchasing\Application\IngredientCatalog;
+use App\Modules\InventoryPurchasing\Application\IngredientCatalogService;
 use App\Modules\InventoryPurchasing\Application\InventoryStore;
 use App\Modules\InventoryPurchasing\Application\PurchasingStore;
 use App\Modules\InventoryPurchasing\Application\StockCountStore;
 use App\Modules\InventoryPurchasing\Infrastructure\DatabaseInventoryStore;
 use App\Modules\InventoryPurchasing\Infrastructure\DatabasePurchasingStore;
 use App\Modules\InventoryPurchasing\Infrastructure\DatabaseStockCountStore;
+use App\Modules\Kitchen\Application\RecipeStore;
 use App\Modules\Kitchen\Application\TicketStore;
+use App\Modules\Kitchen\Infrastructure\DatabaseRecipeStore;
 use App\Modules\Kitchen\Infrastructure\DatabaseTicketStore;
 use App\Modules\Laundry\Application\ClaimRepository;
 use App\Modules\Laundry\Application\LaundryLiability;
@@ -413,6 +417,8 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(BillStore::class, DatabaseBillStore::class);
         $this->app->bind(MenuAvailability::class, MenuAvailabilityService::class);
         $this->app->bind(TicketStore::class, DatabaseTicketStore::class);
+        $this->app->bind(RecipeStore::class, DatabaseRecipeStore::class);
+        $this->app->bind(IngredientCatalog::class, IngredientCatalogService::class);
         $this->app->bind(PaymentStore::class, DatabasePaymentStore::class);
         $this->app->bind(FinanceExportQueries::class, DatabaseFinanceExportQueries::class);
         $this->app->bind(RecurringExpenseStore::class, DatabaseRecurringExpenseStore::class);

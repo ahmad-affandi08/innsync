@@ -46,9 +46,9 @@ interface TicketStore
     /** @return list<string> the tickets of a cancelled bill that were still open, now cancelled */
     public function cancelBill(PropertyId $property, string $billId, DateTimeImmutable $at): array;
 
-    /** @return array{late_after_minutes: int, lock_version: int}|null */
+    /** @return array{late_after_minutes: int, stock_location_id: string|null, lock_version: int}|null */
     public function settings(PropertyId $property): ?array;
 
     /** @return bool false when the setting changed meanwhile */
-    public function saveSettings(PropertyId $property, int $lateAfterMinutes, ?int $expectedLockVersion, string $by, DateTimeImmutable $at): bool;
+    public function saveSettings(PropertyId $property, int $lateAfterMinutes, ?string $stockLocationId, ?int $expectedLockVersion, string $by, DateTimeImmutable $at): bool;
 }

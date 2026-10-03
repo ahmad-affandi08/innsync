@@ -131,6 +131,7 @@ final class DevelopmentSeeder extends Seeder
         'inventory.transfer.send',
         'inventory.valuation.view',
         'kitchen.board.operate',
+        'kitchen.recipe.manage',
         'kitchen.settings.manage',
         'laundry.claim.approve',
         'laundry.claim.record',

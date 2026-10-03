@@ -132,8 +132,8 @@
 | TASK-FBS-034 | FR-FBS-034 | F&B Service | Wajib | TODO |
 | TASK-KIT-001 | FR-KIT-001 | F&B Product / Kitchen | Wajib | REVIEW |
 | TASK-KIT-002 | FR-KIT-002 | F&B Product / Kitchen | Wajib | REVIEW |
-| TASK-KIT-003 | FR-KIT-003 | F&B Product / Kitchen | Wajib | TODO |
-| TASK-KIT-004 | FR-KIT-004 | F&B Product / Kitchen | Wajib | TODO |
+| TASK-KIT-003 | FR-KIT-003 | F&B Product / Kitchen | Wajib | REVIEW |
+| TASK-KIT-004 | FR-KIT-004 | F&B Product / Kitchen | Wajib | REVIEW |
 | TASK-KIT-005 | FR-KIT-005 | F&B Product / Kitchen | Wajib | IN_PROGRESS |
 | TASK-KIT-006 | FR-KIT-006 | F&B Product / Kitchen | Wajib | TODO |
 | TASK-KIT-007 | FR-KIT-007 | F&B Product / Kitchen | Wajib | TODO |
@@ -142,7 +142,7 @@
 | TASK-KIT-010 | FR-KIT-010 | F&B Product / Kitchen | Wajib | TODO |
 | TASK-KIT-011 | FR-KIT-011 | F&B Product / Kitchen | Wajib | TODO |
 | TASK-KIT-012 | FR-KIT-012 | F&B Product / Kitchen | Sebaiknya | TODO |
-| TASK-KIT-013 | FR-KIT-013 | F&B Product / Kitchen | Wajib | TODO |
+| TASK-KIT-013 | FR-KIT-013 | F&B Product / Kitchen | Wajib | REVIEW |
 | TASK-KIT-014 | FR-KIT-014 | F&B Product / Kitchen | Sebaiknya | TODO |
 | TASK-KIT-015 | FR-KIT-015 | F&B Product / Kitchen | Wajib | IN_PROGRESS |
 | TASK-MTC-001 | FR-MTC-001 | Maintenance / Engineering | Wajib | TODO |

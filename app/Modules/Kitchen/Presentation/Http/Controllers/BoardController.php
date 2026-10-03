@@ -53,9 +53,9 @@ final readonly class BoardController
 
     public function saveSettings(Request $request): JsonResponse
     {
-        $data = $request->validate(['late_after_minutes' => ['required', 'integer', 'min:1', 'max:240'], 'reason' => ['required', 'string', 'max:200'], 'lock_version' => ['nullable', 'integer', 'min:0']]);
+        $data = $request->validate(['late_after_minutes' => ['required', 'integer', 'min:1', 'max:240'], 'stock_location_id' => ['nullable', 'string', 'size:26'], 'reason' => ['required', 'string', 'max:200'], 'lock_version' => ['nullable', 'integer', 'min:0']]);
 
-        return $this->json(['settings' => $this->board->saveSettings($this->property->current(), $this->actor($request), (int) $data['late_after_minutes'], isset($data['lock_version']) ? (int) $data['lock_version'] : null, $data['reason'])]);
+        return $this->json(['settings' => $this->board->saveSettings($this->property->current(), $this->actor($request), (int) $data['late_after_minutes'], $data['stock_location_id'] ?? null, isset($data['lock_version']) ? (int) $data['lock_version'] : null, $data['reason'])]);
     }
 
     /** @param array<string, mixed> $body */

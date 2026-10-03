@@ -457,6 +457,11 @@
         "late_after_minutes",
         "reason"
     ],
+    "kitchen/pages/recipes": [
+        "effective_from",
+        "reason",
+        "yield_portions"
+    ],
     "laundry/pages/claims": [
         "approved_minor",
         "cap_multiple",

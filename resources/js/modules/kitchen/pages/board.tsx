@@ -8,6 +8,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
+import { Select } from '@/components/ui/select';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { KitchenShell } from '@/modules/kitchen/components/kitchen-shell';
@@ -38,7 +39,7 @@ export default function KitchenBoardPage(props: BoardPageProps) {
     const [tab, setTab] = useState<string>(props.board.station);
     const [offline, setOffline] = useState(false);
     const [dialog, setDialog] = useState(false);
-    const [form, setForm] = useState({ minutes: String(props.settings.late_after_minutes), reason: '' });
+    const [form, setForm] = useState({ minutes: String(props.settings.late_after_minutes), location: props.settings.stock_location_id ?? '', reason: '' });
     const [badMinutes, setBadMinutes] = useState(false);
     const [saved, setSaved] = useState(false);
     const skew = useRef(new Date(props.board.loaded_at).getTime() - Date.now());
@@ -99,13 +100,13 @@ export default function KitchenBoardPage(props: BoardPageProps) {
 
         setBadMinutes(bad);
         if (bad) return;
-        const done = await action.run<{ settings: KitchenSettings }>('/kitchen/settings', { body: { late_after_minutes: minutes, reason: form.reason.trim(), lock_version: settings.lock_version } });
+        const done = await action.run<{ settings: KitchenSettings }>('/kitchen/settings', { body: { late_after_minutes: minutes, stock_location_id: form.location === '' ? null : form.location, reason: form.reason.trim(), lock_version: settings.lock_version } });
 
         if (done !== null) {
             setSettings(done.settings);
             setDialog(false);
             setSaved(true);
-            setForm({ minutes: String(done.settings.late_after_minutes), reason: '' });
+            setForm({ minutes: String(done.settings.late_after_minutes), location: done.settings.stock_location_id ?? '', reason: '' });
             await load(station);
         }
     }
@@ -210,6 +211,12 @@ export default function KitchenBoardPage(props: BoardPageProps) {
                     {failure}
                     <FormField error={badMinutes ? t('kitchen.settings.badMinutes') : action.fieldError('late_after_minutes')} field="late_after_minutes" hint={t('kitchen.settings.lateHint')} label={t('kitchen.settings.late')}>
                         <Input inputMode="numeric" onChange={(e) => setForm({ ...form, minutes: e.target.value })} value={form.minutes} />
+                    </FormField>
+                    <FormField error={action.fieldError('stock_location_id')} field="stock_location_id" hint={t('kitchen.settings.locationHint')} label={t('kitchen.settings.location')}>
+                        <Select onChange={(e) => setForm({ ...form, location: e.target.value })} value={form.location}>
+                            <option value="">{t('kitchen.settings.noLocation')}</option>
+                            {settings.locations.map((l) => <option key={l.id} value={l.id}>{l.name} ({l.code})</option>)}
+                        </Select>
                     </FormField>
                     <FormField error={action.fieldError('reason')} field="reason" label={t('kitchen.settings.reason')}>
                         <Input maxLength={200} onChange={(e) => setForm({ ...form, reason: e.target.value })} value={form.reason} />

@@ -101,14 +101,14 @@ final readonly class DatabaseTicketStore implements TicketStore
     {
         $row = DB::table('kitchen_settings')->where('property_id', $property->toString())->first();
 
-        return $row === null ? null : ['late_after_minutes' => (int) $row->late_after_minutes, 'lock_version' => (int) $row->lock_version];
+        return $row === null ? null : ['late_after_minutes' => (int) $row->late_after_minutes, 'stock_location_id' => $row->stock_location_id, 'lock_version' => (int) $row->lock_version];
     }
 
-    public function saveSettings(PropertyId $property, int $lateAfterMinutes, ?int $expectedLockVersion, string $by, DateTimeImmutable $at): bool
+    public function saveSettings(PropertyId $property, int $lateAfterMinutes, ?string $stockLocationId, ?int $expectedLockVersion, string $by, DateTimeImmutable $at): bool
     {
         if ($expectedLockVersion === null) {
             try {
-                DB::table('kitchen_settings')->insert(['property_id' => $property->toString(), 'late_after_minutes' => $lateAfterMinutes, 'lock_version' => 0, 'updated_by' => $by, 'created_at' => $at, 'updated_at' => $at]);
+                DB::table('kitchen_settings')->insert(['property_id' => $property->toString(), 'late_after_minutes' => $lateAfterMinutes, 'stock_location_id' => $stockLocationId, 'lock_version' => 0, 'updated_by' => $by, 'created_at' => $at, 'updated_at' => $at]);
 
                 return true;
             } catch (QueryException $e) {
@@ -121,7 +121,7 @@ final readonly class DatabaseTicketStore implements TicketStore
         }
 
         return DB::table('kitchen_settings')->where('property_id', $property->toString())->where('lock_version', $expectedLockVersion)
-            ->update(['late_after_minutes' => $lateAfterMinutes, 'lock_version' => $expectedLockVersion + 1, 'updated_by' => $by, 'updated_at' => $at]) === 1;
+            ->update(['late_after_minutes' => $lateAfterMinutes, 'stock_location_id' => $stockLocationId, 'lock_version' => $expectedLockVersion + 1, 'updated_by' => $by, 'updated_at' => $at]) === 1;
     }
 
     /**

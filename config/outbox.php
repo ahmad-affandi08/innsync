@@ -6,6 +6,8 @@ use App\Modules\Finance\Application\FrontOfficeRevenueConsumer;
 use App\Modules\Finance\Application\PurchasingPayableConsumer;
 use App\Modules\FnbSales\Application\KitchenProgressConsumer;
 use App\Modules\FrontOffice\Application\Companies\CompanyReceiptConsumer;
+use App\Modules\InventoryPurchasing\Application\RecipeConsumptionConsumer;
+use App\Modules\Kitchen\Application\SaleConsumptionConsumer;
 use App\Modules\Kitchen\Application\TicketIntakeConsumer;
 use App\Shared\Application\Outbox\OutboxConsumer;
 
@@ -43,6 +45,8 @@ return [
         FrontOfficeRevenueConsumer::class,
         KitchenProgressConsumer::class,
         PurchasingPayableConsumer::class,
+        RecipeConsumptionConsumer::class,
+        SaleConsumptionConsumer::class,
         TicketIntakeConsumer::class,
     ],
 ];

@@ -6,6 +6,7 @@ namespace App\Modules\Kitchen\Application;
 
 use App\Modules\FnbSales\Application\FnbTime;
 use App\Modules\FnbSales\Application\MenuAvailability;
+use App\Modules\InventoryPurchasing\Application\IngredientCatalog;
 use App\Shared\Application\Audit\AuditEntry;
 use App\Shared\Application\Audit\AuditTrail;
 use App\Shared\Application\Errors\Refusal;
@@ -40,6 +41,7 @@ final readonly class BoardService
         private TicketStore $store,
         private KitchenAccess $access,
         private MenuAvailability $menu,
+        private IngredientCatalog $ingredients,
         private TransactionRunner $transactions,
         private AuditTrail $audit,
         private OutboxPublisher $outbox,
@@ -135,11 +137,16 @@ final readonly class BoardService
         $this->access->require($property, $actorId, KitchenAccess::BOARD_OPERATE, 'This person may not work the kitchen screen.');
         $row = $this->store->settings($property);
 
-        return ['late_after_minutes' => $row['late_after_minutes'] ?? self::BASELINE_LATE_MINUTES, 'lock_version' => $row['lock_version'] ?? null, 'is_baseline' => $row === null, 'may' => ['manage' => $this->access->may($property, $actorId, KitchenAccess::SETTINGS_MANAGE)]];
+        $manage = $this->access->may($property, $actorId, KitchenAccess::SETTINGS_MANAGE);
+
+        return [
+            'late_after_minutes' => $row['late_after_minutes'] ?? self::BASELINE_LATE_MINUTES, 'stock_location_id' => $row['stock_location_id'] ?? null, 'lock_version' => $row['lock_version'] ?? null, 'is_baseline' => $row === null,
+            'locations' => $manage ? $this->ingredients->locations($property) : [], 'may' => ['manage' => $manage],
+        ];
     }
 
     /** @return array<string, mixed> */
-    public function saveSettings(PropertyId $property, string $actorId, int $lateAfterMinutes, ?int $lock, string $reason): array
+    public function saveSettings(PropertyId $property, string $actorId, int $lateAfterMinutes, ?string $stockLocationId, ?int $lock, string $reason): array
     {
         $this->access->require($property, $actorId, KitchenAccess::SETTINGS_MANAGE, 'This person may not set the kitchen screen.');
         $reason = trim($reason);
@@ -152,19 +159,25 @@ final readonly class BoardService
             throw Refusal::invalid('Give the reason, in at most 200 characters.', ['reason']);
         }
 
+        $stockLocationId = $stockLocationId === null || $stockLocationId === '' ? null : strtolower($stockLocationId);
+
+        if ($stockLocationId !== null && ! in_array($stockLocationId, array_column($this->ingredients->locations($property), 'id'), true)) {
+            throw Refusal::invalid('Choose a location of the inventory that is in use.', ['stock_location_id']);
+        }
+
         $actor = strtolower($actorId);
         $before = $this->store->settings($property);
 
-        $this->transactions->run(function () use ($property, $actor, $lateAfterMinutes, $lock, $reason, $before): void {
+        $this->transactions->run(function () use ($property, $actor, $lateAfterMinutes, $stockLocationId, $lock, $reason, $before): void {
             if (($before['lock_version'] ?? null) !== $lock) {
                 throw Refusal::stateConflict('This setting changed after you opened it. Reload it.');
             }
 
-            if (! $this->store->saveSettings($property, $lateAfterMinutes, $before === null ? null : (int) $before['lock_version'], $actor, $this->clock->nowUtc())) {
+            if (! $this->store->saveSettings($property, $lateAfterMinutes, $stockLocationId, $before === null ? null : (int) $before['lock_version'], $actor, $this->clock->nowUtc())) {
                 throw Refusal::stateConflict('This setting changed after you opened it. Reload it.');
             }
 
-            $this->audit->record(new AuditEntry($property->toString(), $actor, 'kitchen_settings.changed', 'kitchen_settings', $property->toString(), ['late_after_minutes' => $before['late_after_minutes'] ?? self::BASELINE_LATE_MINUTES], ['late_after_minutes' => $lateAfterMinutes], $reason));
+            $this->audit->record(new AuditEntry($property->toString(), $actor, 'kitchen_settings.changed', 'kitchen_settings', $property->toString(), ['late_after_minutes' => $before['late_after_minutes'] ?? self::BASELINE_LATE_MINUTES, 'stock_location_id' => $before['stock_location_id'] ?? null], ['late_after_minutes' => $lateAfterMinutes, 'stock_location_id' => $stockLocationId], $reason));
         });
 
         return $this->settings($property, $actorId);

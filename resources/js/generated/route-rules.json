@@ -3085,6 +3085,28 @@
             "available"
         ]
     },
+    "POST /kitchen/recipes/{id}": {
+        "required": [
+            "effective_from",
+            "lines",
+            "lines.*.item_id",
+            "lines.*.quantity_milli",
+            "lines.*.unit",
+            "lines.*.waste_bp",
+            "reason",
+            "yield_portions"
+        ],
+        "declared": [
+            "effective_from",
+            "lines",
+            "lines.*.item_id",
+            "lines.*.quantity_milli",
+            "lines.*.unit",
+            "lines.*.waste_bp",
+            "reason",
+            "yield_portions"
+        ]
+    },
     "POST /kitchen/settings": {
         "required": [
             "late_after_minutes",
@@ -3093,7 +3115,8 @@
         "declared": [
             "late_after_minutes",
             "lock_version",
-            "reason"
+            "reason",
+            "stock_location_id"
         ]
     },
     "POST /kitchen/tickets/{id}/advance": {

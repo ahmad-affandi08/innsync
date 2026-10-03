@@ -35,7 +35,7 @@ final readonly class MenuAvailabilityService implements MenuAvailability
                 $category = $categories[$i['category_id']] ?? null;
 
                 if ((bool) $i['is_active'] && $category !== null && (bool) $category['is_active']) {
-                    $out[] = ['id' => $i['id'], 'code' => $i['code'], 'name' => $i['name'], 'category' => $category['name'], 'outlet' => $outlet['name'], 'is_available' => (bool) $i['is_available']];
+                    $out[] = ['id' => $i['id'], 'code' => $i['code'], 'name' => $i['name'], 'category' => $category['name'], 'outlet' => $outlet['name'], 'price_minor' => (int) $i['price_minor'], 'is_available' => (bool) $i['is_available']];
                 }
             }
         }

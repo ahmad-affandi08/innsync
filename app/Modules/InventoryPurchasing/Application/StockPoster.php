@@ -53,9 +53,10 @@ final readonly class StockPoster
      * @param  string|null  $overrideReason  why an outflow may take the balance below zero; needs the privilege
      * @param  int|null  $unitCostMinor  the cost of one `$unit` in minor units; needed for opening and receipt, optional for adjustment in (the average is used)
      * @param  int|null  $fixedValueMinor  the value a transfer in takes over from its transfer out, or the cost a return to a supplier takes out
+     * @param  bool  $automatic  a movement the system makes from a sale: it may take the balance below zero (a sale is never refused for stock the books are behind on) unless the location or category blocks it
      * @return array{movement: array<string, mixed>, replayed: bool}
      */
-    public function post(PropertyId $property, string $actorId, array $item, array $location, string $kind, string $unit, int $qtyMilli, ?string $reasonCode, ?string $reference, ?string $note, ?string $sourceType, ?string $sourceRef, ?string $transferId, ?string $overrideReason, bool $allowNegative, ?array $snapshot = null, ?int $unitCostMinor = null, ?int $fixedValueMinor = null): array
+    public function post(PropertyId $property, string $actorId, array $item, array $location, string $kind, string $unit, int $qtyMilli, ?string $reasonCode, ?string $reference, ?string $note, ?string $sourceType, ?string $sourceRef, ?string $transferId, ?string $overrideReason, bool $allowNegative, ?array $snapshot = null, ?int $unitCostMinor = null, ?int $fixedValueMinor = null, bool $automatic = false): array
     {
         $actor = strtolower($actorId);
         $this->inventory->lockItem($property, $item['id']);
@@ -97,7 +98,7 @@ final readonly class StockPoster
             $balance = $this->inventory->balanceOf($property, $item['id'], $location['id']);
 
             if ($balance - $base < 0) {
-                $override = $this->negativeAllowed($property, $actor, $item, $location, $allowNegative, $overrideReason);
+                $override = $this->negativeAllowed($property, $actor, $item, $location, $allowNegative, $overrideReason, $automatic);
             }
         }
 
@@ -161,12 +162,16 @@ final readonly class StockPoster
     }
 
     /** The reason an outflow may go below zero, or a refusal. */
-    private function negativeAllowed(PropertyId $property, string $actor, array $item, array $location, bool $allowNegative, ?string $reason): string
+    private function negativeAllowed(PropertyId $property, string $actor, array $item, array $location, bool $allowNegative, ?string $reason, bool $automatic): string
     {
         $category = $this->inventory->category($property, $item['category_id']);
 
         if (! $allowNegative || (bool) $location['negative_blocked'] || ($category !== null && (bool) $category['negative_blocked'])) {
             throw Refusal::stateConflict('There is not enough stock, and this location or category does not allow stock below zero.');
+        }
+
+        if ($automatic) {
+            return 'Taken by a sale before the stock was received';
         }
 
         if (! $this->permissions->allowsInProperty($actor, self::NEGATIVE_PERMISSION, $property)) {

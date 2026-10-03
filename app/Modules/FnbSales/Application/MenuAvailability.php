@@ -13,7 +13,7 @@ use App\Shared\Domain\Tenancy\PropertyId;
  */
 interface MenuAvailability
 {
-    /** @return list<array{id: string, code: string, name: string, category: string, outlet: string, is_available: bool}> the items in use, by outlet and category */
+    /** @return list<array{id: string, code: string, name: string, category: string, outlet: string, price_minor: int, is_available: bool}> the items in use, by outlet and category */
     public function items(PropertyId $property): array;
 
     /** @throws Refusal when the item does not exist */
