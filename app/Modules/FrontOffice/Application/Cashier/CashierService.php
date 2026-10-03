@@ -280,6 +280,8 @@ final readonly class CashierService implements ShiftAttribution
             ));
             $this->outbox->publish(new OutboxEvent($property, 'frontoffice.cashier.shift.closed', $shift['id'], 1, [
                 'shift_id' => $shift['id'], 'number' => $shift['number'], 'cashier_id' => $shift['cashier_id'], 'expected_cash_minor' => $expected, 'counted_cash_minor' => $countedMinor, 'variance_minor' => $variance, 'currency' => $shift['currency'],
+                'closed_business_date' => $today->toString(), 'opening_float_minor' => $shift['opening_float_minor'], 'drops_minor' => $drops, 'cash_net_minor' => $this->cashNet($receipts), 'receipts' => $receipts,
+                'actor_id' => $actor,
             ]));
 
             return ['id' => $shift['id']];

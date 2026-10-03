@@ -237,6 +237,7 @@ final readonly class NightAuditService
         $this->outbox->publish(new OutboxEvent($property, 'frontoffice.night_audit.completed', $id, 1, [
             'night_audit_id' => $id, 'business_date' => $today->toString(), 'next_business_date' => $next->toString(),
             'room_nights_charged' => $charged, 'revenue' => $totals['revenue'], 'actor_id' => $actor,
+            'currency' => $report['currency'], 'revenue_by_source' => $this->audits->sourceTotals($property, $today), 'payments' => $this->audits->paymentTotals($property, $today),
         ]));
 
         return $today;

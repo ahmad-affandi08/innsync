@@ -1,5 +1,6 @@
 <?php
 
+use App\Modules\Finance\Application\FrontOfficeRevenueConsumer;
 use App\Modules\Finance\Application\PurchasingPayableConsumer;
 use App\Shared\Application\Outbox\OutboxConsumer;
 
@@ -31,6 +32,7 @@ return [
 
     /** @var list<class-string<OutboxConsumer>> */
     'consumers' => [
+        FrontOfficeRevenueConsumer::class,
         PurchasingPayableConsumer::class,
     ],
 ];

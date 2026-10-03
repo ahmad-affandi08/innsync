@@ -21,6 +21,10 @@ final readonly class FinanceAccess
 
     public const ACCOUNT_MANAGE = 'finance.account.manage';
 
+    public const REVENUE_VIEW = 'finance.revenue.view';
+
+    public const RECONCILE = 'finance.reconcile.manage';
+
     private const VIEWERS = [self::PAYABLE_VIEW, self::PAYABLE_MANAGE, self::PAYMENT_RECORD, self::ACCOUNT_MANAGE];
 
     public function __construct(private PermissionChecker $permissions, private PropertyContext $property) {}
@@ -65,6 +69,20 @@ final readonly class FinanceAccess
 
         if (! $this->mayView($property, $actorId)) {
             throw Refusal::forbidden('This person may not see accounts payable.');
+        }
+    }
+
+    public function mayViewRevenue(PropertyId $property, string $actorId): bool
+    {
+        return $this->may($property, $actorId, self::REVENUE_VIEW) || $this->may($property, $actorId, self::RECONCILE);
+    }
+
+    public function requireRevenueView(PropertyId $property, string $actorId): void
+    {
+        $this->assertProperty($property);
+
+        if (! $this->mayViewRevenue($property, $actorId)) {
+            throw Refusal::forbidden('This person may not see the revenue of the property.');
         }
     }
 }

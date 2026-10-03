@@ -2,8 +2,10 @@
 
 declare(strict_types=1);
 
+use App\Modules\Finance\Presentation\Http\Controllers\CashReconciliationController;
 use App\Modules\Finance\Presentation\Http\Controllers\ExpenseAccountController;
 use App\Modules\Finance\Presentation\Http\Controllers\PayableController;
+use App\Modules\Finance\Presentation\Http\Controllers\RevenueController;
 use App\Modules\Finance\Presentation\Http\Controllers\SupplierPaymentController;
 use App\Modules\FrontOffice\Presentation\Http\Controllers\AvailabilityController;
 use App\Modules\FrontOffice\Presentation\Http\Controllers\CashierController;
@@ -543,4 +545,10 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
     Route::get('/accounts', [ExpenseAccountController::class, 'index'])->name('finance.accounts');
     Route::post('/accounts', [ExpenseAccountController::class, 'store'])->name('finance.accounts.store');
     Route::post('/accounts/{id}', [ExpenseAccountController::class, 'update'])->where('id', $id)->name('finance.accounts.update');
+    Route::get('/revenue', [RevenueController::class, 'index'])->name('finance.revenue');
+    Route::get('/revenue/{date}', [RevenueController::class, 'show'])->where('date', '\d{4}-\d{2}-\d{2}')->name('finance.revenue.show');
+    Route::post('/revenue/{date}/verify', [RevenueController::class, 'verify'])->where('date', '\d{4}-\d{2}-\d{2}')->name('finance.revenue.verify');
+    Route::get('/cash', [CashReconciliationController::class, 'index'])->name('finance.cash');
+    Route::post('/cash/shifts/{id}/receive', [CashReconciliationController::class, 'receive'])->where('id', $id)->middleware(['idempotent'])->name('finance.cash.receive');
+    Route::post('/cash/exceptions/{id}/settle', [CashReconciliationController::class, 'settle'])->where('id', $id)->name('finance.cash.settle');
 });

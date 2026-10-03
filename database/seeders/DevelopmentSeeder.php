@@ -38,6 +38,8 @@ final class DevelopmentSeeder extends Seeder
         'finance.payable.manage',
         'finance.payable.view',
         'finance.payment.record',
+        'finance.reconcile.manage',
+        'finance.revenue.view',
         'front-office.availability.view',
         'front-office.cashier.manage',
         'front-office.cashier.operate',

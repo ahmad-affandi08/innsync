@@ -82,6 +82,31 @@ final readonly class DatabaseNightAuditRepository implements NightAuditRepositor
         ];
     }
 
+    public function sourceTotals(PropertyId $property, BusinessDate $date): array
+    {
+        $rows = DB::table('folio_postings')
+            ->where('property_id', $property->toString())->where('business_date', $date->toString())
+            ->whereIn('entry_type', ['charge', 'reversal'])
+            ->where(static fn ($q) => $q->where('base_minor', '<>', 0)->orWhere('service_charge_minor', '<>', 0)->orWhere('tax_minor', '<>', 0))
+            ->groupBy('source')->orderBy('source')
+            ->get(['source', DB::raw('SUM(base_minor) as base'), DB::raw('SUM(service_charge_minor) as service_charge'), DB::raw('SUM(tax_minor) as tax'), DB::raw('SUM(total_minor) as total')]);
+
+        return $rows->map(static fn ($r): array => [
+            'source' => (string) $r->source, 'base_minor' => (int) $r->base, 'service_charge_minor' => (int) $r->service_charge, 'tax_minor' => (int) $r->tax, 'total_minor' => (int) $r->total,
+        ])->all();
+    }
+
+    public function paymentTotals(PropertyId $property, BusinessDate $date): array
+    {
+        $rows = DB::table('folio_postings')
+            ->where('property_id', $property->toString())->where('business_date', $date->toString())
+            ->whereIn('entry_type', ['payment', 'refund', 'reversal'])->where('base_minor', 0)->where('service_charge_minor', 0)->where('tax_minor', 0)
+            ->groupBy('payment_method')->orderBy('payment_method')
+            ->get(['payment_method', DB::raw('SUM(CASE WHEN total_minor < 0 THEN -total_minor ELSE 0 END) as received'), DB::raw('SUM(CASE WHEN total_minor > 0 THEN total_minor ELSE 0 END) as paid_back'), DB::raw('COUNT(*) as n')]);
+
+        return $rows->map(static fn ($r): array => ['method' => (string) ($r->payment_method ?? 'other'), 'received_minor' => (int) $r->received, 'paid_back_minor' => (int) $r->paid_back, 'count' => (int) $r->n])->all();
+    }
+
     public function record(PropertyId $property, string $id, BusinessDate $date, BusinessDate $next, array $report, array $waivers, string $actorId, DateTimeImmutable $at): void
     {
         try {

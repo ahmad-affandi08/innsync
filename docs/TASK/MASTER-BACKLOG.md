@@ -214,11 +214,11 @@
 | TASK-HR-036 | FR-HR-036 | Human Resource | Sebaiknya | TODO |
 | TASK-HR-037 | FR-HR-037 | Human Resource | Wajib | TODO |
 | TASK-HR-038 | FR-HR-038 | Human Resource | Wajib | TODO |
-| TASK-FIN-001 | FR-FIN-001 | Finance | Wajib | TODO |
-| TASK-FIN-002 | FR-FIN-002 | Finance | Wajib | TODO |
-| TASK-FIN-003 | FR-FIN-003 | Finance | Wajib | TODO |
+| TASK-FIN-001 | FR-FIN-001 | Finance | Wajib | REVIEW |
+| TASK-FIN-002 | FR-FIN-002 | Finance | Wajib | REVIEW |
+| TASK-FIN-003 | FR-FIN-003 | Finance | Wajib | REVIEW |
 | TASK-FIN-004 | FR-FIN-004 | Finance | Sebaiknya | TODO |
-| TASK-FIN-005 | FR-FIN-005 | Finance | Wajib | TODO |
+| TASK-FIN-005 | FR-FIN-005 | Finance | Wajib | REVIEW |
 | TASK-FIN-006 | FR-FIN-006 | Finance | Wajib | IN_PROGRESS |
 | TASK-FIN-010 | FR-FIN-010 | Finance | Wajib | REVIEW |
 | TASK-FIN-011 | FR-FIN-011 | Finance | Wajib | REVIEW |
@@ -243,7 +243,7 @@
 | TASK-FIN-034 | FR-FIN-034 | Finance | Wajib | TODO |
 | TASK-FIN-035 | FR-FIN-035 | Finance | Wajib | TODO |
 | TASK-FIN-036 | FR-FIN-036 | Finance | Wajib | TODO |
-| TASK-FIN-037 | FR-FIN-037 | Finance | Wajib | TODO |
+| TASK-FIN-037 | FR-FIN-037 | Finance | Wajib | IN_PROGRESS |
 | TASK-RPT-001 | FR-RPT-001 | Reporting & Analytics | Wajib | REVIEW |
 | TASK-RPT-002 | FR-RPT-002 | Reporting & Analytics | Wajib | IN_PROGRESS |
 | TASK-RPT-003 | FR-RPT-003 | Reporting & Analytics | Wajib | IN_PROGRESS |

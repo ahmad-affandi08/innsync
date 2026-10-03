@@ -17,11 +17,11 @@
 
 | Task ID | FR | Priority | Requirement | Status |
 | --- | --- | --- | --- | --- |
-| TASK-FIN-001 | FR-FIN-001 | Wajib | Menerima pembukuan pendapatan otomatis dari Front Office dan seluruh POS outlet, terpisah antara nilai dasar, pajak, dan service charge. | TODO |
-| TASK-FIN-002 | FR-FIN-002 | Wajib | Menerbitkan laporan pendapatan harian per outlet dan per metode pembayaran, serta rekapitulasi bulanan. | TODO |
-| TASK-FIN-003 | FR-FIN-003 | Wajib | Melakukan rekonsiliasi setoran kasir: kas fisik yang disetor dibandingkan dengan kas sistem per shift dan per kasir, dengan pencatatan selisih. | TODO |
+| TASK-FIN-001 | FR-FIN-001 | Wajib | Menerima pembukuan pendapatan otomatis dari Front Office dan seluruh POS outlet, terpisah antara nilai dasar, pajak, dan service charge. | REVIEW |
+| TASK-FIN-002 | FR-FIN-002 | Wajib | Menerbitkan laporan pendapatan harian per outlet dan per metode pembayaran, serta rekapitulasi bulanan. | REVIEW |
+| TASK-FIN-003 | FR-FIN-003 | Wajib | Melakukan rekonsiliasi setoran kasir: kas fisik yang disetor dibandingkan dengan kas sistem per shift dan per kasir, dengan pencatatan selisih. | REVIEW |
 | TASK-FIN-004 | FR-FIN-004 | Sebaiknya | Merekonsiliasi penerimaan QRIS dan kartu terhadap mutasi rekening bank, termasuk pemotongan biaya transaksi. | TODO |
-| TASK-FIN-005 | FR-FIN-005 | Wajib | Memverifikasi dan mengunci transaksi hari sebelumnya setelah night audit sehingga tidak dapat diubah tanpa jurnal koreksi. | TODO |
+| TASK-FIN-005 | FR-FIN-005 | Wajib | Memverifikasi dan mengunci transaksi hari sebelumnya setelah night audit sehingga tidak dapat diubah tanpa jurnal koreksi. | REVIEW |
 | TASK-FIN-006 | FR-FIN-006 | Wajib | Setiap posting keuangan menyimpan property, business date, event time, source document, actor, dan correlation ID agar rekonsiliasi lintas modul dapat dilakukan tanpa ambigu. | IN_PROGRESS |
 | TASK-FIN-010 | FR-FIN-010 | Wajib | Mengelola daftar akun biaya sederhana yang dikelompokkan per department dan per kategori. | REVIEW |
 | TASK-FIN-011 | FR-FIN-011 | Wajib | Mencatat hutang kepada pemasok dan vendor secara otomatis dari penerimaan barang dan faktur, lengkap dengan syarat pembayaran dan tanggal jatuh tempo. | REVIEW |
@@ -46,7 +46,7 @@
 | TASK-FIN-034 | FR-FIN-034 | Wajib | Mengekspor data transaksi ke format lembar kerja atau format impor perangkat lunak akuntansi yang digunakan properti. | TODO |
 | TASK-FIN-035 | FR-FIN-035 | Wajib | Menyimpan jejak audit atas seluruh perubahan angka keuangan beserta pelaku dan waktunya. | TODO |
 | TASK-FIN-036 | FR-FIN-036 | Wajib | Transaksi keuangan yang telah locked hanya dapat dikoreksi melalui reversal/adjustment yang menaut ke transaksi asal dan memerlukan alasan serta otorisasi. | TODO |
-| TASK-FIN-037 | FR-FIN-037 | Wajib | Rekonsiliasi harian menghasilkan daftar exception antara POS/folio, payment provider/EDC, kas fisik, dan bank; hari dianggap clean hanya bila exception telah diselesaikan atau di-waive. | TODO |
+| TASK-FIN-037 | FR-FIN-037 | Wajib | Rekonsiliasi harian menghasilkan daftar exception antara POS/folio, payment provider/EDC, kas fisik, dan bank; hari dianggap clean hanya bila exception telah diselesaikan atau di-waive. | IN_PROGRESS |
 
 ## Required engineering checks
 
@@ -75,3 +75,16 @@
 - Known limit: cancelling a payment that waits for approval closes the payment but leaves its approval request pending in the approvers' inbox (the approval gate has no cancel for a request yet); approving it later changes nothing.
 - Not yet: payments by batch, reversal of a paid payment (needs a reversal document), recurring expenses, petty cash, accounts receivable, revenue postings and bank reconciliation (the rest of Finance).
 - Evidence: `tests/Feature/Finance/AccountsPayableHttpTest.php` (18 tests: the event pipeline and its idempotency, partial and full payments, the second approver, credits, aging at the bucket edges, the due schedule, the dashboard alerts, immutability triggers, privileges) and the browser run of the screens in both languages.
+
+### Slice 12 (2026-10-03): revenue statement, cash received for shifts, exceptions and the verified day
+
+- Status: `TASK-FIN-001`, `-002`, `-003` and `-005` are `REVIEW`. `TASK-FIN-037` is `IN_PROGRESS`: the cash side of the daily reconciliation (cash received against the system, exceptions settled before a day is verified) exists; the payment provider/EDC and bank sides do not. `TASK-FIN-006` stays `IN_PROGRESS` (payables, revenue days and cash receipts carry their posting facts; refunds and petty cash do not exist yet). NFR/BR: BR-003 (a booked day, a cash shift, a deposit and a settled exception are never changed), BR-004 (the cash of a shift is received, and a difference settled, by someone other than the person who worked it or received it), BR-005 (idempotent), BR-002 (integer money), BR-006 (document numbers `DEP-nnnnnn`).
+- Context: migration 63 (`fin_revenue_days`, `fin_revenue_lines`, `fin_payment_lines`, `fin_cash_shifts`, `fin_cash_deposits`, `fin_cash_exceptions`), `FrontOfficeRevenueConsumer` (registered in `config/outbox.php`), `RevenueService`, `CashReconciliationService`, screens `/finance/revenue`, `/finance/revenue/{date}` and `/finance/cash`; privileges `finance.revenue.view` (read) and `finance.reconcile.manage` (receive cash, settle, verify).
+- **Finance reads events.** The night audit event (`frontoffice.night_audit.completed`) now also carries the day's revenue by posting source (base, service charge, tax apart, charges and their reversals) and its payments by method; the shift event (`frontoffice.cashier.shift.closed`) carries the closing business date, the float, the drops and the cash the shift took in. Finance books each once per source document. A source is shown under the revenue outlet that owns it at that time (rooms and laundry are built in, every other unclaimed source is `other`); the outlet is kept on the line, so a later outlet change does not move a booked day.
+- **A day is a fact (FR-FIN-005, FR-FIN-006)**: figures, lines and payments never change (triggers); the day keeps the night audit, the business date, the event time, the actor and the correlation id. Because the business date advances at the night audit, a posting made afterwards falls on a later day: a correction of a booked day is a reversal posted on a later day.
+- **Reports (FR-FIN-002)**: the daily report is the booked days of a range (up to 93 days) with totals, by outlet and by payment method (received, paid back, net); the monthly roll-up shows the twelve months of a year, each with its outlets. Both read only what was booked.
+- **Cash received (FR-FIN-003)**: the system holds, per closed shift, the cash it took in (received less paid back). Finance counts what is handed over and records it once as a deposit (`DEP-nnnnnn`), never for a shift it worked or closed itself. The declared handover (counted drawer less the float that stays, plus the drops) is shown beside the system figure. A difference needs a reason and opens an exception; a deposit that matches opens none.
+- **Exceptions (FR-FIN-037)**: open until someone other than the receiver settles it as explained, recovered or waived, with a note; a settled exception never changes. Baseline: any difference opens one (no tolerance); a tolerance can be added later as a property setting.
+- **Verified day (FR-FIN-005)**: finance verifies a booked day once every shift closed on that date has its cash received and none of their exceptions is open; the verification (who, when, note) is final.
+- Not yet: reconciliation of QRIS and card receipts against the provider and the bank (FR-FIN-004), refunds and chargebacks as exceptions (FR-FIN-019), a locked-day correction document with authorisation (FR-FIN-036), POS outlets as a source (they appear as soon as they post to the folio with a source an outlet claims), and the dashboard alert for unverified days.
+- Evidence: `tests/Feature/Finance/RevenueReconciliationHttpTest.php` (booking and its idempotency, outlets, immutability, the reports, privileges, cash received with and without a difference, settlement by another person, the verified day) and `tests/Integration/Finance/RevenueFromFrontOfficeTest.php` (the real night audit and shift close booked by finance).
