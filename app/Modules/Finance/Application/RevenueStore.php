@@ -73,12 +73,15 @@ interface RevenueStore
     /** @param array<string, mixed> $row @return bool false when this bill was booked already */
     public function addPosSale(PropertyId $property, array $row, DateTimeImmutable $at): bool;
 
+    /** @param array<string, mixed> $row @return bool false when the bill was refunded already */
+    public function addPosRefund(PropertyId $property, array $row, DateTimeImmutable $at): bool;
+
     /** Whether the revenue of a business date was booked. */
     public function dayExists(PropertyId $property, string $date): bool;
 
-    /** @return list<array{source: string, base_minor: int, service_charge_minor: int, tax_minor: int, total_minor: int}> bills settled on a date by posting source, without those charged to a room and those that came late */
+    /** @return list<array{source: string, base_minor: int, service_charge_minor: int, tax_minor: int, total_minor: int}> bills settled on a date by posting source, without those charged to a room and those that came late, less the refunds of that date */
     public function posSalesOf(PropertyId $property, string $date): array;
 
-    /** @return list<array{method: string, amount_minor: int, count: int}> what those bills took on a date, by method (cash, card, qris) */
+    /** @return list<array{method: string, amount_minor: int, paid_back_minor: int, count: int}> what those bills took on a date, by method (cash, card, qris), and what was paid back by refunds */
     public function posPaymentsOf(PropertyId $property, string $date): array;
 }

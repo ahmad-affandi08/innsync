@@ -305,7 +305,7 @@ export const CORRECTION_STATUSES = ['pending', 'approved', 'rejected'] as const;
 export const CORRECTION_TONE: Record<string, StatusTone> = { pending: 'pending', approved: 'success', rejected: 'danger' };
 
 /** A reconciliation exception (refund, chargeback, settlement difference or payment of unknown status). Not the cash differences of shifts, which have their own tab. */
-export const RECON_KINDS = ['refund', 'chargeback', 'settlement_discrepancy', 'unknown_payment', 'late_sale'] as const;
+export const RECON_KINDS = ['refund', 'chargeback', 'settlement_discrepancy', 'unknown_payment', 'late_sale', 'late_refund'] as const;
 export const RECON_STATUSES = ['open', 'matched', 'adjusted', 'waived'] as const;
 export const RECON_TONE: Record<string, StatusTone> = { open: 'danger', matched: 'success', adjusted: 'info', waived: 'neutral' };
 

@@ -96,6 +96,7 @@ describe('dictionaries', () => {
             'fin.fc.target',
             'kitchen.station.bar',
             'recipes.outlet',
+            'fnb.bill.refundDetail',
             'recipes.foodCost',
             'recipes.colBill',
             'kitchen.soldOut.outlet',

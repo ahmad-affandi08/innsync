@@ -557,6 +557,9 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
     Route::post('/bills/{id}/lines/{line}/discount-request', [BillController::class, 'requestDiscount'])->where('id', $id)->where('line', $id)->middleware(['idempotent'])->name('fnb.bills.lines.discount-request');
     Route::post('/bills/{id}/lines/{line}/discount', [BillController::class, 'discount'])->where('id', $id)->where('line', $id)->middleware(['idempotent'])->name('fnb.bills.lines.discount');
     Route::post('/bills/{id}/lines/{line}/discount/remove', [BillController::class, 'removeDiscount'])->where('id', $id)->where('line', $id)->middleware(['idempotent'])->name('fnb.bills.lines.discount.remove');
+    Route::post('/bills/{id}/refund-request', [BillController::class, 'requestRefund'])->where('id', $id)->middleware(['idempotent'])->name('fnb.bills.refund-request');
+    Route::post('/bills/{id}/refund', [BillController::class, 'refund'])->where('id', $id)->middleware(['idempotent'])->name('fnb.bills.refund');
+    Route::post('/bills/{id}/reprint', [BillController::class, 'reprint'])->where('id', $id)->middleware(['idempotent'])->name('fnb.bills.reprint');
     Route::post('/bills/{id}/cancel-request', [BillController::class, 'requestCancel'])->where('id', $id)->middleware(['idempotent'])->name('fnb.bills.cancel-request');
     Route::post('/bills/{id}/cancel', [BillController::class, 'cancel'])->where('id', $id)->middleware(['idempotent'])->name('fnb.bills.cancel');
     Route::get('/outlets', [SetupController::class, 'outlets'])->name('fnb.outlets');

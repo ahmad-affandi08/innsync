@@ -1208,6 +1208,33 @@
             "status"
         ]
     },
+    "POST /fnb/bills/{id}/refund": {
+        "required": [
+            "lock_version",
+            "reason"
+        ],
+        "declared": [
+            "approval_id",
+            "lock_version",
+            "reason"
+        ]
+    },
+    "POST /fnb/bills/{id}/refund-request": {
+        "required": [
+            "reason"
+        ],
+        "declared": [
+            "reason"
+        ]
+    },
+    "POST /fnb/bills/{id}/reprint": {
+        "required": [
+            "reason"
+        ],
+        "declared": [
+            "reason"
+        ]
+    },
     "POST /fnb/bills/{id}/send": {
         "required": [
             "lock_version"

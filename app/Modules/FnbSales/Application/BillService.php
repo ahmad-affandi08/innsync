@@ -233,7 +233,7 @@ final readonly class BillService
         $approvals = [];
 
         foreach ($this->approvals->requestedBy($property, strtolower($actorId), 200) as $view) {
-            if (in_array($view->subjectType, [self::VOID_SUBJECT, self::CANCEL_SUBJECT, LineDiscountService::DISCOUNT_SUBJECT, LineDiscountService::COMP_SUBJECT], true) && isset($refs[$view->subjectRef])) {
+            if (in_array($view->subjectType, [self::VOID_SUBJECT, self::CANCEL_SUBJECT, LineDiscountService::DISCOUNT_SUBJECT, LineDiscountService::COMP_SUBJECT, RefundService::SUBJECT], true) && isset($refs[$view->subjectRef])) {
                 $approvals[] = ['id' => $view->id, 'subject_type' => $view->subjectType, 'subject_ref' => $view->subjectRef, 'status' => $view->status, 'consumed' => $view->consumed];
             }
         }
@@ -251,9 +251,10 @@ final readonly class BillService
             }
         }
 
-        $totals = $bill['status'] === 'settled'
+        $totals = in_array($bill['status'], ['settled', 'refunded'], true)
             ? ['subtotal_minor' => (int) $bill['subtotal_minor'], 'base_minor' => (int) $bill['base_minor'], 'service_charge_minor' => (int) $bill['service_charge_minor'], 'tax_minor' => (int) $bill['tax_minor'], 'total_minor' => (int) $bill['total_minor'], 'scheme_missing' => false, 'scheme' => $bill['scheme'] === null ? null : json_decode((string) $bill['scheme'], true)]
             : $this->pricing->totals($property, $outlet, (string) $bill['business_date'], $bill['lines']);
+        $refund = $bill['status'] === 'refunded' ? $this->payments->refundOf($property, $bill['id']) : null;
         $discounts = 0;
 
         foreach ($bill['lines'] as $l) {
@@ -270,7 +271,8 @@ final readonly class BillService
             'currency' => $this->currencies->currencyOf($property),
             'bill' => [
                 'id' => $bill['id'], 'number' => $bill['number'], 'status' => $bill['status'], 'covers' => (int) $bill['covers'], 'note' => $bill['note'], 'business_date' => $bill['business_date'], 'opened_at' => FnbTime::utc($bill['opened_at']), 'closed_at' => FnbTime::utc($bill['closed_at']),
-                'table' => $table['code'] ?? null, 'room_id' => $bill['room_id'], 'room' => $room?->number, 'lock_version' => (int) $bill['lock_version'], 'cancel_reason' => $bill['cancel_reason'],
+                'table' => $table['code'] ?? null, 'room_id' => $bill['room_id'], 'room' => $room?->number, 'lock_version' => (int) $bill['lock_version'], 'cancel_reason' => $bill['cancel_reason'], 'reprint_count' => (int) $bill['reprint_count'],
+                'refund' => $refund === null ? null : ['number' => $refund['number'], 'reason' => $refund['reason'], 'total_minor' => (int) $refund['total_minor'], 'business_date' => $refund['business_date'], 'at' => FnbTime::utc($refund['created_at']), 'payments' => array_map(static fn (array $p): array => ['method' => $p['method'], 'amount_minor' => (int) $p['amount_minor'], 'reference' => $p['reference']], $refund['payments'])],
                 'lines' => array_map($this->shapeLine(...), $bill['lines']),
             ],
             'outlet' => ['id' => $outlet['id'], 'code' => $outlet['code'], 'name' => $outlet['name'], 'prices_include_charges' => (bool) $outlet['prices_include_charges']],
@@ -284,7 +286,7 @@ final readonly class BillService
             'rooms' => $cashier && $open && ! $unsent && $totals['total_minor'] > 0 ? $this->inHouseRooms($property) : [],
             'menu' => $open ? $this->orderMenu($property, $outlet['id']) : [],
             'approvals' => $approvals,
-            'may' => ['operate' => $this->access->may($property, $actorId, FnbAccess::POS_OPERATE) && $open, 'pay' => $cashier && $open && ! $unsent && $totals['total_minor'] > 0 && ! $totals['scheme_missing'], 'cashier' => $cashier, 'discount' => $this->access->may($property, $actorId, FnbAccess::DISCOUNT_APPLY) && $open && $payments === []],
+            'may' => ['operate' => $this->access->may($property, $actorId, FnbAccess::POS_OPERATE) && $open, 'pay' => $cashier && $open && ! $unsent && $totals['total_minor'] > 0 && ! $totals['scheme_missing'], 'cashier' => $cashier, 'discount' => $this->access->may($property, $actorId, FnbAccess::DISCOUNT_APPLY) && $open && $payments === [], 'refund' => $this->access->may($property, $actorId, FnbAccess::REFUND_APPLY) && $bill['status'] === 'settled', 'reprint' => $this->access->may($property, $actorId, FnbAccess::RECEIPT_REPRINT) && in_array($bill['status'], ['settled', 'refunded'], true)],
         ];
     }
 

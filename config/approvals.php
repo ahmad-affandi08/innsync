@@ -32,5 +32,7 @@ return [
         // complimentary item is mandatory: with no policy it is refused, never given.
         'fnb.discount' => ['mandatory' => false],
         'fnb.comp' => ['mandatory' => true],
+        // FR-FBS-014: giving a settled bill back needs a supervisor. Mandatory: with no policy configured the refund is refused, never made.
+        'fnb.bill.refund' => ['mandatory' => true],
     ],
 ];

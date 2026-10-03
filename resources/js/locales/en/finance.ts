@@ -1038,6 +1038,7 @@ export const finance = {
     "fin.exc.kind.settlement_discrepancy": "Settlement difference",
     "fin.exc.kind.unknown_payment": "Payment of unknown status",
     "fin.exc.kind.late_sale": "Sale that reached finance late",
+    "fin.exc.kind.late_refund": "Refund that reached finance late",
     "fin.exc.colNumber": "Exception",
     "fin.exc.colKind": "Kind",
     "fin.exc.colDate": "Business date",

@@ -112,16 +112,17 @@ final readonly class FrontOfficeRevenueConsumer implements OutboxConsumer
             foreach ($payments as $i => $existing) {
                 if ($existing['method'] === $p['method']) {
                     $payments[$i]['received_minor'] += $p['amount_minor'];
+                    $payments[$i]['paid_back_minor'] += $p['paid_back_minor'];
                     $payments[$i]['entries'] += $p['count'];
                     $merged = true;
                 }
             }
 
             if (! $merged) {
-                $payments[] = ['day_id' => $day, 'business_date' => (string) $d['business_date'], 'method' => $p['method'], 'received_minor' => $p['amount_minor'], 'paid_back_minor' => 0, 'entries' => $p['count']];
+                $payments[] = ['day_id' => $day, 'business_date' => (string) $d['business_date'], 'method' => $p['method'], 'received_minor' => $p['amount_minor'], 'paid_back_minor' => $p['paid_back_minor'], 'entries' => $p['count']];
             }
 
-            $collected += $p['amount_minor'];
+            $collected += $p['amount_minor'] - $p['paid_back_minor'];
         }
 
         $this->store->addDay($event->propertyId, [

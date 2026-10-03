@@ -48,4 +48,18 @@ interface PaymentStore
 
     /** Settles a bill: its status and the totals it came to. @param array<string, mixed> $fields */
     public function settleBill(PropertyId $property, string $billId, array $fields, DateTimeImmutable $at): void;
+
+    /**
+     * A refund of a whole bill and the payments it gives back.
+     *
+     * @param  array<string, mixed>  $row
+     * @param  list<array<string, mixed>>  $payments
+     */
+    public function addRefund(PropertyId $property, array $row, array $payments, DateTimeImmutable $at): void;
+
+    /** @return array<string, mixed>|null the refund of a bill with its `payments` */
+    public function refundOf(PropertyId $property, string $billId): ?array;
+
+    /** @return array<string, int> what the refunds made in a shift paid back, by method */
+    public function shiftRefunds(PropertyId $property, string $shiftId): array;
 }

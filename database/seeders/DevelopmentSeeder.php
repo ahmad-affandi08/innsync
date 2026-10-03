@@ -59,6 +59,8 @@ final class DevelopmentSeeder extends Seeder
         'fnb.cashier.operate',
         'fnb.discount.apply',
         'fnb.pos.operate',
+        'fnb.receipt.reprint',
+        'fnb.refund.apply',
         'fnb.setup.manage',
         'front-office.availability.view',
         'front-office.cashier.manage',

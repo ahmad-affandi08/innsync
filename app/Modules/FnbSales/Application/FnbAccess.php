@@ -25,6 +25,12 @@ final readonly class FnbAccess
     /** Gives a discount or a complimentary item on a line of a bill. */
     public const DISCOUNT_APPLY = 'fnb.discount.apply';
 
+    /** Gives a settled bill back to the guest. */
+    public const REFUND_APPLY = 'fnb.refund.apply';
+
+    /** Prints another copy of the receipt of a bill that was settled. */
+    public const RECEIPT_REPRINT = 'fnb.receipt.reprint';
+
     public function __construct(private PermissionChecker $permissions, private PropertyContext $property) {}
 
     public function assertProperty(PropertyId $property): void

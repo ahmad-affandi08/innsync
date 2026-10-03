@@ -6,6 +6,7 @@ namespace App\Modules\FnbSales\Presentation\Http\Controllers;
 
 use App\Modules\FnbSales\Application\BillService;
 use App\Modules\FnbSales\Application\LineDiscountService;
+use App\Modules\FnbSales\Application\RefundService;
 use App\Shared\Application\Idempotency\IdempotencyKey;
 use App\Shared\Application\Tenancy\PropertyContext;
 use Illuminate\Http\JsonResponse;
@@ -16,7 +17,7 @@ use Inertia\Response;
 /** The floor of an outlet and its bills. Every rule, permission and approval lives in `BillService`. */
 final readonly class BillController
 {
-    public function __construct(private BillService $bills, private LineDiscountService $discounts, private PropertyContext $property) {}
+    public function __construct(private BillService $bills, private LineDiscountService $discounts, private RefundService $refunds, private PropertyContext $property) {}
 
     public function floor(Request $request): Response
     {
@@ -96,6 +97,28 @@ final readonly class BillController
         $this->discounts->remove($this->property->current(), $this->actor($request), $id, $line, $data['reason'], (int) $data['lock_version']);
 
         return $this->json($this->bills->show($this->property->current(), $this->actor($request), $id));
+    }
+
+    public function requestRefund(Request $request, string $id): JsonResponse
+    {
+        $data = $request->validate(['reason' => ['required', 'string', 'max:200']]);
+
+        return $this->json($this->refunds->request($this->property->current(), $this->actor($request), $id, $data['reason'], IdempotencyKey::fromString((string) $request->header('Idempotency-Key'))), 201);
+    }
+
+    public function refund(Request $request, string $id): JsonResponse
+    {
+        $data = $request->validate(['lock_version' => ['required', 'integer', 'min:0'], 'reason' => ['required', 'string', 'max:200'], 'approval_id' => ['nullable', 'string', 'size:26']]);
+        $this->refunds->refund($this->property->current(), $this->actor($request), $id, $data['reason'], $data['approval_id'] ?? null, (int) $data['lock_version']);
+
+        return $this->json($this->bills->show($this->property->current(), $this->actor($request), $id));
+    }
+
+    public function reprint(Request $request, string $id): JsonResponse
+    {
+        $data = $request->validate(['reason' => ['required', 'string', 'max:200']]);
+
+        return $this->json($this->refunds->reprint($this->property->current(), $this->actor($request), $id, $data['reason']));
     }
 
     public function requestCancel(Request $request, string $id): JsonResponse

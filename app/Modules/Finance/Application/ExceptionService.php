@@ -30,9 +30,9 @@ use DateTimeZone;
  */
 final readonly class ExceptionService
 {
-    public const KINDS = ['refund', 'chargeback', 'settlement_discrepancy', 'unknown_payment', 'late_sale'];
+    public const KINDS = ['refund', 'chargeback', 'settlement_discrepancy', 'unknown_payment', 'late_sale', 'late_refund'];
 
-    /** The kinds a person raises; a late sale is raised by finance itself when a bill arrives after its day was booked. */
+    /** The kinds a person raises; a late sale or a late refund is raised by finance itself when a bill or a refund arrives after its day was booked. */
     public const MANUAL_KINDS = ['refund', 'chargeback', 'settlement_discrepancy', 'unknown_payment'];
 
     public const RESOLUTIONS = ['matched', 'adjusted', 'waived'];

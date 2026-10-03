@@ -24,7 +24,7 @@ import type { MessageKey } from '@/locales/en/index';
 type Pick = { item: OrderItem; variant: string; modifiers: string[]; quantity: number; note: string };
 type PayForm = { method: 'cash' | 'card' | 'qris' | 'room'; amount: string; tendered: string; reference: string; room: string; guest: string };
 type QrisForm = { payment: BillPayment; status: string; reference: string; reason: string };
-type Confirm = { kind: 'void'; line: BillLine } | { kind: 'cancel' } | { kind: 'discount'; line: BillLine } | { kind: 'undiscount'; line: BillLine };
+type Confirm = { kind: 'void'; line: BillLine } | { kind: 'cancel' } | { kind: 'discount'; line: BillLine } | { kind: 'undiscount'; line: BillLine } | { kind: 'refund' } | { kind: 'reprint' };
 type DiscountForm = { kind: 'percent' | 'amount' | 'comp'; value: string };
 
 const PREP_TONE = { new: 'neutral', preparing: 'info', ready: 'success', served: 'neutral' } as const;
@@ -41,6 +41,7 @@ export default function BillPage({ view }: { view: BillView }) {
     const [reason, setReason] = useState('');
     const [discount, setDiscount] = useState<DiscountForm>({ kind: 'percent', value: '' });
     const [badDiscount, setBadDiscount] = useState(false);
+    const [copy, setCopy] = useState<number | null>(null);
     const [needsApproval, setNeedsApproval] = useState(false);
     const [requested, setRequested] = useState(false);
     const [pickError, setPickError] = useState<string | null>(null);
@@ -131,8 +132,8 @@ export default function BillPage({ view }: { view: BillView }) {
     }
 
     const discountComp = discount.kind === 'comp';
-    const subject = confirm === null ? '' : confirm.kind === 'void' ? 'fnb.item.void' : confirm.kind === 'cancel' ? 'fnb.bill.cancel' : discountComp ? 'fnb.comp' : 'fnb.discount';
-    const ref = confirm === null ? '' : confirm.kind === 'cancel' ? bill.id : confirm.line.id;
+    const subject = confirm === null ? '' : confirm.kind === 'void' ? 'fnb.item.void' : confirm.kind === 'cancel' ? 'fnb.bill.cancel' : confirm.kind === 'refund' ? 'fnb.bill.refund' : discountComp ? 'fnb.comp' : 'fnb.discount';
+    const ref = confirm === null ? '' : confirm.kind === 'cancel' || confirm.kind === 'refund' || confirm.kind === 'reprint' ? bill.id : confirm.line.id;
     const ready = confirm === null ? undefined : approvalFor(ref, subject, 'approved');
     const waiting = confirm === null ? undefined : approvalFor(ref, subject, 'pending');
 
@@ -148,6 +149,18 @@ export default function BillPage({ view }: { view: BillView }) {
     async function submitConfirm() {
         if (confirm === null) return;
         const base = { lock_version: bill.lock_version, reason: reason.trim() };
+
+        if (confirm.kind === 'reprint') {
+            const done = await action.run<{ copy: number }>(`/fnb/bills/${bill.id}/reprint`, { idempotencyKey: newIdempotencyKey(), body: { reason: reason.trim() }, reload });
+
+            if (done !== null) {
+                setCopy(done.copy);
+                setConfirm(null);
+                window.setTimeout(() => window.print(), 150);
+            }
+
+            return;
+        }
 
         if (confirm.kind === 'undiscount') {
             const done = await action.run(`/fnb/bills/${bill.id}/lines/${confirm.line.id}/discount/remove`, { idempotencyKey: newIdempotencyKey(), body: base, reload });
@@ -167,15 +180,15 @@ export default function BillPage({ view }: { view: BillView }) {
             return;
         }
 
-        const url = confirm.kind === 'void' ? `/fnb/bills/${bill.id}/lines/${confirm.line.id}/void` : `/fnb/bills/${bill.id}/cancel`;
+        const url = confirm.kind === 'void' ? `/fnb/bills/${bill.id}/lines/${confirm.line.id}/void` : confirm.kind === 'refund' ? `/fnb/bills/${bill.id}/refund` : `/fnb/bills/${bill.id}/cancel`;
         const done = await action.run(url, { idempotencyKey: newIdempotencyKey(), body: { ...base, approval_id: ready?.id ?? null }, reload, onFailure });
         if (done !== null) setConfirm(null);
     }
 
     async function requestApproval() {
-        if (confirm === null || confirm.kind === 'undiscount') return;
+        if (confirm === null || confirm.kind === 'undiscount' || confirm.kind === 'reprint') return;
         let body: Record<string, unknown> = { reason: reason.trim() };
-        let url = confirm.kind === 'cancel' ? `/fnb/bills/${bill.id}/cancel-request` : `/fnb/bills/${bill.id}/lines/${confirm.line.id}/void-request`;
+        let url = confirm.kind === 'cancel' ? `/fnb/bills/${bill.id}/cancel-request` : confirm.kind === 'refund' ? `/fnb/bills/${bill.id}/refund-request` : `/fnb/bills/${bill.id}/lines/${confirm.line.id}/void-request`;
 
         if (confirm.kind === 'discount') {
             const value = discountValue();
@@ -295,7 +308,7 @@ export default function BillPage({ view }: { view: BillView }) {
                 <section aria-labelledby="fnb-order-h" className="flex flex-col gap-3 border border-border bg-surface p-4">
                     <div className="flex items-center justify-between gap-2">
                         <h2 className="text-lg font-semibold" id="fnb-order-h">{t('fnb.bill.order')}</h2>
-                        <StatusBadge label={t(`fnb.bill.status.${bill.status}` as MessageKey)} tone={open ? 'info' : 'neutral'} />
+                        <StatusBadge label={t(`fnb.bill.status.${bill.status}` as MessageKey)} tone={open ? 'info' : bill.status === 'refunded' ? 'warning' : 'neutral'} />
                     </div>
 
                     {bill.lines.length === 0 ? <EmptyState illustration="checklist" title={t('fnb.bill.empty')} /> : (
@@ -376,10 +389,14 @@ export default function BillPage({ view }: { view: BillView }) {
                                     : totals.scheme_missing ? <p className="text-xs text-muted-foreground">{t('fnb.pay.schemeMissing')}</p>
                                     : view.left_minor > 0 ? <Button disabled={action.busy} onClick={openPay} type="button">{t('fnb.pay.take')}</Button> : null
                             ) : null}
-                            {bill.status === 'settled' ? (
+                            {bill.status === 'settled' || bill.status === 'refunded' ? (
                                 <div className="flex flex-col gap-2">
-                                    <p className="text-sm font-medium">{t('fnb.pay.settledNote')} {bill.closed_at !== null ? t('fnb.pay.paidAt', { time: format.instant(bill.closed_at) }) : ''}</p>
-                                    <Button className="print:hidden" onClick={() => window.print()} type="button" variant="outline">{t('fnb.pay.print')}</Button>
+                                    {copy !== null ? <p className="hidden text-center text-sm font-semibold uppercase tracking-wide print:block" data-testid="receipt-copy">{t('fnb.pay.copyMark', { copy })}</p> : null}
+                                    <p className="text-sm font-medium">{bill.status === 'refunded' ? t('fnb.bill.refundedNote', { number: bill.refund?.number ?? '', time: format.instant(bill.refund?.at ?? bill.closed_at ?? '') }) : t('fnb.pay.settledNote')} {bill.status === 'settled' && bill.closed_at !== null ? t('fnb.pay.paidAt', { time: format.instant(bill.closed_at) }) : ''}</p>
+                                    {bill.refund !== null ? <p className="text-sm text-muted-foreground" data-testid="bill-refund">{t('fnb.bill.refundDetail', { reason: bill.refund.reason, payments: bill.refund.payments.map((p) => `${t(`fnb.pay.method.${p.method}` as MessageKey)} ${money(p.amount_minor)}`).join(', ') })}</p> : null}
+                                    {bill.status === 'settled' ? <Button className="print:hidden" onClick={() => window.print()} type="button" variant="outline">{t('fnb.pay.print')}</Button> : null}
+                                    {view.may.reprint ? <Button className="print:hidden" disabled={action.busy} onClick={() => openConfirm({ kind: 'reprint' })} type="button" variant="outline">{t('fnb.bill.reprint')}{bill.reprint_count > 0 ? ` (${bill.reprint_count})` : ''}</Button> : null}
+                                    {view.may.refund ? <Button className="print:hidden" disabled={action.busy} onClick={() => openConfirm({ kind: 'refund' })} type="button" variant="outline">{t('fnb.bill.refund')}</Button> : null}
                                     <p className="hidden text-center text-sm print:block">{t('fnb.pay.receiptThanks')}</p>
                                 </div>
                             ) : null}
@@ -470,15 +487,15 @@ export default function BillPage({ view }: { view: BillView }) {
             <Dialog
                 footer={<>
                     <Button disabled={action.busy} onClick={() => setConfirm(null)} type="button" variant="outline">{t('fnb.bill.close')}</Button>
-                    {waiting === undefined || ready !== undefined ? <Button disabled={reason.trim() === ''} loading={action.busy} onClick={() => void submitConfirm()} type="button">{confirm?.kind === 'void' ? t('fnb.bill.confirmVoid') : confirm?.kind === 'discount' ? t(discountComp ? 'fnb.bill.confirmComp' : 'fnb.bill.confirmDiscount') : confirm?.kind === 'undiscount' ? t('fnb.bill.confirmUndiscount') : t('fnb.bill.confirmCancel')}</Button> : null}
+                    {waiting === undefined || ready !== undefined ? <Button disabled={reason.trim() === ''} loading={action.busy} onClick={() => void submitConfirm()} type="button">{confirm?.kind === 'void' ? t('fnb.bill.confirmVoid') : confirm?.kind === 'discount' ? t(discountComp ? 'fnb.bill.confirmComp' : 'fnb.bill.confirmDiscount') : confirm?.kind === 'undiscount' ? t('fnb.bill.confirmUndiscount') : confirm?.kind === 'refund' ? t('fnb.bill.confirmRefund') : confirm?.kind === 'reprint' ? t('fnb.bill.confirmReprint') : t('fnb.bill.confirmCancel')}</Button> : null}
                 </>}
                 onClose={() => setConfirm(null)}
                 open={confirm !== null}
-                title={confirm === null ? '' : confirm.kind === 'void' ? t('fnb.bill.voidTitle', { item: lineTitle(confirm.line) }) : confirm.kind === 'discount' ? t('fnb.bill.discountTitle', { item: lineTitle(confirm.line) }) : confirm.kind === 'undiscount' ? t('fnb.bill.undiscountTitle', { item: lineTitle(confirm.line) }) : t('fnb.bill.cancelTitle', { number: bill.number })}
+                title={confirm === null ? '' : confirm.kind === 'void' ? t('fnb.bill.voidTitle', { item: lineTitle(confirm.line) }) : confirm.kind === 'discount' ? t('fnb.bill.discountTitle', { item: lineTitle(confirm.line) }) : confirm.kind === 'undiscount' ? t('fnb.bill.undiscountTitle', { item: lineTitle(confirm.line) }) : confirm.kind === 'refund' ? t('fnb.bill.refundTitle', { number: bill.number }) : confirm.kind === 'reprint' ? t('fnb.bill.reprintTitle', { number: bill.number }) : t('fnb.bill.cancelTitle', { number: bill.number })}
             >
                 {confirm !== null && (
                     <div className="flex flex-col gap-3">
-                        <p className="text-sm text-muted-foreground">{confirm.kind === 'void' ? t('fnb.bill.voidHint') : confirm.kind === 'discount' ? t('fnb.bill.discountHint', { gross: money(confirm.line.gross_minor) }) : confirm.kind === 'undiscount' ? t('fnb.bill.undiscountHint') : t('fnb.bill.cancelHint')}</p>
+                        <p className="text-sm text-muted-foreground">{confirm.kind === 'void' ? t('fnb.bill.voidHint') : confirm.kind === 'discount' ? t('fnb.bill.discountHint', { gross: money(confirm.line.gross_minor) }) : confirm.kind === 'undiscount' ? t('fnb.bill.undiscountHint') : confirm.kind === 'refund' ? t('fnb.bill.refundHint', { amount: money(totals.total_minor) }) : confirm.kind === 'reprint' ? t('fnb.bill.reprintHint') : t('fnb.bill.cancelHint')}</p>
                         {failure}
                         {confirm.kind === 'discount' ? (
                             <div className="grid gap-3 sm:grid-cols-2">

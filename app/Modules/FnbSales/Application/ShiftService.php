@@ -182,6 +182,15 @@ final readonly class ShiftService
             }
         }
 
+        // What the refunds made in this shift paid back is taken out of what it took, by method: the cash leaves this drawer, whichever shift took it.
+        foreach ($this->store->shiftRefunds($property, $shiftId) as $method => $amount) {
+            $by[$method] = ['method' => (string) $method, 'count' => $by[$method]['count'] ?? 0, 'amount_minor' => ($by[$method]['amount_minor'] ?? 0) - $amount];
+
+            if ($method === 'cash') {
+                $cash -= $amount;
+            }
+        }
+
         return ['cash_minor' => $cash, 'by_method' => array_values($by), 'open_minor' => $open];
     }
 

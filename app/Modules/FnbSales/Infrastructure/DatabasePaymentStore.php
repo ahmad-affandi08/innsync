@@ -92,6 +92,41 @@ final readonly class DatabasePaymentStore implements PaymentStore
         DB::table('fnb_bills')->where('property_id', $property->toString())->where('id', $billId)->update([...$fields, 'status' => 'settled', 'updated_at' => $at]);
     }
 
+    public function addRefund(PropertyId $property, array $row, array $payments, DateTimeImmutable $at): void
+    {
+        DB::table('fnb_refunds')->insert([...$row, 'property_id' => $property->toString(), 'created_at' => $at]);
+
+        foreach ($payments as $p) {
+            DB::table('fnb_refund_payments')->insert([...$p, 'refund_id' => $row['id']]);
+        }
+    }
+
+    public function refundOf(PropertyId $property, string $billId): ?array
+    {
+        $row = DB::table('fnb_refunds')->where('property_id', $property->toString())->where('bill_id', $billId)->first();
+
+        if ($row === null) {
+            return null;
+        }
+
+        $refund = (array) $row;
+        $refund['payments'] = DB::table('fnb_refund_payments')->where('refund_id', $refund['id'])->orderBy('id')->get()->map(static fn (object $p): array => (array) $p)->all();
+
+        return $refund;
+    }
+
+    public function shiftRefunds(PropertyId $property, string $shiftId): array
+    {
+        $out = [];
+
+        foreach (DB::table('fnb_refund_payments as p')->join('fnb_refunds as r', 'r.id', '=', 'p.refund_id')->where('r.property_id', $property->toString())->where('r.shift_id', $shiftId)
+            ->groupBy('p.method')->get(['p.method as method', DB::raw('SUM(p.amount_minor) as amount')]) as $r) {
+            $out[(string) $r->method] = (int) $r->amount;
+        }
+
+        return $out;
+    }
+
     /** @return array<string, mixed>|null */
     private function row(?object $row): ?array
     {
