@@ -109,7 +109,7 @@
 | TASK-FBS-003 | FR-FBS-003 | F&B Service | Wajib | IN_PROGRESS |
 | TASK-FBS-004 | FR-FBS-004 | F&B Service | Sebaiknya | TODO |
 | TASK-FBS-005 | FR-FBS-005 | F&B Service | Wajib | IN_PROGRESS |
-| TASK-FBS-006 | FR-FBS-006 | F&B Service | Wajib | TODO |
+| TASK-FBS-006 | FR-FBS-006 | F&B Service | Wajib | REVIEW |
 | TASK-FBS-007 | FR-FBS-007 | F&B Service | Wajib | REVIEW |
 | TASK-FBS-008 | FR-FBS-008 | F&B Service | Wajib | REVIEW |
 | TASK-FBS-009 | FR-FBS-009 | F&B Service | Wajib | REVIEW |

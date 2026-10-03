@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Modules\FnbSales\Presentation\Http\Controllers;
 
 use App\Modules\FnbSales\Application\BillService;
+use App\Modules\FnbSales\Application\LineDiscountService;
 use App\Shared\Application\Idempotency\IdempotencyKey;
 use App\Shared\Application\Tenancy\PropertyContext;
 use Illuminate\Http\JsonResponse;
@@ -15,7 +16,7 @@ use Inertia\Response;
 /** The floor of an outlet and its bills. Every rule, permission and approval lives in `BillService`. */
 final readonly class BillController
 {
-    public function __construct(private BillService $bills, private PropertyContext $property) {}
+    public function __construct(private BillService $bills, private LineDiscountService $discounts, private PropertyContext $property) {}
 
     public function floor(Request $request): Response
     {
@@ -72,6 +73,29 @@ final readonly class BillController
         $data = $request->validate(['lock_version' => ['required', 'integer', 'min:0'], 'reason' => ['required', 'string', 'max:200'], 'approval_id' => ['nullable', 'string', 'size:26']]);
 
         return $this->json($this->bills->voidLine($this->property->current(), $this->actor($request), $id, $line, $data['reason'], $data['approval_id'] ?? null, (int) $data['lock_version']));
+    }
+
+    public function requestDiscount(Request $request, string $id, string $line): JsonResponse
+    {
+        $data = $request->validate(['kind' => ['required', 'string', 'max:8'], 'value' => ['nullable', 'integer', 'min:1', 'max:9000000000000'], 'reason' => ['required', 'string', 'max:200']]);
+
+        return $this->json($this->discounts->request($this->property->current(), $this->actor($request), $id, $line, $data['kind'], isset($data['value']) ? (int) $data['value'] : null, $data['reason'], IdempotencyKey::fromString((string) $request->header('Idempotency-Key'))), 201);
+    }
+
+    public function discount(Request $request, string $id, string $line): JsonResponse
+    {
+        $data = $request->validate(['kind' => ['required', 'string', 'max:8'], 'value' => ['nullable', 'integer', 'min:1', 'max:9000000000000'], 'lock_version' => ['required', 'integer', 'min:0'], 'reason' => ['required', 'string', 'max:200'], 'approval_id' => ['nullable', 'string', 'size:26']]);
+        $this->discounts->apply($this->property->current(), $this->actor($request), $id, $line, $data['kind'], isset($data['value']) ? (int) $data['value'] : null, $data['reason'], $data['approval_id'] ?? null, (int) $data['lock_version']);
+
+        return $this->json($this->bills->show($this->property->current(), $this->actor($request), $id));
+    }
+
+    public function removeDiscount(Request $request, string $id, string $line): JsonResponse
+    {
+        $data = $request->validate(['lock_version' => ['required', 'integer', 'min:0'], 'reason' => ['required', 'string', 'max:200']]);
+        $this->discounts->remove($this->property->current(), $this->actor($request), $id, $line, $data['reason'], (int) $data['lock_version']);
+
+        return $this->json($this->bills->show($this->property->current(), $this->actor($request), $id));
     }
 
     public function requestCancel(Request $request, string $id): JsonResponse

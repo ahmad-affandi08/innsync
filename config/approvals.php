@@ -28,5 +28,9 @@ return [
         // no policy configured the void is refused, never allowed. The owner configures who approves, and from what amount, per property.
         'fnb.item.void' => ['mandatory' => true],
         'fnb.bill.cancel' => ['mandatory' => true],
+        // FR-FBS-006: a discount on a line needs approval above the threshold the owner sets (the amount band of the policy; with no policy no discount needs approval). A
+        // complimentary item is mandatory: with no policy it is refused, never given.
+        'fnb.discount' => ['mandatory' => false],
+        'fnb.comp' => ['mandatory' => true],
     ],
 ];

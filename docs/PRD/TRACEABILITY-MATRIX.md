@@ -111,7 +111,7 @@ Every row must eventually point to implementation evidence and tests. Status is 
 | FR-FBS-003 | F&B Service | Wajib | ../TASK/MODULE-05-FNB-SERVICE.md | IN_PROGRESS |
 | FR-FBS-004 | F&B Service | Sebaiknya | ../TASK/MODULE-05-FNB-SERVICE.md | TODO |
 | FR-FBS-005 | F&B Service | Wajib | ../TASK/MODULE-05-FNB-SERVICE.md | IN_PROGRESS |
-| FR-FBS-006 | F&B Service | Wajib | ../TASK/MODULE-05-FNB-SERVICE.md | TODO |
+| FR-FBS-006 | F&B Service | Wajib | ../TASK/MODULE-05-FNB-SERVICE.md | REVIEW |
 | FR-FBS-007 | F&B Service | Wajib | ../TASK/MODULE-05-FNB-SERVICE.md | REVIEW |
 | FR-FBS-008 | F&B Service | Wajib | ../TASK/MODULE-05-FNB-SERVICE.md | REVIEW |
 | FR-FBS-009 | F&B Service | Wajib | ../TASK/MODULE-05-FNB-SERVICE.md | REVIEW |

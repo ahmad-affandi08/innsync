@@ -102,6 +102,7 @@
     ],
     "fnb-sales/pages/bill": [
         "amount_minor",
+        "kind",
         "method"
     ],
     "fnb-sales/pages/floor": [

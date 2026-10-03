@@ -1118,6 +1118,41 @@
             "variant_id"
         ]
     },
+    "POST /fnb/bills/{id}/lines/{line}/discount": {
+        "required": [
+            "kind",
+            "lock_version",
+            "reason"
+        ],
+        "declared": [
+            "approval_id",
+            "kind",
+            "lock_version",
+            "reason",
+            "value"
+        ]
+    },
+    "POST /fnb/bills/{id}/lines/{line}/discount-request": {
+        "required": [
+            "kind",
+            "reason"
+        ],
+        "declared": [
+            "kind",
+            "reason",
+            "value"
+        ]
+    },
+    "POST /fnb/bills/{id}/lines/{line}/discount/remove": {
+        "required": [
+            "lock_version",
+            "reason"
+        ],
+        "declared": [
+            "lock_version",
+            "reason"
+        ]
+    },
     "POST /fnb/bills/{id}/lines/{line}/remove": {
         "required": [
             "lock_version"

@@ -233,7 +233,7 @@ final readonly class BillService
         $approvals = [];
 
         foreach ($this->approvals->requestedBy($property, strtolower($actorId), 200) as $view) {
-            if (in_array($view->subjectType, [self::VOID_SUBJECT, self::CANCEL_SUBJECT], true) && isset($refs[$view->subjectRef])) {
+            if (in_array($view->subjectType, [self::VOID_SUBJECT, self::CANCEL_SUBJECT, LineDiscountService::DISCOUNT_SUBJECT, LineDiscountService::COMP_SUBJECT], true) && isset($refs[$view->subjectRef])) {
                 $approvals[] = ['id' => $view->id, 'subject_type' => $view->subjectType, 'subject_ref' => $view->subjectRef, 'status' => $view->status, 'consumed' => $view->consumed];
             }
         }
@@ -254,6 +254,14 @@ final readonly class BillService
         $totals = $bill['status'] === 'settled'
             ? ['subtotal_minor' => (int) $bill['subtotal_minor'], 'base_minor' => (int) $bill['base_minor'], 'service_charge_minor' => (int) $bill['service_charge_minor'], 'tax_minor' => (int) $bill['tax_minor'], 'total_minor' => (int) $bill['total_minor'], 'scheme_missing' => false, 'scheme' => $bill['scheme'] === null ? null : json_decode((string) $bill['scheme'], true)]
             : $this->pricing->totals($property, $outlet, (string) $bill['business_date'], $bill['lines']);
+        $discounts = 0;
+
+        foreach ($bill['lines'] as $l) {
+            if (in_array($l['status'], ['pending', 'sent'], true)) {
+                $discounts += (int) $l['discount_minor'];
+            }
+        }
+
         $shift = $this->payments->openShiftOf($property, strtolower($actorId));
         $cashier = $this->access->may($property, $actorId, FnbAccess::CASHIER_OPERATE);
         $unsent = count(array_filter($bill['lines'], static fn (array $l): bool => $l['status'] === 'pending')) > 0;
@@ -266,7 +274,7 @@ final readonly class BillService
                 'lines' => array_map($this->shapeLine(...), $bill['lines']),
             ],
             'outlet' => ['id' => $outlet['id'], 'code' => $outlet['code'], 'name' => $outlet['name'], 'prices_include_charges' => (bool) $outlet['prices_include_charges']],
-            'totals' => $totals,
+            'totals' => [...$totals, 'discount_minor' => $discounts],
             'payments' => array_map(static fn (array $p): array => [
                 'id' => $p['id'], 'method' => $p['method'], 'status' => $p['status'], 'amount_minor' => (int) $p['amount_minor'], 'tendered_minor' => $p['tendered_minor'] === null ? null : (int) $p['tendered_minor'], 'change_minor' => (int) $p['change_minor'],
                 'reference' => $p['reference'], 'guest_name' => $p['guest_name'], 'status_reason' => $p['status_reason'], 'created_at' => FnbTime::utc($p['created_at']),
@@ -276,7 +284,7 @@ final readonly class BillService
             'rooms' => $cashier && $open && ! $unsent && $totals['total_minor'] > 0 ? $this->inHouseRooms($property) : [],
             'menu' => $open ? $this->orderMenu($property, $outlet['id']) : [],
             'approvals' => $approvals,
-            'may' => ['operate' => $this->access->may($property, $actorId, FnbAccess::POS_OPERATE) && $open, 'pay' => $cashier && $open && ! $unsent && $totals['total_minor'] > 0 && ! $totals['scheme_missing'], 'cashier' => $cashier],
+            'may' => ['operate' => $this->access->may($property, $actorId, FnbAccess::POS_OPERATE) && $open, 'pay' => $cashier && $open && ! $unsent && $totals['total_minor'] > 0 && ! $totals['scheme_missing'], 'cashier' => $cashier, 'discount' => $this->access->may($property, $actorId, FnbAccess::DISCOUNT_APPLY) && $open && $payments === []],
         ];
     }
 
@@ -338,7 +346,7 @@ final readonly class BillService
             $this->bills->addLine($property, $bill['id'], [
                 'id' => $this->ids->next(), 'item_id' => $item['id'], 'variant_id' => $variant['id'] ?? null, 'item_code' => $item['code'], 'item_name' => $item['name'], 'variant_name' => $variant['name'] ?? null,
                 'station' => $item['station'] ?? $category['station'], 'unit_price_minor' => $unit, 'modifiers' => $chosen, 'modifiers_minor' => $extra, 'quantity' => $quantity, 'note' => $note,
-                'line_total_minor' => ($unit + $extra) * $quantity, 'status' => 'pending', 'created_by' => $actor,
+                'gross_minor' => ($unit + $extra) * $quantity, 'line_total_minor' => ($unit + $extra) * $quantity, 'status' => 'pending', 'created_by' => $actor,
             ], $this->clock->nowUtc());
             $this->guard->touch($property, $bill['id'], $lock);
         });
@@ -697,6 +705,7 @@ final readonly class BillService
         return [
             'id' => $l['id'], 'line_no' => (int) $l['line_no'], 'item_name' => $l['item_name'], 'variant_name' => $l['variant_name'], 'modifiers' => array_map(static fn (array $m): array => ['name' => $m['name'], 'price_delta_minor' => (int) $m['price_delta_minor']], $l['modifiers']),
             'quantity' => (int) $l['quantity'], 'note' => $l['note'], 'unit_price_minor' => (int) $l['unit_price_minor'], 'modifiers_minor' => (int) $l['modifiers_minor'], 'line_total_minor' => (int) $l['line_total_minor'],
+            'gross_minor' => (int) ($l['gross_minor'] ?? $l['line_total_minor']), 'discount_kind' => $l['discount_kind'], 'discount_value' => $l['discount_value'] === null ? null : (int) $l['discount_value'], 'discount_minor' => (int) $l['discount_minor'], 'discount_reason' => $l['discount_reason'],
             'status' => $l['status'], 'prep_status' => $l['prep_status'], 'station' => $l['station'], 'sent_at' => FnbTime::utc($l['sent_at']), 'void_reason' => $l['void_reason'],
         ];
     }

@@ -22,6 +22,9 @@ final readonly class FnbAccess
     /** Opens and closes a cashier shift and takes payments for bills. */
     public const CASHIER_OPERATE = 'fnb.cashier.operate';
 
+    /** Gives a discount or a complimentary item on a line of a bill. */
+    public const DISCOUNT_APPLY = 'fnb.discount.apply';
+
     public function __construct(private PermissionChecker $permissions, private PropertyContext $property) {}
 
     public function assertProperty(PropertyId $property): void

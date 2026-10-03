@@ -24,7 +24,8 @@ import type { MessageKey } from '@/locales/en/index';
 type Pick = { item: OrderItem; variant: string; modifiers: string[]; quantity: number; note: string };
 type PayForm = { method: 'cash' | 'card' | 'qris' | 'room'; amount: string; tendered: string; reference: string; room: string; guest: string };
 type QrisForm = { payment: BillPayment; status: string; reference: string; reason: string };
-type Confirm = { kind: 'void'; line: BillLine } | { kind: 'cancel' };
+type Confirm = { kind: 'void'; line: BillLine } | { kind: 'cancel' } | { kind: 'discount'; line: BillLine } | { kind: 'undiscount'; line: BillLine };
+type DiscountForm = { kind: 'percent' | 'amount' | 'comp'; value: string };
 
 const PREP_TONE = { new: 'neutral', preparing: 'info', ready: 'success', served: 'neutral' } as const;
 const LINE_TONE = { pending: 'pending', sent: 'success', voided: 'neutral', removed: 'neutral' } as const;
@@ -38,6 +39,8 @@ export default function BillPage({ view }: { view: BillView }) {
     const [pick, setPick] = useState<Pick | null>(null);
     const [confirm, setConfirm] = useState<Confirm | null>(null);
     const [reason, setReason] = useState('');
+    const [discount, setDiscount] = useState<DiscountForm>({ kind: 'percent', value: '' });
+    const [badDiscount, setBadDiscount] = useState(false);
     const [needsApproval, setNeedsApproval] = useState(false);
     const [requested, setRequested] = useState(false);
     const [pickError, setPickError] = useState<string | null>(null);
@@ -122,25 +125,68 @@ export default function BillPage({ view }: { view: BillView }) {
         setNeedsApproval(false);
         setRequested(false);
         setReason('');
+        setBadDiscount(false);
+        setDiscount({ kind: 'percent', value: '' });
         setConfirm(next);
     }
 
-    const subject = confirm === null ? '' : confirm.kind === 'void' ? 'fnb.item.void' : 'fnb.bill.cancel';
-    const ref = confirm === null ? '' : confirm.kind === 'void' ? confirm.line.id : bill.id;
+    const discountComp = discount.kind === 'comp';
+    const subject = confirm === null ? '' : confirm.kind === 'void' ? 'fnb.item.void' : confirm.kind === 'cancel' ? 'fnb.bill.cancel' : discountComp ? 'fnb.comp' : 'fnb.discount';
+    const ref = confirm === null ? '' : confirm.kind === 'cancel' ? bill.id : confirm.line.id;
     const ready = confirm === null ? undefined : approvalFor(ref, subject, 'approved');
     const waiting = confirm === null ? undefined : approvalFor(ref, subject, 'pending');
 
+    /** The value of a discount as the server wants it: basis points for a percentage, minor units for an amount, nothing for a complimentary item. */
+    function discountValue(): number | null | undefined {
+        if (discount.kind === 'comp') return null;
+        if (discount.kind === 'amount') return parseMajorToMinor(discount.value, view.currency) ?? undefined;
+        const m = /^(\d{1,3})(?:[.,](\d{1,2}))?$/.exec(discount.value.trim());
+
+        return m === null ? undefined : Number(m[1]) * 100 + Number((m[2] ?? '').padEnd(2, '0'));
+    }
+
     async function submitConfirm() {
         if (confirm === null) return;
+        const base = { lock_version: bill.lock_version, reason: reason.trim() };
+
+        if (confirm.kind === 'undiscount') {
+            const done = await action.run(`/fnb/bills/${bill.id}/lines/${confirm.line.id}/discount/remove`, { idempotencyKey: newIdempotencyKey(), body: base, reload });
+            if (done !== null) setConfirm(null);
+
+            return;
+        }
+
+        if (confirm.kind === 'discount') {
+            const value = discountValue();
+
+            setBadDiscount(value === undefined || (value !== null && value < 1));
+            if (value === undefined || (value !== null && value < 1)) return;
+            const done = await action.run(`/fnb/bills/${bill.id}/lines/${confirm.line.id}/discount`, { idempotencyKey: newIdempotencyKey(), body: { ...base, kind: discount.kind, value, approval_id: ready?.id ?? null }, reload, onFailure });
+            if (done !== null) setConfirm(null);
+
+            return;
+        }
+
         const url = confirm.kind === 'void' ? `/fnb/bills/${bill.id}/lines/${confirm.line.id}/void` : `/fnb/bills/${bill.id}/cancel`;
-        const done = await action.run(url, { idempotencyKey: newIdempotencyKey(), body: { lock_version: bill.lock_version, reason: reason.trim(), approval_id: ready?.id ?? null }, reload, onFailure });
+        const done = await action.run(url, { idempotencyKey: newIdempotencyKey(), body: { ...base, approval_id: ready?.id ?? null }, reload, onFailure });
         if (done !== null) setConfirm(null);
     }
 
     async function requestApproval() {
-        if (confirm === null) return;
-        const url = confirm.kind === 'void' ? `/fnb/bills/${bill.id}/lines/${confirm.line.id}/void-request` : `/fnb/bills/${bill.id}/cancel-request`;
-        const done = await action.run(url, { idempotencyKey: newIdempotencyKey(), body: { reason: reason.trim() }, reload });
+        if (confirm === null || confirm.kind === 'undiscount') return;
+        let body: Record<string, unknown> = { reason: reason.trim() };
+        let url = confirm.kind === 'cancel' ? `/fnb/bills/${bill.id}/cancel-request` : `/fnb/bills/${bill.id}/lines/${confirm.line.id}/void-request`;
+
+        if (confirm.kind === 'discount') {
+            const value = discountValue();
+
+            setBadDiscount(value === undefined);
+            if (value === undefined) return;
+            url = `/fnb/bills/${bill.id}/lines/${confirm.line.id}/discount-request`;
+            body = { ...body, kind: discount.kind, value };
+        }
+
+        const done = await action.run(url, { idempotencyKey: newIdempotencyKey(), body, reload });
         if (done !== null) {
             setRequested(true);
             setNeedsApproval(false);
@@ -258,8 +304,9 @@ export default function BillPage({ view }: { view: BillView }) {
                                 <li className={`flex flex-col gap-1 py-2 ${l.status === 'voided' || l.status === 'removed' ? 'text-muted-foreground line-through' : ''}`} key={l.id}>
                                     <div className="flex items-start justify-between gap-2">
                                         <span className="font-medium">{lineTitle(l)}</span>
-                                        <span className="whitespace-nowrap tabular-nums">{money(l.line_total_minor)}</span>
+                                        <span className="whitespace-nowrap tabular-nums">{l.discount_minor > 0 ? <span className="mr-2 text-xs text-muted-foreground line-through">{money(l.gross_minor)}</span> : null}{money(l.line_total_minor)}</span>
                                     </div>
+                                    {l.discount_kind !== null ? <p className="text-xs text-muted-foreground" data-testid="line-discount">{l.discount_kind === 'comp' ? t('fnb.bill.discountComp', { reason: l.discount_reason ?? '' }) : t('fnb.bill.discountLine', { amount: money(l.discount_minor), how: l.discount_kind === 'percent' ? `${((l.discount_value ?? 0) / 100).toString()}%` : t('fnb.bill.discountFixed'), reason: l.discount_reason ?? '' })}</p> : null}
                                     {l.modifiers.length > 0 ? <p className="text-xs text-muted-foreground">{l.modifiers.map((m) => m.name).join(', ')}</p> : null}
                                     {l.note !== null ? <p className="text-xs text-muted-foreground">“{l.note}”</p> : null}
                                     <div className="flex flex-wrap items-center gap-2">
@@ -267,6 +314,8 @@ export default function BillPage({ view }: { view: BillView }) {
                                         {l.status === 'sent' && l.station !== 'none' ? <StatusBadge label={t(`fnb.bill.prep.${l.prep_status}` as MessageKey)} tone={PREP_TONE[l.prep_status]} /> : null}
                                         {l.status === 'voided' && l.void_reason !== null ? <span className="text-xs">{t('fnb.bill.voidReason', { reason: l.void_reason })}</span> : null}
                                         {open && operate && l.status === 'pending' ? <Button disabled={action.busy} onClick={() => void remove(l)} size="sm" type="button" variant="outline">{t('fnb.bill.remove')}</Button> : null}
+                                        {open && view.may.discount && (l.status === 'pending' || l.status === 'sent') ? <Button disabled={action.busy} onClick={() => openConfirm({ kind: 'discount', line: l })} size="sm" type="button" variant="outline">{t('fnb.bill.discount')}</Button> : null}
+                                        {open && view.may.discount && l.discount_kind !== null ? <Button disabled={action.busy} onClick={() => openConfirm({ kind: 'undiscount', line: l })} size="sm" type="button" variant="outline">{t('fnb.bill.discountRemove')}</Button> : null}
                                         {open && operate && l.status === 'sent' ? <Button disabled={action.busy} onClick={() => openConfirm({ kind: 'void', line: l })} size="sm" type="button" variant="outline">{t('fnb.bill.void')}</Button> : null}
                                     </div>
                                 </li>
@@ -275,7 +324,8 @@ export default function BillPage({ view }: { view: BillView }) {
                     )}
 
                     <dl className="flex flex-col gap-1 border-t border-border pt-3 text-sm" data-testid="bill-totals">
-                        <div className="flex justify-between"><dt>{t('fnb.bill.subtotal')}</dt><dd className="tabular-nums">{money(totals.subtotal_minor)}</dd></div>
+                        <div className="flex justify-between"><dt>{t('fnb.bill.subtotal')}</dt><dd className="tabular-nums">{money(totals.subtotal_minor + totals.discount_minor)}</dd></div>
+                        {totals.discount_minor > 0 ? <div className="flex justify-between"><dt>{t('fnb.bill.discounts')}</dt><dd className="tabular-nums" data-testid="bill-discounts">−{money(totals.discount_minor)}</dd></div> : null}
                         {totals.scheme_missing ? null : (
                             <>
                                 <div className="flex justify-between"><dt>{t('fnb.bill.service')}</dt><dd className="tabular-nums">{money(totals.service_charge_minor)}</dd></div>
@@ -420,16 +470,30 @@ export default function BillPage({ view }: { view: BillView }) {
             <Dialog
                 footer={<>
                     <Button disabled={action.busy} onClick={() => setConfirm(null)} type="button" variant="outline">{t('fnb.bill.close')}</Button>
-                    {waiting === undefined || ready !== undefined ? <Button disabled={reason.trim() === ''} loading={action.busy} onClick={() => void submitConfirm()} type="button">{confirm?.kind === 'void' ? t('fnb.bill.confirmVoid') : t('fnb.bill.confirmCancel')}</Button> : null}
+                    {waiting === undefined || ready !== undefined ? <Button disabled={reason.trim() === ''} loading={action.busy} onClick={() => void submitConfirm()} type="button">{confirm?.kind === 'void' ? t('fnb.bill.confirmVoid') : confirm?.kind === 'discount' ? t(discountComp ? 'fnb.bill.confirmComp' : 'fnb.bill.confirmDiscount') : confirm?.kind === 'undiscount' ? t('fnb.bill.confirmUndiscount') : t('fnb.bill.confirmCancel')}</Button> : null}
                 </>}
                 onClose={() => setConfirm(null)}
                 open={confirm !== null}
-                title={confirm === null ? '' : confirm.kind === 'void' ? t('fnb.bill.voidTitle', { item: lineTitle(confirm.line) }) : t('fnb.bill.cancelTitle', { number: bill.number })}
+                title={confirm === null ? '' : confirm.kind === 'void' ? t('fnb.bill.voidTitle', { item: lineTitle(confirm.line) }) : confirm.kind === 'discount' ? t('fnb.bill.discountTitle', { item: lineTitle(confirm.line) }) : confirm.kind === 'undiscount' ? t('fnb.bill.undiscountTitle', { item: lineTitle(confirm.line) }) : t('fnb.bill.cancelTitle', { number: bill.number })}
             >
                 {confirm !== null && (
                     <div className="flex flex-col gap-3">
-                        <p className="text-sm text-muted-foreground">{confirm.kind === 'void' ? t('fnb.bill.voidHint') : t('fnb.bill.cancelHint')}</p>
+                        <p className="text-sm text-muted-foreground">{confirm.kind === 'void' ? t('fnb.bill.voidHint') : confirm.kind === 'discount' ? t('fnb.bill.discountHint', { gross: money(confirm.line.gross_minor) }) : confirm.kind === 'undiscount' ? t('fnb.bill.undiscountHint') : t('fnb.bill.cancelHint')}</p>
                         {failure}
+                        {confirm.kind === 'discount' ? (
+                            <div className="grid gap-3 sm:grid-cols-2">
+                                <FormField error={action.fieldError('kind')} field="kind" label={t('fnb.bill.discountKind')}>
+                                    <Select onChange={(e) => setDiscount({ ...discount, kind: e.target.value as DiscountForm['kind'] })} value={discount.kind}>
+                                        {(['percent', 'amount', 'comp'] as const).map((k) => <option key={k} value={k}>{t(`fnb.bill.discountKind.${k}` as MessageKey)}</option>)}
+                                    </Select>
+                                </FormField>
+                                {discountComp ? null : (
+                                    <FormField error={badDiscount ? t('fnb.bill.discountBad') : action.fieldError('value')} field="value" label={discount.kind === 'percent' ? t('fnb.bill.discountPercent') : t('fnb.bill.discountAmount', { currency: view.currency })}>
+                                        <Input inputMode="decimal" onChange={(e) => setDiscount({ ...discount, value: e.target.value })} value={discount.value} />
+                                    </FormField>
+                                )}
+                            </div>
+                        ) : null}
                         <FormField error={action.fieldError('reason')} field="reason" label={t('fnb.bill.reason')}>
                             <Input maxLength={200} onChange={(e) => setReason(e.target.value)} value={reason} />
                         </FormField>

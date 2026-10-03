@@ -57,6 +57,7 @@ final class DevelopmentSeeder extends Seeder
         'finance.report.view',
         'finance.revenue.view',
         'fnb.cashier.operate',
+        'fnb.discount.apply',
         'fnb.pos.operate',
         'fnb.setup.manage',
         'front-office.availability.view',
