@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Modules\FnbSales\Presentation\Http\Controllers\SetupController;
 use App\Modules\Finance\Presentation\Http\Controllers\BudgetController;
 use App\Modules\Finance\Presentation\Http\Controllers\CashReconciliationController;
 use App\Modules\Finance\Presentation\Http\Controllers\CorrectionController;
@@ -531,6 +532,25 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->group(
         Route::get('/foreign-guests/export', [ReportController::class, 'exportForeignGuests'])->name('reports.foreign.export');
         Route::get('/audit', [ReportController::class, 'audit'])->name('reports.audit');
     });
+});
+
+Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix('fnb')->group(function (): void {
+    $id = '[0-9a-z]{26}';
+
+    Route::get('/outlets', [SetupController::class, 'outlets'])->name('fnb.outlets');
+    Route::post('/outlets', [SetupController::class, 'storeOutlet'])->name('fnb.outlets.store');
+    Route::post('/outlets/{id}', [SetupController::class, 'updateOutlet'])->where('id', $id)->name('fnb.outlets.update');
+    Route::get('/outlets/{id}/tables', [SetupController::class, 'tables'])->where('id', $id)->name('fnb.tables');
+    Route::post('/outlets/{id}/tables', [SetupController::class, 'storeTable'])->where('id', $id)->name('fnb.tables.store');
+    Route::post('/tables/{id}', [SetupController::class, 'updateTable'])->where('id', $id)->name('fnb.tables.update');
+    Route::get('/menu', [SetupController::class, 'menu'])->name('fnb.menu');
+    Route::post('/outlets/{id}/categories', [SetupController::class, 'storeCategory'])->where('id', $id)->name('fnb.categories.store');
+    Route::post('/categories/{id}', [SetupController::class, 'updateCategory'])->where('id', $id)->name('fnb.categories.update');
+    Route::post('/items', [SetupController::class, 'storeItem'])->name('fnb.items.store');
+    Route::post('/items/{id}', [SetupController::class, 'updateItem'])->where('id', $id)->name('fnb.items.update');
+    Route::post('/items/{id}/availability', [SetupController::class, 'availability'])->where('id', $id)->name('fnb.items.availability');
+    Route::post('/modifier-groups', [SetupController::class, 'storeGroup'])->name('fnb.groups.store');
+    Route::post('/modifier-groups/{id}', [SetupController::class, 'updateGroup'])->where('id', $id)->name('fnb.groups.update');
 });
 
 Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix('finance')->group(function (): void {

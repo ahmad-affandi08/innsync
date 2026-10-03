@@ -1,7 +1,7 @@
 import { type DataGridColumn } from '@/components/ui/data-grid';
 import { StatusBadge, type StatusTone } from '@/components/ui/status-badge';
 import { useFormatters, useTranslation } from '@/shared/i18n/i18n';
-import { currencyExponent, parseMajorToMinor } from '@/shared/money/money';
+import { minorToMajorText, parseMajorToMinor } from '@/shared/money/money';
 import { cn } from '@/shared/lib/utils';
 import type { MessageKey } from '@/locales/en/index';
 
@@ -239,15 +239,7 @@ export function parseSignedMajorToMinor(text: string, currency: string): number 
     return minor === null ? null : negative && minor !== 0 ? -minor : minor;
 }
 
-/** Minor units as the text of an input: "-1500.5" for -150050 in a currency with two decimals. */
-export function minorToMajorText(minor: number, currency: string): string {
-    const exponent = currencyExponent(currency);
-    const absolute = Math.abs(minor);
-    const whole = Math.trunc(absolute / 10 ** exponent);
-    const fraction = String(absolute % 10 ** exponent).padStart(exponent, '0').replace(/0+$/, '');
-
-    return `${minor < 0 ? '-' : ''}${whole}${fraction === '' ? '' : `.${fraction}`}`;
-}
+export { minorToMajorText };
 
 /** The management P&L as the server sends it. Money is in minor units; a margin in basis points. */
 export type PnlOutlet = { code: string; name: string | null; revenue_minor: number };

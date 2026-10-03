@@ -89,4 +89,5 @@ export const rates = {
     'tax.scope': 'Berlaku untuk',
     'tax.scope.rooms': 'Kamar',
     'tax.scope.laundry': 'Laundry',
+    'tax.scope.fnb': 'Makanan dan minuman',
 } as const

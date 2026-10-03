@@ -19,6 +19,7 @@ import {
     Settings2,
     ShieldCheck,
     Shirt,
+    UtensilsCrossed,
     type LucideIcon,
 } from 'lucide-react';
 import { useState, type ReactNode } from 'react';
@@ -48,6 +49,7 @@ const MODULES: ModuleEntry[] = [
     { key: 'front-office', href: '/front-office/room-board', icon: ConciergeBell, label: 'fo.nav.label', prefixes: ['/front-office'], group: 'operations' },
     { key: 'housekeeping', href: '/housekeeping', icon: BedDouble, label: 'hk.nav.label', prefixes: ['/housekeeping'], group: 'operations' },
     { key: 'laundry', href: '/laundry', icon: Shirt, label: 'ldy.nav.label', prefixes: ['/laundry'], group: 'operations' },
+    { key: 'fnb', href: '/fnb/outlets', icon: UtensilsCrossed, label: 'fnb.nav.label', prefixes: ['/fnb'], group: 'operations' },
     { key: 'inventory', href: '/inventory/stock', icon: Warehouse, label: 'inv.nav.label', prefixes: ['/inventory'], group: 'operations' },
     { key: 'finance', href: '/finance/payables', icon: Landmark, label: 'fin.nav.label', prefixes: ['/finance'], group: 'operations' },
     { key: 'dashboard', href: '/dashboard', icon: LayoutDashboard, label: 'rpt.nav.dashboard', prefixes: ['/dashboard'], group: 'insight' },

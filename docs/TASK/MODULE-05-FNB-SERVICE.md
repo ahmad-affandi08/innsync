@@ -14,17 +14,17 @@
 
 | Task ID | FR | Priority | Requirement | Status |
 | --- | --- | --- | --- | --- |
-| TASK-FBS-001 | FR-FBS-001 | Wajib | Menampilkan denah meja per outlet dengan status kosong, terisi, dan sudah memesan; kasir dapat membuka bill dari meja atau dari nomor kamar. | TODO |
-| TASK-FBS-002 | FR-FBS-002 | Wajib | Mengambil pesanan dengan katalog menu bergambar, kategori, varian, catatan khusus, dan jumlah porsi. | TODO |
+| TASK-FBS-001 | FR-FBS-001 | Wajib | Menampilkan denah meja per outlet dengan status kosong, terisi, dan sudah memesan; kasir dapat membuka bill dari meja atau dari nomor kamar. | IN_PROGRESS |
+| TASK-FBS-002 | FR-FBS-002 | Wajib | Mengambil pesanan dengan katalog menu bergambar, kategori, varian, catatan khusus, dan jumlah porsi. | IN_PROGRESS |
 | TASK-FBS-003 | FR-FBS-003 | Wajib | Mengirim pesanan ke layar dapur dan bar sesuai kategori item, serta mencetak tiket pada printer masing-masing bila diperlukan. | TODO |
 | TASK-FBS-004 | FR-FBS-004 | Sebaiknya | Mendukung pemisahan bill, penggabungan bill, dan pemindahan pesanan antar meja. | TODO |
 | TASK-FBS-005 | FR-FBS-005 | Wajib | Void item dan pembatalan bill hanya dapat dilakukan dengan alasan dan persetujuan penyelia; seluruh tindakan tercatat pada jejak audit. | TODO |
 | TASK-FBS-006 | FR-FBS-006 | Wajib | Diskon dan pemberian gratis (complimentary) memerlukan alasan dan persetujuan sesuai ambang yang dikonfigurasi. | TODO |
 | TASK-FBS-007 | FR-FBS-007 | Wajib | Menerima pembayaran tunai, QRIS, kartu melalui EDC, dan pembebanan ke kamar. Pembebanan ke kamar wajib memvalidasi bahwa kamar berstatus terisi dan mencocokkan nama tamu. | TODO |
-| TASK-FBS-008 | FR-FBS-008 | Wajib | Menghitung pajak dan service charge secara otomatis sesuai konfigurasi per outlet dan menampilkannya terpisah pada struk. | TODO |
+| TASK-FBS-008 | FR-FBS-008 | Wajib | Menghitung pajak dan service charge secara otomatis sesuai konfigurasi per outlet dan menampilkannya terpisah pada struk. | IN_PROGRESS |
 | TASK-FBS-009 | FR-FBS-009 | Wajib | Membuka dan menutup shift kasir dengan penghitungan kas fisik, kas sistem, serta pencatatan selisih beserta alasan. | TODO |
 | TASK-FBS-010 | FR-FBS-010 | Wajib | POS tetap dapat mencatat transaksi saat jaringan terputus melalui antrean lokal terenkripsi. Setiap transaksi memiliki idempotency key dan status sinkronisasi sehingga pemulihan jaringan tidak menghasilkan bill, pembayaran, atau pengurangan stok ganda. | TODO |
-| TASK-FBS-011 | FR-FBS-011 | Wajib | Mendukung modifier/add-on, tingkat kematangan, pilihan varian, dan catatan khusus yang dapat memengaruhi harga dan resep tanpa membuat item menu duplikat. | TODO |
+| TASK-FBS-011 | FR-FBS-011 | Wajib | Mendukung modifier/add-on, tingkat kematangan, pilihan varian, dan catatan khusus yang dapat memengaruhi harga dan resep tanpa membuat item menu duplikat. | IN_PROGRESS |
 | TASK-FBS-012 | FR-FBS-012 | Wajib | Perubahan bill oleh beberapa perangkat menggunakan kontrol konkurensi; sistem mencegah lost update dan menampilkan konflik bila bill telah berubah di perangkat lain. | TODO |
 | TASK-FBS-013 | FR-FBS-013 | Wajib | Pembayaran QRIS/daring memiliki state initiated, pending, paid, failed, expired, unknown, dan refunded. Status unknown tidak boleh dianggap lunas sebelum rekonsiliasi atau callback valid diterima. | TODO |
 | TASK-FBS-014 | FR-FBS-014 | Wajib | Refund, void setelah pembayaran, dan reprint struk memerlukan hak akses sesuai kebijakan, alasan, serta referensi transaksi awal pada audit trail. | TODO |
@@ -40,6 +40,18 @@
 | TASK-FBS-032 | FR-FBS-032 | Wajib | Menampilkan SOP tugas harian, mingguan, dan bulanan outlet beserta persentase penyelesaian yang dikirim ke Human Resource. | TODO |
 | TASK-FBS-033 | FR-FBS-033 | Wajib | Membuat laporan kerusakan yang diteruskan ke modul Maintenance. | TODO |
 | TASK-FBS-034 | FR-FBS-034 | Wajib | Mengajukan permintaan pembelian alat dan bahan ke modul Purchasing. | TODO |
+
+## Progress notes
+
+### Slice 20 (2026-10-03): outlets, tables and the menu (the setup the POS stands on)
+
+- Status: `TASK-FBS-001`, `-002`, `-008` and `-011` are `IN_PROGRESS`: their setup half is built (outlets and tables, the menu with variants and groups of choices, the charge scheme per outlet); taking orders, the floor plan with live status, bills and the receipt come in the next slices. ADR/BR: BR-005 (charges are computed by the scheme of a scope, effective-dated), property scope, append-only history of what a bill priced.
+- Context: new bounded context `FnbSales` (`app/Modules/FnbSales`), migration 71 (`fnb_outlets`, `fnb_tables`, `fnb_menu_categories`, `fnb_menu_items`, `fnb_item_variants`, `fnb_modifier_groups`, `fnb_modifiers`, `fnb_item_modifier_groups`), `SetupStore` with `DatabaseSetupStore`, `OutletService`, `MenuService`, `SetupController`, routes under `/fnb`, pages `fnb-sales/pages/outlets|tables|menu`. Permissions: `fnb.setup.manage` (sets everything up) and `fnb.pos.operate` (sees the setup and marks items sold out).
+- **Outlets.** A short code that never changes, a kind (restaurant, bar, cafe, room service, banquet, other), the revenue scope whose service charge and tax the outlet follows (`fnb` is a new scope under property tax, effective-dated like `rooms` and `laundry`; the owner defines its scheme there) and whether its prices already include them. Baseline: prices are quoted without service charge and tax, as is usual on hotel menus. Outlets and tables are deactivated, never removed.
+- **Menu.** Categories per outlet carry the station that prepares what is in them (kitchen, bar or none), so a ticket will reach the right screen; an item may override the station. An item has a price, sizes or kinds (variants) with their own price, and takes groups of choices (add-ons, doneness) with a least and most to pick and an extra price per choice, so one dish is one item however it is ordered. Nothing is removed: variants and choices left out of an edit are deactivated, and put back by the same name as the same row. Price changes are audited (before and after).
+- **Sold out.** Whoever takes orders may mark an item sold out or on sale again (audited); only the menu's owner changes the rest. The kitchen will use the same switch (`TASK-KIT-005`).
+- Not yet: bills and the floor plan (`FBS-001` live status), pictures of the dishes, price lists and schedules per outlet or channel (`FBS-015`), recipes that make a variant or a choice consume stock (`KIT-003`, `KIT-004`), and the revenue source mapping of an outlet to the reporting outlets (the owner does it where the revenue outlets are mapped, as for laundry).
+- Evidence: `tests/Feature/FnbSales/SetupHttpTest.php` (outlet setup with lock and audit, the fnb scheme can be defined, tables unique per outlet, variants with own price and their deactivation and return, groups of choices with their limits, sold out by a waiter, permissions, property scope). Seen in the browser: outlet, table, category, group and item created, item marked sold out.
 
 ## Required engineering checks
 

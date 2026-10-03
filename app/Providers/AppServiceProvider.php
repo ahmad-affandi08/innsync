@@ -10,6 +10,8 @@ use App\Modules\Finance\Application\ExceptionStore;
 use App\Modules\Finance\Application\FinanceAuditQueries;
 use App\Modules\Finance\Application\FinanceExportQueries;
 use App\Modules\Finance\Application\ManagementReportQueries;
+use App\Modules\FnbSales\Application\SetupStore;
+use App\Modules\FnbSales\Infrastructure\DatabaseSetupStore;
 use App\Modules\Finance\Application\StockReportQueries;
 use App\Modules\Finance\Application\PayableStore;
 use App\Modules\Finance\Application\PettyCashStore;
@@ -399,6 +401,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(PettyCashStore::class, DatabasePettyCashStore::class);
         $this->app->bind(ManagementReportQueries::class, DatabaseManagementReportQueries::class);
         $this->app->bind(StockReportQueries::class, DatabaseStockReportQueries::class);
+        $this->app->bind(SetupStore::class, DatabaseSetupStore::class);
         $this->app->bind(FinanceExportQueries::class, DatabaseFinanceExportQueries::class);
         $this->app->bind(RecurringExpenseStore::class, DatabaseRecurringExpenseStore::class);
         $this->app->bind(BudgetStore::class, DatabaseBudgetStore::class);

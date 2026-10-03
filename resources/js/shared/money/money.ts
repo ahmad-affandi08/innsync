@@ -66,3 +66,13 @@ export function parseMajorToMinor(text: string, currency: string): number | null
 
     return Number.isSafeInteger(minor) ? minor : null
 }
+
+/** Minor units as the text of an input: "-1500.5" for -150050 in a currency with two decimals. */
+export function minorToMajorText(minor: number, currency: string): string {
+    const exponent = currencyExponent(currency);
+    const absolute = Math.abs(minor);
+    const whole = Math.trunc(absolute / 10 ** exponent);
+    const fraction = String(absolute % 10 ** exponent).padStart(exponent, '0').replace(/0+$/, '');
+
+    return `${minor < 0 ? '-' : ''}${whole}${fraction === '' ? '' : `.${fraction}`}`;
+}

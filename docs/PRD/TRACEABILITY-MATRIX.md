@@ -106,17 +106,17 @@ Every row must eventually point to implementation evidence and tests. Status is 
 | FR-LDY-010 | Laundry | Sebaiknya | ../TASK/MODULE-04-LAUNDRY.md | TODO |
 | FR-LDY-011 | Laundry | Wajib | ../TASK/MODULE-04-LAUNDRY.md | TODO |
 | FR-LDY-012 | Laundry | Wajib | ../TASK/MODULE-04-LAUNDRY.md | TODO |
-| FR-FBS-001 | F&B Service | Wajib | ../TASK/MODULE-05-FNB-SERVICE.md | TODO |
-| FR-FBS-002 | F&B Service | Wajib | ../TASK/MODULE-05-FNB-SERVICE.md | TODO |
+| FR-FBS-001 | F&B Service | Wajib | ../TASK/MODULE-05-FNB-SERVICE.md | IN_PROGRESS |
+| FR-FBS-002 | F&B Service | Wajib | ../TASK/MODULE-05-FNB-SERVICE.md | IN_PROGRESS |
 | FR-FBS-003 | F&B Service | Wajib | ../TASK/MODULE-05-FNB-SERVICE.md | TODO |
 | FR-FBS-004 | F&B Service | Sebaiknya | ../TASK/MODULE-05-FNB-SERVICE.md | TODO |
 | FR-FBS-005 | F&B Service | Wajib | ../TASK/MODULE-05-FNB-SERVICE.md | TODO |
 | FR-FBS-006 | F&B Service | Wajib | ../TASK/MODULE-05-FNB-SERVICE.md | TODO |
 | FR-FBS-007 | F&B Service | Wajib | ../TASK/MODULE-05-FNB-SERVICE.md | TODO |
-| FR-FBS-008 | F&B Service | Wajib | ../TASK/MODULE-05-FNB-SERVICE.md | TODO |
+| FR-FBS-008 | F&B Service | Wajib | ../TASK/MODULE-05-FNB-SERVICE.md | IN_PROGRESS |
 | FR-FBS-009 | F&B Service | Wajib | ../TASK/MODULE-05-FNB-SERVICE.md | TODO |
 | FR-FBS-010 | F&B Service | Wajib | ../TASK/MODULE-05-FNB-SERVICE.md | TODO |
-| FR-FBS-011 | F&B Service | Wajib | ../TASK/MODULE-05-FNB-SERVICE.md | TODO |
+| FR-FBS-011 | F&B Service | Wajib | ../TASK/MODULE-05-FNB-SERVICE.md | IN_PROGRESS |
 | FR-FBS-012 | F&B Service | Wajib | ../TASK/MODULE-05-FNB-SERVICE.md | TODO |
 | FR-FBS-013 | F&B Service | Wajib | ../TASK/MODULE-05-FNB-SERVICE.md | TODO |
 | FR-FBS-014 | F&B Service | Wajib | ../TASK/MODULE-05-FNB-SERVICE.md | TODO |

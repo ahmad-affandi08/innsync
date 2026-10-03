@@ -1,5 +1,5 @@
 import { Link } from '@inertiajs/react';
-import { ArrowUpRight, BedDouble, ChartNoAxesCombined, ConciergeBell, Landmark, LayoutDashboard, Settings2, ShieldCheck, Shirt, Warehouse, type LucideIcon } from 'lucide-react';
+import { ArrowUpRight, BedDouble, ChartNoAxesCombined, ConciergeBell, Landmark, LayoutDashboard, Settings2, ShieldCheck, Shirt, UtensilsCrossed, Warehouse, type LucideIcon } from 'lucide-react';
 
 import { AppFrame } from '@/components/layout/app-frame';
 import { Card } from '@/components/ui/card';
@@ -15,6 +15,7 @@ const CARDS: readonly Module[] = [
     { href: '/front-office/room-board', icon: ConciergeBell, label: 'fo.nav.label', about: 'home.about.frontOffice' },
     { href: '/housekeeping', icon: BedDouble, label: 'hk.nav.label', about: 'home.about.housekeeping' },
     { href: '/laundry', icon: Shirt, label: 'ldy.nav.label', about: 'home.about.laundry' },
+    { href: '/fnb/outlets', icon: UtensilsCrossed, label: 'fnb.nav.label', about: 'home.about.fnb' },
     { href: '/inventory/stock', icon: Warehouse, label: 'inv.nav.label', about: 'home.about.inventory' },
     { href: '/finance/payables', icon: Landmark, label: 'fin.nav.label', about: 'home.about.finance' },
     { href: '/reports', icon: ChartNoAxesCombined, label: 'rpt.nav.reports', about: 'home.about.reports' },

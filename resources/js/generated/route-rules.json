@@ -133,6 +133,12 @@
             "to"
         ]
     },
+    "GET /fnb/menu": {
+        "required": [],
+        "declared": [
+            "outlet"
+        ]
+    },
     "GET /front-office/availability": {
         "required": [],
         "declared": [
@@ -1042,6 +1048,202 @@
         "required": [],
         "declared": [
             "note"
+        ]
+    },
+    "POST /fnb/categories/{id}": {
+        "required": [
+            "active",
+            "lock_version",
+            "name",
+            "sort_order",
+            "station"
+        ],
+        "declared": [
+            "active",
+            "lock_version",
+            "name",
+            "sort_order",
+            "station"
+        ]
+    },
+    "POST /fnb/items": {
+        "required": [
+            "category_id",
+            "code",
+            "name",
+            "price_minor",
+            "sort_order",
+            "variants.*.name",
+            "variants.*.price_minor"
+        ],
+        "declared": [
+            "category_id",
+            "code",
+            "description",
+            "group_ids",
+            "group_ids.*",
+            "name",
+            "price_minor",
+            "sort_order",
+            "station",
+            "variants",
+            "variants.*.id",
+            "variants.*.name",
+            "variants.*.price_minor"
+        ]
+    },
+    "POST /fnb/items/{id}": {
+        "required": [
+            "active",
+            "category_id",
+            "lock_version",
+            "name",
+            "price_minor",
+            "sort_order",
+            "variants.*.name",
+            "variants.*.price_minor"
+        ],
+        "declared": [
+            "active",
+            "category_id",
+            "description",
+            "group_ids",
+            "group_ids.*",
+            "lock_version",
+            "name",
+            "price_minor",
+            "sort_order",
+            "station",
+            "variants",
+            "variants.*.id",
+            "variants.*.name",
+            "variants.*.price_minor"
+        ]
+    },
+    "POST /fnb/items/{id}/availability": {
+        "required": [
+            "available",
+            "lock_version"
+        ],
+        "declared": [
+            "available",
+            "lock_version"
+        ]
+    },
+    "POST /fnb/modifier-groups": {
+        "required": [
+            "code",
+            "max_select",
+            "min_select",
+            "modifiers",
+            "modifiers.*.name",
+            "modifiers.*.price_delta_minor",
+            "name"
+        ],
+        "declared": [
+            "code",
+            "max_select",
+            "min_select",
+            "modifiers",
+            "modifiers.*.id",
+            "modifiers.*.name",
+            "modifiers.*.price_delta_minor",
+            "name"
+        ]
+    },
+    "POST /fnb/modifier-groups/{id}": {
+        "required": [
+            "active",
+            "lock_version",
+            "max_select",
+            "min_select",
+            "modifiers",
+            "modifiers.*.name",
+            "modifiers.*.price_delta_minor",
+            "name"
+        ],
+        "declared": [
+            "active",
+            "lock_version",
+            "max_select",
+            "min_select",
+            "modifiers",
+            "modifiers.*.id",
+            "modifiers.*.name",
+            "modifiers.*.price_delta_minor",
+            "name"
+        ]
+    },
+    "POST /fnb/outlets": {
+        "required": [
+            "charge_scope",
+            "code",
+            "kind",
+            "name",
+            "prices_include_charges"
+        ],
+        "declared": [
+            "charge_scope",
+            "code",
+            "kind",
+            "name",
+            "prices_include_charges"
+        ]
+    },
+    "POST /fnb/outlets/{id}": {
+        "required": [
+            "active",
+            "charge_scope",
+            "kind",
+            "lock_version",
+            "name",
+            "prices_include_charges"
+        ],
+        "declared": [
+            "active",
+            "charge_scope",
+            "kind",
+            "lock_version",
+            "name",
+            "prices_include_charges"
+        ]
+    },
+    "POST /fnb/outlets/{id}/categories": {
+        "required": [
+            "code",
+            "name",
+            "sort_order",
+            "station"
+        ],
+        "declared": [
+            "code",
+            "name",
+            "sort_order",
+            "station"
+        ]
+    },
+    "POST /fnb/outlets/{id}/tables": {
+        "required": [
+            "code",
+            "seats"
+        ],
+        "declared": [
+            "area",
+            "code",
+            "seats"
+        ]
+    },
+    "POST /fnb/tables/{id}": {
+        "required": [
+            "active",
+            "lock_version",
+            "seats"
+        ],
+        "declared": [
+            "active",
+            "area",
+            "lock_version",
+            "seats"
         ]
     },
     "POST /front-office/cashier/settings": {

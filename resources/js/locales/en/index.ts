@@ -1,5 +1,6 @@
 import { common } from './common.ts'
 import { finance } from './finance.ts'
+import { fnb } from './fnb.ts'
 import { foundation } from './foundation.ts'
 import { frontOffice } from './frontoffice.ts'
 import { housekeeping } from './housekeeping.ts'
@@ -15,6 +16,6 @@ import { rates } from './rates.ts'
 import { ui } from './ui.ts'
 
 /** English is the source dictionary: it defines the key set every other locale must satisfy. */
-export const en = { ...common, ...finance, ...foundation, ...frontOffice, ...housekeeping, ...identity, ...inventory, ...purchasingReceiving, ...laundry, ...offline, ...property, ...purchasingReports, ...rates, ...reporting, ...ui } as const
+export const en = { ...common, ...finance, ...fnb, ...foundation, ...frontOffice, ...housekeeping, ...identity, ...inventory, ...purchasingReceiving, ...laundry, ...offline, ...property, ...purchasingReports, ...rates, ...reporting, ...ui } as const
 
 export type MessageKey = keyof typeof en

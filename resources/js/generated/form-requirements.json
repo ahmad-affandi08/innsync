@@ -100,6 +100,25 @@
         "name",
         "remind_days"
     ],
+    "fnb-sales/pages/menu": [
+        "category_id",
+        "code",
+        "max_select",
+        "min_select",
+        "name",
+        "price_minor",
+        "sort_order"
+    ],
+    "fnb-sales/pages/outlets": [
+        "charge_scope",
+        "code",
+        "kind",
+        "name"
+    ],
+    "fnb-sales/pages/tables": [
+        "code",
+        "seats"
+    ],
     "front-office/pages/cashier": [
         "amount_minor",
         "counted_cash_minor",
