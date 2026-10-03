@@ -388,9 +388,12 @@ final readonly class SupplierInvoiceService
         }
 
         $this->store->addLedgerEntry($property, ['id' => $this->ids->next(), 'supplier_id' => $invoice['supplier_id'], 'kind' => 'invoice', 'amount_minor' => (int) $invoice['total_minor'], 'ref_type' => 'supplier_invoice', 'ref_id' => $invoice['id'], 'ref_number' => $invoice['number'], 'business_date' => $date, 'created_by' => $actor], $at);
+        $supplier = $this->store->supplier($property, $invoice['supplier_id']);
+        $order = $this->store->order($property, $invoice['order_id']);
         $this->outbox->publish(new OutboxEvent($property, 'purchasing.invoice.recognised', $invoice['id'], 1, [
-            'invoice_id' => $invoice['id'], 'number' => $invoice['number'], 'supplier_id' => $invoice['supplier_id'], 'order_id' => $invoice['order_id'], 'total_minor' => (int) $invoice['total_minor'], 'tax_minor' => (int) $invoice['tax_minor'],
-            'due_date' => substr((string) $invoice['due_date'], 0, 10), 'currency' => $this->currency->currencyOf($property), 'actor_id' => $actor,
+            'invoice_id' => $invoice['id'], 'number' => $invoice['number'], 'invoice_number' => $invoice['invoice_number'], 'invoice_date' => substr((string) $invoice['invoice_date'], 0, 10), 'supplier_id' => $invoice['supplier_id'],
+            'supplier_code' => $supplier['code'] ?? '', 'supplier_name' => $supplier['name'] ?? '', 'order_id' => $invoice['order_id'], 'order_number' => $order['number'] ?? null, 'total_minor' => (int) $invoice['total_minor'], 'tax_minor' => (int) $invoice['tax_minor'],
+            'due_date' => substr((string) $invoice['due_date'], 0, 10), 'business_date' => $date, 'currency' => $this->currency->currencyOf($property), 'actor_id' => $actor,
         ]));
     }
 

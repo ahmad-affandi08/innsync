@@ -104,6 +104,8 @@ final readonly class DashboardService
         'serious_complaints' => '/front-office/feedback',
         'company_over_limit' => '/front-office/companies',
         'stock_below_minimum' => '/inventory/stock',
+        'payables_overdue' => '/finance/payables?status=overdue',
+        'payables_due_soon' => '/finance/schedule',
     ];
 
     /**

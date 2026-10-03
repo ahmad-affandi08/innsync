@@ -54,6 +54,8 @@ export const reporting = {
     'rpt.alert.company_over_limit': 'Companies owing more than their credit limit',
     'rpt.alert.rooms_not_ready': 'Vacant rooms still dirty or in rework',
     'rpt.alert.stock_below_minimum': 'Items below their minimum stock',
+    'rpt.alert.payables_overdue': 'Supplier invoices past their due date',
+    'rpt.alert.payables_due_soon': 'Supplier invoices due in the next seven days',
     'rpt.centre.title': 'Reports',
     'rpt.centre.description': 'Reports grouped by theme. Each states when it was made, the business dates it covers, its filters and its source.',
     'rpt.centre.empty': 'You have no reports available.',

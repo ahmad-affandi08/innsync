@@ -2,6 +2,9 @@
 
 declare(strict_types=1);
 
+use App\Modules\Finance\Presentation\Http\Controllers\ExpenseAccountController;
+use App\Modules\Finance\Presentation\Http\Controllers\PayableController;
+use App\Modules\Finance\Presentation\Http\Controllers\SupplierPaymentController;
 use App\Modules\FrontOffice\Presentation\Http\Controllers\AvailabilityController;
 use App\Modules\FrontOffice\Presentation\Http\Controllers\CashierController;
 use App\Modules\FrontOffice\Presentation\Http\Controllers\ChecklistController;
@@ -518,4 +521,26 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->group(
         Route::get('/foreign-guests/export', [ReportController::class, 'exportForeignGuests'])->name('reports.foreign.export');
         Route::get('/audit', [ReportController::class, 'audit'])->name('reports.audit');
     });
+});
+
+Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix('finance')->group(function (): void {
+    $id = '[0-9a-hjkmnp-tv-z]{26}';
+
+    Route::get('/', fn () => redirect()->route('finance.payables'));
+    Route::get('/payables', [PayableController::class, 'index'])->name('finance.payables');
+    Route::get('/payables/{id}', [PayableController::class, 'show'])->where('id', $id)->name('finance.payables.show');
+    Route::post('/payables/{id}/classify', [PayableController::class, 'classify'])->where('id', $id)->name('finance.payables.classify');
+    Route::post('/payables/{id}/credits', [PayableController::class, 'applyCredit'])->where('id', $id)->name('finance.payables.credits');
+    Route::get('/aging', [PayableController::class, 'aging'])->name('finance.aging');
+    Route::get('/schedule', [PayableController::class, 'schedule'])->name('finance.schedule');
+    Route::get('/payments', [SupplierPaymentController::class, 'index'])->name('finance.payments');
+    Route::get('/payments/{id}', [SupplierPaymentController::class, 'show'])->where('id', $id)->name('finance.payments.show');
+    Route::post('/payments', [SupplierPaymentController::class, 'store'])->middleware(['idempotent'])->name('finance.payments.store');
+    Route::post('/payments/{id}/release', [SupplierPaymentController::class, 'release'])->where('id', $id)->name('finance.payments.release');
+    Route::post('/payments/{id}/cancel', [SupplierPaymentController::class, 'cancel'])->where('id', $id)->name('finance.payments.cancel');
+    Route::post('/payments/{id}/proofs', [SupplierPaymentController::class, 'addProof'])->where('id', $id)->name('finance.payments.proofs.store');
+    Route::get('/payments/{id}/proofs/{proof}', [SupplierPaymentController::class, 'proof'])->where('id', $id)->where('proof', $id)->name('finance.payments.proofs.show');
+    Route::get('/accounts', [ExpenseAccountController::class, 'index'])->name('finance.accounts');
+    Route::post('/accounts', [ExpenseAccountController::class, 'store'])->name('finance.accounts.store');
+    Route::post('/accounts/{id}', [ExpenseAccountController::class, 'update'])->where('id', $id)->name('finance.accounts.update');
 });

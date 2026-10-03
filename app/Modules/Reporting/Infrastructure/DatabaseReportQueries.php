@@ -146,6 +146,18 @@ final readonly class DatabaseReportQueries implements ReportQueries
             ->where('l.property_id', $pid)->where('i.is_active', true)->where('loc.is_active', true)->where('l.min_milli', '>', 0)->whereRaw('COALESCE(m.balance, 0) < l.min_milli');
         $alerts['stock_below_minimum'] = ['count' => (clone $low)->count(), 'items' => (clone $low)->orderBy('i.code')->limit(self::ALERT_EXAMPLES)->get(['i.code as item', 'loc.code as location'])->map(static fn ($r): string => $r->item.' · '.$r->location)->all()];
 
+        // What is owed to suppliers (FR-FIN-012): payables past their due date, and those that fall due in the next seven days. What is owed is the amount
+        // less the payments that were made and the credits applied.
+        $paid = DB::table('ap_payments')->where('status', 'paid')->groupBy('payable_id')->selectRaw('payable_id, SUM(amount_minor) as paid');
+        $credited = DB::table('ap_credit_applications')->groupBy('payable_id')->selectRaw('payable_id, SUM(amount_minor) as credit');
+        $owed = DB::table('ap_payables as p')->leftJoinSub($paid, 'x', 'x.payable_id', '=', 'p.id')->leftJoinSub($credited, 'y', 'y.payable_id', '=', 'p.id')->where('p.property_id', $pid)
+            ->whereRaw('(p.amount_minor - COALESCE(x.paid, 0) - COALESCE(y.credit, 0)) > 0');
+        $label = static fn ($r): string => $r->supplier_name.' · '.$r->document_number;
+        $overdue = (clone $owed)->where('p.due_date', '<', $today->toString());
+        $alerts['payables_overdue'] = ['count' => (clone $overdue)->count(), 'items' => (clone $overdue)->orderBy('p.due_date')->limit(self::ALERT_EXAMPLES)->get(['p.supplier_name', 'p.document_number'])->map($label)->all()];
+        $soon = (clone $owed)->whereBetween('p.due_date', [$today->toString(), $today->addDays(7)->toString()]);
+        $alerts['payables_due_soon'] = ['count' => (clone $soon)->count(), 'items' => (clone $soon)->orderBy('p.due_date')->limit(self::ALERT_EXAMPLES)->get(['p.supplier_name', 'p.document_number'])->map($label)->all()];
+
         return $alerts;
     }
 

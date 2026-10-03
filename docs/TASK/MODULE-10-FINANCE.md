@@ -22,16 +22,16 @@
 | TASK-FIN-003 | FR-FIN-003 | Wajib | Melakukan rekonsiliasi setoran kasir: kas fisik yang disetor dibandingkan dengan kas sistem per shift dan per kasir, dengan pencatatan selisih. | TODO |
 | TASK-FIN-004 | FR-FIN-004 | Sebaiknya | Merekonsiliasi penerimaan QRIS dan kartu terhadap mutasi rekening bank, termasuk pemotongan biaya transaksi. | TODO |
 | TASK-FIN-005 | FR-FIN-005 | Wajib | Memverifikasi dan mengunci transaksi hari sebelumnya setelah night audit sehingga tidak dapat diubah tanpa jurnal koreksi. | TODO |
-| TASK-FIN-006 | FR-FIN-006 | Wajib | Setiap posting keuangan menyimpan property, business date, event time, source document, actor, dan correlation ID agar rekonsiliasi lintas modul dapat dilakukan tanpa ambigu. | TODO |
-| TASK-FIN-010 | FR-FIN-010 | Wajib | Mengelola daftar akun biaya sederhana yang dikelompokkan per department dan per kategori. | TODO |
-| TASK-FIN-011 | FR-FIN-011 | Wajib | Mencatat hutang kepada pemasok dan vendor secara otomatis dari penerimaan barang dan faktur, lengkap dengan syarat pembayaran dan tanggal jatuh tempo. | TODO |
-| TASK-FIN-012 | FR-FIN-012 | Wajib | Menampilkan jadwal jatuh tempo pembayaran dan laporan umur hutang, serta mengirimkannya sebagai peringatan ke dashboard. | TODO |
-| TASK-FIN-013 | FR-FIN-013 | Wajib | Mencatat pembayaran kepada pemasok dan vendor, baik penuh maupun sebagian, beserta bukti pembayaran. | TODO |
+| TASK-FIN-006 | FR-FIN-006 | Wajib | Setiap posting keuangan menyimpan property, business date, event time, source document, actor, dan correlation ID agar rekonsiliasi lintas modul dapat dilakukan tanpa ambigu. | IN_PROGRESS |
+| TASK-FIN-010 | FR-FIN-010 | Wajib | Mengelola daftar akun biaya sederhana yang dikelompokkan per department dan per kategori. | REVIEW |
+| TASK-FIN-011 | FR-FIN-011 | Wajib | Mencatat hutang kepada pemasok dan vendor secara otomatis dari penerimaan barang dan faktur, lengkap dengan syarat pembayaran dan tanggal jatuh tempo. | REVIEW |
+| TASK-FIN-012 | FR-FIN-012 | Wajib | Menampilkan jadwal jatuh tempo pembayaran dan laporan umur hutang, serta mengirimkannya sebagai peringatan ke dashboard. | REVIEW |
+| TASK-FIN-013 | FR-FIN-013 | Wajib | Mencatat pembayaran kepada pemasok dan vendor, baik penuh maupun sebagian, beserta bukti pembayaran. | REVIEW |
 | TASK-FIN-014 | FR-FIN-014 | Wajib | Mengelola piutang dari perusahaan, agen perjalanan, dan kanal pemesanan daring beserta umur piutang dan penagihan. | TODO |
 | TASK-FIN-015 | FR-FIN-015 | Wajib | Mengelola kas kecil (petty cash): pengisian, pengeluaran dengan bukti, dan pertanggungjawaban. | TODO |
 | TASK-FIN-016 | FR-FIN-016 | Sebaiknya | Mencatat biaya tetap berulang seperti sewa, listrik, air, dan langganan, dengan pengingat jatuh tempo. | TODO |
 | TASK-FIN-017 | FR-FIN-017 | Sebaiknya | Menyusun anggaran per department dan menampilkan perbandingan anggaran terhadap realisasi. | TODO |
-| TASK-FIN-018 | FR-FIN-018 | Wajib | Pembayaran vendor/pengeluaran di atas threshold menggunakan maker-checker; pembuat transaksi tidak boleh menjadi satu-satunya penyetuju. | TODO |
+| TASK-FIN-018 | FR-FIN-018 | Wajib | Pembayaran vendor/pengeluaran di atas threshold menggunakan maker-checker; pembuat transaksi tidak boleh menjadi satu-satunya penyetuju. | REVIEW |
 | TASK-FIN-019 | FR-FIN-019 | Wajib | Refund tamu, chargeback, settlement discrepancy, dan pembayaran berstatus unknown dikelola sebagai exception sampai direkonsiliasi, bukan diedit langsung pada transaksi asal. | TODO |
 | TASK-FIN-020 | FR-FIN-020 | Wajib | Menghitung pajak daerah atas jasa perhotelan dan makanan minuman secara otomatis per outlet dengan tarif yang dapat dikonfigurasi. | TODO |
 | TASK-FIN-021 | FR-FIN-021 | Wajib | Menyajikan lini masa kewajiban pajak: nilai terkumpul berjalan, periode pelaporan, tanggal jatuh tempo, dan status penyetoran. | TODO |
@@ -56,3 +56,21 @@
 - Emit audit evidence for sensitive/state-changing operations.
 - Add happy, negative, conflict/retry, and permission tests as applicable.
 - Update traceability/evidence before marking DONE.
+
+## Delivery notes
+
+### Slice 11 (2026-10-03): accounts payable, the first part of the Finance context
+
+- Status: `TASK-FIN-010`, `-011`, `-012`, `-013` and `-018` are `REVIEW`. `TASK-FIN-006` is `IN_PROGRESS`: payables carry the posting facts, but the other postings (revenue, cash) do not exist yet. NFR/BR: BR-003 (a payable and a paid payment are never changed), BR-004 (no self-approval), BR-005 (idempotent), BR-002 (integer money), BR-006 (document numbers `PAY-nnnnnn`).
+- Context: the new bounded context `Finance` (`app/Modules/Finance`), migration 62 (`finance_expense_accounts`, `ap_payables`, `ap_credits`, `ap_credit_applications`, `ap_payments`, `ap_payment_proofs`), screens under `/finance` (Payables, Payments, Due schedule, Aging, Expense accounts) and a Finance entry in the module navigation.
+- **Finance reads events, not tables.** `PurchasingPayableConsumer` is an outbox consumer (registered in `config/outbox.php`) for `purchasing.invoice.recognised` and `purchasing.return.posted`. A recognised supplier invoice becomes a payable and a return that came with a supplier credit note becomes a credit; each is made once per source document however often the event is delivered. The payload of those two events carries what Finance needs (supplier code and name, invoice number and date, due date, business date, currency). Because the outbox is processed by the worker, a payable appears when the worker has run, not in the same request.
+- **Posting facts (FR-FIN-006)**: a payable keeps the source document, the business date, the event time, the actor and the correlation id of the event that made it. The amount, the dates and the source never change (triggers); only the expense account it is classified under can.
+- Choices recorded as configurable baselines:
+  - **Balance**: amount less paid payments less credits applied. Status open, partly paid or paid; overdue when something is owed after the due date. A payment that waits for approval counts against what can still be paid.
+  - **Payments (FR-FIN-013)**: against one payable, in full or in part, never more than is owed; methods transfer, cash, giro, other; a transfer or a giro needs its reference; the date cannot be in the future; a proof of payment (PDF, JPEG or PNG, up to five) is added afterwards. A paid payment never changes.
+  - **Maker-checker (FR-FIN-018)**: approval subject `finance.supplier-payment`, with the threshold and the chain set by the owner in the approval policy (no policy for an amount means it is paid when recorded). A different person approves; the person who recorded the payment takes the decision to release it; a rejected payment is closed with the reason and frees its amount; a pending one can be cancelled by its maker.
+  - **Supplier credits**: a credit from a return with a credit note (goods and the tax it credits) is set against payables of the same supplier in parts, never more than the credit has left or the payable still owes.
+  - **Aging (FR-FIN-012)**: what is owed at the end of a chosen business date by days past due (not yet due, 1-30, 31-60, 61-90, over 90), per supplier; payments and credits count from their own date, so an earlier date is stable. The due schedule lists what is overdue and what falls due in the next 7 to 90 days. The dashboard warns of payables past due and payables due in the next seven days.
+  - **Expense accounts (FR-FIN-010)**: code (fixed), name, department and category (a fixed baseline list); payables are classified under an active account.
+- Not yet: payments by batch, reversal of a paid payment (needs a reversal document), recurring expenses, petty cash, accounts receivable, revenue postings and bank reconciliation (the rest of Finance).
+- Evidence: `tests/Feature/Finance/AccountsPayableHttpTest.php` (18 tests: the event pipeline and its idempotency, partial and full payments, the second approver, credits, aging at the bucket edges, the due schedule, the dashboard alerts, immutability triggers, privileges) and the browser run of the screens in both languages.

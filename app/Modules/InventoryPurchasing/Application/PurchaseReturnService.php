@@ -198,7 +198,11 @@ final readonly class PurchaseReturnService
                 'number' => $number, 'receipt' => $receipt['number'], 'reason' => $reason, 'value_minor' => $total, 'credit_tax_minor' => $creditTaxMinor,
                 'lines' => array_map(static fn (array $p): array => ['item' => $p['_item']['code'], 'qty_milli' => $p['qty_milli']], $prepared),
             ], $note));
-            $this->outbox->publish(new OutboxEvent($property, 'purchasing.return.posted', $id, 1, ['return_id' => $id, 'number' => $number, 'supplier_id' => $order['supplier_id'], 'value_minor' => $total, 'credit_tax_minor' => $creditTaxMinor, 'currency' => $this->currency->currencyOf($property), 'actor_id' => $actor]));
+            $supplier = $this->store->supplier($property, $order['supplier_id']);
+            $this->outbox->publish(new OutboxEvent($property, 'purchasing.return.posted', $id, 1, [
+                'return_id' => $id, 'number' => $number, 'supplier_id' => $order['supplier_id'], 'supplier_code' => $supplier['code'] ?? '', 'supplier_name' => $supplier['name'] ?? '', 'value_minor' => $total, 'credit_tax_minor' => $creditTaxMinor,
+                'credit_note_number' => $creditNoteNumber, 'credit_total_minor' => $creditNoteNumber === null ? 0 : $total + $creditTaxMinor, 'business_date' => $date, 'currency' => $this->currency->currencyOf($property), 'actor_id' => $actor,
+            ]));
         };
 
         if ($key === null) {

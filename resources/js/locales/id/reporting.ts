@@ -54,6 +54,8 @@ export const reporting = {
     'rpt.alert.company_over_limit': 'Perusahaan dengan piutang melebihi batas kreditnya',
     'rpt.alert.rooms_not_ready': 'Kamar kosong yang masih kotor atau perlu dikerjakan ulang',
     'rpt.alert.stock_below_minimum': 'Barang di bawah stok minimum',
+    'rpt.alert.payables_overdue': 'Faktur pemasok yang lewat jatuh tempo',
+    'rpt.alert.payables_due_soon': 'Faktur pemasok yang jatuh tempo dalam tujuh hari',
     'rpt.centre.title': 'Laporan',
     'rpt.centre.description': 'Laporan dikelompokkan menurut tema. Setiap laporan menyebut kapan dibuat, business date yang dicakup, filter dan sumbernya.',
     'rpt.centre.empty': 'Anda tidak memiliki laporan yang tersedia.',

@@ -22,5 +22,7 @@ return [
         // the chain by amount band; with no policy for an amount, the document needs no approval.
         'inventory.purchase-request' => ['mandatory' => false],
         'inventory.purchase-order' => ['mandatory' => false],
+        // FR-FIN-018: a payment to a supplier above the threshold the owner sets needs a second person; with no policy for the amount it is paid when recorded.
+        'finance.supplier-payment' => ['mandatory' => false],
     ],
 ];
