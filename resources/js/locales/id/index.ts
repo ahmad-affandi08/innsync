@@ -1,4 +1,5 @@
 import type { MessageKey } from '../en/index.ts'
+import { finance } from './finance.ts'
 import { frontOffice } from './frontoffice.ts'
 import { housekeeping } from './housekeeping.ts'
 import { inventory } from './inventory.ts'
@@ -13,6 +14,7 @@ import { reporting } from './reporting.ts'
 /** Must define every key of the English source dictionary; the type enforces it at compile time. */
 export const id: Record<MessageKey, string> = {
     ...offline,
+    ...finance,
     ...property,
     ...frontOffice,
     ...housekeeping,
