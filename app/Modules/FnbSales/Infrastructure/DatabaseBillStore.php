@@ -98,4 +98,9 @@ final readonly class DatabaseBillStore implements BillStore
     {
         DB::table('fnb_bills')->where('property_id', $property->toString())->where('id', $billId)->update([...$fields, 'updated_at' => $at]);
     }
+
+    public function paymentCount(PropertyId $property, string $billId): int
+    {
+        return DB::table('fnb_payments')->where('property_id', $property->toString())->where('bill_id', $billId)->whereNotIn('status', ['failed', 'expired'])->count();
+    }
 }

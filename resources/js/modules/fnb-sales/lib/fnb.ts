@@ -35,8 +35,18 @@ export type OrderCategory = { id: string; name: string; station: string; items: 
 export type BillApproval = { id: string; subject_type: string; subject_ref: string; status: string; consumed: boolean };
 export type BillView = {
     currency: string;
-    bill: { id: string; number: string; status: 'open' | 'settled' | 'cancelled'; covers: number; note: string | null; business_date: string; opened_at: string; table: string | null; room: string | null; lock_version: number; cancel_reason: string | null; lines: BillLine[] };
+    bill: { id: string; number: string; status: 'open' | 'settled' | 'cancelled'; covers: number; note: string | null; business_date: string; opened_at: string; closed_at: string | null; table: string | null; room_id: string | null; room: string | null; lock_version: number; cancel_reason: string | null; lines: BillLine[] };
     outlet: { id: string; code: string; name: string; prices_include_charges: boolean };
     totals: { subtotal_minor: number; base_minor: number; service_charge_minor: number; tax_minor: number; total_minor: number; scheme_missing: boolean };
-    menu: OrderCategory[]; approvals: BillApproval[]; may: { operate: boolean };
+    payments: BillPayment[]; paid_minor: number; reserved_minor: number; left_minor: number; shift: { id: string; number: string } | null; rooms: { id: string; number: string }[];
+    menu: OrderCategory[]; approvals: BillApproval[]; may: { operate: boolean; pay: boolean; cashier: boolean };
 };
+export type BillPayment = { id: string; method: 'cash' | 'card' | 'qris' | 'room'; status: string; amount_minor: number; tendered_minor: number | null; change_minor: number; reference: string | null; guest_name: string | null; status_reason: string | null; created_at: string };
+
+/** The cashier's shift. */
+export type ShiftView = {
+    id: string; number: string; outlet_id: string; outlet: string | null; status: 'open' | 'closed'; opening_float_minor: number; business_date: string; opened_at: string; closed_at: string | null;
+    expected_cash_minor: number | null; counted_cash_minor: number | null; variance_minor: number | null; variance_reason: string | null; lock_version: number;
+    cash_taken_minor?: number; expected_now_minor?: number; by_method?: { method: string; count: number; amount_minor: number }[]; open_minor?: number; cashier?: string | null;
+};
+export type ShiftOverview = { currency: string; shift: ShiftView | null; outlets: { id: string; code: string; name: string }[]; recent: ShiftView[]; may: { operate: boolean; manage: boolean } };

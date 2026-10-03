@@ -19,6 +19,9 @@ final readonly class FnbAccess
     /** Sees the menu and the tables; held by everybody who takes orders. */
     public const POS_OPERATE = 'fnb.pos.operate';
 
+    /** Opens and closes a cashier shift and takes payments for bills. */
+    public const CASHIER_OPERATE = 'fnb.cashier.operate';
+
     public function __construct(private PermissionChecker $permissions, private PropertyContext $property) {}
 
     public function assertProperty(PropertyId $property): void

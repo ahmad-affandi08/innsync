@@ -39,4 +39,7 @@ interface BillStore
 
     /** @param array<string, mixed> $fields */
     public function updateBill(PropertyId $property, string $billId, array $fields, DateTimeImmutable $at): void;
+
+    /** Payments of a bill that count or may still count: every one that is not failed or expired. */
+    public function paymentCount(PropertyId $property, string $billId): int;
 }

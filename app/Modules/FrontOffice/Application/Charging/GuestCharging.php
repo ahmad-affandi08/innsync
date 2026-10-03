@@ -13,7 +13,7 @@ use App\Shared\Domain\Tenancy\PropertyId;
  */
 interface GuestCharging
 {
-    /** @return array{stay_id: string, reservation_id: string}|null null when nobody is in the room */
+    /** @return array{stay_id: string, reservation_id: string, guest_name?: string}|null null when nobody is in the room; `guest_name` is the name on the reservation, for a cashier to match against what the guest says */
     public function inHouseStayOfRoom(PropertyId $property, string $roomId): ?array;
 
     /**

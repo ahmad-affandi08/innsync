@@ -101,7 +101,8 @@
         "remind_days"
     ],
     "fnb-sales/pages/bill": [
-        "reason"
+        "amount_minor",
+        "method"
     ],
     "fnb-sales/pages/floor": [
         "covers"
@@ -120,6 +121,10 @@
         "code",
         "kind",
         "name"
+    ],
+    "fnb-sales/pages/shift": [
+        "counted_cash_minor",
+        "opening_float_minor"
     ],
     "fnb-sales/pages/tables": [
         "code",

@@ -44,8 +44,10 @@ final readonly class BillService
 
     public function __construct(
         private BillStore $bills,
+        private PaymentStore $payments,
         private SetupStore $setup,
         private BillPricing $pricing,
+        private BillGuard $guard,
         private FnbAccess $access,
         private PropertyCurrencyReader $currencies,
         private BusinessDateProvider $businessDate,
@@ -110,7 +112,7 @@ final readonly class BillService
                     $tables[] = [
                         'id' => $t['id'], 'code' => $t['code'], 'area' => $t['area'], 'seats' => (int) $t['seats'],
                         'status' => $b === null ? 'free' : ((int) $b['sent_lines'] > 0 ? 'ordered' : 'occupied'), 'bill_id' => $b['id'] ?? null, 'bill_number' => $b['number'] ?? null,
-                        'subtotal_minor' => (int) ($b['subtotal_minor'] ?? 0), 'opened_at' => $b['opened_at'] ?? null,
+                        'subtotal_minor' => (int) ($b['subtotal_minor'] ?? 0), 'opened_at' => FnbTime::utc($b['opened_at'] ?? null),
                     ];
                 }
             }
@@ -118,7 +120,7 @@ final readonly class BillService
             foreach ($open as $b) {
                 $bills[] = [
                     'id' => $b['id'], 'number' => $b['number'], 'table' => $b['table_id'] === null ? null : ($tableCode[$b['table_id']] ?? null), 'room' => $b['room_id'] === null ? null : ($roomNumber[$b['room_id']] ?? null),
-                    'covers' => (int) $b['covers'], 'lines' => (int) $b['line_count'], 'sent' => (int) $b['sent_lines'] > 0, 'subtotal_minor' => (int) $b['subtotal_minor'], 'opened_at' => $b['opened_at'],
+                    'covers' => (int) $b['covers'], 'lines' => (int) $b['line_count'], 'sent' => (int) $b['sent_lines'] > 0, 'subtotal_minor' => (int) $b['subtotal_minor'], 'opened_at' => FnbTime::utc($b['opened_at']),
                 ];
             }
         }
@@ -126,13 +128,7 @@ final readonly class BillService
         $mayOperate = $this->access->may($property, $actorId, FnbAccess::POS_OPERATE);
 
         if ($mayOperate && $selected !== null) {
-            foreach ($this->rooms->activeRooms($property) as $room) {
-                if ($this->guests->inHouseStayOfRoom($property, $room->id) !== null) {
-                    $inHouse[] = ['id' => $room->id, 'number' => $room->number];
-                }
-            }
-
-            usort($inHouse, static fn (array $a, array $b): int => strnatcmp($a['number'], $b['number']));
+            $inHouse = $this->inHouseRooms($property);
         }
 
         return [
@@ -141,6 +137,22 @@ final readonly class BillService
             'outlet' => $selected === null ? null : ['id' => $selected['id'], 'code' => $selected['code'], 'name' => $selected['name']],
             'tables' => $tables, 'bills' => $bills, 'rooms' => $inHouse, 'may' => ['operate' => $mayOperate],
         ];
+    }
+
+    /** @return list<array{id: string, number: string}> the rooms that have a guest in them */
+    private function inHouseRooms(PropertyId $property): array
+    {
+        $rooms = [];
+
+        foreach ($this->rooms->activeRooms($property) as $room) {
+            if ($this->guests->inHouseStayOfRoom($property, $room->id) !== null) {
+                $rooms[] = ['id' => $room->id, 'number' => $room->number];
+            }
+        }
+
+        usort($rooms, static fn (array $a, array $b): int => strnatcmp($a['number'], $b['number']));
+
+        return $rooms;
     }
 
     // ---- opening ----
@@ -227,19 +239,44 @@ final readonly class BillService
         }
 
         $open = $bill['status'] === 'open';
+        $payments = $this->payments->paymentsOf($property, $bill['id']);
+        $paid = 0;
+        $reserved = 0;
+
+        foreach ($payments as $p) {
+            if ($p['status'] === 'paid') {
+                $paid += (int) $p['amount_minor'];
+            } elseif (in_array($p['status'], ['initiated', 'pending', 'unknown'], true)) {
+                $reserved += (int) $p['amount_minor'];
+            }
+        }
+
+        $totals = $bill['status'] === 'settled'
+            ? ['subtotal_minor' => (int) $bill['subtotal_minor'], 'base_minor' => (int) $bill['base_minor'], 'service_charge_minor' => (int) $bill['service_charge_minor'], 'tax_minor' => (int) $bill['tax_minor'], 'total_minor' => (int) $bill['total_minor'], 'scheme_missing' => false, 'scheme' => $bill['scheme'] === null ? null : json_decode((string) $bill['scheme'], true)]
+            : $this->pricing->totals($property, $outlet, (string) $bill['business_date'], $bill['lines']);
+        $shift = $this->payments->openShiftOf($property, strtolower($actorId));
+        $cashier = $this->access->may($property, $actorId, FnbAccess::CASHIER_OPERATE);
+        $unsent = count(array_filter($bill['lines'], static fn (array $l): bool => $l['status'] === 'pending')) > 0;
 
         return [
             'currency' => $this->currencies->currencyOf($property),
             'bill' => [
-                'id' => $bill['id'], 'number' => $bill['number'], 'status' => $bill['status'], 'covers' => (int) $bill['covers'], 'note' => $bill['note'], 'business_date' => $bill['business_date'], 'opened_at' => $bill['opened_at'],
-                'table' => $table['code'] ?? null, 'room' => $room?->number, 'lock_version' => (int) $bill['lock_version'], 'cancel_reason' => $bill['cancel_reason'],
+                'id' => $bill['id'], 'number' => $bill['number'], 'status' => $bill['status'], 'covers' => (int) $bill['covers'], 'note' => $bill['note'], 'business_date' => $bill['business_date'], 'opened_at' => FnbTime::utc($bill['opened_at']), 'closed_at' => FnbTime::utc($bill['closed_at']),
+                'table' => $table['code'] ?? null, 'room_id' => $bill['room_id'], 'room' => $room?->number, 'lock_version' => (int) $bill['lock_version'], 'cancel_reason' => $bill['cancel_reason'],
                 'lines' => array_map($this->shapeLine(...), $bill['lines']),
             ],
             'outlet' => ['id' => $outlet['id'], 'code' => $outlet['code'], 'name' => $outlet['name'], 'prices_include_charges' => (bool) $outlet['prices_include_charges']],
-            'totals' => $this->pricing->totals($property, $outlet, (string) $bill['business_date'], $bill['lines']),
+            'totals' => $totals,
+            'payments' => array_map(static fn (array $p): array => [
+                'id' => $p['id'], 'method' => $p['method'], 'status' => $p['status'], 'amount_minor' => (int) $p['amount_minor'], 'tendered_minor' => $p['tendered_minor'] === null ? null : (int) $p['tendered_minor'], 'change_minor' => (int) $p['change_minor'],
+                'reference' => $p['reference'], 'guest_name' => $p['guest_name'], 'status_reason' => $p['status_reason'], 'created_at' => FnbTime::utc($p['created_at']),
+            ], $payments),
+            'paid_minor' => $paid, 'reserved_minor' => $reserved, 'left_minor' => $open ? max(0, $totals['total_minor'] - $paid - $reserved) : 0,
+            'shift' => $shift === null ? null : ['id' => $shift['id'], 'number' => $shift['number']],
+            'rooms' => $cashier && $open && ! $unsent && $totals['total_minor'] > 0 ? $this->inHouseRooms($property) : [],
             'menu' => $open ? $this->orderMenu($property, $outlet['id']) : [],
             'approvals' => $approvals,
-            'may' => ['operate' => $this->access->may($property, $actorId, FnbAccess::POS_OPERATE) && $open],
+            'may' => ['operate' => $this->access->may($property, $actorId, FnbAccess::POS_OPERATE) && $open, 'pay' => $cashier && $open && ! $unsent && $totals['total_minor'] > 0 && ! $totals['scheme_missing'], 'cashier' => $cashier],
         ];
     }
 
@@ -262,7 +299,7 @@ final readonly class BillService
         $actor = strtolower($actorId);
 
         $this->transactions->run(function () use ($property, $actor, $billId, $lock, $item, $variantId, $modifierIds, $quantity, $note): void {
-            $bill = $this->openBill($property, strtolower($billId), $lock);
+            $bill = $this->guard->open($property, strtolower($billId), $lock);
 
             if ($item['outlet_id'] !== $bill['outlet_id'] || ! (bool) $item['is_active']) {
                 throw Refusal::invalid('Choose an item of the menu of this outlet.', ['item_id']);
@@ -303,7 +340,7 @@ final readonly class BillService
                 'station' => $item['station'] ?? $category['station'], 'unit_price_minor' => $unit, 'modifiers' => $chosen, 'modifiers_minor' => $extra, 'quantity' => $quantity, 'note' => $note,
                 'line_total_minor' => ($unit + $extra) * $quantity, 'status' => 'pending', 'created_by' => $actor,
             ], $this->clock->nowUtc());
-            $this->touch($property, $bill['id'], $lock);
+            $this->guard->touch($property, $bill['id'], $lock);
         });
 
         return $this->show($property, $actorId, $billId);
@@ -315,7 +352,7 @@ final readonly class BillService
         $this->access->require($property, $actorId, FnbAccess::POS_OPERATE, 'This person may not take orders.');
 
         $this->transactions->run(function () use ($property, $billId, $lineId, $lock): void {
-            $bill = $this->openBill($property, strtolower($billId), $lock);
+            $bill = $this->guard->open($property, strtolower($billId), $lock);
             $line = $this->line($bill, $lineId);
 
             if ($line['status'] !== 'pending') {
@@ -323,7 +360,7 @@ final readonly class BillService
             }
 
             $this->bills->updateLine($property, $bill['id'], $line['id'], ['status' => 'removed'], $this->clock->nowUtc());
-            $this->touch($property, $bill['id'], $lock);
+            $this->guard->touch($property, $bill['id'], $lock);
         });
 
         return $this->show($property, $actorId, $billId);
@@ -336,7 +373,7 @@ final readonly class BillService
         $actor = strtolower($actorId);
 
         $this->transactions->run(function () use ($property, $actor, $billId, $lock): void {
-            $bill = $this->openBill($property, strtolower($billId), $lock);
+            $bill = $this->guard->open($property, strtolower($billId), $lock);
             $pending = array_values(array_filter($bill['lines'], static fn (array $l): bool => $l['status'] === 'pending'));
 
             if ($pending === []) {
@@ -347,7 +384,7 @@ final readonly class BillService
             $batchId = $this->ids->next();
             $number = $this->bills->nextBatchNumber($property, $bill['id']);
             $this->bills->sendPending($property, $bill['id'], $batchId, $actor, $this->clock->nowUtc());
-            $this->touch($property, $bill['id'], $lock);
+            $this->guard->touch($property, $bill['id'], $lock);
             $table = $bill['table_id'] === null ? null : $this->setup->table($property, $bill['table_id']);
 
             $lines = array_map(static fn (array $l): array => [
@@ -394,17 +431,19 @@ final readonly class BillService
         $actor = strtolower($actorId);
 
         $this->transactions->run(function () use ($property, $actor, $billId, $lineId, $reason, $approvalId, $lock): void {
-            $bill = $this->openBill($property, strtolower($billId), $lock);
+            $bill = $this->guard->open($property, strtolower($billId), $lock);
             $line = $this->line($bill, $lineId);
 
             if ($line['status'] !== 'sent') {
                 throw Refusal::stateConflict('Only a line that was sent is voided.');
             }
 
+            $this->assertNoPayments($property, $bill['id']);
+
             $approval = $this->consume($property, $actor, self::VOID_SUBJECT, $line['id'], $this->voidPayload($bill, $line), (int) $line['line_total_minor'], $approvalId);
             $now = $this->clock->nowUtc();
             $this->bills->updateLine($property, $bill['id'], $line['id'], ['status' => 'voided', 'voided_by' => $actor, 'voided_at' => $now, 'void_reason' => $reason, 'void_approval_id' => $approval === '' ? null : $approval], $now);
-            $this->touch($property, $bill['id'], $lock);
+            $this->guard->touch($property, $bill['id'], $lock);
             $this->audit->record(new AuditEntry($property->toString(), $actor, 'fnb_line.voided', 'fnb_bill', $bill['id'], ['line' => $line['line_no'], 'item' => $line['item_name'], 'quantity' => (int) $line['quantity'], 'line_total_minor' => (int) $line['line_total_minor'], 'status' => 'sent'], ['status' => 'voided'], $reason, $approval === '' ? null : $approval));
             $this->outbox->publish(new OutboxEvent($property, 'fnb.line.voided', $line['id'], 1, ['line_id' => $line['id'], 'bill_id' => $bill['id'], 'bill_number' => $bill['number'], 'item_id' => $line['item_id'], 'quantity' => (int) $line['quantity'], 'station' => $line['station'], 'batch_id' => $line['batch_id'], 'amount_minor' => (int) $line['line_total_minor'], 'actor_id' => $actor]));
         });
@@ -438,7 +477,8 @@ final readonly class BillService
         $actor = strtolower($actorId);
 
         $this->transactions->run(function () use ($property, $actor, $billId, $reason, $approvalId, $lock): void {
-            $bill = $this->openBill($property, strtolower($billId), $lock);
+            $bill = $this->guard->open($property, strtolower($billId), $lock);
+            $this->assertNoPayments($property, $bill['id']);
             $sent = array_values(array_filter($bill['lines'], static fn (array $l): bool => $l['status'] === 'sent'));
             $approval = $sent === [] ? '' : $this->consume($property, $actor, self::CANCEL_SUBJECT, $bill['id'], $this->cancelPayload($bill), $this->activeTotal($bill), $approvalId);
             $now = $this->clock->nowUtc();
@@ -465,34 +505,6 @@ final readonly class BillService
     }
 
     // ---- helpers ----
-
-    /**
-     * The bill, locked, if it is open and at the version the person saw.
-     *
-     * @return array<string, mixed>
-     */
-    private function openBill(PropertyId $property, string $id, int $lock): array
-    {
-        $this->bills->lockBill($property, $id);
-        $bill = $this->bills->bill($property, $id) ?? throw Refusal::notFound('Bill not found.');
-
-        if ($bill['status'] !== 'open') {
-            throw Refusal::stateConflict('This bill is not open any more.');
-        }
-
-        if ((int) $bill['lock_version'] !== $lock) {
-            throw Refusal::stateConflict('This bill was changed on another device. Reload it and check it.');
-        }
-
-        return $bill;
-    }
-
-    private function touch(PropertyId $property, string $id, int $lock): void
-    {
-        if (! $this->bills->touchBill($property, $id, $lock, $this->clock->nowUtc())) {
-            throw Refusal::stateConflict('This bill was changed on another device. Reload it and check it.');
-        }
-    }
 
     /**
      * @param  array<string, mixed>  $bill
@@ -645,6 +657,14 @@ final readonly class BillService
         return strtolower($approvalId);
     }
 
+    /** A bill that has taken money is not voided or cancelled: the payment is refunded first. */
+    private function assertNoPayments(PropertyId $property, string $billId): void
+    {
+        if ($this->bills->paymentCount($property, $billId) > 0) {
+            throw Refusal::stateConflict('This bill has payments. Refund them before a line is voided or the bill is cancelled.');
+        }
+    }
+
     private function reason(string $reason): string
     {
         $reason = trim($reason);
@@ -677,7 +697,7 @@ final readonly class BillService
         return [
             'id' => $l['id'], 'line_no' => (int) $l['line_no'], 'item_name' => $l['item_name'], 'variant_name' => $l['variant_name'], 'modifiers' => array_map(static fn (array $m): array => ['name' => $m['name'], 'price_delta_minor' => (int) $m['price_delta_minor']], $l['modifiers']),
             'quantity' => (int) $l['quantity'], 'note' => $l['note'], 'unit_price_minor' => (int) $l['unit_price_minor'], 'modifiers_minor' => (int) $l['modifiers_minor'], 'line_total_minor' => (int) $l['line_total_minor'],
-            'status' => $l['status'], 'station' => $l['station'], 'sent_at' => $l['sent_at'], 'void_reason' => $l['void_reason'],
+            'status' => $l['status'], 'station' => $l['station'], 'sent_at' => FnbTime::utc($l['sent_at']), 'void_reason' => $l['void_reason'],
         ];
     }
 }

@@ -1131,6 +1131,34 @@
             "reason"
         ]
     },
+    "POST /fnb/bills/{id}/payments": {
+        "required": [
+            "amount_minor",
+            "lock_version",
+            "method"
+        ],
+        "declared": [
+            "amount_minor",
+            "guest_name",
+            "lock_version",
+            "method",
+            "reference",
+            "room_id",
+            "tendered_minor"
+        ]
+    },
+    "POST /fnb/bills/{id}/payments/{payment}/qris": {
+        "required": [
+            "lock_version",
+            "status"
+        ],
+        "declared": [
+            "lock_version",
+            "reason",
+            "reference",
+            "status"
+        ]
+    },
     "POST /fnb/bills/{id}/send": {
         "required": [
             "lock_version"
@@ -1320,6 +1348,27 @@
             "area",
             "code",
             "seats"
+        ]
+    },
+    "POST /fnb/shift": {
+        "required": [
+            "opening_float_minor",
+            "outlet_id"
+        ],
+        "declared": [
+            "opening_float_minor",
+            "outlet_id"
+        ]
+    },
+    "POST /fnb/shift/{id}/close": {
+        "required": [
+            "counted_cash_minor",
+            "lock_version"
+        ],
+        "declared": [
+            "counted_cash_minor",
+            "lock_version",
+            "reason"
         ]
     },
     "POST /fnb/tables/{id}": {

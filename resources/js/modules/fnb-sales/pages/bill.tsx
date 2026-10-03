@@ -12,14 +12,18 @@ import { Input } from '@/components/ui/input';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { FnbShell } from '@/modules/fnb-sales/components/fnb-shell';
-import type { BillApproval, BillLine, BillView, OrderItem } from '@/modules/fnb-sales/lib/fnb';
+import type { BillApproval, BillLine, BillPayment, BillView, OrderItem } from '@/modules/fnb-sales/lib/fnb';
 import { newIdempotencyKey } from '@/shared/api/http';
 import { useServerAction } from '@/shared/api/use-server-action';
 import { useFormatters, useTranslation } from '@/shared/i18n/i18n';
 import { useErrorStateCopy } from '@/shared/i18n/use-ui-copy';
+import { minorToMajorText, parseMajorToMinor } from '@/shared/money/money';
+import { Select } from '@/components/ui/select';
 import type { MessageKey } from '@/locales/en/index';
 
 type Pick = { item: OrderItem; variant: string; modifiers: string[]; quantity: number; note: string };
+type PayForm = { method: 'cash' | 'card' | 'qris' | 'room'; amount: string; tendered: string; reference: string; room: string; guest: string };
+type QrisForm = { payment: BillPayment; status: string; reference: string; reason: string };
 type Confirm = { kind: 'void'; line: BillLine } | { kind: 'cancel' };
 
 const LINE_TONE = { pending: 'pending', sent: 'success', voided: 'neutral', removed: 'neutral' } as const;
@@ -36,6 +40,9 @@ export default function BillPage({ view }: { view: BillView }) {
     const [needsApproval, setNeedsApproval] = useState(false);
     const [requested, setRequested] = useState(false);
     const [pickError, setPickError] = useState<string | null>(null);
+    const [pay, setPay] = useState<PayForm | null>(null);
+    const [payError, setPayError] = useState<string | null>(null);
+    const [qris, setQris] = useState<QrisForm | null>(null);
     const { bill, outlet, totals } = view;
     const open = bill.status === 'open';
     const operate = view.may.operate;
@@ -139,6 +146,53 @@ export default function BillPage({ view }: { view: BillView }) {
         }
     }
 
+    function openPay() {
+        action.clear();
+        setPayError(null);
+        setPay({ method: 'cash', amount: minorToMajorText(view.left_minor, view.currency), tendered: minorToMajorText(view.left_minor, view.currency), reference: '', room: bill.room_id ?? '', guest: '' });
+    }
+
+    async function submitPay() {
+        if (pay === null) return;
+        const amount = parseMajorToMinor(pay.amount, view.currency);
+        const tendered = pay.method === 'cash' ? parseMajorToMinor(pay.tendered, view.currency) : null;
+
+        if (amount === null || (pay.method === 'cash' && tendered === null)) {
+            setPayError(t('fnb.pay.badAmount'));
+
+            return;
+        }
+
+        if (pay.method === 'cash' && tendered !== null && tendered < amount) {
+            setPayError(t('fnb.pay.shortCash'));
+
+            return;
+        }
+
+        setPayError(null);
+        const done = await action.run(`/fnb/bills/${bill.id}/payments`, {
+            idempotencyKey: newIdempotencyKey(), reload,
+            body: { lock_version: bill.lock_version, method: pay.method, amount_minor: amount, tendered_minor: tendered, reference: pay.reference.trim() === '' ? null : pay.reference.trim(), room_id: pay.method === 'room' && pay.room !== '' ? pay.room : null, guest_name: pay.method === 'room' ? pay.guest.trim() : null },
+        });
+        if (done !== null) setPay(null);
+    }
+
+    function openQris(payment: BillPayment, status: string) {
+        action.clear();
+        setQris({ payment, status, reference: payment.reference ?? '', reason: '' });
+    }
+
+    async function submitQris() {
+        if (qris === null) return;
+        const done = await action.run(`/fnb/bills/${bill.id}/payments/${qris.payment.id}/qris`, {
+            idempotencyKey: newIdempotencyKey(), reload,
+            body: { lock_version: bill.lock_version, status: qris.status, reference: qris.reference.trim() === '' ? null : qris.reference.trim(), reason: qris.reason.trim() === '' ? null : qris.reason.trim() },
+        });
+        if (done !== null) setQris(null);
+    }
+
+    const paymentLine = (p: BillPayment): string => (p.method === 'cash' ? t('fnb.pay.rowCash', { tendered: money(p.tendered_minor ?? p.amount_minor), change: money(p.change_minor) }) : p.method === 'room' ? t('fnb.pay.rowRoom', { name: p.guest_name ?? '' }) : p.reference ?? '');
+    const payChange = pay !== null && pay.method === 'cash' ? (parseMajorToMinor(pay.tendered, view.currency) ?? 0) - (parseMajorToMinor(pay.amount, view.currency) ?? 0) : 0;
     const lineTitle = (l: BillLine) => `${l.quantity} × ${l.item_name}${l.variant_name !== null ? ` (${l.variant_name})` : ''}`;
     const failure = action.error !== null && !needsApproval ? <ErrorState {...errorCopy} error={action.error} onRefresh={() => router.reload()} /> : null;
 
@@ -150,44 +204,46 @@ export default function BillPage({ view }: { view: BillView }) {
             wide
         >
             {bill.status === 'cancelled' ? <Alert title={t('fnb.bill.cancelledNote', { reason: bill.cancel_reason ?? '' })} tone="warning" /> : null}
-            {confirm === null && pick === null ? failure : null}
+            {confirm === null && pick === null && pay === null && qris === null ? failure : null}
 
             <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_26rem]">
-                <section aria-labelledby="fnb-menu-h" className="flex flex-col gap-3">
-                    <h2 className="text-lg font-semibold" id="fnb-menu-h">{t('fnb.bill.menu')}</h2>
-                    {!open ? null : view.menu.length === 0 ? <EmptyState illustration="coffee" title={t('fnb.bill.noMenu')} /> : (
-                        <Tabs defaultValue={view.menu[0]?.id}>
-                            <TabsList aria-label={t('fnb.bill.menu')}>
-                                {view.menu.map((c) => <TabsTrigger key={c.id} value={c.id}>{c.name}</TabsTrigger>)}
-                            </TabsList>
-                            {view.menu.map((c) => (
-                                <TabsContent key={c.id} value={c.id}>
-                                    {c.items.length === 0 ? <EmptyState illustration="coffee" title={t('fnb.bill.noItems')} /> : (
-                                        <ul className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3" data-testid="menu-buttons">
-                                            {c.items.map((i) => (
-                                                <li key={i.id}>
-                                                    <button
-                                                        className="flex h-full min-h-24 w-full flex-col justify-between gap-1 border border-border bg-surface p-3 text-left transition-colors hover:border-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-                                                        disabled={!operate || !i.is_available || action.busy}
-                                                        onClick={() => choose(i)}
-                                                        type="button"
-                                                    >
-                                                        <span className="font-medium">{i.name}</span>
-                                                        {i.description !== null ? <span className="line-clamp-2 text-xs text-muted-foreground">{i.description}</span> : null}
-                                                        <span className="flex items-center justify-between gap-2 text-sm">
-                                                            <span>{i.variants.length > 0 ? t('fnb.bill.from', { price: money(Math.min(...i.variants.map((v) => v.price_minor))) }) : money(i.price_minor)}</span>
-                                                            {!i.is_available ? <StatusBadge label={t('fnb.bill.soldOut')} tone="warning" /> : null}
-                                                        </span>
-                                                    </button>
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    )}
-                                </TabsContent>
-                            ))}
-                        </Tabs>
-                    )}
-                </section>
+                {open ? (
+                    <section aria-labelledby="fnb-menu-h" className="flex flex-col gap-3 print:hidden">
+                        <h2 className="text-lg font-semibold" id="fnb-menu-h">{t('fnb.bill.menu')}</h2>
+                        {!open ? null : view.menu.length === 0 ? <EmptyState illustration="coffee" title={t('fnb.bill.noMenu')} /> : (
+                            <Tabs defaultValue={view.menu[0]?.id}>
+                                <TabsList aria-label={t('fnb.bill.menu')}>
+                                    {view.menu.map((c) => <TabsTrigger key={c.id} value={c.id}>{c.name}</TabsTrigger>)}
+                                </TabsList>
+                                {view.menu.map((c) => (
+                                    <TabsContent key={c.id} value={c.id}>
+                                        {c.items.length === 0 ? <EmptyState illustration="coffee" title={t('fnb.bill.noItems')} /> : (
+                                            <ul className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3" data-testid="menu-buttons">
+                                                {c.items.map((i) => (
+                                                    <li key={i.id}>
+                                                        <button
+                                                            className="flex h-full min-h-24 w-full flex-col justify-between gap-1 border border-border bg-surface p-3 text-left transition-colors hover:border-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                                                            disabled={!operate || !i.is_available || action.busy}
+                                                            onClick={() => choose(i)}
+                                                            type="button"
+                                                        >
+                                                            <span className="font-medium">{i.name}</span>
+                                                            {i.description !== null ? <span className="line-clamp-2 text-xs text-muted-foreground">{i.description}</span> : null}
+                                                            <span className="flex items-center justify-between gap-2 text-sm">
+                                                                <span>{i.variants.length > 0 ? t('fnb.bill.from', { price: money(Math.min(...i.variants.map((v) => v.price_minor))) }) : money(i.price_minor)}</span>
+                                                                {!i.is_available ? <StatusBadge label={t('fnb.bill.soldOut')} tone="warning" /> : null}
+                                                            </span>
+                                                        </button>
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        )}
+                                    </TabsContent>
+                                ))}
+                            </Tabs>
+                        )}
+                    </section>
+                ) : <div />}
 
                 <section aria-labelledby="fnb-order-h" className="flex flex-col gap-3 border border-border bg-surface p-4">
                     <div className="flex items-center justify-between gap-2">
@@ -228,6 +284,55 @@ export default function BillPage({ view }: { view: BillView }) {
                     </dl>
                     {outlet.prices_include_charges && totals.subtotal_minor > 0 ? <p className="text-xs text-muted-foreground">{t('fnb.bill.included')}</p> : null}
                     {totals.scheme_missing ? <Alert title={t('fnb.bill.schemeMissing')} tone="warning"><p>{t('fnb.bill.schemeMissingHint')}</p></Alert> : null}
+
+                    {view.payments.length > 0 || view.may.cashier ? (
+                        <div className="flex flex-col gap-2 border-t border-border pt-3" data-testid="bill-payments">
+                            <h3 className="font-semibold">{t('fnb.pay.title')}</h3>
+                            {view.payments.length === 0 ? <p className="text-sm text-muted-foreground">{t('fnb.pay.none')}</p> : (
+                                <ul className="flex flex-col gap-2 text-sm">
+                                    {view.payments.map((p) => (
+                                        <li className="flex flex-col gap-1" key={p.id}>
+                                            <div className="flex flex-wrap items-center justify-between gap-2">
+                                                <span className="flex items-center gap-2">{t(`fnb.pay.method.${p.method}` as MessageKey)} <StatusBadge label={t(`fnb.pay.status.${p.status}` as MessageKey)} tone={p.status === 'paid' ? 'success' : p.status === 'failed' || p.status === 'expired' ? 'neutral' : p.status === 'unknown' ? 'warning' : 'pending'} /></span>
+                                                <span className="tabular-nums">{money(p.amount_minor)}</span>
+                                            </div>
+                                            {paymentLine(p) !== '' ? <p className="text-xs text-muted-foreground">{paymentLine(p)}</p> : null}
+                                            {p.status_reason !== null ? <p className="text-xs text-muted-foreground">{p.status_reason}</p> : null}
+                                            {p.method === 'qris' && open && view.may.cashier && ['initiated', 'pending', 'unknown'].includes(p.status) ? (
+                                                <div className="flex flex-wrap gap-2">
+                                                    {p.status === 'initiated' ? <Button disabled={action.busy} onClick={() => openQris(p, 'pending')} size="sm" type="button" variant="outline">{t('fnb.pay.markPending')}</Button> : null}
+                                                    <Button disabled={action.busy} onClick={() => openQris(p, 'paid')} size="sm" type="button" variant="outline">{t('fnb.pay.markPaid')}</Button>
+                                                    <Button disabled={action.busy} onClick={() => openQris(p, 'failed')} size="sm" type="button" variant="outline">{t('fnb.pay.markFailed')}</Button>
+                                                    <Button disabled={action.busy} onClick={() => openQris(p, 'expired')} size="sm" type="button" variant="outline">{t('fnb.pay.markExpired')}</Button>
+                                                    {p.status !== 'unknown' ? <Button disabled={action.busy} onClick={() => openQris(p, 'unknown')} size="sm" type="button" variant="outline">{t('fnb.pay.markUnknown')}</Button> : null}
+                                                </div>
+                                            ) : null}
+                                        </li>
+                                    ))}
+                                </ul>
+                            )}
+                            {open ? (
+                                <dl className="flex flex-col gap-1 text-sm">
+                                    <div className="flex justify-between"><dt>{t('fnb.pay.paid')}</dt><dd className="tabular-nums">{money(view.paid_minor)}</dd></div>
+                                    {view.reserved_minor > 0 ? <div className="flex justify-between"><dt>{t('fnb.pay.reserved')}</dt><dd className="tabular-nums">{money(view.reserved_minor)}</dd></div> : null}
+                                    <div className="flex justify-between font-semibold"><dt>{t('fnb.pay.left')}</dt><dd className="tabular-nums">{money(view.left_minor)}</dd></div>
+                                </dl>
+                            ) : null}
+                            {open && view.may.cashier ? (
+                                view.shift === null ? <Alert actions={<Button asChild size="sm" variant="outline"><Link href="/fnb/shift">{t('fnb.pos.toShift')}</Link></Button>} title={t('fnb.pay.needShift')} tone="info" />
+                                    : pending.length > 0 ? <p className="text-xs text-muted-foreground">{t('fnb.pay.needSend')}</p>
+                                    : totals.scheme_missing ? <p className="text-xs text-muted-foreground">{t('fnb.pay.schemeMissing')}</p>
+                                    : view.left_minor > 0 ? <Button disabled={action.busy} onClick={openPay} type="button">{t('fnb.pay.take')}</Button> : null
+                            ) : null}
+                            {bill.status === 'settled' ? (
+                                <div className="flex flex-col gap-2">
+                                    <p className="text-sm font-medium">{t('fnb.pay.settledNote')} {bill.closed_at !== null ? t('fnb.pay.paidAt', { time: format.instant(bill.closed_at) }) : ''}</p>
+                                    <Button className="print:hidden" onClick={() => window.print()} type="button" variant="outline">{t('fnb.pay.print')}</Button>
+                                    <p className="hidden text-center text-sm print:block">{t('fnb.pay.receiptThanks')}</p>
+                                </div>
+                            ) : null}
+                        </div>
+                    ) : null}
 
                     {open && operate ? (
                         <div className="flex flex-col gap-2 border-t border-border pt-3">
@@ -330,6 +435,83 @@ export default function BillPage({ view }: { view: BillView }) {
                         {waiting !== undefined && ready === undefined ? <StatusBadge label={t('fnb.bill.approvalPending')} tone="pending" /> : null}
                         {needsApproval ? <Alert actions={<Button disabled={reason.trim() === ''} loading={action.busy} onClick={() => void requestApproval()} size="sm" type="button">{t('fnb.bill.requestApproval')}</Button>} title={t('fnb.bill.approvalNeeded')} tone="warning" /> : null}
                         {requested ? <Alert title={t('fnb.bill.approvalRequested')} tone="info" /> : null}
+                    </div>
+                )}
+            </Dialog>
+            <Dialog
+                footer={<>
+                    <Button disabled={action.busy} onClick={() => setPay(null)} type="button" variant="outline">{t('ui.dialog.cancel')}</Button>
+                    <Button loading={action.busy} onClick={() => void submitPay()} type="button">{t('fnb.pay.record')}</Button>
+                </>}
+                onClose={() => setPay(null)}
+                open={pay !== null}
+                title={t('fnb.pay.title')}
+            >
+                {pay !== null && (
+                    <div className="grid gap-3 sm:grid-cols-2">
+                        {failure !== null ? <div className="sm:col-span-2">{failure}</div> : null}
+                        {payError !== null ? <div className="sm:col-span-2"><Alert title={payError} tone="warning" /></div> : null}
+                        <div className="sm:col-span-2">
+                            <FormField error={action.fieldError('method')} field="method" label={t('fnb.pay.method')}>
+                                <Select onChange={(e) => setPay({ ...pay, method: e.target.value as PayForm['method'], amount: e.target.value === 'room' ? minorToMajorText(totals.total_minor, view.currency) : pay.amount })} value={pay.method}>
+                                    {(['cash', 'card', 'qris', 'room'] as const).map((m) => <option key={m} value={m}>{t(`fnb.pay.method.${m}` as MessageKey)}</option>)}
+                                </Select>
+                            </FormField>
+                        </div>
+                        <FormField error={action.fieldError('amount_minor')} field="amount_minor" label={t('fnb.pay.amount', { currency: view.currency })}>
+                            <Input inputMode="decimal" onChange={(e) => setPay({ ...pay, amount: e.target.value })} readOnly={pay.method === 'room'} value={pay.amount} />
+                        </FormField>
+                        {pay.method === 'cash' ? (
+                            <FormField error={action.fieldError('tendered_minor')} field="tendered_minor" hint={payChange > 0 ? t('fnb.pay.change', { amount: money(payChange) }) : undefined} label={t('fnb.pay.tendered', { currency: view.currency })}>
+                                <Input inputMode="decimal" onChange={(e) => setPay({ ...pay, tendered: e.target.value })} value={pay.tendered} />
+                            </FormField>
+                        ) : null}
+                        {pay.method === 'card' ? (
+                            <FormField error={action.fieldError('reference')} field="reference" label={t('fnb.pay.cardCode')}>
+                                <Input maxLength={60} onChange={(e) => setPay({ ...pay, reference: e.target.value })} value={pay.reference} />
+                            </FormField>
+                        ) : null}
+                        {pay.method === 'qris' ? <p className="text-sm text-muted-foreground sm:col-span-2">{t('fnb.pay.qrisNote')}</p> : null}
+                        {pay.method === 'room' ? (
+                            <>
+                                <FormField error={action.fieldError('room_id')} field="room_id" hint={t('fnb.pay.roomHint')} label={t('fnb.pay.room')}>
+                                    <Select onChange={(e) => setPay({ ...pay, room: e.target.value })} value={pay.room}>
+                                        <option value="" />
+                                        {view.rooms.map((r) => <option key={r.id} value={r.id}>{r.number}</option>)}
+                                    </Select>
+                                </FormField>
+                                <FormField error={action.fieldError('guest_name')} field="guest_name" hint={t('fnb.pay.guestNameHint')} label={t('fnb.pay.guestName')}>
+                                    <Input maxLength={80} onChange={(e) => setPay({ ...pay, guest: e.target.value })} value={pay.guest} />
+                                </FormField>
+                            </>
+                        ) : null}
+                    </div>
+                )}
+            </Dialog>
+
+            <Dialog
+                footer={<>
+                    <Button disabled={action.busy} onClick={() => setQris(null)} type="button" variant="outline">{t('ui.dialog.cancel')}</Button>
+                    <Button loading={action.busy} onClick={() => void submitQris()} type="button">{t('fnb.pay.qrisConfirm')}</Button>
+                </>}
+                onClose={() => setQris(null)}
+                open={qris !== null}
+                title={qris === null ? '' : t('fnb.pay.qrisTitle', { amount: money(qris.payment.amount_minor) }) + ' · ' + t(`fnb.pay.status.${qris.status}` as MessageKey)}
+            >
+                {qris !== null && (
+                    <div className="flex flex-col gap-3">
+                        {qris.payment.status === 'unknown' || qris.status === 'unknown' ? <p className="text-sm text-muted-foreground">{t('fnb.pay.unknownHint')}</p> : null}
+                        {failure}
+                        {qris.status === 'paid' ? (
+                            <FormField error={action.fieldError('reference')} field="reference" label={t('fnb.pay.qrisReference')}>
+                                <Input maxLength={60} onChange={(e) => setQris({ ...qris, reference: e.target.value })} value={qris.reference} />
+                            </FormField>
+                        ) : null}
+                        {qris.status !== 'pending' ? (
+                            <FormField error={action.fieldError('reason')} field="reason" label={t('fnb.pay.qrisReason')}>
+                                <Input maxLength={200} onChange={(e) => setQris({ ...qris, reason: e.target.value })} value={qris.reason} />
+                            </FormField>
+                        ) : null}
                     </div>
                 )}
             </Dialog>

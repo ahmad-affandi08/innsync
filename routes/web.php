@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Modules\FnbSales\Presentation\Http\Controllers\BillController;
+use App\Modules\FnbSales\Presentation\Http\Controllers\PaymentController;
 use App\Modules\FnbSales\Presentation\Http\Controllers\SetupController;
 use App\Modules\Finance\Presentation\Http\Controllers\BudgetController;
 use App\Modules\Finance\Presentation\Http\Controllers\CashReconciliationController;
@@ -539,6 +540,11 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
     $id = '[0-9a-z]{26}';
 
     Route::get('/pos', [BillController::class, 'floor'])->name('fnb.pos');
+    Route::get('/shift', [PaymentController::class, 'shift'])->name('fnb.shift');
+    Route::post('/shift', [PaymentController::class, 'openShift'])->middleware(['idempotent'])->name('fnb.shift.open');
+    Route::post('/shift/{id}/close', [PaymentController::class, 'closeShift'])->where('id', $id)->middleware(['idempotent'])->name('fnb.shift.close');
+    Route::post('/bills/{id}/payments', [PaymentController::class, 'pay'])->where('id', $id)->middleware(['idempotent'])->name('fnb.bills.pay');
+    Route::post('/bills/{id}/payments/{payment}/qris', [PaymentController::class, 'qris'])->where('id', $id)->where('payment', $id)->middleware(['idempotent'])->name('fnb.bills.qris');
     Route::post('/bills', [BillController::class, 'open'])->middleware(['idempotent'])->name('fnb.bills.open');
     Route::get('/bills/{id}', [BillController::class, 'show'])->where('id', $id)->name('fnb.bills.show');
     Route::post('/bills/{id}/lines', [BillController::class, 'addLine'])->where('id', $id)->middleware(['idempotent'])->name('fnb.bills.lines.store');

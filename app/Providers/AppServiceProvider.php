@@ -11,6 +11,8 @@ use App\Modules\Finance\Application\FinanceAuditQueries;
 use App\Modules\Finance\Application\FinanceExportQueries;
 use App\Modules\Finance\Application\ManagementReportQueries;
 use App\Modules\FnbSales\Application\BillStore;
+use App\Modules\FnbSales\Application\PaymentStore;
+use App\Modules\FnbSales\Infrastructure\DatabasePaymentStore;
 use App\Modules\FnbSales\Application\SetupStore;
 use App\Modules\FnbSales\Infrastructure\DatabaseBillStore;
 use App\Modules\FnbSales\Infrastructure\DatabaseSetupStore;
@@ -405,6 +407,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(StockReportQueries::class, DatabaseStockReportQueries::class);
         $this->app->bind(SetupStore::class, DatabaseSetupStore::class);
         $this->app->bind(BillStore::class, DatabaseBillStore::class);
+        $this->app->bind(PaymentStore::class, DatabasePaymentStore::class);
         $this->app->bind(FinanceExportQueries::class, DatabaseFinanceExportQueries::class);
         $this->app->bind(RecurringExpenseStore::class, DatabaseRecurringExpenseStore::class);
         $this->app->bind(BudgetStore::class, DatabaseBudgetStore::class);
