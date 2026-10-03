@@ -113,11 +113,12 @@ export default function RosterPage({ overview }: { overview: RosterOverview }) {
                                     <th className="sticky left-0 bg-surface p-2 text-left font-normal" scope="row">{e.name}<span className="block text-xs text-muted-foreground">{e.number} · {label('hr.department', e.department)}</span></th>
                                     {overview.days.map((d) => {
                                         const cell = overview.cells[e.id]?.[d];
+                                        const leave = overview.leave[e.id]?.[d];
                                         const locked = !overview.may.roster || d < overview.business_date || d < e.joined_on || (e.contract_end_on !== null && d > e.contract_end_on);
 
                                         return (
                                             <td className="p-1 text-center" key={d}>
-                                                {locked ? <span className={cell?.off ? 'text-muted-foreground' : ''}>{cell?.code ?? '·'}</span> : (
+                                                {leave !== undefined ? <span className="text-info" title={t('hr.roster.onLeave')}>{leave}</span> : locked ? <span className={cell?.off ? 'text-muted-foreground' : ''}>{cell?.code ?? '·'}</span> : (
                                                     <select aria-label={`${e.name} ${d}`} className="min-h-9 w-16 border border-input bg-surface px-1 text-sm" disabled={action.busy} onChange={(ev) => void put(e.id, d, ev.target.value)} value={cell?.pattern_id ?? ''}>
                                                         <option value="">·</option>
                                                         {active.map((p) => <option key={p.id} value={p.id}>{p.code}</option>)}

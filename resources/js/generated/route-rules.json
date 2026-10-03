@@ -281,6 +281,13 @@
             "status"
         ]
     },
+    "GET /hr/leave": {
+        "required": [],
+        "declared": [
+            "status",
+            "year"
+        ]
+    },
     "GET /hr/roster": {
         "required": [],
         "declared": [
@@ -2668,6 +2675,80 @@
             "offboarded_on",
             "reason",
             "reassign_to"
+        ]
+    },
+    "POST /hr/leave": {
+        "required": [
+            "from_date",
+            "leave_type_id",
+            "reason",
+            "to_date"
+        ],
+        "declared": [
+            "employee_id",
+            "evidence",
+            "from_date",
+            "leave_type_id",
+            "reason",
+            "to_date"
+        ]
+    },
+    "POST /hr/leave/adjust": {
+        "required": [
+            "days",
+            "employee_id",
+            "leave_type_id",
+            "reason",
+            "year"
+        ],
+        "declared": [
+            "days",
+            "employee_id",
+            "leave_type_id",
+            "reason",
+            "year"
+        ]
+    },
+    "POST /hr/leave/types": {
+        "required": [
+            "code",
+            "deducts_balance",
+            "name",
+            "paid"
+        ],
+        "declared": [
+            "code",
+            "deducts_balance",
+            "eligible_after_months",
+            "entitlement_days",
+            "evidence_after_days",
+            "name",
+            "paid"
+        ]
+    },
+    "POST /hr/leave/types/{id}": {
+        "required": [
+            "lock_version",
+            "name",
+            "paid"
+        ],
+        "declared": [
+            "eligible_after_months",
+            "entitlement_days",
+            "evidence_after_days",
+            "lock_version",
+            "name",
+            "paid"
+        ]
+    },
+    "POST /hr/leave/types/{id}/active": {
+        "required": [
+            "active",
+            "lock_version"
+        ],
+        "declared": [
+            "active",
+            "lock_version"
         ]
     },
     "POST /hr/overtime": {

@@ -36,6 +36,7 @@ final readonly class RosterService
 
     public function __construct(
         private RosterStore $roster,
+        private LeaveStore $leave,
         private EmployeeStore $employees,
         private HrAccess $access,
         private BusinessDateProvider $businessDate,
@@ -75,13 +76,19 @@ final readonly class RosterService
             $cells[$e['employee_id']][substr((string) $e['work_date'], 0, 10)] = ['pattern_id' => $e['pattern_id'], 'code' => $e['pattern_code'], 'off' => (bool) $e['is_off']];
         }
 
+        $onLeave = [];
+
+        foreach ($this->leave->daysBetween($property, $from, $to, null) as $l) {
+            $onLeave[$l['employee_id']][substr((string) $l['work_date'], 0, 10)] = $l['type_code'];
+        }
+
         $patterns = $this->roster->patterns($property, false);
         $minimums = $this->roster->minimums($property);
 
         return [
             'from' => $from, 'to' => $to, 'days' => $days, 'department' => $department, 'business_date' => $today,
             'employees' => array_map(static fn (array $e): array => ['id' => $e['id'], 'number' => $e['number'], 'name' => $e['full_name'], 'department' => $e['department'], 'position' => $e['position'], 'joined_on' => substr((string) $e['joined_on'], 0, 10), 'contract_end_on' => $e['contract_end_on'] === null ? null : substr((string) $e['contract_end_on'], 0, 10)], $people),
-            'cells' => $cells === [] ? new \stdClass : $cells, 'patterns' => array_map(fn (array $p): array => $this->shape($p), $patterns),
+            'cells' => $cells === [] ? new \stdClass : $cells, 'leave' => $onLeave === [] ? new \stdClass : $onLeave, 'patterns' => array_map(fn (array $p): array => $this->shape($p), $patterns),
             'minimums' => array_map(static fn (array $m): array => ['department' => $m['department'], 'pattern_id' => $m['pattern_id'], 'minimum' => (int) $m['minimum']], $minimums),
             'shortages' => $this->shortages($property, $from, $to, $today, $department, $patterns, $minimums),
             'departments' => EmployeeService::DEPARTMENTS, 'may' => $caps,
@@ -149,6 +156,14 @@ final readonly class RosterService
             }
         }
 
+        if ($pattern !== null) {
+            foreach ($this->leave->daysBetween($property, $dates[0], $dates[count($dates) - 1], array_keys($people)) as $l) {
+                if (in_array(substr((string) $l['work_date'], 0, 10), $dates, true)) {
+                    throw Refusal::invalid("{$people[$l['employee_id']]['number']} is on leave on ".substr((string) $l['work_date'], 0, 10).'.', ['dates']);
+                }
+            }
+        }
+
         $assigned = 0;
         $cleared = 0;
 
@@ -201,6 +216,11 @@ final readonly class RosterService
         $this->transactions->run(function () use ($property, $actor, $fromStart, $shift, $today, $department, &$copied, &$skipped): void {
             $now = $this->clock->nowUtc();
             $source = $this->roster->entriesBetween($property, $fromStart, date('Y-m-d', strtotime($fromStart.' +6 days')), $department);
+            $leaves = [];
+
+            foreach ($this->leave->daysBetween($property, date('Y-m-d', strtotime($fromStart.' '.($shift >= 0 ? '+' : '').$shift.' days')), date('Y-m-d', strtotime($fromStart.' +6 days '.($shift >= 0 ? '+' : '').$shift.' days')), null) as $l) {
+                $leaves[$l['employee_id'].'|'.substr((string) $l['work_date'], 0, 10)] = true;
+            }
 
             foreach ($source as $s) {
                 $date = date('Y-m-d', strtotime(substr((string) $s['work_date'], 0, 10).' '.($shift >= 0 ? '+' : '').$shift.' days'));
@@ -208,7 +228,7 @@ final readonly class RosterService
                 $pattern = $this->roster->pattern($property, $s['pattern_id']);
 
                 if ($e === null || $pattern === null || $e['status'] !== 'active' || ! (bool) $pattern['is_active'] || $date < $today || $date < substr((string) $e['joined_on'], 0, 10)
-                    || ($e['contract_end_on'] !== null && $date > substr((string) $e['contract_end_on'], 0, 10)) || $this->roster->entry($property, $e['id'], $date) !== null) {
+                    || ($e['contract_end_on'] !== null && $date > substr((string) $e['contract_end_on'], 0, 10)) || isset($leaves[$e['id'].'|'.$date]) || $this->roster->entry($property, $e['id'], $date) !== null) {
                     $skipped++;
 
                     continue;

@@ -45,6 +45,7 @@ final readonly class EmployeeService
         private StaffDirectory $staff,
         private StaffAccess $staffAccess,
         private RosterService $roster,
+        private LeaveService $leave,
         private BusinessDateProvider $businessDate,
         private DocumentNumbers $numbers,
         private StoredFileRepository $files,
@@ -223,15 +224,16 @@ final readonly class EmployeeService
             }
 
             $closed = $this->roster->closeFor($property, $e['id'], $on);
+            $leave = $this->leave->closeFor($property, $e['id'], $on, $actor);
             $revoked = $e['user_id'] === null ? 0 : $this->staffAccess->revokeInProperty($property, (string) $e['user_id']);
             $anchor = new DateTimeImmutable($on.' 00:00:00', new DateTimeZone('UTC'));
 
-            foreach ($this->store->fileIdsOf($property, $e['id']) as $fileId) {
+            foreach ([...$this->store->fileIdsOf($property, $e['id']), ...$leave['files']] as $fileId) {
                 $this->files->setExpiryOnce($property, $fileId, $this->retention->expiryFor($property, DocumentService::PURPOSE, $anchor));
             }
 
             $this->audit->record(new AuditEntry($property->toString(), $actor, 'employee.offboarded', 'employee', $e['id'], ['status' => 'active'], [
-                'status' => 'offboarded', 'number' => $e['number'], 'kind' => $kind, 'offboarded_on' => $on, 'access_ended' => $revoked, 'items' => count($clean), 'not_returned' => count(array_filter($clean, static fn (array $i): bool => ! $i['returned'])), 'reassigned' => count($team), 'shifts_closed' => $closed,
+                'status' => 'offboarded', 'number' => $e['number'], 'kind' => $kind, 'offboarded_on' => $on, 'access_ended' => $revoked, 'items' => count($clean), 'not_returned' => count(array_filter($clean, static fn (array $i): bool => ! $i['returned'])), 'reassigned' => count($team), 'shifts_closed' => $closed, 'leave_cancelled' => $leave['cancelled'],
             ], $reason));
         });
 

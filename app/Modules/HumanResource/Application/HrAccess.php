@@ -28,6 +28,9 @@ final readonly class HrAccess
     /** Sees the attendance of everyone, records a clock-in or clock-out for a person with a reason, and sets how attendance is taken. */
     public const ATTENDANCE = 'hr.attendance.manage';
 
+    /** Configures the kinds of leave, asks for leave for other people, sees everyone's requests and balances, and adjusts a balance. */
+    public const LEAVE = 'hr.leave.manage';
+
     public function __construct(private PermissionChecker $permissions, private PropertyContext $property) {}
 
     public function assertProperty(PropertyId $property): void

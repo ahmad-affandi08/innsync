@@ -338,6 +338,15 @@
         "title",
         "warn_days"
     ],
+    "hr/pages/leave": [
+        "code",
+        "days",
+        "from_date",
+        "leave_type_id",
+        "name",
+        "reason",
+        "to_date"
+    ],
     "hr/pages/roster": [
         "name"
     ],

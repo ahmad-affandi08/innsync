@@ -40,5 +40,7 @@ return [
         'hr.overtime' => ['mandatory' => false],
         // FR-HR-019: a correction of attendance needs approval. Mandatory: with no policy configured the correction is refused, never made.
         'hr.attendance-correction' => ['mandatory' => true],
+        // FR-HR-015: a request for leave, a permit or sick leave needs the approval chain the owner configures. Mandatory: with no policy configured the request is refused, never taken.
+        'hr.leave' => ['mandatory' => true],
     ],
 ];

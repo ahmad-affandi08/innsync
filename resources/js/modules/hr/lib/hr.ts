@@ -27,6 +27,7 @@ export type RosterOverview = {
     from: string; to: string; days: string[]; department: string | null; business_date: string;
     employees: { id: string; number: string; name: string; department: string; position: string; joined_on: string; contract_end_on: string | null }[];
     cells: Record<string, Record<string, { pattern_id: string; code: string; off: boolean }>>;
+    leave: Record<string, Record<string, string>>;
     patterns: ShiftPattern[]; minimums: { department: string; pattern_id: string; minimum: number }[];
     shortages: { date: string; department: string; pattern_id: string; code: string; have: number; need: number }[];
     departments: string[]; may: { view: boolean; roster: boolean };
@@ -75,3 +76,23 @@ export type AttendanceCorrection = {
 };
 
 export type CorrectionOverview = { corrections: AttendanceCorrection[]; days_back: number };
+
+export type LeaveKind = { id: string; code: string; name: string; deducts_balance: boolean; entitlement_days: number; eligible_after_months: number; evidence_after_days: number | null; paid: boolean; active: boolean; lock_version: number };
+
+export type LeaveStatus = 'pending_approval' | 'approved' | 'rejected' | 'cancelled';
+
+export type LeaveRequest = {
+    id: string; employee: { id: string; number: string; name: string; department: string }; type: { code: string; name: string; deducts_balance: boolean }; from_date: string; to_date: string; days: number; reason: string; status: LeaveStatus;
+    has_evidence: boolean; approval: { id: string; status: string; consumed: boolean } | null; may: { release: boolean; cancel: boolean };
+};
+
+export type LeaveBalanceItem = { type_id: string; code: string; name: string; eligible_on: string; entitlement: number; adjusted: number; taken: number; pending: number; remaining: number };
+
+export type LeaveBalance = { employee: { id: string; number: string; name: string; department: string }; year: number; items: LeaveBalanceItem[] };
+
+export type LeaveOverview = {
+    year: number; years: number[]; today: string; types: LeaveKind[]; may: { manage: boolean };
+    mine: { employee: { id: string; number: string; name: string; department: string }; active: boolean; balances: LeaveBalanceItem[]; requests: LeaveRequest[] } | null;
+    requests: LeaveRequest[] | null; balances: LeaveBalance[] | null; employees: { id: string; number: string; name: string; department: string }[] | null;
+    adjustments: { id: string; employee: { id: string; number: string; name: string }; type_code: string; days: number; reason: string; created_at: string }[] | null;
+};
