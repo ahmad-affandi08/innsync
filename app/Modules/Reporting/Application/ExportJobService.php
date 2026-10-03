@@ -61,7 +61,7 @@ final readonly class ExportJobService
      * @param  array<string, mixed>  $params
      * @return array<string, mixed>
      */
-    public function request(PropertyId $property, string $actorId, string $report, array $params, ?string $purpose): array
+    public function request(PropertyId $property, string $actorId, string $report, array $params, ?string $purpose, ?string $scheduleId = null): array
     {
         $this->assertProperty($property);
 
@@ -98,9 +98,9 @@ final readonly class ExportJobService
         $id = $this->ids->next();
         $actor = strtolower($actorId);
 
-        $this->transactions->run(function () use ($property, $id, $report, $clean, $purpose, $actor): void {
-            $this->jobs->add($property, $id, $report, $clean, $purpose, $actor, $this->clock->nowUtc());
-            $this->audit->record(new AuditEntry($property->toString(), $actor, 'report.export_requested', 'report_export_job', $id, null, ['report' => $report, 'inputs' => array_keys($clean)], $purpose));
+        $this->transactions->run(function () use ($property, $id, $report, $clean, $purpose, $actor, $scheduleId): void {
+            $this->jobs->add($property, $id, $report, $clean, $purpose, $actor, $this->clock->nowUtc(), $scheduleId);
+            $this->audit->record(new AuditEntry($property->toString(), $actor, 'report.export_requested', 'report_export_job', $id, null, ['report' => $report, 'inputs' => array_keys($clean), 'schedule_id' => $scheduleId], $purpose));
         });
 
         return $this->jobs->find($property, $id) ?? throw Refusal::notFound('Request not found.');

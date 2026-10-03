@@ -11,9 +11,9 @@ use Illuminate\Support\Facades\DB;
 
 final readonly class DatabaseExportJobRepository implements ExportJobRepository
 {
-    public function add(PropertyId $property, string $id, string $report, array $params, ?string $purpose, string $actorId, DateTimeImmutable $at): void
+    public function add(PropertyId $property, string $id, string $report, array $params, ?string $purpose, string $actorId, DateTimeImmutable $at, ?string $scheduleId = null): void
     {
-        DB::table('report_export_jobs')->insert(['id' => $id, 'property_id' => $property->toString(), 'report' => $report, 'params' => json_encode($params, JSON_THROW_ON_ERROR), 'purpose' => $purpose, 'requested_by' => $actorId, 'status' => 'queued', 'requested_at' => $at]);
+        DB::table('report_export_jobs')->insert(['id' => $id, 'property_id' => $property->toString(), 'report' => $report, 'params' => json_encode($params, JSON_THROW_ON_ERROR), 'purpose' => $purpose, 'schedule_id' => $scheduleId, 'requested_by' => $actorId, 'status' => 'queued', 'requested_at' => $at]);
     }
 
     public function find(PropertyId $property, string $id): ?array
@@ -74,7 +74,7 @@ final readonly class DatabaseExportJobRepository implements ExportJobRepository
         $utc = static fn (?string $v): ?string => $v === null ? null : substr($v, 0, 19).'Z';
 
         return [
-            'id' => $r->id, 'report' => $r->report, 'params' => json_decode((string) $r->params, true, 512, JSON_THROW_ON_ERROR), 'purpose' => $r->purpose, 'requested_by' => $r->requested_by, 'status' => $r->status,
+            'id' => $r->id, 'report' => $r->report, 'params' => json_decode((string) $r->params, true, 512, JSON_THROW_ON_ERROR), 'purpose' => $r->purpose, 'schedule_id' => $r->schedule_id, 'requested_by' => $r->requested_by, 'status' => $r->status,
             'rows' => $r->row_count === null ? null : (int) $r->row_count, 'file_id' => $r->file_id, 'filename' => $r->filename, 'error' => $r->error,
             'requested_at' => $utc($r->requested_at), 'started_at' => $utc($r->started_at), 'finished_at' => $utc($r->finished_at), 'seen' => $r->seen_at !== null,
         ];

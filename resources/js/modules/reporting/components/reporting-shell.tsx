@@ -7,6 +7,7 @@ const LINKS = [
     { href: '/reports', label: 'rpt.nav.reports' },
     { href: '/reports/builder', label: 'rpt.nav.builder' },
     { href: '/reports/exports', label: 'rpt.nav.exports' },
+    { href: '/reports/schedules', label: 'rpt.nav.schedules' },
     { href: '/reports/outlets', label: 'rpt.nav.outlets' },
 ] as const;
 

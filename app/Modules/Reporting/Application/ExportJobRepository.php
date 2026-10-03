@@ -10,7 +10,7 @@ use DateTimeImmutable;
 interface ExportJobRepository
 {
     /** @param array<string, mixed> $params */
-    public function add(PropertyId $property, string $id, string $report, array $params, ?string $purpose, string $actorId, DateTimeImmutable $at): void;
+    public function add(PropertyId $property, string $id, string $report, array $params, ?string $purpose, string $actorId, DateTimeImmutable $at, ?string $scheduleId = null): void;
 
     /** @return array<string, mixed>|null */
     public function find(PropertyId $property, string $id): ?array;

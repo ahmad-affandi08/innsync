@@ -249,7 +249,7 @@ Every row must eventually point to implementation evidence and tests. Status is 
 | FR-RPT-001 | Reporting & Analytics | Wajib | ../TASK/MODULE-11-REPORTING.md | TODO |
 | FR-RPT-002 | Reporting & Analytics | Wajib | ../TASK/MODULE-11-REPORTING.md | TODO |
 | FR-RPT-003 | Reporting & Analytics | Wajib | ../TASK/MODULE-11-REPORTING.md | TODO |
-| FR-RPT-004 | Reporting & Analytics | Sebaiknya | ../TASK/MODULE-11-REPORTING.md | TODO |
+| FR-RPT-004 | Reporting & Analytics | Sebaiknya | ../TASK/MODULE-11-REPORTING.md | REVIEW |
 | FR-RPT-005 | Reporting & Analytics | Wajib | ../TASK/MODULE-11-REPORTING.md | TODO |
 | FR-RPT-006 | Reporting & Analytics | Sebaiknya | ../TASK/MODULE-11-REPORTING.md | TODO |
 | FR-RPT-007 | Reporting & Analytics | Wajib | ../TASK/MODULE-11-REPORTING.md | TODO |

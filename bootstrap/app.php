@@ -10,6 +10,7 @@ use App\Modules\Maintenance\Infrastructure\GenerateDutyRunsCommand;
 use App\Modules\Maintenance\Infrastructure\GenerateRoutineWorkCommand;
 use App\Modules\Property\Infrastructure\Migration\ImportRoomMasterCommand;
 use App\Modules\Reporting\Infrastructure\RunReportExportsCommand;
+use App\Modules\Reporting\Infrastructure\RunReportSchedulesCommand;
 use App\Shared\Application\Observability\CorrelationId;
 use App\Shared\Infrastructure\Backup\BackupDecryptCommand;
 use App\Shared\Infrastructure\Backup\BackupKeygenCommand;
@@ -60,6 +61,7 @@ return Application::configure(basePath: dirname(__DIR__))
         SmokeCommand::class,
         RetentionPurgeCommand::class,
         RunReportExportsCommand::class,
+        RunReportSchedulesCommand::class,
         EscalateWorkOrdersCommand::class,
         GenerateRoutineWorkCommand::class,
         GenerateDutyRunsCommand::class,

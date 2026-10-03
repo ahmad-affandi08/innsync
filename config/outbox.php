@@ -15,6 +15,7 @@ use App\Modules\InventoryPurchasing\Application\MaintenancePartConsumer;
 use App\Modules\InventoryPurchasing\Application\RecipeConsumptionConsumer;
 use App\Modules\Kitchen\Application\SaleConsumptionConsumer;
 use App\Modules\Kitchen\Application\TicketIntakeConsumer;
+use App\Modules\Reporting\Application\ScheduledReportNoticeConsumer;
 use App\Shared\Application\Outbox\OutboxConsumer;
 
 $retryDelays = array_values(array_filter(
@@ -59,6 +60,7 @@ return [
         SopCompletionConsumer::class,
         PayrollPaidConsumer::class,
         SaleConsumptionConsumer::class,
+        ScheduledReportNoticeConsumer::class,
         TicketIntakeConsumer::class,
     ],
 ];

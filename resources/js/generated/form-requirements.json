@@ -774,6 +774,12 @@
         "reason",
         "source"
     ],
+    "reporting/pages/schedules": [
+        "at_time",
+        "cadence",
+        "name",
+        "report"
+    ],
     "routines/pages/temperatures": [
         "max_tenth",
         "min_tenth",

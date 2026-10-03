@@ -113,6 +113,7 @@ use App\Modules\Reporting\Presentation\Http\Controllers\ObligationController;
 use App\Modules\Reporting\Presentation\Http\Controllers\OutletController;
 use App\Modules\Reporting\Presentation\Http\Controllers\ReportBuilderController;
 use App\Modules\Reporting\Presentation\Http\Controllers\ReportController;
+use App\Modules\Reporting\Presentation\Http\Controllers\ReportScheduleController;
 use App\Modules\Routines\Presentation\Http\Controllers\RoutineController;
 use App\Shared\Infrastructure\Localization\SetLocaleController;
 use App\Shared\Infrastructure\Offline\SyncController;
@@ -562,6 +563,10 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->group(
         Route::get('/builder', [ReportBuilderController::class, 'index'])->name('reports.builder');
         Route::get('/builder/run', [ReportBuilderController::class, 'run'])->name('reports.builder.run');
         Route::get('/builder/export', [ReportBuilderController::class, 'export'])->name('reports.builder.export');
+        Route::get('/schedules', [ReportScheduleController::class, 'index'])->name('reports.schedules');
+        Route::post('/schedules', [ReportScheduleController::class, 'store'])->name('reports.schedules.store');
+        Route::post('/schedules/{id}', [ReportScheduleController::class, 'update'])->where('id', $id)->name('reports.schedules.update');
+        Route::post('/schedules/{id}/active', [ReportScheduleController::class, 'active'])->where('id', $id)->name('reports.schedules.active');
         Route::get('/exports', [ExportJobController::class, 'index'])->name('reports.exports');
         Route::post('/exports', [ExportJobController::class, 'store'])->middleware('throttle:bookings')->name('reports.exports.store');
         Route::post('/exports/seen', [ExportJobController::class, 'seen'])->name('reports.exports.seen');

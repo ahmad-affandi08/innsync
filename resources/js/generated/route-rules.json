@@ -5512,6 +5512,66 @@
             "source"
         ]
     },
+    "POST /reports/schedules": {
+        "required": [
+            "at_time",
+            "cadence",
+            "name",
+            "notify_email",
+            "recipients",
+            "report"
+        ],
+        "declared": [
+            "at_time",
+            "cadence",
+            "month_day",
+            "name",
+            "notify_email",
+            "params",
+            "params.by",
+            "params.kind",
+            "params.preset",
+            "recipients",
+            "recipients.*",
+            "report",
+            "weekday"
+        ]
+    },
+    "POST /reports/schedules/{id}": {
+        "required": [
+            "at_time",
+            "cadence",
+            "name",
+            "notify_email",
+            "recipients",
+            "report"
+        ],
+        "declared": [
+            "at_time",
+            "cadence",
+            "month_day",
+            "name",
+            "notify_email",
+            "params",
+            "params.by",
+            "params.kind",
+            "params.preset",
+            "recipients",
+            "recipients.*",
+            "report",
+            "weekday"
+        ]
+    },
+    "POST /reports/schedules/{id}/active": {
+        "required": [
+            "active",
+            "lock_version"
+        ],
+        "declared": [
+            "active",
+            "lock_version"
+        ]
+    },
     "POST /sync/batch": {
         "required": [],
         "declared": [
