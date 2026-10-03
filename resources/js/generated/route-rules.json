@@ -645,6 +645,89 @@
             "proof"
         ]
     },
+    "POST /finance/petty": {
+        "required": [
+            "code",
+            "custodian_id",
+            "imprest_minor",
+            "name"
+        ],
+        "declared": [
+            "code",
+            "custodian_id",
+            "imprest_minor",
+            "max_voucher_minor",
+            "name"
+        ]
+    },
+    "POST /finance/petty/settlements/{id}/decide": {
+        "required": [
+            "decision",
+            "lock_version"
+        ],
+        "declared": [
+            "decision",
+            "lock_version",
+            "note"
+        ]
+    },
+    "POST /finance/petty/vouchers/{id}/proofs": {
+        "required": [
+            "proof"
+        ],
+        "declared": [
+            "proof"
+        ]
+    },
+    "POST /finance/petty/vouchers/{id}/void": {
+        "required": [
+            "reason"
+        ],
+        "declared": [
+            "reason"
+        ]
+    },
+    "POST /finance/petty/{id}": {
+        "required": [
+            "active",
+            "custodian_id",
+            "lock_version",
+            "name"
+        ],
+        "declared": [
+            "active",
+            "custodian_id",
+            "lock_version",
+            "max_voucher_minor",
+            "name"
+        ]
+    },
+    "POST /finance/petty/{id}/settlements": {
+        "required": [
+            "counted_minor"
+        ],
+        "declared": [
+            "counted_minor",
+            "variance_reason"
+        ]
+    },
+    "POST /finance/petty/{id}/vouchers": {
+        "required": [
+            "amount_minor",
+            "description",
+            "expense_account_id",
+            "payee"
+        ],
+        "declared": [
+            "amount_minor",
+            "description",
+            "expense_account_id",
+            "no_receipt_reason",
+            "payee",
+            "receipt_ref",
+            "voucher_date"
+        ]
+    },
     "POST /finance/receivables": {
         "required": [
             "amount_minor",

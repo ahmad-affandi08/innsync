@@ -25,6 +25,25 @@
         "proof",
         "reason"
     ],
+    "finance/pages/petty-fund": [
+        "amount_minor",
+        "counted_minor",
+        "description",
+        "expense_account_id",
+        "name",
+        "payee",
+        "proof",
+        "reason"
+    ],
+    "finance/pages/petty-funds": [
+        "code",
+        "custodian_id",
+        "imprest_minor",
+        "name"
+    ],
+    "finance/pages/petty-settlement": [
+        "decision"
+    ],
     "finance/pages/receivable": [
         "amount_minor",
         "kind",

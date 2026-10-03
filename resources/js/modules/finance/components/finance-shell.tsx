@@ -12,6 +12,7 @@ const LINKS = [
     { href: '/finance/customers', label: 'fin.nav.customers' },
     { href: '/finance/revenue', label: 'fin.nav.revenue' },
     { href: '/finance/cash', label: 'fin.nav.cash' },
+    { href: '/finance/petty', label: 'fin.nav.petty' },
     { href: '/finance/accounts', label: 'fin.nav.accounts' },
 ] as const;
 
