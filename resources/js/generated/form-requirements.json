@@ -594,6 +594,17 @@
         "category",
         "title"
     ],
+    "kitchen/pages/production": [
+        "actual_output_milli",
+        "batches",
+        "code",
+        "formula_id",
+        "name",
+        "output_item_id",
+        "output_unit",
+        "reason",
+        "standard_output_milli"
+    ],
     "kitchen/pages/recipes": [
         "effective_from",
         "reason",

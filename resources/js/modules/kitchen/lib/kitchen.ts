@@ -91,3 +91,16 @@ export type MenuReport = {
     currency: string; from: string; to: string; outlet_id: string | null; outlets: { id: string; name: string }[]; rows: MenuReportRow[];
     totals: { portions: number; net_minor: number; discount_minor: number; costed_net_minor: number; cost_minor: number; cost_bp: number | null; costed_dishes: number; dishes: number };
 };
+
+export type Formula = {
+    id: string; code: string; name: string; output_item_id: string; output_name: string; output_unit: string; standard_output_milli: number; is_active: boolean; retire_reason: string | null;
+    lines: { item_id: string; code: string; name: string; unit: string; quantity_milli: number }[];
+};
+export type ProductionBatch = {
+    id: string; number: string; formula: string; formula_code: string; batches: number; output_name: string; output_unit: string; standard_output_milli: number; actual_output_milli: number; yield_bp: number;
+    input_value_minor: number; input_value_complete: boolean; expires_on: string | null; note: string | null; business_date: string; by: string | null; at: string;
+    lines: { name: string; unit: string; quantity_milli: number; value_minor: number | null }[];
+};
+export type ProductionOverview = {
+    currency: string; business_date: string; formulas: Formula[]; batches: ProductionBatch[]; items: Ingredient[]; has_location: boolean; may: { record: boolean; manage: boolean };
+};

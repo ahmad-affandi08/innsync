@@ -232,6 +232,9 @@ describe('dictionaries', () => {
             'fo.audit.report.waiverRow',
             'fnb.px.outlet',
             'fnb.px.status',
+            'kitchen.prod.colNumber',
+            'kitchen.prod.colStatus',
+            'kitchen.prod.formula',
         ])
         const identical = (Object.keys(en) as (keyof typeof en)[]).filter(
             (key) => en[key] === id[key] && !allowedSame.has(key),

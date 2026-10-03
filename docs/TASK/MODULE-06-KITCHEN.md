@@ -27,7 +27,7 @@
 | TASK-KIT-011 | FR-KIT-011 | Wajib | Mengajukan permintaan pembelian bahan dan peralatan ke modul Purchasing. | REVIEW |
 | TASK-KIT-012 | FR-KIT-012 | Sebaiknya | Menerbitkan laporan penjualan menu, rasio biaya bahan terhadap penjualan, dan analisis menu berdasarkan popularitas serta kontribusi margin. | REVIEW |
 | TASK-KIT-013 | FR-KIT-013 | Wajib | Setiap perubahan resep menghasilkan versi baru bertanggal efektif; transaksi lama selalu mereferensikan versi resep yang berlaku saat transaksi diposting. | REVIEW |
-| TASK-KIT-014 | FR-KIT-014 | Sebaiknya | Mendukung produksi/preparation batch (misalnya sauce, dough, stock) yang mengonsumsi bahan baku dan menghasilkan semi-finished goods beserta yield aktual. | TODO |
+| TASK-KIT-014 | FR-KIT-014 | Sebaiknya | Mendukung produksi/preparation batch (misalnya sauce, dough, stock) yang mengonsumsi bahan baku dan menghasilkan semi-finished goods beserta yield aktual. | REVIEW |
 | TASK-KIT-015 | FR-KIT-015 | Wajib | KDS menyediakan indikator koneksi dan antrean; bila layar atau jaringan bermasalah, tiket tetap tersimpan dan dapat dialihkan ke printer/fallback queue tanpa kehilangan order. | IN_PROGRESS |
 
 ## Progress notes
@@ -91,6 +91,16 @@
 - **Menu engineering.** A dish with a complete cost and a sale is classed when at least two are: popular when its share of the portions of the costed dishes is at least 70% of an equal share, high margin when its margin per portion reaches the average of those dishes weighted by portions; star, plowhorse, puzzle or dog, with what to do about each on the screen. The period is at most 366 days and defaults to the last 30 days of the business date; it can be narrowed to an outlet.
 - Not yet: cost at the price paid on the day (the average of now is used, so an old period is costed at today's average), cost of choices and variants that consume stock, a trend by week, and export.
 - Evidence: `tests/Feature/Kitchen/MenuReportHttpTest.php` (sales, cost, ratio, margin, mix and the class of each dish from real settled bills and consumptions, the outlet and period filters, open bills and an uncosted ingredient, rights and dates).
+
+### Slice 61 (2026-10-03): production of semi-finished goods
+
+- Status: `TASK-KIT-014` is `REVIEW`; `TASK-KIT-006` (use of ingredients and preparation production in the log) stays `IN_PROGRESS` only for the recording of ingredient use outside sales.
+- Context: migration 107 (`kitchen_prep_formulas` and lines with a retire-only trigger, `kitchen_productions` and lines append-only), `ProductionStore`/`DatabaseProductionStore`, `ProductionService`, `ProductionController`, privilege `kitchen.production.record` (formulas need the recipe privilege), `KitchenProductionConsumer` in the inventory (`kitchen.production.recorded`, registered in `config/outbox.php`), page `kitchen/pages/production.tsx`.
+- **Formula.** What one batch of a sauce, dough or stock takes (ingredients, units from the inventory) and what it should make (the product, an item of the inventory, and the standard quantity). The product is not its own ingredient; a formula is never edited, only retired with a reason and replaced.
+- **Batch.** Made from an active formula in whole batches (1–100) with the actual yield the person measured (more than six times the standard is refused as a slipped decimal) and an optional expiry date that becomes the batch of the product in the inventory. The batch is numbered `KPR-…`, keeps its formula, standard, actual quantity, yield in percent and the cost of its ingredients at the moving average (partial when an ingredient has no cost), and is audited; it is never edited or deleted.
+- **Booked once.** The inventory reads the fact and posts a movement out for each ingredient and one in for the product, the batch being the source of all of them, so a message handled twice books nothing twice. The product comes in at the value the ingredients went out at, spread over what was really made, so a poor yield makes each kilogram dearer. The ingredients may go below zero unless the location or category blocks it (then the message waits for a person).
+- Not yet: recipes of dishes that use the semi-finished goods directly (a dish uses the product like any ingredient, by its own recipe), a variance report by formula, scheduling of production from forecast demand, and a different location for the product than the pantry the ingredients come from.
+- Evidence: `tests/Feature/Kitchen/ProductionHttpTest.php` (ingredients out, product in at 1 288 889 per kg for a 90% yield, the lot with its expiry, a replay that books nothing twice, every formula and batch refusal, retire-only and append-only triggers, rights).
 
 ## Required engineering checks
 

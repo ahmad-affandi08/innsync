@@ -4386,6 +4386,52 @@
             "available"
         ]
     },
+    "POST /kitchen/production": {
+        "required": [
+            "actual_output_milli",
+            "batches",
+            "formula_id"
+        ],
+        "declared": [
+            "actual_output_milli",
+            "batches",
+            "expires_on",
+            "formula_id",
+            "note"
+        ]
+    },
+    "POST /kitchen/production/formulas": {
+        "required": [
+            "code",
+            "lines",
+            "lines.*.item_id",
+            "lines.*.quantity_milli",
+            "lines.*.unit",
+            "name",
+            "output_item_id",
+            "output_unit",
+            "standard_output_milli"
+        ],
+        "declared": [
+            "code",
+            "lines",
+            "lines.*.item_id",
+            "lines.*.quantity_milli",
+            "lines.*.unit",
+            "name",
+            "output_item_id",
+            "output_unit",
+            "standard_output_milli"
+        ]
+    },
+    "POST /kitchen/production/formulas/{id}/retire": {
+        "required": [
+            "reason"
+        ],
+        "declared": [
+            "reason"
+        ]
+    },
     "POST /kitchen/recipes/{id}": {
         "required": [
             "effective_from",
