@@ -22,6 +22,7 @@ use App\Modules\FnbSales\Presentation\Http\Controllers\DamageReportController as
 use App\Modules\FnbSales\Presentation\Http\Controllers\MinibarController;
 use App\Modules\FnbSales\Presentation\Http\Controllers\PaymentController;
 use App\Modules\FnbSales\Presentation\Http\Controllers\PriceRuleController;
+use App\Modules\FnbSales\Presentation\Http\Controllers\RegisterController;
 use App\Modules\FnbSales\Presentation\Http\Controllers\RoomServiceController;
 use App\Modules\FnbSales\Presentation\Http\Controllers\SetupController;
 use App\Modules\FrontOffice\Presentation\Http\Controllers\AvailabilityController;
@@ -620,6 +621,7 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
     Route::post('/bills/{id}/table', [BillController::class, 'moveTable'])->where('id', $id)->middleware(['idempotent'])->name('fnb.bills.table');
     Route::post('/bills/{id}/merge', [BillController::class, 'merge'])->where('id', $id)->middleware(['idempotent'])->name('fnb.bills.merge');
     Route::post('/bills/{id}/split', [BillController::class, 'split'])->where('id', $id)->middleware(['idempotent'])->name('fnb.bills.split');
+    Route::get('/register', [RegisterController::class, 'index'])->name('fnb.register');
     Route::get('/prices', [PriceRuleController::class, 'index'])->name('fnb.prices');
     Route::post('/prices', [PriceRuleController::class, 'store'])->name('fnb.prices.store');
     Route::post('/prices/{id}/retire', [PriceRuleController::class, 'retire'])->where('id', $id)->name('fnb.prices.retire');

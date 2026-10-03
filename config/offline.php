@@ -1,5 +1,6 @@
 <?php
 
+use App\Modules\FnbSales\Application\OfflineSaleHandler;
 use App\Shared\Application\Offline\OfflineOperationHandler;
 use App\Shared\Infrastructure\Offline\SystemEchoHandler;
 
@@ -15,6 +16,7 @@ return [
      */
     'handlers' => [
         SystemEchoHandler::class,
+        OfflineSaleHandler::class,
     ],
 
     'max_batch_items' => max(1, (int) env('OFFLINE_MAX_BATCH_ITEMS', 50)),

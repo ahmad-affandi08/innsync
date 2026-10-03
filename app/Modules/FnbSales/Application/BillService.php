@@ -578,7 +578,7 @@ final readonly class BillService
     }
 
     /** @return list<array<string, mixed>> the categories in use with the items in use, for taking an order */
-    private function orderMenu(PropertyId $property, string $outletId, string $channel): array
+    public function orderMenu(PropertyId $property, string $outletId, string $channel): array
     {
         $book = $this->prices->bookOf($property, $outletId);
         $items = $this->setup->items($property, $outletId);

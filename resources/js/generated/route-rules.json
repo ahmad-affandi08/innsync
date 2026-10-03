@@ -169,6 +169,12 @@
             "outlet"
         ]
     },
+    "GET /fnb/register": {
+        "required": [],
+        "declared": [
+            "outlet"
+        ]
+    },
     "GET /fnb/routines/performance": {
         "required": [],
         "declared": [
