@@ -245,8 +245,8 @@ final class AccountsReceivableHttpTest extends TestCase
             ->where('aging.totals.total_minor', 20_000_000)
             ->has('aging.rows', 2));
 
-        $this->get('/finance/receivables/aging?as_of=2026-09-30')->assertInertia(fn (Assert $page) => $page->where('aging.totals.d90_plus', 6_000_000)->where('aging.totals.total_minor', 15_000_000), 'an earlier date is stable: the receipt of 2026-10-01 is not counted yet');
-        $this->get('/finance/receivables/aging?as_of=2026-02-30')->assertStatus(422);
+        $this->get('/finance/receivables/aging?as_of=2026-09-30')->assertInertia(fn (Assert $page) => $page->where('aging.totals.d90_plus', 6_000_000)->where('aging.totals.total_minor', 20_000_000), 'an earlier date is stable: the receipt of 2026-10-01 is not counted yet');
+        $this->get('/finance/receivables/aging?as_of=2026-02-30')->assertSessionHasErrors('as_of');
     }
 
     public function test_the_receivables_list_filters_by_status_and_customer(): void

@@ -35,6 +35,19 @@
             "status"
         ]
     },
+    "GET /finance/receivables": {
+        "required": [],
+        "declared": [
+            "customer_id",
+            "status"
+        ]
+    },
+    "GET /finance/receivables/aging": {
+        "required": [],
+        "declared": [
+            "as_of"
+        ]
+    },
     "GET /finance/revenue": {
         "required": [],
         "declared": [
@@ -557,6 +570,34 @@
             "reason"
         ]
     },
+    "POST /finance/customers": {
+        "required": [
+            "code",
+            "kind",
+            "name",
+            "terms_days"
+        ],
+        "declared": [
+            "code",
+            "kind",
+            "name",
+            "terms_days"
+        ]
+    },
+    "POST /finance/customers/{id}": {
+        "required": [
+            "active",
+            "lock_version",
+            "name",
+            "terms_days"
+        ],
+        "declared": [
+            "active",
+            "lock_version",
+            "name",
+            "terms_days"
+        ]
+    },
     "POST /finance/payables/{id}/classify": {
         "required": [],
         "declared": [
@@ -602,6 +643,47 @@
         ],
         "declared": [
             "proof"
+        ]
+    },
+    "POST /finance/receivables": {
+        "required": [
+            "amount_minor",
+            "customer_id",
+            "description"
+        ],
+        "declared": [
+            "amount_minor",
+            "customer_id",
+            "description",
+            "due_date",
+            "issued_on",
+            "reference"
+        ]
+    },
+    "POST /finance/receivables/{id}/notes": {
+        "required": [
+            "kind",
+            "note"
+        ],
+        "declared": [
+            "kind",
+            "note",
+            "promised_minor",
+            "promised_on"
+        ]
+    },
+    "POST /finance/receivables/{id}/receipts": {
+        "required": [
+            "amount_minor",
+            "method",
+            "reference"
+        ],
+        "declared": [
+            "amount_minor",
+            "method",
+            "note",
+            "received_on",
+            "reference"
         ]
     },
     "POST /finance/revenue/{date}/verify": {

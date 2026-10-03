@@ -10,6 +10,12 @@
         "resolution",
         "status"
     ],
+    "finance/pages/customers": [
+        "code",
+        "kind",
+        "name",
+        "terms_days"
+    ],
     "finance/pages/payable": [
         "amount_minor",
         "credit_id",
@@ -18,6 +24,17 @@
     "finance/pages/payment": [
         "proof",
         "reason"
+    ],
+    "finance/pages/receivable": [
+        "amount_minor",
+        "kind",
+        "method",
+        "reference"
+    ],
+    "finance/pages/receivables": [
+        "amount_minor",
+        "customer_id",
+        "description"
     ],
     "front-office/pages/cashier": [
         "amount_minor",

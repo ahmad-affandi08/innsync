@@ -1,5 +1,5 @@
 import { StatusBadge, type StatusTone } from '@/components/ui/status-badge';
-import { useTranslation } from '@/shared/i18n/i18n';
+import { useFormatters, useTranslation } from '@/shared/i18n/i18n';
 import type { MessageKey } from '@/locales/en/index';
 
 /** A payable as the overview, the schedule and the payable page send it. */
@@ -59,4 +59,46 @@ export function useReceiptMethodLabel() {
     const { t } = useTranslation();
 
     return (method: string): string => (KNOWN_METHODS.includes(method) ? t(`fo.folio.method.${method}` as MessageKey) : method);
+}
+
+/** A receivable as the list and the receivable page send it. */
+export type ReceivableRow = {
+    id: string; number: string; customer_id: string; customer_code: string; customer_name: string; source_type: 'company_folio' | 'manual'; source_number: string; description: string;
+    issued_on: string; due_date: string; amount_minor: number; received_minor: number; balance_minor: number; currency: string; status: 'open' | 'partial' | 'paid'; overdue: boolean;
+    days_to_due: number; days_overdue: number; promised_on: string | null; last_note_at: string | null; note_count: number;
+};
+
+export const RECEIVABLE_TONE: Record<string, StatusTone> = { open: 'info', partial: 'pending', paid: 'success' };
+export const CUSTOMER_KINDS = ['company', 'agent', 'ota', 'other'] as const;
+export const NOTE_TONE: Record<string, StatusTone> = { reminder: 'info', call: 'info', promise: 'warning', dispute: 'danger', note: 'neutral' };
+
+/** The state of a receivable, with a red badge showing how late it is when something is still owed after the due date. */
+export function ReceivableStatus({ row }: { row: Pick<ReceivableRow, 'status' | 'overdue' | 'days_overdue'> }) {
+    const { t } = useTranslation();
+
+    return (
+        <span className="inline-flex flex-wrap items-center gap-1.5">
+            <StatusBadge label={t(`fin.status.${row.status}` as MessageKey)} tone={RECEIVABLE_TONE[row.status] ?? 'neutral'} />
+            {row.overdue ? <StatusBadge label={t('fin.overdueDays', { days: row.days_overdue })} tone="danger" /> : null}
+        </span>
+    );
+}
+
+/** The date a customer promised to pay, in warning colour while it holds and in red once it has passed. Nothing for a paid receivable. */
+export function PromiseBadge({ row, today }: { row: Pick<ReceivableRow, 'promised_on' | 'balance_minor'>; today: string }) {
+    const { t } = useTranslation();
+    const format = useFormatters();
+
+    if (row.promised_on === null || row.balance_minor <= 0) return null;
+
+    return row.promised_on < today
+        ? <StatusBadge label={t('fin.ar.promiseBroken', { date: format.date(row.promised_on) })} tone="danger" />
+        : <StatusBadge label={t('fin.ar.promisedOn', { date: format.date(row.promised_on) })} tone="warning" />;
+}
+
+/** A customer's kind in the words the front office and finance use. */
+export function useCustomerKindLabel() {
+    const { t } = useTranslation();
+
+    return (kind: string): string => ((CUSTOMER_KINDS as readonly string[]).includes(kind) ? t(`fin.arc.kind.${kind}` as MessageKey) : kind);
 }
