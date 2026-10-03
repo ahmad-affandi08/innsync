@@ -132,4 +132,7 @@ interface InventoryStore
 
     /** @return list<array<string, mixed>> the lots that still hold stock, with the item and the location, earliest expiry first */
     public function lots(PropertyId $property, ?string $itemId, ?string $locationId, ?string $department): array;
+
+    /** @return list<array<string, mixed>> the issues a department made, newest first, with the item and the location */
+    public function issuesOfDepartment(PropertyId $property, string $department, int $limit): array;
 }

@@ -19,11 +19,12 @@ final readonly class StockCountController
 
     public function index(Request $request): Response
     {
-        $data = $request->validate(['status' => ['nullable', 'string', 'max:10']]);
+        $data = $request->validate(['status' => ['nullable', 'string', 'max:10'], 'location_kind' => ['nullable', 'string', 'max:12']]);
 
         return Inertia::render('inventory-purchasing/pages/counts', [
-            'overview' => $this->counts->overview($this->property->current(), $this->actor($request), $data['status'] ?? null),
+            'overview' => $this->counts->overview($this->property->current(), $this->actor($request), $data['status'] ?? null, $data['location_kind'] ?? null),
             'status' => $data['status'] ?? '',
+            'locationKind' => $data['location_kind'] ?? '',
         ]);
     }
 

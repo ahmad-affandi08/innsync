@@ -7,6 +7,7 @@ const LINKS = [
     { href: '/laundry/new', label: 'ldy.nav.new' },
     { href: '/laundry/claims', label: 'ldy.nav.claims' },
     { href: '/laundry/prices', label: 'ldy.nav.prices' },
+    { href: '/laundry/supplies', label: 'ldy.nav.supplies' },
     { href: '/inventory/requests?department=laundry', label: 'ldy.nav.purchasing' },
 ] as const;
 

@@ -111,6 +111,7 @@ export const kitchen = {
     "kitchen.damage.title": "Report a fault",
     "kitchen.damage.description": "Equipment of the kitchen or the bar that is broken: say which and what, add a photo, and Maintenance gets a work order at once.",
     "kitchen.nav.lots": "Batches and expiry",
+    "kitchen.nav.counts": "Stock counts",
     "kitchen.nav.waste": "Waste",
     "waste.title": "Waste log",
     "waste.description": "What the kitchen threw away and why, and what it cost. Each entry takes its stock out of the pantry.",

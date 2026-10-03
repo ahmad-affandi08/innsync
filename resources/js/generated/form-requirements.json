@@ -463,6 +463,11 @@
         "reason",
         "urgency"
     ],
+    "inventory-purchasing/pages/requisitions": [
+        "lines",
+        "requesting_location_id",
+        "supplying_location_id"
+    ],
     "inventory-purchasing/pages/returns": [
         "reason",
         "receipt_id"
@@ -546,6 +551,11 @@
         "reason",
         "unit_price_minor",
         "value"
+    ],
+    "laundry/pages/supplies": [
+        "item_id",
+        "location_id",
+        "quantity"
     ],
     "maintenance/pages/assets": [
         "acquired_on",

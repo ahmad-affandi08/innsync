@@ -7,6 +7,8 @@ const LINKS = [
     { href: '/fnb/shift', label: 'fnb.nav.shift' },
     { href: '/fnb/outlets', label: 'fnb.nav.outlets' },
     { href: '/fnb/menu', label: 'fnb.nav.menu' },
+    { href: '/inventory/requisitions', label: 'inv.nav.requisitions' },
+    { href: '/inventory/counts?location_kind=bar', label: 'fnb.nav.counts' },
     { href: '/fnb/damage-reports', label: 'fnb.nav.damage' },
     { href: '/inventory/requests?department=fnb', label: 'fnb.nav.purchasing' },
 ] as const;

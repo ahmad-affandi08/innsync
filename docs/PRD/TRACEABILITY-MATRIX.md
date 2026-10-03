@@ -101,7 +101,7 @@ Every row must eventually point to implementation evidence and tests. Status is 
 | FR-LDY-005 | Laundry | Sebaiknya | ../TASK/MODULE-04-LAUNDRY.md | TODO |
 | FR-LDY-006 | Laundry | Sebaiknya | ../TASK/MODULE-04-LAUNDRY.md | TODO |
 | FR-LDY-007 | Laundry | Wajib | ../TASK/MODULE-04-LAUNDRY.md | TODO |
-| FR-LDY-008 | Laundry | Sebaiknya | ../TASK/MODULE-04-LAUNDRY.md | TODO |
+| FR-LDY-008 | Laundry | Sebaiknya | ../TASK/MODULE-04-LAUNDRY.md | REVIEW |
 | FR-LDY-009 | Laundry | Wajib | ../TASK/MODULE-04-LAUNDRY.md | REVIEW |
 | FR-LDY-010 | Laundry | Sebaiknya | ../TASK/MODULE-04-LAUNDRY.md | TODO |
 | FR-LDY-011 | Laundry | Wajib | ../TASK/MODULE-04-LAUNDRY.md | TODO |
@@ -127,8 +127,8 @@ Every row must eventually point to implementation evidence and tests. Status is 
 | FR-FBS-023 | F&B Service | Wajib | ../TASK/MODULE-05-FNB-SERVICE.md | TODO |
 | FR-FBS-024 | F&B Service | Wajib | ../TASK/MODULE-05-FNB-SERVICE.md | TODO |
 | FR-FBS-025 | F&B Service | Sebaiknya | ../TASK/MODULE-05-FNB-SERVICE.md | TODO |
-| FR-FBS-030 | F&B Service | Wajib | ../TASK/MODULE-05-FNB-SERVICE.md | TODO |
-| FR-FBS-031 | F&B Service | Wajib | ../TASK/MODULE-05-FNB-SERVICE.md | TODO |
+| FR-FBS-030 | F&B Service | Wajib | ../TASK/MODULE-05-FNB-SERVICE.md | REVIEW |
+| FR-FBS-031 | F&B Service | Wajib | ../TASK/MODULE-05-FNB-SERVICE.md | REVIEW |
 | FR-FBS-032 | F&B Service | Wajib | ../TASK/MODULE-05-FNB-SERVICE.md | TODO |
 | FR-FBS-033 | F&B Service | Wajib | ../TASK/MODULE-05-FNB-SERVICE.md | REVIEW |
 | FR-FBS-034 | F&B Service | Wajib | ../TASK/MODULE-05-FNB-SERVICE.md | REVIEW |
@@ -138,7 +138,7 @@ Every row must eventually point to implementation evidence and tests. Status is 
 | FR-KIT-004 | F&B Product / Kitchen | Wajib | ../TASK/MODULE-06-KITCHEN.md | REVIEW |
 | FR-KIT-005 | F&B Product / Kitchen | Wajib | ../TASK/MODULE-06-KITCHEN.md | IN_PROGRESS |
 | FR-KIT-006 | F&B Product / Kitchen | Wajib | ../TASK/MODULE-06-KITCHEN.md | IN_PROGRESS |
-| FR-KIT-007 | F&B Product / Kitchen | Wajib | ../TASK/MODULE-06-KITCHEN.md | TODO |
+| FR-KIT-007 | F&B Product / Kitchen | Wajib | ../TASK/MODULE-06-KITCHEN.md | REVIEW |
 | FR-KIT-008 | F&B Product / Kitchen | Wajib | ../TASK/MODULE-06-KITCHEN.md | TODO |
 | FR-KIT-009 | F&B Product / Kitchen | Sebaiknya | ../TASK/MODULE-06-KITCHEN.md | REVIEW |
 | FR-KIT-010 | F&B Product / Kitchen | Wajib | ../TASK/MODULE-06-KITCHEN.md | REVIEW |

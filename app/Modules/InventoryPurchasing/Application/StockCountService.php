@@ -70,7 +70,7 @@ final readonly class StockCountService
     /**
      * @return array{counts: list<array<string, mixed>>, locations: list<array<string, mixed>>, categories: list<array<string, mixed>>, kinds: list<string>, may: array{manage: bool, approve: bool}}
      */
-    public function overview(PropertyId $property, string $actorId, ?string $status): array
+    public function overview(PropertyId $property, string $actorId, ?string $status, ?string $locationKind = null): array
     {
         $this->assertProperty($property);
         $may = $this->mayOf($property, $actorId);
@@ -83,8 +83,21 @@ final readonly class StockCountService
             throw Refusal::invalid('Choose counting, submitted, approved or cancelled.', ['status']);
         }
 
+        $locationKind = $locationKind === '' ? null : $locationKind;
+
+        if ($locationKind !== null && ! in_array($locationKind, ['main', 'bar', 'kitchen', 'housekeeping', 'engineering', 'galley', 'other'], true)) {
+            throw Refusal::invalid('Choose a kind of location from the list.', ['location_kind']);
+        }
+
         $locations = array_column($this->inventory->locations($property), null, 'id');
         $rows = $this->counts->all($property, $status === '' ? null : $status, 200);
+
+        // A department that comes from its own screen (the kitchen, the bar) sees and starts counts of its own locations.
+        if ($locationKind !== null) {
+            $locations = array_filter($locations, static fn (array $l): bool => $l['kind'] === $locationKind);
+            $rows = array_values(array_filter($rows, static fn (array $c): bool => isset($locations[$c['location_id']])));
+        }
+
         $names = $this->staff->namesOf($property, array_values(array_unique(array_filter(array_merge(array_column($rows, 'started_by'), array_column($rows, 'submitted_by'), array_column($rows, 'decided_by'))))));
 
         return [

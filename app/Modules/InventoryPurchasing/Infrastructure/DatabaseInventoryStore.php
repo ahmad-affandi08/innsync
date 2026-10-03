@@ -301,4 +301,11 @@ final readonly class DatabaseInventoryStore implements InventoryStore
             ->when($itemId !== null, static fn ($q) => $q->where('l.item_id', $itemId))->when($locationId !== null, static fn ($q) => $q->where('l.location_id', $locationId))->when($department !== null, static fn ($q) => $q->where('i.department', $department))
             ->orderByRaw('l.expires_on IS NULL')->orderBy('l.expires_on')->orderBy('i.code')->get(['l.*', 'i.code as item_code', 'i.name as item_name', 'i.base_unit', 'i.department', 'loc.code as location_code', 'loc.name as location_name'])->map(static fn ($r): array => (array) $r)->all();
     }
+
+    public function issuesOfDepartment(PropertyId $property, string $department, int $limit): array
+    {
+        return DB::table('stock_movements as m')->join('inventory_items as i', 'i.id', '=', 'm.item_id')->join('inventory_locations as loc', 'loc.id', '=', 'm.location_id')
+            ->where('m.property_id', $property->toString())->where('m.kind', 'issue')->where('m.reason_code', $department)->whereNull('m.source_type')->orderByDesc('m.created_at')->orderByDesc('m.id')->limit($limit)
+            ->get(['m.id', 'm.unit', 'm.unit_qty_milli', 'm.note', 'm.posted_by', 'm.business_date', 'm.created_at', 'i.code as item_code', 'i.name as item_name', 'loc.code as location_code', 'loc.name as location_name'])->map(static fn ($r): array => (array) $r)->all();
+    }
 }

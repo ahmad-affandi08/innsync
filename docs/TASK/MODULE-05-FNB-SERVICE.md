@@ -35,8 +35,8 @@
 | TASK-FBS-023 | FR-FBS-023 | Wajib | Riwayat pengisian dan konsumsi mini bar tersimpan per kamar dan per petugas untuk keperluan audit. | TODO |
 | TASK-FBS-024 | FR-FBS-024 | Wajib | Mencatat pesanan room service dengan nomor kamar, waktu janji pengantaran, dan status pengantaran. | TODO |
 | TASK-FBS-025 | FR-FBS-025 | Sebaiknya | Sistem memblokir pembebanan mini bar setelah folio kamar ditutup dan mengarahkannya ke prosedur late charge. | TODO |
-| TASK-FBS-030 | FR-FBS-030 | Wajib | Mengelola persediaan outlet (bar dan gudang outlet) beserta permintaan barang ke gudang utama. | TODO |
-| TASK-FBS-031 | FR-FBS-031 | Wajib | Melakukan stock opname harian untuk minuman dan bahan bar dengan pencatatan selisih. | TODO |
+| TASK-FBS-030 | FR-FBS-030 | Wajib | Mengelola persediaan outlet (bar dan gudang outlet) beserta permintaan barang ke gudang utama. | REVIEW |
+| TASK-FBS-031 | FR-FBS-031 | Wajib | Melakukan stock opname harian untuk minuman dan bahan bar dengan pencatatan selisih. | REVIEW |
 | TASK-FBS-032 | FR-FBS-032 | Wajib | Menampilkan SOP tugas harian, mingguan, dan bulanan outlet beserta persentase penyelesaian yang dikirim ke Human Resource. | TODO |
 | TASK-FBS-033 | FR-FBS-033 | Wajib | Membuat laporan kerusakan yang diteruskan ke modul Maintenance. | REVIEW |
 | TASK-FBS-034 | FR-FBS-034 | Wajib | Mengajukan permintaan pembelian alat dan bahan ke modul Purchasing. | REVIEW |
@@ -80,6 +80,12 @@
 - Status: `TASK-FBS-033` and `-034` are `REVIEW`. A waiter, cashier or outlet manager reports a fault of an outlet's equipment (which equipment or place, what is wrong, urgent or not, a photo): it becomes a work order of Maintenance with the department `fnb`, and the screen follows its state. The F&B menu links to the purchase requests of the department (`/inventory/requests?department=fnb`), which Purchasing owns.
 - Context: `OutletDamageReportService`, `DamageReportController` (F&B), page `fnb-sales/pages/damage-reports`, the shared `DamageReportPanel` and the Maintenance contract `DamageReporting`.
 - Evidence: `tests/Feature/Maintenance/DamageReportHttpTest.php`.
+
+### Slice 45 (2026-10-03): the outlet's stock, requests to the main store and daily counts
+
+- Status: `TASK-FBS-030` and `-031` are `REVIEW`. The stock of an outlet is the stock of its stores in Inventory (the bar store, the outlet store), on the stock card with minimums, batches and counts. **Requests to the main store (`FBS-030`)**: the outlet's store asks for items and quantities; the main store answers by sending a transfer (with the quantity it can spare, less than or equal to what was asked) that the outlet then receives, or by refusing with a reason; the requester may withdraw a waiting request. **Daily counts (`FBS-031`)**: the F&B menu opens the counts of the bar's own stores (`/inventory/counts?location_kind=bar`), where the count is blind, reviewed by a second person and its differences become stock adjustments with value (`INV-006`).
+- Context: migration 94 (`inventory_requisitions` and lines, never changed or deleted), `StockRequisitionService`, page `inventory-purchasing/pages/requisitions`, privilege `inventory.requisition.request` (the main store uses the privilege to send transfers); `StockCountService::overview` takes a location kind.
+- Evidence: `tests/Feature/InventoryPurchasing/RequisitionAndSupplyHttpTest.php`.
 
 ## Required engineering checks
 

@@ -67,6 +67,7 @@ use App\Modules\InventoryPurchasing\Presentation\Http\Controllers\PurchasingSett
 use App\Modules\InventoryPurchasing\Presentation\Http\Controllers\StockCountController;
 use App\Modules\InventoryPurchasing\Presentation\Http\Controllers\StockLotController;
 use App\Modules\InventoryPurchasing\Presentation\Http\Controllers\StockMovementController;
+use App\Modules\InventoryPurchasing\Presentation\Http\Controllers\StockRequisitionController;
 use App\Modules\InventoryPurchasing\Presentation\Http\Controllers\SupplierController;
 use App\Modules\InventoryPurchasing\Presentation\Http\Controllers\SupplierInvoiceController;
 use App\Modules\Kitchen\Presentation\Http\Controllers\BoardController as KitchenBoardController;
@@ -75,6 +76,7 @@ use App\Modules\Kitchen\Presentation\Http\Controllers\RecipeController;
 use App\Modules\Kitchen\Presentation\Http\Controllers\WasteController;
 use App\Modules\Laundry\Presentation\Http\Controllers\ClaimController;
 use App\Modules\Laundry\Presentation\Http\Controllers\LaundryController;
+use App\Modules\Laundry\Presentation\Http\Controllers\SupplyUseController;
 use App\Modules\Maintenance\Presentation\Http\Controllers\AssetController;
 use App\Modules\Maintenance\Presentation\Http\Controllers\DutyController;
 use App\Modules\Maintenance\Presentation\Http\Controllers\PartsController;
@@ -422,6 +424,11 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
     Route::post('/stock-limits', [InventoryCatalogController::class, 'setLimits'])->name('inventory.limits');
     Route::post('/stock/opening', [InventoryCatalogController::class, 'postOpening'])->name('inventory.stock.opening');
     Route::get('/lots', [StockLotController::class, 'index'])->name('inventory.lots');
+    Route::get('/requisitions', [StockRequisitionController::class, 'index'])->name('inventory.requisitions');
+    Route::post('/requisitions', [StockRequisitionController::class, 'store'])->name('inventory.requisitions.store');
+    Route::post('/requisitions/{id}/fulfil', [StockRequisitionController::class, 'fulfil'])->where('id', $id)->name('inventory.requisitions.fulfil');
+    Route::post('/requisitions/{id}/reject', [StockRequisitionController::class, 'reject'])->where('id', $id)->name('inventory.requisitions.reject');
+    Route::post('/requisitions/{id}/cancel', [StockRequisitionController::class, 'cancel'])->where('id', $id)->name('inventory.requisitions.cancel');
     Route::post('/stock/movements', [StockMovementController::class, 'store'])->middleware(['idempotent'])->name('inventory.stock.movements');
     Route::get('/transfers', [StockMovementController::class, 'transfersPage'])->name('inventory.transfers');
     Route::post('/transfers', [StockMovementController::class, 'send'])->middleware(['idempotent'])->name('inventory.transfers.send');
@@ -494,6 +501,8 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
     Route::post('/prices/{id}', [LaundryController::class, 'updatePrice'])->where('id', $id)->name('laundry.prices.update');
     Route::post('/treatments', [LaundryController::class, 'addTreatment'])->name('laundry.treatments.store');
     Route::post('/treatments/{id}', [LaundryController::class, 'updateTreatment'])->where('id', $id)->name('laundry.treatments.update');
+    Route::get('/supplies', [SupplyUseController::class, 'index'])->name('laundry.supplies');
+    Route::post('/supplies', [SupplyUseController::class, 'store'])->middleware(['idempotent'])->name('laundry.supplies.store');
     Route::get('/claims', [ClaimController::class, 'index'])->name('laundry.claims');
     Route::post('/claims', [ClaimController::class, 'store'])->name('laundry.claims.store');
     Route::post('/claims/cap', [ClaimController::class, 'cap'])->name('laundry.claims.cap');

@@ -5,6 +5,7 @@ export const fnb = {
     "fnb.nav.purchasing": "Purchase requests",
     "fnb.damage.title": "Report a fault",
     "fnb.damage.description": "Equipment of an outlet that is broken: say which and what, add a photo, and Maintenance gets a work order at once.",
+    "fnb.nav.counts": "Bar stock counts",
     "fnb.nav.menu": "Menu",
     "home.about.fnb": "Outlets, tables and the menu of restaurants and bars.",
     "fnb.kind.restaurant": "Restaurant",

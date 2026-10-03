@@ -7,6 +7,8 @@ const LINKS = [
     { href: '/kitchen/recipes', label: 'kitchen.nav.recipes' },
     { href: '/kitchen/waste', label: 'kitchen.nav.waste' },
     { href: '/inventory/lots?department=kitchen', label: 'kitchen.nav.lots' },
+    { href: '/inventory/requisitions', label: 'inv.nav.requisitions' },
+    { href: '/inventory/counts?location_kind=kitchen', label: 'kitchen.nav.counts' },
     { href: '/kitchen/damage-reports', label: 'kitchen.nav.damage' },
     { href: '/inventory/requests?department=kitchen', label: 'kitchen.nav.purchasing' },
 ] as const;

@@ -99,7 +99,7 @@
 | TASK-LDY-005 | FR-LDY-005 | Laundry | Sebaiknya | REVIEW |
 | TASK-LDY-006 | FR-LDY-006 | Laundry | Sebaiknya | REVIEW |
 | TASK-LDY-007 | FR-LDY-007 | Laundry | Wajib | REVIEW |
-| TASK-LDY-008 | FR-LDY-008 | Laundry | Sebaiknya | TODO |
+| TASK-LDY-008 | FR-LDY-008 | Laundry | Sebaiknya | REVIEW |
 | TASK-LDY-009 | FR-LDY-009 | Laundry | Wajib | REVIEW |
 | TASK-LDY-010 | FR-LDY-010 | Laundry | Sebaiknya | REVIEW |
 | TASK-LDY-011 | FR-LDY-011 | Laundry | Wajib | IN_PROGRESS |
@@ -125,8 +125,8 @@
 | TASK-FBS-023 | FR-FBS-023 | F&B Service | Wajib | TODO |
 | TASK-FBS-024 | FR-FBS-024 | F&B Service | Wajib | TODO |
 | TASK-FBS-025 | FR-FBS-025 | F&B Service | Sebaiknya | TODO |
-| TASK-FBS-030 | FR-FBS-030 | F&B Service | Wajib | TODO |
-| TASK-FBS-031 | FR-FBS-031 | F&B Service | Wajib | TODO |
+| TASK-FBS-030 | FR-FBS-030 | F&B Service | Wajib | REVIEW |
+| TASK-FBS-031 | FR-FBS-031 | F&B Service | Wajib | REVIEW |
 | TASK-FBS-032 | FR-FBS-032 | F&B Service | Wajib | TODO |
 | TASK-FBS-033 | FR-FBS-033 | F&B Service | Wajib | REVIEW |
 | TASK-FBS-034 | FR-FBS-034 | F&B Service | Wajib | REVIEW |
@@ -136,7 +136,7 @@
 | TASK-KIT-004 | FR-KIT-004 | F&B Product / Kitchen | Wajib | REVIEW |
 | TASK-KIT-005 | FR-KIT-005 | F&B Product / Kitchen | Wajib | IN_PROGRESS |
 | TASK-KIT-006 | FR-KIT-006 | F&B Product / Kitchen | Wajib | IN_PROGRESS |
-| TASK-KIT-007 | FR-KIT-007 | F&B Product / Kitchen | Wajib | TODO |
+| TASK-KIT-007 | FR-KIT-007 | F&B Product / Kitchen | Wajib | REVIEW |
 | TASK-KIT-008 | FR-KIT-008 | F&B Product / Kitchen | Wajib | TODO |
 | TASK-KIT-009 | FR-KIT-009 | F&B Product / Kitchen | Sebaiknya | REVIEW |
 | TASK-KIT-010 | FR-KIT-010 | F&B Product / Kitchen | Wajib | REVIEW |

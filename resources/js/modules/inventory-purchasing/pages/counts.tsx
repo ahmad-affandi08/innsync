@@ -26,7 +26,7 @@ type Overview = { counts: Count[]; locations: { id: string; code: string; name: 
 
 const tone: Record<string, StatusTone> = { counting: 'info', submitted: 'pending', approved: 'success', cancelled: 'neutral' };
 
-export default function CountsPage({ overview, status }: { overview: Overview; status: string }) {
+export default function CountsPage({ overview, status, locationKind }: { overview: Overview; status: string; locationKind: string }) {
     const { t } = useTranslation();
     const format = useFormatters();
     const errorCopy = useErrorStateCopy();
@@ -64,7 +64,7 @@ export default function CountsPage({ overview, status }: { overview: Overview; s
     return (
         <InventoryShell actions={overview.may.manage ? <Button onClick={openNew} type="button">{t('inv.cnt.new')}</Button> : undefined} description={t('inv.cnt.description')} title={t('inv.cnt.title')} wide>
             <div className="max-w-xs">
-                <Select aria-label={t('inv.col.status')} onChange={(e) => router.get('/inventory/counts', e.target.value ? { status: e.target.value } : {}, { preserveScroll: true })} searchable={false} value={status}>
+                <Select aria-label={t('inv.col.status')} onChange={(e) => router.get('/inventory/counts', { ...(e.target.value ? { status: e.target.value } : {}), ...(locationKind === '' ? {} : { location_kind: locationKind }) }, { preserveScroll: true })} searchable={false} value={status}>
                     <option value="">{t('inv.cnt.allStatuses')}</option>
                     {['counting', 'submitted', 'approved', 'cancelled'].map((s) => <option key={s} value={s}>{label(s)}</option>)}
                 </Select>

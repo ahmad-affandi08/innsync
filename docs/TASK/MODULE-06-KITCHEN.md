@@ -20,7 +20,7 @@
 | TASK-KIT-004 | FR-KIT-004 | Wajib | Mengurangi stok bahan secara otomatis berdasarkan versi resep yang berlaku setiap kali item menu diposting sebagai penjualan, tepat satu kali untuk setiap transaksi. | REVIEW |
 | TASK-KIT-005 | FR-KIT-005 | Wajib | Menandai menu yang habis sehingga otomatis tidak dapat dipesan dari POS maupun menu QR tamu. | IN_PROGRESS |
 | TASK-KIT-006 | FR-KIT-006 | Wajib | Mencatat pemakaian bahan, produksi persiapan, dan pembuangan bahan rusak (waste log) beserta alasan. | IN_PROGRESS |
-| TASK-KIT-007 | FR-KIT-007 | Wajib | Melakukan stock opname bahan dapur dan gudang kering dengan pencatatan selisih dan nilai kerugian. | TODO |
+| TASK-KIT-007 | FR-KIT-007 | Wajib | Melakukan stock opname bahan dapur dan gudang kering dengan pencatatan selisih dan nilai kerugian. | REVIEW |
 | TASK-KIT-008 | FR-KIT-008 | Wajib | Menampilkan daftar periksa kebersihan, suhu penyimpanan, dan tugas harian, mingguan, serta bulanan dapur. | TODO |
 | TASK-KIT-009 | FR-KIT-009 | Sebaiknya | Mencatat tanggal kedaluwarsa dan nomor batch bahan sensitif dengan peringatan mendekati kedaluwarsa. | REVIEW |
 | TASK-KIT-010 | FR-KIT-010 | Wajib | Membuat laporan kerusakan peralatan yang diteruskan ke modul Maintenance. | REVIEW |
@@ -72,6 +72,8 @@
 - Evidence: `tests/Feature/Maintenance/DamageReportHttpTest.php`, `tests/Feature/InventoryPurchasing/PurchasingHttpTest.php` (the department view).
 
 - `TASK-KIT-009` is `REVIEW` (same slice): the kitchen menu links to the batches of kitchen items (`/inventory/lots?department=kitchen`) with the warning of batches that are about to expire or have expired; the batch and expiry rules are Inventory's (`INV-008`).
+
+- `TASK-KIT-007` is `REVIEW` (slice 45): the kitchen menu opens the counts of the kitchen's own stores (`/inventory/counts?location_kind=kitchen`) and the requests to the main store; the count, its second-person review, the differences and their value are Inventory's (`INV-006`, `INV-012`).
 
 ## Required engineering checks
 

@@ -34,6 +34,15 @@ final class StockQuantity
     }
 
     /** Reads "12.5" or "12,5" as 12,500 thousandths; at most three decimals. */
+    /** A quantity in thousandths as the text `parse` reads back: 2500 is "2.5". */
+    public static function format(int $milli): string
+    {
+        $whole = intdiv($milli, 1000);
+        $fraction = rtrim(str_pad((string) ($milli % 1000), 3, '0', STR_PAD_LEFT), '0');
+
+        return $fraction === '' ? (string) $whole : $whole.'.'.$fraction;
+    }
+
     public static function parse(string $text): ?int
     {
         $text = trim(str_replace(',', '.', $text));
