@@ -29,6 +29,7 @@ export type MaintenanceReport = {
     from: string; to: string; reported: number; by_status: Partial<Record<Status, number>>; by_department: Record<string, number>;
     completion: { done: number; average_hours: number | null; on_time: number; on_time_percent: number | null; by_priority: { priority: Priority; done: number; average_hours: number | null }[] };
     repeat_rooms: { room: string; count: number; categories: string[] }[]; unsellable: { total_days: number; rooms: { room: string; days: number }[] };
+    parts: { currency: string; total_minor: number; uses: number; complete: boolean; by_category: { category: string; value_minor: number }[]; top_items: { item: string; value_minor: number }[] };
 };
 
 export type AssetSummary = {
@@ -49,4 +50,13 @@ export type AssetDetail = {
     asset: AssetSummary & { notes: string | null; retired_reason: string | null; retired_on: string | null; lock_version: number };
     repairs: { id: string; number: string; title: string; status: Status; priority: Priority; reported_at: string; preventive: boolean }[];
     readings: { reading: number; read_on: string; by: string | null }[]; plans: Plan[]; may: { manage: boolean; read_meter: boolean }; business_date: string;
+};
+
+export type PartsPanel = {
+    currency: string;
+    uses: { id: string; item_code: string; item_name: string; unit: string; quantity_milli: number; location: string; note: string | null; value_minor: number | null; used_on: string; by: string | null; at: string }[];
+    total_minor: number; complete: boolean;
+    requests: { id: string; number: string; status: string | null; total_minor: number | null; by: string | null; at: string }[];
+    items: { id: string; code: string; name: string; base_unit: string; units: string[] }[]; locations: { id: string; code: string; name: string; kind: string }[];
+    urgencies: Priority[]; business_date: string; may: { use: boolean; request: boolean };
 };

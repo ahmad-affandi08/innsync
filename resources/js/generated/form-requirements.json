@@ -514,13 +514,19 @@
     "maintenance/pages/work-orders": [
         "category",
         "escalate_percent",
+        "item_id",
+        "location_id",
+        "needed_by",
         "night_from_hour",
         "night_to_hour",
         "priority",
+        "quantity_milli",
         "reason",
         "reporter_department",
         "title",
+        "unit",
         "until",
+        "urgency",
         "warn_percent"
     ],
     "property/pages/booking-policies": [

@@ -67,6 +67,7 @@ use App\Modules\Kitchen\Presentation\Http\Controllers\WasteController;
 use App\Modules\Laundry\Presentation\Http\Controllers\ClaimController;
 use App\Modules\Laundry\Presentation\Http\Controllers\LaundryController;
 use App\Modules\Maintenance\Presentation\Http\Controllers\AssetController;
+use App\Modules\Maintenance\Presentation\Http\Controllers\PartsController;
 use App\Modules\Maintenance\Presentation\Http\Controllers\ReportController as MaintenanceReportController;
 use App\Modules\Maintenance\Presentation\Http\Controllers\WorkOrderController;
 use App\Modules\Property\Presentation\Http\Controllers\BookingPolicyController;
@@ -688,6 +689,9 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
     Route::post('/work-orders/{id}/complete', [WorkOrderController::class, 'complete'])->where('id', $id)->name('maintenance.work-orders.complete');
     Route::post('/work-orders/{id}/cancel', [WorkOrderController::class, 'cancel'])->where('id', $id)->name('maintenance.work-orders.cancel');
     Route::post('/work-orders/{id}/block', [WorkOrderController::class, 'block'])->where('id', $id)->name('maintenance.work-orders.block');
+    Route::get('/work-orders/{id}/parts', [PartsController::class, 'show'])->where('id', $id)->name('maintenance.parts.show');
+    Route::post('/work-orders/{id}/parts', [PartsController::class, 'use'])->where('id', $id)->middleware(['idempotent'])->name('maintenance.parts.use');
+    Route::post('/work-orders/{id}/part-requests', [PartsController::class, 'request'])->where('id', $id)->middleware(['idempotent'])->name('maintenance.parts.request');
     Route::post('/work-orders/{id}/release-room', [WorkOrderController::class, 'releaseRoom'])->where('id', $id)->name('maintenance.work-orders.release-room');
     Route::post('/sla', [WorkOrderController::class, 'sla'])->name('maintenance.sla');
     Route::get('/assets', [AssetController::class, 'index'])->name('maintenance.assets');

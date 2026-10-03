@@ -98,6 +98,30 @@ final readonly class IngredientCatalogService implements IngredientCatalog
         return $last === null || $last['base_qty_milli'] < 1 ? null : StockValue::mulDiv($base, $last['value_minor'], $last['base_qty_milli']);
     }
 
+    public function onHand(PropertyId $property, string $itemId, string $locationId, string $unit): ?int
+    {
+        $this->access->assertProperty($property);
+        $item = $this->inventory->item($property, strtolower($itemId));
+
+        if ($item === null) {
+            return null;
+        }
+
+        $factor = 1000;
+
+        if ($unit !== $item['base_unit']) {
+            $current = $this->inventory->currentUnit($property, $item['id'], $unit);
+
+            if ($current === null) {
+                return null;
+            }
+
+            $factor = (int) $current['factor_milli'];
+        }
+
+        return intdiv($this->inventory->balanceOf($property, $item['id'], strtolower($locationId)) * 1000, $factor);
+    }
+
     /**
      * @param  array<string, mixed>  $item
      * @param  array<string, true>  $units

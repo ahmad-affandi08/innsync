@@ -124,6 +124,8 @@ use App\Modules\IdentityAccess\Infrastructure\Sessions\DatabaseUserSessionReposi
 use App\Modules\InventoryPurchasing\Application\IngredientCatalog;
 use App\Modules\InventoryPurchasing\Application\IngredientCatalogService;
 use App\Modules\InventoryPurchasing\Application\InventoryStore;
+use App\Modules\InventoryPurchasing\Application\PurchaseRequesting;
+use App\Modules\InventoryPurchasing\Application\PurchaseRequestingService;
 use App\Modules\InventoryPurchasing\Application\PurchasingStore;
 use App\Modules\InventoryPurchasing\Application\StockCountStore;
 use App\Modules\InventoryPurchasing\Infrastructure\DatabaseInventoryStore;
@@ -142,8 +144,10 @@ use App\Modules\Laundry\Application\LaundryService;
 use App\Modules\Laundry\Infrastructure\DatabaseClaimRepository;
 use App\Modules\Laundry\Infrastructure\DatabaseLaundryRepository;
 use App\Modules\Maintenance\Application\AssetStore;
+use App\Modules\Maintenance\Application\PartsStore;
 use App\Modules\Maintenance\Application\WorkOrderStore;
 use App\Modules\Maintenance\Infrastructure\DatabaseAssetStore;
+use App\Modules\Maintenance\Infrastructure\DatabasePartsStore;
 use App\Modules\Maintenance\Infrastructure\DatabaseWorkOrderStore;
 use App\Modules\Property\Application\Catalog\RoomCatalogReader;
 use App\Modules\Property\Application\Catalog\RoomCatalogRepository;
@@ -431,6 +435,8 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(AssetStore::class, DatabaseAssetStore::class);
         $this->app->bind(RoomBlocking::class, RoomBlockingService::class);
         $this->app->bind(IngredientCatalog::class, IngredientCatalogService::class);
+        $this->app->bind(PurchaseRequesting::class, PurchaseRequestingService::class);
+        $this->app->bind(PartsStore::class, DatabasePartsStore::class);
         $this->app->bind(PaymentStore::class, DatabasePaymentStore::class);
         $this->app->bind(FinanceExportQueries::class, DatabaseFinanceExportQueries::class);
         $this->app->bind(RecurringExpenseStore::class, DatabaseRecurringExpenseStore::class);

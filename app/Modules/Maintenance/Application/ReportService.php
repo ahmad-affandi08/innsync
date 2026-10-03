@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\Maintenance\Application;
 
+use App\Modules\Property\Application\Rates\PropertyCurrencyReader;
 use App\Shared\Application\Errors\Refusal;
 use App\Shared\Domain\Tenancy\PropertyId;
 use DateTimeImmutable;
@@ -11,14 +12,14 @@ use DateTimeZone;
 
 /**
  * The work order reports (FR-MTC-012): what was reported in a period by status and by the department that reported it; how long the work that was finished took, on average and by
- * priority, and how much of it was done by its deadline; the rooms that broke again and again; and the days rooms could not be sold because of a work order. The cost of repairs is not
- * here yet: it comes with the spare parts and the work of vendors.
+ * priority, and how much of it was done by its deadline; the rooms that broke again and again; and the days rooms could not be sold because of a work order. The cost of the spare parts used in the
+ * period is here, by kind of work and by item; the work of vendors is not.
  */
 final readonly class ReportService
 {
     private const MAX_DAYS = 366;
 
-    public function __construct(private WorkOrderStore $store, private MaintenanceAccess $access) {}
+    public function __construct(private WorkOrderStore $store, private PartsStore $parts, private MaintenanceAccess $access, private PropertyCurrencyReader $currencies) {}
 
     /** @return array<string, mixed> */
     public function report(PropertyId $property, string $actorId, string $from, string $to): array
@@ -71,6 +72,34 @@ final readonly class ReportService
             ],
             'repeat_rooms' => $repeat,
             'unsellable' => $this->unsellable($property, $start, $end),
+            'parts' => $this->parts($property, $from, $to),
+        ];
+    }
+
+    /** @return array{currency: string, total_minor: int, uses: int, complete: bool, by_category: list<array{category: string, value_minor: int}>, top_items: list<array{item: string, value_minor: int}>} */
+    private function parts(PropertyId $property, string $from, string $to): array
+    {
+        $byCategory = [];
+        $byItem = [];
+        $total = 0;
+        $complete = true;
+        $rows = $this->parts->usedBetween($property, $from, $to);
+
+        foreach ($rows as $r) {
+            $value = (int) $r['value_minor'];
+            $complete = $complete && $r['value_minor'] !== null;
+            $total += $value;
+            $byCategory[$r['category']] = ($byCategory[$r['category']] ?? 0) + $value;
+            $byItem[$r['item_name']] = ($byItem[$r['item_name']] ?? 0) + $value;
+        }
+
+        arsort($byCategory);
+        arsort($byItem);
+
+        return [
+            'currency' => $this->currencies->currencyOf($property), 'total_minor' => $total, 'uses' => count($rows), 'complete' => $complete,
+            'by_category' => array_map(static fn (string $c, int $v): array => ['category' => $c, 'value_minor' => $v], array_keys($byCategory), array_values($byCategory)),
+            'top_items' => array_slice(array_map(static fn (string $i, int $v): array => ['item' => $i, 'value_minor' => $v], array_keys($byItem), array_values($byItem)), 0, 5),
         ];
     }
 

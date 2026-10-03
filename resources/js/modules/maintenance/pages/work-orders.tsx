@@ -15,6 +15,7 @@ import { Select } from '@/components/ui/select';
 import { StatusBadge, type StatusTone } from '@/components/ui/status-badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { MaintenanceShell } from '@/modules/maintenance/components/maintenance-shell';
+import { PartsPanel } from '@/modules/maintenance/components/parts-panel';
 import type { Overview, Priority, Status, WorkOrderDetail, WorkOrderSummary } from '@/modules/maintenance/lib/maintenance';
 import { apiRequest } from '@/shared/api/http';
 import { useServerAction } from '@/shared/api/use-server-action';
@@ -74,6 +75,16 @@ export default function WorkOrdersPage({ overview }: { overview: Overview }) {
             setDoneFile(null);
             setDone({ note: '' });
             setHold({ reason: 'waiting_parts', note: '' });
+        } catch {
+            setLoadFailed(true);
+        }
+    }
+
+    async function refresh() {
+        if (detail === null) return;
+
+        try {
+            setDetail(await apiRequest<WorkOrderDetail>(`/maintenance/work-orders/${detail.work_order.id}`, { method: 'GET' }));
         } catch {
             setLoadFailed(true);
         }
@@ -299,6 +310,8 @@ export default function WorkOrdersPage({ overview }: { overview: Overview }) {
                                 <Button disabled={action.busy || reason.trim() === ''} onClick={() => void step('cancel', { reason: reason.trim() })} size="sm" type="button" variant="outline">{t('mtc.cancel.do')}</Button>
                             </div>
                         ) : null}
+
+                        <PartsPanel onChanged={() => void refresh()} status={detail.work_order.status} workOrderId={detail.work_order.id} />
 
                         <section aria-labelledby="mtc-history-h" className="flex flex-col gap-1 border-t border-border pt-3">
                             <h3 className="text-sm font-semibold" id="mtc-history-h">{t('mtc.history')}</h3>
