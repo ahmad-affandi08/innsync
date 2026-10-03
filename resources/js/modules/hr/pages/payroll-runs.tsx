@@ -1,4 +1,4 @@
-import { router } from '@inertiajs/react';
+import { Link, router } from '@inertiajs/react';
 import { useState } from 'react';
 
 import { Alert } from '@/components/ui/alert';
@@ -16,6 +16,7 @@ import { HrShell } from '@/modules/hr/components/hr-shell';
 import type { PayrollAdjustment, PayrollLine, PayrollRun, PayrollRunOverview, PayrollRunStatus } from '@/modules/hr/lib/hr';
 import { useServerAction } from '@/shared/api/use-server-action';
 import { useFormatters, useTranslation } from '@/shared/i18n/i18n';
+import { parseMajorToMinor } from '@/shared/money/money';
 import { useErrorStateCopy } from '@/shared/i18n/use-ui-copy';
 import type { MessageKey } from '@/locales/en/index';
 
@@ -46,9 +47,16 @@ export default function PayrollRunsPage({ overview }: { overview: PayrollRunOver
         if (result !== null) setCreate(null);
     }
 
+    // A minus sign in front means the adjustment takes from the pay; the amount itself is read like any amount of money.
+    const adjustAmount = (text: string) => {
+        const minor = parseMajorToMinor(text.trim().replace(/^-/, ''), overview.currency);
+
+        return minor === null ? 0 : text.trim().startsWith('-') ? -minor : minor;
+    };
+
     async function saveAdjustment() {
         if (adjust === null) return;
-        const result = await action.run('/hr/payroll/adjustments', { body: { employee_id: adjust.employeeId, amount_minor: Number(adjust.amount), label: adjust.label.trim(), taxable: adjust.taxable, reason: adjust.reason.trim(), ...(adjust.sourceRunId === '' ? {} : { source_run_id: adjust.sourceRunId }) }, reload });
+        const result = await action.run('/hr/payroll/adjustments', { body: { employee_id: adjust.employeeId, amount_minor: adjustAmount(adjust.amount), label: adjust.label.trim(), taxable: adjust.taxable, reason: adjust.reason.trim(), ...(adjust.sourceRunId === '' ? {} : { source_run_id: adjust.sourceRunId }) }, reload });
 
         if (result !== null) setAdjust(null);
     }
@@ -70,7 +78,7 @@ export default function PayrollRunsPage({ overview }: { overview: PayrollRunOver
         { id: 'other', label: t('hr.run.otherDeductions'), align: 'right', value: (l) => l.other_deductions_minor, cell: (l) => money(l.other_deductions_minor) },
         { id: 'net', label: t('hr.run.net'), align: 'right', value: (l) => l.net_minor, cell: (l) => <strong>{money(l.net_minor)}</strong> },
         { id: 'warn', label: t('hr.run.warnings'), value: (l) => l.warnings.length, sortable: false, cell: (l) => (l.warnings.length === 0 ? '—' : <span className="text-xs text-warning">{l.warnings.map((w) => label('hr.run.warning', w)).join(' · ')}</span>) },
-        { id: 'act', label: '', value: () => '', sortable: false, cell: (l) => <Button onClick={() => setDetail(l)} size="sm" type="button" variant="outline">{t('hr.run.details')}</Button> },
+        { id: 'act', label: '', value: () => '', sortable: false, cell: (l) => <span className="flex gap-2"><Button onClick={() => setDetail(l)} size="sm" type="button" variant="outline">{t('hr.run.details')}</Button>{run !== null ? <Button asChild size="sm" variant="outline"><Link href={`/hr/payroll/runs/${run.id}/payslips/${l.employee.id}`}>{t('hr.run.payslip')}</Link></Button> : null}</span> },
     ];
     const adjustmentColumns: DataGridColumn<PayrollAdjustment>[] = [
         { id: 'name', label: t('hr.col.name'), value: (a) => a.employee.name, rowHeader: true, cell: (a) => <span>{a.employee.name}<span className="block text-xs text-muted-foreground">{a.employee.number}</span></span> },
@@ -117,6 +125,8 @@ export default function PayrollRunsPage({ overview }: { overview: PayrollRunOver
                                 {run.may.review ? <Button disabled={action.busy} onClick={() => void step('review')} type="button" variant="outline">{t('hr.run.review')}</Button> : null}
                                 {run.may.approve ? <Button disabled={action.busy} onClick={() => void step('approve')} type="button" variant="outline">{approveText(run)}</Button> : null}
                                 {run.may.reopen ? <Button onClick={() => { action.clear(); setReopen(''); }} type="button" variant="outline">{t('hr.run.reopen')}</Button> : null}
+                                {run.may.lock ? <Button disabled={action.busy} onClick={() => void action.run(`/hr/payroll/runs/${run.id}/lock`, { body: { lock_version: run.lock_version }, reload })} type="button" variant="outline">{t('hr.run.lock')}</Button> : null}
+                                {['approved', 'paid', 'locked'].includes(run.status) ? <Button asChild variant="outline"><a href={`/hr/payroll/runs/${run.id}/export`}>{t('hr.run.export')}</a></Button> : null}
                                 {run.may.discard ? <Button disabled={action.busy} onClick={() => void action.run(`/hr/payroll/runs/${run.id}/discard`, { body: {}, reload })} type="button" variant="outline">{t('hr.run.discard')}</Button> : null}
                             </div>
                             {run.approval !== null && !run.approval.consumed ? <Alert title={label('hr.run.approvalState', run.approval.status)} tone="info" /> : null}
@@ -162,7 +172,7 @@ export default function PayrollRunsPage({ overview }: { overview: PayrollRunOver
             </Dialog>
 
             <Dialog
-                footer={<><Button disabled={action.busy} onClick={() => setAdjust(null)} type="button" variant="outline">{t('ui.dialog.cancel')}</Button><Button disabled={adjust === null || adjust.employeeId === '' || adjust.amount === '' || adjust.label.trim() === '' || adjust.reason.trim() === ''} loading={action.busy} onClick={() => void saveAdjustment()} type="button">{t('hr.run.saveAdjustment')}</Button></>}
+                footer={<><Button disabled={action.busy} onClick={() => setAdjust(null)} type="button" variant="outline">{t('ui.dialog.cancel')}</Button><Button disabled={adjust === null || adjust.employeeId === '' || adjustAmount(adjust.amount) === 0 || adjust.label.trim() === '' || adjust.reason.trim() === ''} loading={action.busy} onClick={() => void saveAdjustment()} type="button">{t('hr.run.saveAdjustment')}</Button></>}
                 onClose={() => setAdjust(null)}
                 open={adjust !== null}
                 title={t('hr.run.addAdjustment')}
@@ -171,7 +181,7 @@ export default function PayrollRunsPage({ overview }: { overview: PayrollRunOver
                     <div className="grid gap-3 sm:grid-cols-2">
                         {failure !== null ? <div className="sm:col-span-2">{failure}</div> : null}
                         <div className="sm:col-span-2"><FormField error={action.fieldError('employee_id')} field="employee_id" label={t('hr.col.name')}><Select onChange={(e) => setAdjust({ ...adjust, employeeId: e.target.value })} value={adjust.employeeId}>{overview.employees.map((e) => <option key={e.id} value={e.id}>{e.name} · {e.number}</option>)}</Select></FormField></div>
-                        <FormField error={action.fieldError('amount_minor')} field="amount_minor" hint={t('hr.run.amountHint')} label={t('hr.pay.amount')}><Input inputMode="numeric" onChange={(e) => setAdjust({ ...adjust, amount: e.target.value.replace(/[^\d-]/g, '') })} value={adjust.amount} /></FormField>
+                        <FormField error={action.fieldError('amount_minor')} field="amount_minor" hint={t('hr.run.amountHint')} label={t('hr.pay.amount')}><Input inputMode="numeric" onChange={(e) => setAdjust({ ...adjust, amount: e.target.value })} value={adjust.amount} /></FormField>
                         <FormField error={action.fieldError('label')} field="label" label={t('hr.run.adjustLabel')}><Input maxLength={60} onChange={(e) => setAdjust({ ...adjust, label: e.target.value })} value={adjust.label} /></FormField>
                         <div className="sm:col-span-2"><FormField error={action.fieldError('source_run_id')} field="source_run_id" hint={t('hr.run.sourceHint')} label={t('hr.run.corrects')}><Select onChange={(e) => setAdjust({ ...adjust, sourceRunId: e.target.value })} value={adjust.sourceRunId}><option value="">{t('hr.run.noSource')}</option>{overview.runs.filter((r) => ['approved', 'paid', 'locked'].includes(r.status)).map((r) => <option key={r.id} value={r.id}>{r.period}</option>)}</Select></FormField></div>
                         <div className="sm:col-span-2"><FormField error={action.fieldError('reason')} field="reason" label={t('hr.att.reasonShort')}><Input maxLength={200} onChange={(e) => setAdjust({ ...adjust, reason: e.target.value })} value={adjust.reason} /></FormField></div>

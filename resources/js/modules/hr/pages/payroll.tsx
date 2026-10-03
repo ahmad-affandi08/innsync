@@ -18,6 +18,7 @@ import type { PayComponent, PayPerson, PayrollOverview, PayrollSettings } from '
 import { newIdempotencyKey } from '@/shared/api/http';
 import { useServerAction } from '@/shared/api/use-server-action';
 import { useFormatters, useTranslation } from '@/shared/i18n/i18n';
+import { minorToMajorText, parseMajorToMinor } from '@/shared/money/money';
 import { useErrorStateCopy } from '@/shared/i18n/use-ui-copy';
 import type { MessageKey } from '@/locales/en/index';
 
@@ -31,12 +32,12 @@ const toBp = (value: string) => Math.round(Number(value.replace(',', '.')) * 100
 
 type Form = Record<string, string> & { lock: string };
 
-function formOf(s: PayrollSettings): Form {
+function formOf(s: PayrollSettings, currency: string): Form {
     const form: Record<string, string> = { lock: s.lock_version === null ? '' : String(s.lock_version), overtime_divisor: String(s.overtime_divisor), overtime_first: String(s.overtime_first_x100 / 100), overtime_next: String(s.overtime_next_x100 / 100), absence_divisor: String(s.absence_divisor) };
     for (const k of BP) form[k] = percent(s[k]);
-    for (const k of MONEY) form[k] = String(s[k]);
-    for (const [status, amount] of Object.entries(s.ptkp)) form[`ptkp_${status}`] = String(amount);
-    s.brackets.forEach((b, i) => { form[`upto_${i}`] = b.upto_minor === null ? '' : String(b.upto_minor); form[`rate_${i}`] = percent(b.rate_bp); });
+    for (const k of MONEY) form[k] = minorToMajorText(s[k], currency);
+    for (const [status, amount] of Object.entries(s.ptkp)) form[`ptkp_${status}`] = minorToMajorText(amount, currency);
+    s.brackets.forEach((b, i) => { form[`upto_${i}`] = b.upto_minor === null ? '' : minorToMajorText(b.upto_minor, currency); form[`rate_${i}`] = percent(b.rate_bp); });
     form.count = String(s.brackets.length);
 
     return form as Form;
@@ -63,12 +64,12 @@ export default function PayrollPage({ overview }: { overview: PayrollOverview })
     function openPay(person: PayPerson) {
         action.clear();
         const first = active[0];
-        setPay({ employeeId: person.id, componentId: first?.id ?? '', amount: first === undefined ? '' : String(person.pay[first.id]?.amount_minor ?? ''), from: overview.today, reason: '' });
+        setPay({ employeeId: person.id, componentId: first?.id ?? '', amount: first === undefined || person.pay[first.id] === undefined ? '' : minorToMajorText(person.pay[first.id].amount_minor, overview.currency), from: overview.today, reason: '' });
     }
 
     async function savePay() {
         if (pay === null) return;
-        const result = await action.run('/hr/payroll/pay', { idempotencyKey: newIdempotencyKey(), body: { employee_id: pay.employeeId, component_id: pay.componentId, amount_minor: Number(pay.amount), effective_from: pay.from, reason: pay.reason.trim() }, reload });
+        const result = await action.run('/hr/payroll/pay', { idempotencyKey: newIdempotencyKey(), body: { employee_id: pay.employeeId, component_id: pay.componentId, amount_minor: parseMajorToMinor(pay.amount, overview.currency) ?? 0, effective_from: pay.from, reason: pay.reason.trim() }, reload });
 
         if (result !== null) setPay(null);
     }
@@ -92,14 +93,15 @@ export default function PayrollPage({ overview }: { overview: PayrollOverview })
     async function saveSettings() {
         if (settings === null) return;
         const f = settings;
+        const money = (key: string) => parseMajorToMinor(f[key] ?? '', overview.currency) ?? 0;
         const result = await action.run('/hr/payroll/settings', {
             body: {
-                health_employee_bp: toBp(f.health_employee_bp), health_employer_bp: toBp(f.health_employer_bp), health_cap_minor: Number(f.health_cap_minor),
-                jht_employee_bp: toBp(f.jht_employee_bp), jht_employer_bp: toBp(f.jht_employer_bp), jp_employee_bp: toBp(f.jp_employee_bp), jp_employer_bp: toBp(f.jp_employer_bp), jp_cap_minor: Number(f.jp_cap_minor),
-                jkk_employer_bp: toBp(f.jkk_employer_bp), jkm_employer_bp: toBp(f.jkm_employer_bp), job_cost_bp: toBp(f.job_cost_bp), job_cost_cap_year_minor: Number(f.job_cost_cap_year_minor), no_npwp_surcharge_bp: toBp(f.no_npwp_surcharge_bp),
-                ptkp: Object.fromEntries(overview.statuses.map((s) => [s, Number(f[`ptkp_${s}`])])),
-                brackets: Array.from({ length: Number(f.count) }, (_, i) => ({ upto_minor: i === Number(f.count) - 1 || f[`upto_${i}`] === '' ? null : Number(f[`upto_${i}`]), rate_bp: toBp(f[`rate_${i}`]) })),
-                overtime_divisor: Number(f.overtime_divisor), overtime_first_x100: toBp(f.overtime_first), overtime_next_x100: toBp(f.overtime_next), absence_divisor: Number(f.absence_divisor), late_minute_deduction_minor: Number(f.late_minute_deduction_minor),
+                health_employee_bp: toBp(f.health_employee_bp), health_employer_bp: toBp(f.health_employer_bp), health_cap_minor: money('health_cap_minor'),
+                jht_employee_bp: toBp(f.jht_employee_bp), jht_employer_bp: toBp(f.jht_employer_bp), jp_employee_bp: toBp(f.jp_employee_bp), jp_employer_bp: toBp(f.jp_employer_bp), jp_cap_minor: money('jp_cap_minor'),
+                jkk_employer_bp: toBp(f.jkk_employer_bp), jkm_employer_bp: toBp(f.jkm_employer_bp), job_cost_bp: toBp(f.job_cost_bp), job_cost_cap_year_minor: money('job_cost_cap_year_minor'), no_npwp_surcharge_bp: toBp(f.no_npwp_surcharge_bp),
+                ptkp: Object.fromEntries(overview.statuses.map((st) => [st, money(`ptkp_${st}`)])),
+                brackets: Array.from({ length: Number(f.count) }, (_, i) => ({ upto_minor: i === Number(f.count) - 1 || f[`upto_${i}`] === '' ? null : money(`upto_${i}`), rate_bp: toBp(f[`rate_${i}`]) })),
+                overtime_divisor: Number(f.overtime_divisor), overtime_first_x100: toBp(f.overtime_first), overtime_next_x100: toBp(f.overtime_next), absence_divisor: Number(f.absence_divisor), late_minute_deduction_minor: money('late_minute_deduction_minor'),
                 lock_version: f.lock === '' ? null : Number(f.lock),
             },
             reload,
@@ -178,7 +180,7 @@ export default function PayrollPage({ overview }: { overview: PayrollOverview })
                     <DataGrid caption={t('hr.pay.kindsTab')} columns={kindColumns} empty={<EmptyState illustration="checklist" title={t('hr.pay.noKinds')} />} getRowId={(k) => k.id} id="hr.pay.kinds" rows={overview.components} testId="hr-pay-kinds" />
                 </TabsContent>
                 <TabsContent className="flex flex-col gap-3" value="parameters">
-                    <div className="flex gap-2"><Button onClick={() => { action.clear(); setSettings(formOf(s)); }} type="button">{t('hr.pay.editParameters')}</Button></div>
+                    <div className="flex gap-2"><Button onClick={() => { action.clear(); setSettings(formOf(s, overview.currency)); }} type="button">{t('hr.pay.editParameters')}</Button></div>
                     {s.is_baseline ? <Alert title={t('hr.pay.parametersBaseline')} tone="warning" /> : null}
                     <dl className="grid gap-x-6 gap-y-1 text-sm sm:grid-cols-2" data-testid="hr-pay-parameters">
                         <dt>{t('hr.pay.health')}</dt><dd>{t('hr.pay.shares', { employee: percent(s.health_employee_bp), employer: percent(s.health_employer_bp) })} · {t('hr.pay.cap', { amount: money(s.health_cap_minor) })}</dd>
@@ -196,7 +198,7 @@ export default function PayrollPage({ overview }: { overview: PayrollOverview })
             </Tabs>
 
             <Dialog
-                footer={<><Button disabled={action.busy} onClick={() => setPay(null)} type="button" variant="outline">{t('ui.dialog.cancel')}</Button><Button disabled={pay?.componentId === '' || pay?.amount === '' || pay?.reason.trim() === '' || pay?.from === ''} loading={action.busy} onClick={() => void savePay()} type="button">{t('hr.pay.savePay')}</Button></>}
+                footer={<><Button disabled={action.busy} onClick={() => setPay(null)} type="button" variant="outline">{t('ui.dialog.cancel')}</Button><Button disabled={pay?.componentId === '' || parseMajorToMinor(pay?.amount ?? '', overview.currency) === null || pay?.reason.trim() === '' || pay?.from === ''} loading={action.busy} onClick={() => void savePay()} type="button">{t('hr.pay.savePay')}</Button></>}
                 onClose={() => setPay(null)}
                 open={pay !== null}
                 title={t('hr.pay.setPay')}
@@ -204,8 +206,8 @@ export default function PayrollPage({ overview }: { overview: PayrollOverview })
                 {pay !== null && (
                     <div className="grid gap-3 sm:grid-cols-2">
                         {failure !== null ? <div className="sm:col-span-2">{failure}</div> : null}
-                        <div className="sm:col-span-2"><FormField error={action.fieldError('component_id')} field="component_id" label={t('hr.pay.kind')}><Select onChange={(e) => setPay({ ...pay, componentId: e.target.value, amount: String(overview.employees.find((x) => x.id === pay.employeeId)?.pay[e.target.value]?.amount_minor ?? '') })} value={pay.componentId}>{active.map((c) => <option key={c.id} value={c.id}>{c.name} ({c.code})</option>)}</Select></FormField></div>
-                        <FormField error={action.fieldError('amount_minor')} field="amount_minor" hint={t('hr.pay.amountHint', { basis: label('hr.pay.basis', named(pay.componentId)?.basis ?? 'monthly') })} label={t('hr.pay.amount')}><Input inputMode="numeric" onChange={(e) => setPay({ ...pay, amount: e.target.value.replace(/\D/g, '') })} value={pay.amount} /></FormField>
+                        <div className="sm:col-span-2"><FormField error={action.fieldError('component_id')} field="component_id" label={t('hr.pay.kind')}><Select onChange={(e) => setPay({ ...pay, componentId: e.target.value, amount: ((m) => (m === undefined ? '' : minorToMajorText(m, overview.currency)))(overview.employees.find((x) => x.id === pay.employeeId)?.pay[e.target.value]?.amount_minor) })} value={pay.componentId}>{active.map((c) => <option key={c.id} value={c.id}>{c.name} ({c.code})</option>)}</Select></FormField></div>
+                        <FormField error={action.fieldError('amount_minor')} field="amount_minor" hint={t('hr.pay.amountHint', { basis: label('hr.pay.basis', named(pay.componentId)?.basis ?? 'monthly') })} label={t('hr.pay.amount')}><Input inputMode="numeric" onChange={(e) => setPay({ ...pay, amount: e.target.value })} value={pay.amount} /></FormField>
                         <FormField error={action.fieldError('effective_from')} field="effective_from" hint={t('hr.pay.fromHint')} label={t('hr.pay.from')}><DatePicker min={overview.earliest} onChange={(e) => setPay({ ...pay, from: e.target.value })} value={pay.from} /></FormField>
                         <div className="sm:col-span-2"><FormField error={action.fieldError('reason')} field="reason" label={t('hr.att.reasonShort')}><Input maxLength={200} onChange={(e) => setPay({ ...pay, reason: e.target.value })} value={pay.reason} /></FormField></div>
                     </div>

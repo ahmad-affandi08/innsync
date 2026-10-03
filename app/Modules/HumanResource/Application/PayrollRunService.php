@@ -282,6 +282,31 @@ final readonly class PayrollRunService
         return $this->overview($property, $actorId, $runId);
     }
 
+    /** A paid run is locked: from then on it is only ever corrected by an adjustment in a later period. @return array<string, mixed> */
+    public function lock(PropertyId $property, string $actorId, string $runId, int $lock): array
+    {
+        $this->access->require($property, $actorId, HrAccess::PAYROLL, 'This person may not run the payroll.');
+        $actor = strtolower($actorId);
+
+        $this->transactions->run(function () use ($property, $actor, $runId, $lock): void {
+            $run = $this->store->run($property, strtolower($runId)) ?? throw Refusal::notFound('Payroll run not found.');
+
+            if ($run['status'] !== 'paid') {
+                throw Refusal::stateConflict('Only a paid run is locked.');
+            }
+
+            $now = $this->clock->nowUtc();
+
+            if (! $this->store->updateRun($property, $run['id'], $lock, ['status' => 'locked', 'locked_at' => $now->format('Y-m-d H:i:s.u')], $now)) {
+                throw Refusal::stateConflict('This payroll run changed after you opened it. Reload it.');
+            }
+
+            $this->audit->record(new AuditEntry($property->toString(), $actor, 'payroll_run.locked', 'payroll_run', $run['id'], ['status' => 'paid'], ['status' => 'locked', 'period' => $run['period']]));
+        });
+
+        return $this->overview($property, $actorId, $runId);
+    }
+
     /** A run that was never calculated is dropped. @return array<string, mixed> */
     public function discard(PropertyId $property, string $actorId, string $runId): array
     {
@@ -394,7 +419,7 @@ final readonly class PayrollRunService
             'approval' => $approval === null ? null : ['id' => $approval->id, 'status' => $approval->status, 'consumed' => $approval->consumed], 'paid_reference' => $r['paid_reference'],
             'may' => [
                 'calculate' => in_array($status, ['draft', 'calculated', 'reviewed'], true) && $r['approval_id'] === null, 'review' => $status === 'calculated' && (int) $r['employees_count'] > 0, 'approve' => $status === 'reviewed' && ($r['approval_id'] === null || $r['approval_by'] === $actor),
-                'reopen' => $status === 'approved' && $mayReopen, 'discard' => $status === 'draft',
+                'reopen' => $status === 'approved' && $mayReopen, 'discard' => $status === 'draft', 'lock' => $status === 'paid',
             ],
         ];
     }

@@ -52,6 +52,11 @@
         "proof",
         "reason"
     ],
+    "finance/pages/payroll": [
+        "confirmed_net_minor",
+        "method",
+        "reference"
+    ],
     "finance/pages/petty-fund": [
         "amount_minor",
         "counted_minor",

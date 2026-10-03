@@ -73,10 +73,10 @@ final class PayrollRunHttpTest extends TestCase
         $this->emp['ani'] = $this->employee('Ani');
         $this->emp['budi'] = $this->employee('Budi');
         $this->emp['candra'] = $this->employee('Candra');
-        $this->pay('ani', 'basic', 5_000_000);
-        $this->pay('ani', 'fixed_allowance', 500_000);
-        $this->pay('ani', 'meal', 25_000);
-        $this->pay('budi', 'basic', 3_000_000);
+        $this->pay('ani', 'basic', 500_000_000);
+        $this->pay('ani', 'fixed_allowance', 50_000_000);
+        $this->pay('ani', 'meal', 2_500_000);
+        $this->pay('budi', 'basic', 300_000_000);
         $this->postJson('/hr/payroll/profile', ['employee_id' => $this->emp['ani'], 'ptkp_status' => 'K1', 'has_npwp' => true, 'in_health' => true, 'in_employment' => true])->assertOk();
     }
 
@@ -152,22 +152,22 @@ final class PayrollRunHttpTest extends TestCase
         }
 
         // Ani: 5,500,000 of wage, no roster so no meal allowance; social security and income tax (K1 threshold) come out.
-        self::assertSame([5_500_000, 220_000, 2_358, 5_277_642], [$lines['Ani']['gross_minor'], $lines['Ani']['employee_social_minor'], $lines['Ani']['tax_minor'], $lines['Ani']['net_minor']]);
-        self::assertSame(563_200, $lines['Ani']['employer_social_minor']);
+        self::assertSame([550_000_000, 22_000_000, 235_833, 527_764_167], [$lines['Ani']['gross_minor'], $lines['Ani']['employee_social_minor'], $lines['Ani']['tax_minor'], $lines['Ani']['net_minor']]);
+        self::assertSame(56_320_000, $lines['Ani']['employer_social_minor']);
         self::assertSame(['no_roster'], $lines['Ani']['warnings']);
         // Budi has no tax data: the usual status is assumed and the line says so.
-        self::assertSame([3_000_000, 120_000, 0, 2_880_000, ['no_tax_profile', 'no_roster']], [$lines['Budi']['gross_minor'], $lines['Budi']['employee_social_minor'], $lines['Budi']['tax_minor'], $lines['Budi']['net_minor'], $lines['Budi']['warnings']]);
+        self::assertSame([300_000_000, 12_000_000, 0, 288_000_000, ['no_tax_profile', 'no_roster']], [$lines['Budi']['gross_minor'], $lines['Budi']['employee_social_minor'], $lines['Budi']['tax_minor'], $lines['Budi']['net_minor'], $lines['Budi']['warnings']]);
         self::assertArrayNotHasKey('Candra', $lines, 'a person with nothing set is not paid');
         self::assertSame(['Candra'], array_column($this->overview()['without_pay'], 'name'));
-        self::assertSame([2, 8_500_000, 8_157_642, 2358, 340_000], [$run['employees'], $run['gross_minor'], $run['net_minor'], $run['tax_minor'], $run['employee_social_minor']]);
+        self::assertSame([2, 850_000_000, 815_764_167, 235_833, 34_000_000], [$run['employees'], $run['gross_minor'], $run['net_minor'], $run['tax_minor'], $run['employee_social_minor']]);
         self::assertSame('calculated', $run['status']);
         self::assertSame(400, json_decode((string) DB::table('hr_payroll_runs')->value('settings_snapshot'), true)['health_employer_bp']);
 
         // A raise after the calculation changes nothing until it is calculated again.
-        $this->postJson('/hr/payroll/pay', ['employee_id' => $this->emp['budi'], 'component_id' => $this->kind['basic'], 'amount_minor' => 3_500_000, 'effective_from' => '2026-10-05', 'reason' => 'Raise'], $this->key())->assertCreated();
-        self::assertSame(3_000_000, (int) DB::table('hr_payroll_lines')->where('employee_id', $this->emp['budi'])->value('gross_minor'));
+        $this->postJson('/hr/payroll/pay', ['employee_id' => $this->emp['budi'], 'component_id' => $this->kind['basic'], 'amount_minor' => 350_000_000, 'effective_from' => '2026-10-05', 'reason' => 'Raise'], $this->key())->assertCreated();
+        self::assertSame(300_000_000, (int) DB::table('hr_payroll_lines')->where('employee_id', $this->emp['budi'])->value('gross_minor'));
         $this->step($id, 'calculate');
-        self::assertSame(3_000_000, (int) DB::table('hr_payroll_lines')->where('employee_id', $this->emp['budi'])->value('gross_minor'), 'the pay in force on the last day of September');
+        self::assertSame(300_000_000, (int) DB::table('hr_payroll_lines')->where('employee_id', $this->emp['budi'])->value('gross_minor'), 'the pay in force on the last day of September');
         self::assertSame(2, DB::table('hr_payroll_lines')->count());
 
         $this->step($id, 'calculate', ['lock_version' => 99], 409);
@@ -207,7 +207,7 @@ final class PayrollRunHttpTest extends TestCase
         $run = DB::table('hr_payroll_runs')->first();
         self::assertSame('approved', $run->status);
         $disbursement = DB::table('finance_payroll_disbursements')->first();
-        self::assertSame(['awaiting', 'PAY-2026-09', 2, 8_157_642, 2358, 340_000, 563_200 + 307_200], [$disbursement->status, $disbursement->number, (int) $disbursement->employees_count, (int) $disbursement->net_minor, (int) $disbursement->tax_minor, (int) $disbursement->employee_social_minor, (int) $disbursement->employer_social_minor]);
+        self::assertSame(['awaiting', 'PAY-2026-09', 2, 815_764_167, 235_833, 34_000_000, 56_320_000 + 30_720_000], [$disbursement->status, $disbursement->number, (int) $disbursement->employees_count, (int) $disbursement->net_minor, (int) $disbursement->tax_minor, (int) $disbursement->employee_social_minor, (int) $disbursement->employer_social_minor]);
         self::assertSame(1, DB::table('outbox_messages')->where('event_type', 'hr.payroll.approved')->count());
 
         foreach ([fn () => DB::table('hr_payroll_lines')->update(['net_minor' => 1]), fn () => DB::table('hr_payroll_lines')->delete(), fn () => DB::table('hr_payroll_runs')->delete()] as $change) {
@@ -242,12 +242,12 @@ final class PayrollRunHttpTest extends TestCase
         self::assertSame(['calculated', 1, null], [$run->status, (int) $run->revision, $run->approval_id]);
         self::assertSame('withdrawn', DB::table('finance_payroll_disbursements')->value('status'));
         $revision = DB::table('hr_payroll_revisions')->first();
-        self::assertSame([1, 'Wrong allowance', 8_157_642], [(int) $revision->revision, $revision->reason, json_decode($revision->snapshot, true)['run']['net_minor']]);
+        self::assertSame([1, 'Wrong allowance', 815_764_167], [(int) $revision->revision, $revision->reason, json_decode($revision->snapshot, true)['run']['net_minor']]);
         self::assertSame(1, DB::table('outbox_messages')->where('event_type', 'hr.payroll.reopened')->count());
         $this->step($id, 'reopen', ['reason' => 'Again'], 409);
 
         // The change is calculated, reviewed and approved again; Finance takes it in again with the new amounts.
-        $this->pay('budi', 'fixed_allowance', 200_000);
+        $this->pay('budi', 'fixed_allowance', 20_000_000);
         foreach (['calculate', 'review', 'approve'] as $step) {
             $this->step($id, $step);
         }
@@ -275,12 +275,12 @@ final class PayrollRunHttpTest extends TestCase
         $this->decide((string) DB::table('hr_payroll_runs')->value('approval_id'));
         $this->step($september, 'approve');
 
-        $body = ['employee_id' => $this->emp['budi'], 'amount_minor' => 150_000, 'label' => 'Missed allowance', 'taxable' => true, 'reason' => 'Left out of September', 'source_run_id' => $september];
+        $body = ['employee_id' => $this->emp['budi'], 'amount_minor' => 15_000_000, 'label' => 'Missed allowance', 'taxable' => true, 'reason' => 'Left out of September', 'source_run_id' => $september];
         $this->postJson('/hr/payroll/adjustments', [...$body, 'amount_minor' => 0])->assertStatus(422);
         $this->postJson('/hr/payroll/adjustments', [...$body, 'reason' => ' '])->assertStatus(422);
         $this->postJson('/hr/payroll/adjustments', [...$body, 'source_run_id' => $this->newRun('2026-08')])->assertStatus(409);
         $adjustment = $this->postJson('/hr/payroll/adjustments', $body)->assertCreated()->assertJsonPath('status', 'open')->assertJsonPath('source_period', '2026-09')->json();
-        $cancelled = $this->postJson('/hr/payroll/adjustments', [...$body, 'amount_minor' => -20_000, 'label' => 'Typo'])->assertCreated()->json();
+        $cancelled = $this->postJson('/hr/payroll/adjustments', [...$body, 'amount_minor' => -2_000_000, 'label' => 'Typo'])->assertCreated()->json();
         $this->postJson("/hr/payroll/adjustments/{$cancelled['id']}/cancel", ['lock_version' => 0])->assertOk()->assertJsonPath('status', 'cancelled');
         $this->postJson("/hr/payroll/adjustments/{$cancelled['id']}/cancel", ['lock_version' => 1])->assertStatus(409);
 
@@ -290,15 +290,15 @@ final class PayrollRunHttpTest extends TestCase
         $october = (string) DB::table('hr_payroll_runs')->where('period', '2026-10')->value('id');
         $this->step($october, 'calculate');
         $line = DB::table('hr_payroll_lines')->where('run_id', $october)->where('employee_id', $this->emp['budi'])->first();
-        self::assertSame(3_150_000, (int) $line->gross_minor);
+        self::assertSame(315_000_000, (int) $line->gross_minor);
         self::assertSame(['applied', $october], [DB::table('hr_payroll_adjustments')->where('id', $adjustment['id'])->value('status'), DB::table('hr_payroll_adjustments')->where('id', $adjustment['id'])->value('applied_run_id')]);
         $this->postJson("/hr/payroll/adjustments/{$adjustment['id']}/cancel", ['lock_version' => 1])->assertStatus(409);
 
         // Calculating again gives it back and takes it in again, once.
         $this->step($october, 'calculate');
-        self::assertSame(3_150_000, (int) DB::table('hr_payroll_lines')->where('run_id', $october)->where('employee_id', $this->emp['budi'])->value('gross_minor'));
+        self::assertSame(315_000_000, (int) DB::table('hr_payroll_lines')->where('run_id', $october)->where('employee_id', $this->emp['budi'])->value('gross_minor'));
         self::assertSame(1, DB::table('hr_payroll_adjustments')->where('status', 'applied')->count());
-        self::assertSame(3_000_000, (int) DB::table('hr_payroll_lines')->where('run_id', $september)->where('employee_id', $this->emp['budi'])->value('gross_minor'));
+        self::assertSame(300_000_000, (int) DB::table('hr_payroll_lines')->where('run_id', $september)->where('employee_id', $this->emp['budi'])->value('gross_minor'));
     }
 
     public function test_the_payroll_needs_the_right_to_see_and_to_run_it(): void

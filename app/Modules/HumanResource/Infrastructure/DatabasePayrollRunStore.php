@@ -103,4 +103,17 @@ final class DatabasePayrollRunStore implements PayrollRunStore
     {
         DB::table('hr_payroll_revisions')->insert([...$row, 'property_id' => $property->toString(), 'snapshot' => json_encode($row['snapshot'], JSON_THROW_ON_ERROR), 'created_at' => $at->format('Y-m-d H:i:s.u')]);
     }
+
+    public function lineOf(PropertyId $property, string $runId, string $employeeId): ?array
+    {
+        $r = DB::table('hr_payroll_lines')->where('property_id', $property->toString())->where('run_id', $runId)->where('employee_id', $employeeId)->first();
+
+        return $r === null ? null : (array) $r;
+    }
+
+    public function linesOfEmployee(PropertyId $property, string $employeeId, array $statuses): array
+    {
+        return DB::table('hr_payroll_lines as l')->join('hr_payroll_runs as r', 'r.id', '=', 'l.run_id')->where('l.property_id', $property->toString())->where('l.employee_id', $employeeId)->whereIn('r.status', $statuses)
+            ->orderByDesc('r.period')->select('l.*', 'r.period', 'r.status', 'r.number as run_number')->get()->map(static fn ($r): array => (array) $r)->all();
+    }
 }

@@ -22,12 +22,12 @@ final readonly class PayrollSettingsService
 
     /** @var array<string, mixed> */
     public const BASELINE = [
-        'health_employee_bp' => 100, 'health_employer_bp' => 400, 'health_cap_minor' => 12_000_000,
-        'jht_employee_bp' => 200, 'jht_employer_bp' => 370, 'jp_employee_bp' => 100, 'jp_employer_bp' => 200, 'jp_cap_minor' => 10_547_400,
+        'health_employee_bp' => 100, 'health_employer_bp' => 400, 'health_cap_minor' => 1_200_000_000,
+        'jht_employee_bp' => 200, 'jht_employer_bp' => 370, 'jp_employee_bp' => 100, 'jp_employer_bp' => 200, 'jp_cap_minor' => 1_054_740_000,
         'jkk_employer_bp' => 24, 'jkm_employer_bp' => 30,
-        'job_cost_bp' => 500, 'job_cost_cap_year_minor' => 6_000_000, 'no_npwp_surcharge_bp' => 2000,
-        'ptkp' => ['TK0' => 54_000_000, 'TK1' => 58_500_000, 'TK2' => 63_000_000, 'TK3' => 67_500_000, 'K0' => 58_500_000, 'K1' => 63_000_000, 'K2' => 67_500_000, 'K3' => 72_000_000],
-        'brackets' => [['upto_minor' => 60_000_000, 'rate_bp' => 500], ['upto_minor' => 250_000_000, 'rate_bp' => 1500], ['upto_minor' => 500_000_000, 'rate_bp' => 2500], ['upto_minor' => 5_000_000_000, 'rate_bp' => 3000], ['upto_minor' => null, 'rate_bp' => 3500]],
+        'job_cost_bp' => 500, 'job_cost_cap_year_minor' => 600_000_000, 'no_npwp_surcharge_bp' => 2000,
+        'ptkp' => ['TK0' => 5_400_000_000, 'TK1' => 5_850_000_000, 'TK2' => 6_300_000_000, 'TK3' => 6_750_000_000, 'K0' => 5_850_000_000, 'K1' => 6_300_000_000, 'K2' => 6_750_000_000, 'K3' => 7_200_000_000],
+        'brackets' => [['upto_minor' => 6_000_000_000, 'rate_bp' => 500], ['upto_minor' => 25_000_000_000, 'rate_bp' => 1500], ['upto_minor' => 50_000_000_000, 'rate_bp' => 2500], ['upto_minor' => 500_000_000_000, 'rate_bp' => 3000], ['upto_minor' => null, 'rate_bp' => 3500]],
         'overtime_divisor' => 173, 'overtime_first_x100' => 150, 'overtime_next_x100' => 200, 'absence_divisor' => 25, 'late_minute_deduction_minor' => 0,
     ];
 

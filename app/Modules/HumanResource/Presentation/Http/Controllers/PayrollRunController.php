@@ -33,17 +33,22 @@ final readonly class PayrollRunController
 
     public function calculate(Request $request, string $id): JsonResponse
     {
-        return response()->json($this->runs->calculate($this->property->current(), $this->actor($request), $id, $this->lock($request)));
+        return response()->json($this->runs->calculate($this->property->current(), $this->actor($request), $id, $this->version($request)));
     }
 
     public function review(Request $request, string $id): JsonResponse
     {
-        return response()->json($this->runs->review($this->property->current(), $this->actor($request), $id, $this->lock($request)));
+        return response()->json($this->runs->review($this->property->current(), $this->actor($request), $id, $this->version($request)));
     }
 
     public function approve(Request $request, string $id): JsonResponse
     {
-        return response()->json($this->runs->approve($this->property->current(), $this->actor($request), $id, $this->lock($request)));
+        return response()->json($this->runs->approve($this->property->current(), $this->actor($request), $id, $this->version($request)));
+    }
+
+    public function lock(Request $request, string $id): JsonResponse
+    {
+        return response()->json($this->runs->lock($this->property->current(), $this->actor($request), $id, $this->version($request)));
     }
 
     public function reopen(Request $request, string $id): JsonResponse
@@ -67,10 +72,10 @@ final readonly class PayrollRunController
 
     public function cancelAdjustment(Request $request, string $id): JsonResponse
     {
-        return response()->json($this->adjustments->cancel($this->property->current(), $this->actor($request), $id, $this->lock($request)));
+        return response()->json($this->adjustments->cancel($this->property->current(), $this->actor($request), $id, $this->version($request)));
     }
 
-    private function lock(Request $request): int
+    private function version(Request $request): int
     {
         return (int) $request->validate(['lock_version' => ['required', 'integer', 'min:0']])['lock_version'];
     }

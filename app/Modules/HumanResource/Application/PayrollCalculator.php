@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Modules\HumanResource\Application;
 
 /**
- * The arithmetic of one person's pay for one month (FR-HR-031), with no access to anything: the same inputs give the same lines. Whole minor units throughout, shares rounded half up.
+ * The arithmetic of one person's pay for one month (FR-HR-031), with no access to anything: the same inputs give the same lines. Whole minor units (sen) throughout, shares rounded half up.
  *
  * Earnings follow the kinds (whole, by days present, or for each day present); overtime is priced from the wage of basic pay and fixed allowance; absence, unpaid leave and lateness are deducted. The social security
  * comes out of the wage the owner flagged, up to the ceilings. The income tax is worked out on the month as if it lasted the year (the monthly income less the cost of the job and the person's own pension contributions,
@@ -117,7 +117,8 @@ final class PayrollCalculator
         $jobCost = min(self::share($monthlyIncome, $s['job_cost_bp']), intdiv($s['job_cost_cap_year_minor'], 12));
         $annual = max(0, $monthlyIncome - $jobCost - $ownPension) * 12;
         $taxableYear = max(0, $annual - ($s['ptkp'][$profile['ptkp_status']] ?? 0));
-        $taxableYear = intdiv($taxableYear, 1000) * 1000;
+        // The taxable income is rounded down to a thousand rupiah (100,000 minor units).
+        $taxableYear = intdiv($taxableYear, 100_000) * 100_000;
         $year = 0;
         $from = 0;
 

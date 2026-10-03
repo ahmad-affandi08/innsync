@@ -211,10 +211,10 @@ Every row must eventually point to implementation evidence and tests. Status is 
 | FR-HR-031 | Human Resource | Wajib | ../TASK/MODULE-09-HUMAN-RESOURCE.md | REVIEW |
 | FR-HR-032 | Human Resource | Wajib | ../TASK/MODULE-09-HUMAN-RESOURCE.md | TODO |
 | FR-HR-033 | Human Resource | Wajib | ../TASK/MODULE-09-HUMAN-RESOURCE.md | TODO |
-| FR-HR-034 | Human Resource | Wajib | ../TASK/MODULE-09-HUMAN-RESOURCE.md | TODO |
-| FR-HR-035 | Human Resource | Sebaiknya | ../TASK/MODULE-09-HUMAN-RESOURCE.md | TODO |
+| FR-HR-034 | Human Resource | Wajib | ../TASK/MODULE-09-HUMAN-RESOURCE.md | REVIEW |
+| FR-HR-035 | Human Resource | Sebaiknya | ../TASK/MODULE-09-HUMAN-RESOURCE.md | REVIEW |
 | FR-HR-036 | Human Resource | Sebaiknya | ../TASK/MODULE-09-HUMAN-RESOURCE.md | REVIEW |
-| FR-HR-037 | Human Resource | Wajib | ../TASK/MODULE-09-HUMAN-RESOURCE.md | TODO |
+| FR-HR-037 | Human Resource | Wajib | ../TASK/MODULE-09-HUMAN-RESOURCE.md | REVIEW |
 | FR-HR-038 | Human Resource | Wajib | ../TASK/MODULE-09-HUMAN-RESOURCE.md | REVIEW |
 | FR-FIN-001 | Finance | Wajib | ../TASK/MODULE-10-FINANCE.md | TODO |
 | FR-FIN-002 | Finance | Wajib | ../TASK/MODULE-10-FINANCE.md | TODO |

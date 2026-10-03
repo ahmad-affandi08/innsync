@@ -23,6 +23,7 @@ const LINKS = [
     { href: '/finance/recurring', label: 'fin.nav.recurring' },
     { href: '/finance/budget', label: 'fin.nav.budget' },
     { href: '/finance/budget/report', label: 'fin.nav.budgetReport' },
+    { href: '/finance/payroll', label: 'fin.nav.payroll' },
     { href: '/finance/export', label: 'fin.nav.export' },
     { href: '/finance/accounts', label: 'fin.nav.accounts' },
 ] as const;

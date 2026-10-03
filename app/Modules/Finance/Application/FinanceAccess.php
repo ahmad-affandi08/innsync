@@ -57,6 +57,12 @@ final readonly class FinanceAccess
 
     public const RECEIVABLE_ADJUST = 'finance.receivable.adjust';
 
+    /** Checks the amounts of an approved payroll run that Human Resource handed over. */
+    public const PAYROLL_VERIFY = 'finance.payroll.verify';
+
+    /** Pays an approved payroll run. Held by someone else than the person who verifies it. */
+    public const PAYROLL_PAY = 'finance.payroll.pay';
+
     private const VIEWERS = [self::PAYABLE_VIEW, self::PAYABLE_MANAGE, self::PAYMENT_RECORD, self::ACCOUNT_MANAGE];
 
     public function __construct(private PermissionChecker $permissions, private PropertyContext $property) {}
@@ -187,6 +193,15 @@ final readonly class FinanceAccess
 
         if (! $this->mayViewRevenue($property, $actorId) && ! $this->may($property, $actorId, self::CORRECTION_APPROVE)) {
             throw Refusal::forbidden('This person may not see corrections and exceptions.');
+        }
+    }
+
+    public function requirePayrollView(PropertyId $property, string $actorId): void
+    {
+        $this->assertProperty($property);
+
+        if (! $this->may($property, $actorId, self::PAYROLL_VERIFY) && ! $this->may($property, $actorId, self::PAYROLL_PAY)) {
+            throw Refusal::forbidden('This person may not see the payroll to be paid.');
         }
     }
 }

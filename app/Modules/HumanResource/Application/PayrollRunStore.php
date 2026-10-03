@@ -47,4 +47,10 @@ interface PayrollRunStore
 
     /** @param array<string, mixed> $row */
     public function addRevision(PropertyId $property, array $row, DateTimeImmutable $at): void;
+
+    /** @return array<string, mixed>|null */
+    public function lineOf(PropertyId $property, string $runId, string $employeeId): ?array;
+
+    /** The runs a person was paid in, newest first, with their line, among the runs in the given statuses. @param list<string> $statuses @return list<array<string, mixed>> */
+    public function linesOfEmployee(PropertyId $property, string $employeeId, array $statuses): array;
 }

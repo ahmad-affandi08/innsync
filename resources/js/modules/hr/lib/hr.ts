@@ -138,7 +138,7 @@ export type PayrollLine = {
 
 export type PayrollRun = {
     id: string; number: string; period: string; status: PayrollRunStatus; employees: number; gross_minor: number; deductions_minor: number; net_minor: number; tax_minor: number; employee_social_minor: number; employer_social_minor: number; revision: number; lock_version: number;
-    approval: { id: string; status: string; consumed: boolean } | null; paid_reference: string | null; may: { calculate: boolean; review: boolean; approve: boolean; reopen: boolean; discard: boolean };
+    approval: { id: string; status: string; consumed: boolean } | null; paid_reference: string | null; may: { calculate: boolean; review: boolean; approve: boolean; reopen: boolean; discard: boolean; lock: boolean };
 };
 
 export type PayrollAdjustment = { id: string; employee: { id: string; number: string; name: string }; amount_minor: number; taxable: boolean; label: string; reason: string; source_period: string | null; status: 'open' | 'applied' | 'cancelled'; lock_version: number };

@@ -41,10 +41,10 @@
 | TASK-HR-031 | FR-HR-031 | Wajib | Menghitung usulan penggajian periodik berdasarkan kehadiran, lembur, potongan keterlambatan, dan ketidakhadiran, lalu meneruskannya ke modul Finance untuk verifikasi dan pembayaran. | REVIEW |
 | TASK-HR-032 | FR-HR-032 | Wajib | Menghitung distribusi service charge yang terkumpul dari kamar dan outlet berdasarkan sistem poin per jabatan dan proporsi kehadiran, dengan penyisihan untuk kerusakan atau kehilangan sesuai kebijakan properti. | TODO |
 | TASK-HR-033 | FR-HR-033 | Wajib | Menampilkan simulasi distribusi service charge sebelum disahkan, dan mengunci nilainya setelah disetujui oleh General Manager. | TODO |
-| TASK-HR-034 | FR-HR-034 | Wajib | Menerbitkan slip pendapatan elektronik per karyawan yang memuat rincian gaji, lembur, potongan, dan bagian service charge. | TODO |
-| TASK-HR-035 | FR-HR-035 | Sebaiknya | Mengekspor data penggajian ke berkas lembar kerja atau format yang dapat diterima sistem penggajian pihak ketiga. | TODO |
+| TASK-HR-034 | FR-HR-034 | Wajib | Menerbitkan slip pendapatan elektronik per karyawan yang memuat rincian gaji, lembur, potongan, dan bagian service charge. | REVIEW |
+| TASK-HR-035 | FR-HR-035 | Sebaiknya | Mengekspor data penggajian ke berkas lembar kerja atau format yang dapat diterima sistem penggajian pihak ketiga. | REVIEW |
 | TASK-HR-036 | FR-HR-036 | Sebaiknya | Menyimpan dasar perhitungan pajak penghasilan karyawan dan iuran jaminan sosial sebagai parameter yang dapat dikonfigurasi. | REVIEW |
-| TASK-HR-037 | FR-HR-037 | Wajib | Payroll run memiliki lifecycle draft, calculated, reviewed, approved, paid, dan locked; hanya periode approved yang boleh diteruskan untuk pembayaran. | TODO |
+| TASK-HR-037 | FR-HR-037 | Wajib | Payroll run memiliki lifecycle draft, calculated, reviewed, approved, paid, dan locked; hanya periode approved yang boleh diteruskan untuk pembayaran. | REVIEW |
 | TASK-HR-038 | FR-HR-038 | Wajib | Perubahan setelah payroll/service-charge dikunci dilakukan melalui adjustment pada periode berikutnya atau reopening berizin tinggi; transaksi lama tidak ditimpa. | REVIEW |
 
 ## Progress
@@ -124,6 +124,15 @@
 - **HR-038** — Nothing approved is overwritten. A correction is an adjustment (`hr_payroll_adjustments`, plus or minus, taxable or not, with the run it corrects and a reason; never deleted, cancelled while open) that the next run for a later month takes in as its own line; calculating again gives the adjustments back and takes them in once. An approved run that Finance has not paid can be reopened with a reason by a person holding `hr.payroll.reopen`: what it was is kept in the append-only `hr_payroll_revisions`, Finance gets the run back (withdrawn; refused when it was paid), the run returns to calculated and `hr.payroll.reopened` goes out; after payment only an adjustment is possible.
 - Screens: `/hr/payroll/runs` (the run and its steps, the pay of each person with a breakdown, adjustments). Not yet: Finance verifying and paying the run, marking it paid and locking it, the payslips (`HR-034`), the service charge (`HR-032/033`), the export (`HR-035`), proration of a raise or a joiner in the middle of a month, the monthly TER tax tables.
 - Tests: `PayrollCalculatorTest` (unit), `PayrollRunHttpTest`.
+
+### Slice 50 (2026-10-03): Finance pays the run, the run is locked, payslips and the payroll file
+
+- **HR-037 (completed)** — Finance gets every approved run on `/finance/payroll` (`finance_payroll_disbursements`): a person with `finance.payroll.verify` confirms the net pay by typing it (a different amount is refused), and a different person with `finance.payroll.pay` pays it with the method (transfer or cash) and a reference; the tax and the social security owed on top are shown beside the net pay. Paying publishes `finance.payroll.paid`; `PayrollPaidConsumer` (`hr.payroll-paid`, idempotent) marks the run paid with its reference, and a person with the payroll right locks it (`POST /hr/payroll/runs/{id}/lock`). Only an approved run goes to Finance, so only an approved period is ever paid. A run Finance already paid cannot be reopened (the withdrawal is refused).
+- **HR-034** — The electronic payslip: `/hr/payslips` lists a person's own payslips of the months that were paid and `/hr/payslips/{run}` shows one (earnings, deductions, what the employer paid, net pay, tax status, days; printable). A person can only open their own, and only once the run was paid. People with the payroll right open anyone's from the run (`/hr/payroll/runs/{run}/payslips/{employee}`); each such view is audited.
+- **HR-035** — `GET /hr/payroll/runs/{id}/export` gives a spreadsheet-safe CSV (cells that could run as a formula are made harmless) of an approved run: person, department, tax status, days planned/present/absent, overtime, gross, social security of the person and the employer, income tax, other deductions, net pay; money in major units with two decimals. Written to the audit trail.
+- Note on money: amounts are integer minor units of the property currency, which for the rupiah are sen (Rp 1 = 100): the defaults of the parameters (ceilings, PTKP, brackets) are stored accordingly, and the screens take and show rupiah.
+- Not yet: the service charge (`HR-032/033`), the bank account of each person, a bank file for transfers, proration of a raise or a joiner in the middle of a month.
+- Tests: `PayrollPaymentHttpTest`.
 
 ## Required engineering checks
 

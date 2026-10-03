@@ -969,6 +969,28 @@
             "reason"
         ]
     },
+    "POST /finance/payroll/{id}/pay": {
+        "required": [
+            "lock_version",
+            "method",
+            "reference"
+        ],
+        "declared": [
+            "lock_version",
+            "method",
+            "reference"
+        ]
+    },
+    "POST /finance/payroll/{id}/verify": {
+        "required": [
+            "confirmed_net_minor",
+            "lock_version"
+        ],
+        "declared": [
+            "confirmed_net_minor",
+            "lock_version"
+        ]
+    },
     "POST /finance/petty": {
         "required": [
             "code",
@@ -3034,6 +3056,14 @@
         ]
     },
     "POST /hr/payroll/runs/{id}/calculate": {
+        "required": [
+            "lock_version"
+        ],
+        "declared": [
+            "lock_version"
+        ]
+    },
+    "POST /hr/payroll/runs/{id}/lock": {
         "required": [
             "lock_version"
         ],

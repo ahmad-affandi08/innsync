@@ -177,7 +177,7 @@ final class PayrollBasisHttpTest extends TestCase
     public function test_the_parameters_of_the_tax_start_at_the_usual_values_and_are_checked_when_saved(): void
     {
         $settings = $this->overview()['settings'];
-        self::assertSame([true, null, 100, 400, 12_000_000, 54_000_000, 5], [$settings['is_baseline'], $settings['lock_version'], $settings['health_employee_bp'], $settings['health_employer_bp'], $settings['health_cap_minor'], $settings['ptkp']['TK0'], count($settings['brackets'])]);
+        self::assertSame([true, null, 100, 400, 1_200_000_000, 5_400_000_000, 5], [$settings['is_baseline'], $settings['lock_version'], $settings['health_employee_bp'], $settings['health_employer_bp'], $settings['health_cap_minor'], $settings['ptkp']['TK0'], count($settings['brackets'])]);
 
         $body = array_diff_key($settings, ['is_baseline' => 1, 'lock_version' => 1]);
         $this->postJson('/hr/payroll/settings', [...$body, 'health_employee_bp' => 3000])->assertStatus(422);
