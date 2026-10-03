@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Modules\FnbSales\Presentation\Http\Controllers;
 
 use App\Modules\FnbSales\Application\BillService;
+use App\Modules\FnbSales\Application\BillSplitService;
 use App\Modules\FnbSales\Application\LineDiscountService;
 use App\Modules\FnbSales\Application\RefundService;
 use App\Shared\Application\Idempotency\IdempotencyKey;
@@ -17,7 +18,7 @@ use Inertia\Response;
 /** The floor of an outlet and its bills. Every rule, permission and approval lives in `BillService`. */
 final readonly class BillController
 {
-    public function __construct(private BillService $bills, private LineDiscountService $discounts, private RefundService $refunds, private PropertyContext $property) {}
+    public function __construct(private BillService $bills, private BillSplitService $splits, private LineDiscountService $discounts, private RefundService $refunds, private PropertyContext $property) {}
 
     public function floor(Request $request): Response
     {
@@ -35,7 +36,36 @@ final readonly class BillController
 
     public function show(Request $request, string $id): Response
     {
-        return Inertia::render('fnb-sales/pages/bill', ['view' => $this->bills->show($this->property->current(), $this->actor($request), $id)]);
+        $property = $this->property->current();
+        $actor = $this->actor($request);
+        $view = $this->bills->show($property, $actor, $id);
+
+        return Inertia::render('fnb-sales/pages/bill', ['view' => $view, 'targets' => $view['may']['operate'] ? $this->splits->targets($property, $actor, $id) : ['tables' => [], 'bills' => []]]);
+    }
+
+    public function moveTable(Request $request, string $id): JsonResponse
+    {
+        $data = $request->validate(['lock_version' => ['required', 'integer', 'min:0'], 'table_id' => ['required', 'string', 'size:26']]);
+
+        return $this->json($this->splits->moveTable($this->property->current(), $this->actor($request), $id, (int) $data['lock_version'], $data['table_id']));
+    }
+
+    public function merge(Request $request, string $id): JsonResponse
+    {
+        $data = $request->validate(['lock_version' => ['required', 'integer', 'min:0'], 'target_id' => ['required', 'string', 'size:26'], 'target_lock_version' => ['required', 'integer', 'min:0']]);
+
+        return $this->json($this->splits->merge($this->property->current(), $this->actor($request), $id, (int) $data['lock_version'], $data['target_id'], (int) $data['target_lock_version']));
+    }
+
+    public function split(Request $request, string $id): JsonResponse
+    {
+        $data = $request->validate([
+            'lock_version' => ['required', 'integer', 'min:0'], 'lines' => ['required', 'array', 'min:1', 'max:60'], 'lines.*.line_id' => ['required', 'string', 'size:26'], 'lines.*.quantity' => ['nullable', 'integer', 'min:1', 'max:99'],
+            'table_id' => ['nullable', 'string', 'size:26'], 'covers' => ['required', 'integer', 'min:1', 'max:500'],
+        ]);
+        $done = $this->splits->split($this->property->current(), $this->actor($request), $id, (int) $data['lock_version'], array_map(static fn (array $l): array => ['line_id' => $l['line_id'], 'quantity' => isset($l['quantity']) ? (int) $l['quantity'] : null], $data['lines']), $data['table_id'] ?? null, (int) $data['covers']);
+
+        return $this->json([...$done['bill'], 'new_bill_id' => $done['new_bill_id']], 201);
     }
 
     public function addLine(Request $request, string $id): JsonResponse

@@ -48,6 +48,7 @@ final readonly class BillService
         private SetupStore $setup,
         private BillPricing $pricing,
         private BillGuard $guard,
+        private PriceRuleService $prices,
         private FnbAccess $access,
         private PropertyCurrencyReader $currencies,
         private BusinessDateProvider $businessDate,
@@ -284,7 +285,7 @@ final readonly class BillService
             'paid_minor' => $paid, 'reserved_minor' => $reserved, 'left_minor' => $open ? max(0, $totals['total_minor'] - $paid - $reserved) : 0,
             'shift' => $shift === null ? null : ['id' => $shift['id'], 'number' => $shift['number']],
             'rooms' => $cashier && $open && ! $unsent && $totals['total_minor'] > 0 ? $this->inHouseRooms($property) : [],
-            'menu' => $open ? $this->orderMenu($property, $outlet['id']) : [],
+            'menu' => $open ? $this->orderMenu($property, $outlet['id'], PriceBook::channelOf($bill['table_id'], $bill['room_id'])) : [],
             'approvals' => $approvals,
             'may' => ['operate' => $this->access->may($property, $actorId, FnbAccess::POS_OPERATE) && $open, 'pay' => $cashier && $open && ! $unsent && $totals['total_minor'] > 0 && ! $totals['scheme_missing'], 'cashier' => $cashier, 'discount' => $this->access->may($property, $actorId, FnbAccess::DISCOUNT_APPLY) && $open && $payments === [], 'refund' => $this->access->may($property, $actorId, FnbAccess::REFUND_APPLY) && $bill['status'] === 'settled', 'reprint' => $this->access->may($property, $actorId, FnbAccess::RECEIPT_REPRINT) && in_array($bill['status'], ['settled', 'refunded'], true)],
         ];
@@ -343,11 +344,12 @@ final readonly class BillService
             }
 
             [$chosen, $extra] = $this->choices($property, $item, $modifierIds);
-            $unit = (int) ($variant['price_minor'] ?? $item['price_minor']);
+            $list = (int) ($variant['price_minor'] ?? $item['price_minor']);
+            [$unit, $ruleId] = $this->prices->bookOf($property, $bill['outlet_id'])->price($item['id'], $variant['id'] ?? null, PriceBook::channelOf($bill['table_id'], $bill['room_id']), $list);
 
             $this->bills->addLine($property, $bill['id'], [
                 'id' => $this->ids->next(), 'item_id' => $item['id'], 'variant_id' => $variant['id'] ?? null, 'item_code' => $item['code'], 'item_name' => $item['name'], 'variant_name' => $variant['name'] ?? null,
-                'station' => $item['station'] ?? $category['station'], 'unit_price_minor' => $unit, 'modifiers' => $chosen, 'modifiers_minor' => $extra, 'quantity' => $quantity, 'note' => $note,
+                'station' => $item['station'] ?? $category['station'], 'unit_price_minor' => $unit, 'price_rule_id' => $ruleId, 'list_price_minor' => $list, 'modifiers' => $chosen, 'modifiers_minor' => $extra, 'quantity' => $quantity, 'note' => $note,
                 'gross_minor' => ($unit + $extra) * $quantity, 'line_total_minor' => ($unit + $extra) * $quantity, 'status' => 'pending', 'created_by' => $actor,
             ], $this->clock->nowUtc());
             $this->guard->touch($property, $bill['id'], $lock);
@@ -576,8 +578,9 @@ final readonly class BillService
     }
 
     /** @return list<array<string, mixed>> the categories in use with the items in use, for taking an order */
-    private function orderMenu(PropertyId $property, string $outletId): array
+    private function orderMenu(PropertyId $property, string $outletId, string $channel): array
     {
+        $book = $this->prices->bookOf($property, $outletId);
         $items = $this->setup->items($property, $outletId);
         $groups = [];
 
@@ -599,8 +602,8 @@ final readonly class BillService
             foreach ($items as $i) {
                 if ($i['category_id'] === $c['id'] && (bool) $i['is_active']) {
                     $list[] = [
-                        'id' => $i['id'], 'code' => $i['code'], 'name' => $i['name'], 'description' => $i['description'], 'price_minor' => (int) $i['price_minor'], 'is_available' => (bool) $i['is_available'],
-                        'variants' => array_values(array_map(static fn (array $v): array => ['id' => $v['id'], 'name' => $v['name'], 'price_minor' => (int) $v['price_minor']], array_filter($i['variants'], static fn (array $v): bool => (bool) $v['is_active']))),
+                        'id' => $i['id'], 'code' => $i['code'], 'name' => $i['name'], 'description' => $i['description'], 'price_minor' => $book->price($i['id'], null, $channel, (int) $i['price_minor'])[0], 'list_price_minor' => (int) $i['price_minor'], 'is_available' => (bool) $i['is_available'],
+                        'variants' => array_values(array_map(static fn (array $v): array => ['id' => $v['id'], 'name' => $v['name'], 'price_minor' => $book->price($i['id'], $v['id'], $channel, (int) $v['price_minor'])[0], 'list_price_minor' => (int) $v['price_minor']], array_filter($i['variants'], static fn (array $v): bool => (bool) $v['is_active']))),
                         'groups' => array_values(array_filter(array_map(static fn (string $g): ?array => $groups[$g] ?? null, $i['group_ids']))),
                     ];
                 }
@@ -708,6 +711,7 @@ final readonly class BillService
             'id' => $l['id'], 'line_no' => (int) $l['line_no'], 'item_name' => $l['item_name'], 'variant_name' => $l['variant_name'], 'modifiers' => array_map(static fn (array $m): array => ['name' => $m['name'], 'price_delta_minor' => (int) $m['price_delta_minor']], $l['modifiers']),
             'quantity' => (int) $l['quantity'], 'note' => $l['note'], 'unit_price_minor' => (int) $l['unit_price_minor'], 'modifiers_minor' => (int) $l['modifiers_minor'], 'line_total_minor' => (int) $l['line_total_minor'],
             'gross_minor' => (int) ($l['gross_minor'] ?? $l['line_total_minor']), 'discount_kind' => $l['discount_kind'], 'discount_value' => $l['discount_value'] === null ? null : (int) $l['discount_value'], 'discount_minor' => (int) $l['discount_minor'], 'discount_reason' => $l['discount_reason'],
+            'list_price_minor' => $l['list_price_minor'] === null ? null : (int) $l['list_price_minor'], 'price_rule_id' => $l['price_rule_id'] ?? null,
             'status' => $l['status'], 'prep_status' => $l['prep_status'], 'station' => $l['station'], 'sent_at' => FnbTime::utc($l['sent_at']), 'void_reason' => $l['void_reason'],
         ];
     }

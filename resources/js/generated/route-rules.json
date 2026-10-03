@@ -163,6 +163,12 @@
             "outlet"
         ]
     },
+    "GET /fnb/prices": {
+        "required": [],
+        "declared": [
+            "outlet"
+        ]
+    },
     "GET /fnb/routines/performance": {
         "required": [],
         "declared": [
@@ -1374,6 +1380,18 @@
             "reason"
         ]
     },
+    "POST /fnb/bills/{id}/merge": {
+        "required": [
+            "lock_version",
+            "target_id",
+            "target_lock_version"
+        ],
+        "declared": [
+            "lock_version",
+            "target_id",
+            "target_lock_version"
+        ]
+    },
     "POST /fnb/bills/{id}/payments": {
         "required": [
             "amount_minor",
@@ -1435,6 +1453,32 @@
         ],
         "declared": [
             "lock_version"
+        ]
+    },
+    "POST /fnb/bills/{id}/split": {
+        "required": [
+            "covers",
+            "lines",
+            "lines.*.line_id",
+            "lock_version"
+        ],
+        "declared": [
+            "covers",
+            "lines",
+            "lines.*.line_id",
+            "lines.*.quantity",
+            "lock_version",
+            "table_id"
+        ]
+    },
+    "POST /fnb/bills/{id}/table": {
+        "required": [
+            "lock_version",
+            "table_id"
+        ],
+        "declared": [
+            "lock_version",
+            "table_id"
         ]
     },
     "POST /fnb/categories/{id}": {
@@ -1687,6 +1731,40 @@
             "area",
             "code",
             "seats"
+        ]
+    },
+    "POST /fnb/prices": {
+        "required": [
+            "channel",
+            "days",
+            "item_id",
+            "kind",
+            "name",
+            "outlet_id",
+            "price_minor",
+            "valid_from"
+        ],
+        "declared": [
+            "channel",
+            "days",
+            "from_time",
+            "item_id",
+            "kind",
+            "name",
+            "outlet_id",
+            "price_minor",
+            "to_time",
+            "valid_from",
+            "valid_to",
+            "variant_id"
+        ]
+    },
+    "POST /fnb/prices/{id}/retire": {
+        "required": [
+            "reason"
+        ],
+        "declared": [
+            "reason"
         ]
     },
     "POST /fnb/room-service": {

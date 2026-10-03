@@ -23,6 +23,8 @@ final readonly class TicketIntakeConsumer implements OutboxConsumer
 
     public const CANCELLED_EVENT = 'fnb.bill.cancelled';
 
+    public const REARRANGED_EVENT = 'fnb.bill.rearranged';
+
     public const STATIONS = ['kitchen', 'bar'];
 
     public function __construct(private TicketStore $store, private IdentifierGenerator $ids, private Clock $clock) {}
@@ -34,7 +36,7 @@ final readonly class TicketIntakeConsumer implements OutboxConsumer
 
     public function supports(string $eventType): bool
     {
-        return in_array($eventType, [self::SENT_EVENT, self::VOIDED_EVENT, self::CANCELLED_EVENT], true);
+        return in_array($eventType, [self::SENT_EVENT, self::VOIDED_EVENT, self::CANCELLED_EVENT, self::REARRANGED_EVENT], true);
     }
 
     public function consume(OutboxMessage $message): void
@@ -45,9 +47,22 @@ final readonly class TicketIntakeConsumer implements OutboxConsumer
 
         match ($event->eventType) {
             self::SENT_EVENT => $this->intake($message),
+            self::REARRANGED_EVENT => $this->relocate($message),
             self::VOIDED_EVENT => $this->store->cancelLines($event->propertyId, [strtolower((string) $d['line_id'])], $now),
             default => $this->store->cancelBill($event->propertyId, strtolower((string) $d['bill_id']), $now),
         };
+    }
+
+    /** The lines now on a bill: a ticket whose dishes are all among them follows the bill; one that is only partly there keeps the bill it was sent for. */
+    private function relocate(OutboxMessage $message): void
+    {
+        $d = $message->event->data;
+        $table = isset($d['table']) && $d['table'] !== '' ? (string) $d['table'] : null;
+        $room = isset($d['room']) && $d['room'] !== '' ? (string) $d['room'] : null;
+        $this->store->relocate(
+            $message->event->propertyId, array_values(array_map(static fn (mixed $id): string => strtolower((string) $id), $d['line_ids'] ?? [])), strtolower((string) $d['bill_id']), (string) $d['bill_number'],
+            $table !== null ? 'table' : ($room !== null ? 'room' : 'counter'), $table ?? $room, $this->clock->nowUtc(),
+        );
     }
 
     private function intake(OutboxMessage $message): void

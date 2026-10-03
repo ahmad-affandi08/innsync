@@ -46,6 +46,14 @@ interface TicketStore
     /** @return list<string> the tickets of a cancelled bill that were still open, now cancelled */
     public function cancelBill(PropertyId $property, string $billId, DateTimeImmutable $at): array;
 
+    /**
+     * Points the tickets whose open dishes are all among the given lines at the bill and the place those lines are on now.
+     *
+     * @param  list<string>  $lineIds
+     * @return list<string> the tickets that were changed
+     */
+    public function relocate(PropertyId $property, array $lineIds, string $billId, string $billNumber, string $placeKind, ?string $place, DateTimeImmutable $at): array;
+
     /** @return array{late_after_minutes: int, stock_location_id: string|null, lock_version: int}|null */
     public function settings(PropertyId $property): ?array;
 

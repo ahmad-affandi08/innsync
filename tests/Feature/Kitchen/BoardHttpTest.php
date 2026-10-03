@@ -110,6 +110,29 @@ final class BoardHttpTest extends TestCase
         return $this->getJson("/kitchen/tickets?station={$station}")->assertOk()->json('board');
     }
 
+    public function test_a_ticket_follows_its_dishes_when_the_bill_moves_table_or_merges_and_a_partly_moved_ticket_stays(): void
+    {
+        $a = $this->order('t1', ['nasi', 'tea']);
+        $this->drain(['fnb.order.sent']);
+        $ticket = DB::table('kitchen_tickets')->where('station', 'kitchen')->first();
+        self::assertSame(['table', 'T1', $a], [$ticket->place_kind, $ticket->place, $ticket->bill_id]);
+
+        $this->postJson("/fnb/bills/{$a}/table", ['lock_version' => (int) DB::table('fnb_bills')->where('id', $a)->value('lock_version'), 'table_id' => $this->id['t2']], $this->key())->assertOk();
+        $this->drain(['fnb.bill.rearranged']);
+        self::assertSame('T2', DB::table('kitchen_tickets')->where('id', $ticket->id)->value('place'));
+
+        // One of the two dishes is split off: the ticket is only partly moved, so it keeps its bill.
+        $nasi = (string) DB::table('fnb_bill_lines')->where('bill_id', $a)->where('item_code', 'NASI')->value('id');
+        $new = (string) $this->postJson("/fnb/bills/{$a}/split", ['lock_version' => (int) DB::table('fnb_bills')->where('id', $a)->value('lock_version'), 'lines' => [['line_id' => $nasi, 'quantity' => null]], 'table_id' => $this->id['t1'], 'covers' => 1], $this->key())->assertCreated()->json('new_bill_id');
+        $this->drain(['fnb.bill.rearranged']);
+        self::assertSame($a, DB::table('kitchen_tickets')->where('id', $ticket->id)->value('bill_id'));
+
+        // Merged into the other bill: every dish of the ticket is on it now, so the ticket follows.
+        $this->postJson("/fnb/bills/{$a}/merge", ['lock_version' => (int) DB::table('fnb_bills')->where('id', $a)->value('lock_version'), 'target_id' => $new, 'target_lock_version' => (int) DB::table('fnb_bills')->where('id', $new)->value('lock_version')], $this->key())->assertOk();
+        $this->drain(['fnb.bill.rearranged']);
+        self::assertSame([$new, 'T1'], [DB::table('kitchen_tickets')->where('id', $ticket->id)->value('bill_id'), DB::table('kitchen_tickets')->where('id', $ticket->id)->value('place')]);
+    }
+
     public function test_a_send_makes_one_ticket_for_each_station_and_none_for_what_no_station_prepares(): void
     {
         $bill = $this->order('t1', ['nasi', 'juice', 'water']);

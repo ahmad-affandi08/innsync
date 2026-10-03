@@ -11,8 +11,9 @@ import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { BillRearrange } from '@/modules/fnb-sales/components/bill-rearrange';
 import { FnbShell } from '@/modules/fnb-sales/components/fnb-shell';
-import type { BillApproval, BillLine, BillPayment, BillView, OrderItem } from '@/modules/fnb-sales/lib/fnb';
+import type { BillApproval, BillLine, BillPayment, BillView, OrderItem, RearrangeTargets } from '@/modules/fnb-sales/lib/fnb';
 import { newIdempotencyKey } from '@/shared/api/http';
 import { useServerAction } from '@/shared/api/use-server-action';
 import { useFormatters, useTranslation } from '@/shared/i18n/i18n';
@@ -31,7 +32,7 @@ const PREP_TONE = { new: 'neutral', preparing: 'info', ready: 'success', served:
 const LINE_TONE = { pending: 'pending', sent: 'success', voided: 'neutral', removed: 'neutral' } as const;
 
 /** One bill: the menu to order from, what was ordered with its state, what it comes to, and sending, voiding and cancelling. */
-export default function BillPage({ view }: { view: BillView }) {
+export default function BillPage({ targets, view }: { targets: RearrangeTargets; view: BillView }) {
     const { t } = useTranslation();
     const format = useFormatters();
     const errorCopy = useErrorStateCopy();
@@ -52,7 +53,7 @@ export default function BillPage({ view }: { view: BillView }) {
     const open = bill.status === 'open';
     const operate = view.may.operate;
     const money = (minor: number) => format.money(minor, view.currency);
-    const reload = ['view'];
+    const reload = ['view', 'targets'];
     const pending = bill.lines.filter((l) => l.status === 'pending');
     const place = bill.table !== null ? t('fnb.pos.tableLabel', { code: bill.table }) : bill.room !== null ? t('fnb.pos.roomLabel', { number: bill.room }) : t('fnb.pos.counter');
     const approvalFor = (ref: string, type: string, status: string): BillApproval | undefined => view.approvals.find((a) => a.subject_ref === ref && a.subject_type === type && a.status === status && !a.consumed);
@@ -320,6 +321,7 @@ export default function BillPage({ view }: { view: BillView }) {
                                         <span className="whitespace-nowrap tabular-nums">{l.discount_minor > 0 ? <span className="mr-2 text-xs text-muted-foreground line-through">{money(l.gross_minor)}</span> : null}{money(l.line_total_minor)}</span>
                                     </div>
                                     {l.discount_kind !== null ? <p className="text-xs text-muted-foreground" data-testid="line-discount">{l.discount_kind === 'comp' ? t('fnb.bill.discountComp', { reason: l.discount_reason ?? '' }) : t('fnb.bill.discountLine', { amount: money(l.discount_minor), how: l.discount_kind === 'percent' ? `${((l.discount_value ?? 0) / 100).toString()}%` : t('fnb.bill.discountFixed'), reason: l.discount_reason ?? '' })}</p> : null}
+                                    {l.price_rule_id !== null && l.list_price_minor !== null ? <p className="text-xs text-muted-foreground" data-testid="line-price-rule">{t('fnb.bill.priceRule', { list: money(l.list_price_minor) })}</p> : null}
                                     {l.modifiers.length > 0 ? <p className="text-xs text-muted-foreground">{l.modifiers.map((m) => m.name).join(', ')}</p> : null}
                                     {l.note !== null ? <p className="text-xs text-muted-foreground">“{l.note}”</p> : null}
                                     <div className="flex flex-wrap items-center gap-2">
@@ -402,6 +404,8 @@ export default function BillPage({ view }: { view: BillView }) {
                             ) : null}
                         </div>
                     ) : null}
+
+                    {open && operate ? <BillRearrange bill={bill} lineTitle={lineTitle} money={money} targets={targets} /> : null}
 
                     {open && operate ? (
                         <div className="flex flex-col gap-2 border-t border-border pt-3">

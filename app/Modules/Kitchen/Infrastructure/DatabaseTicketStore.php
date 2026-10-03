@@ -97,6 +97,27 @@ final readonly class DatabaseTicketStore implements TicketStore
         return array_map('strval', $ids);
     }
 
+    public function relocate(PropertyId $property, array $lineIds, string $billId, string $billNumber, string $placeKind, ?string $place, DateTimeImmutable $at): array
+    {
+        if ($lineIds === []) {
+            return [];
+        }
+
+        $tickets = DB::table('kitchen_ticket_lines as l')->join('kitchen_tickets as t', 't.id', '=', 'l.ticket_id')->where('t.property_id', $property->toString())->whereIn('l.line_id', $lineIds)->distinct()->pluck('t.id')->all();
+        $changed = [];
+
+        foreach ($tickets as $id) {
+            $stays = DB::table('kitchen_ticket_lines')->where('ticket_id', $id)->where('cancelled', false)->whereNotIn('line_id', $lineIds)->exists();
+
+            if (! $stays) {
+                DB::table('kitchen_tickets')->where('id', $id)->update(['bill_id' => $billId, 'bill_number' => $billNumber, 'place_kind' => $placeKind, 'place' => $place, 'updated_at' => $at]);
+                $changed[] = (string) $id;
+            }
+        }
+
+        return $changed;
+    }
+
     public function settings(PropertyId $property): ?array
     {
         $row = DB::table('kitchen_settings')->where('property_id', $property->toString())->first();

@@ -17,7 +17,7 @@
 | TASK-FBS-001 | FR-FBS-001 | Wajib | Menampilkan denah meja per outlet dengan status kosong, terisi, dan sudah memesan; kasir dapat membuka bill dari meja atau dari nomor kamar. | IN_PROGRESS |
 | TASK-FBS-002 | FR-FBS-002 | Wajib | Mengambil pesanan dengan katalog menu bergambar, kategori, varian, catatan khusus, dan jumlah porsi. | IN_PROGRESS |
 | TASK-FBS-003 | FR-FBS-003 | Wajib | Mengirim pesanan ke layar dapur dan bar sesuai kategori item, serta mencetak tiket pada printer masing-masing bila diperlukan. | IN_PROGRESS |
-| TASK-FBS-004 | FR-FBS-004 | Sebaiknya | Mendukung pemisahan bill, penggabungan bill, dan pemindahan pesanan antar meja. | TODO |
+| TASK-FBS-004 | FR-FBS-004 | Sebaiknya | Mendukung pemisahan bill, penggabungan bill, dan pemindahan pesanan antar meja. | REVIEW |
 | TASK-FBS-005 | FR-FBS-005 | Wajib | Void item dan pembatalan bill hanya dapat dilakukan dengan alasan dan persetujuan penyelia; seluruh tindakan tercatat pada jejak audit. | IN_PROGRESS |
 | TASK-FBS-006 | FR-FBS-006 | Wajib | Diskon dan pemberian gratis (complimentary) memerlukan alasan dan persetujuan sesuai ambang yang dikonfigurasi. | REVIEW |
 | TASK-FBS-007 | FR-FBS-007 | Wajib | Menerima pembayaran tunai, QRIS, kartu melalui EDC, dan pembebanan ke kamar. Pembebanan ke kamar wajib memvalidasi bahwa kamar berstatus terisi dan mencocokkan nama tamu. | REVIEW |
@@ -28,7 +28,7 @@
 | TASK-FBS-012 | FR-FBS-012 | Wajib | Perubahan bill oleh beberapa perangkat menggunakan kontrol konkurensi; sistem mencegah lost update dan menampilkan konflik bila bill telah berubah di perangkat lain. | REVIEW |
 | TASK-FBS-013 | FR-FBS-013 | Wajib | Pembayaran QRIS/daring memiliki state initiated, pending, paid, failed, expired, unknown, dan refunded. Status unknown tidak boleh dianggap lunas sebelum rekonsiliasi atau callback valid diterima. | IN_PROGRESS |
 | TASK-FBS-014 | FR-FBS-014 | Wajib | Refund, void setelah pembayaran, dan reprint struk memerlukan hak akses sesuai kebijakan, alasan, serta referensi transaksi awal pada audit trail. | REVIEW |
-| TASK-FBS-015 | FR-FBS-015 | Sebaiknya | Mendukung price list dan jadwal harga per outlet/channel/waktu, termasuk promo terjadwal, tanpa mengubah histori harga transaksi yang sudah ditutup. | TODO |
+| TASK-FBS-015 | FR-FBS-015 | Sebaiknya | Mendukung price list dan jadwal harga per outlet/channel/waktu, termasuk promo terjadwal, tanpa mengubah histori harga transaksi yang sudah ditutup. | REVIEW |
 | TASK-FBS-020 | FR-FBS-020 | Wajib | Petugas memeriksa mini bar di kamar tamu dengan memindai barcode kamar lalu memilih menu mini bar. | REVIEW |
 | TASK-FBS-021 | FR-FBS-021 | Wajib | Jumlah minuman dan makanan yang dikonsumsi tamu diinput di tempat dan otomatis terkirim ke kasir serta folio kamar tanpa input ulang. | REVIEW |
 | TASK-FBS-022 | FR-FBS-022 | Wajib | Sistem menghasilkan daftar jumlah item yang harus diisi ulang per kamar untuk shift berikutnya. | REVIEW |
@@ -96,6 +96,18 @@
 - **FBS-024** — `RoomServiceService` (`/fnb/room-service`): an order is a bill of an outlet of the kind room service opened for a room with a guest in it; it keeps the room, the time promised (the clock of the property, later than now) and the delivery: ordered, on the way, delivered, one step at a time. The board lists what is still to deliver, soonest promise first, flags what is late and by how many minutes, and shows delivered orders of the last hours; a bill that was cancelled shows as cancelled. The bill is paid as any bill, charged to the room in full when the guest asks. Audited.
 - Not yet: printing the code of each room, a scanner that reads the code by the camera (a keyboard scanner or typing works), items of the mini bar that take stock out of the inventory, an order of room service that is placed by the guest.
 - Tests: `MinibarAndRoomServiceHttpTest`.
+
+### Slice 58 (2026-10-03): moving, merging and splitting bills; price lists and scheduled promotions
+
+- Status: `TASK-FBS-004` and `TASK-FBS-015` are `REVIEW`.
+- Context: migration 106 (`fnb_bills.split_from_id`/`merged_into_id`, `fnb_price_rules` with a retire-only trigger and a CHECK on channel, kind, days and hours, `fnb_bill_lines.price_rule_id`/`list_price_minor`), `BillSplitService`, `PriceBook` (pure), `PriceRuleStore`/`DatabasePriceRuleStore`, `PriceRuleService`, `PriceRuleController`, `BillStore::moveLines/moveToTable`, `TicketStore::relocate`, `FnbAccess::PRICES_MANAGE`, pages `fnb-sales/pages/prices.tsx`, component `bill-rearrange.tsx`.
+- **Move table (FBS-004).** An open bill goes to another active table of its outlet that has no open bill (the generated unique index decides, so two devices cannot both take it); a bill with payments may still change table. Audited as `fnb_bill.table_moved`.
+- **Merge (FBS-004).** The source bill's lines (history included) are appended to the target with new line numbers, the covers add up (at most 500), and the source is closed as `cancelled` with `merged_into_id` and the reason "Merged into …", so the record stays. Both bills must be open, of the same outlet, with no payment on either; a room bill merges only into a bill of the same room. Both versions are named (`lock_version` and `target_lock_version`) and locked in a fixed order, so opposite merges cannot deadlock.
+- **Split (FBS-004).** Whole lines, or some portions of a line, go onto a new open bill (optional free table, own covers; room and stay carry over, `split_from_id` points back). A portion is a line of its own at the price the line was ordered at; a line with a discount goes whole. The old bill keeps at least one line; a bill with payments is not split.
+- **Kitchen.** Every rearrangement publishes `fnb.bill.rearranged` with the lines now on the bill; the kitchen points a ticket whose open dishes are all among them at the bill and place, and leaves a partly moved ticket with the bill it was sent for.
+- **Price rules (FBS-015).** A rule sets the price of an item or one variant for a channel (all, dine in, room service, take away), kind (price list or promotion), between two dates, on chosen days of the week, in an optional window of hours (an end before the start runs past midnight and belongs to the day it started). The channel of a bill is room service with a room, dine in with a table, take away otherwise; dates, days and hours are the property's local ones. When several hold, the winner is by variant, channel, promotion over price list, latest start, newest; the menu price stands when none holds. The waiter's menu shows the price that holds now and each new line keeps the unit price, the menu price and the rule it was ordered by; a rule is only retired (reason, audit), never edited or deleted, and bills already ordered never change.
+- Not yet: vouchers and discount codes, rules for a group of items or a whole category, a price per customer segment, and a merged ticket on the kitchen screen showing both original bills.
+- Evidence: `tests/Feature/FnbSales/BillRearrangeAndPriceHttpTest.php` (move, merge, split with portions, refusals with payments and rooms, rule pricing by channel, retire, retire-only trigger, permission), `tests/Unit/Modules/FnbSales/PriceBookTest.php` (dates, days, hours, overnight windows, precedence), `tests/Feature/Kitchen/BoardHttpTest.php` (tickets follow the bill).
 
 ## Required engineering checks
 

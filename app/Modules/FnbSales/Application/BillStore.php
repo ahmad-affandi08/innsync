@@ -43,6 +43,12 @@ interface BillStore
     /** Payments of a bill that count or may still count: every one that is not failed or expired. */
     public function paymentCount(PropertyId $property, string $billId): int;
 
+    /** Moves lines to another bill, each at the end of it with the next line number. @param list<string> $lineIds */
+    public function moveLines(PropertyId $property, string $fromBillId, string $toBillId, array $lineIds, DateTimeImmutable $at): void;
+
+    /** Puts an open bill on another table. @return bool false when that table has an open bill already */
+    public function moveToTable(PropertyId $property, string $billId, string $tableId, DateTimeImmutable $at): bool;
+
     /**
      * Records how far sent lines are in the kitchen or the bar.
      *

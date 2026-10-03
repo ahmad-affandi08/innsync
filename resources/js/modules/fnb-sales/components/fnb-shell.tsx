@@ -7,6 +7,7 @@ const LINKS = [
     { href: '/fnb/shift', label: 'fnb.nav.shift' },
     { href: '/fnb/outlets', label: 'fnb.nav.outlets' },
     { href: '/fnb/menu', label: 'fnb.nav.menu' },
+    { href: '/fnb/prices', label: 'fnb.nav.prices' },
     { href: '/fnb/room-service', label: 'fnb.nav.roomService' },
     { href: '/fnb/minibar', label: 'fnb.nav.minibar' },
     { href: '/inventory/requisitions', label: 'inv.nav.requisitions' },

@@ -112,8 +112,10 @@
     ],
     "fnb-sales/pages/bill": [
         "amount_minor",
+        "covers",
         "kind",
-        "method"
+        "method",
+        "target_id"
     ],
     "fnb-sales/pages/damage-reports": [
         "area",
@@ -143,6 +145,15 @@
         "code",
         "kind",
         "name"
+    ],
+    "fnb-sales/pages/prices": [
+        "channel",
+        "item_id",
+        "kind",
+        "name",
+        "price_minor",
+        "reason",
+        "valid_from"
     ],
     "fnb-sales/pages/room-service": [
         "covers",

@@ -29,9 +29,11 @@ export type BillLine = {
     id: string; line_no: number; item_name: string; variant_name: string | null; modifiers: { name: string; price_delta_minor: number }[]; quantity: number; note: string | null;
     unit_price_minor: number; modifiers_minor: number; line_total_minor: number; status: 'pending' | 'sent' | 'voided' | 'removed'; prep_status: 'new' | 'preparing' | 'ready' | 'served'; station: string; sent_at: string | null; void_reason: string | null;
     gross_minor: number; discount_kind: 'percent' | 'amount' | 'comp' | null; discount_value: number | null; discount_minor: number; discount_reason: string | null;
+    list_price_minor: number | null; price_rule_id: string | null;
 };
+export type RearrangeTargets = { tables: { id: string; code: string }[]; bills: { id: string; number: string; table: string | null; lock_version: number }[] };
 export type OrderGroup = { id: string; name: string; min_select: number; max_select: number; modifiers: { id: string; name: string; price_delta_minor: number }[] };
-export type OrderItem = { id: string; code: string; name: string; description: string | null; price_minor: number; is_available: boolean; variants: { id: string; name: string; price_minor: number }[]; groups: OrderGroup[] };
+export type OrderItem = { id: string; code: string; name: string; description: string | null; price_minor: number; list_price_minor: number; is_available: boolean; variants: { id: string; name: string; price_minor: number; list_price_minor: number }[]; groups: OrderGroup[] };
 export type OrderCategory = { id: string; name: string; station: string; items: OrderItem[] };
 export type BillApproval = { id: string; subject_type: string; subject_ref: string; status: string; consumed: boolean };
 export type BillView = {
@@ -51,3 +53,13 @@ export type ShiftView = {
     cash_taken_minor?: number; expected_now_minor?: number; by_method?: { method: string; count: number; amount_minor: number }[]; open_minor?: number; cashier?: string | null;
 };
 export type ShiftOverview = { currency: string; shift: ShiftView | null; outlets: { id: string; code: string; name: string }[]; recent: ShiftView[]; may: { operate: boolean; manage: boolean } };
+
+/** Price lists and scheduled promotions of an outlet. */
+export type PriceRule = {
+    id: string; item_id: string; item: string; variant_id: string | null; variant: string | null; channel: 'all' | 'dine_in' | 'room_service' | 'takeaway'; kind: 'price' | 'promo'; name: string; price_minor: number;
+    valid_from: string; valid_to: string | null; days: number; from_time: string | null; to_time: string | null; is_active: boolean; retire_reason: string | null; retired_at: string | null; holds_now: boolean;
+};
+export type PriceOverview = {
+    currency: string; outlets: { id: string; code: string; name: string }[]; outlet: { id: string; code: string; name: string } | null; rules: PriceRule[];
+    items: { id: string; code: string; name: string; price_minor: number; variants: { id: string; name: string; price_minor: number }[]; now: { dine_in: number; room_service: number; takeaway: number } }[]; may: { manage: boolean };
+};

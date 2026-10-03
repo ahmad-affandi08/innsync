@@ -106,6 +106,30 @@ final readonly class DatabaseBillStore implements BillStore
         return DB::table('fnb_payments')->where('property_id', $property->toString())->where('bill_id', $billId)->whereNotIn('status', ['failed', 'expired'])->count();
     }
 
+    public function moveLines(PropertyId $property, string $fromBillId, string $toBillId, array $lineIds, DateTimeImmutable $at): void
+    {
+        $next = (int) DB::table('fnb_bill_lines')->where('bill_id', $toBillId)->max('line_no');
+
+        foreach ($lineIds as $lineId) {
+            DB::table('fnb_bill_lines')->where('bill_id', $fromBillId)->where('id', $lineId)->update(['bill_id' => $toBillId, 'line_no' => ++$next, 'updated_at' => $at]);
+        }
+    }
+
+    public function moveToTable(PropertyId $property, string $billId, string $tableId, DateTimeImmutable $at): bool
+    {
+        try {
+            DB::table('fnb_bills')->where('property_id', $property->toString())->where('id', $billId)->where('status', 'open')->update(['table_id' => $tableId, 'updated_at' => $at]);
+
+            return true;
+        } catch (QueryException $e) {
+            if (($e->errorInfo[1] ?? null) === 1062) {
+                return false;
+            }
+
+            throw $e;
+        }
+    }
+
     public function setPrepStatus(PropertyId $property, array $lineIds, string $status, DateTimeImmutable $at): void
     {
         if ($lineIds === []) {

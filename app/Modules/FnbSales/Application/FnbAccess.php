@@ -37,6 +37,9 @@ final readonly class FnbAccess
     /** Sets the items of the mini bar, their prices and how many a room holds. */
     public const MINIBAR_MANAGE = 'fnb.minibar.manage';
 
+    /** Sets the price lists and the scheduled promotions of the outlets. */
+    public const PRICES_MANAGE = 'fnb.prices.manage';
+
     public function __construct(private PermissionChecker $permissions, private PropertyContext $property) {}
 
     public function assertProperty(PropertyId $property): void
