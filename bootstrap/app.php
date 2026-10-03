@@ -7,6 +7,7 @@ use App\Modules\IdentityAccess\Presentation\Http\Middleware\EnsureActiveUser;
 use App\Modules\IdentityAccess\Presentation\Http\Middleware\EnsureMfaVerified;
 use App\Modules\IdentityAccess\Presentation\Http\Middleware\RequirePermission;
 use App\Modules\IdentityAccess\Presentation\Http\Middleware\ResolvePropertyContext;
+use App\Modules\Laundry\Infrastructure\EscalateLaundryCommand;
 use App\Modules\Maintenance\Infrastructure\EscalateWorkOrdersCommand;
 use App\Modules\Maintenance\Infrastructure\GenerateDutyRunsCommand;
 use App\Modules\Maintenance\Infrastructure\GenerateRoutineWorkCommand;
@@ -65,6 +66,7 @@ return Application::configure(basePath: dirname(__DIR__))
         RunReportExportsCommand::class,
         RunReportSchedulesCommand::class,
         EscalateWorkOrdersCommand::class,
+        EscalateLaundryCommand::class,
         GenerateRoutineWorkCommand::class,
         GenerateDutyRunsCommand::class,
     ])

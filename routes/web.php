@@ -314,6 +314,7 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
     Route::get('/stays/{id}', [StayController::class, 'show'])->where('id', $id)->name('front-office.stays.show');
     Route::get('/stays/{id}/id-photo', [StayController::class, 'photo'])->where('id', $id)->name('front-office.stays.photo');
     Route::post('/stays/{id}/id-photo', [StayController::class, 'attachPhoto'])->where('id', $id)->middleware('throttle:bookings')->name('front-office.stays.photo.store');
+    Route::post('/stays/{id}/preferences', [StayController::class, 'preferences'])->where('id', $id)->name('front-office.stays.preferences');
     Route::get('/stays/{id}/move-options', [StayController::class, 'moveOptions'])->where('id', $id)->name('front-office.stays.move-options');
     Route::post('/stays/{id}/move', [StayController::class, 'move'])->where('id', $id)->name('front-office.stays.move');
     Route::get('/stays/{id}/extension-quote', [StayController::class, 'extensionQuote'])->where('id', $id)->name('front-office.stays.extension-quote');

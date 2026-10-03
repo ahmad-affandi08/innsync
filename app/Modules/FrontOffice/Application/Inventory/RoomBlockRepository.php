@@ -22,6 +22,6 @@ interface RoomBlockRepository
     /** Active blocks of one room that overlap the nights `$from`..`$to` inclusive. @return list<RoomBlock> */
     public function overlapping(PropertyId $property, string $roomId, string $from, string $to): array;
 
-    /** The rooms of the property with an active block that overlaps the nights `$from`..`$to` inclusive, in one query (a board asks for every room at once). @return array<string, true> room id => true */
+    /** The rooms of the property with an active block that overlaps the nights `$from`..`$to` inclusive, in one query (a board asks for every room at once). @return array<string, string> room id => the kind of the block (out of order wins over out of service) */
     public function blockedRooms(PropertyId $property, string $from, string $to): array;
 }

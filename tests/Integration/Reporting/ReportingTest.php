@@ -202,6 +202,30 @@ final class ReportingTest extends TestCase
         self::assertArrayNotHasKey('serious_complaints', array_column($this->dashboard()['alerts'], null, 'code'));
     }
 
+    public function test_offline_entries_waiting_and_pos_sales_paid_without_a_room_charge_reach_the_dashboard(): void
+    {
+        $this->operate();
+        self::assertArrayNotHasKey('sync_failures', array_column($this->dashboard()['alerts'], null, 'code'));
+
+        DB::table('offline_sync_exceptions')->insert([
+            'id' => '01arz3ndektsv4rrffq69g5fx1', 'property_id' => $this->property()->toString(), 'operation_id' => '01arz3ndektsv4rrffq69g5fo1', 'operation_type' => 'fnb.sale.record', 'device_id' => '01arz3ndektsv4rrffq69g5fd1',
+            'client_sequence' => 1, 'actor_id' => $this->managerId, 'kind' => 'conflict', 'reason_code' => 'stale_version', 'payload_version' => 1, 'encrypted_payload' => 'x', 'device_time' => now(), 'received_at' => now(),
+            'correlation_id' => '01arz3ndektsv4rrffq69g5fc1', 'status' => 'open', 'lock_version' => 0, 'created_at' => now(), 'updated_at' => now(),
+        ]);
+        $alert = array_column($this->dashboard()['alerts'], null, 'code')['sync_failures'];
+        self::assertSame([1, '/sync/exceptions', ['fnb.sale.record']], [$alert['count'], $alert['href'], $alert['items']]);
+
+        $sale = ['property_id' => $this->property()->toString(), 'outlet_id' => '01arz3ndektsv4rrffq69g5fo9', 'outlet_code' => 'REST', 'source' => 'fnb:restaurant', 'business_date' => '2026-10-01', 'currency' => 'IDR',
+            'base_minor' => 100_000, 'service_charge_minor' => 5_000, 'tax_minor' => 10_500, 'total_minor' => 115_500, 'cash_minor' => 115_500, 'room_minor' => 0, 'event_id' => '01arz3ndektsv4rrffq69g5fe1', 'occurred_at' => now(), 'created_at' => now()];
+        DB::table('fin_pos_sales')->insert([...$sale, 'id' => '01arz3ndektsv4rrffq69g5fs1', 'bill_id' => '01arz3ndektsv4rrffq69g5fb1', 'bill_number' => 'B-1']);
+        // A bill charged to a room is on the folio already and is not counted twice.
+        DB::table('fin_pos_sales')->insert([...$sale, 'id' => '01arz3ndektsv4rrffq69g5fs2', 'bill_id' => '01arz3ndektsv4rrffq69g5fb2', 'bill_number' => 'B-2', 'cash_minor' => 0, 'room_minor' => 115_500, 'event_id' => '01arz3ndektsv4rrffq69g5fe2']);
+
+        $revenue = array_column($this->dashboard(null, 'today')['cards'], null, 'key')['revenue']['values'];
+        self::assertSame(115_500, $revenue['net']['total']);
+        self::assertSame(115_500, $revenue['other']['total']);
+    }
+
     public function test_the_flash_report_is_built_from_closed_days_and_states_how(): void
     {
         $this->operate();

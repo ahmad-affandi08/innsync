@@ -45,6 +45,7 @@ final readonly class RoomBoardService
         $this->authorize($property, $actorId);
         $today = $this->businessDate->current($property);
         $statuses = $this->readiness->statuses($property);
+        $flags = $this->readiness->serviceFlags($property);
         $types = [];
 
         foreach ($this->rooms->activeTypes($property) as $type) {
@@ -81,9 +82,11 @@ final readonly class RoomBoardService
                 'room_type_id' => $room->roomTypeId,
                 'housekeeping' => $hk,
                 'blocked' => $blocked,
+                'sellability' => $blockedRooms[$room->id] ?? 'sellable',
                 'stay_id' => $stay?->id,
                 'expected_departure' => $stay?->expectedDeparture->toString(),
                 'open_requests' => $openRequests[$room->id] ?? 0,
+                'service_flags' => $flags[$room->id] ?? [],
             ];
         }
 

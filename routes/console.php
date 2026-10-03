@@ -36,6 +36,10 @@ Schedule::command('maintenance:escalate')
     ->everyFiveMinutes()
     ->withoutOverlapping(10);
 
+Schedule::command('laundry:escalate')
+    ->everyTenMinutes()
+    ->withoutOverlapping(10);
+
 Schedule::command('maintenance:preventive')
     ->hourly()
     ->withoutOverlapping(30);

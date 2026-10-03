@@ -132,6 +132,12 @@ final class StayHttpTest extends TestCase
         // Spaces and hyphens do not make it another document.
         $this->postJson("/front-office/reservations/{$this->reservationId}/guest-lookup", ['id_type' => 'ktp', 'id_number' => '3174-0101-0190-0001'])->assertOk()->assertJsonPath('matches.0.full_name', 'Budi Santoso');
         $this->postJson("/front-office/reservations/{$this->reservationId}/guest-lookup", ['id_type' => 'passport', 'id_number' => '3174010101900001'])->assertOk()->assertJsonPath('matches', []);
+
+        // What the guest likes is kept for the person and comes back with the lookup (FR-FO-015).
+        $this->postJson("/front-office/stays/{$stay['id']}/preferences", ['preferences' => str_repeat('x', 501)])->assertStatus(422);
+        $this->postJson("/front-office/stays/{$stay['id']}/preferences", ['preferences' => 'Quiet room'])->assertOk()->assertJsonPath('saved', true);
+        $this->postJson("/front-office/reservations/{$this->reservationId}/guest-lookup", ['id_type' => 'ktp', 'id_number' => '3174010101900001'])->assertOk()->assertJsonPath('matches.0.preferences', 'Quiet room')->assertJsonPath('matches.0.profile.address', fn ($v): bool => $v !== null);
+        $this->get("/front-office/stays/{$stay['id']}")->assertInertia(fn (Assert $p) => $p->where('stay.guest.preferences', 'Quiet room'));
     }
 
     public function test_a_photo_is_uploaded_served_only_with_permission_and_check_out_completes_the_stay(): void

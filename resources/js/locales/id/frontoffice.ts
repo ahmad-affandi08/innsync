@@ -864,4 +864,13 @@ export const frontOffice = {
     'fo.group.ownBalance': "Saldo folio sendiri",
     'fo.group.partOf': "Bagian dari grup {number} ({name})",
     'fo.group.openGroup': "Buka grup",
+    "fo.board.sell.out_of_order": "Rusak (tidak dapat dijual)",
+    "fo.board.sell.out_of_service": "Dalam perawatan (tidak dapat dijual)",
+    "fo.checkin.useProfile": "Isi dari pendaftaran sebelumnya",
+    "fo.checkin.historyRow": "{arrival} – {departure}, kamar {room}",
+    "fo.checkin.knownPreferences": "Preferensi tercatat: {text}",
+    "fo.checkin.preferences": "Preferensi tamu",
+    "fo.checkin.preferencesHint": "Misalnya kamar tenang, bantal keras, tanpa telur. Disimpan untuk menginap berikutnya.",
+    "fo.stay.preferencesSave": "Simpan preferensi",
+    "fo.stay.preferencesSaved": "Preferensi disimpan.",
 } as const;

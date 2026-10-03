@@ -864,4 +864,13 @@ export const frontOffice = {
     'fo.group.ownBalance': "Own folio balance",
     'fo.group.partOf': "Part of group {number} ({name})",
     'fo.group.openGroup': "Open the group",
+    "fo.board.sell.out_of_order": "Out of order",
+    "fo.board.sell.out_of_service": "Out of service",
+    "fo.checkin.useProfile": "Fill in from the earlier registration",
+    "fo.checkin.historyRow": "{arrival} – {departure}, room {room}",
+    "fo.checkin.knownPreferences": "Preferences on record: {text}",
+    "fo.checkin.preferences": "Preferences of the guest",
+    "fo.checkin.preferencesHint": "For example a quiet room, a firm pillow, no eggs. Kept for the next stay.",
+    "fo.stay.preferencesSave": "Save preferences",
+    "fo.stay.preferencesSaved": "Preferences saved.",
 } as const;

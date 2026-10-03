@@ -51,8 +51,9 @@ final readonly class DatabaseRoomBlockRepository implements RoomBlockRepository
     {
         $blocked = [];
 
-        foreach (DB::table('room_blocks')->where('property_id', $property->toString())->whereNull('released_at')->where('start_date', '<=', $to)->where('end_date', '>=', $from)->distinct()->pluck('room_id') as $roomId) {
-            $blocked[(string) $roomId] = true;
+        foreach (DB::table('room_blocks')->where('property_id', $property->toString())->whereNull('released_at')->where('start_date', '<=', $to)->where('end_date', '>=', $from)->get(['room_id', 'kind']) as $row) {
+            $current = $blocked[(string) $row->room_id] ?? null;
+            $blocked[(string) $row->room_id] = $current === RoomBlock::OUT_OF_ORDER ? $current : (string) $row->kind;
         }
 
         return $blocked;

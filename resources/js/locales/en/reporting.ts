@@ -469,4 +469,8 @@ export const reporting = {
     "rpt.sch.day.7": "Sunday",
     "rpt.export.pdf": "PDF",
     "rpt.builder.pdf": "Download PDF",
+    "rpt.alert.payments_unknown": "Payments of unknown status waiting to be checked",
+    "rpt.alert.stock_negative": "Items with stock below zero",
+    "rpt.alert.work_orders_overdue": "Work orders past their due time",
+    "rpt.alert.sync_failures": "Offline entries waiting to be reconciled",
 } as const;

@@ -146,6 +146,10 @@ final readonly class DashboardService
         'recurring_overdue' => '/finance/recurring',
         'finance_exceptions_open' => '/finance/exceptions',
         'recurring_due_soon' => '/finance/recurring',
+        'payments_unknown' => '/fnb/pos',
+        'stock_negative' => '/inventory/stock',
+        'work_orders_overdue' => '/maintenance',
+        'sync_failures' => '/sync/exceptions',
     ];
 
     /**

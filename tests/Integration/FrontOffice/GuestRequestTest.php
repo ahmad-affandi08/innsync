@@ -207,4 +207,20 @@ final class GuestRequestTest extends TestCase
         $this->requests()->complete($this->property(), $this->requestStaffId, $r['id'], 0, null);
         self::assertSame(1, array_column(app(RoomBoardService::class)->board($this->property(), $this->managerId)['rooms'], null, 'number')['101']['open_requests']);
     }
+
+    public function test_the_room_card_shows_what_the_guest_asked_for_and_why_a_room_cannot_be_sold(): void
+    {
+        $board = fn (): array => array_column(app(RoomBoardService::class)->board($this->property(), $this->managerId)['rooms'], null, 'number');
+        self::assertSame([[], 'sellable'], [$board()['101']['service_flags'], $board()['101']['sellability']]);
+
+        DB::table('room_service_flags')->insert(['id' => '01arz3ndektsv4rrffq69g5fe1', 'property_id' => $this->property()->toString(), 'room_id' => $this->roomIds[0], 'kind' => 'dnd', 'note' => null, 'started_at' => now(), 'started_by' => $this->managerId, 'ended_at' => null, 'ended_by' => null, 'lock_version' => 0]);
+        $block = fn (string $id, string $room, string $kind): array => ['id' => $id, 'property_id' => '01arz3ndektsv4rrffq69g5fav', 'room_id' => $room, 'kind' => $kind, 'start_date' => '2026-10-01', 'end_date' => '2026-10-01', 'reason' => 'Leak', 'created_by' => $this->managerId, 'created_at' => now()];
+        DB::table('room_blocks')->insert($block('01arz3ndektsv4rrffq69g5fb1', $this->roomIds[1], 'out_of_service'));
+
+        self::assertSame(['dnd'], $board()['101']['service_flags']);
+        self::assertSame('out_of_service', $board()['102']['sellability']);
+
+        DB::table('room_blocks')->insert($block('01arz3ndektsv4rrffq69g5fb2', $this->roomIds[1], 'out_of_order'));
+        self::assertSame('out_of_order', $board()['102']['sellability'], 'out of order wins over out of service');
+    }
 }

@@ -8,15 +8,18 @@ use App\Modules\FrontOffice\Application\Folios\FolioRepository;
 use App\Modules\FrontOffice\Application\Folios\FolioService;
 use App\Modules\FrontOffice\Application\Stays\CheckInRequest;
 use App\Modules\FrontOffice\Application\Stays\StayService;
+use App\Modules\Laundry\Application\LaundryEscalationService;
 use App\Modules\Laundry\Application\LaundryRequest;
 use App\Modules\Laundry\Application\LaundryService;
 use App\Modules\Property\Application\Rates\ChargeSchemeService;
 use App\Modules\Reporting\Application\ReportService;
 use App\Shared\Application\Errors\Refusal;
 use App\Shared\Application\Idempotency\IdempotencyKey;
+use App\Shared\Application\Notifications\EmailNotifier;
 use App\Shared\Application\Tenancy\PropertyContext;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\DB;
 use LogicException;
@@ -334,6 +337,54 @@ final class LaundryTest extends TestCase
         $queue = $this->laundry()->queue($this->property(), $this->laundryManagerId);
         self::assertSame(['BAG-C' => false, 'BAG-B' => true, 'BAG-A' => false], array_column(array_map(static fn (array $o): array => ['b' => $o['barcode'], 'o' => $o['overdue']], $queue), 'o', 'b'));
         $this->assertRefused(403, fn () => $this->laundry()->queue($this->property(), $this->auditorId));
+    }
+
+    public function test_an_order_past_its_promise_is_told_to_the_laundry_staff_once(): void
+    {
+        $sent = new class implements EmailNotifier
+        {
+            /** @var list<array{string, string, string}> */
+            public array $notices = [];
+
+            public bool $works = true;
+
+            public function notify(string $address, string $subject, string $body): bool
+            {
+                $this->notices[] = [$address, $subject, $body];
+
+                return $this->works;
+            }
+        };
+        $this->app->instance(EmailNotifier::class, $sent);
+
+        $late = $this->handOver('BAG-A', [['price_item_id' => $this->shirtId, 'quantity' => 1]], false, '09:00');
+        $this->handOver('BAG-B', [['price_item_id' => $this->shirtId, 'quantity' => 1]], true, '23:00');
+        $escalation = fn (): int => app(LaundryEscalationService::class)->run($this->property(), 50);
+
+        self::assertSame(0, $escalation(), 'nothing is late yet');
+
+        $this->clock->advance('+1 day +3 hours');
+        $sent->works = false;
+        self::assertSame(1, $escalation(), 'the mark is kept even when the notice cannot be sent');
+        self::assertNotNull(DB::table('laundry_orders')->where('id', $late['id'])->value('escalated_at'));
+        self::assertNull(DB::table('laundry_orders')->where('barcode', 'BAG-B')->value('escalated_at'));
+        self::assertNotEmpty($sent->notices);
+        [, $subject, $body] = $sent->notices[0];
+        self::assertStringContainsString($late['number'], $subject);
+        self::assertStringContainsString('room 101', $body);
+        self::assertSame(1, DB::table('audit_entries')->where('action', 'laundry.order.escalated')->where('aggregate_id', $late['id'])->count());
+        self::assertSame(1, DB::table('outbox_messages')->where('event_type', LaundryEscalationService::EVENT)->count());
+
+        $before = count($sent->notices);
+        self::assertSame(0, $escalation(), 'a second run does not tell again');
+        self::assertCount($before, $sent->notices);
+
+        // The scheduled command goes through the properties and finds the other order, which is late by now.
+        $this->clock->advance('+2 days');
+        $sent->works = true;
+        self::assertSame(0, Artisan::call('laundry:escalate'));
+        self::assertStringContainsString('"escalated":1', Artisan::output());
+        self::assertNotNull(DB::table('laundry_orders')->where('barcode', 'BAG-B')->value('escalated_at'));
     }
 
     public function test_history_and_origin_cannot_be_rewritten(): void

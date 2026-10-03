@@ -33,4 +33,18 @@ interface GuestRepository
      * @return list<array{guest_id: string, full_name: string, stays: int, last_stay: ?string}>
      */
     public function previousWithDocument(PropertyId $property, string $idType, string $idNumber, int $limit = 5): array;
+
+    /**
+     * The stays of the given registrations, most recent first, for the history a returning guest shows (FR-FO-015). Dates are business dates; the departure is the day the guest left, or is expected to.
+     *
+     * @param  list<string>  $guestIds
+     * @return array<string, list<array{arrival: string, departure: string, room: ?string}>> by guest id
+     */
+    public function staysOf(PropertyId $property, array $guestIds, int $limit = 5): array;
+
+    /** What the guest with this identity document likes, kept for the person and not for one registration (FR-FO-015). */
+    public function preferencesOf(PropertyId $property, string $idType, string $idNumber): ?string;
+
+    /** Keeps the preferences for the identity document; an empty text removes them. */
+    public function savePreferences(PropertyId $property, string $idType, string $idNumber, string $text, string $actorId, DateTimeImmutable $at): void;
 }

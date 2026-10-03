@@ -81,6 +81,13 @@ final readonly class DatabaseReportQueries implements ReportQueries
             ->groupBy('source')
             ->get(['source', DB::raw('SUM(base_minor) as base'), DB::raw('SUM(service_charge_minor) as service_charge'), DB::raw('SUM(tax_minor) as tax'), DB::raw('SUM(total_minor) as total')]);
 
+        // What the outlets sold for cash, card or QRIS (FR-DSH-004): the bills settled on those days that were not charged to a room, whose revenue is on the folio already.
+        $sales = DB::table('fin_pos_sales')
+            ->where('property_id', $property->toString())->whereBetween('business_date', [$period->from->toString(), $period->to->toString()])->where('room_minor', 0)
+            ->groupBy('source')
+            ->get(['source', DB::raw('SUM(base_minor) as base'), DB::raw('SUM(service_charge_minor) as service_charge'), DB::raw('SUM(tax_minor) as tax'), DB::raw('SUM(total_minor) as total')]);
+        $rows = collect($rows->all())->concat($sales->all());
+
         foreach ($rows as $row) {
             $outlet = $named['sources'][$row->source] ?? null;
             $bucket = match ($row->source) {
@@ -181,6 +188,23 @@ final readonly class DatabaseReportQueries implements ReportQueries
         $open = DB::table('fin_exceptions')->where('property_id', $pid)->where('status', 'open');
         $cash = DB::table('fin_cash_exceptions')->where('property_id', $pid)->where('status', 'open');
         $alerts['finance_exceptions_open'] = ['count' => (clone $open)->count() + (clone $cash)->count(), 'items' => (clone $open)->orderBy('business_date')->limit(self::ALERT_EXAMPLES)->pluck('number')->all()];
+
+        // Payments the provider has not confirmed (FR-FBS-013): a bill with money that is neither paid nor failed has to be looked at before the day is closed.
+        $unknown = DB::table('fnb_payments as p')->join('fnb_bills as b', 'b.id', '=', 'p.bill_id')->where('p.property_id', $pid)->where('p.status', 'unknown');
+        $alerts['payments_unknown'] = ['count' => (clone $unknown)->count(), 'items' => (clone $unknown)->orderBy('p.created_at')->limit(self::ALERT_EXAMPLES)->pluck('b.number')->all()];
+
+        // Stock the books hold below zero in a location: a sale or an issue went ahead for stock the books were behind on, or a count is wrong.
+        $negative = DB::table('stock_movements as m')->join('inventory_items as i', 'i.id', '=', 'm.item_id')->join('inventory_locations as loc', 'loc.id', '=', 'm.location_id')->where('m.property_id', $pid)
+            ->groupBy('m.item_id', 'm.location_id', 'i.code', 'loc.code')->havingRaw('SUM(m.base_qty_milli) < 0')->select('i.code as item', 'loc.code as location');
+        $alerts['stock_negative'] = ['count' => DB::query()->fromSub(clone $negative, 'n')->count(), 'items' => (clone $negative)->orderBy('i.code')->limit(self::ALERT_EXAMPLES)->get()->map(static fn ($r): string => $r->item.' · '.$r->location)->all()];
+
+        // Work orders past the time their priority allows (FR-MTC): still open, assigned, being worked on or on hold.
+        $late = DB::table('maintenance_work_orders')->where('property_id', $pid)->whereIn('status', ['open', 'assigned', 'in_progress', 'on_hold'])->where('due_at', '<', $nowUtc);
+        $alerts['work_orders_overdue'] = ['count' => (clone $late)->count(), 'items' => (clone $late)->orderBy('due_at')->limit(self::ALERT_EXAMPLES)->pluck('number')->all()];
+
+        // What a phone or a register recorded offline and the server could not apply, waiting for a manager (NFR-04).
+        $sync = DB::table('offline_sync_exceptions')->where('property_id', $pid)->where('status', 'open');
+        $alerts['sync_failures'] = ['count' => (clone $sync)->count(), 'items' => (clone $sync)->orderBy('received_at')->limit(self::ALERT_EXAMPLES)->pluck('operation_type')->all()];
 
         return $alerts;
     }

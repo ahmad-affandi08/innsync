@@ -76,6 +76,11 @@ final readonly class HousekeepingService implements GuestServiceRequests, RoomHa
         return $this->repository->statuses($property);
     }
 
+    public function serviceFlags(PropertyId $property): array
+    {
+        return array_map(static fn (array $flags): array => array_values(array_unique(array_column($flags, 'kind'))), $this->repository->openFlags($property));
+    }
+
     /**
      * Every active room with its housekeeping state, whether a guest is in it, and its unfinished task, most urgent first.
      * Occupancy comes from Front Office and is shown next to the housekeeping state, never merged with it.

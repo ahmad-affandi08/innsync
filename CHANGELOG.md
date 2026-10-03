@@ -69,6 +69,9 @@ Release notes for every release (NFR-14). Newest first. Each entry names the tas
 - NFR pass (docs/OPERATIONS/NFR-EVIDENCE.md): the evidence for each of the 30 non-functional requirements, with measurements of load time on 4G, 5,000 POS bills in a day, 50 concurrent users, and an accessibility scan of 162 pages. The room board and the in-house list no longer make a query for each room or guest, pages are compressed and cached by `public/.htaccess`, an Indonesian reader no longer waits for a second dictionary, housekeeping attendants can start and finish rooms offline, a role guide is in the product (`/help`), the version of the application is in the footer of every page, and receipts print on 80 mm paper.
 - FR-RPT-003 (partly): every report export can also be downloaded as a PDF (A4 on its side, the header row repeated on each page, numbers aligned to the right, page numbers), made from the same rows as the CSV.
 - NFR-04 (reconciliation): a screen for a manager to review the offline entries the server could not apply and mark them reconciled with a note; the payload is not shown and the person who made the entry cannot close it.
+- TASK-FO-015 (BR-009): a returning guest found by identity document brings the earlier registration to fill in (for those who may read identity), the earlier stays and the guest's preferences, which are kept for the person, encrypted, saved at check-in and editable on the stay.
+- TASK-LDY-011 (BR-005): the staff who work the laundry are told by e-mail, once, when an order is past its promised time (`laundry:escalate`, every ten minutes).
+- TASK-DSH-002, TASK-DSH-004, TASK-DSH-020: the room board shows sellability and the service flags of the guests; revenue per outlet includes POS sales paid by cash, card or QRIS; the alert centre adds unknown payments, negative stock, work orders past due and offline entries to reconcile.
 
 ### Fixed
 

@@ -5,9 +5,9 @@ Every row must eventually point to implementation evidence and tests. Status is 
 | Requirement | Module | Priority | Task File | Status |
 | --- | --- | --- | --- | --- |
 | FR-DSH-001 | Dashboard Manajemen | Wajib | ../TASK/MODULE-01-DASHBOARD.md | REVIEW |
-| FR-DSH-002 | Dashboard Manajemen | Wajib | ../TASK/MODULE-01-DASHBOARD.md | IN_PROGRESS |
+| FR-DSH-002 | Dashboard Manajemen | Wajib | ../TASK/MODULE-01-DASHBOARD.md | REVIEW |
 | FR-DSH-003 | Dashboard Manajemen | Wajib | ../TASK/MODULE-01-DASHBOARD.md | REVIEW |
-| FR-DSH-004 | Dashboard Manajemen | Wajib | ../TASK/MODULE-01-DASHBOARD.md | IN_PROGRESS |
+| FR-DSH-004 | Dashboard Manajemen | Wajib | ../TASK/MODULE-01-DASHBOARD.md | REVIEW |
 | FR-DSH-005 | Dashboard Manajemen | Wajib | ../TASK/MODULE-01-DASHBOARD.md | REVIEW |
 | FR-DSH-006 | Dashboard Manajemen | Wajib | ../TASK/MODULE-01-DASHBOARD.md | REVIEW |
 | FR-DSH-007 | Dashboard Manajemen | Wajib | ../TASK/MODULE-01-DASHBOARD.md | REVIEW |
@@ -23,7 +23,7 @@ Every row must eventually point to implementation evidence and tests. Status is 
 | FR-DSH-017 | Dashboard Manajemen | Bisa | ../TASK/MODULE-01-DASHBOARD.md | REVIEW |
 | FR-DSH-018 | Dashboard Manajemen | Sebaiknya | ../TASK/MODULE-01-DASHBOARD.md | REVIEW |
 | FR-DSH-019 | Dashboard Manajemen | Bisa | ../TASK/MODULE-01-DASHBOARD.md | REVIEW |
-| FR-DSH-020 | Dashboard Manajemen | Wajib | ../TASK/MODULE-01-DASHBOARD.md | IN_PROGRESS |
+| FR-DSH-020 | Dashboard Manajemen | Wajib | ../TASK/MODULE-01-DASHBOARD.md | REVIEW |
 | FR-DSH-021 | Dashboard Manajemen | Wajib | ../TASK/MODULE-01-DASHBOARD.md | REVIEW |
 | FR-DSH-022 | Dashboard Manajemen | Wajib | ../TASK/MODULE-01-DASHBOARD.md | IN_PROGRESS |
 | FR-FO-001 | Front Office | Wajib | ../TASK/MODULE-02-FRONT-OFFICE.md | REVIEW |
@@ -40,7 +40,7 @@ Every row must eventually point to implementation evidence and tests. Status is 
 | FR-FO-012 | Front Office | Wajib | ../TASK/MODULE-02-FRONT-OFFICE.md | REVIEW |
 | FR-FO-013 | Front Office | Wajib | ../TASK/MODULE-02-FRONT-OFFICE.md | REVIEW |
 | FR-FO-014 | Front Office | Sebaiknya | ../TASK/MODULE-02-FRONT-OFFICE.md | REVIEW |
-| FR-FO-015 | Front Office | Sebaiknya | ../TASK/MODULE-02-FRONT-OFFICE.md | IN_PROGRESS |
+| FR-FO-015 | Front Office | Sebaiknya | ../TASK/MODULE-02-FRONT-OFFICE.md | REVIEW |
 | FR-FO-016 | Front Office | Wajib | ../TASK/MODULE-02-FRONT-OFFICE.md | REVIEW |
 | FR-FO-017 | Front Office | Sebaiknya | ../TASK/MODULE-02-FRONT-OFFICE.md | REVIEW |
 | FR-FO-018 | Front Office | Wajib | ../TASK/MODULE-02-FRONT-OFFICE.md | REVIEW |
@@ -104,7 +104,7 @@ Every row must eventually point to implementation evidence and tests. Status is 
 | FR-LDY-008 | Laundry | Sebaiknya | ../TASK/MODULE-04-LAUNDRY.md | REVIEW |
 | FR-LDY-009 | Laundry | Wajib | ../TASK/MODULE-04-LAUNDRY.md | REVIEW |
 | FR-LDY-010 | Laundry | Sebaiknya | ../TASK/MODULE-04-LAUNDRY.md | REVIEW |
-| FR-LDY-011 | Laundry | Wajib | ../TASK/MODULE-04-LAUNDRY.md | IN_PROGRESS |
+| FR-LDY-011 | Laundry | Wajib | ../TASK/MODULE-04-LAUNDRY.md | REVIEW |
 | FR-LDY-012 | Laundry | Wajib | ../TASK/MODULE-04-LAUNDRY.md | IN_PROGRESS |
 | FR-FBS-001 | F&B Service | Wajib | ../TASK/MODULE-05-FNB-SERVICE.md | IN_PROGRESS |
 | FR-FBS-002 | F&B Service | Wajib | ../TASK/MODULE-05-FNB-SERVICE.md | IN_PROGRESS |

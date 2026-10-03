@@ -141,7 +141,9 @@ final readonly class StayService
      * Earlier registrations with the same identity document, so the desk can reuse the guest's history (FR-FO-015).
      * Looking up identity is itself access to personal data and is audited.
      *
-     * @return list<array{guest_id: string, full_name: string, stays: int, last_stay: ?string}>
+     * With the details to fill the registration in (only for a person who may read identity), the stays the registration had and what the guest likes (FR-FO-015).
+     *
+     * @return list<array{guest_id: string, full_name: string, stays: int, last_stay: ?string, profile: ?array<string, mixed>, history: list<array{arrival: string, departure: string, room: ?string}>, preferences: ?string}>
      */
     public function previousGuests(PropertyId $property, string $actorId, string $reservationId, string $idType, string $idNumber): array
     {
@@ -154,11 +156,46 @@ final readonly class StayService
 
         $matches = $this->guests->previousWithDocument($property, $idType, $idNumber);
 
-        if ($matches !== []) {
-            $this->piiAccess->record($property, strtolower($actorId), 'reservation', $reservation->id, 'Looked up earlier stays by identity document', ['full_name', 'id_number']);
+        if ($matches === []) {
+            return [];
         }
 
-        return $matches;
+        $ids = array_column($matches, 'guest_id');
+        $mayRead = $this->permissions->allowsInProperty($actorId, self::IDENTITY_PERMISSION, $property);
+        $profiles = $mayRead ? $this->guests->findMany($property, $ids) : [];
+        $history = $this->guests->staysOf($property, $ids);
+        $preferences = $this->guests->preferencesOf($property, $idType, $idNumber);
+        $this->piiAccess->record($property, strtolower($actorId), 'reservation', $reservation->id, 'Looked up earlier stays by identity document', $mayRead ? ['full_name', 'id_number', 'address', 'preferences'] : ['full_name', 'id_number', 'preferences']);
+
+        return array_map(static fn (array $m): array => [
+            ...$m,
+            'profile' => isset($profiles[$m['guest_id']]) ? [
+                'nationality' => $profiles[$m['guest_id']]->nationality, 'id_valid_until' => $profiles[$m['guest_id']]->idValidUntil?->toString(),
+                'visa_number' => $profiles[$m['guest_id']]->visaNumber, 'address' => $profiles[$m['guest_id']]->address,
+            ] : null,
+            'history' => $history[$m['guest_id']] ?? [],
+            'preferences' => $preferences,
+        ], $matches);
+    }
+
+    /** What the guest likes, changed during the stay or after it; an empty text removes it (FR-FO-015). */
+    public function updatePreferences(PropertyId $property, string $actorId, string $stayId, ?string $text): void
+    {
+        $this->authorize($property, $actorId, self::MANAGE_PERMISSION);
+        $actor = strtolower($actorId);
+        $text = trim((string) $text);
+
+        if (mb_strlen($text) > 500) {
+            throw Refusal::invalid('Write at most 500 characters.', ['preferences']);
+        }
+
+        $stay = $this->stays->find($property, strtolower($stayId)) ?? throw Refusal::notFound('Stay not found.');
+        $guest = $this->guests->find($property, $stay->guestId) ?? throw Refusal::notFound('Guest not found.');
+
+        $this->transactions->run(function () use ($property, $actor, $stay, $guest, $text): void {
+            $this->guests->savePreferences($property, $guest->idType->value, $guest->idNumber, $text, $actor, $this->clock->nowUtc());
+            $this->audit->record(new AuditEntry($property->toString(), $actor, 'guest.preferences.updated', 'stay', $stay->id, null, ['has_preferences' => $text !== '', 'length' => mb_strlen($text)]));
+        });
     }
 
     /**
@@ -447,6 +484,15 @@ final readonly class StayService
         $stay = new Stay($this->ids->next(), $reservation->id, $profile->id, $roomId, StayStatus::InHouse, $request->adults, $request->children, $today, $now, $reservation->stay->departure, null, null, 0);
 
         $this->guests->add($property, $profile, $actor, $now);
+        $preferences = trim((string) $request->preferences);
+
+        if ($preferences !== '') {
+            if (mb_strlen($preferences) > 500) {
+                throw Refusal::invalid('Write at most 500 characters.', ['preferences']);
+            }
+
+            $this->guests->savePreferences($property, $profile->idType->value, $profile->idNumber, $preferences, $actor, $now);
+        }
 
         if (! $this->stays->add($property, $stay, $actor)) {
             throw Refusal::stateConflict('This reservation already has a stay, or the room already has a guest.');
@@ -513,6 +559,7 @@ final readonly class StayService
                 'visa_number' => $mayReadIdentity && $audited ? $guest->visaNumber : ($guest->visaNumber === null ? null : GuestProfile::mask($guest->visaNumber)),
                 'address' => $mayReadIdentity && $audited ? $guest->address : null,
                 'identity_visible' => $mayReadIdentity && $audited,
+                'preferences' => $audited ? $this->guests->preferencesOf($property, $guest->idType->value, $guest->idNumber) : null,
             ],
         ];
     }

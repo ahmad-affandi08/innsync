@@ -75,7 +75,7 @@ final class StayTest extends TestCase
             'visa_number' => null, 'address' => 'Jl. Merdeka 1, Jakarta', 'adults' => 2, 'children' => 0, ...$override,
         ];
 
-        return new CheckInRequest($reservationId, $roomId ?? $this->roomIds[0], $v['full_name'], $v['nationality'], $v['id_type'], $v['id_number'], $v['id_valid_until'], $v['visa_number'], $v['address'], $v['adults'], $v['children']);
+        return new CheckInRequest($reservationId, $roomId ?? $this->roomIds[0], $v['full_name'], $v['nationality'], $v['id_type'], $v['id_number'], $v['id_valid_until'], $v['visa_number'], $v['address'], $v['adults'], $v['children'], $v['preferences'] ?? null);
     }
 
     /** @param array<string, mixed> $override @return array<string, mixed> */
@@ -246,10 +246,42 @@ final class StayTest extends TestCase
         self::assertSame('Budi Santoso', $matches[0]['full_name']);
         self::assertSame(1, $matches[0]['stays']);
         self::assertSame('2026-10-01', $matches[0]['last_stay']);
-        self::assertSame(['guest_id', 'full_name', 'stays', 'last_stay'], array_keys($matches[0]));
+        self::assertSame(['guest_id', 'full_name', 'stays', 'last_stay', 'profile', 'history', 'preferences'], array_keys($matches[0]));
         self::assertSame(1, DB::table('audit_entries')->where('action', 'pii.accessed')->where('reason', 'Looked up earlier stays by identity document')->count());
         // The same number as a passport is another document.
         self::assertSame([], $this->stays()->previousGuests($this->property(), $this->managerId, $next, 'passport', self::KTP));
+    }
+
+    public function test_a_returning_guest_brings_the_registration_the_history_and_the_preferences_for_the_next_stay(): void
+    {
+        $stayId = $this->checkIn($this->arriving(), null, ['preferences' => '  Quiet room, firm pillow  ', 'visa_number' => 'V-77', 'id_valid_until' => '2031-05-01'])['id'];
+        $this->stays()->checkOut($this->property(), $this->managerId, $stayId, 0);
+        self::assertStringNotContainsString('firm pillow', json_encode(DB::table('guest_preferences')->get(), JSON_THROW_ON_ERROR), 'what the guest likes is encrypted');
+        self::assertStringNotContainsString('firm pillow', json_encode(DB::table('audit_entries')->get(), JSON_THROW_ON_ERROR));
+
+        $next = $this->arriving();
+        $match = $this->stays()->previousGuests($this->property(), $this->auditorId, $next, 'ktp', self::KTP)[0];
+        self::assertSame(['nationality' => 'ID', 'id_valid_until' => '2031-05-01', 'visa_number' => 'V-77', 'address' => 'Jl. Merdeka 1, Jakarta'], $match['profile']);
+        self::assertSame('Quiet room, firm pillow', $match['preferences']);
+        self::assertSame([['arrival' => '2026-10-01', 'departure' => '2026-10-01', 'room' => '101']], $match['history']);
+
+        // Someone who may not read identity gets the name and the history, not the details of the document or the address.
+        $limited = $this->stays()->previousGuests($this->property(), $this->managerId, $next, 'ktp', self::KTP)[0];
+        self::assertNull($limited['profile']);
+        self::assertSame('Budi Santoso', $limited['full_name']);
+
+        // The preferences follow the person: a new registration with another text replaces them, and they can be changed or cleared on the stay.
+        $second = $this->checkIn($next, $this->roomIds[1], ['preferences' => 'High floor'])['id'];
+        self::assertSame('High floor', $this->stays()->view($this->property(), $this->managerId, $second)['guest']['preferences']);
+        $this->stays()->updatePreferences($this->property(), $this->managerId, $second, 'High floor, no eggs');
+        self::assertSame('High floor, no eggs', $this->stays()->view($this->property(), $this->managerId, $second)['guest']['preferences']);
+        self::assertSame(1, DB::table('guest_preferences')->count());
+        $this->stays()->updatePreferences($this->property(), $this->managerId, $second, '  ');
+        self::assertNull($this->stays()->view($this->property(), $this->managerId, $second)['guest']['preferences']);
+        self::assertSame(2, DB::table('audit_entries')->where('action', 'guest.preferences.updated')->count());
+
+        $this->assertRefused(403, fn () => $this->stays()->updatePreferences($this->property(), $this->viewerId, $second, 'x'));
+        $this->assertRefused(422, fn () => $this->stays()->updatePreferences($this->property(), $this->managerId, $second, str_repeat('x', 501)));
     }
 
     public function test_check_out_needs_a_settled_folio_then_completes_everything_and_starts_photo_retention(): void

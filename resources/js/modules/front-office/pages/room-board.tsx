@@ -5,7 +5,7 @@ import { FrontOfficeShell } from '@/modules/front-office/components/front-office
 import { statusTone } from '@/modules/housekeeping/pages/board';
 import { useFormatters, useTranslation } from '@/shared/i18n/i18n';
 
-type Room = { room_id: string; number: string; floor: string | null; type: string; room_type_id: string; housekeeping: string; blocked: boolean; stay_id: string | null; expected_departure: string | null; open_requests: number };
+type Room = { room_id: string; number: string; floor: string | null; type: string; room_type_id: string; housekeeping: string; blocked: boolean; sellability: 'sellable' | 'out_of_order' | 'out_of_service'; service_flags: string[]; stay_id: string | null; expected_departure: string | null; open_requests: number };
 type Arrival = { reservation_id: string; number: string; guest_name: string; room_type_id: string; type: string; arrival: string; departure: string };
 type Board = { business_date: string; rooms: Room[]; arrivals: Arrival[]; counts: { occupied: number; vacant_ready: number; vacant_not_ready: number; blocked: number } };
 
@@ -30,6 +30,8 @@ export default function RoomBoardPage({ board }: { board: Board }) {
                         </div>
                         <span>{r.stay_id !== null && r.expected_departure !== null ? t('fo.board.occupied', { date: format.date(r.expected_departure) }) : r.blocked ? t('fo.board.blocked') : t('fo.board.vacant')}</span>
                         <StatusBadge label={t(`hk.status.${r.housekeeping}` as 'hk.status.dirty')} tone={statusTone[r.housekeeping] ?? 'neutral'} />
+                        {r.sellability !== 'sellable' ? <StatusBadge label={t(`fo.board.sell.${r.sellability}` as 'fo.board.sell.out_of_order')} tone="danger" /> : null}
+                        {r.service_flags.length > 0 ? <span className="flex flex-wrap gap-1" data-testid={`flags-${r.number}`}>{r.service_flags.map((k) => <StatusBadge key={k} label={t(`hk.flag.kind.${k}` as 'hk.flag.kind.dnd')} tone="pending" />)}</span> : null}
                         {r.open_requests > 0 ? <Link className="text-xs font-medium underline-offset-2 hover:underline" data-testid={`requests-${r.number}`} href={`/front-office/requests?status=active&room=${r.room_id}`}>{t('fo.board.requests', { n: r.open_requests })}</Link> : null}
                     </li>
                 ))}

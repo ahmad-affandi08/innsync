@@ -10,6 +10,7 @@ import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
 import { StatusBadge } from '@/components/ui/status-badge';
+import { Textarea } from '@/components/ui/textarea';
 import { FrontOfficeShell } from '@/modules/front-office/components/front-office-shell';
 import { GuestCorrections, type Corrections } from '@/modules/front-office/components/guest-correction';
 import { StayTimeFeesPanel, type StayTimeFees } from '@/modules/front-office/components/stay-time-fees';
@@ -18,7 +19,7 @@ import { useFormatters, useTranslation } from '@/shared/i18n/i18n';
 import { useErrorStateCopy } from '@/shared/i18n/use-ui-copy';
 
 type Guest = {
-    full_name: string; nationality: string; id_type: string; id_number: string; id_valid_until: string | null; visa_number: string | null; address: string | null; identity_visible: boolean;
+    full_name: string; nationality: string; id_type: string; id_number: string; id_valid_until: string | null; visa_number: string | null; address: string | null; identity_visible: boolean; preferences: string | null;
 };
 type Move = { id: string; from_room_id: string; to_room_id: string; reason: string; business_date: string };
 type Option = { id: string; number: string; floor: string | null; type: string; same_type: boolean };
@@ -36,7 +37,8 @@ export default function StayPage({ corrections, reservation, stay: s, time_fees:
     const [file, setFile] = useState<File | null>(null);
     const [pickerKey, setPickerKey] = useState(0);
     const [confirming, setConfirming] = useState(false);
-    const [saved, setSaved] = useState<'photo' | 'out' | null>(null);
+    const [saved, setSaved] = useState<'photo' | 'out' | 'prefs' | null>(null);
+    const [prefs, setPrefs] = useState(s.guest.preferences ?? '');
     const [panel, setPanel] = useState<'move' | 'extend' | null>(null);
     const [options, setOptions] = useState<Option[]>([]);
     const [target, setTarget] = useState('');
@@ -46,6 +48,11 @@ export default function StayPage({ corrections, reservation, stay: s, time_fees:
     const lookup = useServerAction();
     const inHouse = s.status === 'in_house';
     const reload = ['stay'];
+
+    async function savePreferences() {
+        const done = await action.run(`/front-office/stays/${s.id}/preferences`, { body: { preferences: prefs.trim() === '' ? null : prefs.trim() }, reload });
+        if (done !== null) setSaved('prefs');
+    }
 
     async function upload() {
         if (file === null) return;
@@ -119,6 +126,13 @@ export default function StayPage({ corrections, reservation, stay: s, time_fees:
                     {g.address !== null && <><dt className="text-muted-foreground">{t('fo.checkin.address')}</dt><dd className="break-words">{g.address}</dd></>}
                 </dl>
                 {!g.identity_visible ? <p className="text-xs text-muted-foreground">{t('fo.stay.identityHidden')}</p> : null}
+            </section>
+
+            <section aria-labelledby="prefs-h" className="flex flex-col gap-2">
+                <h2 className="text-lg font-semibold" id="prefs-h">{t('fo.checkin.preferences')}</h2>
+                {saved === 'prefs' ? <Alert title={t('fo.stay.preferencesSaved')} tone="success" /> : null}
+                <FormField field="preferences" error={action.fieldError('preferences')} hint={t('fo.checkin.preferencesHint')} label={t('fo.checkin.preferences')}><Textarea maxLength={500} onChange={(e) => { setPrefs(e.target.value); setSaved(null); }} rows={2} value={prefs} /></FormField>
+                <div><Button loading={action.busy} onClick={() => void savePreferences()} type="button" variant="outline">{t('fo.stay.preferencesSave')}</Button></div>
             </section>
 
             <section aria-labelledby="photo-h" className="flex flex-col gap-2">

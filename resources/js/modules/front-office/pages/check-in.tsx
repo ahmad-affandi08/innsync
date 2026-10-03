@@ -17,7 +17,8 @@ import { useErrorStateCopy } from '@/shared/i18n/use-ui-copy';
 
 type Reservation = { id: string; number: string; status: string; guest_name: string; arrival: string; departure: string; adults: number; children: number };
 type Room = { id: string; number: string; floor: string | null; ready: boolean };
-type Match = { guest_id: string; full_name: string; stays: number; last_stay: string | null };
+type Profile = { nationality: string; id_valid_until: string | null; visa_number: string | null; address: string | null };
+type Match = { guest_id: string; full_name: string; stays: number; last_stay: string | null; profile: Profile | null; history: { arrival: string; departure: string; room: string | null }[]; preferences: string | null };
 type Done = { id: string; room_number: string; warnings: string[] };
 
 const ID_TYPES = ['ktp', 'passport', 'sim', 'kitas', 'other'] as const;
@@ -31,7 +32,7 @@ export default function CheckInPage({ preselect, reservation: r, rooms, stay }: 
     const lookup = useServerAction();
     const [intent, setIntent] = useState(() => newIdempotencyKey());
     const [form, setForm] = useState({
-        roomId: rooms.find((x) => x.id === preselect && x.ready)?.id ?? rooms.find((x) => x.ready)?.id ?? '', fullName: r.guest_name, nationality: 'ID', idType: 'ktp', idNumber: '', idValidUntil: '', visa: '', address: '', adults: String(r.adults), children: String(r.children),
+        roomId: rooms.find((x) => x.id === preselect && x.ready)?.id ?? rooms.find((x) => x.ready)?.id ?? '', fullName: r.guest_name, nationality: 'ID', idType: 'ktp', idNumber: '', idValidUntil: '', visa: '', address: '', preferences: '', adults: String(r.adults), children: String(r.children),
     });
     const [matches, setMatches] = useState<Match[] | null>(null);
     const [done, setDone] = useState<Done | null>(null);
@@ -49,7 +50,7 @@ export default function CheckInPage({ preselect, reservation: r, rooms, stay }: 
             idempotencyKey: intent,
             body: {
                 room_id: form.roomId, full_name: form.fullName, nationality: form.nationality.toUpperCase(), id_type: form.idType, id_number: form.idNumber,
-                id_valid_until: form.idValidUntil || null, visa_number: form.visa || null, address: form.address, adults: Number(form.adults), children: Number(form.children),
+                id_valid_until: form.idValidUntil || null, visa_number: form.visa || null, address: form.address, preferences: form.preferences.trim() || null, adults: Number(form.adults), children: Number(form.children),
             },
         });
         if (result !== null) {
@@ -97,6 +98,18 @@ export default function CheckInPage({ preselect, reservation: r, rooms, stay }: 
                             <div className="flex flex-wrap items-center gap-2 text-sm" key={m.guest_id}>
                                 <span>{m.last_stay === null ? `${m.full_name}: ${t('fo.checkin.lookupNever')}` : t('fo.checkin.lookupFound', { name: m.full_name, n: m.stays, date: format.date(m.last_stay) })}</span>
                                 <Button onClick={() => set({ fullName: m.full_name })} size="sm" type="button" variant="outline">{t('fo.checkin.useName')}</Button>
+                                {m.profile !== null ? (
+                                    <Button
+                                        onClick={() => set({ fullName: m.full_name, nationality: m.profile?.nationality ?? form.nationality, idValidUntil: m.profile?.id_valid_until ?? form.idValidUntil, visa: m.profile?.visa_number ?? form.visa, address: m.profile?.address ?? form.address, preferences: m.preferences ?? form.preferences })}
+                                        size="sm" type="button" variant="outline"
+                                    >{t('fo.checkin.useProfile')}</Button>
+                                ) : null}
+                                {m.history.length > 0 ? (
+                                    <ul className="basis-full list-disc pl-5 text-xs text-muted-foreground" data-testid="guest-history">
+                                        {m.history.map((h) => <li key={`${h.arrival}-${h.room ?? ''}`}>{t('fo.checkin.historyRow', { arrival: format.date(h.arrival), departure: format.date(h.departure), room: h.room ?? '-' })}</li>)}
+                                    </ul>
+                                ) : null}
+                                {m.preferences !== null ? <p className="basis-full text-xs text-muted-foreground">{t('fo.checkin.knownPreferences', { text: m.preferences })}</p> : null}
                             </div>
                         ))}
                     </div>
@@ -108,6 +121,7 @@ export default function CheckInPage({ preselect, reservation: r, rooms, stay }: 
                         <FormField field="children" error={action.fieldError('children')} label={t('fo.checkin.children')}><Input min={0} onChange={(e) => set({ children: e.target.value })} type="number" value={form.children} /></FormField>
                     </div>
                     <div className="sm:col-span-2"><FormField field="address" error={action.fieldError('address')} label={t('fo.checkin.address')}><Textarea maxLength={500} onChange={(e) => set({ address: e.target.value })} required rows={2} value={form.address} /></FormField></div>
+                    <div className="sm:col-span-2"><FormField field="preferences" error={action.fieldError('preferences')} hint={t('fo.checkin.preferencesHint')} label={t('fo.checkin.preferences')}><Textarea maxLength={500} onChange={(e) => set({ preferences: e.target.value })} rows={2} value={form.preferences} /></FormField></div>
                     <div className="sm:col-span-2"><Button disabled={form.roomId === ''} loading={action.busy} type="submit">{t('fo.checkin.submit')}</Button></div>
                 </form>
             )}

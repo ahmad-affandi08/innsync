@@ -69,7 +69,7 @@ final readonly class StayController
             'room_id' => ['required', 'string', 'size:26'], 'full_name' => ['required', 'string', 'max:150'], 'nationality' => ['required', 'string', 'size:2'],
             'id_type' => ['required', 'string', 'max:12'], 'id_number' => ['required', 'string', 'max:40'], 'id_valid_until' => ['nullable', 'string', 'size:10'],
             'visa_number' => ['nullable', 'string', 'max:40'], 'address' => ['required', 'string', 'max:500'],
-            'adults' => ['required', 'integer', 'min:1', 'max:40'], 'children' => ['required', 'integer', 'min:0', 'max:40'],
+            'adults' => ['required', 'integer', 'min:1', 'max:40'], 'children' => ['required', 'integer', 'min:0', 'max:40'], 'preferences' => ['nullable', 'string', 'max:500'],
         ]);
 
         $stay = $this->stays->checkIn(
@@ -77,12 +77,20 @@ final readonly class StayController
             $this->actor($request),
             new CheckInRequest(
                 $id, $data['room_id'], $data['full_name'], $data['nationality'], $data['id_type'], $data['id_number'], $data['id_valid_until'] ?? null,
-                $data['visa_number'] ?? null, $data['address'], (int) $data['adults'], (int) $data['children'],
+                $data['visa_number'] ?? null, $data['address'], (int) $data['adults'], (int) $data['children'], $data['preferences'] ?? null,
             ),
             IdempotencyKey::fromString((string) $request->header('Idempotency-Key')),
         );
 
         return $this->json(['stay' => $stay], 201);
+    }
+
+    public function preferences(Request $request, string $id): JsonResponse
+    {
+        $data = $request->validate(['preferences' => ['nullable', 'string', 'max:500']]);
+        $this->stays->updatePreferences($this->property->current(), $this->actor($request), $id, $data['preferences'] ?? null);
+
+        return $this->json(['saved' => true]);
     }
 
     public function moveOptions(Request $request, string $id): JsonResponse

@@ -19,6 +19,7 @@ final readonly class CheckInRequest
         public string $address,
         public int $adults,
         public int $children,
+        public ?string $preferences = null,
     ) {}
 
     /**
@@ -30,7 +31,7 @@ final readonly class CheckInRequest
     {
         return ['sha256' => hash('sha256', json_encode([
             $this->reservationId, $this->roomId, $this->fullName, $this->nationality, $this->idType, $this->idNumber,
-            $this->idValidUntil, $this->visaNumber, $this->address, $this->adults, $this->children,
+            $this->idValidUntil, $this->visaNumber, $this->address, $this->adults, $this->children, $this->preferences,
         ], JSON_THROW_ON_ERROR))];
     }
 }

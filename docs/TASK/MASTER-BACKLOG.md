@@ -3,9 +3,9 @@
 | Task | Reference | Area | Priority/Category | Status |
 | --- | --- | --- | --- | --- |
 | TASK-DSH-001 | FR-DSH-001 | Dashboard Manajemen | Wajib | REVIEW |
-| TASK-DSH-002 | FR-DSH-002 | Dashboard Manajemen | Wajib | IN_PROGRESS |
+| TASK-DSH-002 | FR-DSH-002 | Dashboard Manajemen | Wajib | REVIEW |
 | TASK-DSH-003 | FR-DSH-003 | Dashboard Manajemen | Wajib | REVIEW |
-| TASK-DSH-004 | FR-DSH-004 | Dashboard Manajemen | Wajib | IN_PROGRESS |
+| TASK-DSH-004 | FR-DSH-004 | Dashboard Manajemen | Wajib | REVIEW |
 | TASK-DSH-005 | FR-DSH-005 | Dashboard Manajemen | Wajib | REVIEW |
 | TASK-DSH-006 | FR-DSH-006 | Dashboard Manajemen | Wajib | REVIEW |
 | TASK-DSH-007 | FR-DSH-007 | Dashboard Manajemen | Wajib | REVIEW |
@@ -21,7 +21,7 @@
 | TASK-DSH-017 | FR-DSH-017 | Dashboard Manajemen | Bisa | REVIEW |
 | TASK-DSH-018 | FR-DSH-018 | Dashboard Manajemen | Sebaiknya | REVIEW |
 | TASK-DSH-019 | FR-DSH-019 | Dashboard Manajemen | Bisa | REVIEW |
-| TASK-DSH-020 | FR-DSH-020 | Dashboard Manajemen | Wajib | IN_PROGRESS |
+| TASK-DSH-020 | FR-DSH-020 | Dashboard Manajemen | Wajib | REVIEW |
 | TASK-DSH-021 | FR-DSH-021 | Dashboard Manajemen | Wajib | REVIEW |
 | TASK-DSH-022 | FR-DSH-022 | Dashboard Manajemen | Wajib | IN_PROGRESS |
 | TASK-FO-001 | FR-FO-001 | Front Office | Wajib | REVIEW |
@@ -38,7 +38,7 @@
 | TASK-FO-012 | FR-FO-012 | Front Office | Wajib | REVIEW |
 | TASK-FO-013 | FR-FO-013 | Front Office | Wajib | REVIEW |
 | TASK-FO-014 | FR-FO-014 | Front Office | Sebaiknya | REVIEW |
-| TASK-FO-015 | FR-FO-015 | Front Office | Sebaiknya | IN_PROGRESS |
+| TASK-FO-015 | FR-FO-015 | Front Office | Sebaiknya | REVIEW |
 | TASK-FO-016 | FR-FO-016 | Front Office | Wajib | REVIEW |
 | TASK-FO-017 | FR-FO-017 | Front Office | Sebaiknya | REVIEW |
 | TASK-FO-018 | FR-FO-018 | Front Office | Wajib | REVIEW |
@@ -102,7 +102,7 @@
 | TASK-LDY-008 | FR-LDY-008 | Laundry | Sebaiknya | REVIEW |
 | TASK-LDY-009 | FR-LDY-009 | Laundry | Wajib | REVIEW |
 | TASK-LDY-010 | FR-LDY-010 | Laundry | Sebaiknya | REVIEW |
-| TASK-LDY-011 | FR-LDY-011 | Laundry | Wajib | IN_PROGRESS |
+| TASK-LDY-011 | FR-LDY-011 | Laundry | Wajib | REVIEW |
 | TASK-LDY-012 | FR-LDY-012 | Laundry | Wajib | IN_PROGRESS |
 | TASK-FBS-001 | FR-FBS-001 | F&B Service | Wajib | IN_PROGRESS |
 | TASK-FBS-002 | FR-FBS-002 | F&B Service | Wajib | IN_PROGRESS |

@@ -469,4 +469,8 @@ export const reporting = {
     "rpt.sch.day.7": "Minggu",
     "rpt.export.pdf": "PDF",
     "rpt.builder.pdf": "Unduh PDF",
+    "rpt.alert.payments_unknown": "Pembayaran berstatus tidak diketahui yang perlu diperiksa",
+    "rpt.alert.stock_negative": "Barang dengan stok di bawah nol",
+    "rpt.alert.work_orders_overdue": "Perintah kerja yang melewati batas waktunya",
+    "rpt.alert.sync_failures": "Catatan luring yang menunggu rekonsiliasi",
 } as const;

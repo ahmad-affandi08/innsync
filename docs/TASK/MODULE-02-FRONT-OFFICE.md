@@ -30,7 +30,7 @@
 | TASK-FO-012 | FR-FO-012 | Wajib | Pemilihan lama menginap menampilkan blok tanggal menginap secara visual serta menghitung otomatis harga per malam sesuai tarif kamar yang bersangkutan. | REVIEW |
 | TASK-FO-013 | FR-FO-013 | Wajib | Harga kamar dapat diubah kapan pun oleh pengguna berwenang; setiap perubahan mencatat nilai lama, nilai baru, alasan, dan pelaku. Perubahan melebihi ambang diskon yang ditetapkan memerlukan persetujuan Manager on Duty. | REVIEW |
 | TASK-FO-014 | FR-FO-014 | Sebaiknya | Sistem memperingatkan bila identitas tamu telah kedaluwarsa atau akan kedaluwarsa selama masa menginap. | REVIEW |
-| TASK-FO-015 | FR-FO-015 | Sebaiknya | Sistem mendeteksi tamu berulang berdasarkan nomor identitas dan mengisi otomatis data profil beserta riwayat menginap dan preferensinya. | IN_PROGRESS |
+| TASK-FO-015 | FR-FO-015 | Sebaiknya | Sistem mendeteksi tamu berulang berdasarkan nomor identitas dan mengisi otomatis data profil beserta riwayat menginap dan preferensinya. | REVIEW |
 | TASK-FO-016 | FR-FO-016 | Wajib | Setelah check-in, status kamar otomatis berubah menjadi terisi dan seluruh permintaan tamu yang tercatat muncul pada kartu kamar tersebut. | REVIEW |
 | TASK-FO-017 | FR-FO-017 | Sebaiknya | Sistem mencetak atau mengirim kartu registrasi elektronik untuk ditandatangani tamu, termasuk tanda tangan digital pada tablet. | REVIEW |
 | TASK-FO-018 | FR-FO-018 | Wajib | Mendukung perpindahan kamar (room move) dengan pemindahan seluruh saldo folio dan pencatatan alasan. | REVIEW |
@@ -64,6 +64,11 @@
 ### Evidence (2026-10-03): room revenue to Finance (`FO-027`)
 
 - `TASK-FO-027` is `REVIEW`. A completed night audit publishes the revenue of its business date with the base, the service charge and the tax apart, by posting source and payment method; `FrontOfficeRevenueConsumer` books it into Finance once however often the event is delivered, and Finance reads only the event. Evidence: `tests/Feature/Finance/RevenueReconciliationHttpTest.php`, `tests/Feature/Finance/CorrectionsExceptionsAuditHttpTest.php`, `tests/Feature/FnbSales/RefundHttpTest.php`.
+
+### Evidence (2026-10-03): the returning guest (`FO-015`)
+
+- `TASK-FO-015` is `REVIEW`. The lookup by identity document (number normalised, per document type, found through the blind index) now also brings what is needed to fill the registration in: for a person who may read identity, the nationality, document validity, visa number and address of the earlier registration (a button on the check-in page fills the form); for everyone with the right to view stays, the earlier stays (arrival, departure, room) and the guest's preferences. The preferences (at most 500 characters: a quiet room, a firm pillow) belong to the person and not to one registration: they are kept per property and identity-document index in `guest_preferences`, encrypted at rest, saved from the check-in form, shown and editable on the stay page (`POST /front-office/stays/{id}/preferences`, privilege `front-office.stay.manage`; an empty text removes them) and never written to the audit trail in clear (only whether there are some and how long). The lookup is an audited access to personal data (`pii.accessed`, naming `preferences` and, when shown, `address`).
+- Evidence: `tests/Integration/FrontOffice/StayTest.php` (`test_a_returning_guest_brings_the_registration_the_history_and_the_preferences_for_the_next_stay`), `tests/Feature/FrontOffice/StayHttpTest.php` (`test_guest_lookup_finds_a_returning_guest`).
 
 ## Required engineering checks
 

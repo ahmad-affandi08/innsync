@@ -2473,6 +2473,7 @@
             "id_type",
             "id_valid_until",
             "nationality",
+            "preferences",
             "room_id",
             "visa_number"
         ]
@@ -2675,6 +2676,12 @@
             "lock_version",
             "reason",
             "room_id"
+        ]
+    },
+    "POST /front-office/stays/{id}/preferences": {
+        "required": [],
+        "declared": [
+            "preferences"
         ]
     },
     "POST /front-office/stays/{id}/registration-card/sign": {

@@ -23,7 +23,7 @@
 | TASK-LDY-008 | FR-LDY-008 | Sebaiknya | Mencatat pemakaian bahan kimia dan perlengkapan laundry sehingga terhubung dengan kartu stok gudang. | REVIEW |
 | TASK-LDY-009 | FR-LDY-009 | Wajib | Mengajukan permintaan pembelian bahan dan alat ke modul Purchasing. | REVIEW |
 | TASK-LDY-010 | FR-LDY-010 | Sebaiknya | Menerbitkan laporan volume pengerjaan harian, waktu penyelesaian rata-rata, biaya per kilogram, serta pendapatan guest laundry. | REVIEW |
-| TASK-LDY-011 | FR-LDY-011 | Wajib | Setiap order memiliki promised time/SLA; order express dan order melewati janji selesai diberi prioritas serta notifikasi eskalasi. | IN_PROGRESS |
+| TASK-LDY-011 | FR-LDY-011 | Wajib | Setiap order memiliki promised time/SLA; order express dan order melewati janji selesai diberi prioritas serta notifikasi eskalasi. | REVIEW |
 | TASK-LDY-012 | FR-LDY-012 | Wajib | Sistem mencegah penutupan stay bila guest laundry masih berstatus aktif, kecuali diubah menjadi late charge/claim melalui persetujuan yang tercatat. | IN_PROGRESS |
 
 ### Slice 42 (2026-10-03): purchase requests of laundry
@@ -36,6 +36,11 @@
 - Status: `TASK-LDY-008` is `REVIEW`. The laundry records the chemicals and supplies it uses up (an item of the department laundry, the store, the quantity, a note) on the page "Supplies used"; the stock card of the store takes it out at the average cost as laundry consumption, never below zero, and the laundry sees what it used lately. People who process orders see the list; recording needs `laundry.supplies.use`.
 - Context: Inventory contract `DepartmentSupplyUse` (issue of the item as consumption of a department, checking no privilege), `SupplyUseService`, `SupplyUseController`, page `laundry/pages/supplies`.
 - Evidence: `tests/Feature/InventoryPurchasing/RequisitionAndSupplyHttpTest.php`.
+
+### Evidence (2026-10-03): escalation of a late order (`LDY-011`)
+
+- `TASK-LDY-011` is `REVIEW`. Every order has a promised time (set at hand-over); the work list already puts express orders first, then the earliest promise, and flags an overdue order. The escalation notice is now sent: `laundry:escalate` (scheduler, every ten minutes, one property failing does not stop the others) finds the orders still in the laundry's hands past their promise, marks each one (`laundry_orders.escalated_at`, set once under a conditional update so two runs cannot both send), records the audit entry and the outbox event `laundry.order.escalated`, and then e-mails the staff who process laundry or may cancel an order (the supervisor) the number, room, promised time and state. The e-mail goes through the `EmailNotifier` contract (the mailer the installation configured; the log mailer until a provider is chosen); a notice that cannot be sent never undoes the mark or the order. The dashboard alert for overdue laundry stays for as long as the order is overdue.
+- Evidence: `tests/Integration/Laundry/LaundryTest.php` (`test_an_order_past_its_promise_is_told_to_the_laundry_staff_once`).
 
 ## Required engineering checks
 

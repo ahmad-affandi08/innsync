@@ -12,6 +12,7 @@ use App\Shared\Domain\Tenancy\PropertyId;
 use App\Shared\Domain\Time\BusinessDate;
 use DateTimeImmutable;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 final readonly class DatabaseGuestRepository implements GuestRepository
 {
@@ -118,6 +119,54 @@ final readonly class DatabaseGuestRepository implements GuestRepository
             'stays' => (int) $r->stays,
             'last_stay' => $r->last_stay === null ? null : substr((string) $r->last_stay, 0, 10),
         ])->all();
+    }
+
+    public function staysOf(PropertyId $property, array $guestIds, int $limit = 5): array
+    {
+        $result = [];
+
+        foreach (array_chunk(array_values(array_unique($guestIds)), 500) as $chunk) {
+            $rows = DB::table('stays as s')->leftJoin('rooms as r', 'r.id', '=', 's.room_id')->where('s.property_id', $property->toString())->whereIn('s.guest_id', $chunk)
+                ->orderByDesc('s.checked_in_business_date')->orderByDesc('s.id')
+                ->get(['s.guest_id', 's.checked_in_business_date', 's.checked_out_business_date', 's.expected_departure', 'r.number as room']);
+
+            foreach ($rows as $row) {
+                if (count($result[$row->guest_id] ?? []) < $limit) {
+                    $result[(string) $row->guest_id][] = [
+                        'arrival' => substr((string) $row->checked_in_business_date, 0, 10), 'departure' => substr((string) ($row->checked_out_business_date ?? $row->expected_departure), 0, 10), 'room' => $row->room === null ? null : (string) $row->room,
+                    ];
+                }
+            }
+        }
+
+        return $result;
+    }
+
+    public function preferencesOf(PropertyId $property, string $idType, string $idNumber): ?string
+    {
+        $sealed = DB::table('guest_preferences')->where('property_id', $property->toString())->where('id_number_index', $this->index($idType, GuestProfile::normalizeNumber($idNumber)))->value('preferences_enc');
+
+        return $sealed === null ? null : $this->cipher->open((string) $sealed);
+    }
+
+    public function savePreferences(PropertyId $property, string $idType, string $idNumber, string $text, string $actorId, DateTimeImmutable $at): void
+    {
+        $index = $this->index($idType, GuestProfile::normalizeNumber($idNumber));
+        $row = DB::table('guest_preferences')->where('property_id', $property->toString())->where('id_number_index', $index);
+
+        if ($text === '') {
+            $row->delete();
+
+            return;
+        }
+
+        if (! $row->exists()) {
+            DB::table('guest_preferences')->insert(['id' => strtolower((string) Str::ulid()), 'property_id' => $property->toString(), 'id_number_index' => $index, 'preferences_enc' => $this->cipher->seal($text), 'updated_by' => $actorId, 'lock_version' => 0, 'created_at' => $at, 'updated_at' => $at]);
+
+            return;
+        }
+
+        $row->update(['preferences_enc' => $this->cipher->seal($text), 'updated_by' => $actorId, 'lock_version' => DB::raw('lock_version + 1'), 'updated_at' => $at]);
     }
 
     private function index(string $idType, string $normalized): string

@@ -219,10 +219,12 @@ use App\Modules\Kitchen\Infrastructure\DatabaseRecipeStore;
 use App\Modules\Kitchen\Infrastructure\DatabaseTicketStore;
 use App\Modules\Kitchen\Infrastructure\DatabaseWasteStore;
 use App\Modules\Laundry\Application\ClaimRepository;
+use App\Modules\Laundry\Application\LaundryEscalations;
 use App\Modules\Laundry\Application\LaundryLiability;
 use App\Modules\Laundry\Application\LaundryRepository;
 use App\Modules\Laundry\Application\LaundryService;
 use App\Modules\Laundry\Infrastructure\DatabaseClaimRepository;
+use App\Modules\Laundry\Infrastructure\DatabaseLaundryEscalations;
 use App\Modules\Laundry\Infrastructure\DatabaseLaundryRepository;
 use App\Modules\Maintenance\Application\AssetStore;
 use App\Modules\Maintenance\Application\DamageReporting;
@@ -310,6 +312,7 @@ use App\Shared\Application\Integration\WebhookProtocol;
 use App\Shared\Application\Integration\WebhookReceiptStore;
 use App\Shared\Application\Integration\WebhookReceiver;
 use App\Shared\Application\Localization\LocaleNegotiator;
+use App\Shared\Application\Notifications\EmailNotifier;
 use App\Shared\Application\Observability\CorrelationId;
 use App\Shared\Application\Observability\Health\AlertNotifier;
 use App\Shared\Application\Observability\Health\AlertStore;
@@ -353,6 +356,7 @@ use App\Shared\Infrastructure\Integration\ConfiguredProviderRegistry;
 use App\Shared\Infrastructure\Integration\DatabaseCircuitStore;
 use App\Shared\Infrastructure\Integration\DatabaseUnknownOutcomeRepository;
 use App\Shared\Infrastructure\Integration\DatabaseWebhookReceiptStore;
+use App\Shared\Infrastructure\Notifications\MailEmailNotifier;
 use App\Shared\Infrastructure\Observability\Health\ConfiguredHealthCheckRegistry;
 use App\Shared\Infrastructure\Observability\Health\DatabaseAlertStore;
 use App\Shared\Infrastructure\Observability\Health\LogAlertNotifier;
@@ -525,6 +529,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(PenaltyPoster::class, FolioPenaltyPoster::class);
         $this->app->bind(DepositLedger::class, FolioPenaltyPoster::class);
         $this->app->bind(LaundryRepository::class, DatabaseLaundryRepository::class);
+        $this->app->bind(LaundryEscalations::class, DatabaseLaundryEscalations::class);
         $this->app->bind(ReportQueries::class, DatabaseReportQueries::class);
         $this->app->bind(ObligationRepository::class, DatabaseObligationRepository::class);
         $this->app->bind(OutletRepository::class, DatabaseOutletRepository::class);
@@ -613,6 +618,7 @@ class AppServiceProvider extends ServiceProvider
             (int) config('integrations.webhooks.max_body_bytes'),
         ));
         $this->app->bind(SyncExceptionRepository::class, DatabaseSyncExceptionRepository::class);
+        $this->app->bind(EmailNotifier::class, MailEmailNotifier::class);
         $this->app->bind(DeviceStatusRepository::class, DatabaseDeviceStatusRepository::class);
         $this->app->bind(UnexpectedFailureReporter::class, ReportingFailureReporter::class);
         $this->app->singleton(OfflineHandlerRegistry::class, static fn ($app): OfflineHandlerRegistry => new ConfiguredHandlerRegistry(
