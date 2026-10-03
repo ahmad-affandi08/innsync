@@ -125,6 +125,12 @@ final readonly class DatabaseRecipeStore implements RecipeStore
         return $added;
     }
 
+    public function consumedBetween(PropertyId $property, string $from, string $to): array
+    {
+        return DB::table('kitchen_consumptions')->where('property_id', $property->toString())->whereBetween('business_date', [$from, $to])->groupBy('menu_item_id', 'ingredient_item_id', 'unit')
+            ->get(['menu_item_id', 'ingredient_item_id', 'unit', DB::raw('SUM(quantity_milli) as quantity_milli')])->map(static fn (object $r): array => ['menu_item_id' => (string) $r->menu_item_id, 'ingredient_item_id' => (string) $r->ingredient_item_id, 'unit' => (string) $r->unit, 'quantity_milli' => (int) $r->quantity_milli])->all();
+    }
+
     public function consumptions(PropertyId $property, int $limit): array
     {
         return DB::table('kitchen_consumptions')->where('property_id', $property->toString())->orderByDesc('created_at')->orderByDesc('id')->limit($limit)->get()->map(static fn (object $r): array => (array) $r)->all();

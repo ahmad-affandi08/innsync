@@ -81,3 +81,13 @@ export type WasteOverview = {
     summary: { since: string; by_reason: { reason: string; entries: number; value_minor: number }[]; today_minor: number };
     ingredients: Ingredient[]; dishes: { id: string; name: string; outlet: string }[]; has_location: boolean; may: { record: boolean };
 };
+
+export type MenuClass = 'star' | 'plowhorse' | 'puzzle' | 'dog';
+export type MenuReportRow = {
+    item_id: string; code: string; name: string; category: string; outlet_id: string; outlet: string; portions: number; net_minor: number; discount_minor: number; avg_price_minor: number; has_recipe: boolean;
+    cost_state: 'complete' | 'partial' | 'none'; cost_minor: number | null; cost_bp: number | null; margin_minor: number | null; margin_per_portion_minor: number | null; mix_bp: number | null; class: MenuClass | null;
+};
+export type MenuReport = {
+    currency: string; from: string; to: string; outlet_id: string | null; outlets: { id: string; name: string }[]; rows: MenuReportRow[];
+    totals: { portions: number; net_minor: number; discount_minor: number; costed_net_minor: number; cost_minor: number; cost_bp: number | null; costed_dishes: number; dishes: number };
+};

@@ -25,7 +25,7 @@
 | TASK-KIT-009 | FR-KIT-009 | Sebaiknya | Mencatat tanggal kedaluwarsa dan nomor batch bahan sensitif dengan peringatan mendekati kedaluwarsa. | REVIEW |
 | TASK-KIT-010 | FR-KIT-010 | Wajib | Membuat laporan kerusakan peralatan yang diteruskan ke modul Maintenance. | REVIEW |
 | TASK-KIT-011 | FR-KIT-011 | Wajib | Mengajukan permintaan pembelian bahan dan peralatan ke modul Purchasing. | REVIEW |
-| TASK-KIT-012 | FR-KIT-012 | Sebaiknya | Menerbitkan laporan penjualan menu, rasio biaya bahan terhadap penjualan, dan analisis menu berdasarkan popularitas serta kontribusi margin. | TODO |
+| TASK-KIT-012 | FR-KIT-012 | Sebaiknya | Menerbitkan laporan penjualan menu, rasio biaya bahan terhadap penjualan, dan analisis menu berdasarkan popularitas serta kontribusi margin. | REVIEW |
 | TASK-KIT-013 | FR-KIT-013 | Wajib | Setiap perubahan resep menghasilkan versi baru bertanggal efektif; transaksi lama selalu mereferensikan versi resep yang berlaku saat transaksi diposting. | REVIEW |
 | TASK-KIT-014 | FR-KIT-014 | Sebaiknya | Mendukung produksi/preparation batch (misalnya sauce, dough, stock) yang mengonsumsi bahan baku dan menghasilkan semi-finished goods beserta yield aktual. | TODO |
 | TASK-KIT-015 | FR-KIT-015 | Wajib | KDS menyediakan indikator koneksi dan antrean; bila layar atau jaringan bermasalah, tiket tetap tersimpan dan dapat dialihkan ke printer/fallback queue tanpa kehilangan order. | IN_PROGRESS |
@@ -81,6 +81,16 @@
 - Context: new module `Routines` (`RoutineSopService`, `TemperatureService`, `RoutineStore`, `RoutineController`, pages `routines/pages/{checklists,templates,performance,temperatures}`), migration 95, privileges `kitchen.sop.*`, `fnb.sop.*` (manage, perform, view) and `*.temperature.record`; the two menus link to the pages.
 - Not yet: reminders for checklists not done, photographing an item, a reading from a sensor.
 - Evidence: `tests/Feature/Routines/RoutineHttpTest.php` (versions and their checks, the board per department, ticking and the events, the run keeping its items, who may, the performance figure; points and ranges, in-range and outside readings, the range kept with each reading, inactive places, who may, the triggers).
+
+### Slice 60 (2026-10-03): the menu report
+
+- Status: `TASK-KIT-012` is `REVIEW`.
+- Context: `MenuSales` (FnbSales contract, `DatabaseMenuSales`), `RecipeStore::consumedBetween`, `MenuReportService`, `MenuReportController`, page `kitchen/pages/menu-report.tsx`, privilege `kitchen.report.view` (the recipe privilege also reads it).
+- **Sales.** Settled bills of the period by business date (a refunded or cancelled bill, an open bill and a voided or removed line never count), per dish and outlet: portions, sales net of discounts, the service charge and the tax (each line's share of what the bill kept), the discounts given and the average price.
+- **Cost and ratio.** The cost of a dish is what the period's sales took out of the pantry by the recipe of each day (`kitchen_consumptions`), valued at the moving average of the inventory now; a dish whose ingredients are not all costed is shown as partial, one with no recipe (or nothing taken yet) shows none, and neither enters the cost ratio of the total. Per dish: cost, cost ratio of its sales, margin per portion and share of the portions.
+- **Menu engineering.** A dish with a complete cost and a sale is classed when at least two are: popular when its share of the portions of the costed dishes is at least 70% of an equal share, high margin when its margin per portion reaches the average of those dishes weighted by portions; star, plowhorse, puzzle or dog, with what to do about each on the screen. The period is at most 366 days and defaults to the last 30 days of the business date; it can be narrowed to an outlet.
+- Not yet: cost at the price paid on the day (the average of now is used, so an old period is costed at today's average), cost of choices and variants that consume stock, a trend by week, and export.
+- Evidence: `tests/Feature/Kitchen/MenuReportHttpTest.php` (sales, cost, ratio, margin, mix and the class of each dish from real settled bills and consumptions, the outlet and period filters, open bills and an uncosted ingredient, rights and dates).
 
 ## Required engineering checks
 

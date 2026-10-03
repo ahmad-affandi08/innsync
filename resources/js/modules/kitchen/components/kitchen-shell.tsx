@@ -5,6 +5,7 @@ import { AppFrame } from '@/components/layout/app-frame';
 const LINKS = [
     { href: '/kitchen', label: 'kitchen.nav.board' },
     { href: '/kitchen/recipes', label: 'kitchen.nav.recipes' },
+    { href: '/kitchen/menu-report', label: 'kitchen.nav.report' },
     { href: '/kitchen/waste', label: 'kitchen.nav.waste' },
     { href: '/kitchen/routines', label: 'kitchen.nav.routines' },
     { href: '/inventory/lots?department=kitchen', label: 'kitchen.nav.lots' },

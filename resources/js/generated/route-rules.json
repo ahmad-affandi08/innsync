@@ -474,6 +474,14 @@
             "station"
         ]
     },
+    "GET /kitchen/menu-report": {
+        "required": [],
+        "declared": [
+            "from",
+            "outlet",
+            "to"
+        ]
+    },
     "GET /kitchen/routines/performance": {
         "required": [],
         "declared": [

@@ -88,6 +88,7 @@ use App\Modules\InventoryPurchasing\Presentation\Http\Controllers\SupplierContro
 use App\Modules\InventoryPurchasing\Presentation\Http\Controllers\SupplierInvoiceController;
 use App\Modules\Kitchen\Presentation\Http\Controllers\BoardController as KitchenBoardController;
 use App\Modules\Kitchen\Presentation\Http\Controllers\DamageReportController as KitchenDamageReportController;
+use App\Modules\Kitchen\Presentation\Http\Controllers\MenuReportController;
 use App\Modules\Kitchen\Presentation\Http\Controllers\RecipeController;
 use App\Modules\Kitchen\Presentation\Http\Controllers\WasteController;
 use App\Modules\Laundry\Presentation\Http\Controllers\ClaimController;
@@ -758,6 +759,7 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
     Route::post('/damage-reports', [KitchenDamageReportController::class, 'store'])->name('kitchen.damage.store');
     Route::get('/waste', [WasteController::class, 'index'])->name('kitchen.waste');
     Route::post('/waste', [WasteController::class, 'record'])->middleware(['idempotent'])->name('kitchen.waste.record');
+    Route::get('/menu-report', [MenuReportController::class, 'index'])->name('kitchen.menu-report');
     Route::get('/recipes', [RecipeController::class, 'index'])->name('kitchen.recipes');
     Route::get('/recipes/{id}', [RecipeController::class, 'show'])->where('id', $id)->name('kitchen.recipes.show');
     Route::post('/recipes/{id}', [RecipeController::class, 'save'])->where('id', $id)->name('kitchen.recipes.save');

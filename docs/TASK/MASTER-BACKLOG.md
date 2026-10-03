@@ -141,7 +141,7 @@
 | TASK-KIT-009 | FR-KIT-009 | F&B Product / Kitchen | Sebaiknya | REVIEW |
 | TASK-KIT-010 | FR-KIT-010 | F&B Product / Kitchen | Wajib | REVIEW |
 | TASK-KIT-011 | FR-KIT-011 | F&B Product / Kitchen | Wajib | REVIEW |
-| TASK-KIT-012 | FR-KIT-012 | F&B Product / Kitchen | Sebaiknya | TODO |
+| TASK-KIT-012 | FR-KIT-012 | F&B Product / Kitchen | Sebaiknya | REVIEW |
 | TASK-KIT-013 | FR-KIT-013 | F&B Product / Kitchen | Wajib | REVIEW |
 | TASK-KIT-014 | FR-KIT-014 | F&B Product / Kitchen | Sebaiknya | TODO |
 | TASK-KIT-015 | FR-KIT-015 | F&B Product / Kitchen | Wajib | IN_PROGRESS |

@@ -28,6 +28,12 @@ final readonly class KitchenAccess
     /** Reports a fault of the equipment to maintenance. */
     public const DAMAGE_REPORT = 'kitchen.damage.report';
 
+    /** Reads the menu report: what sold, what it cost and how each dish does. */
+    public const REPORT_VIEW = 'kitchen.report.view';
+
+    /** Records production batches of semi-finished goods. */
+    public const PRODUCTION_RECORD = 'kitchen.production.record';
+
     public function __construct(private PermissionChecker $permissions, private PropertyContext $property) {}
 
     public function assertProperty(PropertyId $property): void

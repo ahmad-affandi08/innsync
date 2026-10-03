@@ -43,6 +43,9 @@ interface RecipeStore
      */
     public function addConsumptions(PropertyId $property, array $rows, DateTimeImmutable $at): array;
 
+    /** @return list<array{menu_item_id: string, ingredient_item_id: string, unit: string, quantity_milli: int}> what sales took out of stock between two business dates (both included), by dish and ingredient */
+    public function consumedBetween(PropertyId $property, string $from, string $to): array;
+
     /** @return list<array<string, mixed>> the latest consumptions, newest first */
     public function consumptions(PropertyId $property, int $limit): array;
 }
