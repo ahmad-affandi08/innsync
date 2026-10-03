@@ -100,6 +100,8 @@ describe('dictionaries', () => {
             'hr.col.status',
             'hr.att.shift',
             'mtc.damage.number',
+            'rtn.period',
+            'rtn.perf.run',
             'mtc.damage.state',
             'hr.department.front_office',
             'hr.department.housekeeping',

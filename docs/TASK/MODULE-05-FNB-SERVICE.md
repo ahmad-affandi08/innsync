@@ -37,7 +37,7 @@
 | TASK-FBS-025 | FR-FBS-025 | Sebaiknya | Sistem memblokir pembebanan mini bar setelah folio kamar ditutup dan mengarahkannya ke prosedur late charge. | TODO |
 | TASK-FBS-030 | FR-FBS-030 | Wajib | Mengelola persediaan outlet (bar dan gudang outlet) beserta permintaan barang ke gudang utama. | REVIEW |
 | TASK-FBS-031 | FR-FBS-031 | Wajib | Melakukan stock opname harian untuk minuman dan bahan bar dengan pencatatan selisih. | REVIEW |
-| TASK-FBS-032 | FR-FBS-032 | Wajib | Menampilkan SOP tugas harian, mingguan, dan bulanan outlet beserta persentase penyelesaian yang dikirim ke Human Resource. | TODO |
+| TASK-FBS-032 | FR-FBS-032 | Wajib | Menampilkan SOP tugas harian, mingguan, dan bulanan outlet beserta persentase penyelesaian yang dikirim ke Human Resource. | REVIEW |
 | TASK-FBS-033 | FR-FBS-033 | Wajib | Membuat laporan kerusakan yang diteruskan ke modul Maintenance. | REVIEW |
 | TASK-FBS-034 | FR-FBS-034 | Wajib | Mengajukan permintaan pembelian alat dan bahan ke modul Purchasing. | REVIEW |
 
@@ -120,3 +120,5 @@
 - Facts published: `fnb.bill.settled` (the figures, the payments by method, the lines sold with their items, business date) for finance and for stock by recipe, and `fnb.cashier.shift.closed`. Finance books both (slice 23).
 - Not yet: refund and reprint (`FBS-014`), discounts and complimentary (`FBS-006`), splitting and merging (`FBS-004`), a QRIS provider callback and its reconciliation, the offline queue (`FBS-010`), cash drops during a shift.
 - Evidence: `tests/Feature/FnbSales/PaymentHttpTest.php` (one shift per cashier and no payment without it, cash with change and the settled snapshot, split payments and the card code, QRIS states and reservation of the amount, a room charge with the name match and one folio posting, closing the shift with variance and its reason, the name matching). Seen in the browser: opening a shift, ordering, sending, paying cash with change, paying by QRIS and marking it paid with a reference, and the shift totals.
+
+- `TASK-FBS-032` is `REVIEW` (slice 46): the outlets keep their own daily, weekly and monthly checklists and storage temperatures, with the completion share announced for Human Resource; see `MODULE-06-KITCHEN.md`, slice 46, for the design and the evidence.

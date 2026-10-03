@@ -21,7 +21,7 @@
 | TASK-KIT-005 | FR-KIT-005 | Wajib | Menandai menu yang habis sehingga otomatis tidak dapat dipesan dari POS maupun menu QR tamu. | IN_PROGRESS |
 | TASK-KIT-006 | FR-KIT-006 | Wajib | Mencatat pemakaian bahan, produksi persiapan, dan pembuangan bahan rusak (waste log) beserta alasan. | IN_PROGRESS |
 | TASK-KIT-007 | FR-KIT-007 | Wajib | Melakukan stock opname bahan dapur dan gudang kering dengan pencatatan selisih dan nilai kerugian. | REVIEW |
-| TASK-KIT-008 | FR-KIT-008 | Wajib | Menampilkan daftar periksa kebersihan, suhu penyimpanan, dan tugas harian, mingguan, serta bulanan dapur. | TODO |
+| TASK-KIT-008 | FR-KIT-008 | Wajib | Menampilkan daftar periksa kebersihan, suhu penyimpanan, dan tugas harian, mingguan, serta bulanan dapur. | REVIEW |
 | TASK-KIT-009 | FR-KIT-009 | Sebaiknya | Mencatat tanggal kedaluwarsa dan nomor batch bahan sensitif dengan peringatan mendekati kedaluwarsa. | REVIEW |
 | TASK-KIT-010 | FR-KIT-010 | Wajib | Membuat laporan kerusakan peralatan yang diteruskan ke modul Maintenance. | REVIEW |
 | TASK-KIT-011 | FR-KIT-011 | Wajib | Mengajukan permintaan pembelian bahan dan peralatan ke modul Purchasing. | REVIEW |
@@ -74,6 +74,13 @@
 - `TASK-KIT-009` is `REVIEW` (same slice): the kitchen menu links to the batches of kitchen items (`/inventory/lots?department=kitchen`) with the warning of batches that are about to expire or have expired; the batch and expiry rules are Inventory's (`INV-008`).
 
 - `TASK-KIT-007` is `REVIEW` (slice 45): the kitchen menu opens the counts of the kitchen's own stores (`/inventory/counts?location_kind=kitchen`) and the requests to the main store; the count, its second-person review, the differences and their value are Inventory's (`INV-006`, `INV-012`).
+
+### Slice 46 (2026-10-03): checklists and storage temperatures of the kitchen and the outlets
+
+- Status: `TASK-KIT-008` and `TASK-FBS-032` (in `MODULE-05-FNB-SERVICE.md`) are `REVIEW`. The kitchen and the outlets each keep daily, weekly and monthly checklists (hygiene rounds, closing and cleaning tasks): management writes a template (a change is a new version), the period has one run of each active checklist started by the first tick with the items it began with, a ticked item is a fact (who, when, a note) and each one is announced for Human Resource with the share of the checklist done so far (events `kitchen.sop.item_completed` and `fnb.sop.item_completed`, and `.run_completed`). The kitchen (and the outlets) also keep storage temperatures: management writes the places (chiller, freezer) with the range of each in tenths of a degree; a reading is judged against the range of the moment, a reading outside it needs the action taken and is announced (`.temperature.out_of_range`); readings are never changed.
+- Context: new module `Routines` (`RoutineSopService`, `TemperatureService`, `RoutineStore`, `RoutineController`, pages `routines/pages/{checklists,templates,performance,temperatures}`), migration 95, privileges `kitchen.sop.*`, `fnb.sop.*` (manage, perform, view) and `*.temperature.record`; the two menus link to the pages.
+- Not yet: reminders for checklists not done, photographing an item, a reading from a sensor.
+- Evidence: `tests/Feature/Routines/RoutineHttpTest.php` (versions and their checks, the board per department, ticking and the events, the run keeping its items, who may, the performance figure; points and ranges, in-range and outside readings, the range kept with each reading, inactive places, who may, the triggers).
 
 ## Required engineering checks
 

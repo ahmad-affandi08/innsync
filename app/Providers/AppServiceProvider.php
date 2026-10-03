@@ -224,6 +224,8 @@ use App\Modules\Reporting\Infrastructure\DatabaseObligationRepository;
 use App\Modules\Reporting\Infrastructure\DatabaseOutletRepository;
 use App\Modules\Reporting\Infrastructure\DatabaseReportBuilderQueries;
 use App\Modules\Reporting\Infrastructure\DatabaseReportQueries;
+use App\Modules\Routines\Application\RoutineStore;
+use App\Modules\Routines\Infrastructure\DatabaseRoutineStore;
 use App\Shared\Application\Approval\ApprovalGate;
 use App\Shared\Application\Approval\ApprovalSubjects;
 use App\Shared\Application\Audit\AuditTrail;
@@ -384,6 +386,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(OvertimeStore::class, DatabaseOvertimeStore::class);
         $this->app->bind(LeaveStore::class, DatabaseLeaveStore::class);
         $this->app->bind(RequisitionStore::class, DatabaseRequisitionStore::class);
+        $this->app->bind(RoutineStore::class, DatabaseRoutineStore::class);
         $this->app->bind(DepartmentSupplyUse::class, DepartmentSupplyUseService::class);
         $this->app->bind(AttendanceCorrectionStore::class, DatabaseAttendanceCorrectionStore::class);
         $this->app->bind(StaffOnDuty::class, StaffOnDutyService::class);

@@ -5,6 +5,7 @@ export const fnb = {
     "fnb.damage.title": "Lapor kerusakan",
     "fnb.damage.description": "Peralatan outlet yang rusak: sebutkan yang mana dan kerusakannya, tambahkan foto, dan Maintenance langsung mendapat work order.",
     "fnb.nav.counts": "Stock opname bar",
+    "fnb.nav.routines": "Daftar periksa dan suhu",
     "fnb.nav.outlets": "Outlet",
     "fnb.nav.menu": "Menu",
     "home.about.fnb": "Outlet, meja dan menu restoran serta bar.",

@@ -668,5 +668,17 @@
         "name",
         "reason",
         "source"
+    ],
+    "routines/pages/temperatures": [
+        "max_tenth",
+        "min_tenth",
+        "name",
+        "point_id",
+        "value_tenth"
+    ],
+    "routines/pages/templates": [
+        "frequency",
+        "items",
+        "name"
     ]
 }

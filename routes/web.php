@@ -94,6 +94,7 @@ use App\Modules\Reporting\Presentation\Http\Controllers\ObligationController;
 use App\Modules\Reporting\Presentation\Http\Controllers\OutletController;
 use App\Modules\Reporting\Presentation\Http\Controllers\ReportBuilderController;
 use App\Modules\Reporting\Presentation\Http\Controllers\ReportController;
+use App\Modules\Routines\Presentation\Http\Controllers\RoutineController;
 use App\Shared\Infrastructure\Localization\SetLocaleController;
 use App\Shared\Infrastructure\Offline\SyncController;
 use Illuminate\Http\Request;
@@ -570,6 +571,16 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
     $id = '[0-9a-z]{26}';
 
     Route::get('/pos', [BillController::class, 'floor'])->name('fnb.pos');
+    // Checklists and storage temperatures of the department (FR-KIT-008, FR-FBS-032).
+    Route::get('/routines', [RoutineController::class, 'index'])->defaults('department', 'fnb')->name('fnb.routines');
+    Route::get('/routines/templates', [RoutineController::class, 'templates'])->defaults('department', 'fnb')->name('fnb.routines.templates');
+    Route::post('/routines/templates', [RoutineController::class, 'define'])->defaults('department', 'fnb')->name('fnb.routines.define');
+    Route::get('/routines/performance', [RoutineController::class, 'performance'])->defaults('department', 'fnb')->name('fnb.routines.performance');
+    Route::post('/routines/{template}/items/{item}/complete', [RoutineController::class, 'complete'])->where(['template' => $id, 'item' => 'i[0-9]{1,2}'])->defaults('department', 'fnb')->name('fnb.routines.complete');
+    Route::get('/temperatures', [RoutineController::class, 'temperaturesPage'])->defaults('department', 'fnb')->name('fnb.temperatures');
+    Route::post('/temperatures/points', [RoutineController::class, 'createPoint'])->defaults('department', 'fnb')->name('fnb.temperatures.points.create');
+    Route::post('/temperatures/points/{id}', [RoutineController::class, 'updatePoint'])->where('id', $id)->defaults('department', 'fnb')->name('fnb.temperatures.points.update');
+    Route::post('/temperatures/readings', [RoutineController::class, 'record'])->defaults('department', 'fnb')->name('fnb.temperatures.record');
     Route::get('/damage-reports', [FnbDamageReportController::class, 'index'])->name('fnb.damage');
     Route::post('/damage-reports', [FnbDamageReportController::class, 'store'])->name('fnb.damage.store');
     Route::get('/shift', [PaymentController::class, 'shift'])->name('fnb.shift');
@@ -692,6 +703,16 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
     Route::post('/tickets/{id}/advance', [KitchenBoardController::class, 'advance'])->where('id', $id)->name('kitchen.tickets.advance');
     Route::post('/items/{id}/availability', [KitchenBoardController::class, 'availability'])->where('id', $id)->name('kitchen.items.availability');
     Route::post('/settings', [KitchenBoardController::class, 'saveSettings'])->name('kitchen.settings.save');
+    // Checklists and storage temperatures of the department (FR-KIT-008, FR-FBS-032).
+    Route::get('/routines', [RoutineController::class, 'index'])->defaults('department', 'kitchen')->name('kitchen.routines');
+    Route::get('/routines/templates', [RoutineController::class, 'templates'])->defaults('department', 'kitchen')->name('kitchen.routines.templates');
+    Route::post('/routines/templates', [RoutineController::class, 'define'])->defaults('department', 'kitchen')->name('kitchen.routines.define');
+    Route::get('/routines/performance', [RoutineController::class, 'performance'])->defaults('department', 'kitchen')->name('kitchen.routines.performance');
+    Route::post('/routines/{template}/items/{item}/complete', [RoutineController::class, 'complete'])->where(['template' => $id, 'item' => 'i[0-9]{1,2}'])->defaults('department', 'kitchen')->name('kitchen.routines.complete');
+    Route::get('/temperatures', [RoutineController::class, 'temperaturesPage'])->defaults('department', 'kitchen')->name('kitchen.temperatures');
+    Route::post('/temperatures/points', [RoutineController::class, 'createPoint'])->defaults('department', 'kitchen')->name('kitchen.temperatures.points.create');
+    Route::post('/temperatures/points/{id}', [RoutineController::class, 'updatePoint'])->where('id', $id)->defaults('department', 'kitchen')->name('kitchen.temperatures.points.update');
+    Route::post('/temperatures/readings', [RoutineController::class, 'record'])->defaults('department', 'kitchen')->name('kitchen.temperatures.record');
     Route::get('/damage-reports', [KitchenDamageReportController::class, 'index'])->name('kitchen.damage');
     Route::post('/damage-reports', [KitchenDamageReportController::class, 'store'])->name('kitchen.damage.store');
     Route::get('/waste', [WasteController::class, 'index'])->name('kitchen.waste');

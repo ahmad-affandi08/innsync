@@ -129,7 +129,7 @@ Every row must eventually point to implementation evidence and tests. Status is 
 | FR-FBS-025 | F&B Service | Sebaiknya | ../TASK/MODULE-05-FNB-SERVICE.md | TODO |
 | FR-FBS-030 | F&B Service | Wajib | ../TASK/MODULE-05-FNB-SERVICE.md | REVIEW |
 | FR-FBS-031 | F&B Service | Wajib | ../TASK/MODULE-05-FNB-SERVICE.md | REVIEW |
-| FR-FBS-032 | F&B Service | Wajib | ../TASK/MODULE-05-FNB-SERVICE.md | TODO |
+| FR-FBS-032 | F&B Service | Wajib | ../TASK/MODULE-05-FNB-SERVICE.md | REVIEW |
 | FR-FBS-033 | F&B Service | Wajib | ../TASK/MODULE-05-FNB-SERVICE.md | REVIEW |
 | FR-FBS-034 | F&B Service | Wajib | ../TASK/MODULE-05-FNB-SERVICE.md | REVIEW |
 | FR-KIT-001 | F&B Product / Kitchen | Wajib | ../TASK/MODULE-06-KITCHEN.md | REVIEW |
@@ -139,7 +139,7 @@ Every row must eventually point to implementation evidence and tests. Status is 
 | FR-KIT-005 | F&B Product / Kitchen | Wajib | ../TASK/MODULE-06-KITCHEN.md | IN_PROGRESS |
 | FR-KIT-006 | F&B Product / Kitchen | Wajib | ../TASK/MODULE-06-KITCHEN.md | IN_PROGRESS |
 | FR-KIT-007 | F&B Product / Kitchen | Wajib | ../TASK/MODULE-06-KITCHEN.md | REVIEW |
-| FR-KIT-008 | F&B Product / Kitchen | Wajib | ../TASK/MODULE-06-KITCHEN.md | TODO |
+| FR-KIT-008 | F&B Product / Kitchen | Wajib | ../TASK/MODULE-06-KITCHEN.md | REVIEW |
 | FR-KIT-009 | F&B Product / Kitchen | Sebaiknya | ../TASK/MODULE-06-KITCHEN.md | REVIEW |
 | FR-KIT-010 | F&B Product / Kitchen | Wajib | ../TASK/MODULE-06-KITCHEN.md | REVIEW |
 | FR-KIT-011 | F&B Product / Kitchen | Wajib | ../TASK/MODULE-06-KITCHEN.md | REVIEW |

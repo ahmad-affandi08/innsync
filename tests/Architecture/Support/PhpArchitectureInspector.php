@@ -21,6 +21,7 @@ final class PhpArchitectureInspector
         'Kitchen',
         'InventoryPurchasing',
         'Maintenance',
+        'Routines',
         'HumanResource',
         'Finance',
         'Reporting',

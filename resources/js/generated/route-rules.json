@@ -145,6 +145,20 @@
             "outlet"
         ]
     },
+    "GET /fnb/routines/performance": {
+        "required": [],
+        "declared": [
+            "from",
+            "to"
+        ]
+    },
+    "GET /fnb/temperatures": {
+        "required": [],
+        "declared": [
+            "from",
+            "to"
+        ]
+    },
     "GET /front-office/availability": {
         "required": [],
         "declared": [
@@ -396,6 +410,20 @@
         "required": [],
         "declared": [
             "station"
+        ]
+    },
+    "GET /kitchen/routines/performance": {
+        "required": [],
+        "declared": [
+            "from",
+            "to"
+        ]
+    },
+    "GET /kitchen/temperatures": {
+        "required": [],
+        "declared": [
+            "from",
+            "to"
         ]
     },
     "GET /kitchen/tickets": {
@@ -1506,6 +1534,28 @@
             "seats"
         ]
     },
+    "POST /fnb/routines/templates": {
+        "required": [
+            "active",
+            "frequency",
+            "items",
+            "items.*",
+            "name"
+        ],
+        "declared": [
+            "active",
+            "frequency",
+            "items",
+            "items.*",
+            "name"
+        ]
+    },
+    "POST /fnb/routines/{template}/items/{item}/complete": {
+        "required": [],
+        "declared": [
+            "note"
+        ]
+    },
     "POST /fnb/shift": {
         "required": [
             "opening_float_minor",
@@ -1538,6 +1588,45 @@
             "area",
             "lock_version",
             "seats"
+        ]
+    },
+    "POST /fnb/temperatures/points": {
+        "required": [
+            "max_tenth",
+            "min_tenth",
+            "name"
+        ],
+        "declared": [
+            "max_tenth",
+            "min_tenth",
+            "name"
+        ]
+    },
+    "POST /fnb/temperatures/points/{id}": {
+        "required": [
+            "active",
+            "lock_version",
+            "max_tenth",
+            "min_tenth",
+            "name"
+        ],
+        "declared": [
+            "active",
+            "lock_version",
+            "max_tenth",
+            "min_tenth",
+            "name"
+        ]
+    },
+    "POST /fnb/temperatures/readings": {
+        "required": [
+            "point_id",
+            "value_tenth"
+        ],
+        "declared": [
+            "action_taken",
+            "point_id",
+            "value_tenth"
         ]
     },
     "POST /front-office/cashier/settings": {
@@ -3645,6 +3734,28 @@
             "yield_portions"
         ]
     },
+    "POST /kitchen/routines/templates": {
+        "required": [
+            "active",
+            "frequency",
+            "items",
+            "items.*",
+            "name"
+        ],
+        "declared": [
+            "active",
+            "frequency",
+            "items",
+            "items.*",
+            "name"
+        ]
+    },
+    "POST /kitchen/routines/{template}/items/{item}/complete": {
+        "required": [],
+        "declared": [
+            "note"
+        ]
+    },
     "POST /kitchen/settings": {
         "required": [
             "late_after_minutes",
@@ -3655,6 +3766,45 @@
             "lock_version",
             "reason",
             "stock_location_id"
+        ]
+    },
+    "POST /kitchen/temperatures/points": {
+        "required": [
+            "max_tenth",
+            "min_tenth",
+            "name"
+        ],
+        "declared": [
+            "max_tenth",
+            "min_tenth",
+            "name"
+        ]
+    },
+    "POST /kitchen/temperatures/points/{id}": {
+        "required": [
+            "active",
+            "lock_version",
+            "max_tenth",
+            "min_tenth",
+            "name"
+        ],
+        "declared": [
+            "active",
+            "lock_version",
+            "max_tenth",
+            "min_tenth",
+            "name"
+        ]
+    },
+    "POST /kitchen/temperatures/readings": {
+        "required": [
+            "point_id",
+            "value_tenth"
+        ],
+        "declared": [
+            "action_taken",
+            "point_id",
+            "value_tenth"
         ]
     },
     "POST /kitchen/tickets/{id}/advance": {
