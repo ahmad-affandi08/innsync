@@ -4,6 +4,7 @@ import { AppFrame } from '@/components/layout/app-frame';
 
 const LINKS = [
     { href: '/guest/orders', label: 'guest.nav.orders' },
+    { href: '/guest/checkins', label: 'guest.nav.checkins' },
     { href: '/guest/surveys', label: 'guest.nav.surveys' },
     { href: '/guest/qr', label: 'guest.nav.qr' },
     { href: '/fnb/pos', label: 'fnb.nav.pos' },

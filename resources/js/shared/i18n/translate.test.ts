@@ -243,6 +243,11 @@ describe('dictionaries', () => {
             'kitchen.prod.colNumber',
             'kitchen.prod.colStatus',
             'kitchen.prod.formula',
+            'guest.checkin.idType.ktp',
+            'guest.checkin.idType.kitas',
+            'guest.checkin.deposit',
+            'guest.ck.colDeposit',
+            'guest.ck.roomReady',
         ])
         const identical = (Object.keys(en) as (keyof typeof en)[]).filter(
             (key) => en[key] === id[key] && !allowedSame.has(key),

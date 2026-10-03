@@ -50,6 +50,8 @@ use App\Modules\GuestExperience\Presentation\Http\Controllers\GuestMenuControlle
 use App\Modules\GuestExperience\Presentation\Http\Controllers\GuestOrderQueueController;
 use App\Modules\GuestExperience\Presentation\Http\Controllers\GuestSurveyController;
 use App\Modules\GuestExperience\Presentation\Http\Controllers\QrPointController;
+use App\Modules\GuestExperience\Presentation\Http\Controllers\SelfCheckInController;
+use App\Modules\GuestExperience\Presentation\Http\Controllers\SelfCheckInStaffController;
 use App\Modules\Housekeeping\Presentation\Http\Controllers\ChecklistController as HousekeepingChecklistController;
 use App\Modules\Housekeeping\Presentation\Http\Controllers\DamageReportController as HousekeepingDamageReportController;
 use App\Modules\Housekeeping\Presentation\Http\Controllers\HousekeepingController;
@@ -143,6 +145,12 @@ Route::prefix('g')->middleware(['throttle:guest'])->group(function (): void {
         Route::get('/bill', [GuestHelpController::class, 'bill'])->name('guest.bill');
         Route::get('/survey', [GuestHelpController::class, 'survey'])->name('guest.survey');
         Route::post('/survey', [GuestHelpController::class, 'answer'])->middleware('throttle:guest-write')->name('guest.survey.answer');
+    });
+    // The self check-in link (FR-GST-001, -006): the token in the address is the proof; unknown, withdrawn and expired links answer alike.
+    Route::middleware(['guest.link'])->prefix('c/{token}')->where(['token' => '[A-Za-z0-9_-]{32}'])->group(function (): void {
+        Route::get('/', [SelfCheckInController::class, 'show'])->name('guest.checkin');
+        Route::post('/find', [SelfCheckInController::class, 'find'])->middleware('throttle:guest-lookup')->name('guest.checkin.find');
+        Route::post('/', [SelfCheckInController::class, 'submit'])->middleware('throttle:guest-write')->name('guest.checkin.submit');
     });
     Route::get('/{token}', [GuestEntryController::class, 'enter'])->where('token', '[A-Za-z0-9_-]{32}')->name('guest.enter');
 });
@@ -781,6 +789,16 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
     Route::get('/surveys', [GuestSurveyController::class, 'index'])->name('guest.surveys');
     Route::get('/orders', [GuestOrderQueueController::class, 'index'])->name('guest.orders.queue');
     Route::post('/orders/{id}/decide', [GuestOrderQueueController::class, 'decide'])->where('id', $id)->name('guest.orders.decide');
+    Route::get('/checkins', [SelfCheckInStaffController::class, 'index'])->name('guest.checkins');
+    Route::post('/checkins/links', [SelfCheckInStaffController::class, 'issue'])->name('guest.checkins.links.issue');
+    Route::post('/checkins/links/{id}/revoke', [SelfCheckInStaffController::class, 'revoke'])->where('id', $id)->name('guest.checkins.links.revoke');
+    Route::post('/checkins/lobby', [SelfCheckInStaffController::class, 'lobby'])->name('guest.checkins.lobby');
+    Route::post('/checkins/notice', [SelfCheckInStaffController::class, 'defineNotice'])->name('guest.checkins.notice');
+    Route::get('/checkins/{id}', [SelfCheckInStaffController::class, 'show'])->where('id', $id)->name('guest.checkins.show');
+    Route::get('/checkins/{id}/photo', [SelfCheckInStaffController::class, 'photo'])->where('id', $id)->name('guest.checkins.photo');
+    Route::get('/checkins/{id}/signature', [SelfCheckInStaffController::class, 'signature'])->where('id', $id)->name('guest.checkins.signature');
+    Route::post('/checkins/{id}/verify', [SelfCheckInStaffController::class, 'verify'])->where('id', $id)->name('guest.checkins.verify');
+    Route::post('/checkins/{id}/reject', [SelfCheckInStaffController::class, 'reject'])->where('id', $id)->name('guest.checkins.reject');
 });
 
 Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix('kitchen')->group(function (): void {

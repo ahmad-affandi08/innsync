@@ -30,3 +30,35 @@ export type GuestBill = {
 export type GuestSurvey = { hotel: string; label: string; verified: boolean; locked: boolean; open: boolean; answered: boolean; departure: string | null };
 export type SurveyRow = { id: string; overall: number; room: number | null; service: number | null; food: number | null; value: number | null; comment: string | null; complaint_opened: boolean; at: string };
 export type SurveyOverview = { days: number; count: number; averages: Record<'overall' | 'room_rating' | 'service_rating' | 'food_rating' | 'value_rating', number | null>; surveys: SurveyRow[] };
+
+export type CheckInView =
+    | { hotel: string; state: 'unavailable'; expires_at: string }
+    | { hotel: string; state: 'lobby'; expires_at: string }
+    | { hotel: string; state: 'too_early'; expires_at: string; opens_on: string; arrival: string }
+    | { hotel: string; state: 'waiting'; expires_at: string; submitted_at: string }
+    | { hotel: string; state: 'rejected'; expires_at: string; reason: string | null }
+    | { hotel: string; state: 'verified'; expires_at: string; room_number: string | null; arrival: string; departure: string; key: { id: string; en: string; note: string | null } }
+    | {
+        hotel: string; state: 'form'; expires_at: string;
+        reservation: { number: string; guest_name: string; arrival: string; departure: string; nights: number; adults: number; children: number; max_adults: number | null; max_children: number | null; room_type: string | null };
+        deposit: { currency: string; required_minor: number; held_minor: number; due_minor: number; instructions: { id: string; en: string } };
+        notice: { version: number; body_id: string; body_en: string };
+        id_types: string[];
+    };
+export type CheckInArrival = {
+    reservation_id: string; number: string; guest_name: string; arrival: string; departure: string; room_type: string | null; has_stay: boolean;
+    checkin: { id: string; status: 'submitted' | 'verified' | 'rejected' } | null;
+    link: { id: string; token: string; expires_at: string; lock_version: number } | null;
+};
+export type CheckInOverview = { arrivals: CheckInArrival[]; lobby: { id: string; token: string; expires_at: string } | null; queue_count: number };
+export type CheckInRow = {
+    id: string; status: 'submitted' | 'verified' | 'rejected'; reservation_id: string; number: string; guest_name: string; arrival: string; departure: string; room_type: string | null; adults: number; children: number;
+    submitted_at: string; decided_at: string | null; room_number: string | null; reject_reason: string | null;
+    deposit: { currency: string; required_minor: number; held_minor: number; claimed_minor: number | null; reference: string | null };
+};
+export type CheckInQueue = { waiting: CheckInRow[]; verified: CheckInRow[]; rejected: CheckInRow[]; may_read_identity: boolean };
+export type CheckInDetail = CheckInRow & {
+    data: { full_name: string; nationality: string; id_type: string; id_number: string; id_valid_until: string | null; visa_number: string | null; address: string; phone: string | null; email: string | null } | null;
+    consent: { version: number; at: string; locale: string }; rooms: { id: string; number: string; floor: string | null; ready: boolean }[]; has_photo: boolean; has_signature: boolean; lock_version: number;
+};
+export type PrivacyNotice = { version: number; body_id: string; body_en: string; digest: string };

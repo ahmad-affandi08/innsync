@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\HandleInertiaRequests;
+use App\Modules\GuestExperience\Presentation\Http\Middleware\ResolveCheckInLink;
 use App\Modules\GuestExperience\Presentation\Http\Middleware\ResolveGuestSession;
 use App\Modules\IdentityAccess\Presentation\Http\Middleware\EnsureActiveUser;
 use App\Modules\IdentityAccess\Presentation\Http\Middleware\EnsureMfaVerified;
@@ -72,6 +73,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->alias([
             'active' => EnsureActiveUser::class,
+            'guest.link' => ResolveCheckInLink::class,
             'guest.session' => ResolveGuestSession::class,
             'idempotent' => RequireIdempotencyKey::class,
             'mfa' => EnsureMfaVerified::class,

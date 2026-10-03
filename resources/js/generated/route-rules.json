@@ -2690,6 +2690,39 @@
             "reason"
         ]
     },
+    "POST /g/c/{token}": {
+        "required": [
+            "notice_version"
+        ],
+        "declared": [
+            "address",
+            "adults",
+            "children",
+            "deposit_reference",
+            "email",
+            "full_name",
+            "id_number",
+            "id_type",
+            "id_valid_until",
+            "locale",
+            "nationality",
+            "notice_version",
+            "phone",
+            "photo",
+            "signature",
+            "visa_number"
+        ]
+    },
+    "POST /g/c/{token}/find": {
+        "required": [
+            "name",
+            "reservation_number"
+        ],
+        "declared": [
+            "name",
+            "reservation_number"
+        ]
+    },
     "POST /g/complaint": {
         "required": [
             "client_key",
@@ -2756,6 +2789,54 @@
         "declared": [
             "room_number",
             "surname"
+        ]
+    },
+    "POST /guest/checkins/links": {
+        "required": [
+            "reservation_id"
+        ],
+        "declared": [
+            "reservation_id"
+        ]
+    },
+    "POST /guest/checkins/lobby": {
+        "required": [],
+        "declared": [
+            "renew"
+        ]
+    },
+    "POST /guest/checkins/notice": {
+        "required": [
+            "body_en",
+            "body_id",
+            "reason"
+        ],
+        "declared": [
+            "body_en",
+            "body_id",
+            "reason"
+        ]
+    },
+    "POST /guest/checkins/{id}/reject": {
+        "required": [
+            "lock_version",
+            "reason"
+        ],
+        "declared": [
+            "lock_version",
+            "reason"
+        ]
+    },
+    "POST /guest/checkins/{id}/verify": {
+        "required": [
+            "lock_version",
+            "room_id"
+        ],
+        "declared": [
+            "deposit_received_minor",
+            "key_note",
+            "lock_version",
+            "room_id"
         ]
     },
     "POST /guest/orders/{id}/decide": {

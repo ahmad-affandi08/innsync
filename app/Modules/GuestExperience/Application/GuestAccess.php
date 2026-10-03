@@ -19,6 +19,15 @@ final readonly class GuestAccess
     /** Sees what guests ordered and verifies a charge to the room. */
     public const ORDER_MANAGE = 'guest.order.manage';
 
+    /** Sends links for the self check-in, reads what guests sent, verifies or refuses it. Reading what a guest sent also needs the right to read identity documents. */
+    public const CHECKIN_MANAGE = 'guest.checkin.manage';
+
+    /** Writes a new version of the privacy notice the guest agrees to before sending an identity document. */
+    public const PRIVACY_MANAGE = 'guest.privacy.manage';
+
+    /** The front office privilege to read identity documents; asking for it here does not make this context depend on front office code. */
+    public const IDENTITY_VIEW = 'front-office.guest-identity.view';
+
     public function __construct(private PermissionChecker $permissions, private PropertyContext $property) {}
 
     public function assertProperty(PropertyId $property): void

@@ -257,13 +257,13 @@ Every row must eventually point to implementation evidence and tests. Status is 
 | FR-RPT-009 | Reporting & Analytics | Wajib | ../TASK/MODULE-11-REPORTING.md | TODO |
 | FR-RPT-010 | Reporting & Analytics | Wajib | ../TASK/MODULE-11-REPORTING.md | TODO |
 | FR-RPT-011 | Reporting & Analytics | Sebaiknya | ../TASK/MODULE-11-REPORTING.md | TODO |
-| FR-GST-001 | Guest Self-Service | Wajib | ../TASK/MODULE-12-GUEST-SELF-SERVICE.md | TODO |
-| FR-GST-002 | Guest Self-Service | Wajib | ../TASK/MODULE-12-GUEST-SELF-SERVICE.md | TODO |
-| FR-GST-003 | Guest Self-Service | Wajib | ../TASK/MODULE-12-GUEST-SELF-SERVICE.md | TODO |
-| FR-GST-004 | Guest Self-Service | Wajib | ../TASK/MODULE-12-GUEST-SELF-SERVICE.md | TODO |
-| FR-GST-005 | Guest Self-Service | Wajib | ../TASK/MODULE-12-GUEST-SELF-SERVICE.md | TODO |
-| FR-GST-006 | Guest Self-Service | Wajib | ../TASK/MODULE-12-GUEST-SELF-SERVICE.md | TODO |
-| FR-GST-007 | Guest Self-Service | Wajib | ../TASK/MODULE-12-GUEST-SELF-SERVICE.md | TODO |
+| FR-GST-001 | Guest Self-Service | Wajib | ../TASK/MODULE-12-GUEST-SELF-SERVICE.md | REVIEW |
+| FR-GST-002 | Guest Self-Service | Wajib | ../TASK/MODULE-12-GUEST-SELF-SERVICE.md | REVIEW |
+| FR-GST-003 | Guest Self-Service | Wajib | ../TASK/MODULE-12-GUEST-SELF-SERVICE.md | REVIEW |
+| FR-GST-004 | Guest Self-Service | Wajib | ../TASK/MODULE-12-GUEST-SELF-SERVICE.md | REVIEW |
+| FR-GST-005 | Guest Self-Service | Wajib | ../TASK/MODULE-12-GUEST-SELF-SERVICE.md | REVIEW |
+| FR-GST-006 | Guest Self-Service | Wajib | ../TASK/MODULE-12-GUEST-SELF-SERVICE.md | REVIEW |
+| FR-GST-007 | Guest Self-Service | Wajib | ../TASK/MODULE-12-GUEST-SELF-SERVICE.md | REVIEW |
 | FR-GST-010 | Guest Self-Service | Wajib | ../TASK/MODULE-12-GUEST-SELF-SERVICE.md | REVIEW |
 | FR-GST-011 | Guest Self-Service | Wajib | ../TASK/MODULE-12-GUEST-SELF-SERVICE.md | REVIEW |
 | FR-GST-012 | Guest Self-Service | Wajib | ../TASK/MODULE-12-GUEST-SELF-SERVICE.md | REVIEW |
@@ -271,7 +271,7 @@ Every row must eventually point to implementation evidence and tests. Status is 
 | FR-GST-014 | Guest Self-Service | Wajib | ../TASK/MODULE-12-GUEST-SELF-SERVICE.md | REVIEW |
 | FR-GST-015 | Guest Self-Service | Sebaiknya | ../TASK/MODULE-12-GUEST-SELF-SERVICE.md | REVIEW |
 | FR-GST-016 | Guest Self-Service | Sebaiknya | ../TASK/MODULE-12-GUEST-SELF-SERVICE.md | REVIEW |
-| FR-GST-017 | Guest Self-Service | Wajib | ../TASK/MODULE-12-GUEST-SELF-SERVICE.md | TODO |
+| FR-GST-017 | Guest Self-Service | Wajib | ../TASK/MODULE-12-GUEST-SELF-SERVICE.md | REVIEW |
 | FR-GST-018 | Guest Self-Service | Wajib | ../TASK/MODULE-12-GUEST-SELF-SERVICE.md | REVIEW |
 | FR-GST-019 | Guest Self-Service | Sebaiknya | ../TASK/MODULE-12-GUEST-SELF-SERVICE.md | REVIEW |
 | NFR-01 | Cross-cutting | Kinerja | ../TASK/PHASE-0-FOUNDATION.md | TODO |

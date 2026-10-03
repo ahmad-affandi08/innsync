@@ -71,6 +71,8 @@ use App\Modules\FrontOffice\Application\ForeignPayments\ForeignPaymentRepository
 use App\Modules\FrontOffice\Application\Groups\GroupRepository;
 use App\Modules\FrontOffice\Application\GuestDesk\GuestStayDesk;
 use App\Modules\FrontOffice\Application\GuestDesk\GuestStayDeskService;
+use App\Modules\FrontOffice\Application\GuestDesk\SelfCheckInDesk;
+use App\Modules\FrontOffice\Application\GuestDesk\SelfCheckInDeskService;
 use App\Modules\FrontOffice\Application\Inventory\InventoryHoldRepository;
 use App\Modules\FrontOffice\Application\Inventory\InventoryRepository;
 use App\Modules\FrontOffice\Application\Inventory\RoomBlocking;
@@ -114,10 +116,12 @@ use App\Modules\GuestExperience\Application\GuestRoomChargeVerdict;
 use App\Modules\GuestExperience\Application\GuestSessionStore;
 use App\Modules\GuestExperience\Application\GuestTokens;
 use App\Modules\GuestExperience\Application\QrPointStore;
+use App\Modules\GuestExperience\Application\SelfCheckInStore;
 use App\Modules\GuestExperience\Infrastructure\DatabaseGuestHelpStore;
 use App\Modules\GuestExperience\Infrastructure\DatabaseGuestOrderStore;
 use App\Modules\GuestExperience\Infrastructure\DatabaseGuestSessionStore;
 use App\Modules\GuestExperience\Infrastructure\DatabaseQrPointStore;
+use App\Modules\GuestExperience\Infrastructure\DatabaseSelfCheckInStore;
 use App\Modules\GuestExperience\Infrastructure\RandomGuestTokens;
 use App\Modules\Housekeeping\Application\ChecklistRepository;
 use App\Modules\Housekeeping\Application\GuestServiceRequests;
@@ -561,6 +565,8 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(GuestRoomCharges::class, GuestRoomChargeVerdict::class);
         $this->app->bind(GuestHelpStore::class, DatabaseGuestHelpStore::class);
         $this->app->bind(GuestStayDesk::class, GuestStayDeskService::class);
+        $this->app->bind(SelfCheckInStore::class, DatabaseSelfCheckInStore::class);
+        $this->app->bind(SelfCheckInDesk::class, SelfCheckInDeskService::class);
         $this->app->bind(SystemActors::class, DatabaseSystemActors::class);
         $this->app->bind(TicketStore::class, DatabaseTicketStore::class);
         $this->app->bind(RecipeStore::class, DatabaseRecipeStore::class);
@@ -639,6 +645,10 @@ class AppServiceProvider extends ServiceProvider
             ->symbols());
 
         RateLimiter::for('guest', static fn (Request $request): Limit => Limit::perMinute(120)
+            ->by((string) $request->ip()));
+
+        // The lobby code asks for a reservation number and a name: slower than the rest, so a name cannot be tried against many numbers.
+        RateLimiter::for('guest-lookup', static fn (Request $request): Limit => Limit::perMinute(10)
             ->by((string) $request->ip()));
 
         RateLimiter::for('guest-write', static fn (Request $request): Limit => Limit::perMinute(20)
