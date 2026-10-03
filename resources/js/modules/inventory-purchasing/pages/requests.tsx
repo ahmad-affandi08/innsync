@@ -22,7 +22,7 @@ type Request = {
 };
 type Overview = { currency: string; requests: Request[]; departments: string[]; urgencies: string[]; items: ItemChoice[]; may: { create: boolean } };
 
-export default function RequestsPage({ overview, status }: { overview: Overview; status: string }) {
+export default function RequestsPage({ overview, status, department }: { overview: Overview; status: string; department: string }) {
     const { t } = useTranslation();
     const format = useFormatters();
     const errorCopy = useErrorStateCopy();
@@ -35,7 +35,7 @@ export default function RequestsPage({ overview, status }: { overview: Overview;
     function openNew() {
         action.clear();
         setBadCosts([]);
-        setForm(blankRequest(overview.departments));
+        setForm({ ...blankRequest(overview.departments), ...(department === '' ? {} : { department }) });
     }
 
     async function create() {
@@ -69,12 +69,13 @@ export default function RequestsPage({ overview, status }: { overview: Overview;
     return (
         <InventoryShell actions={overview.may.create ? <Button onClick={openNew} type="button">{t('inv.req.new')}</Button> : undefined} description={t('inv.req.description')} title={t('inv.req.title')} wide>
             <div className="max-w-xs">
-                <Select aria-label={t('inv.col.status')} onChange={(e) => router.get('/inventory/requests', e.target.value ? { status: e.target.value } : {}, { preserveScroll: true })} searchable={false} value={status}>
+                <Select aria-label={t('inv.col.status')} onChange={(e) => router.get('/inventory/requests', { ...(e.target.value ? { status: e.target.value } : {}), ...(department === '' ? {} : { department }) }, { preserveScroll: true })} searchable={false} value={status}>
                     <option value="">{t('inv.req.allStatuses')}</option>
                     {REQUEST_STATUSES.map((s) => <option key={s} value={s}>{label(s)}</option>)}
                 </Select>
             </div>
 
+            {department !== '' ? <p className="text-sm text-muted-foreground" data-testid="requests-department">{t('inv.req.ofDepartment', { department: t(`inv.dept.${department}` as MessageKey) })}</p> : null}
             <DataGrid caption={t('inv.req.title')} columns={columns} empty={<EmptyState title={t('inv.req.empty')} />} getRowId={(r) => r.id} id="inv.requests" rows={overview.requests} testId="requests" />
 
             <Dialog

@@ -290,6 +290,10 @@
         "name",
         "scope"
     ],
+    "housekeeping/pages/damage-reports": [
+        "category",
+        "title"
+    ],
     "housekeeping/pages/linen": [
         "code",
         "item_id",
@@ -491,6 +495,11 @@
     "kitchen/pages/board": [
         "late_after_minutes",
         "reason"
+    ],
+    "kitchen/pages/damage-reports": [
+        "area",
+        "category",
+        "title"
     ],
     "kitchen/pages/recipes": [
         "effective_from",

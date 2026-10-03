@@ -7,6 +7,7 @@ const LINKS = [
     { href: '/laundry/new', label: 'ldy.nav.new' },
     { href: '/laundry/claims', label: 'ldy.nav.claims' },
     { href: '/laundry/prices', label: 'ldy.nav.prices' },
+    { href: '/inventory/requests?department=laundry', label: 'ldy.nav.purchasing' },
 ] as const;
 
 type Props = { title: string; description: string; children: ReactNode; wide?: boolean; };

@@ -2,6 +2,7 @@ export const laundry = {
     'ldy.nav.label': 'Laundry',
     'ldy.nav.queue': 'Daftar pekerjaan',
     'ldy.nav.new': 'Serahkan kantong',
+    'ldy.nav.purchasing': 'Permintaan pembelian',
     'ldy.nav.prices': 'Daftar harga',
     'ldy.status.sent': 'Dikirim',
     'ldy.status.received': 'Diterima dan dihitung',

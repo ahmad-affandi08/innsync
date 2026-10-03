@@ -23,8 +23,8 @@
 | TASK-KIT-007 | FR-KIT-007 | Wajib | Melakukan stock opname bahan dapur dan gudang kering dengan pencatatan selisih dan nilai kerugian. | TODO |
 | TASK-KIT-008 | FR-KIT-008 | Wajib | Menampilkan daftar periksa kebersihan, suhu penyimpanan, dan tugas harian, mingguan, serta bulanan dapur. | TODO |
 | TASK-KIT-009 | FR-KIT-009 | Sebaiknya | Mencatat tanggal kedaluwarsa dan nomor batch bahan sensitif dengan peringatan mendekati kedaluwarsa. | TODO |
-| TASK-KIT-010 | FR-KIT-010 | Wajib | Membuat laporan kerusakan peralatan yang diteruskan ke modul Maintenance. | TODO |
-| TASK-KIT-011 | FR-KIT-011 | Wajib | Mengajukan permintaan pembelian bahan dan peralatan ke modul Purchasing. | TODO |
+| TASK-KIT-010 | FR-KIT-010 | Wajib | Membuat laporan kerusakan peralatan yang diteruskan ke modul Maintenance. | REVIEW |
+| TASK-KIT-011 | FR-KIT-011 | Wajib | Mengajukan permintaan pembelian bahan dan peralatan ke modul Purchasing. | REVIEW |
 | TASK-KIT-012 | FR-KIT-012 | Sebaiknya | Menerbitkan laporan penjualan menu, rasio biaya bahan terhadap penjualan, dan analisis menu berdasarkan popularitas serta kontribusi margin. | TODO |
 | TASK-KIT-013 | FR-KIT-013 | Wajib | Setiap perubahan resep menghasilkan versi baru bertanggal efektif; transaksi lama selalu mereferensikan versi resep yang berlaku saat transaksi diposting. | REVIEW |
 | TASK-KIT-014 | FR-KIT-014 | Sebaiknya | Mendukung produksi/preparation batch (misalnya sauce, dough, stock) yang mengonsumsi bahan baku dan menghasilkan semi-finished goods beserta yield aktual. | TODO |
@@ -64,6 +64,12 @@
 - The log is never edited or removed; a wrong entry is answered with a stock adjustment.
 - Not yet: the use of ingredients and preparation batches in the same log, photos of what was thrown away, a threshold that needs a second person, waste proposed automatically from a void after the dish was cooked.
 - Evidence: `tests/Feature/Kitchen/WasteHttpTest.php` (an ingredient logged, costed and written off once; a dish worked out by its recipe; the checks and that the log cannot be changed; negative stock allowed unless blocked; permissions). Seen in the browser: two portions of a dish sent back, recorded, listed with its ingredients and its cost.
+
+### Slice 42 (2026-10-03): equipment faults and purchase requests of the kitchen
+
+- Status: `TASK-KIT-010` and `-011` are `REVIEW`. Equipment faults of the kitchen and bar are reported the same way as in housekeeping (department `kitchen`, privilege `kitchen.damage.report`, or the board, waste or recipe privilege) and become work orders of Maintenance. The kitchen menu links to the purchase requests of the department (`/inventory/requests?department=kitchen`): the list shows only the department's requests and a new request starts for it; the request, its approval chain and its ordering are Purchasing's.
+- Context: `EquipmentDamageReportService`, `DamageReportController`, page `kitchen/pages/damage-reports`; `PurchaseRequestService::overview` takes an optional department.
+- Evidence: `tests/Feature/Maintenance/DamageReportHttpTest.php`, `tests/Feature/InventoryPurchasing/PurchasingHttpTest.php` (the department view).
 
 ## Required engineering checks
 

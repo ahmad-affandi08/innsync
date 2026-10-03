@@ -75,7 +75,7 @@
 | TASK-HK-005 | FR-HK-005 | Housekeeping | Wajib | REVIEW |
 | TASK-HK-006 | FR-HK-006 | Housekeeping | Sebaiknya | REVIEW |
 | TASK-HK-007 | FR-HK-007 | Housekeeping | Wajib | REVIEW |
-| TASK-HK-008 | FR-HK-008 | Housekeeping | Wajib | TODO |
+| TASK-HK-008 | FR-HK-008 | Housekeeping | Wajib | REVIEW |
 | TASK-HK-009 | FR-HK-009 | Housekeeping | Wajib | REVIEW |
 | TASK-HK-010 | FR-HK-010 | Housekeeping | Wajib | REVIEW |
 | TASK-HK-011 | FR-HK-011 | Housekeeping | Sebaiknya | REVIEW |
@@ -100,7 +100,7 @@
 | TASK-LDY-006 | FR-LDY-006 | Laundry | Sebaiknya | REVIEW |
 | TASK-LDY-007 | FR-LDY-007 | Laundry | Wajib | REVIEW |
 | TASK-LDY-008 | FR-LDY-008 | Laundry | Sebaiknya | TODO |
-| TASK-LDY-009 | FR-LDY-009 | Laundry | Wajib | TODO |
+| TASK-LDY-009 | FR-LDY-009 | Laundry | Wajib | REVIEW |
 | TASK-LDY-010 | FR-LDY-010 | Laundry | Sebaiknya | REVIEW |
 | TASK-LDY-011 | FR-LDY-011 | Laundry | Wajib | IN_PROGRESS |
 | TASK-LDY-012 | FR-LDY-012 | Laundry | Wajib | IN_PROGRESS |
@@ -139,8 +139,8 @@
 | TASK-KIT-007 | FR-KIT-007 | F&B Product / Kitchen | Wajib | TODO |
 | TASK-KIT-008 | FR-KIT-008 | F&B Product / Kitchen | Wajib | TODO |
 | TASK-KIT-009 | FR-KIT-009 | F&B Product / Kitchen | Sebaiknya | TODO |
-| TASK-KIT-010 | FR-KIT-010 | F&B Product / Kitchen | Wajib | TODO |
-| TASK-KIT-011 | FR-KIT-011 | F&B Product / Kitchen | Wajib | TODO |
+| TASK-KIT-010 | FR-KIT-010 | F&B Product / Kitchen | Wajib | REVIEW |
+| TASK-KIT-011 | FR-KIT-011 | F&B Product / Kitchen | Wajib | REVIEW |
 | TASK-KIT-012 | FR-KIT-012 | F&B Product / Kitchen | Sebaiknya | TODO |
 | TASK-KIT-013 | FR-KIT-013 | F&B Product / Kitchen | Wajib | REVIEW |
 | TASK-KIT-014 | FR-KIT-014 | F&B Product / Kitchen | Sebaiknya | TODO |

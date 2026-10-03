@@ -25,6 +25,9 @@ final readonly class KitchenAccess
     /** Records what was thrown away. */
     public const WASTE_RECORD = 'kitchen.waste.record';
 
+    /** Reports a fault of the equipment to maintenance. */
+    public const DAMAGE_REPORT = 'kitchen.damage.report';
+
     public function __construct(private PermissionChecker $permissions, private PropertyContext $property) {}
 
     public function assertProperty(PropertyId $property): void

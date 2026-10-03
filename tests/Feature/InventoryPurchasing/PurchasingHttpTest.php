@@ -114,6 +114,15 @@ final class PurchasingHttpTest extends TestCase
         $this->get('/inventory/requests')->assertInertia(fn (Assert $p) => $p->component('inventory-purchasing/pages/requests')->where('overview.requests.0.number', $r['number'])->where('overview.items.1.suggested_cost_minor.DUS', 2_400_000)->where('overview.items.1.suggested_cost_minor.BTL', 100_000));
     }
 
+    public function test_a_department_that_comes_from_its_own_screen_sees_and_starts_its_own_requests(): void
+    {
+        $this->pr();
+        $laundry = $this->pr(['department' => 'laundry', 'reason' => 'Detergent']);
+        $this->get('/inventory/requests?department=laundry')->assertInertia(fn (Assert $p) => $p->where('department', 'laundry')->has('overview.requests', 1)->where('overview.requests.0.number', $laundry['number']));
+        $this->get('/inventory/requests')->assertInertia(fn (Assert $p) => $p->where('department', '')->has('overview.requests', 2));
+        $this->getJson('/inventory/requests?department=wizardry')->assertStatus(422);
+    }
+
     public function test_a_request_is_checked_for_department_urgency_date_lines_and_units(): void
     {
         $this->pr(['department' => 'moon'], 422);

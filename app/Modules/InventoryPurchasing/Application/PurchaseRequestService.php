@@ -58,7 +58,7 @@ final readonly class PurchaseRequestService
     ) {}
 
     /** @return array<string, mixed> */
-    public function overview(PropertyId $property, string $actorId, ?string $status): array
+    public function overview(PropertyId $property, string $actorId, ?string $status, ?string $department = null): array
     {
         $this->access->requireView($property, $actorId);
 
@@ -66,7 +66,17 @@ final readonly class PurchaseRequestService
             throw Refusal::invalid('Choose a status from the list.', ['status']);
         }
 
+        if ($department !== null && $department !== '' && ! in_array($department, InventoryCatalogService::DEPARTMENTS, true)) {
+            throw Refusal::invalid('Choose a department from the list.', ['department']);
+        }
+
         $rows = $this->store->requests($property, $status === '' ? null : $status, 200);
+
+        // A department that comes here from its own screen (laundry, kitchen) sees its own requests.
+        if ($department !== null && $department !== '') {
+            $rows = array_values(array_filter($rows, static fn (array $r): bool => $r['department'] === $department));
+        }
+
         $names = $this->staff->namesOf($property, array_values(array_unique(array_column($rows, 'requested_by'))));
 
         return [

@@ -293,6 +293,7 @@ export const inventory = {
     "inv.nav.orders": "Pesanan pembelian",
     "inv.nav.purchasingSettings": "Pengaturan pembelian",
     "inv.req.title": "Permintaan pembelian",
+    "inv.req.ofDepartment": "Menampilkan permintaan {department}. Permintaan baru dimulai untuk departemen ini.",
     "inv.req.description": "Barang yang perlu dibeli tiap departemen, seberapa mendesak, dan sampai mana proses persetujuannya.",
     "inv.req.new": "Permintaan baru",
     "inv.req.open": "Buka",

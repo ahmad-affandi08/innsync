@@ -99,6 +99,8 @@ describe('dictionaries', () => {
             'mtc.asset.meter',
             'hr.col.status',
             'hr.att.shift',
+            'mtc.damage.number',
+            'mtc.damage.state',
             'hr.department.front_office',
             'hr.department.housekeeping',
             'hr.department.laundry',

@@ -22,7 +22,7 @@
 | TASK-HK-005 | FR-HK-005 | Wajib | Menyediakan daftar periksa SOP tugas harian, mingguan, dan bulanan per kamar dan per area umum, disusun oleh manajemen sebagai template. | REVIEW |
 | TASK-HK-006 | FR-HK-006 | Sebaiknya | Daftar periksa dapat mewajibkan lampiran foto pada butir tertentu sebagai bukti pengerjaan. | REVIEW |
 | TASK-HK-007 | FR-HK-007 | Wajib | Supervisor melakukan inspeksi kamar dan menyetujui perubahan status menjadi siap dijual; kamar tanpa inspeksi dapat dikonfigurasi tetap masuk status bersih namun belum siap. | REVIEW |
-| TASK-HK-008 | FR-HK-008 | Wajib | Room attendant membuat laporan kerusakan dengan cara memilih kamar atau lokasi, menulis keterangan, dan melampirkan foto; laporan langsung menjadi work order pada modul Maintenance. | TODO |
+| TASK-HK-008 | FR-HK-008 | Wajib | Room attendant membuat laporan kerusakan dengan cara memilih kamar atau lokasi, menulis keterangan, dan melampirkan foto; laporan langsung menjadi work order pada modul Maintenance. | REVIEW |
 | TASK-HK-009 | FR-HK-009 | Wajib | Mencatat pemakaian linen dan perlengkapan: sprei, handuk, sarung bantal, sabun, dan amenitas lain, per kamar dan per hari. | REVIEW |
 | TASK-HK-010 | FR-HK-010 | Wajib | Mencatat sirkulasi linen mengikuti alur gudang ke luar gudang, ke laundry, dan kembali ke gudang; setiap perpindahan wajib diinput saat pengambilan maupun penyimpanan. | REVIEW |
 | TASK-HK-011 | FR-HK-011 | Sebaiknya | Sistem menghitung selisih linen yang tidak kembali dan menandainya sebagai kehilangan atau kerusakan untuk ditindaklanjuti. | REVIEW |
@@ -39,6 +39,12 @@
 | TASK-HK-022 | FR-HK-022 | Wajib | Sistem mengirim order tersebut ke modul Laundry lengkap dengan nomor kamar dan jumlah item, dalam bentuk daftar per item sehingga petugas laundry cukup menandai centang. | REVIEW |
 | TASK-HK-023 | FR-HK-023 | Wajib | Nilai tagihan laundry otomatis dibentuk berdasarkan daftar harga per item dan diposkan ke folio kamar. | REVIEW |
 | TASK-HK-024 | FR-HK-024 | Wajib | Setelah laundry selesai, Housekeeping menerima notifikasi untuk mengantarkan kembali ke kamar dan menutup order dengan bukti penerimaan. | REVIEW |
+
+### Slice 42 (2026-10-03): faults found by housekeeping become work orders
+
+- Status: `TASK-HK-008` is `REVIEW`. A room attendant (or anyone who performs, manages or inspects housekeeping work) opens "Report a fault", picks the room or writes the place, chooses the kind of work, says what is wrong, may mark it urgent and attach a photo; Maintenance gets a work order at once, reported for that person with the department `housekeeping`, and the screen lists the faults they reported with the state of each work order (waiting, being fixed, fixed, cancelled). The work order is the record; an audit entry names its number.
+- Context: Maintenance contract `DamageReporting` (implemented by `DamageReportService` over `WorkOrderService::report`, checking no privilege), `RoomDamageReportService`, `DamageReportController`, page `housekeeping/pages/damage-reports` over the shared `DamageReportPanel`.
+- Evidence: `tests/Feature/Maintenance/DamageReportHttpTest.php`.
 
 ## Required engineering checks
 

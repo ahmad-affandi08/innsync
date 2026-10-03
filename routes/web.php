@@ -37,6 +37,7 @@ use App\Modules\FrontOffice\Presentation\Http\Controllers\RoomBoardController;
 use App\Modules\FrontOffice\Presentation\Http\Controllers\StayController;
 use App\Modules\FrontOffice\Presentation\Http\Controllers\StayFeePolicyController;
 use App\Modules\Housekeeping\Presentation\Http\Controllers\ChecklistController as HousekeepingChecklistController;
+use App\Modules\Housekeeping\Presentation\Http\Controllers\DamageReportController as HousekeepingDamageReportController;
 use App\Modules\Housekeeping\Presentation\Http\Controllers\HousekeepingController;
 use App\Modules\Housekeeping\Presentation\Http\Controllers\LinenController;
 use App\Modules\Housekeeping\Presentation\Http\Controllers\LostFoundController;
@@ -67,6 +68,7 @@ use App\Modules\InventoryPurchasing\Presentation\Http\Controllers\StockMovementC
 use App\Modules\InventoryPurchasing\Presentation\Http\Controllers\SupplierController;
 use App\Modules\InventoryPurchasing\Presentation\Http\Controllers\SupplierInvoiceController;
 use App\Modules\Kitchen\Presentation\Http\Controllers\BoardController as KitchenBoardController;
+use App\Modules\Kitchen\Presentation\Http\Controllers\DamageReportController as KitchenDamageReportController;
 use App\Modules\Kitchen\Presentation\Http\Controllers\RecipeController;
 use App\Modules\Kitchen\Presentation\Http\Controllers\WasteController;
 use App\Modules\Laundry\Presentation\Http\Controllers\ClaimController;
@@ -381,6 +383,8 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
     Route::post('/linen/transfers/{id}/cancel', [LinenController::class, 'cancel'])->where('id', $id)->name('housekeeping.linen.transfers.cancel');
 
     // Lost and found (FR-HK-012).
+    Route::get('/damage-reports', [HousekeepingDamageReportController::class, 'index'])->name('housekeeping.damage');
+    Route::post('/damage-reports', [HousekeepingDamageReportController::class, 'store'])->name('housekeeping.damage.store');
     Route::get('/lost-found', [LostFoundController::class, 'index'])->name('housekeeping.lost-found');
     Route::post('/lost-found', [LostFoundController::class, 'store'])->name('housekeeping.lost-found.store');
     Route::post('/lost-found/{id}/returned', [LostFoundController::class, 'returned'])->where('id', $id)->name('housekeeping.lost-found.returned');
@@ -674,6 +678,8 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
     Route::post('/tickets/{id}/advance', [KitchenBoardController::class, 'advance'])->where('id', $id)->name('kitchen.tickets.advance');
     Route::post('/items/{id}/availability', [KitchenBoardController::class, 'availability'])->where('id', $id)->name('kitchen.items.availability');
     Route::post('/settings', [KitchenBoardController::class, 'saveSettings'])->name('kitchen.settings.save');
+    Route::get('/damage-reports', [KitchenDamageReportController::class, 'index'])->name('kitchen.damage');
+    Route::post('/damage-reports', [KitchenDamageReportController::class, 'store'])->name('kitchen.damage.store');
     Route::get('/waste', [WasteController::class, 'index'])->name('kitchen.waste');
     Route::post('/waste', [WasteController::class, 'record'])->middleware(['idempotent'])->name('kitchen.waste.record');
     Route::get('/recipes', [RecipeController::class, 'index'])->name('kitchen.recipes');

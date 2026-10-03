@@ -6,6 +6,8 @@ const LINKS = [
     { href: '/kitchen', label: 'kitchen.nav.board' },
     { href: '/kitchen/recipes', label: 'kitchen.nav.recipes' },
     { href: '/kitchen/waste', label: 'kitchen.nav.waste' },
+    { href: '/kitchen/damage-reports', label: 'kitchen.nav.damage' },
+    { href: '/inventory/requests?department=kitchen', label: 'kitchen.nav.purchasing' },
 ] as const;
 
 type Props = { title: string; description: string; children: ReactNode; actions?: ReactNode };

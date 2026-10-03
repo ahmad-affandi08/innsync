@@ -349,6 +349,7 @@
     "GET /inventory/requests": {
         "required": [],
         "declared": [
+            "department",
             "status"
         ]
     },
@@ -2308,6 +2309,21 @@
             "target"
         ]
     },
+    "POST /housekeeping/damage-reports": {
+        "required": [
+            "category",
+            "title"
+        ],
+        "declared": [
+            "area",
+            "category",
+            "detail",
+            "photo",
+            "room_id",
+            "title",
+            "urgent"
+        ]
+    },
     "POST /housekeeping/findings/{id}/waive": {
         "required": [
             "reason"
@@ -3504,6 +3520,21 @@
         "declared": [
             "lock_version",
             "note"
+        ]
+    },
+    "POST /kitchen/damage-reports": {
+        "required": [
+            "area",
+            "category",
+            "title"
+        ],
+        "declared": [
+            "area",
+            "category",
+            "detail",
+            "photo",
+            "title",
+            "urgent"
         ]
     },
     "POST /kitchen/items/{id}/availability": {

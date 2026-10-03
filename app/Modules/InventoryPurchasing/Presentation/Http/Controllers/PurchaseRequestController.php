@@ -18,9 +18,9 @@ final readonly class PurchaseRequestController
 
     public function index(Request $request): Response
     {
-        $data = $request->validate(['status' => ['nullable', 'string', 'max:16']]);
+        $data = $request->validate(['status' => ['nullable', 'string', 'max:16'], 'department' => ['nullable', 'string', 'max:16']]);
 
-        return Inertia::render('inventory-purchasing/pages/requests', ['overview' => $this->requests->overview($this->property->current(), $this->actor($request), $data['status'] ?? null), 'status' => $data['status'] ?? '']);
+        return Inertia::render('inventory-purchasing/pages/requests', ['overview' => $this->requests->overview($this->property->current(), $this->actor($request), $data['status'] ?? null, $data['department'] ?? null), 'status' => $data['status'] ?? '', 'department' => $data['department'] ?? '']);
     }
 
     public function show(Request $request, string $id): Response

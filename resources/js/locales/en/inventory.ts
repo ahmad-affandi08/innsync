@@ -293,6 +293,7 @@ export const inventory = {
     "inv.nav.orders": "Purchase orders",
     "inv.nav.purchasingSettings": "Purchasing settings",
     "inv.req.title": "Purchase requests",
+    "inv.req.ofDepartment": "Showing the requests of {department}. A new request starts for this department.",
     "inv.req.description": "What each department needs bought, how urgent it is and where it stands in approval.",
     "inv.req.new": "New request",
     "inv.req.open": "Open",

@@ -2,6 +2,7 @@ export const laundry = {
     'ldy.nav.label': 'Laundry',
     'ldy.nav.queue': 'Work list',
     'ldy.nav.new': 'Hand over a bag',
+    'ldy.nav.purchasing': 'Purchase requests',
     'ldy.nav.prices': 'Price list',
     'ldy.status.sent': 'Sent',
     'ldy.status.received': 'Received and counted',
