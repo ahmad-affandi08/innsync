@@ -7,6 +7,7 @@ namespace App\Modules\Reporting\Application;
 use App\Modules\Reporting\Domain\ReportPeriod;
 use App\Shared\Domain\Tenancy\PropertyId;
 use App\Shared\Domain\Time\BusinessDate;
+use App\Shared\Domain\Time\PropertyTimeZone;
 use DateTimeImmutable;
 
 /**
@@ -121,4 +122,32 @@ interface ReportQueries
      * @return array<string, array{room: array{base: int, service_charge: int, tax: int}, laundry: array{base: int, service_charge: int, tax: int}, other: array{base: int, service_charge: int, tax: int}}> by month `YYYY-MM`
      */
     public function obligationsByMonth(PropertyId $property, BusinessDate $from, BusinessDate $to): array;
+
+    /**
+     * FR-DSH-010: the dishes sold the most and the least in the period (bills that were settled, lines not voided or removed; dishes still on the menu with no sale count as the least sold).
+     *
+     * @return array{top: list<array{code: string, name: string, outlet: string, quantity: int, total_minor: int}>, bottom: list<array{code: string, name: string, outlet: string, quantity: int, total_minor: int}>}
+     */
+    public function menuPerformance(PropertyId $property, ReportPeriod $period, int $limit): array;
+
+    /**
+     * FR-DSH-010: for each room type, the room nights sold in the period, the room revenue before service charge and tax, the average daily rate and the occupancy of its rooms.
+     *
+     * @return list<array{code: string, name: string, rooms: int, nights: int, revenue_minor: int, adr_minor: int, occupancy_bp: int}>
+     */
+    public function roomTypePerformance(PropertyId $property, ReportPeriod $period): array;
+
+    /**
+     * FR-DSH-011: the bills settled in each hour of the day (clock of the property) for each outlet.
+     *
+     * @return list<array{code: string, name: string, hours: list<int>, total: int}>
+     */
+    public function outletHours(PropertyId $property, DateTimeImmutable $fromUtc, DateTimeImmutable $toUtc, PropertyTimeZone $zone, BusinessDate $from, BusinessDate $to): array;
+
+    /**
+     * FR-DSH-012: the check-ins of the period by day of the week (Monday first) and hour of the day (clock of the property).
+     *
+     * @return array{cells: list<list<int>>, total: int}
+     */
+    public function arrivalHeatmap(PropertyId $property, ReportPeriod $period, PropertyTimeZone $zone): array;
 }

@@ -11,9 +11,9 @@
 | TASK-DSH-007 | FR-DSH-007 | Dashboard Manajemen | Wajib | REVIEW |
 | TASK-DSH-008 | FR-DSH-008 | Dashboard Manajemen | Wajib | REVIEW |
 | TASK-DSH-009 | FR-DSH-009 | Dashboard Manajemen | Wajib | REVIEW |
-| TASK-DSH-010 | FR-DSH-010 | Dashboard Manajemen | Sebaiknya | TODO |
-| TASK-DSH-011 | FR-DSH-011 | Dashboard Manajemen | Sebaiknya | TODO |
-| TASK-DSH-012 | FR-DSH-012 | Dashboard Manajemen | Sebaiknya | TODO |
+| TASK-DSH-010 | FR-DSH-010 | Dashboard Manajemen | Sebaiknya | REVIEW |
+| TASK-DSH-011 | FR-DSH-011 | Dashboard Manajemen | Sebaiknya | REVIEW |
+| TASK-DSH-012 | FR-DSH-012 | Dashboard Manajemen | Sebaiknya | REVIEW |
 | TASK-DSH-013 | FR-DSH-013 | Dashboard Manajemen | Wajib | REVIEW |
 | TASK-DSH-014 | FR-DSH-014 | Dashboard Manajemen | Wajib | REVIEW |
 | TASK-DSH-015 | FR-DSH-015 | Dashboard Manajemen | Wajib | REVIEW |

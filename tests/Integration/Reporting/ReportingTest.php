@@ -113,7 +113,7 @@ final class ReportingTest extends TestCase
 
         self::assertSame('2026-10-01', $snapshot['business_date']);
         self::assertSame(['today', '2026-10-01', '2026-10-01'], [$snapshot['period']['preset'], $snapshot['period']['from'], $snapshot['period']['to']]);
-        self::assertSame(['occupancy', 'movements', 'activity', 'revenue'], array_keys($cards));
+        self::assertSame(['occupancy', 'movements', 'activity', 'revenue', 'products', 'outlet_hours', 'arrivals'], array_keys($cards));
 
         $o = $cards['occupancy']['values'];
         self::assertSame([2, 2, 3, 1, 0, 10_000, 6], [$o['occupied'], $o['sellable'], $o['total'], $o['blocked'], $o['available'], $o['occupancy_bp'], $o['guests']]);
@@ -162,7 +162,7 @@ final class ReportingTest extends TestCase
         $this->operate();
 
         $limited = array_column($this->dashboard($this->dashOnlyId)['cards'], 'key');
-        self::assertSame(['occupancy', 'movements', 'activity'], $limited);
+        self::assertSame(['occupancy', 'movements', 'activity', 'outlet_hours', 'arrivals'], $limited);
         $this->assertRefused(403, fn () => $this->dashboard($this->viewerId));
         $this->assertRefused(403, fn () => $this->dashboard($this->attendantId));
     }

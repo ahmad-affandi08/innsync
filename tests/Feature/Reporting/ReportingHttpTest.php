@@ -62,7 +62,7 @@ final class ReportingHttpTest extends TestCase
     public function test_the_dashboard_follows_the_chosen_period_and_the_report_centre_lists_reports(): void
     {
         $this->get('/dashboard')->assertInertia(fn (Assert $p) => $p->component('reporting/pages/dashboard')->where('currency', 'IDR')->where('snapshot.period.preset', 'today')->where('snapshot.cards.0.key', 'occupancy')
-            ->where('snapshot.cards.0.values.occupied', 1)->where('snapshot.cards.1.values.arrivals_checked_in', 1)->has('snapshot.cards', 4));
+            ->where('snapshot.cards.0.values.occupied', 1)->where('snapshot.cards.1.values.arrivals_checked_in', 1)->has('snapshot.cards', 7));
         $this->get('/dashboard?preset=month')->assertInertia(fn (Assert $p) => $p->where('snapshot.period.preset', 'month')->where('snapshot.period.from', '2026-10-01'));
         $this->get('/dashboard?from=2026-10-01&to=2026-10-01')->assertInertia(fn (Assert $p) => $p->where('snapshot.period.preset', 'custom'));
         $this->get('/dashboard?preset=forever')->assertStatus(422);
@@ -86,7 +86,7 @@ final class ReportingHttpTest extends TestCase
         $this->get('/dashboard')->assertInertia(fn (Assert $p) => $p->where('preferences.saved', false)->where('preferences.order.0', 'occupancy')->where('tv', false));
         $this->postJson('/dashboard/preferences', ['order' => ['revenue', 'occupancy'], 'hidden' => ['activity']])->assertOk()->assertJsonPath('preferences.order.0', 'revenue')->assertJsonPath('preferences.hidden.0', 'activity');
         $this->postJson('/dashboard/preferences', ['order' => ['nonsense'], 'hidden' => []])->assertStatus(422);
-        $this->postJson('/dashboard/preferences', ['order' => ['occupancy'], 'hidden' => ['occupancy', 'movements', 'activity', 'revenue']])->assertStatus(422);
+        $this->postJson('/dashboard/preferences', ['order' => ['occupancy'], 'hidden' => ['occupancy', 'movements', 'activity', 'revenue', 'staff', 'spend', 'stock', 'maintenance', 'products', 'outlet_hours', 'arrivals']])->assertStatus(422);
         $this->get('/dashboard')->assertInertia(fn (Assert $p) => $p->where('preferences.saved', true)->where('preferences.hidden.0', 'activity'));
         $this->get('/dashboard?tv=1')->assertInertia(fn (Assert $p) => $p->component('reporting/pages/dashboard')->where('tv', true)->has('snapshot.cards'));
         $this->deleteJson('/dashboard/preferences')->assertOk()->assertJsonPath('preferences.saved', false);
@@ -184,7 +184,7 @@ final class ReportingHttpTest extends TestCase
         $this->flushSession();
         $this->signIn(self::A, [DashboardService::VIEW_PERMISSION]);
 
-        $this->get('/dashboard')->assertInertia(fn (Assert $p) => $p->has('snapshot.cards', 3));
+        $this->get('/dashboard')->assertInertia(fn (Assert $p) => $p->has('snapshot.cards', 5));
         $this->get('/reports')->assertInertia(fn (Assert $p) => $p->has('reports', 0));
         $this->get('/reports/flash')->assertForbidden();
         $this->get('/reports/registrations')->assertForbidden();

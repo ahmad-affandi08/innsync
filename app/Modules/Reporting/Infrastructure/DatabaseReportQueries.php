@@ -9,6 +9,7 @@ use App\Modules\Reporting\Domain\ReportPeriod;
 use App\Shared\Application\Privacy\FieldCipher;
 use App\Shared\Domain\Tenancy\PropertyId;
 use App\Shared\Domain\Time\BusinessDate;
+use App\Shared\Domain\Time\PropertyTimeZone;
 use DateTimeImmutable;
 use Illuminate\Support\Facades\DB;
 
@@ -448,5 +449,89 @@ final readonly class DatabaseReportQueries implements ReportQueries
         }
 
         return ['outlets' => $outlets, 'sources' => $sources];
+    }
+
+    public function menuPerformance(PropertyId $property, ReportPeriod $period, int $limit): array
+    {
+        $pid = $property->toString();
+        $sold = [];
+
+        foreach (DB::table('fnb_bill_lines as l')->join('fnb_bills as b', 'b.id', '=', 'l.bill_id')->where('b.property_id', $pid)->where('b.status', 'settled')->whereBetween('b.business_date', [$period->from->toString(), $period->to->toString()])
+            ->whereNotIn('l.status', ['voided', 'removed'])->groupBy('l.item_id')->get(['l.item_id', DB::raw('SUM(l.quantity) as quantity'), DB::raw('SUM(l.line_total_minor) as total')]) as $r) {
+            $sold[(string) $r->item_id] = ['quantity' => (int) $r->quantity, 'total_minor' => (int) $r->total];
+        }
+
+        $items = [];
+
+        foreach (DB::table('fnb_menu_items as i')->join('fnb_menu_categories as c', 'c.id', '=', 'i.category_id')->join('fnb_outlets as o', 'o.id', '=', 'c.outlet_id')->where('i.property_id', $pid)->where('i.is_active', true)->get(['i.id', 'i.code', 'i.name', 'o.name as outlet']) as $i) {
+            $items[] = ['code' => (string) $i->code, 'name' => (string) $i->name, 'outlet' => (string) $i->outlet, 'quantity' => $sold[(string) $i->id]['quantity'] ?? 0, 'total_minor' => $sold[(string) $i->id]['total_minor'] ?? 0];
+        }
+
+        $byTop = $items;
+        usort($byTop, static fn (array $a, array $b): int => [$b['quantity'], $b['total_minor'], $a['name']] <=> [$a['quantity'], $a['total_minor'], $b['name']]);
+        $byBottom = $items;
+        usort($byBottom, static fn (array $a, array $b): int => [$a['quantity'], $a['total_minor'], $a['name']] <=> [$b['quantity'], $b['total_minor'], $b['name']]);
+
+        return ['top' => array_slice(array_values(array_filter($byTop, static fn (array $i): bool => $i['quantity'] > 0)), 0, $limit), 'bottom' => array_slice($byBottom, 0, $limit)];
+    }
+
+    public function roomTypePerformance(PropertyId $property, ReportPeriod $period): array
+    {
+        $pid = $property->toString();
+        $out = [];
+
+        foreach (DB::table('room_types as t')->leftJoin('rooms as r', static fn ($j) => $j->on('r.room_type_id', '=', 't.id')->where('r.is_active', true))->where('t.property_id', $pid)->groupBy('t.id', 't.code', 't.name')->orderBy('t.code')->get(['t.id', 't.code', 't.name', DB::raw('COUNT(r.id) as rooms')]) as $t) {
+            $out[(string) $t->id] = ['code' => (string) $t->code, 'name' => (string) $t->name, 'rooms' => (int) $t->rooms, 'nights' => 0, 'revenue_minor' => 0];
+        }
+
+        // A night charge of the night audit is a room night sold; the room type is the one of the room the stay is in.
+        foreach (DB::table('folio_postings as p')->join('folios as f', 'f.id', '=', 'p.folio_id')->join('stays as s', 's.reservation_id', '=', 'f.reservation_id')->join('rooms as r', 'r.id', '=', 's.room_id')
+            ->where('p.property_id', $pid)->where('p.source', 'night_audit')->whereIn('p.entry_type', ['charge', 'reversal'])->whereBetween('p.business_date', [$period->from->toString(), $period->to->toString()])
+            ->groupBy('r.room_type_id')->get(['r.room_type_id', DB::raw("SUM(CASE WHEN p.entry_type = 'charge' THEN 1 ELSE -1 END) as nights"), DB::raw('SUM(p.base_minor) as revenue')]) as $r) {
+            if (isset($out[(string) $r->room_type_id])) {
+                $out[(string) $r->room_type_id]['nights'] = max(0, (int) $r->nights);
+                $out[(string) $r->room_type_id]['revenue_minor'] = (int) $r->revenue;
+            }
+        }
+
+        $days = $period->days();
+
+        return array_values(array_map(static fn (array $t): array => [...$t, 'adr_minor' => $t['nights'] === 0 ? 0 : intdiv($t['revenue_minor'], $t['nights']), 'occupancy_bp' => $t['rooms'] === 0 ? 0 : min(10_000, intdiv($t['nights'] * 10_000, $t['rooms'] * $days))], $out));
+    }
+
+    public function outletHours(PropertyId $property, DateTimeImmutable $fromUtc, DateTimeImmutable $toUtc, PropertyTimeZone $zone, BusinessDate $from, BusinessDate $to): array
+    {
+        $pid = $property->toString();
+        $outlets = [];
+
+        foreach (DB::table('fnb_outlets')->where('property_id', $pid)->where('is_active', true)->orderBy('code')->get(['id', 'code', 'name']) as $o) {
+            $outlets[(string) $o->id] = ['code' => (string) $o->code, 'name' => (string) $o->name, 'hours' => array_fill(0, 24, 0), 'total' => 0];
+        }
+
+        foreach (DB::table('fnb_bills')->where('property_id', $pid)->where('status', 'settled')->whereBetween('business_date', [$from->toString(), $to->toString()])->whereNotNull('closed_at')->limit(200_000)->get(['outlet_id', 'closed_at']) as $b) {
+            if (! isset($outlets[(string) $b->outlet_id])) {
+                continue;
+            }
+
+            $hour = (int) $zone->localize(new DateTimeImmutable((string) $b->closed_at, new \DateTimeZone('UTC')))->format('G');
+            $outlets[(string) $b->outlet_id]['hours'][$hour]++;
+            $outlets[(string) $b->outlet_id]['total']++;
+        }
+
+        return array_values($outlets);
+    }
+
+    public function arrivalHeatmap(PropertyId $property, ReportPeriod $period, PropertyTimeZone $zone): array
+    {
+        $cells = array_fill(0, 7, array_fill(0, 24, 0));
+        $total = 0;
+
+        foreach (DB::table('stays')->where('property_id', $property->toString())->whereBetween('checked_in_business_date', [$period->from->toString(), $period->to->toString()])->limit(200_000)->pluck('checked_in_at') as $at) {
+            $local = $zone->localize(new DateTimeImmutable((string) $at, new \DateTimeZone('UTC')));
+            $cells[(int) $local->format('N') - 1][(int) $local->format('G')]++;
+            $total++;
+        }
+
+        return ['cells' => $cells, 'total' => $total];
     }
 }

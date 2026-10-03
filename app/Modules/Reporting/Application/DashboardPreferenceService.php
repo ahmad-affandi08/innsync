@@ -17,7 +17,7 @@ use App\Shared\Domain\Tenancy\PropertyId;
  */
 final readonly class DashboardPreferenceService
 {
-    public const CARD_KEYS = ['occupancy', 'movements', 'activity', 'revenue', 'staff', 'spend', 'stock', 'maintenance'];
+    public const CARD_KEYS = ['occupancy', 'movements', 'activity', 'revenue', 'staff', 'spend', 'stock', 'maintenance', 'products', 'outlet_hours', 'arrivals'];
 
     public function __construct(
         private DashboardPreferenceRepository $preferences,

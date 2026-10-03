@@ -108,6 +108,15 @@ final readonly class DashboardService
             $cards[] = $this->card('maintenance', 'now', $today->toString(), $asOf, '/maintenance', $this->queries->maintenance($property, $today, $zone->utcAt(CalendarDate::fromString($today->toString())), $zone->utcAt(CalendarDate::fromString($today->next()->toString())), $now));
         }
 
+        // FR-DSH-010: which dishes sell and which do not, and how each room type did. The room revenue and the sales are revenue, so it needs the revenue right.
+        if ($this->permissions->allowsInProperty($actorId, self::REVENUE_PERMISSION, $property)) {
+            $cards[] = $this->card('products', 'period', $period, $asOf, '/reports/flash?'.http_build_query($period->toArray()), ['menu' => $this->queries->menuPerformance($property, $period, 10), 'room_types' => $this->queries->roomTypePerformance($property, $period)]);
+        }
+
+        // FR-DSH-011, -012: when the outlets are busy and when guests arrive, to plan the staff.
+        $cards[] = $this->card('outlet_hours', 'period', $period, $asOf, '/fnb', ['outlets' => $this->queries->outletHours($property, $zone->utcAt(CalendarDate::fromString($period->from->toString())), $zone->utcAt(CalendarDate::fromString($period->to->next()->toString())), $zone, $period->from, $period->to)]);
+        $cards[] = $this->card('arrivals', 'period', $period, $asOf, '/front-office/stays', $this->queries->arrivalHeatmap($property, $period, $zone));
+
         $alerts = [];
 
         foreach ($this->queries->alerts($property, $today, $this->clock->nowUtc()) as $code => $alert) {

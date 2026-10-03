@@ -13,7 +13,14 @@ type Money = { base: number; service_charge: number; tax: number; total: number 
 type Card = { key: string; kind: 'now' | 'period'; business_date: string | null; period: { from: string; to: string } | null; as_of: string; href: string; values: Record<string, any> };
 type Snapshot = { period: { preset: string; from: string; to: string }; business_date: string; as_of: string; cards: Card[]; alerts: { code: string; count: number; items: string[]; href: string }[] };
 
+type MenuRow = { code: string; name: string; outlet: string; quantity: number; total_minor: number };
+type MenuPerformance = { top: MenuRow[]; bottom: MenuRow[] };
+type RoomTypeRow = { code: string; name: string; rooms: number; nights: number; revenue_minor: number; adr_minor: number; occupancy_bp: number };
+type OutletHours = { code: string; name: string; hours: number[]; total: number };
+
 const REFRESH_MS = 60_000;
+const dayOf = (offset: number) => new Date(Date.UTC(2026, 0, 5 + offset)).toISOString().slice(0, 10);
+const busiest = (hours: number[]) => (Math.max(...hours) === 0 ? '—' : `${String(hours.indexOf(Math.max(...hours))).padStart(2, '0')}:00`);
 
 type Preferences = { order: string[]; hidden: string[]; saved: boolean };
 
@@ -80,6 +87,9 @@ export default function DashboardPage({ currency, preferences, snapshot: s, tv }
                                 {c.key === 'spend' && <p className="text-5xl font-semibold">{format.money(c.values.owed_minor, currency)}</p>}
                                 {c.key === 'stock' && <p className="text-5xl font-semibold">{((c.values.departments ?? []) as { count: number }[]).reduce((n, d) => n + d.count, 0)}</p>}
                                 {c.key === 'maintenance' && <p className="text-5xl font-semibold">{c.values.open}<span className="text-2xl font-normal"> · {t('rpt.card.maintenance.overdue', { n: c.values.overdue })}</span></p>}
+                                {c.key === 'products' && <p className="text-3xl font-semibold">{(((c.values.menu as MenuPerformance).top[0]?.name) ?? '—')}</p>}
+                                {c.key === 'outlet_hours' && <ul className="text-2xl">{((c.values.outlets ?? []) as OutletHours[]).map((o) => <li key={o.code}>{o.name}: {busiest(o.hours)}</li>)}</ul>}
+                                {c.key === 'arrivals' && <p className="text-5xl font-semibold">{c.values.total}</p>}
                             </article>
                         ))}
                     </div>
@@ -211,6 +221,62 @@ export default function DashboardPage({ currency, preferences, snapshot: s, tv }
                                 </ul>
                             </>
                         )}
+
+                        {c.key === 'products' && (
+                            <div className="flex flex-col gap-3" data-testid="products-card">
+                                {([['top', (c.values.menu as MenuPerformance).top], ['bottom', (c.values.menu as MenuPerformance).bottom]] as const).map(([k, rows]) => (
+                                    <section key={k}>
+                                        <h3 className="text-sm font-semibold">{t(`rpt.card.products.${k}` as 'rpt.card.products.top')}</h3>
+                                        {rows.length === 0 ? <p className="text-xs text-muted-foreground">{t('rpt.card.products.none')}</p> : (
+                                            <ol className="flex flex-col gap-0.5 text-sm" data-testid={`menu-${k}`}>{rows.map((r) => <li className="flex justify-between gap-2" key={`${k}-${r.code}`}><span>{r.name}<span className="text-xs text-muted-foreground"> · {r.outlet}</span></span><span className="tabular-nums">{r.quantity} · {format.money(r.total_minor, currency)}</span></li>)}</ol>
+                                        )}
+                                    </section>
+                                ))}
+                                <section>
+                                    <h3 className="text-sm font-semibold">{t('rpt.card.products.roomTypes')}</h3>
+                                    <table className="w-full text-sm" data-testid="room-types">
+                                        <thead><tr className="text-left text-xs text-muted-foreground"><th scope="col">{t('rpt.card.products.type')}</th><th className="text-right" scope="col">{t('rpt.card.products.nights')}</th><th className="text-right" scope="col">{t('rpt.card.products.occupancy')}</th><th className="text-right" scope="col">ADR</th></tr></thead>
+                                        <tbody>{((c.values.room_types ?? []) as RoomTypeRow[]).map((r) => <tr key={r.code}><th className="text-left font-normal" scope="row">{r.name}</th><td className="text-right tabular-nums">{r.nights}</td><td className="text-right tabular-nums">{percent(r.occupancy_bp)}</td><td className="text-right tabular-nums">{format.money(r.adr_minor, currency)}</td></tr>)}</tbody>
+                                    </table>
+                                </section>
+                            </div>
+                        )}
+                        {c.key === 'outlet_hours' && (
+                            <div className="flex flex-col gap-3" data-testid="outlet-hours-card">
+                                {((c.values.outlets ?? []) as OutletHours[]).length === 0 ? <p className="text-sm">{t('rpt.card.outlet_hours.none')}</p> : ((c.values.outlets ?? []) as OutletHours[]).map((o) => {
+                                    const max = Math.max(1, ...o.hours);
+
+                                    return (
+                                        <section key={o.code}>
+                                            <h3 className="flex justify-between text-sm font-semibold"><span>{o.name}</span><span className="text-xs font-normal text-muted-foreground">{t('rpt.card.outlet_hours.total', { n: o.total, hour: busiest(o.hours) })}</span></h3>
+                                            <div aria-label={t('rpt.card.outlet_hours.chart', { name: o.name })} className="flex h-20 items-end gap-0.5" data-testid={`hours-${o.code}`} role="img">
+                                                {o.hours.map((n, h) => <span className="flex-1 bg-accent" key={h} style={{ height: `${Math.round((n * 100) / max)}%`, minHeight: n > 0 ? 2 : 0 }} title={`${String(h).padStart(2, '0')}:00 · ${n}`} />)}
+                                            </div>
+                                            <div aria-hidden="true" className="flex justify-between text-[10px] text-muted-foreground"><span>00</span><span>06</span><span>12</span><span>18</span><span>23</span></div>
+                                        </section>
+                                    );
+                                })}
+                            </div>
+                        )}
+                        {c.key === 'arrivals' && (() => {
+                            const cells = (c.values.cells ?? []) as number[][];
+                            const max = Math.max(1, ...cells.flat());
+
+                            return (
+                                <div className="flex flex-col gap-1" data-testid="arrivals-card">
+                                    <p className="text-sm">{t('rpt.card.arrivals.total', { n: c.values.total })}</p>
+                                    <div aria-label={t('rpt.card.arrivals.chart')} className="grid gap-px" role="img" style={{ gridTemplateColumns: 'auto repeat(24, minmax(0, 1fr))' }}>
+                                        {cells.map((row, d) => (
+                                            <Fragment key={d}>
+                                                <span className="pr-1 text-[10px] text-muted-foreground">{format.weekday(dayOf(d)).slice(0, 3)}</span>
+                                                {row.map((n, h) => <span className="aspect-square bg-accent" key={h} style={{ opacity: n === 0 ? 0.06 : 0.2 + (0.8 * n) / max }} title={`${format.weekday(dayOf(d))} ${String(h).padStart(2, '0')}:00 · ${n}`} />)}
+                                            </Fragment>
+                                        ))}
+                                    </div>
+                                    <div aria-hidden="true" className="flex justify-between pl-6 text-[10px] text-muted-foreground"><span>00</span><span>06</span><span>12</span><span>18</span><span>23</span></div>
+                                </div>
+                            );
+                        })()}
 
                         <details className="text-xs text-muted-foreground">
                             <summary className="cursor-pointer">{t('rpt.dash.definition')}</summary>

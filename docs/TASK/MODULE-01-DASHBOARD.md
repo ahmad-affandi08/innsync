@@ -22,9 +22,9 @@
 | TASK-DSH-007 | FR-DSH-007 | Wajib | Menampilkan peringatan stok minimum per department (Bar, Kitchen, Housekeeping, Maintenance, Galley, Reception) berdasarkan kartu stok dan hasil stock opname. | REVIEW |
 | TASK-DSH-008 | FR-DSH-008 | Wajib | Menampilkan ringkasan kepegawaian hari berjalan: jumlah staf bertugas per shift per department, staf libur, staf ijin dengan keterangan, dan staf tanpa keterangan (alpha). | REVIEW |
 | TASK-DSH-009 | FR-DSH-009 | Wajib | Menampilkan ringkasan pekerjaan pemeliharaan: work order berjalan, selesai hari ini, melewati batas waktu, dan kamar berstatus Out of Order. | REVIEW |
-| TASK-DSH-010 | FR-DSH-010 | Sebaiknya | Menampilkan performa produk: sepuluh menu terlaris dan paling tidak laku, serta performa tipe kamar berdasarkan okupansi dan ADR pada periode terpilih. | TODO |
-| TASK-DSH-011 | FR-DSH-011 | Sebaiknya | Menampilkan distribusi jam transaksi per outlet dalam bentuk grafik batang per jam untuk membantu penjadwalan staf. | TODO |
-| TASK-DSH-012 | FR-DSH-012 | Sebaiknya | Menampilkan heatmap kedatangan tamu (check-in) berdasarkan jam dan hari dalam seminggu. | TODO |
+| TASK-DSH-010 | FR-DSH-010 | Sebaiknya | Menampilkan performa produk: sepuluh menu terlaris dan paling tidak laku, serta performa tipe kamar berdasarkan okupansi dan ADR pada periode terpilih. | REVIEW |
+| TASK-DSH-011 | FR-DSH-011 | Sebaiknya | Menampilkan distribusi jam transaksi per outlet dalam bentuk grafik batang per jam untuk membantu penjadwalan staf. | REVIEW |
+| TASK-DSH-012 | FR-DSH-012 | Sebaiknya | Menampilkan heatmap kedatangan tamu (check-in) berdasarkan jam dan hari dalam seminggu. | REVIEW |
 | TASK-DSH-013 | FR-DSH-013 | Wajib | Menampilkan lini masa kewajiban pajak: pajak kamar, pajak restoran dan outlet lain, nilai terkumpul berjalan, tanggal jatuh tempo pelaporan, dan status pelaporan. | REVIEW |
 | TASK-DSH-014 | FR-DSH-014 | Wajib | Menampilkan akumulasi service charge yang terkumpul dari kamar dan outlet beserta estimasi porsi yang akan didistribusikan kepada karyawan. | REVIEW |
 | TASK-DSH-015 | FR-DSH-015 | Wajib | Menyediakan penyaring periode (hari ini, kemarin, 7 hari, bulan berjalan, rentang khusus) yang berlaku serentak pada seluruh kartu. | REVIEW |
@@ -44,6 +44,14 @@
 - **Staffing today (`DSH-008`).** The existing staff card now also says how many have the day off, who is on leave or a permit with its kind, and who was planned and did not come (absent). Seen by people with an HR privilege.
 - **Maintenance (`DSH-009`).** Work orders still open, done on the business date, open ones past their due time, and the rooms out of order today. Seen with a maintenance work privilege.
 - Evidence: `tests/Integration/Reporting/DashboardOperationsCardsTest.php` (who sees which card; the spending sums with an overdue, a near and a far invoice and a payment; low stock by department; maintenance counts and the room out of order), `LeaveHttpTest` (leave on the staff card), `DashboardPreferenceTest` (the card keys).
+
+### Slice 55 (2026-10-03): products, busy hours and arrivals on the dashboard
+
+- **DSH-010** — card `products` (revenue right): the ten dishes sold the most and the ten sold the least in the chosen period (bills that were settled, lines not voided or removed; a dish on the menu that sold nothing is among the least), with quantity, sales and outlet; and for each room type the room nights sold (night-audit charges, less reversals), the room revenue before service charge and tax, the average daily rate and the occupancy of its rooms. The room type is that of the room the stay is in.
+- **DSH-011** — card `outlet_hours`: for each active outlet, the bills settled in each of the 24 hours of the day by the clock of the property, as a bar chart (with the total and the busiest hour), to plan the staff.
+- **DSH-012** — card `arrivals`: a heatmap of the check-ins of the period by day of the week (Monday first) and hour of the day, by the clock of the property; a darker square is more arrivals.
+- All three have a definition, the period they describe, the time of the data and a link to the source; they can be moved or hidden like the others and show in the television view in short form. The charts are drawn without a library and carry a text alternative.
+- Tests: `DashboardAnalyticsCardsTest`; the existing dashboard tests were updated for the three new cards.
 
 ## Required engineering checks
 
