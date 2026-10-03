@@ -251,6 +251,18 @@ final readonly class AttendanceService
         return $this->dayRowFor($property, $employee['id'], $date, $tz, $now);
     }
 
+    /**
+     * How each person did in a period: days planned and came, late, early, absent, extra time and overtime (the figures of `overview`, for another service to read).
+     *
+     * @return list<array<string, mixed>>
+     */
+    public function periodSummary(PropertyId $property, string $from, string $to, ?string $department): array
+    {
+        $this->access->assertProperty($property);
+
+        return $this->summary($property, $from, $to, $department, $this->zone($property), $this->clock->nowUtc());
+    }
+
     /** @return array{latitude: float|null, longitude: float|null, radius_m: int, require_selfie: bool, late_grace: int, early_grace: int, extra_after: int, geofence: bool, is_baseline: bool, lock_version: int|null} */
     public function settings(PropertyId $property): array
     {

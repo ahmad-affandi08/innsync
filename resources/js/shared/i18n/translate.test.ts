@@ -104,6 +104,7 @@ describe('dictionaries', () => {
             'rtn.perf.run',
             'mtc.damage.state',
             'hr.department.front_office',
+            'hr.perf.source.front_office',
             'hr.department.housekeeping',
             'hr.department.laundry',
             'hr.email',

@@ -28,6 +28,9 @@ final readonly class HrAccess
     /** Sees the attendance of everyone, records a clock-in or clock-out for a person with a reason, and sets how attendance is taken. */
     public const ATTENDANCE = 'hr.attendance.manage';
 
+    /** Sees how people are doing: the performance board and the share of their routines they did. */
+    public const PERFORMANCE = 'hr.performance.view';
+
     /** Configures the kinds of leave, asks for leave for other people, sees everyone's requests and balances, and adjusts a balance. */
     public const LEAVE = 'hr.leave.manage';
 

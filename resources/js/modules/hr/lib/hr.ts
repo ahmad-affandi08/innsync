@@ -96,3 +96,13 @@ export type LeaveOverview = {
     requests: LeaveRequest[] | null; balances: LeaveBalance[] | null; employees: { id: string; number: string; name: string; department: string }[] | null;
     adjustments: { id: string; employee: { id: string; number: string; name: string }; type_code: string; days: number; reason: string; created_at: string }[] | null;
 };
+
+export type PerformanceRow = {
+    employee: { id: string; number: string; name: string; department: string; position: string };
+    scheduled: number; present: number; late_days: number; late_minutes: number; absent: number; punctuality: number | null; attendance: number | null;
+    overtime_minutes: number; unapproved_minutes: number; sop_items: number; sop_by: Record<string, number>; complaints: { total: number; serious: number; resolved: number }; linked: boolean;
+};
+
+export type PerformanceSource = { source: string; runs: number; complete: number; items: number; done: number; percent: number };
+
+export type PerformanceOverview = { from: string; to: string; department: string | null; departments: string[]; board: PerformanceRow[]; sources: PerformanceSource[] };

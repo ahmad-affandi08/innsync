@@ -9,6 +9,8 @@ use App\Shared\Application\Audit\AuditEntry;
 use App\Shared\Application\Audit\AuditTrail;
 use App\Shared\Application\Errors\Refusal;
 use App\Shared\Application\Identifiers\IdentifierGenerator;
+use App\Shared\Application\Outbox\OutboxEvent;
+use App\Shared\Application\Outbox\OutboxPublisher;
 use App\Shared\Application\Security\StaffDirectory;
 use App\Shared\Application\Time\Clock;
 use App\Shared\Application\Transactions\TransactionRunner;
@@ -36,6 +38,7 @@ final readonly class DutyRunService
         private StaffDirectory $staff,
         private TransactionRunner $transactions,
         private AuditTrail $audit,
+        private OutboxPublisher $outbox,
         private IdentifierGenerator $ids,
         private Clock $clock,
     ) {}
@@ -200,6 +203,10 @@ final readonly class DutyRunService
 
             $issues = count(array_filter($run['steps'], static fn (array $s): bool => $s['result'] === 'issue'));
             $this->audit->record(new AuditEntry($property->toString(), $actor, 'duty_run.done', 'duty_run', $run['id'], ['status' => 'open'], ['status' => 'done', 'duty' => $run['title'], 'due_on' => substr((string) $run['due_on'], 0, 10), 'issues' => $issues], $note));
+            // Told to Human Resource like a checklist that was done (FR-HR-020): who did the round and how many steps it had.
+            $this->outbox->publish(new OutboxEvent($property, 'maintenance.duty.completed', $run['id'], 1, [
+                'run_id' => $run['id'], 'checklist' => $run['title'], 'frequency' => 'daily', 'period' => substr((string) $run['due_on'], 0, 10), 'total' => count($run['steps']), 'completed_by' => $actor, 'issues' => $issues,
+            ]));
         });
 
         return $this->show($property, $actorId, $runId);

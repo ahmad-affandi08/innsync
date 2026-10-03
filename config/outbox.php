@@ -7,6 +7,7 @@ use App\Modules\Finance\Application\FrontOfficeRevenueConsumer;
 use App\Modules\Finance\Application\PurchasingPayableConsumer;
 use App\Modules\FnbSales\Application\KitchenProgressConsumer;
 use App\Modules\FrontOffice\Application\Companies\CompanyReceiptConsumer;
+use App\Modules\HumanResource\Application\SopCompletionConsumer;
 use App\Modules\InventoryPurchasing\Application\KitchenWasteConsumer;
 use App\Modules\InventoryPurchasing\Application\MaintenancePartConsumer;
 use App\Modules\InventoryPurchasing\Application\RecipeConsumptionConsumer;
@@ -52,6 +53,7 @@ return [
         KitchenWasteConsumer::class,
         MaintenancePartConsumer::class,
         RecipeConsumptionConsumer::class,
+        SopCompletionConsumer::class,
         SaleConsumptionConsumer::class,
         TicketIntakeConsumer::class,
     ],

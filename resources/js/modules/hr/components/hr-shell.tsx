@@ -7,6 +7,7 @@ const LINKS = [
     { href: '/hr/roster', label: 'hr.nav.roster' },
     { href: '/hr/attendance', label: 'hr.nav.attendance' },
     { href: '/hr/leave', label: 'hr.nav.leave' },
+    { href: '/hr/performance', label: 'hr.nav.performance' },
 ] as const;
 
 type Props = { title: string; description: string; children: ReactNode; actions?: ReactNode };

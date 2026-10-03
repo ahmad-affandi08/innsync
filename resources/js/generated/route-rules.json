@@ -302,6 +302,14 @@
             "year"
         ]
     },
+    "GET /hr/performance": {
+        "required": [],
+        "declared": [
+            "department",
+            "from",
+            "to"
+        ]
+    },
     "GET /hr/roster": {
         "required": [],
         "declared": [

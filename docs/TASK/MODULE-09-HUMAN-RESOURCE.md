@@ -32,8 +32,8 @@
 | TASK-HR-017 | FR-HR-017 | Bisa | Mendukung pertukaran shift antar karyawan dengan persetujuan penyelia. | TODO |
 | TASK-HR-018 | FR-HR-018 | Wajib | Mencatat lembur yang telah disetujui sebelumnya dan membedakannya dari kelebihan jam kerja yang tidak disetujui. | REVIEW |
 | TASK-HR-019 | FR-HR-019 | Wajib | Koreksi presensi setelah periode berjalan memerlukan alasan dan approval; nilai sebelum/sesudah disimpan dan perubahan otomatis memicu hitung ulang komponen terkait. | REVIEW |
-| TASK-HR-020 | FR-HR-020 | Wajib | Menerima persentase penyelesaian SOP tugas harian, mingguan, dan bulanan dari seluruh modul operasional sebagai komponen penilaian kinerja objektif. | TODO |
-| TASK-HR-021 | FR-HR-021 | Sebaiknya | Menampilkan papan kinerja per karyawan: kehadiran, ketepatan waktu, penyelesaian tugas, jumlah komplain tamu terkait, dan produktivitas department. | TODO |
+| TASK-HR-020 | FR-HR-020 | Wajib | Menerima persentase penyelesaian SOP tugas harian, mingguan, dan bulanan dari seluruh modul operasional sebagai komponen penilaian kinerja objektif. | REVIEW |
+| TASK-HR-021 | FR-HR-021 | Sebaiknya | Menampilkan papan kinerja per karyawan: kehadiran, ketepatan waktu, penyelesaian tugas, jumlah komplain tamu terkait, dan produktivitas department. | REVIEW |
 | TASK-HR-022 | FR-HR-022 | Sebaiknya | Melakukan penilaian kinerja berkala dengan formulir yang dapat dikonfigurasi dan tanda tangan digital atasan serta karyawan. | TODO |
 | TASK-HR-023 | FR-HR-023 | Sebaiknya | Mencatat teguran, surat peringatan, dan penghargaan karyawan beserta lampiran dan masa berlaku. | TODO |
 | TASK-HR-024 | FR-HR-024 | Bisa | Menyediakan papan pengumuman internal dan distribusi kebijakan yang wajib dibaca dengan pencatatan konfirmasi. | TODO |
@@ -103,6 +103,12 @@
 - **Balance (`HR-016`).** For a year (last, this, next): right (the kind's days once the months of work are over) + adjustments − days taken (approved) − days waiting for approval. The person sees their own; the manager sees everyone and adjusts with a reason (a number of days, more or less, never below zero), which is audited and never changed or deleted (database triggers).
 - Not yet: carrying unused days over automatically or letting them lapse (adjust by hand), half days, a right that grows in proportion to the months worked, public holidays and collective leave, leave that covers two years, the supervisor deciding for their team without the chain, the leave pay in payroll, a notice to the approvers (needs a notification channel), the person's own portal (`HR-004`).
 - Evidence: `tests/Feature/HumanResource/LeaveHttpTest.php` (the kinds with their checks, versions and retiring; annual leave with no policy, every refused input, the balance held while waiting, the decision, the days leaving the roster and not planned again, cancelling before the start, rejecting; sick leave with and without a paper, who may open it and the audit; leave on behalf of another and attendance blocking it; adjustments and their limits and triggers; offboarding). `RosterHttpTest` and `EmployeeHttpTest` still pass. Seen in the browser: a request made with the balance held, approved by another person, taken, and the roster showing the leave.
+
+### Slice 47 (2026-10-03): SOP completion to Human Resource and the performance board
+
+- **HR-020** — Every area that has checklists now tells HR when an item is ticked: Front Office, Housekeeping, Kitchen, F&B and the Routines modules publish `*.sop.item_completed`; Maintenance publishes `maintenance.duty.completed` when a round is done. `SopCompletionConsumer` (`hr.sop-completion`) keeps one `hr_sop_runs` row per run (done, total, percent; the count only goes up) and credits the person who ticked each item once in the append-only `hr_sop_credits` (unique per run and item, so a re-delivered event credits nothing twice; a duty round weighs as its steps).
+- **HR-021** — `GET /hr/performance` (`hr.performance.view`): for a period of at most 93 days (default the last 30) and an optional department, each active employee's attendance %, punctuality %, days absent, routine items done per area, guest complaints owned (total, serious, resolved, through the `ComplaintWorkload` contract of Front Office) and overtime with the unapproved part; and per area the checklists started, fully done and the share of items done. Employees without a linked account show "not linked" rather than zero credit. The board counts; it does not judge — no score, rank or threshold is stored.
+- Tests: `PerformanceHttpTest` (credit once, per-area percentages, complaints, department/period filters, 403).
 
 ## Required engineering checks
 

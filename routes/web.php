@@ -47,6 +47,7 @@ use App\Modules\HumanResource\Presentation\Http\Controllers\AttendanceAdjustment
 use App\Modules\HumanResource\Presentation\Http\Controllers\AttendanceController;
 use App\Modules\HumanResource\Presentation\Http\Controllers\EmployeeController;
 use App\Modules\HumanResource\Presentation\Http\Controllers\LeaveController;
+use App\Modules\HumanResource\Presentation\Http\Controllers\PerformanceController;
 use App\Modules\HumanResource\Presentation\Http\Controllers\RosterController;
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\ApprovalController;
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\ApprovalPolicyController;
@@ -749,6 +750,7 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
     Route::post('/attendance/corrections/{id}/apply', [AttendanceAdjustmentController::class, 'applyCorrection'])->where('id', $id)->name('hr.attendance.corrections.apply');
     Route::post('/attendance/corrections/{id}/cancel', [AttendanceAdjustmentController::class, 'cancelCorrection'])->where('id', $id)->name('hr.attendance.corrections.cancel');
     Route::get('/attendance/{id}/photo/{which}', [AttendanceController::class, 'photo'])->where('id', $id)->where('which', 'in|out')->name('hr.attendance.photo');
+    Route::get('/performance', [PerformanceController::class, 'index'])->name('hr.performance');
     Route::get('/leave', [LeaveController::class, 'index'])->name('hr.leave');
     Route::post('/leave', [LeaveController::class, 'request'])->middleware(['idempotent'])->name('hr.leave.request');
     Route::post('/leave/adjust', [LeaveController::class, 'adjust'])->middleware(['idempotent'])->name('hr.leave.adjust');

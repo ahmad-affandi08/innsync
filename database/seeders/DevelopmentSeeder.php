@@ -122,7 +122,7 @@ final class DevelopmentSeeder extends Seeder
         'housekeeping.task.perform',
         'housekeeping.view',
         'identity.approval-policy.manage',
-        'hr.attendance.manage', 'hr.leave.manage',
+        'hr.attendance.manage', 'hr.leave.manage', 'hr.performance.view',
         'hr.document.manage',
         'hr.employee.manage',
         'hr.employee.view',
