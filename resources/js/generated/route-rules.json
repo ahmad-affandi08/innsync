@@ -3275,6 +3275,32 @@
             "lock_version"
         ]
     },
+    "POST /hr/swaps": {
+        "required": [
+            "partner_id",
+            "reason",
+            "work_date"
+        ],
+        "declared": [
+            "partner_id",
+            "reason",
+            "work_date"
+        ]
+    },
+    "POST /hr/swaps/{id}/approve": {
+        "required": [],
+        "declared": [
+            "note"
+        ]
+    },
+    "POST /hr/swaps/{id}/reject": {
+        "required": [
+            "note"
+        ],
+        "declared": [
+            "note"
+        ]
+    },
     "POST /inventory/categories": {
         "required": [
             "code",

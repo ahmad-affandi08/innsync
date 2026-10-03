@@ -20,7 +20,7 @@
 | TASK-HR-001 | FR-HR-001 | Wajib | Mengelola data induk karyawan: nomor induk, nama, department, jabatan, tanggal bergabung, jenis kontrak, masa berlaku kontrak, atasan langsung, dan status aktif. | REVIEW |
 | TASK-HR-002 | FR-HR-002 | Wajib | Menyimpan berkas kepegawaian: kontrak kerja, identitas, sertifikat keahlian, dan hasil pemeriksaan wajib, beserta tanggal berlaku. | REVIEW |
 | TASK-HR-003 | FR-HR-003 | Sebaiknya | Memberi peringatan otomatis menjelang berakhirnya kontrak, sertifikat, atau dokumen wajib lainnya. | REVIEW |
-| TASK-HR-004 | FR-HR-004 | Sebaiknya | Menyediakan portal mandiri karyawan untuk melihat jadwal, sisa cuti, riwayat kehadiran, dan slip pendapatan. | TODO |
+| TASK-HR-004 | FR-HR-004 | Sebaiknya | Menyediakan portal mandiri karyawan untuk melihat jadwal, sisa cuti, riwayat kehadiran, dan slip pendapatan. | REVIEW |
 | TASK-HR-005 | FR-HR-005 | Wajib | Proses offboarding menonaktifkan akses, menutup assignment/shift mendatang, mencatat pengembalian aset, dan mempertahankan histori transaksi karyawan tanpa menghapus data historis. | REVIEW |
 | TASK-HR-010 | FR-HR-010 | Wajib | Menyusun roster shift per department dengan pola shift yang dapat dikonfigurasi (pagi, siang, malam, split, libur) untuk periode mingguan dan bulanan. | REVIEW |
 | TASK-HR-011 | FR-HR-011 | Sebaiknya | Sistem memperingatkan bila jumlah staf pada suatu shift berada di bawah kebutuhan minimum department. | REVIEW |
@@ -29,7 +29,7 @@
 | TASK-HR-014 | FR-HR-014 | Wajib | Jumlah staf bertugas per shift per department dikirim ke dashboard secara langsung. | REVIEW |
 | TASK-HR-015 | FR-HR-015 | Wajib | Mengelola pengajuan cuti, ijin, dan sakit dengan alur persetujuan berjenjang serta lampiran bukti; hasilnya otomatis mengubah roster. | REVIEW |
 | TASK-HR-016 | FR-HR-016 | Wajib | Mengelola saldo cuti tahunan, cuti yang sudah diambil, dan sisa cuti per karyawan. | REVIEW |
-| TASK-HR-017 | FR-HR-017 | Bisa | Mendukung pertukaran shift antar karyawan dengan persetujuan penyelia. | TODO |
+| TASK-HR-017 | FR-HR-017 | Bisa | Mendukung pertukaran shift antar karyawan dengan persetujuan penyelia. | REVIEW |
 | TASK-HR-018 | FR-HR-018 | Wajib | Mencatat lembur yang telah disetujui sebelumnya dan membedakannya dari kelebihan jam kerja yang tidak disetujui. | REVIEW |
 | TASK-HR-019 | FR-HR-019 | Wajib | Koreksi presensi setelah periode berjalan memerlukan alasan dan approval; nilai sebelum/sesudah disimpan dan perubahan otomatis memicu hitung ulang komponen terkait. | REVIEW |
 | TASK-HR-020 | FR-HR-020 | Wajib | Menerima persentase penyelesaian SOP tugas harian, mingguan, dan bulanan dari seluruh modul operasional sebagai komponen penilaian kinerja objektif. | REVIEW |
@@ -141,6 +141,13 @@
 - Screen `/hr/service-charge` (distribution of a month and the policy). Permission `hr.service-charge.manage` (sensitive).
 - Not yet: points that change during the month, a reserve that is spent (the reserve is kept, not booked against a loss), a share for people who left before the month began, a separate distribution of tips.
 - Tests: `ServiceChargeHttpTest` (calculator included).
+
+### Slice 52 (2026-10-03): shift exchanges and the employee's own page
+
+- **HR-017** — `ShiftSwapService` (`hr_shift_swaps`, `/hr/swaps`): an employee asks a colleague of the same department to exchange their shifts of one day (a day after today on which both are planned with different shifts); the colleague agrees or declines; then a supervisor decides — the supervisor of either of the two or a person who plans the roster, never one of the two themselves; rejecting needs a note; the person who asked can withdraw until it is approved. The two shifts as they were are kept in the request: approval is refused if the roster of that day changed meanwhile or if the day has begun, and otherwise exchanges the two roster entries (pattern, times, minutes) in one transaction, so the people on each shift stay the same. Only one open exchange for a person and day. Audited; `hr.shift.swapped` goes out.
+- **HR-004** — `/hr/me` (`EmployeePortalService`) shows the person their own schedule for the next two weeks, what they did over the last month (status, times, late/early/overtime), the leave balances and requests waiting, the payslips of the paid months, and their shift exchanges (open, to answer, to decide), with links to the leave, attendance, payslip and exchange pages. It reads only for the employee the account belongs to; an account not linked to an employee sees nothing. `AttendanceService::historyOf` gives the attendance of one person over a period.
+- Not yet: a swap of a shift for a day off on another date, a notice to the colleague and the supervisor (needs a notification channel), overtime or corrections asked for in the page itself (they are in the attendance page).
+- Tests: `ShiftSwapHttpTest`.
 
 ## Required engineering checks
 

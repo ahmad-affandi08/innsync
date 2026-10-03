@@ -159,3 +159,21 @@ export type ServiceChargeDistribution = {
 export type ServiceChargeOverview = {
     currency: string; today: string; period: string; settings: ServiceChargeSettings; unlisted_positions: string[]; distributions: ServiceChargeDistribution[]; selected: (ServiceChargeDistribution & { lines: ServiceChargeLine[] }) | null;
 };
+
+export type SwapStatus = 'awaiting_partner' | 'awaiting_supervisor' | 'approved' | 'rejected' | 'declined' | 'cancelled';
+
+export type ShiftSwap = {
+    id: string; date: string; status: SwapStatus; reason: string; decision_note: string | null; lock_version: number;
+    requester: { id: string; number: string; name: string; shift: string }; partner: { id: string; number: string; name: string; shift: string }; may: { respond: boolean; decide: boolean; cancel: boolean };
+};
+
+export type SwapOverview = { today: string; linked: boolean; me: string | null; may: { decide: boolean }; colleagues: { id: string; number: string; name: string }[]; mine: ShiftSwap[]; to_decide: ShiftSwap[] };
+
+export type PortalOverview = {
+    linked: boolean; today: string; currency?: string; employee?: { id: string; number: string; name: string; department: string; position: string; joined_on: string };
+    schedule?: { date: string; code: string; is_off: boolean; starts_at: string | null; ends_at: string | null; starts2_at: string | null; ends2_at: string | null }[];
+    attendance?: { date: string; code: string; status: AttendanceStatus; in_at: string | null; out_at: string | null; late_minutes: number; early_minutes: number; overtime_minutes: number }[];
+    leave?: { year: number; balances: LeaveBalanceItem[]; pending: number };
+    payslips?: { run_id: string; period: string; number: string; gross_minor: number; net_minor: number }[];
+    swaps?: { open: number; to_answer: number; to_decide: number };
+};

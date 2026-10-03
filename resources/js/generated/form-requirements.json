@@ -387,6 +387,12 @@
         "reserve_bp",
         "staff_share_bp"
     ],
+    "hr/pages/swaps": [
+        "note",
+        "partner_id",
+        "reason",
+        "work_date"
+    ],
     "identity-access/pages/approval-policies": [
         "band_min_amount_minor",
         "reason",

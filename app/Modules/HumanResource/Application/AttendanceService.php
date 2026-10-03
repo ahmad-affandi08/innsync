@@ -263,6 +263,38 @@ final readonly class AttendanceService
         return $this->summary($property, $from, $to, $department, $this->zone($property), $this->clock->nowUtc());
     }
 
+    /**
+     * What one person did on the days planned for them in a period, newest day first (the caller has decided that the person may see it).
+     *
+     * @return list<array<string, mixed>>
+     */
+    public function historyOf(PropertyId $property, string $employeeId, string $department, string $from, string $to): array
+    {
+        $this->access->assertProperty($property);
+        $tz = $this->zone($property);
+        $now = $this->clock->nowUtc();
+        $settings = $this->settings($property);
+        $records = [];
+
+        foreach ($this->store->between($property, $from, $to, $employeeId) as $r) {
+            $records[substr((string) $r['work_date'], 0, 10)] = $r;
+        }
+
+        $grants = $this->grants($property, $from, $to, $employeeId);
+        $rows = [];
+
+        foreach ($this->roster->entriesBetween($property, $from, $to, $department) as $e) {
+            if ($e['employee_id'] !== $employeeId || (bool) $e['is_off']) {
+                continue;
+            }
+
+            $date = substr((string) $e['work_date'], 0, 10);
+            $rows[] = $this->row($e, $records[$date] ?? null, $settings, $now, $tz, $grants[$employeeId.'|'.$date] ?? null);
+        }
+
+        return array_reverse($rows);
+    }
+
     /** @return array{latitude: float|null, longitude: float|null, radius_m: int, require_selfie: bool, late_grace: int, early_grace: int, extra_after: int, geofence: bool, is_baseline: bool, lock_version: int|null} */
     public function settings(PropertyId $property): array
     {
