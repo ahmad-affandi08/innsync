@@ -7,6 +7,7 @@ namespace App\Modules\FrontOffice\Application\Requests;
 use App\Modules\FrontOffice\Application\Reservations\ReservationRepository;
 use App\Modules\FrontOffice\Application\Stays\StayRepository;
 use App\Modules\Housekeeping\Application\GuestServiceRequests;
+use App\Modules\Maintenance\Application\GuestMaintenanceRequests;
 use App\Modules\Property\Application\Catalog\RoomCatalogReader;
 use App\Shared\Application\Audit\AuditEntry;
 use App\Shared\Application\Audit\AuditTrail;
@@ -25,7 +26,7 @@ use App\Shared\Domain\Tenancy\PropertyId;
 /**
  * What an in-house guest asks for (FR-FO-030): a free-text request filed under the department that has to do it, with a status
  * until it is done. A request for housekeeping opens (or joins) the room's housekeeping task, so the housekeepers see it in their
- * work; the others are announced for their department (an outbox event carries the category and the room) and followed here by
+ * work; one for maintenance becomes a work order of the room, so engineering sees and does it; the others are announced for their department (an outbox event carries the category and the room) and followed here by
  * Front Office staff until the contexts of those departments take them over. All open requests of a room show on its room card
  * (FR-FO-016).
  */
@@ -41,6 +42,7 @@ final readonly class GuestRequestService
         private GuestRequestRepository $requests,
         private StayRepository $stays,
         private GuestServiceRequests $housekeeping,
+        private GuestMaintenanceRequests $maintenance,
         private ReservationRepository $reservations,
         private RoomCatalogReader $rooms,
         private DocumentNumbers $numbers,
@@ -90,9 +92,10 @@ final readonly class GuestRequestService
 
             $number = $this->numbers->next($property, 'REQ');
             $task = $category === 'housekeeping' ? $this->housekeeping->openForGuestRequest($property, $actor, $stay->roomId, 'Guest request '.$number.': '.$title) : null;
-            $this->requests->add($property, $id, $number, $stay->id, $stay->reservationId, $stay->roomId, $category, $urgent ? 'urgent' : 'normal', $title, $detail, $dueInMinutes === null ? null : $this->clock->nowUtc()->modify('+'.$dueInMinutes.' minutes'), $task, $clientKey, $actor, $this->clock->nowUtc());
+            $workOrder = $category === 'maintenance' ? $this->maintenance->openForGuestRequest($property, $actor, $stay->roomId, $number, $title, $detail, $urgent) : null;
+            $this->requests->add($property, $id, $number, $stay->id, $stay->reservationId, $stay->roomId, $category, $urgent ? 'urgent' : 'normal', $title, $detail, $dueInMinutes === null ? null : $this->clock->nowUtc()->modify('+'.$dueInMinutes.' minutes'), $task, $workOrder, $clientKey, $actor, $this->clock->nowUtc());
 
-            $this->audit->record(new AuditEntry($property->toString(), $actor, 'guest_request.opened', 'guest_request', $id, null, ['number' => $number, 'category' => $category, 'priority' => $urgent ? 'urgent' : 'normal', 'room_id' => $stay->roomId, 'housekeeping_task' => $task, 'due_in_minutes' => $dueInMinutes]));
+            $this->audit->record(new AuditEntry($property->toString(), $actor, 'guest_request.opened', 'guest_request', $id, null, ['number' => $number, 'category' => $category, 'priority' => $urgent ? 'urgent' : 'normal', 'room_id' => $stay->roomId, 'housekeeping_task' => $task, 'work_order' => $workOrder, 'due_in_minutes' => $dueInMinutes]));
             $this->outbox->publish(new OutboxEvent($property, 'frontoffice.guest_request.opened', $id, 1, ['request_id' => $id, 'number' => $number, 'category' => $category, 'priority' => $urgent ? 'urgent' : 'normal', 'room_id' => $stay->roomId, 'stay_id' => $stay->id, 'actor_id' => $actor]));
         });
 
@@ -232,7 +235,14 @@ final readonly class GuestRequestService
             };
         }
 
-        return [...$r, 'recorded_status' => $r['status'], 'status' => $status, 'housekeeping_state' => $hk];
+        $wo = $r['work_order_id'] === null ? null : $this->maintenance->stateOf($property, $r['work_order_id']);
+
+        // The same for maintenance: engineering's work order decides how far the request has come while Front Office has not closed it itself.
+        if (in_array($status, ['open', 'in_progress'], true) && $wo !== null && $wo['state'] !== 'open') {
+            $status = $wo['state'];
+        }
+
+        return [...$r, 'recorded_status' => $r['status'], 'status' => $status, 'housekeeping_state' => $hk, 'work_order' => $wo];
     }
 
     private function text(?string $value, string $field): ?string

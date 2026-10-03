@@ -12,11 +12,11 @@ use Illuminate\Support\Facades\DB;
 
 final readonly class DatabaseGuestRequestRepository implements GuestRequestRepository
 {
-    public function add(PropertyId $property, string $id, string $number, string $stayId, string $reservationId, string $roomId, string $category, string $priority, string $title, ?string $detail, ?DateTimeImmutable $dueAt, ?string $hkTaskId, ?string $clientKey, string $actorId, DateTimeImmutable $at): void
+    public function add(PropertyId $property, string $id, string $number, string $stayId, string $reservationId, string $roomId, string $category, string $priority, string $title, ?string $detail, ?DateTimeImmutable $dueAt, ?string $hkTaskId, ?string $workOrderId, ?string $clientKey, string $actorId, DateTimeImmutable $at): void
     {
         DB::table('guest_requests')->insert([
             'id' => $id, 'property_id' => $property->toString(), 'number' => $number, 'stay_id' => $stayId, 'reservation_id' => $reservationId, 'room_id' => $roomId, 'category' => $category,
-            'priority' => $priority, 'title' => $title, 'detail' => $detail, 'due_at' => $dueAt, 'status' => 'open', 'hk_task_id' => $hkTaskId, 'client_key' => $clientKey, 'created_by' => $actorId, 'created_at' => $at, 'lock_version' => 0, 'updated_at' => $at,
+            'priority' => $priority, 'title' => $title, 'detail' => $detail, 'due_at' => $dueAt, 'status' => 'open', 'hk_task_id' => $hkTaskId, 'work_order_id' => $workOrderId, 'client_key' => $clientKey, 'created_by' => $actorId, 'created_at' => $at, 'lock_version' => 0, 'updated_at' => $at,
         ]);
     }
 
@@ -81,7 +81,7 @@ final readonly class DatabaseGuestRequestRepository implements GuestRequestRepos
 
         return [
             'id' => $r->id, 'number' => $r->number, 'stay_id' => $r->stay_id, 'reservation_id' => $r->reservation_id, 'room_id' => $r->room_id, 'room' => $r->room_number,
-            'category' => $r->category, 'priority' => $r->priority, 'title' => $r->title, 'detail' => $r->detail, 'due_at' => $utc($r->due_at), 'status' => $r->status, 'hk_task_id' => $r->hk_task_id, 'resolution' => $r->resolution,
+            'category' => $r->category, 'priority' => $r->priority, 'title' => $r->title, 'detail' => $r->detail, 'due_at' => $utc($r->due_at), 'status' => $r->status, 'hk_task_id' => $r->hk_task_id, 'work_order_id' => $r->work_order_id, 'resolution' => $r->resolution,
             'created_by' => $r->created_by, 'created_at' => $utc($r->created_at), 'closed_at' => $utc($r->closed_at), 'closed_by' => $r->closed_by, 'lock_version' => (int) $r->lock_version,
         ];
     }

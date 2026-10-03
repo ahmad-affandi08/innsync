@@ -9,11 +9,13 @@ use App\Modules\FrontOffice\Application\Requests\GuestRequestService;
 use App\Modules\FrontOffice\Application\Reservations\ReservationService;
 use App\Modules\FrontOffice\Application\Stays\StayService;
 use App\Modules\Housekeeping\Application\HousekeepingService;
+use App\Modules\Maintenance\Application\MaintenanceAccess;
 use App\Modules\Property\Application\Catalog\RoomCatalogService;
 use App\Modules\Property\Application\Rates\ChargeSchemeService;
 use App\Modules\Property\Application\Rates\RatePlanService;
 use App\Modules\Property\Application\Settings\PropertySettingsService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Inertia\Testing\AssertableInertia as Assert;
 use LogicException;
@@ -79,6 +81,37 @@ final class GuestRequestHttpTest extends TestCase
         $this->postJson("/front-office/requests/{$housekeeping['id']}/cancel", ['lock_version' => 0])->assertStatus(422);
         $this->postJson("/front-office/requests/{$housekeeping['id']}/cancel", ['lock_version' => 0, 'reason' => 'Guest left the room'])->assertOk()->assertJsonPath('request.status', 'cancelled');
         $this->get('/front-office/room-board')->assertInertia(fn (Assert $p) => $p->where('board.rooms.0.open_requests', 0));
+    }
+
+    public function test_a_request_for_maintenance_becomes_a_work_order_of_the_room_and_follows_it(): void
+    {
+        // The desk has no maintenance privilege at all: the request still reaches engineering.
+        $request = $this->postJson('/front-office/requests', ['stay_id' => $this->stay, 'category' => 'maintenance', 'title' => 'Noisy AC', 'detail' => 'Rattles at night', 'urgent' => true], ['Idempotency-Key' => 'request-key-0000020'])
+            ->assertCreated()->assertJsonPath('request.work_order.number', 'WO-000001')->assertJsonPath('request.work_order.state', 'open')->json('request');
+        $wo = DB::table('maintenance_work_orders')->first();
+        self::assertSame($this->room, $wo->room_id);
+        self::assertSame('front_office', $wo->reporter_department);
+        self::assertSame('urgent', $wo->priority);
+        self::assertStringContainsString('REQ-000001', (string) $wo->title);
+        self::assertStringContainsString('Rattles at night', (string) $wo->description);
+        self::assertSame($wo->id, DB::table('guest_requests')->where('id', $request['id'])->value('work_order_id'));
+        self::assertNull(DB::table('guest_requests')->where('id', $request['id'])->value('hk_task_id'));
+
+        // The same attempt sent again is the same request and the same work order.
+        $this->postJson('/front-office/requests', ['stay_id' => $this->stay, 'category' => 'maintenance', 'title' => 'Noisy AC', 'detail' => 'Rattles at night', 'urgent' => true], ['Idempotency-Key' => 'request-key-0000020'])->assertCreated();
+        self::assertSame(1, DB::table('maintenance_work_orders')->count());
+
+        // Engineering does the work; the request follows the work order.
+        $this->post('/logout');
+        $this->flushSession();
+        $tech = $this->signIn(self::A, [MaintenanceAccess::MANAGE, MaintenanceAccess::PERFORM, GuestRequestService::VIEW_PERMISSION]);
+        $this->postJson("/maintenance/work-orders/{$wo->id}/assign", ['technician_id' => (string) $tech->getKey(), 'lock_version' => 0])->assertOk();
+        $this->postJson("/maintenance/work-orders/{$wo->id}/start", ['lock_version' => 1])->assertOk();
+        $this->get('/front-office/requests')->assertInertia(fn (Assert $p) => $p->where('queue.requests.0.status', 'in_progress')->where('queue.requests.0.recorded_status', 'open')->where('queue.requests.0.work_order.state', 'in_progress'));
+        $png = UploadedFile::fake()->createWithContent('d.png', (string) base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==', true));
+        $this->post("/maintenance/work-orders/{$wo->id}/complete", ['note' => 'Fan cleaned', 'photo' => $png, 'lock_version' => 2], ['Accept' => 'application/json'])->assertOk();
+        $this->get('/front-office/requests?status=done')->assertInertia(fn (Assert $p) => $p->has('queue.requests', 1)->where('queue.requests.0.work_order.state', 'done'));
+        $this->get('/front-office/requests')->assertInertia(fn (Assert $p) => $p->has('queue.requests', 0));
     }
 
     public function test_bad_input_and_permissions_are_refused(): void

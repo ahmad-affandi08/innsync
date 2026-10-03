@@ -529,6 +529,7 @@ export const frontOffice = {
     'fo.req.status.cancelled': 'Cancelled',
     'fo.req.empty': 'No requests match.',
     'fo.req.row': '{number} · Room {room}',
+    'fo.req.wo': 'Work order {number}: {state}',
     'fo.req.hk': 'Housekeeping: {state}',
     'fo.req.start': 'Start',
     'fo.req.complete': 'Mark done',

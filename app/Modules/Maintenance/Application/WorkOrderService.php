@@ -138,11 +138,12 @@ final readonly class WorkOrderService
     }
 
     /** @return array<string, mixed> */
-    public function report(PropertyId $property, string $actorId, string $title, ?string $description, string $category, string $department, ?string $roomId, ?string $area, string $priority, ?string $photo, ?string $photoName, ?string $assetId = null): array
+    public function report(PropertyId $property, string $actorId, string $title, ?string $description, string $category, string $department, ?string $roomId, ?string $area, string $priority, ?string $photo, ?string $photoName, ?string $assetId = null, bool $trusted = false): array
     {
-        $caps = $this->capabilities($property, $actorId);
+        // A caller that has checked its own privilege (the front office passing a guest's request) reports for the person without needing a maintenance privilege.
+        $caps = $trusted ? null : $this->capabilities($property, $actorId);
 
-        if (! $caps['may_report']) {
+        if ($caps !== null && ! $caps['may_report']) {
             throw Refusal::forbidden('This person may not report faults.');
         }
 
@@ -208,7 +209,7 @@ final readonly class WorkOrderService
             $this->audit->record(new AuditEntry($property->toString(), $actor, 'work_order.reported', 'work_order', $id, null, ['number' => $number, 'title' => $title, 'priority' => $priority, 'room' => $room?->number, 'area' => $area, 'department' => $department, 'has_photo' => $file !== null]));
         });
 
-        return $this->show($property, $actorId, $id);
+        return $trusted ? ['work_order' => ['id' => $id]] : $this->show($property, $actorId, $id);
     }
 
     /**

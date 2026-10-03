@@ -529,6 +529,7 @@ export const frontOffice = {
     'fo.req.status.cancelled': 'Dibatalkan',
     'fo.req.empty': 'Tidak ada permintaan yang cocok.',
     'fo.req.row': '{number} · Kamar {room}',
+    'fo.req.wo': 'Work order {number}, status: {state}',
     'fo.req.hk': 'Housekeeping: {state}',
     'fo.req.start': 'Mulai',
     'fo.req.complete': 'Tandai selesai',

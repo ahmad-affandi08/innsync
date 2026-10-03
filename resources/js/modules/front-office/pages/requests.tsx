@@ -16,7 +16,7 @@ import { useFormatters, useTranslation } from '@/shared/i18n/i18n';
 import { useErrorStateCopy } from '@/shared/i18n/use-ui-copy';
 
 type Req = {
-    due_at: string | null; id: string; number: string; room: string; category: string; priority: string; title: string; detail: string | null; status: string; recorded_status: string; housekeeping_state: string | null;
+    due_at: string | null; id: string; number: string; room: string; category: string; priority: string; title: string; detail: string | null; status: string; recorded_status: string; housekeeping_state: string | null; work_order: { number: string; state: string } | null;
     resolution: string | null; created_at: string; lock_version: number;
 };
 type Props = {
@@ -99,7 +99,7 @@ export default function RequestsPage({ filters, in_house: inHouse, queue }: Prop
                             </div>
                             <p>{r.title}{r.due_at !== null ? ` · ${t('fo.req.dueBy', { time: format.instant(r.due_at) })}` : ''}</p>
                             {r.detail !== null ? <p className="text-xs text-muted-foreground">{r.detail}</p> : null}
-                            <p className="text-xs text-muted-foreground">{format.instant(r.created_at)}{r.housekeeping_state !== null ? ` · ${t('fo.req.hk', { state: t(`fo.req.status.${r.housekeeping_state}` as 'fo.req.status.open') })}` : ''}{r.resolution !== null ? ` · ${r.resolution}` : ''}</p>
+                            <p className="text-xs text-muted-foreground">{format.instant(r.created_at)}{r.housekeeping_state !== null ? ` · ${t('fo.req.hk', { state: t(`fo.req.status.${r.housekeeping_state}` as 'fo.req.status.open') })}` : ''}{r.work_order !== null ? ` · ${t('fo.req.wo', { number: r.work_order.number, state: t(`fo.req.status.${r.work_order.state}` as 'fo.req.status.open') })}` : ''}{r.resolution !== null ? ` · ${r.resolution}` : ''}</p>
                             {queue.may_manage && (r.recorded_status === 'open' || r.recorded_status === 'in_progress') ? (
                                 <div className="flex flex-wrap gap-2">
                                     {r.recorded_status === 'open' ? <Button disabled={action.busy} onClick={() => void start(r)} size="sm" type="button" variant="outline">{t('fo.req.start')}</Button> : null}

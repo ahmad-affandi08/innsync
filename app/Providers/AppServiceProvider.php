@@ -147,6 +147,8 @@ use App\Modules\Laundry\Infrastructure\DatabaseClaimRepository;
 use App\Modules\Laundry\Infrastructure\DatabaseLaundryRepository;
 use App\Modules\Maintenance\Application\AssetStore;
 use App\Modules\Maintenance\Application\DutyStore;
+use App\Modules\Maintenance\Application\GuestMaintenanceRequests;
+use App\Modules\Maintenance\Application\GuestMaintenanceRequestService;
 use App\Modules\Maintenance\Application\PartsStore;
 use App\Modules\Maintenance\Application\VendorJobStore;
 use App\Modules\Maintenance\Application\WorkOrderStore;
@@ -444,6 +446,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(PurchaseRequesting::class, PurchaseRequestingService::class);
         $this->app->bind(PartsStore::class, DatabasePartsStore::class);
         $this->app->bind(DutyStore::class, DatabaseDutyStore::class);
+        $this->app->bind(GuestMaintenanceRequests::class, GuestMaintenanceRequestService::class);
         $this->app->bind(VendorJobStore::class, DatabaseVendorJobStore::class);
         $this->app->bind(SupplierDirectory::class, SupplierDirectoryService::class);
         $this->app->bind(PaymentStore::class, DatabasePaymentStore::class);
