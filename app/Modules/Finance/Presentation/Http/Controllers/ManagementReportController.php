@@ -6,6 +6,7 @@ namespace App\Modules\Finance\Presentation\Http\Controllers;
 
 use App\Modules\Finance\Application\FinanceExportService;
 use App\Modules\Finance\Application\ManagementReportService;
+use App\Modules\Finance\Application\StockReportService;
 use App\Shared\Application\Tenancy\PropertyContext;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -13,10 +14,10 @@ use Illuminate\Http\Response as HttpResponse;
 use Inertia\Inertia;
 use Inertia\Response;
 
-/** The management P&L, the cash flow summary and the exports of finance data. Every rule and permission lives in the application services. */
+/** The management P&L, the cash flow summary, the stock value and food cost reports and the exports of finance data. Every rule and permission lives in the application services. */
 final readonly class ManagementReportController
 {
-    public function __construct(private ManagementReportService $reports, private FinanceExportService $exports, private PropertyContext $property) {}
+    public function __construct(private ManagementReportService $reports, private FinanceExportService $exports, private StockReportService $stock, private PropertyContext $property) {}
 
     public function pnl(Request $request): Response
     {
@@ -44,6 +45,27 @@ final readonly class ManagementReportController
         $data = $request->validate(['cash_opening_minor' => ['required', 'integer', 'min:-9000000000000', 'max:9000000000000'], 'bank_opening_minor' => ['required', 'integer', 'min:-9000000000000', 'max:9000000000000'], 'opening_date' => ['required', 'date_format:Y-m-d'], 'lock_version' => ['nullable', 'integer', 'min:0'], 'reason' => ['required', 'string', 'max:300']]);
 
         return $this->json(['balances' => $this->reports->setOpening($this->property->current(), $this->actor($request), (int) $data['cash_opening_minor'], (int) $data['bank_opening_minor'], $data['opening_date'], isset($data['lock_version']) ? (int) $data['lock_version'] : null, $data['reason'])]);
+    }
+
+    public function stockValue(Request $request): Response
+    {
+        $data = $request->validate(['from' => ['nullable', 'date_format:Y-m-d'], 'to' => ['nullable', 'date_format:Y-m-d']]);
+
+        return Inertia::render('finance/pages/stock-value', ['report' => $this->stock->value($this->property->current(), $this->actor($request), $data['from'] ?? null, $data['to'] ?? null)]);
+    }
+
+    public function foodCost(Request $request): Response
+    {
+        $data = $request->validate(['from' => ['nullable', 'date_format:Y-m-d'], 'to' => ['nullable', 'date_format:Y-m-d']]);
+
+        return Inertia::render('finance/pages/food-cost', ['report' => $this->stock->foodCost($this->property->current(), $this->actor($request), $data['from'] ?? null, $data['to'] ?? null)]);
+    }
+
+    public function setFoodCostTarget(Request $request): JsonResponse
+    {
+        $data = $request->validate(['target_bp' => ['required', 'integer', 'min:500', 'max:9000'], 'lock_version' => ['nullable', 'integer', 'min:0'], 'reason' => ['required', 'string', 'max:300']]);
+
+        return $this->json(['target' => $this->stock->setFoodCostTarget($this->property->current(), $this->actor($request), (int) $data['target_bp'], isset($data['lock_version']) ? (int) $data['lock_version'] : null, $data['reason'])]);
     }
 
     public function exportPage(Request $request): Response

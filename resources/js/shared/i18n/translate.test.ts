@@ -93,6 +93,8 @@ describe('dictionaries', () => {
             'rpt.obl.reportedOn',
             // Terms Indonesian hotels use unchanged.
             'rates.kind.ota',
+            'fin.fc.target',
+            'fin.fc.colOutlet',
             'rates.quote.service',
             'rates.quote.total',
             'tax.serviceCharge',

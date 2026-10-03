@@ -279,6 +279,12 @@ final readonly class ManagementReportService
         ];
     }
 
+    /** @return array{0: string, 1: string, 2: string} the range of a report as it is shown (from, to, today); the range of every finance report follows the same rules */
+    public function period(PropertyId $property, ?string $from, ?string $to): array
+    {
+        return $this->range($property, $from, $to);
+    }
+
     /** @return array{0: string, 1: string, 2: string} */
     private function range(PropertyId $property, ?string $from, ?string $to): array
     {

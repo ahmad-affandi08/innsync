@@ -18,6 +18,8 @@ const LINKS = [
     { href: '/finance/petty', label: 'fin.nav.petty' },
     { href: '/finance/pnl', label: 'fin.nav.pnl' },
     { href: '/finance/cashflow', label: 'fin.nav.cashflow' },
+    { href: '/finance/stock-value', label: 'fin.nav.stockValue' },
+    { href: '/finance/food-cost', label: 'fin.nav.foodCost' },
     { href: '/finance/recurring', label: 'fin.nav.recurring' },
     { href: '/finance/budget', label: 'fin.nav.budget' },
     { href: '/finance/budget/report', label: 'fin.nav.budgetReport' },

@@ -263,6 +263,20 @@ export type PnlReport = {
     mapping: PnlMapping[]; department_list: string[]; may: { manage: boolean };
 };
 
+/** The stock value report and the food cost report as the server sends them. */
+export type StockValueAmounts = { opening_minor: number; received_minor: number; returned_minor: number; issued_minor: number; written_off_minor: number; adjusted_minor: number; closing_minor: number };
+export type StockValueReport = {
+    from: string; to: string; today: string; opening_as_of: string; currency: string; departments: (StockValueAmounts & { department: string })[];
+    totals: StockValueAmounts; locations: { id: string; code: string; name: string; value_minor: number }[];
+};
+export type FoodCostDepartment = { department: string; issued_minor: number; written_off_minor: number; adjusted_minor: number; cost_minor: number; purchased_minor: number };
+export type FoodCostReport = {
+    from: string; to: string; today: string; currency: string; outlets: { code: string; name: string | null; sales_minor: number }[]; sales_minor: number;
+    departments: FoodCostDepartment[]; totals: Omit<FoodCostDepartment, 'department'>; food_cost_bp: number | null; waste_bp: number | null;
+    target: { bp: number; is_default: boolean; lock_version: number | null; allowed_minor: number }; status: 'no_sales' | 'over' | 'within'; over_minor: number;
+    notes: { outlets_mapped: boolean; unverified_days: number }; may: { manage: boolean };
+};
+
 /** The cash flow summary as the server sends it. */
 export type CashGroup = 'cash' | 'bank';
 export type CashReceipt = { source: 'guest' | 'receivable'; method: string; group: CashGroup; amount_minor: number; received_minor: number; paid_back_minor: number };

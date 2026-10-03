@@ -39,6 +39,10 @@
         "resolution",
         "status"
     ],
+    "finance/pages/food-cost": [
+        "reason",
+        "target_bp"
+    ],
     "finance/pages/payable": [
         "amount_minor",
         "credit_id",

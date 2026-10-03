@@ -238,8 +238,8 @@
 | TASK-FIN-025 | FR-FIN-025 | Finance | Wajib | TODO |
 | TASK-FIN-030 | FR-FIN-030 | Finance | Wajib | REVIEW |
 | TASK-FIN-031 | FR-FIN-031 | Finance | Wajib | REVIEW |
-| TASK-FIN-032 | FR-FIN-032 | Finance | Sebaiknya | TODO |
-| TASK-FIN-033 | FR-FIN-033 | Finance | Sebaiknya | TODO |
+| TASK-FIN-032 | FR-FIN-032 | Finance | Sebaiknya | REVIEW |
+| TASK-FIN-033 | FR-FIN-033 | Finance | Sebaiknya | REVIEW |
 | TASK-FIN-034 | FR-FIN-034 | Finance | Wajib | REVIEW |
 | TASK-FIN-035 | FR-FIN-035 | Finance | Wajib | REVIEW |
 | TASK-FIN-036 | FR-FIN-036 | Finance | Wajib | REVIEW |

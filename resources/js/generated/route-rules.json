@@ -72,6 +72,13 @@
             "to"
         ]
     },
+    "GET /finance/food-cost": {
+        "required": [],
+        "declared": [
+            "from",
+            "to"
+        ]
+    },
     "GET /finance/payables": {
         "required": [],
         "declared": [
@@ -117,6 +124,13 @@
         "required": [],
         "declared": [
             "days"
+        ]
+    },
+    "GET /finance/stock-value": {
+        "required": [],
+        "declared": [
+            "from",
+            "to"
         ]
     },
     "GET /front-office/availability": {
@@ -748,6 +762,17 @@
             "lock_version",
             "resolution",
             "status"
+        ]
+    },
+    "POST /finance/food-cost/target": {
+        "required": [
+            "reason",
+            "target_bp"
+        ],
+        "declared": [
+            "lock_version",
+            "reason",
+            "target_bp"
         ]
     },
     "POST /finance/payables/{id}/classify": {

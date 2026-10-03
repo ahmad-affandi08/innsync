@@ -586,6 +586,9 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
     Route::post('/pnl/mappings', [ManagementReportController::class, 'mapOutlet'])->name('finance.pnl.mappings');
     Route::get('/cashflow', [ManagementReportController::class, 'cashFlow'])->name('finance.cashflow');
     Route::post('/cashflow/opening', [ManagementReportController::class, 'setOpening'])->name('finance.cashflow.opening');
+    Route::get('/stock-value', [ManagementReportController::class, 'stockValue'])->name('finance.stock-value');
+    Route::get('/food-cost', [ManagementReportController::class, 'foodCost'])->name('finance.food-cost');
+    Route::post('/food-cost/target', [ManagementReportController::class, 'setFoodCostTarget'])->name('finance.food-cost.target');
     Route::get('/export', [ManagementReportController::class, 'exportPage'])->name('finance.export');
     Route::get('/export/{dataset}', [ManagementReportController::class, 'export'])->where('dataset', '[a-z_]{3,24}')->name('finance.export.download');
     Route::get('/recurring', [RecurringExpenseController::class, 'index'])->name('finance.recurring');
