@@ -2,6 +2,7 @@ import { type DataGridColumn } from '@/components/ui/data-grid';
 import { StatusBadge, type StatusTone } from '@/components/ui/status-badge';
 import { useFormatters, useTranslation } from '@/shared/i18n/i18n';
 import { currencyExponent, parseMajorToMinor } from '@/shared/money/money';
+import { cn } from '@/shared/lib/utils';
 import type { MessageKey } from '@/locales/en/index';
 
 /** A payable as the overview, the schedule and the payable page send it. */
@@ -248,9 +249,9 @@ export function minorToMajorText(minor: number, currency: string): string {
 
 /** The management P&L as the server sends it. Money is in minor units; a margin in basis points. */
 export type PnlOutlet = { code: string; name: string | null; revenue_minor: number };
-export type PnlAccount = { code: string; name: string; category: string; expenses_minor: number; petty_minor: number };
+export type PnlAccount = { code: string; name: string; category: string; expenses_minor: number; petty_minor: number; recurring_minor: number };
 export type PnlAmounts = {
-    revenue_minor: number; service_charge_minor: number; expenses_minor: number; petty_minor: number; stock_minor: number; cost_total_minor: number; result_minor: number; margin_bp: number | null;
+    revenue_minor: number; service_charge_minor: number; expenses_minor: number; petty_minor: number; recurring_minor: number; stock_minor: number; cost_total_minor: number; result_minor: number; margin_bp: number | null;
 };
 export type PnlDepartment = PnlAmounts & { department: string; outlets: PnlOutlet[]; accounts: PnlAccount[] };
 export type PnlMapping = { code: string; name: string | null; department: string; mapped: boolean };
@@ -263,7 +264,7 @@ export type PnlReport = {
 /** The cash flow summary as the server sends it. */
 export type CashGroup = 'cash' | 'bank';
 export type CashReceipt = { source: 'guest' | 'receivable'; method: string; group: CashGroup; amount_minor: number; received_minor: number; paid_back_minor: number };
-export type CashPayment = { source: 'supplier' | 'petty'; method: string; group: CashGroup; amount_minor: number };
+export type CashPayment = { source: 'supplier' | 'petty' | 'recurring'; method: string; group: CashGroup; amount_minor: number };
 export type CashSplit = { cash: number; bank: number; total: number };
 export type CashBalance = { opening_minor: number; closing_minor: number | null };
 export type CashBalances = { opening_date: string; lock_version: number; reached: boolean; cash: CashBalance; bank: CashBalance };
@@ -285,3 +286,105 @@ export function useCashMethodLabel() {
         return SUPPLIER_METHODS.includes(method) ? t(`fin.method.${method}` as MessageKey) : method;
     };
 }
+
+/** The currency of a page whose props carry none (recurring expenses and the budget grid): the property's own. */
+export const DEFAULT_CURRENCY = 'IDR';
+
+/** A recurring expense as the list and the detail page send it (FR-FIN-016). */
+export const RECURRING_FREQUENCIES = ['monthly', 'quarterly', 'yearly'] as const;
+export type RecurringFrequency = (typeof RECURRING_FREQUENCIES)[number];
+export type RecurringState = 'upcoming' | 'due_soon' | 'overdue' | 'finished' | 'paused';
+export const RECURRING_STATES: RecurringState[] = ['overdue', 'due_soon', 'upcoming', 'paused', 'finished'];
+export type RecurringAccount = { id: string; code: string; name: string; department: string };
+export type RecurringItem = {
+    id: string; name: string; expense_account_id: string; account_code: string; account_name: string; department: string; payee: string | null; amount_minor: number; frequency: RecurringFrequency;
+    due_day: number; start_month: string; end_date: string | null; remind_days: number; next_due: string | null; days_to_due: number | null; days_overdue: number; state: RecurringState; active: boolean;
+    lock_version: number; upcoming: string[];
+};
+export type RecurringHistory = {
+    due_date: string; status: 'paid' | 'skipped'; amount_minor: number | null; paid_on: string | null; method: string | null; reference: string | null; note: string | null; by: string | null;
+};
+
+/** The ways a recurring expense can be paid, and those that need the number of the transfer or giro. */
+export const RECURRING_METHODS = ['cash', 'transfer', 'giro', 'other'] as const;
+export const REFERENCE_METHODS: readonly string[] = ['transfer', 'giro'];
+export const RECURRING_TONE: Record<RecurringState, StatusTone> = { overdue: 'danger', due_soon: 'warning', upcoming: 'neutral', paused: 'neutral', finished: 'neutral' };
+
+/** Whether the next due date of an expense can be settled now. */
+export const canSettle = (item: Pick<RecurringItem, 'state'>): boolean => item.state === 'overdue' || item.state === 'due_soon' || item.state === 'upcoming';
+
+/** The state of a recurring expense: overdue red, due soon amber, upcoming neutral; paused and ended are muted. */
+export function RecurringStateBadge({ state }: { state: RecurringState }) {
+    const { t } = useTranslation();
+    const muted = state === 'paused' || state === 'finished';
+
+    return <StatusBadge className={muted ? 'border-border bg-surface text-muted-foreground' : undefined} label={t(`fin.rec.state.${state}` as MessageKey)} tone={RECURRING_TONE[state]} />;
+}
+
+/** How far the next due date is in words ("In 5 days", "Due today", "3 days overdue"); nothing for an expense that has ended. */
+export function RecurringDays({ item }: { item: Pick<RecurringItem, 'days_to_due' | 'days_overdue' | 'state'> }) {
+    const { t } = useTranslation();
+
+    if (item.days_to_due === null) return null;
+
+    const text = item.days_to_due < 0 ? t('fin.overdueDays', { days: item.days_overdue }) : item.days_to_due === 0 ? t('fin.dueToday') : t('fin.dueIn', { days: item.days_to_due });
+
+    return <span className={cn('text-xs text-muted-foreground', item.state === 'overdue' && 'font-medium text-danger', item.state === 'due_soon' && 'font-medium text-warning')}>{text}</span>;
+}
+
+/** A month sent as `YYYY-MM` in the words of the language: "October 2026". */
+export function useMonthLabel() {
+    const { locale } = useTranslation();
+    const formatter = new Intl.DateTimeFormat(locale, { month: 'long', year: 'numeric', timeZone: 'UTC' });
+
+    return (month: string): string => formatter.format(new Date(`${month}-01T00:00:00Z`));
+}
+
+/** The name of a month number (1 to 12): "October". */
+export function useMonthName() {
+    const { locale } = useTranslation();
+    const formatter = new Intl.DateTimeFormat(locale, { month: 'long', timeZone: 'UTC' });
+
+    return (month: number): string => formatter.format(new Date(Date.UTC(2000, month - 1, 1)));
+}
+
+/** The schedule of a recurring expense in words: "Every month on day 25, until 31 December 2027". */
+export function useRecurringSchedule() {
+    const { t } = useTranslation();
+    const format = useFormatters();
+    const monthLabel = useMonthLabel();
+
+    return (item: Pick<RecurringItem, 'frequency' | 'due_day' | 'start_month' | 'end_date'>): string => {
+        const base = t(`fin.rec.schedule.${item.frequency}` as MessageKey, { day: item.due_day, month: monthLabel(item.start_month) });
+
+        return item.end_date === null ? base : t('fin.rec.schedule.until', { schedule: base, date: format.date(item.end_date) });
+    };
+}
+
+/** What was paid against what was expected: as expected, above it (amber, a higher cost) or below it. Colour, icon and words together. */
+export function RecurringDifference({ currency, minor }: { currency: string; minor: number }) {
+    const { t } = useTranslation();
+    const format = useFormatters();
+
+    if (minor === 0) return <span className="text-sm text-muted-foreground">{t('fin.rec.asExpected')}</span>;
+
+    return minor > 0
+        ? <StatusBadge label={t('fin.rec.moreThan', { amount: format.money(minor, currency) })} tone="warning" />
+        : <StatusBadge label={t('fin.rec.lessThan', { amount: format.money(-minor, currency) })} tone="info" />;
+}
+
+/** The budget of a year as the server sends it: the months that have a budget, by department. */
+export type BudgetRow = { month: number; department: string; revenue_minor: number; cost_minor: number };
+export type BudgetOverview = { year: number; departments: string[]; rows: BudgetRow[]; may: { manage: boolean } };
+
+/** The budget against actual of a department (or the total): money in minor units, "used" in basis points of the budget, null without a budget. */
+export type BudgetComparison = {
+    budget_revenue_minor: number; actual_revenue_minor: number; budget_cost_minor: number; actual_cost_minor: number; revenue_variance_minor: number; cost_variance_minor: number;
+    budget_result_minor: number; actual_result_minor: number; result_variance_minor: number; revenue_used_bp: number | null; cost_used_bp: number | null;
+};
+export type BudgetDepartment = BudgetComparison & { department: string };
+export type BudgetMonth = { month: string; budget_revenue_minor: number; actual_revenue_minor: number; budget_cost_minor: number; actual_cost_minor: number };
+export type BudgetReport = {
+    from: string; to: string; currency: string; departments: BudgetDepartment[]; totals: BudgetComparison; monthly: BudgetMonth[];
+    notes: { unverified_days: number; unclassified_payables_minor: number }; may: { manage: boolean };
+};

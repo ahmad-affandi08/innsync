@@ -14,6 +14,19 @@
             "as_of"
         ]
     },
+    "GET /finance/budget": {
+        "required": [],
+        "declared": [
+            "year"
+        ]
+    },
+    "GET /finance/budget/report": {
+        "required": [],
+        "declared": [
+            "from",
+            "to"
+        ]
+    },
     "GET /finance/cash": {
         "required": [],
         "declared": [
@@ -569,6 +582,26 @@
             "name"
         ]
     },
+    "POST /finance/budget": {
+        "required": [
+            "department",
+            "months",
+            "months.*.cost_minor",
+            "months.*.month",
+            "months.*.revenue_minor",
+            "reason",
+            "year"
+        ],
+        "declared": [
+            "department",
+            "months",
+            "months.*.cost_minor",
+            "months.*.month",
+            "months.*.revenue_minor",
+            "reason",
+            "year"
+        ]
+    },
     "POST /finance/cash/exceptions/{id}/settle": {
         "required": [
             "lock_version",
@@ -812,6 +845,60 @@
             "method",
             "note",
             "received_on",
+            "reference"
+        ]
+    },
+    "POST /finance/recurring": {
+        "required": [
+            "amount_minor",
+            "due_day",
+            "expense_account_id",
+            "frequency",
+            "name",
+            "start_month"
+        ],
+        "declared": [
+            "amount_minor",
+            "due_day",
+            "end_date",
+            "expense_account_id",
+            "frequency",
+            "name",
+            "payee",
+            "remind_days",
+            "start_month"
+        ]
+    },
+    "POST /finance/recurring/{id}": {
+        "required": [
+            "active",
+            "amount_minor",
+            "expense_account_id",
+            "lock_version",
+            "name",
+            "remind_days"
+        ],
+        "declared": [
+            "active",
+            "amount_minor",
+            "end_date",
+            "expense_account_id",
+            "lock_version",
+            "name",
+            "payee",
+            "remind_days"
+        ]
+    },
+    "POST /finance/recurring/{id}/settle": {
+        "required": [
+            "action"
+        ],
+        "declared": [
+            "action",
+            "amount_minor",
+            "method",
+            "note",
+            "paid_on",
             "reference"
         ]
     },

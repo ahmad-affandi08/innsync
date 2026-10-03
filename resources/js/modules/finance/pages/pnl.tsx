@@ -79,6 +79,7 @@ export default function PnlPage({ report }: { report: PnlReport }) {
         { id: 'revenue', label: t('fin.pnl.colRevenue'), align: 'right', value: (d) => d.revenue_minor, cell: (d) => money(d.revenue_minor), footer: money(report.totals.revenue_minor) },
         { id: 'expenses', label: t('fin.pnl.colExpenses'), align: 'right', value: (d) => d.expenses_minor, cell: (d) => money(d.expenses_minor), footer: money(report.totals.expenses_minor) },
         { id: 'petty', label: t('fin.pnl.colPetty'), align: 'right', value: (d) => d.petty_minor, cell: (d) => money(d.petty_minor), footer: money(report.totals.petty_minor) },
+        { id: 'recurring', label: t('fin.pnl.colRecurring'), align: 'right', value: (d) => d.recurring_minor, cell: (d) => money(d.recurring_minor), footer: money(report.totals.recurring_minor) },
         { id: 'stock', label: t('fin.pnl.colStock'), align: 'right', value: (d) => d.stock_minor, cell: (d) => money(d.stock_minor), footer: money(report.totals.stock_minor) },
         { id: 'cost', label: t('fin.pnl.colCost'), align: 'right', value: (d) => d.cost_total_minor, cell: (d) => money(d.cost_total_minor), footer: money(report.totals.cost_total_minor) },
         { id: 'result', label: t('fin.pnl.colResult'), align: 'right', value: (d) => d.result_minor, cell: (d) => signed(d.result_minor), footer: signed(report.totals.result_minor) },
@@ -97,6 +98,7 @@ export default function PnlPage({ report }: { report: PnlReport }) {
         { id: 'category', label: t('fin.acc.category'), value: (a) => a.category, filter: 'select', filterLabel: (c) => t(`fin.cat.${c}` as MessageKey), cell: (a) => t(`fin.cat.${a.category}` as MessageKey) },
         { id: 'expenses', label: t('fin.pnl.colExpenses'), align: 'right', value: (a) => a.expenses_minor, cell: (a) => money(a.expenses_minor) },
         { id: 'petty', label: t('fin.pnl.colPetty'), align: 'right', value: (a) => a.petty_minor, cell: (a) => money(a.petty_minor) },
+        { id: 'recurring', label: t('fin.pnl.colRecurring'), align: 'right', value: (a) => a.recurring_minor, cell: (a) => money(a.recurring_minor) },
     ];
 
     const kpis: [string, ReactNode, string?][] = [

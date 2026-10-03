@@ -5,6 +5,9 @@
         "department",
         "name"
     ],
+    "finance/pages/budget": [
+        "reason"
+    ],
     "finance/pages/cash": [
         "deposited_minor",
         "resolution",
@@ -63,6 +66,20 @@
         "amount_minor",
         "customer_id",
         "description"
+    ],
+    "finance/pages/recurring": [
+        "action",
+        "due_day",
+        "expense_account_id",
+        "frequency",
+        "name",
+        "start_month"
+    ],
+    "finance/pages/recurring-detail": [
+        "action",
+        "expense_account_id",
+        "name",
+        "remind_days"
     ],
     "front-office/pages/cashier": [
         "amount_minor",
