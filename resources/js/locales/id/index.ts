@@ -3,6 +3,7 @@ import { finance } from './finance.ts'
 import { fnb } from './fnb.ts'
 import { kitchen } from './kitchen.ts'
 import { maintenance } from './maintenance.ts'
+import { hr } from './hr.ts'
 import { frontOffice } from './frontoffice.ts'
 import { housekeeping } from './housekeeping.ts'
 import { inventory } from './inventory.ts'
@@ -21,6 +22,7 @@ export const id: Record<MessageKey, string> = {
     ...fnb,
     ...kitchen,
     ...maintenance,
+    ...hr,
     ...property,
     ...frontOffice,
     ...housekeeping,

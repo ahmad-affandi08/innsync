@@ -187,11 +187,11 @@ Every row must eventually point to implementation evidence and tests. Status is 
 | FR-PUR-011 | Purchasing | Wajib | ../TASK/MODULE-08-INVENTORY-PURCHASING.md | TODO |
 | FR-PUR-012 | Purchasing | Wajib | ../TASK/MODULE-08-INVENTORY-PURCHASING.md | TODO |
 | FR-PUR-013 | Purchasing | Sebaiknya | ../TASK/MODULE-08-INVENTORY-PURCHASING.md | TODO |
-| FR-HR-001 | Human Resource | Wajib | ../TASK/MODULE-09-HUMAN-RESOURCE.md | TODO |
-| FR-HR-002 | Human Resource | Wajib | ../TASK/MODULE-09-HUMAN-RESOURCE.md | TODO |
-| FR-HR-003 | Human Resource | Sebaiknya | ../TASK/MODULE-09-HUMAN-RESOURCE.md | TODO |
+| FR-HR-001 | Human Resource | Wajib | ../TASK/MODULE-09-HUMAN-RESOURCE.md | REVIEW |
+| FR-HR-002 | Human Resource | Wajib | ../TASK/MODULE-09-HUMAN-RESOURCE.md | REVIEW |
+| FR-HR-003 | Human Resource | Sebaiknya | ../TASK/MODULE-09-HUMAN-RESOURCE.md | REVIEW |
 | FR-HR-004 | Human Resource | Sebaiknya | ../TASK/MODULE-09-HUMAN-RESOURCE.md | TODO |
-| FR-HR-005 | Human Resource | Wajib | ../TASK/MODULE-09-HUMAN-RESOURCE.md | TODO |
+| FR-HR-005 | Human Resource | Wajib | ../TASK/MODULE-09-HUMAN-RESOURCE.md | IN_PROGRESS |
 | FR-HR-010 | Human Resource | Wajib | ../TASK/MODULE-09-HUMAN-RESOURCE.md | TODO |
 | FR-HR-011 | Human Resource | Sebaiknya | ../TASK/MODULE-09-HUMAN-RESOURCE.md | TODO |
 | FR-HR-012 | Human Resource | Wajib | ../TASK/MODULE-09-HUMAN-RESOURCE.md | TODO |

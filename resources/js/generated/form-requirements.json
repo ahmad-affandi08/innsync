@@ -316,6 +316,17 @@
         "scope_ref",
         "use_quantity"
     ],
+    "hr/pages/employees": [
+        "contract_type",
+        "department",
+        "full_name",
+        "joined_on",
+        "kind",
+        "offboarded_on",
+        "position",
+        "title",
+        "warn_days"
+    ],
     "identity-access/pages/approval-policies": [
         "band_min_amount_minor",
         "reason",

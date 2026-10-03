@@ -41,6 +41,7 @@ use App\Modules\Housekeeping\Presentation\Http\Controllers\HousekeepingControlle
 use App\Modules\Housekeeping\Presentation\Http\Controllers\LinenController;
 use App\Modules\Housekeeping\Presentation\Http\Controllers\LostFoundController;
 use App\Modules\Housekeeping\Presentation\Http\Controllers\ParLevelController;
+use App\Modules\HumanResource\Presentation\Http\Controllers\EmployeeController;
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\ApprovalController;
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\ApprovalPolicyController;
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\AuthenticatedSessionController;
@@ -674,6 +675,20 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
     Route::get('/recipes', [RecipeController::class, 'index'])->name('kitchen.recipes');
     Route::get('/recipes/{id}', [RecipeController::class, 'show'])->where('id', $id)->name('kitchen.recipes.show');
     Route::post('/recipes/{id}', [RecipeController::class, 'save'])->where('id', $id)->name('kitchen.recipes.save');
+});
+
+Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix('hr')->group(function (): void {
+    $id = '[0-9a-z]{26}';
+
+    Route::get('/employees', [EmployeeController::class, 'index'])->name('hr.employees');
+    Route::post('/employees', [EmployeeController::class, 'create'])->middleware(['idempotent'])->name('hr.employees.create');
+    Route::post('/settings', [EmployeeController::class, 'settings'])->name('hr.settings');
+    Route::get('/employees/{id}', [EmployeeController::class, 'show'])->where('id', $id)->name('hr.employees.show');
+    Route::post('/employees/{id}', [EmployeeController::class, 'update'])->where('id', $id)->name('hr.employees.update');
+    Route::post('/employees/{id}/offboard', [EmployeeController::class, 'offboard'])->where('id', $id)->name('hr.employees.offboard');
+    Route::get('/employees/{id}/documents', [EmployeeController::class, 'documents'])->where('id', $id)->name('hr.documents');
+    Route::post('/employees/{id}/documents', [EmployeeController::class, 'addDocument'])->where('id', $id)->name('hr.documents.add');
+    Route::get('/documents/{document}/file', [EmployeeController::class, 'download'])->where('document', $id)->name('hr.documents.file');
 });
 
 Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix('maintenance')->group(function (): void {

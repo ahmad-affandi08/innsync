@@ -22,4 +22,11 @@ interface StaffDirectory
      * @return array<string, string> user id to name
      */
     public function namesOf(PropertyId $property, array $userIds): array;
+
+    /**
+     * Everyone with an active account who works in this property: a role of the property that is still held. For choosing who an employee record belongs to.
+     *
+     * @return list<array{id: string, name: string}> sorted by name
+     */
+    public function members(PropertyId $property): array;
 }

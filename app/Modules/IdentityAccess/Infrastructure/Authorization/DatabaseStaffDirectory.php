@@ -34,6 +34,17 @@ final readonly class DatabaseStaffDirectory implements StaffDirectory
             ->all();
     }
 
+    public function members(PropertyId $property): array
+    {
+        return DB::table('users')
+            ->whereExists(static fn ($q) => $q->selectRaw('1')->from('user_role_assignments')->whereColumn('user_role_assignments.user_id', 'users.id')->where('user_role_assignments.property_id', $property->toString())->where('user_role_assignments.is_active', true))
+            ->where('users.is_active', true)
+            ->orderBy('users.name')
+            ->get(['users.id', 'users.name'])
+            ->map(static fn ($u): array => ['id' => strtolower((string) $u->id), 'name' => (string) $u->name])
+            ->all();
+    }
+
     public function namesOf(PropertyId $property, array $userIds): array
     {
         if ($userIds === []) {

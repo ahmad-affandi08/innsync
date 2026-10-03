@@ -266,6 +266,12 @@
             "shift"
         ]
     },
+    "GET /hr/employees": {
+        "required": [],
+        "declared": [
+            "status"
+        ]
+    },
     "GET /inventory/counts": {
         "required": [],
         "declared": [
@@ -2502,6 +2508,95 @@
         ],
         "declared": [
             "lock_version"
+        ]
+    },
+    "POST /hr/employees": {
+        "required": [
+            "contract_type",
+            "department",
+            "full_name",
+            "joined_on",
+            "position"
+        ],
+        "declared": [
+            "contract_end_on",
+            "contract_type",
+            "department",
+            "email",
+            "full_name",
+            "joined_on",
+            "phone",
+            "position",
+            "supervisor_id",
+            "user_id"
+        ]
+    },
+    "POST /hr/employees/{id}": {
+        "required": [
+            "contract_type",
+            "department",
+            "full_name",
+            "joined_on",
+            "lock_version",
+            "position"
+        ],
+        "declared": [
+            "contract_end_on",
+            "contract_type",
+            "department",
+            "email",
+            "full_name",
+            "joined_on",
+            "lock_version",
+            "phone",
+            "position",
+            "supervisor_id",
+            "user_id"
+        ]
+    },
+    "POST /hr/employees/{id}/documents": {
+        "required": [
+            "kind",
+            "title"
+        ],
+        "declared": [
+            "file",
+            "issued_on",
+            "kind",
+            "replaces_id",
+            "title",
+            "valid_until"
+        ]
+    },
+    "POST /hr/employees/{id}/offboard": {
+        "required": [
+            "items.*.item",
+            "items.*.returned",
+            "kind",
+            "lock_version",
+            "offboarded_on"
+        ],
+        "declared": [
+            "items",
+            "items.*.item",
+            "items.*.note",
+            "items.*.returned",
+            "kind",
+            "lock_version",
+            "offboarded_on",
+            "reason",
+            "reassign_to"
+        ]
+    },
+    "POST /hr/settings": {
+        "required": [
+            "warn_days"
+        ],
+        "declared": [
+            "lock_version",
+            "required_kinds",
+            "required_kinds.*",
+            "warn_days"
         ]
     },
     "POST /inventory/categories": {
