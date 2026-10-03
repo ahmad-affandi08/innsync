@@ -63,7 +63,7 @@ final readonly class DatabaseBillStore implements BillStore
         $rows = DB::table('fnb_bills as b')->leftJoin('fnb_bill_lines as l', static fn ($j) => $j->on('l.bill_id', '=', 'b.id')->whereIn('l.status', ['pending', 'sent']))
             ->where('b.property_id', $property->toString())->where('b.outlet_id', $outletId)->where('b.status', 'open')
             ->groupBy('b.id')->orderByDesc('b.opened_at')
-            ->get(['b.*', DB::raw('COALESCE(SUM(l.line_total_minor), 0) as subtotal_minor'), DB::raw("COALESCE(SUM(l.status = 'sent'), 0) as sent_lines"), DB::raw('COUNT(l.id) as line_count')]);
+            ->get(['b.*', DB::raw('COALESCE(SUM(l.line_total_minor), 0) as subtotal_minor'), DB::raw("COALESCE(SUM(l.status = 'sent'), 0) as sent_lines"), DB::raw("COALESCE(SUM(l.status = 'sent' AND l.prep_status = 'ready'), 0) as ready_lines"), DB::raw('COUNT(l.id) as line_count')]);
 
         return array_map(static fn (object $r): array => (array) $r, $rows->all());
     }
@@ -85,6 +85,8 @@ final readonly class DatabaseBillStore implements BillStore
         $number = $this->nextBatchNumber($property, $billId);
         DB::table('fnb_order_batches')->insert(['id' => $batchId, 'bill_id' => $billId, 'number' => $number, 'line_count' => $count, 'sent_by' => $by, 'sent_at' => $at]);
         DB::table('fnb_bill_lines')->where('bill_id', $billId)->where('status', 'pending')->update(['status' => 'sent', 'batch_id' => $batchId, 'sent_at' => $at, 'updated_at' => $at]);
+        // What no station prepares (a bottle from the fridge) is served as it is sent.
+        DB::table('fnb_bill_lines')->where('bill_id', $billId)->where('batch_id', $batchId)->where('station', 'none')->update(['prep_status' => 'served']);
 
         return $count;
     }
@@ -102,5 +104,14 @@ final readonly class DatabaseBillStore implements BillStore
     public function paymentCount(PropertyId $property, string $billId): int
     {
         return DB::table('fnb_payments')->where('property_id', $property->toString())->where('bill_id', $billId)->whereNotIn('status', ['failed', 'expired'])->count();
+    }
+
+    public function setPrepStatus(PropertyId $property, array $lineIds, string $status, DateTimeImmutable $at): void
+    {
+        if ($lineIds === []) {
+            return;
+        }
+
+        DB::table('fnb_bill_lines')->whereIn('id', $lineIds)->whereIn('bill_id', DB::table('fnb_bills')->where('property_id', $property->toString())->select('id'))->where('status', 'sent')->update(['prep_status' => $status, 'updated_at' => $at]);
     }
 }

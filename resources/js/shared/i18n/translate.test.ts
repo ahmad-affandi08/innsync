@@ -94,6 +94,9 @@ describe('dictionaries', () => {
             // Terms Indonesian hotels use unchanged.
             'rates.kind.ota',
             'fin.fc.target',
+            'kitchen.station.bar',
+            'kitchen.soldOut.outlet',
+            'kitchen.soldOut.status',
             'fnb.nav.shift',
             'fnb.shift.outlet',
             'fnb.shift.current',

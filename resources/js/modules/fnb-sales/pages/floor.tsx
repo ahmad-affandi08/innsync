@@ -98,6 +98,7 @@ export default function FloorPage({ floor }: { floor: Floor }) {
                                             </span>
                                             <span className="text-sm text-muted-foreground">{tb.area !== null ? `${tb.area} · ` : ''}{t('fnb.pos.seats', { count: tb.seats })}</span>
                                             {tb.bill_number !== null ? <span className="text-sm font-medium">{tb.bill_number} · {money(tb.subtotal_minor)}</span> : <span className="text-sm text-muted-foreground">{floor.may.operate ? t('fnb.pos.open') : '—'}</span>}
+                                            {tb.ready_lines > 0 ? <StatusBadge label={t('fnb.pos.readyLines', { count: tb.ready_lines })} tone="success" /> : null}
                                         </>
                                     );
                                     const cls = 'flex h-full min-h-28 w-full flex-col justify-between gap-2 border border-border bg-surface p-4 text-left transition-colors hover:border-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring';

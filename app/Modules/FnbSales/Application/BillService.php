@@ -112,7 +112,7 @@ final readonly class BillService
                     $tables[] = [
                         'id' => $t['id'], 'code' => $t['code'], 'area' => $t['area'], 'seats' => (int) $t['seats'],
                         'status' => $b === null ? 'free' : ((int) $b['sent_lines'] > 0 ? 'ordered' : 'occupied'), 'bill_id' => $b['id'] ?? null, 'bill_number' => $b['number'] ?? null,
-                        'subtotal_minor' => (int) ($b['subtotal_minor'] ?? 0), 'opened_at' => FnbTime::utc($b['opened_at'] ?? null),
+                        'subtotal_minor' => (int) ($b['subtotal_minor'] ?? 0), 'ready_lines' => (int) ($b['ready_lines'] ?? 0), 'opened_at' => FnbTime::utc($b['opened_at'] ?? null),
                     ];
                 }
             }
@@ -120,7 +120,7 @@ final readonly class BillService
             foreach ($open as $b) {
                 $bills[] = [
                     'id' => $b['id'], 'number' => $b['number'], 'table' => $b['table_id'] === null ? null : ($tableCode[$b['table_id']] ?? null), 'room' => $b['room_id'] === null ? null : ($roomNumber[$b['room_id']] ?? null),
-                    'covers' => (int) $b['covers'], 'lines' => (int) $b['line_count'], 'sent' => (int) $b['sent_lines'] > 0, 'subtotal_minor' => (int) $b['subtotal_minor'], 'opened_at' => FnbTime::utc($b['opened_at']),
+                    'covers' => (int) $b['covers'], 'lines' => (int) $b['line_count'], 'sent' => (int) $b['sent_lines'] > 0, 'ready_lines' => (int) $b['ready_lines'], 'subtotal_minor' => (int) $b['subtotal_minor'], 'opened_at' => FnbTime::utc($b['opened_at']),
                 ];
             }
         }
@@ -394,7 +394,7 @@ final readonly class BillService
             $this->audit->record(new AuditEntry($property->toString(), $actor, 'fnb_bill.sent', 'fnb_bill', $bill['id'], null, ['number' => $bill['number'], 'batch' => $number, 'lines' => count($pending)]));
             $this->outbox->publish(new OutboxEvent($property, 'fnb.order.sent', $batchId, 1, [
                 'batch_id' => $batchId, 'batch_number' => $number, 'bill_id' => $bill['id'], 'bill_number' => $bill['number'], 'outlet_id' => $outlet['id'], 'outlet_code' => $outlet['code'], 'table' => $table['code'] ?? null,
-                'room_id' => $bill['room_id'], 'business_date' => $bill['business_date'], 'actor_id' => $actor, 'lines' => $lines,
+                'room_id' => $bill['room_id'], 'room' => $bill['room_id'] === null ? null : $this->rooms->room($property, $bill['room_id'])?->number, 'outlet_name' => $outlet['name'], 'business_date' => $bill['business_date'], 'actor_id' => $actor, 'lines' => $lines,
             ]));
         });
 
@@ -697,7 +697,7 @@ final readonly class BillService
         return [
             'id' => $l['id'], 'line_no' => (int) $l['line_no'], 'item_name' => $l['item_name'], 'variant_name' => $l['variant_name'], 'modifiers' => array_map(static fn (array $m): array => ['name' => $m['name'], 'price_delta_minor' => (int) $m['price_delta_minor']], $l['modifiers']),
             'quantity' => (int) $l['quantity'], 'note' => $l['note'], 'unit_price_minor' => (int) $l['unit_price_minor'], 'modifiers_minor' => (int) $l['modifiers_minor'], 'line_total_minor' => (int) $l['line_total_minor'],
-            'status' => $l['status'], 'station' => $l['station'], 'sent_at' => FnbTime::utc($l['sent_at']), 'void_reason' => $l['void_reason'],
+            'status' => $l['status'], 'prep_status' => $l['prep_status'], 'station' => $l['station'], 'sent_at' => FnbTime::utc($l['sent_at']), 'void_reason' => $l['void_reason'],
         ];
     }
 }

@@ -26,6 +26,7 @@ type PayForm = { method: 'cash' | 'card' | 'qris' | 'room'; amount: string; tend
 type QrisForm = { payment: BillPayment; status: string; reference: string; reason: string };
 type Confirm = { kind: 'void'; line: BillLine } | { kind: 'cancel' };
 
+const PREP_TONE = { new: 'neutral', preparing: 'info', ready: 'success', served: 'neutral' } as const;
 const LINE_TONE = { pending: 'pending', sent: 'success', voided: 'neutral', removed: 'neutral' } as const;
 
 /** One bill: the menu to order from, what was ordered with its state, what it comes to, and sending, voiding and cancelling. */
@@ -263,6 +264,7 @@ export default function BillPage({ view }: { view: BillView }) {
                                     {l.note !== null ? <p className="text-xs text-muted-foreground">“{l.note}”</p> : null}
                                     <div className="flex flex-wrap items-center gap-2">
                                         <StatusBadge label={t(`fnb.bill.line.${l.status}` as MessageKey)} tone={LINE_TONE[l.status]} />
+                                        {l.status === 'sent' && l.station !== 'none' ? <StatusBadge label={t(`fnb.bill.prep.${l.prep_status}` as MessageKey)} tone={PREP_TONE[l.prep_status]} /> : null}
                                         {l.status === 'voided' && l.void_reason !== null ? <span className="text-xs">{t('fnb.bill.voidReason', { reason: l.void_reason })}</span> : null}
                                         {open && operate && l.status === 'pending' ? <Button disabled={action.busy} onClick={() => void remove(l)} size="sm" type="button" variant="outline">{t('fnb.bill.remove')}</Button> : null}
                                         {open && operate && l.status === 'sent' ? <Button disabled={action.busy} onClick={() => openConfirm({ kind: 'void', line: l })} size="sm" type="button" variant="outline">{t('fnb.bill.void')}</Button> : null}

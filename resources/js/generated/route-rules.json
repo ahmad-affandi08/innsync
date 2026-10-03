@@ -347,6 +347,20 @@
             "as_of"
         ]
     },
+    "GET /kitchen": {
+        "required": [],
+        "declared": [
+            "station"
+        ]
+    },
+    "GET /kitchen/tickets": {
+        "required": [
+            "station"
+        ],
+        "declared": [
+            "station"
+        ]
+    },
     "GET /laundry/claims": {
         "required": [],
         "declared": [
@@ -3061,6 +3075,35 @@
         "declared": [
             "lock_version",
             "note"
+        ]
+    },
+    "POST /kitchen/items/{id}/availability": {
+        "required": [
+            "available"
+        ],
+        "declared": [
+            "available"
+        ]
+    },
+    "POST /kitchen/settings": {
+        "required": [
+            "late_after_minutes",
+            "reason"
+        ],
+        "declared": [
+            "late_after_minutes",
+            "lock_version",
+            "reason"
+        ]
+    },
+    "POST /kitchen/tickets/{id}/advance": {
+        "required": [
+            "action",
+            "lock_version"
+        ],
+        "declared": [
+            "action",
+            "lock_version"
         ]
     },
     "POST /laundry/claims": {

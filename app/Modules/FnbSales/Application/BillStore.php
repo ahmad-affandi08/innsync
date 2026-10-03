@@ -42,4 +42,11 @@ interface BillStore
 
     /** Payments of a bill that count or may still count: every one that is not failed or expired. */
     public function paymentCount(PropertyId $property, string $billId): int;
+
+    /**
+     * Records how far sent lines are in the kitchen or the bar.
+     *
+     * @param  list<string>  $lineIds
+     */
+    public function setPrepStatus(PropertyId $property, array $lineIds, string $status, DateTimeImmutable $at): void;
 }

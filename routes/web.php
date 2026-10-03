@@ -2,9 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Modules\FnbSales\Presentation\Http\Controllers\BillController;
-use App\Modules\FnbSales\Presentation\Http\Controllers\PaymentController;
-use App\Modules\FnbSales\Presentation\Http\Controllers\SetupController;
 use App\Modules\Finance\Presentation\Http\Controllers\BudgetController;
 use App\Modules\Finance\Presentation\Http\Controllers\CashReconciliationController;
 use App\Modules\Finance\Presentation\Http\Controllers\CorrectionController;
@@ -18,6 +15,9 @@ use App\Modules\Finance\Presentation\Http\Controllers\ReceivableController;
 use App\Modules\Finance\Presentation\Http\Controllers\RecurringExpenseController;
 use App\Modules\Finance\Presentation\Http\Controllers\RevenueController;
 use App\Modules\Finance\Presentation\Http\Controllers\SupplierPaymentController;
+use App\Modules\FnbSales\Presentation\Http\Controllers\BillController;
+use App\Modules\FnbSales\Presentation\Http\Controllers\PaymentController;
+use App\Modules\FnbSales\Presentation\Http\Controllers\SetupController;
 use App\Modules\FrontOffice\Presentation\Http\Controllers\AvailabilityController;
 use App\Modules\FrontOffice\Presentation\Http\Controllers\CashierController;
 use App\Modules\FrontOffice\Presentation\Http\Controllers\ChecklistController;
@@ -61,6 +61,7 @@ use App\Modules\InventoryPurchasing\Presentation\Http\Controllers\StockCountCont
 use App\Modules\InventoryPurchasing\Presentation\Http\Controllers\StockMovementController;
 use App\Modules\InventoryPurchasing\Presentation\Http\Controllers\SupplierController;
 use App\Modules\InventoryPurchasing\Presentation\Http\Controllers\SupplierInvoiceController;
+use App\Modules\Kitchen\Presentation\Http\Controllers\BoardController as KitchenBoardController;
 use App\Modules\Laundry\Presentation\Http\Controllers\ClaimController;
 use App\Modules\Laundry\Presentation\Http\Controllers\LaundryController;
 use App\Modules\Property\Presentation\Http\Controllers\BookingPolicyController;
@@ -644,4 +645,14 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
     Route::post('/exceptions', [ExceptionController::class, 'store'])->middleware(['idempotent'])->name('finance.exceptions.store');
     Route::post('/exceptions/{id}/reconcile', [ExceptionController::class, 'reconcile'])->where('id', $id)->name('finance.exceptions.reconcile');
     Route::get('/audit', [FinanceAuditController::class, 'index'])->name('finance.audit');
+});
+
+Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix('kitchen')->group(function (): void {
+    $id = '[0-9a-z]{26}';
+
+    Route::get('/', [KitchenBoardController::class, 'show'])->name('kitchen.board');
+    Route::get('/tickets', [KitchenBoardController::class, 'tickets'])->name('kitchen.tickets');
+    Route::post('/tickets/{id}/advance', [KitchenBoardController::class, 'advance'])->where('id', $id)->name('kitchen.tickets.advance');
+    Route::post('/items/{id}/availability', [KitchenBoardController::class, 'availability'])->where('id', $id)->name('kitchen.items.availability');
+    Route::post('/settings', [KitchenBoardController::class, 'saveSettings'])->name('kitchen.settings.save');
 });

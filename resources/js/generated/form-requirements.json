@@ -453,6 +453,10 @@
         "lines.*.unit",
         "to_location_id"
     ],
+    "kitchen/pages/board": [
+        "late_after_minutes",
+        "reason"
+    ],
     "laundry/pages/claims": [
         "approved_minor",
         "cap_multiple",

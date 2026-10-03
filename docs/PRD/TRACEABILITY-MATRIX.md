@@ -132,11 +132,11 @@ Every row must eventually point to implementation evidence and tests. Status is 
 | FR-FBS-032 | F&B Service | Wajib | ../TASK/MODULE-05-FNB-SERVICE.md | TODO |
 | FR-FBS-033 | F&B Service | Wajib | ../TASK/MODULE-05-FNB-SERVICE.md | TODO |
 | FR-FBS-034 | F&B Service | Wajib | ../TASK/MODULE-05-FNB-SERVICE.md | TODO |
-| FR-KIT-001 | F&B Product / Kitchen | Wajib | ../TASK/MODULE-06-KITCHEN.md | TODO |
-| FR-KIT-002 | F&B Product / Kitchen | Wajib | ../TASK/MODULE-06-KITCHEN.md | TODO |
+| FR-KIT-001 | F&B Product / Kitchen | Wajib | ../TASK/MODULE-06-KITCHEN.md | REVIEW |
+| FR-KIT-002 | F&B Product / Kitchen | Wajib | ../TASK/MODULE-06-KITCHEN.md | REVIEW |
 | FR-KIT-003 | F&B Product / Kitchen | Wajib | ../TASK/MODULE-06-KITCHEN.md | TODO |
 | FR-KIT-004 | F&B Product / Kitchen | Wajib | ../TASK/MODULE-06-KITCHEN.md | TODO |
-| FR-KIT-005 | F&B Product / Kitchen | Wajib | ../TASK/MODULE-06-KITCHEN.md | TODO |
+| FR-KIT-005 | F&B Product / Kitchen | Wajib | ../TASK/MODULE-06-KITCHEN.md | IN_PROGRESS |
 | FR-KIT-006 | F&B Product / Kitchen | Wajib | ../TASK/MODULE-06-KITCHEN.md | TODO |
 | FR-KIT-007 | F&B Product / Kitchen | Wajib | ../TASK/MODULE-06-KITCHEN.md | TODO |
 | FR-KIT-008 | F&B Product / Kitchen | Wajib | ../TASK/MODULE-06-KITCHEN.md | TODO |
@@ -146,7 +146,7 @@ Every row must eventually point to implementation evidence and tests. Status is 
 | FR-KIT-012 | F&B Product / Kitchen | Sebaiknya | ../TASK/MODULE-06-KITCHEN.md | TODO |
 | FR-KIT-013 | F&B Product / Kitchen | Wajib | ../TASK/MODULE-06-KITCHEN.md | TODO |
 | FR-KIT-014 | F&B Product / Kitchen | Sebaiknya | ../TASK/MODULE-06-KITCHEN.md | TODO |
-| FR-KIT-015 | F&B Product / Kitchen | Wajib | ../TASK/MODULE-06-KITCHEN.md | TODO |
+| FR-KIT-015 | F&B Product / Kitchen | Wajib | ../TASK/MODULE-06-KITCHEN.md | IN_PROGRESS |
 | FR-MTC-001 | Maintenance / Engineering | Wajib | ../TASK/MODULE-07-MAINTENANCE.md | TODO |
 | FR-MTC-002 | Maintenance / Engineering | Wajib | ../TASK/MODULE-07-MAINTENANCE.md | TODO |
 | FR-MTC-003 | Maintenance / Engineering | Wajib | ../TASK/MODULE-07-MAINTENANCE.md | TODO |

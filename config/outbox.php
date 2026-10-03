@@ -4,7 +4,9 @@ use App\Modules\Finance\Application\CompanyReceivableConsumer;
 use App\Modules\Finance\Application\FnbSalesRevenueConsumer;
 use App\Modules\Finance\Application\FrontOfficeRevenueConsumer;
 use App\Modules\Finance\Application\PurchasingPayableConsumer;
+use App\Modules\FnbSales\Application\KitchenProgressConsumer;
 use App\Modules\FrontOffice\Application\Companies\CompanyReceiptConsumer;
+use App\Modules\Kitchen\Application\TicketIntakeConsumer;
 use App\Shared\Application\Outbox\OutboxConsumer;
 
 $retryDelays = array_values(array_filter(
@@ -39,6 +41,8 @@ return [
         CompanyReceivableConsumer::class,
         FnbSalesRevenueConsumer::class,
         FrontOfficeRevenueConsumer::class,
+        KitchenProgressConsumer::class,
         PurchasingPayableConsumer::class,
+        TicketIntakeConsumer::class,
     ],
 ];
