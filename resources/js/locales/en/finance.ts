@@ -349,7 +349,7 @@ export const finance = {
 
     "fin.ar.new": "New receivable",
     "fin.ar.newTitle": "New receivable",
-    "fin.ar.newHint": "For money owed that no folio carries, such as an online channel's payout or a function. A company's folio makes its own receivable when it is closed.",
+    "fin.ar.newHint": "For money owed that no folio carries, such as an online channel's payout or a function. A company's folio makes its own receivable when the guest checks out.",
     "fin.ar.noCustomers": "No customer is active yet. Add one under Customers first.",
     "fin.ar.customerChoose": "Choose a customer",
     "fin.ar.descriptionField": "What is owed",

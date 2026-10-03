@@ -349,7 +349,7 @@ export const finance = {
 
     "fin.ar.new": "Piutang baru",
     "fin.ar.newTitle": "Piutang baru",
-    "fin.ar.newHint": "Untuk tagihan yang tidak dibawa folio mana pun, seperti pencairan kanal online atau acara. Folio perusahaan membuat piutangnya sendiri saat ditutup.",
+    "fin.ar.newHint": "Untuk tagihan yang tidak dibawa folio mana pun, seperti pencairan kanal online atau acara. Folio perusahaan membuat piutangnya sendiri saat tamunya check-out.",
     "fin.ar.noCustomers": "Belum ada pelanggan aktif. Tambahkan dulu di Pelanggan.",
     "fin.ar.customerChoose": "Pilih pelanggan",
     "fin.ar.descriptionField": "Yang ditagih",
