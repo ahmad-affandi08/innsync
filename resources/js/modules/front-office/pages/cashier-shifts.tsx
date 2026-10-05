@@ -58,7 +58,7 @@ export default function CashierShiftsPage({ filters, list, settings }: Props) {
                         <option value="">{t('fo.cash.list.all')}</option><option value="open">{t('fo.cash.status.open')}</option><option value="closed">{t('fo.cash.status.closed')}</option>
                     </Select>
                 </FormField>
-                <Button size="sm" type="submit" variant="outline">{t('fo.cash.list.apply')}</Button>
+                <Button type="submit" variant="outline">{t('fo.cash.list.apply')}</Button>
             </form>
 
             <DataGrid

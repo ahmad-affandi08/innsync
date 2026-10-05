@@ -80,7 +80,7 @@ export default function RequestsPage({ filters, in_house: inHouse, queue }: Prop
                             {queue.categories.map((c) => <option key={c} value={c}>{t(`fo.req.category.${c}` as 'fo.req.category.other')}</option>)}
                         </Select>
                     </FormField>
-                    <Button size="sm" type="submit" variant="outline">{t('fo.req.filter.apply')}</Button>
+                    <Button type="submit" variant="outline">{t('fo.req.filter.apply')}</Button>
                 </form>
                 {queue.may_manage ? <Button onClick={() => { action.clear(); setForm({ stay: '', category: 'housekeeping', title: '', detail: '', urgent: false, due: '' }); }} size="sm" type="button">{t('fo.req.new')}</Button> : null}
             </div>

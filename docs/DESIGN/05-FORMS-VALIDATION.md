@@ -8,6 +8,12 @@
 - Approval/void/refund/price override forms require reason when configured by PRD.
 - Disable duplicate submission visually, but backend idempotency remains mandatory.
 
+## Form Control Alignment (2026-10-05)
+
+- All single-line input controls (`Input`, `Select`, `Combobox`, `DatePicker`) enforce an exact height of `h-10 min-h-10` (40px / 2.5rem), exactly matching standard button controls (`Button` with default size).
+- In horizontal filter bars (`<form className="flex flex-wrap items-end gap-3">`), wrap fields with `<FormField label="...">`. Action buttons must use default height (`<Button type="submit" variant="outline">` without `size="sm"`), preventing vertical staggered misalignment.
+- `FormField` maintains a uniform layout (`flex flex-col gap-1.5`) without ad-hoc bottom alignment hacks (`mt-auto`).
+
 ## Pickers (2026-10-02)
 
 - **Select** (`components/ui/select.tsx`) keeps the native `<option>` API and `onChange(event)` but opens a **searchable list** (`Combobox`, cmdk on a Radix Popover). Turn the search off with `searchable={false}` only for a short fixed list (a page size, the language).

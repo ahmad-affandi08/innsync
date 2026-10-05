@@ -59,7 +59,7 @@ export default function MovementsPage({ context, may_export, report: r }: { cont
         <ReportingShell description={t('rpt.mov.description')} title={t('rpt.mov.title')} wide>
             <form className="flex flex-wrap items-end gap-3 print:hidden" onSubmit={(e) => { e.preventDefault(); router.get('/reports/movements', { date }); }}>
                 <FormField label={t('rpt.mov.date')}><DatePicker onChange={(e) => setDate(e.target.value)} required value={date} /></FormField>
-                <Button size="sm" type="submit" variant="outline">{t('rpt.mov.show')}</Button>
+                <Button type="submit" variant="outline">{t('rpt.mov.show')}</Button>
                 <Button onClick={() => window.print()} size="sm" type="button" variant="outline">{t('rpt.export.print')}</Button>
             </form>
             {may_export && (

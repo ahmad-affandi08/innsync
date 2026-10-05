@@ -37,7 +37,7 @@ export default function ChecklistPerformancePage({ report: r }: Props) {
             <form className="flex flex-wrap items-end gap-3" onSubmit={(e) => { e.preventDefault(); router.get('/housekeeping/checklists/performance', range); }}>
                 <FormField label={t('hk.cl.perf.from')}><DatePicker onChange={(e) => setRange({ ...range, from: e.target.value })} required value={range.from} /></FormField>
                 <FormField label={t('hk.cl.perf.to')}><DatePicker onChange={(e) => setRange({ ...range, to: e.target.value })} required value={range.to} /></FormField>
-                <Button size="sm" type="submit" variant="outline">{t('hk.cl.perf.apply')}</Button>
+                <Button type="submit" variant="outline">{t('hk.cl.perf.apply')}</Button>
             </form>
             <p className="text-sm">{t('hk.cl.perf.overall')} <StatusBadge label={`${r.percent}%`} tone={r.percent === 100 ? 'success' : 'info'} /></p>
 

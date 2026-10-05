@@ -45,7 +45,7 @@ export default function PerformancePage({ context, report: r }: { context: { cur
                 : (
                     <form className="flex flex-wrap items-end gap-3 print:hidden" onSubmit={(e) => { e.preventDefault(); router.get('/reports/performance', { by: r.by, year }); }}>
                         <FormField label={t('rpt.perf.year')}><Input inputMode="numeric" maxLength={4} onChange={(e) => setYear(e.target.value.replace(/\D/g, ''))} value={year} /></FormField>
-                        <Button size="sm" type="submit" variant="outline">{t('rpt.perf.show')}</Button>
+                        <Button type="submit" variant="outline">{t('rpt.perf.show')}</Button>
                     </form>
                 )}
             <div className="flex flex-wrap gap-2 print:hidden">

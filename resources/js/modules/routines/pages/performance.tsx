@@ -30,7 +30,7 @@ export default function RoutinePerformancePage({ department, report: r }: Props)
             <form className="flex flex-wrap items-end gap-3" onSubmit={(e) => { e.preventDefault(); router.get(`/${department}/routines/performance`, range); }}>
                 <FormField label={t('rtn.perf.from')}><DatePicker onChange={(e) => setRange({ ...range, from: e.target.value })} required value={range.from} /></FormField>
                 <FormField label={t('rtn.perf.to')}><DatePicker onChange={(e) => setRange({ ...range, to: e.target.value })} required value={range.to} /></FormField>
-                <Button size="sm" type="submit" variant="outline">{t('rtn.perf.apply')}</Button>
+                <Button type="submit" variant="outline">{t('rtn.perf.apply')}</Button>
             </form>
             <DataGrid caption={t('rtn.perf.runs')} columns={columns} empty={<EmptyState title={t('rtn.perf.noRuns')} />} getRowId={(x) => x.run_id} id="rtn.runs" rows={r.runs} testId="runs" />
             <section aria-labelledby="people-h" className="flex flex-col gap-1">

@@ -35,7 +35,7 @@ export default function ChecklistPerformancePage({ report: r }: Props) {
             <form className="flex flex-wrap items-end gap-3" onSubmit={(e) => { e.preventDefault(); router.get('/front-office/checklists/performance', range); }}>
                 <FormField label={t('fo.sop.perf.from')}><DatePicker onChange={(e) => setRange({ ...range, from: e.target.value })} required value={range.from} /></FormField>
                 <FormField label={t('fo.sop.perf.to')}><DatePicker onChange={(e) => setRange({ ...range, to: e.target.value })} required value={range.to} /></FormField>
-                <Button size="sm" type="submit" variant="outline">{t('fo.sop.perf.apply')}</Button>
+                <Button type="submit" variant="outline">{t('fo.sop.perf.apply')}</Button>
             </form>
 
             <section aria-labelledby="runs-h" className="flex flex-col gap-1">

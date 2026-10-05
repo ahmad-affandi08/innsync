@@ -278,26 +278,28 @@ export function AppFrame({ actions, children, description, links = [], printClas
                 <Link aria-label="InnSYnc" className="grid h-14 w-full place-items-center border-b border-border" href="/">
                     <img alt="" className="size-8" height={32} src={favicon} width={32} />
                 </Link>
-                <nav aria-label={t('shell.menu')} className="flex w-full flex-1 flex-col gap-1 overflow-y-auto py-3">
-                    {MODULES.map((m) => {
-                        const Icon = m.icon;
-                        const isActive = m.key === current.key;
+                <ScrollArea className="w-full flex-1">
+                    <nav aria-label={t('shell.menu')} className="flex flex-col gap-1 py-3">
+                        {MODULES.map((m) => {
+                            const Icon = m.icon;
+                            const isActive = m.key === current.key;
 
-                        return (
-                            <Link
-                                aria-current={isActive && !hasLinks ? 'page' : undefined}
-                                aria-label={t(m.label)}
-                                className={cn('flex flex-col items-center gap-1 border-l-2 px-1 py-2 text-[0.625rem] leading-tight tracking-tight transition-colors', isActive ? 'border-brand bg-surface-muted font-medium text-foreground' : 'border-transparent text-muted-foreground hover:bg-surface-muted hover:text-foreground')}
-                                href={m.href}
-                                key={m.key}
-                                title={t(m.label)}
-                            >
-                                <Icon aria-hidden="true" className={cn('size-5', isActive ? 'text-brand' : '')} strokeWidth={1.75} />
-                                <span className="line-clamp-2 w-full break-words text-center">{t(m.label)}</span>
-                            </Link>
-                        );
-                    })}
-                </nav>
+                            return (
+                                <Link
+                                    aria-current={isActive && !hasLinks ? 'page' : undefined}
+                                    aria-label={t(m.label)}
+                                    className={cn('flex flex-col items-center gap-1 border-l-2 px-1 py-2 text-[0.625rem] leading-tight tracking-tight transition-colors', isActive ? 'border-brand bg-surface-muted font-medium text-foreground' : 'border-transparent text-muted-foreground hover:bg-surface-muted hover:text-foreground')}
+                                    href={m.href}
+                                    key={m.key}
+                                    title={t(m.label)}
+                                >
+                                    <Icon aria-hidden="true" className={cn('size-5', isActive ? 'text-brand' : '')} strokeWidth={1.75} />
+                                    <span className="line-clamp-2 w-full break-words text-center">{t(m.label)}</span>
+                                </Link>
+                            );
+                        })}
+                    </nav>
+                </ScrollArea>
             </aside>
             {hasLinks ? (
                 <aside aria-label={t(current.label)} className="fixed inset-y-0 left-20 z-20 hidden w-56 flex-col border-r border-border bg-surface lg:flex print:hidden">
@@ -328,7 +330,7 @@ export function AppFrame({ actions, children, description, links = [], printClas
             <div className="flex h-14 items-center gap-3 px-4 lg:px-6">
                 {menuButton}
                 <Link className="flex shrink-0 items-center" href="/"><img alt="InnSYnc" className="h-8 w-auto" height={32} src={logo} width={116} /></Link>
-                <nav aria-label={t('shell.menu')} className="ml-4 hidden min-w-0 flex-1 items-stretch gap-0.5 self-stretch overflow-x-auto lg:flex">
+                <nav aria-label={t('shell.menu')} className="ml-4 hidden min-w-0 flex-1 items-stretch gap-0.5 self-stretch overflow-x-auto no-scrollbar lg:flex">
                     {MODULES.filter((m) => m.key !== 'home').map((m) => {
                         const Icon = m.icon;
                         const isActive = m.key === current.key;
@@ -356,7 +358,7 @@ export function AppFrame({ actions, children, description, links = [], printClas
             </div>
             <div className="hidden h-10 items-center gap-4 border-t border-border bg-surface-muted px-6 lg:flex">
                 {hasLinks ? (
-                    <ul className="flex min-w-0 flex-1 items-stretch gap-1 self-stretch overflow-x-auto">
+                    <ul className="flex min-w-0 flex-1 items-stretch gap-1 self-stretch overflow-x-auto no-scrollbar">
                         {links.map((l) => (
                             <li className="flex" key={l.href}>
                                 <Link

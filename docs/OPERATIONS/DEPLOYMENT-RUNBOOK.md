@@ -82,7 +82,11 @@ Use a **read-only deploy key**, never a personal credential, and never store it 
 
 
 1. Select PHP 8.3+ for the domain; confirm the extensions listed in `PreflightEvaluator::REQUIRED_EXTENSIONS`.
-2. Create the MySQL 8 database and a dedicated user (utf8mb4).
+2. Create the MySQL 8 or MariaDB 10.5+ database and a dedicated user (utf8mb4).
+   - **MariaDB Compatibility**: Shared hosts (such as Niagahoster/Hostinger) often run MariaDB. All migrations must remain strictly compatible with both MySQL 8 and MariaDB 10.5+:
+     - Use `ALTER TABLE ... DROP CONSTRAINT <name>` rather than `DROP CHECK <name>` when dropping check constraints (MariaDB throws SQL syntax error 1064 on `DROP CHECK`).
+     - Use standard SQL `CASE WHEN ... THEN ... ELSE ... END` expressions rather than MySQL-specific `IF()` functions.
+     - For conditional unique constraints, use database triggers or standard composite keys rather than dialect-dependent generated columns.
 3. With the clone from the SSH step **outside** the web root (for example `~/innsync`, not under `public_html`), set the domain's (or subdomain's) **document root to `~/innsync/public`** in the hosting panel's domain settings. The panel supports this for both the main domain and subdomains (D9). Do not make the application root browsable. If the panel cannot set a document root, stop: deployment is BLOCKED (D2).
 4. Create the production `.env` on the host from `.env.example` (never from the artifact, never committed). Set at least: `APP_ENV=production`, `APP_DEBUG=false`, `APP_URL=https://…`, a fresh `APP_KEY` (`php artisan key:generate --show`), database credentials, `SESSION_SECURE_COOKIE` unset or `true`, `SESSION_ENCRYPT=true`, `QUEUE_CONNECTION=database`, `INERTIA_SSR_ENABLED=false`, `HEALTH_TOKEN`, a dedicated `IDEMPOTENCY_HASH_KEY`, `BACKUP_PATH`, `BACKUP_ENCRYPTION_KEY` (`php artisan backup:keygen`; keep a copy off-server). Restrict the file to the web user (mode 600).
 5. Make `storage` and `bootstrap/cache` writable by the web user.

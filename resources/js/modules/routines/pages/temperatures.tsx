@@ -108,7 +108,7 @@ export default function TemperaturesPage({ department, overview }: { department:
             <form className="flex flex-wrap items-end gap-3" onSubmit={(e) => { e.preventDefault(); router.get(`/${department}/temperatures`, range); }}>
                 <FormField label={t('rtn.perf.from')}><DatePicker onChange={(e) => setRange({ ...range, from: e.target.value })} required value={range.from} /></FormField>
                 <FormField label={t('rtn.perf.to')}><DatePicker onChange={(e) => setRange({ ...range, to: e.target.value })} required value={range.to} /></FormField>
-                <Button size="sm" type="submit" variant="outline">{t('rtn.perf.apply')}</Button>
+                <Button type="submit" variant="outline">{t('rtn.perf.apply')}</Button>
             </form>
             <DataGrid caption={t('rtn.temp.title')} columns={columns} empty={<EmptyState title={t('rtn.temp.none')} />} getRowId={(r) => r.id} id="rtn.readings" rows={overview.readings} testId="readings" />
         </RoutineShell>

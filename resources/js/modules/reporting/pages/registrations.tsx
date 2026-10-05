@@ -46,7 +46,7 @@ export default function RegistrationsPage({ foreign, may_export, report: r }: { 
             {!foreign && (
                 <form className="flex flex-wrap items-end gap-3 print:hidden" onSubmit={(e) => { e.preventDefault(); router.get(path, { from: r.meta.period.from, to: r.meta.period.to, ...(nationality !== '' ? { nationality } : {}) }); }}>
                     <FormField label={t('rpt.reg.nationality')}><Input maxLength={2} onChange={(e) => setNationality(e.target.value.toUpperCase())} value={nationality} /></FormField>
-                    <Button size="sm" type="submit" variant="outline">{t('rpt.period.apply')}</Button>
+                    <Button type="submit" variant="outline">{t('rpt.period.apply')}</Button>
                 </form>
             )}
             <Alert title={r.identity_visible ? t('rpt.reg.clear') : t('rpt.reg.masked')} tone={r.identity_visible ? 'info' : 'warning'} />

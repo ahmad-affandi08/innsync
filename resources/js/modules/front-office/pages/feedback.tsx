@@ -76,7 +76,7 @@ export default function FeedbackPage({ filters, queue }: Props) {
                             {queue.severities.map((s) => <option key={s} value={s}>{t(`fo.fb.severity.${s}` as 'fo.fb.severity.low')}</option>)}
                         </Select>
                     </FormField>
-                    <Button size="sm" type="submit" variant="outline">{t('fo.fb.filter.apply')}</Button>
+                    <Button type="submit" variant="outline">{t('fo.fb.filter.apply')}</Button>
                 </form>
                 {queue.may_manage ? <Button onClick={() => { action.clear(); setForm({ kind: 'complaint', severity: 'medium', channel: 'in_person', reservation: '', guest: '', summary: '', detail: '', due: '' }); }} size="sm" type="button">{t('fo.fb.new')}</Button> : null}
             </div>
