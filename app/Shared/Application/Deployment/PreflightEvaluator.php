@@ -19,6 +19,8 @@ final class PreflightEvaluator
 
     public const MINIMUM_MYSQL = '8.0';
 
+    public const MINIMUM_MARIADB = '10.5';
+
     /** Extensions Laravel 13 and this application rely on. */
     public const REQUIRED_EXTENSIONS = [
         'ctype', 'curl', 'dom', 'fileinfo', 'json', 'mbstring', 'openssl',
@@ -80,10 +82,10 @@ final class PreflightEvaluator
 
         if ($in->databaseError !== null) {
             $findings[] = Finding::failure('database.connection', 'The database is not reachable: '.$in->databaseError);
-        } elseif ($in->databaseVersion === null || ! $this->isMysql8($in->databaseVersion)) {
-            $findings[] = Finding::failure('database.version', 'MySQL '.self::MINIMUM_MYSQL.'+ is required; the server reports '.($in->databaseVersion ?? 'an unknown version').'.');
+        } elseif ($in->databaseVersion === null || ! $this->isSupportedDatabase($in->databaseVersion)) {
+            $findings[] = Finding::failure('database.version', 'MySQL '.self::MINIMUM_MYSQL.'+ or MariaDB '.self::MINIMUM_MARIADB.'+ is required; the server reports '.($in->databaseVersion ?? 'an unknown version').'.');
         } else {
-            $findings[] = Finding::ok('database.version', "MySQL {$in->databaseVersion}");
+            $findings[] = Finding::ok('database.version', "Database {$in->databaseVersion}");
         }
 
         $findings[] = match (true) {
@@ -105,9 +107,20 @@ final class PreflightEvaluator
         return new Findings($findings);
     }
 
-    private function isMysql8(string $version): bool
+    private function isSupportedDatabase(string $version): bool
     {
-        // MariaDB reports 10.x/11.x and is not the approved engine.
-        return ! stripos($version, 'mariadb') && version_compare($version, self::MINIMUM_MYSQL, '>=');
+        if (stripos($version, 'mariadb') !== false) {
+            if (preg_match('/(\d+\.\d+(?:\.\d+)?)/', $version, $m)) {
+                return version_compare($m[1], self::MINIMUM_MARIADB, '>=');
+            }
+
+            return true;
+        }
+
+        if (preg_match('/(\d+\.\d+(?:\.\d+)?)/', $version, $m)) {
+            return version_compare($m[1], self::MINIMUM_MYSQL, '>=');
+        }
+
+        return version_compare($version, self::MINIMUM_MYSQL, '>=');
     }
 }

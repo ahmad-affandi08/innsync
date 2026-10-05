@@ -87,7 +87,7 @@ return new class extends Migration
             ADD CONSTRAINT chk_hk_tasks_assigned CHECK (status <> 'assigned' OR assigned_to IS NOT NULL)
             SQL);
         // One unfinished task per room: the room is being serviced once, not twice.
-        DB::statement("ALTER TABLE housekeeping_tasks ADD COLUMN active_room_key CHAR(26) GENERATED ALWAYS AS (IF(status IN ('open', 'assigned', 'in_progress'), room_id, NULL)) STORED");
+        DB::statement("ALTER TABLE housekeeping_tasks ADD COLUMN active_room_key CHAR(26) GENERATED ALWAYS AS (CASE WHEN status IN ('open', 'assigned', 'in_progress') THEN room_id ELSE NULL END) STORED");
         DB::statement('ALTER TABLE housekeeping_tasks ADD UNIQUE INDEX hk_tasks_one_active_per_room (active_room_key)');
         DB::unprepared("CREATE TRIGGER housekeeping_tasks_no_delete BEFORE DELETE ON housekeeping_tasks FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'housekeeping tasks cannot be deleted; cancel them'");
         DB::unprepared(<<<'SQL'

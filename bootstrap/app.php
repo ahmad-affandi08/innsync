@@ -19,6 +19,7 @@ use App\Shared\Infrastructure\Backup\BackupDecryptCommand;
 use App\Shared\Infrastructure\Backup\BackupKeygenCommand;
 use App\Shared\Infrastructure\Backup\BackupRunCommand;
 use App\Shared\Infrastructure\Backup\BackupVerifyCommand;
+use App\Shared\Infrastructure\Deployment\CreateAdminCommand;
 use App\Shared\Infrastructure\Deployment\PreflightCommand;
 use App\Shared\Infrastructure\Deployment\SmokeCommand;
 use App\Shared\Infrastructure\Http\Errors\ErrorEnvelopeFactory;
@@ -60,6 +61,7 @@ return Application::configure(basePath: dirname(__DIR__))
         BackupKeygenCommand::class,
         BackupDecryptCommand::class,
         PreflightCommand::class,
+        CreateAdminCommand::class,
         ImportRoomMasterCommand::class,
         SmokeCommand::class,
         RetentionPurgeCommand::class,

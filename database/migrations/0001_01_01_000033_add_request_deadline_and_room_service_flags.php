@@ -52,7 +52,7 @@ return new class extends Migration
         DB::statement('ALTER TABLE room_service_flags ADD CONSTRAINT chk_flags_times CHECK (ended_at IS NULL OR ended_at >= started_at)');
         DB::statement('ALTER TABLE room_service_flags ADD CONSTRAINT chk_flags_ended CHECK ((ended_at IS NULL AND ended_by IS NULL) OR (ended_at IS NOT NULL AND ended_by IS NOT NULL))');
         // One open flag of a kind per room.
-        DB::statement('ALTER TABLE room_service_flags ADD COLUMN open_key VARCHAR(60) GENERATED ALWAYS AS (IF(ended_at IS NULL, CONCAT(room_id, kind), NULL)) STORED');
+        DB::statement('ALTER TABLE room_service_flags ADD COLUMN open_key VARCHAR(60) GENERATED ALWAYS AS (CASE WHEN ended_at IS NULL THEN CONCAT(room_id, kind) ELSE NULL END) STORED');
         DB::statement('ALTER TABLE room_service_flags ADD UNIQUE INDEX flags_one_open_per_kind (open_key)');
         DB::unprepared("CREATE TRIGGER room_service_flags_no_delete BEFORE DELETE ON room_service_flags FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a service flag cannot be deleted'");
         DB::unprepared(<<<'SQL'

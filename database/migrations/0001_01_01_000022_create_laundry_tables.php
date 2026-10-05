@@ -68,7 +68,7 @@ return new class extends Migration
             ADD CONSTRAINT chk_laundry_ready CHECK (status NOT IN ('ready', 'delivered') OR (ready_at IS NOT NULL AND charged_minor IS NOT NULL)),
             ADD CONSTRAINT chk_laundry_discrepancy CHECK (has_discrepancy = 0 OR discrepancy_note IS NOT NULL)
             SQL);
-        DB::statement("ALTER TABLE laundry_orders ADD COLUMN active_barcode_key VARCHAR(80) GENERATED ALWAYS AS (IF(status IN ('delivered', 'cancelled'), NULL, CONCAT(property_id, '|', barcode))) STORED");
+        DB::statement("ALTER TABLE laundry_orders ADD COLUMN active_barcode_key VARCHAR(80) GENERATED ALWAYS AS (CASE WHEN status IN ('delivered', 'cancelled') THEN NULL ELSE CONCAT(property_id, '|', barcode) END) STORED");
         DB::statement('ALTER TABLE laundry_orders ADD UNIQUE INDEX laundry_one_active_per_bag (active_barcode_key)');
         DB::unprepared("CREATE TRIGGER laundry_orders_no_delete BEFORE DELETE ON laundry_orders FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'laundry orders cannot be deleted; cancel them'");
         DB::unprepared(<<<'SQL'

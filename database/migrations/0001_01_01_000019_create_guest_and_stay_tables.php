@@ -75,7 +75,7 @@ return new class extends Migration
             ADD CONSTRAINT chk_stays_dates CHECK (expected_departure > checked_in_business_date)
             SQL);
         // A room can have only one in-house stay at a time: a generated column is unique only while the stay is in house.
-        DB::statement("ALTER TABLE stays ADD COLUMN in_house_room_key CHAR(26) GENERATED ALWAYS AS (IF(status = 'in_house', room_id, NULL)) STORED");
+        DB::statement("ALTER TABLE stays ADD COLUMN in_house_room_key CHAR(26) GENERATED ALWAYS AS (CASE WHEN status = 'in_house' THEN room_id ELSE NULL END) STORED");
         DB::statement('ALTER TABLE stays ADD UNIQUE INDEX stays_one_in_house_per_room (in_house_room_key)');
         DB::unprepared("CREATE TRIGGER stays_no_delete BEFORE DELETE ON stays FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'stays cannot be deleted'");
         DB::unprepared(<<<'SQL'

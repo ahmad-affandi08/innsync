@@ -43,7 +43,7 @@ return new class extends Migration
             $table->foreign('opened_by')->references('id')->on('users')->restrictOnDelete();
         });
 
-        DB::statement("ALTER TABLE fnb_bills ADD COLUMN open_table_id CHAR(26) GENERATED ALWAYS AS (IF(status = 'open', table_id, NULL)) STORED");
+        DB::statement("ALTER TABLE fnb_bills ADD COLUMN open_table_id CHAR(26) GENERATED ALWAYS AS (CASE WHEN status = 'open' THEN table_id ELSE NULL END) STORED");
         DB::statement('CREATE UNIQUE INDEX fnb_bills_one_open_per_table ON fnb_bills (open_table_id)');
         DB::statement("ALTER TABLE fnb_bills ADD CONSTRAINT chk_fnb_bill_status CHECK (status IN ('open', 'settled', 'cancelled'))");
 

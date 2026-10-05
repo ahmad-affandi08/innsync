@@ -35,7 +35,7 @@ return new class extends Migration
             ADD CONSTRAINT chk_treatment_value CHECK (value >= 0 AND (pricing <> 'percent' OR value <= 100000))
             SQL);
         // At most one active express treatment per property.
-        DB::statement("ALTER TABLE laundry_treatments ADD COLUMN active_express_key CHAR(26) GENERATED ALWAYS AS (IF(kind = 'express' AND is_active = 1, property_id, NULL)) STORED");
+        DB::statement("ALTER TABLE laundry_treatments ADD COLUMN active_express_key CHAR(26) GENERATED ALWAYS AS (CASE WHEN kind = 'express' AND is_active = 1 THEN property_id ELSE NULL END) STORED");
         DB::statement('ALTER TABLE laundry_treatments ADD UNIQUE INDEX laundry_one_active_express (active_express_key)');
         DB::unprepared("CREATE TRIGGER laundry_treatments_no_delete BEFORE DELETE ON laundry_treatments FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'laundry treatments cannot be deleted; deactivate them'");
 

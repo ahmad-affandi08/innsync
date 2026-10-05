@@ -126,7 +126,7 @@ return new class extends Migration
             ADD CONSTRAINT chk_fin_petty_settlement_decided CHECK ((status = 'submitted' AND decided_by IS NULL AND decided_at IS NULL) OR (status <> 'submitted' AND decided_by IS NOT NULL AND decided_at IS NOT NULL))
             SQL);
         // One settlement waits for a decision per fund at a time.
-        DB::statement("ALTER TABLE fin_petty_settlements ADD COLUMN pending_fund_key CHAR(26) GENERATED ALWAYS AS (IF(status = 'submitted', fund_id, NULL)) STORED");
+        DB::statement("ALTER TABLE fin_petty_settlements ADD COLUMN pending_fund_key CHAR(26) GENERATED ALWAYS AS (CASE WHEN status = 'submitted' THEN fund_id ELSE NULL END) STORED");
         DB::statement('ALTER TABLE fin_petty_settlements ADD UNIQUE INDEX fin_petty_one_pending_per_fund (pending_fund_key)');
         DB::unprepared("CREATE TRIGGER fin_petty_settlements_no_delete BEFORE DELETE ON fin_petty_settlements FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a petty cash settlement cannot be deleted'");
         DB::unprepared(<<<'SQL'

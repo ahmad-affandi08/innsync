@@ -153,7 +153,9 @@ final class PreflightEvaluatorTest extends TestCase
         self::assertSame(Severity::Failure, $this->severity($down, 'database.connection'));
 
         self::assertSame(Severity::Failure, $this->severity($this->evaluate(['databaseVersion' => '5.7.44']), 'database.version'));
-        self::assertSame(Severity::Failure, $this->severity($this->evaluate(['databaseVersion' => '10.11.6-MariaDB']), 'database.version'));
+        self::assertSame(Severity::Ok, $this->severity($this->evaluate(['databaseVersion' => '10.11.6-MariaDB']), 'database.version'));
+        self::assertSame(Severity::Ok, $this->severity($this->evaluate(['databaseVersion' => '11.8.9-MariaDB']), 'database.version'));
+        self::assertSame(Severity::Failure, $this->severity($this->evaluate(['databaseVersion' => '10.3.0-MariaDB']), 'database.version'));
         self::assertSame(Severity::Ok, $this->severity($this->evaluate(['databaseVersion' => '8.4.0']), 'database.version'));
         self::assertSame(Severity::Failure, $this->severity($this->evaluate(['databaseVersion' => null]), 'database.version'));
     }

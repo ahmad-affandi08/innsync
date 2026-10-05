@@ -39,7 +39,7 @@ return new class extends Migration
             $table->foreign('cashier_id')->references('id')->on('users')->restrictOnDelete();
         });
 
-        DB::statement("ALTER TABLE fnb_cashier_shifts ADD COLUMN open_cashier_id CHAR(26) GENERATED ALWAYS AS (IF(status = 'open', cashier_id, NULL)) STORED");
+        DB::statement("ALTER TABLE fnb_cashier_shifts ADD COLUMN open_cashier_id CHAR(26) GENERATED ALWAYS AS (CASE WHEN status = 'open' THEN cashier_id ELSE NULL END) STORED");
         DB::statement('CREATE UNIQUE INDEX fnb_cashier_shifts_one_open ON fnb_cashier_shifts (open_cashier_id)');
         DB::statement("ALTER TABLE fnb_cashier_shifts ADD CONSTRAINT chk_fnb_shift CHECK (status IN ('open', 'closed') AND opening_float_minor >= 0)");
 
