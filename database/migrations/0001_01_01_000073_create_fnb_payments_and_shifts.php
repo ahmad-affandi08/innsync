@@ -34,13 +34,26 @@ return new class extends Migration
             $table->timestamps(precision: 6);
 
             $table->unique(['property_id', 'number']);
+            $table->char('open_cashier_id', 26)->nullable()->unique('fnb_cashier_shifts_one_open');
             $table->index(['property_id', 'outlet_id', 'status']);
             $table->foreign('outlet_id')->references('id')->on('fnb_outlets')->restrictOnDelete();
             $table->foreign('cashier_id')->references('id')->on('users')->restrictOnDelete();
         });
 
-        DB::statement("ALTER TABLE fnb_cashier_shifts ADD COLUMN open_cashier_id CHAR(26) GENERATED ALWAYS AS (CASE WHEN status = 'open' THEN cashier_id ELSE NULL END) STORED");
-        DB::statement('CREATE UNIQUE INDEX fnb_cashier_shifts_one_open ON fnb_cashier_shifts (open_cashier_id)');
+        DB::unprepared(<<<'SQL'
+            CREATE TRIGGER fnb_cashier_shifts_open_insert BEFORE INSERT ON fnb_cashier_shifts
+            FOR EACH ROW
+            BEGIN
+                SET NEW.open_cashier_id = CASE WHEN NEW.status = 'open' THEN NEW.cashier_id ELSE NULL END;
+            END
+            SQL);
+        DB::unprepared(<<<'SQL'
+            CREATE TRIGGER fnb_cashier_shifts_open_update BEFORE UPDATE ON fnb_cashier_shifts
+            FOR EACH ROW
+            BEGIN
+                SET NEW.open_cashier_id = CASE WHEN NEW.status = 'open' THEN NEW.cashier_id ELSE NULL END;
+            END
+            SQL);
         DB::statement("ALTER TABLE fnb_cashier_shifts ADD CONSTRAINT chk_fnb_shift CHECK (status IN ('open', 'closed') AND opening_float_minor >= 0)");
 
         // What was taken for a bill (FR-FBS-007, FR-FBS-013). Cash, card and the charge to a room are paid when they are recorded; a QRIS payment goes through initiated,

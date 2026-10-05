@@ -36,6 +36,7 @@ return new class extends Migration
             $table->timestamps(precision: 6);
 
             $table->unique(['property_id', 'number']);
+            $table->char('open_table_id', 26)->nullable()->unique('fnb_bills_one_open_per_table');
             $table->index(['property_id', 'outlet_id', 'status']);
             $table->index(['property_id', 'business_date']);
             $table->foreign('outlet_id')->references('id')->on('fnb_outlets')->restrictOnDelete();
@@ -43,8 +44,20 @@ return new class extends Migration
             $table->foreign('opened_by')->references('id')->on('users')->restrictOnDelete();
         });
 
-        DB::statement("ALTER TABLE fnb_bills ADD COLUMN open_table_id CHAR(26) GENERATED ALWAYS AS (CASE WHEN status = 'open' THEN table_id ELSE NULL END) STORED");
-        DB::statement('CREATE UNIQUE INDEX fnb_bills_one_open_per_table ON fnb_bills (open_table_id)');
+        DB::unprepared(<<<'SQL'
+            CREATE TRIGGER fnb_bills_open_table_insert BEFORE INSERT ON fnb_bills
+            FOR EACH ROW
+            BEGIN
+                SET NEW.open_table_id = CASE WHEN NEW.status = 'open' THEN NEW.table_id ELSE NULL END;
+            END
+            SQL);
+        DB::unprepared(<<<'SQL'
+            CREATE TRIGGER fnb_bills_open_table_update BEFORE UPDATE ON fnb_bills
+            FOR EACH ROW
+            BEGIN
+                SET NEW.open_table_id = CASE WHEN NEW.status = 'open' THEN NEW.table_id ELSE NULL END;
+            END
+            SQL);
         DB::statement("ALTER TABLE fnb_bills ADD CONSTRAINT chk_fnb_bill_status CHECK (status IN ('open', 'settled', 'cancelled'))");
 
         // What was ordered, as it was priced when it was ordered: the name, the price and the choices are copied, so a later change of the menu never

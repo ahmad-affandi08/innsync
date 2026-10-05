@@ -32,14 +32,21 @@ return new class extends Migration
             $table->string('noshow_penalty_kind', 12);
             $table->bigInteger('noshow_penalty_value')->default(0);
             $table->string('reason', 300);
+            $table->string('scope_key', 40);
             $table->foreignUlid('created_by')->constrained('users')->restrictOnDelete();
             $table->timestamp('created_at', precision: 6);
 
+            $table->unique(['property_id', 'scope_key', 'effective_from'], 'booking_policies_version_unique');
             $table->index(['property_id', 'effective_from']);
         });
 
-        DB::statement("ALTER TABLE booking_policies ADD COLUMN scope_key VARCHAR(40) GENERATED ALWAYS AS (CONCAT(COALESCE(rate_plan_id, '*'), '|', COALESCE(source, '*'))) STORED");
-        DB::statement('ALTER TABLE booking_policies ADD UNIQUE INDEX booking_policies_version_unique (property_id, scope_key, effective_from)');
+        DB::unprepared(<<<'SQL'
+            CREATE TRIGGER booking_policies_scope_insert BEFORE INSERT ON booking_policies
+            FOR EACH ROW
+            BEGIN
+                SET NEW.scope_key = CONCAT(COALESCE(NEW.rate_plan_id, '*'), '|', COALESCE(NEW.source, '*'));
+            END
+            SQL);
         DB::statement(<<<'SQL'
             ALTER TABLE booking_policies
             ADD CONSTRAINT chk_policy_deposit CHECK (deposit_basis IN ('none', 'first_night', 'percent', 'fixed') AND deposit_value >= 0 AND (deposit_basis <> 'percent' OR deposit_value <= 10000) AND (deposit_basis NOT IN ('none', 'first_night') OR deposit_value = 0)),

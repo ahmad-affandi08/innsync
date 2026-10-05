@@ -63,6 +63,7 @@ return new class extends Migration
 
             // One stay per reservation, and one in-house stay per room: the room cannot hold two guests at once.
             $table->unique('reservation_id');
+            $table->char('in_house_room_key', 26)->nullable()->unique('stays_one_in_house_per_room');
             $table->index(['property_id', 'status', 'expected_departure']);
             $table->index(['property_id', 'room_id', 'status']);
         });
@@ -74,9 +75,13 @@ return new class extends Migration
                 OR (status = 'checked_out' AND checked_out_at IS NOT NULL AND checked_out_by IS NOT NULL AND checked_out_business_date IS NOT NULL)),
             ADD CONSTRAINT chk_stays_dates CHECK (expected_departure > checked_in_business_date)
             SQL);
-        // A room can have only one in-house stay at a time: a generated column is unique only while the stay is in house.
-        DB::statement("ALTER TABLE stays ADD COLUMN in_house_room_key CHAR(26) GENERATED ALWAYS AS (CASE WHEN status = 'in_house' THEN room_id ELSE NULL END) STORED");
-        DB::statement('ALTER TABLE stays ADD UNIQUE INDEX stays_one_in_house_per_room (in_house_room_key)');
+        DB::unprepared(<<<'SQL'
+            CREATE TRIGGER stays_in_house_key_insert BEFORE INSERT ON stays
+            FOR EACH ROW
+            BEGIN
+                SET NEW.in_house_room_key = CASE WHEN NEW.status = 'in_house' THEN NEW.room_id ELSE NULL END;
+            END
+            SQL);
         DB::unprepared("CREATE TRIGGER stays_no_delete BEFORE DELETE ON stays FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'stays cannot be deleted'");
         DB::unprepared(<<<'SQL'
             CREATE TRIGGER stays_facts_immutable BEFORE UPDATE ON stays
@@ -89,6 +94,7 @@ return new class extends Migration
                 IF OLD.status = 'checked_out' THEN
                     SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a completed stay cannot be changed';
                 END IF;
+                SET NEW.in_house_room_key = CASE WHEN NEW.status = 'in_house' THEN NEW.room_id ELSE NULL END;
             END
             SQL);
 

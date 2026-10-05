@@ -45,6 +45,8 @@ return new class extends Migration
             $table->timestamps(precision: 6);
 
             $table->unique(['property_id', 'number']);
+            $table->char('open_cashier_key', 26)->nullable();
+            $table->unique(['property_id', 'open_cashier_key'], 'cashier_shifts_one_open_per_cashier');
             $table->index(['property_id', 'status', 'opened_at']);
         });
         DB::statement(<<<'SQL'
@@ -56,9 +58,13 @@ return new class extends Migration
             ADD CONSTRAINT chk_shifts_variance CHECK (variance_minor IS NULL OR variance_minor = counted_cash_minor - expected_cash_minor),
             ADD CONSTRAINT chk_shifts_variance_reason CHECK (variance_minor IS NULL OR variance_minor = 0 OR (variance_reason IS NOT NULL AND CHAR_LENGTH(TRIM(variance_reason)) > 0))
             SQL);
-        // A person has at most one open shift in a property: the generated column is unique only while the shift is open.
-        DB::statement("ALTER TABLE cashier_shifts ADD COLUMN open_cashier_key CHAR(26) GENERATED ALWAYS AS (CASE WHEN status = 'open' THEN cashier_id ELSE NULL END) STORED");
-        DB::statement('ALTER TABLE cashier_shifts ADD UNIQUE INDEX cashier_shifts_one_open_per_cashier (property_id, open_cashier_key)');
+        DB::unprepared(<<<'SQL'
+            CREATE TRIGGER cashier_shifts_open_key_insert BEFORE INSERT ON cashier_shifts
+            FOR EACH ROW
+            BEGIN
+                SET NEW.open_cashier_key = CASE WHEN NEW.status = 'open' THEN NEW.cashier_id ELSE NULL END;
+            END
+            SQL);
         DB::unprepared("CREATE TRIGGER cashier_shifts_no_delete BEFORE DELETE ON cashier_shifts FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a cashier shift cannot be deleted'");
         DB::unprepared(<<<'SQL'
             CREATE TRIGGER cashier_shifts_facts_immutable BEFORE UPDATE ON cashier_shifts
@@ -72,6 +78,7 @@ return new class extends Migration
                 IF OLD.status = 'closed' THEN
                     SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a closed shift cannot be changed';
                 END IF;
+                SET NEW.open_cashier_key = CASE WHEN NEW.status = 'open' THEN NEW.cashier_id ELSE NULL END;
             END
             SQL);
 

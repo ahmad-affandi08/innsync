@@ -27,6 +27,7 @@ return new class extends Migration
             $table->timestamps(precision: 6);
 
             $table->unique(['property_id', 'code']);
+            $table->char('active_express_key', 26)->nullable()->unique('laundry_one_active_express');
         });
         DB::statement(<<<'SQL'
             ALTER TABLE laundry_treatments
@@ -34,9 +35,20 @@ return new class extends Migration
             ADD CONSTRAINT chk_treatment_pricing CHECK (pricing IN ('percent', 'fixed')),
             ADD CONSTRAINT chk_treatment_value CHECK (value >= 0 AND (pricing <> 'percent' OR value <= 100000))
             SQL);
-        // At most one active express treatment per property.
-        DB::statement("ALTER TABLE laundry_treatments ADD COLUMN active_express_key CHAR(26) GENERATED ALWAYS AS (CASE WHEN kind = 'express' AND is_active = 1 THEN property_id ELSE NULL END) STORED");
-        DB::statement('ALTER TABLE laundry_treatments ADD UNIQUE INDEX laundry_one_active_express (active_express_key)');
+        DB::unprepared(<<<'SQL'
+            CREATE TRIGGER laundry_treatments_active_key_insert BEFORE INSERT ON laundry_treatments
+            FOR EACH ROW
+            BEGIN
+                SET NEW.active_express_key = CASE WHEN NEW.kind = 'express' AND NEW.is_active = 1 THEN NEW.property_id ELSE NULL END;
+            END
+            SQL);
+        DB::unprepared(<<<'SQL'
+            CREATE TRIGGER laundry_treatments_active_key_update BEFORE UPDATE ON laundry_treatments
+            FOR EACH ROW
+            BEGIN
+                SET NEW.active_express_key = CASE WHEN NEW.kind = 'express' AND NEW.is_active = 1 THEN NEW.property_id ELSE NULL END;
+            END
+            SQL);
         DB::unprepared("CREATE TRIGGER laundry_treatments_no_delete BEFORE DELETE ON laundry_treatments FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'laundry treatments cannot be deleted; deactivate them'");
 
         Schema::table('laundry_order_lines', function (Blueprint $table): void {

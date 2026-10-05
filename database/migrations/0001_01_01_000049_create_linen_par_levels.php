@@ -21,14 +21,29 @@ return new class extends Migration
             $table->string('scope_kind', 9);
             $table->char('room_type_id', 26)->nullable();
             $table->string('area', 40)->nullable();
+            $table->string('scope_key', 46);
             $table->unsignedInteger('par_quantity');
             $table->unsignedInteger('use_quantity')->default(0);
             $table->unsignedInteger('lock_version')->default(0);
             $table->foreignUlid('updated_by')->constrained('users')->restrictOnDelete();
             $table->timestamps(precision: 6);
+
+            $table->unique(['property_id', 'item_id', 'scope_kind', 'scope_key'], 'linen_par_scope_unique');
         });
-        DB::statement("ALTER TABLE linen_par_levels ADD COLUMN scope_key VARCHAR(46) GENERATED ALWAYS AS (COALESCE(room_type_id, CONCAT('area:', area))) STORED");
-        DB::statement('CREATE UNIQUE INDEX linen_par_scope_unique ON linen_par_levels (property_id, item_id, scope_kind, scope_key)');
+        DB::unprepared(<<<'SQL'
+            CREATE TRIGGER linen_par_levels_scope_insert BEFORE INSERT ON linen_par_levels
+            FOR EACH ROW
+            BEGIN
+                SET NEW.scope_key = COALESCE(NEW.room_type_id, CONCAT('area:', NEW.area));
+            END
+            SQL);
+        DB::unprepared(<<<'SQL'
+            CREATE TRIGGER linen_par_levels_scope_update BEFORE UPDATE ON linen_par_levels
+            FOR EACH ROW
+            BEGIN
+                SET NEW.scope_key = COALESCE(NEW.room_type_id, CONCAT('area:', NEW.area));
+            END
+            SQL);
         DB::statement(<<<'SQL'
             ALTER TABLE linen_par_levels
             ADD CONSTRAINT chk_par_scope CHECK ((scope_kind = 'room_type' AND room_type_id IS NOT NULL AND area IS NULL) OR (scope_kind = 'area' AND room_type_id IS NULL AND area IS NOT NULL AND use_quantity = 0))

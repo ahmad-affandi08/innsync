@@ -57,6 +57,7 @@ return new class extends Migration
             $table->timestamps(precision: 6);
 
             $table->unique(['property_id', 'number']);
+            $table->string('active_barcode_key', 80)->nullable()->unique('laundry_one_active_per_bag');
             $table->index(['property_id', 'status', 'promised_at']);
             $table->index(['property_id', 'stay_id']);
         });
@@ -68,8 +69,13 @@ return new class extends Migration
             ADD CONSTRAINT chk_laundry_ready CHECK (status NOT IN ('ready', 'delivered') OR (ready_at IS NOT NULL AND charged_minor IS NOT NULL)),
             ADD CONSTRAINT chk_laundry_discrepancy CHECK (has_discrepancy = 0 OR discrepancy_note IS NOT NULL)
             SQL);
-        DB::statement("ALTER TABLE laundry_orders ADD COLUMN active_barcode_key VARCHAR(80) GENERATED ALWAYS AS (CASE WHEN status IN ('delivered', 'cancelled') THEN NULL ELSE CONCAT(property_id, '|', barcode) END) STORED");
-        DB::statement('ALTER TABLE laundry_orders ADD UNIQUE INDEX laundry_one_active_per_bag (active_barcode_key)');
+        DB::unprepared(<<<'SQL'
+            CREATE TRIGGER laundry_orders_active_key_insert BEFORE INSERT ON laundry_orders
+            FOR EACH ROW
+            BEGIN
+                SET NEW.active_barcode_key = CASE WHEN NEW.status IN ('delivered', 'cancelled') THEN NULL ELSE CONCAT(NEW.property_id, '|', NEW.barcode) END;
+            END
+            SQL);
         DB::unprepared("CREATE TRIGGER laundry_orders_no_delete BEFORE DELETE ON laundry_orders FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'laundry orders cannot be deleted; cancel them'");
         DB::unprepared(<<<'SQL'
             CREATE TRIGGER laundry_orders_facts BEFORE UPDATE ON laundry_orders
@@ -82,6 +88,7 @@ return new class extends Migration
                 IF OLD.status IN ('delivered', 'cancelled') THEN
                     SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a finished laundry order cannot be changed';
                 END IF;
+                SET NEW.active_barcode_key = CASE WHEN NEW.status IN ('delivered', 'cancelled') THEN NULL ELSE CONCAT(NEW.property_id, '|', NEW.barcode) END;
             END
             SQL);
 

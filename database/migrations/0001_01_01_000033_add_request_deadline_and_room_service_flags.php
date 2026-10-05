@@ -43,6 +43,7 @@ return new class extends Migration
             $table->foreignUlid('started_by')->constrained('users')->restrictOnDelete();
             $table->timestamp('ended_at', precision: 6)->nullable();
             $table->foreignUlid('ended_by')->nullable()->constrained('users')->restrictOnDelete();
+            $table->string('open_key', 60)->nullable()->unique('flags_one_open_per_kind');
             $table->unsignedInteger('lock_version')->default(0);
 
             $table->index(['property_id', 'ended_at']);
@@ -51,9 +52,13 @@ return new class extends Migration
         DB::statement("ALTER TABLE room_service_flags ADD CONSTRAINT chk_flags_kind CHECK (kind IN ('dnd', 'refused_service', 'make_up_room', 'privacy'))");
         DB::statement('ALTER TABLE room_service_flags ADD CONSTRAINT chk_flags_times CHECK (ended_at IS NULL OR ended_at >= started_at)');
         DB::statement('ALTER TABLE room_service_flags ADD CONSTRAINT chk_flags_ended CHECK ((ended_at IS NULL AND ended_by IS NULL) OR (ended_at IS NOT NULL AND ended_by IS NOT NULL))');
-        // One open flag of a kind per room.
-        DB::statement('ALTER TABLE room_service_flags ADD COLUMN open_key VARCHAR(60) GENERATED ALWAYS AS (CASE WHEN ended_at IS NULL THEN CONCAT(room_id, kind) ELSE NULL END) STORED');
-        DB::statement('ALTER TABLE room_service_flags ADD UNIQUE INDEX flags_one_open_per_kind (open_key)');
+        DB::unprepared(<<<'SQL'
+            CREATE TRIGGER room_service_flags_open_key_insert BEFORE INSERT ON room_service_flags
+            FOR EACH ROW
+            BEGIN
+                SET NEW.open_key = CASE WHEN NEW.ended_at IS NULL THEN CONCAT(NEW.room_id, NEW.kind) ELSE NULL END;
+            END
+            SQL);
         DB::unprepared("CREATE TRIGGER room_service_flags_no_delete BEFORE DELETE ON room_service_flags FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a service flag cannot be deleted'");
         DB::unprepared(<<<'SQL'
             CREATE TRIGGER room_service_flags_facts_immutable BEFORE UPDATE ON room_service_flags
@@ -66,6 +71,7 @@ return new class extends Migration
                 IF OLD.ended_at IS NOT NULL THEN
                     SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'an ended service flag cannot be changed';
                 END IF;
+                SET NEW.open_key = CASE WHEN NEW.ended_at IS NULL THEN CONCAT(NEW.room_id, NEW.kind) ELSE NULL END;
             END
             SQL);
     }
