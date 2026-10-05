@@ -20,7 +20,7 @@ return new class extends Migration
 
     public function down(): void
     {
-        DB::statement('ALTER TABLE stock_movements DROP CHECK chk_stock_value');
+        DB::statement('ALTER TABLE stock_movements DROP CONSTRAINT chk_stock_value');
         Schema::table('stock_movements', function (Blueprint $table): void {
             $table->dropColumn(['value_minor', 'unit_cost_minor']);
         });

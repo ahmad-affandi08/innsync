@@ -48,13 +48,13 @@ return new class extends Migration
         DB::unprepared("CREATE TRIGGER fin_pos_sales_no_delete BEFORE DELETE ON fin_pos_sales FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a point of sale bill cannot be deleted'");
 
         // A sale that reached finance after the day it belongs to was booked is an exception to settle with a correction of that day.
-        DB::statement('ALTER TABLE fin_exceptions DROP CHECK chk_fin_exception_kind');
+        DB::statement('ALTER TABLE fin_exceptions DROP CONSTRAINT chk_fin_exception_kind');
         DB::statement("ALTER TABLE fin_exceptions ADD CONSTRAINT chk_fin_exception_kind CHECK (kind IN ('refund', 'chargeback', 'settlement_discrepancy', 'unknown_payment', 'late_sale'))");
     }
 
     public function down(): void
     {
-        DB::statement('ALTER TABLE fin_exceptions DROP CHECK chk_fin_exception_kind');
+        DB::statement('ALTER TABLE fin_exceptions DROP CONSTRAINT chk_fin_exception_kind');
         DB::statement("ALTER TABLE fin_exceptions ADD CONSTRAINT chk_fin_exception_kind CHECK (kind IN ('refund', 'chargeback', 'settlement_discrepancy', 'unknown_payment'))");
         Schema::dropIfExists('fin_pos_sales');
     }

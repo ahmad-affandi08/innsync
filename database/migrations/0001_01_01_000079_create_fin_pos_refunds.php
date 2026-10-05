@@ -47,13 +47,13 @@ return new class extends Migration
         DB::unprepared("CREATE TRIGGER fin_pos_refunds_no_update BEFORE UPDATE ON fin_pos_refunds FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a refund cannot be changed'");
         DB::unprepared("CREATE TRIGGER fin_pos_refunds_no_delete BEFORE DELETE ON fin_pos_refunds FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a refund cannot be deleted'");
 
-        DB::statement('ALTER TABLE fin_exceptions DROP CHECK chk_fin_exception_kind');
+        DB::statement('ALTER TABLE fin_exceptions DROP CONSTRAINT chk_fin_exception_kind');
         DB::statement("ALTER TABLE fin_exceptions ADD CONSTRAINT chk_fin_exception_kind CHECK (kind IN ('refund', 'chargeback', 'settlement_discrepancy', 'unknown_payment', 'late_sale', 'late_refund'))");
     }
 
     public function down(): void
     {
-        DB::statement('ALTER TABLE fin_exceptions DROP CHECK chk_fin_exception_kind');
+        DB::statement('ALTER TABLE fin_exceptions DROP CONSTRAINT chk_fin_exception_kind');
         DB::statement("ALTER TABLE fin_exceptions ADD CONSTRAINT chk_fin_exception_kind CHECK (kind IN ('refund', 'chargeback', 'settlement_discrepancy', 'unknown_payment', 'late_sale'))");
         Schema::dropIfExists('fin_pos_refunds');
     }

@@ -20,7 +20,7 @@ return new class extends Migration
         // The ledger grows from opening stock to every kind of movement (FR-INV-004, -005, -010). An outflow is negative; a movement that took the
         // balance below zero keeps the reason it was allowed to. A movement posted for a source document (a POS sale, a kitchen ticket, a transfer) keeps
         // its type and reference, and one source posts its movement for an item and a location once.
-        DB::statement('ALTER TABLE stock_movements DROP CHECK chk_stock_movement');
+        DB::statement('ALTER TABLE stock_movements DROP CONSTRAINT chk_stock_movement');
         DB::statement('ALTER TABLE stock_movements MODIFY kind VARCHAR(16) NOT NULL');
         Schema::table('stock_movements', function (Blueprint $table): void {
             $table->string('reason_code', 16)->nullable()->after('kind');
@@ -109,7 +109,7 @@ return new class extends Migration
         DB::unprepared('DROP TRIGGER IF EXISTS stock_transfers_decide_once');
         DB::unprepared('DROP TRIGGER IF EXISTS stock_transfers_no_delete');
         Schema::dropIfExists('stock_transfers');
-        DB::statement('ALTER TABLE stock_movements DROP CHECK chk_stock_movement');
+        DB::statement('ALTER TABLE stock_movements DROP CONSTRAINT chk_stock_movement');
         Schema::table('stock_movements', function (Blueprint $table): void {
             $table->dropUnique('stock_movements_source_once');
             $table->dropIndex(['transfer_id']);

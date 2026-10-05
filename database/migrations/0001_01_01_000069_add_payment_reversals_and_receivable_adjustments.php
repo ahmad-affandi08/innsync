@@ -11,7 +11,7 @@ return new class extends Migration
         // reversed: what a payable has paid is the paid payments less their reversals. A payment is reversed once, in full.
         DB::statement('ALTER TABLE ap_payments ADD COLUMN reverses_id CHAR(26) NULL AFTER payable_id');
         DB::statement('ALTER TABLE ap_payments ADD UNIQUE INDEX ap_payments_reverses_once (reverses_id)');
-        DB::statement('ALTER TABLE ap_payments DROP CHECK chk_ap_payment');
+        DB::statement('ALTER TABLE ap_payments DROP CONSTRAINT chk_ap_payment');
         DB::statement("ALTER TABLE ap_payments ADD CONSTRAINT chk_ap_payment CHECK (amount_minor > 0 AND method IN ('transfer', 'cash', 'giro', 'other') AND status IN ('pending_approval', 'paid', 'rejected', 'cancelled', 'reversal') AND ((status = 'reversal') = (reverses_id IS NOT NULL)))");
         DB::unprepared('DROP TRIGGER ap_payments_guard');
         DB::unprepared(<<<'SQL'
@@ -31,7 +31,7 @@ return new class extends Migration
         DB::statement('ALTER TABLE ar_receipts ADD UNIQUE INDEX ar_receipts_reverses_once (reverses_id)');
         DB::statement('ALTER TABLE ar_receipts MODIFY method VARCHAR(12) NULL');
         DB::statement('ALTER TABLE ar_receipts MODIFY reference VARCHAR(80) NULL');
-        DB::statement('ALTER TABLE ar_receipts DROP CHECK chk_ar_receipt_method');
+        DB::statement('ALTER TABLE ar_receipts DROP CONSTRAINT chk_ar_receipt_method');
         DB::statement(<<<'SQL'
             ALTER TABLE ar_receipts ADD CONSTRAINT chk_ar_receipt_kind CHECK (
                 kind IN ('receipt', 'reversal', 'credit_note', 'write_off')
@@ -43,12 +43,12 @@ return new class extends Migration
 
     public function down(): void
     {
-        DB::statement('ALTER TABLE ar_receipts DROP CHECK chk_ar_receipt_kind');
+        DB::statement('ALTER TABLE ar_receipts DROP CONSTRAINT chk_ar_receipt_kind');
         DB::statement("ALTER TABLE ar_receipts ADD CONSTRAINT chk_ar_receipt_method CHECK (method IN ('transfer', 'giro', 'online'))");
         DB::statement('ALTER TABLE ar_receipts DROP INDEX ar_receipts_reverses_once');
         DB::statement('ALTER TABLE ar_receipts DROP COLUMN reverses_id');
         DB::statement('ALTER TABLE ar_receipts DROP COLUMN kind');
-        DB::statement('ALTER TABLE ap_payments DROP CHECK chk_ap_payment');
+        DB::statement('ALTER TABLE ap_payments DROP CONSTRAINT chk_ap_payment');
         DB::statement("ALTER TABLE ap_payments ADD CONSTRAINT chk_ap_payment CHECK (amount_minor > 0 AND method IN ('transfer', 'cash', 'giro', 'other') AND status IN ('pending_approval', 'paid', 'rejected', 'cancelled'))");
         DB::statement('ALTER TABLE ap_payments DROP INDEX ap_payments_reverses_once');
         DB::statement('ALTER TABLE ap_payments DROP COLUMN reverses_id');

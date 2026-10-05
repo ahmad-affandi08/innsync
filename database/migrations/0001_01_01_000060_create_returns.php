@@ -11,7 +11,7 @@ return new class extends Migration
     {
         // Returns (FR-INV-011). Goods go back to a supplier against the receipt they came on, or back to the location they were sent from against the
         // transfer that moved them, so the stock, what is owed and the history of the item still reconcile. Each is a document that points to its origin.
-        DB::statement('ALTER TABLE stock_movements DROP CHECK chk_stock_movement');
+        DB::statement('ALTER TABLE stock_movements DROP CONSTRAINT chk_stock_movement');
         DB::statement(<<<'SQL'
             ALTER TABLE stock_movements ADD CONSTRAINT chk_stock_movement CHECK (
                 unit_qty_milli <> 0 AND base_qty_milli <> 0 AND factor_milli >= 1

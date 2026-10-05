@@ -62,7 +62,7 @@ return new class extends Migration
 
     public function down(): void
     {
-        DB::statement('ALTER TABLE maintenance_settings DROP CHECK chk_mtc_escalation_settings');
+        DB::statement('ALTER TABLE maintenance_settings DROP CONSTRAINT chk_mtc_escalation_settings');
         Schema::table('maintenance_settings', function (Blueprint $table): void {
             $table->dropColumn(['warn_percent', 'escalate_percent', 'night_from_hour', 'night_to_hour']);
         });

@@ -56,7 +56,7 @@ return new class extends Migration
         DB::unprepared("CREATE TRIGGER fnb_refund_payments_no_delete BEFORE DELETE ON fnb_refund_payments FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a refund cannot be deleted'");
 
         // A bill that was given back is refunded; and how many copies of its receipt were printed after the first.
-        DB::statement('ALTER TABLE fnb_bills DROP CHECK chk_fnb_bill_status');
+        DB::statement('ALTER TABLE fnb_bills DROP CONSTRAINT chk_fnb_bill_status');
         DB::statement("ALTER TABLE fnb_bills ADD CONSTRAINT chk_fnb_bill_status CHECK (status IN ('open', 'settled', 'cancelled', 'refunded'))");
         Schema::table('fnb_bills', function (Blueprint $table): void {
             $table->unsignedSmallInteger('reprint_count')->default(0)->after('scheme');
@@ -68,7 +68,7 @@ return new class extends Migration
         Schema::table('fnb_bills', function (Blueprint $table): void {
             $table->dropColumn('reprint_count');
         });
-        DB::statement('ALTER TABLE fnb_bills DROP CHECK chk_fnb_bill_status');
+        DB::statement('ALTER TABLE fnb_bills DROP CONSTRAINT chk_fnb_bill_status');
         DB::statement("ALTER TABLE fnb_bills ADD CONSTRAINT chk_fnb_bill_status CHECK (status IN ('open', 'settled', 'cancelled'))");
         Schema::dropIfExists('fnb_refund_payments');
         Schema::dropIfExists('fnb_refunds');

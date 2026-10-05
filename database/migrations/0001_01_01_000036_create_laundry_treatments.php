@@ -76,7 +76,7 @@ return new class extends Migration
 
     public function down(): void
     {
-        DB::statement('ALTER TABLE laundry_order_lines DROP CHECK chk_laundry_line_extras');
+        DB::statement('ALTER TABLE laundry_order_lines DROP CONSTRAINT chk_laundry_line_extras');
         DB::unprepared('DROP TRIGGER laundry_order_lines_facts');
         DB::unprepared(<<<'SQL'
             CREATE TRIGGER laundry_order_lines_facts BEFORE UPDATE ON laundry_order_lines

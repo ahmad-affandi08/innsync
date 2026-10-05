@@ -106,7 +106,7 @@ return new class extends Migration
         Schema::table('kitchen_tickets', function (Blueprint $table): void {
             $table->dropColumn('source');
         });
-        DB::statement('ALTER TABLE fnb_bills DROP CHECK chk_fnb_bill_source');
+        DB::statement('ALTER TABLE fnb_bills DROP CONSTRAINT chk_fnb_bill_source');
         Schema::table('fnb_bills', function (Blueprint $table): void {
             $table->dropColumn('source');
         });

@@ -27,7 +27,7 @@ return new class extends Migration
 
     public function down(): void
     {
-        DB::statement('ALTER TABLE fnb_bill_lines DROP CHECK chk_fnb_line_discount');
+        DB::statement('ALTER TABLE fnb_bill_lines DROP CONSTRAINT chk_fnb_line_discount');
         Schema::table('fnb_bill_lines', function (Blueprint $table): void {
             $table->dropColumn(['gross_minor', 'discount_kind', 'discount_value', 'discount_minor', 'discount_reason', 'discount_by', 'discount_approval_id', 'discounted_at']);
         });
