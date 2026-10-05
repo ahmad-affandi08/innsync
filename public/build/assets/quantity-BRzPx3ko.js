@@ -1,0 +1,1 @@
+function e(e){let t=/^(\d{1,7})(?:\.(\d{1,3}))?$/.exec(e.trim().replace(`,`,`.`));return t===null?null:Number(t[1])*1e3+Number((t[2]??``).padEnd(3,`0`))}function t(e,t){return Math.floor((Math.abs(e)*t+500)/1e3)*(e<0?-1:1)}function n(e,t){return new Intl.NumberFormat(t,{maximumFractionDigits:3}).format(e/1e3)}function r(e){return String(e/1e3)}export{t as i,e as n,r,n as t};
