@@ -598,26 +598,35 @@
     "GET /reports/flash": {
         "required": [],
         "declared": [
+            "department",
             "from",
+            "outlet",
             "preset",
-            "to"
+            "to",
+            "user"
         ]
     },
     "GET /reports/flash/export": {
         "required": [],
         "declared": [
+            "department",
             "from",
+            "outlet",
             "preset",
-            "to"
+            "to",
+            "user"
         ]
     },
     "GET /reports/foreign-guests": {
         "required": [],
         "declared": [
+            "department",
             "from",
             "nationality",
+            "outlet",
             "preset",
-            "to"
+            "to",
+            "user"
         ]
     },
     "GET /reports/foreign-guests/export": {
@@ -625,43 +634,58 @@
             "purpose"
         ],
         "declared": [
+            "department",
             "from",
             "nationality",
+            "outlet",
             "preset",
             "purpose",
-            "to"
+            "to",
+            "user"
         ]
     },
     "GET /reports/housekeeping": {
         "required": [],
         "declared": [
+            "department",
             "from",
+            "outlet",
             "preset",
-            "to"
+            "to",
+            "user"
         ]
     },
     "GET /reports/housekeeping/export": {
         "required": [],
         "declared": [
+            "department",
             "from",
+            "outlet",
             "preset",
-            "to"
+            "to",
+            "user"
         ]
     },
     "GET /reports/laundry": {
         "required": [],
         "declared": [
+            "department",
             "from",
+            "outlet",
             "preset",
-            "to"
+            "to",
+            "user"
         ]
     },
     "GET /reports/laundry/export": {
         "required": [],
         "declared": [
+            "department",
             "from",
+            "outlet",
             "preset",
-            "to"
+            "to",
+            "user"
         ]
     },
     "GET /reports/movements": {
@@ -688,17 +712,23 @@
     "GET /reports/payments": {
         "required": [],
         "declared": [
+            "department",
             "from",
+            "outlet",
             "preset",
-            "to"
+            "to",
+            "user"
         ]
     },
     "GET /reports/payments/export": {
         "required": [],
         "declared": [
+            "department",
             "from",
+            "outlet",
             "preset",
-            "to"
+            "to",
+            "user"
         ]
     },
     "GET /reports/performance": {
@@ -724,10 +754,13 @@
     "GET /reports/registrations": {
         "required": [],
         "declared": [
+            "department",
             "from",
             "nationality",
+            "outlet",
             "preset",
-            "to"
+            "to",
+            "user"
         ]
     },
     "GET /reports/registrations/export": {
@@ -735,11 +768,36 @@
             "purpose"
         ],
         "declared": [
+            "department",
             "from",
             "nationality",
+            "outlet",
             "preset",
             "purpose",
-            "to"
+            "to",
+            "user"
+        ]
+    },
+    "GET /reports/sales": {
+        "required": [],
+        "declared": [
+            "department",
+            "from",
+            "outlet",
+            "preset",
+            "to",
+            "user"
+        ]
+    },
+    "GET /reports/sales/export": {
+        "required": [],
+        "declared": [
+            "department",
+            "from",
+            "outlet",
+            "preset",
+            "to",
+            "user"
         ]
     },
     "GET /sync/exceptions": {

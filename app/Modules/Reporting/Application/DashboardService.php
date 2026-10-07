@@ -191,22 +191,7 @@ final readonly class DashboardService
     /** The part of the revenue a limited grant sees: what each of its departments owns, and the sales of each of its outlets. */
     private function revenueScope(PropertyId $property, DashboardGrant $grant): RevenueScope
     {
-        $kinds = [];
-        $prefixes = [];
-
-        foreach ($grant->departments as $department) {
-            match ($department) {
-                'front_office' => $kinds[] = 'room',
-                'laundry' => $kinds[] = 'laundry',
-                'fnb' => $prefixes[] = 'pos_',
-                'general' => $kinds = [...$kinds, 'other', 'outlet'],
-                default => null,
-            };
-        }
-
-        $sources = array_map(static fn (string $code): string => 'pos_'.strtolower($code), array_values($this->queries->fnbOutletCodes($property, $grant->outlets)));
-
-        return new RevenueScope($kinds, $prefixes, $sources);
+        return RevenueScope::of($grant->departments, array_values($this->queries->fnbOutletCodes($property, $grant->outlets)));
     }
 
     /**

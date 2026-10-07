@@ -68,7 +68,7 @@ final class ReportingHttpTest extends TestCase
         $this->get('/dashboard?preset=forever')->assertStatus(422);
         $this->get('/dashboard?from=2026-10-09&to=2026-10-01')->assertStatus(422);
 
-        $this->get('/reports')->assertInertia(fn (Assert $p) => $p->component('reporting/pages/reports')->has('reports', 11)->where('context.business_date', '2026-10-01'));
+        $this->get('/reports')->assertInertia(fn (Assert $p) => $p->component('reporting/pages/reports')->has('reports', 12)->where('context.business_date', '2026-10-01'));
     }
 
     public function test_the_home_page_gets_todays_numbers_in_one_small_response(): void
@@ -176,6 +176,28 @@ final class ReportingHttpTest extends TestCase
             ->where('bill.reservation.guest_name', 'Budi')->where('bill.reservation.room', '101')->where('bill.hotel', 'A')->where('bill.currency', 'IDR')
             ->where('bill.outlets.0.outlet', 'other')->where('bill.outlets.0.lines.0.total_minor', 12_100_000)
             ->where('bill.payments.0.amount_minor', 5_000_000)->where('bill.totals.total', 12_100_000)->where('bill.totals.paid', 5_000_000)->where('bill.totals.balance_minor', 7_100_000));
+    }
+
+    public function test_reports_take_filters_by_person_department_and_outlet_and_refuse_those_they_do_not_take(): void
+    {
+        $me = (string) DB::table('users')->value('id');
+
+        $this->get('/reports/sales')->assertOk()->assertInertia(fn (Assert $p) => $p->component('reporting/pages/sales')->where('report.options.filters', ['user', 'department', 'outlet'])->has('report.options.staff', 1));
+        $this->get('/reports/sales?department=fnb')->assertOk()->assertInertia(fn (Assert $p) => $p->where('report.meta.filters.department', 'fnb'));
+        $this->get('/reports/sales/export?department=fnb')->assertOk();
+        $this->get('/reports/sales?department=spa')->assertStatus(422);
+        $this->get('/reports/sales?outlet='.str_repeat('0', 26))->assertStatus(422);
+
+        // A report takes a filter only where it has that dimension.
+        $this->get('/reports/payments?department=fnb')->assertStatus(422);
+        $this->get('/reports/flash?outlet='.str_repeat('0', 26))->assertStatus(422);
+        $this->getJson('/reports/payments?user=short')->assertStatus(422);
+
+        foreach (['payments', 'laundry', 'housekeeping', 'flash', 'registrations', 'foreign-guests'] as $report) {
+            $this->get("/reports/{$report}?user={$me}")->assertOk()->assertInertia(fn (Assert $p) => $p->has('report.meta.filters.user')->where('report.options.filters.0', 'user'));
+        }
+
+        $this->get("/reports/laundry/export?user={$me}")->assertOk();
     }
 
     public function test_people_without_the_permissions_see_nothing(): void

@@ -3,11 +3,12 @@ import { DataGrid, type DataGridColumn } from '@/components/ui/data-grid';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { PeriodPicker } from '@/modules/reporting/components/period-picker';
+import { ReportFilterBar, useReportFilters, type FilterOptions } from '@/modules/reporting/components/report-filters';
 import { ReportMeta, type Meta } from '@/modules/reporting/components/report-meta';
 import { ReportingShell } from '@/modules/reporting/components/reporting-shell';
 import { useFormatters, useTranslation } from '@/shared/i18n/i18n';
 
-type Report = {
+type Report = { options: FilterOptions;
     meta: Meta & { period: { preset: string; from: string; to: string } };
     staff: { user_id: string; name: string | null; rooms: number; average_seconds: number }[];
     kinds: { kind: string; rooms: number; average_seconds: number }[];
@@ -20,7 +21,8 @@ type Report = {
 export default function HousekeepingReportPage({ report: r }: { report: Report }) {
     const { t } = useTranslation();
     const format = useFormatters();
-    const q = new URLSearchParams({ from: r.meta.period.from, to: r.meta.period.to }).toString();
+    const filters = useReportFilters();
+    const q = new URLSearchParams({ from: r.meta.period.from, to: r.meta.period.to, ...filters.values }).toString();
     const minutes = (seconds: number) => t('rpt.hk.minutes', { minutes: format.number(Math.round(seconds / 60)) });
     const percent = (bp: number | null) => (bp === null ? '—' : `${format.number(Math.round(bp / 100))}%`);
     const staffColumns: DataGridColumn<Report['staff'][number]>[] = [
@@ -31,7 +33,8 @@ export default function HousekeepingReportPage({ report: r }: { report: Report }
 
     return (
         <ReportingShell description={t('rpt.hk.description')} title={t('rpt.hk.title')}>
-            <PeriodPicker from={r.meta.period.from} path="/reports/housekeeping" preset={r.meta.period.preset} to={r.meta.period.to} />
+            <PeriodPicker extra={filters.values} from={r.meta.period.from} path="/reports/housekeeping" preset={r.meta.period.preset} to={r.meta.period.to} />
+            <ReportFilterBar options={r.options} path="/reports/housekeeping" />
             <div className="flex flex-wrap gap-2 print:hidden">
                 <Button asChild size="sm" variant="outline"><a href={`/reports/housekeeping/export?${q}`}>{t('rpt.export.csv')}</a></Button>
                 <Button asChild size="sm" variant="outline"><a href={`/reports/housekeeping/export?${q}&format=pdf`}>{t('rpt.export.pdf')}</a></Button>

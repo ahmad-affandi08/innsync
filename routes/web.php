@@ -633,6 +633,8 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->group(
         Route::get('/laundry', [ReportController::class, 'laundry'])->name('reports.laundry');
         Route::get('/laundry/export', [ReportController::class, 'exportLaundry'])->name('reports.laundry.export');
         Route::get('/payments', [ReportController::class, 'payments'])->name('reports.payments');
+        Route::get('/sales', [ReportController::class, 'sales'])->name('reports.sales');
+        Route::get('/sales/export', [ReportController::class, 'exportSales'])->name('reports.sales.export');
         Route::get('/payments/export', [ReportController::class, 'exportPayments'])->name('reports.payments.export');
         Route::get('/registrations', [ReportController::class, 'registrations'])->name('reports.registrations');
         Route::get('/registrations/export', [ReportController::class, 'exportRegistrations'])->name('reports.registrations.export');

@@ -2,22 +2,25 @@ import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { PeriodPicker } from '@/modules/reporting/components/period-picker';
+import { ReportFilterBar, useReportFilters, type FilterOptions } from '@/modules/reporting/components/report-filters';
 import { ReportMeta, type Meta } from '@/modules/reporting/components/report-meta';
 import { ReportingShell } from '@/modules/reporting/components/reporting-shell';
 import { useFormatters, useTranslation } from '@/shared/i18n/i18n';
 
 type Row = { method: string; received_minor: number; paid_back_minor: number; net_minor: number; count: number };
-type Report = { meta: Meta & { period: { preset: string; from: string; to: string } }; rows: Row[]; totals: { received_minor: number; paid_back_minor: number; net_minor: number } };
+type Report = { options: FilterOptions; meta: Meta & { period: { preset: string; from: string; to: string } }; rows: Row[]; totals: { received_minor: number; paid_back_minor: number; net_minor: number } };
 
 export default function PaymentsPage({ context, report: r }: { context: { currency: string }; report: Report }) {
     const { t } = useTranslation();
     const format = useFormatters();
-    const q = new URLSearchParams({ from: r.meta.period.from, to: r.meta.period.to }).toString();
+    const filters = useReportFilters();
+    const q = new URLSearchParams({ from: r.meta.period.from, to: r.meta.period.to, ...filters.values }).toString();
     const method = (m: string) => (['cash', 'qris', 'card', 'bank_transfer', 'online'].includes(m) ? t(`fo.folio.method.${m}` as 'fo.folio.method.cash') : m);
 
     return (
         <ReportingShell description={t('rpt.pay.description')} title={t('rpt.pay.title')}>
-            <PeriodPicker from={r.meta.period.from} path="/reports/payments" preset={r.meta.period.preset} to={r.meta.period.to} />
+            <PeriodPicker extra={filters.values} from={r.meta.period.from} path="/reports/payments" preset={r.meta.period.preset} to={r.meta.period.to} />
+            <ReportFilterBar options={r.options} path="/reports/payments" />
             <div className="flex flex-wrap gap-2 print:hidden">
                 <Button asChild size="sm" variant="outline"><a href={`/reports/payments/export?${q}`}>{t('rpt.export.csv')}</a></Button>
                 <Button asChild size="sm" variant="outline"><a href={`/reports/payments/export?${q}&format=pdf`}>{t('rpt.export.pdf')}</a></Button>

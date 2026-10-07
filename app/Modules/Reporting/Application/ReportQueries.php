@@ -40,6 +40,21 @@ interface ReportQueries
     public function revenue(PropertyId $property, ReportPeriod $period, ?RevenueScope $scope = null, ?string $userId = null): array;
 
     /**
+     * The same revenue, one row for each posting source (FR-RPT-002): the rooms (`night_audit`), the laundry, each outlet's sales (`pos_` and the outlet's code in lower case) and
+     * anything else, with the kind the source belongs to.
+     *
+     * @return list<array{source: string, kind: string, outlet: ?string, base: int, service_charge: int, tax: int, total: int}>
+     */
+    public function revenueBySource(PropertyId $property, ReportPeriod $period, ?RevenueScope $scope = null, ?string $userId = null): array;
+
+    /**
+     * The F&B outlets of the property, by code, for a screen to offer as a filter.
+     *
+     * @return list<array{id: string, code: string, name: string}>
+     */
+    public function fnbOutlets(PropertyId $property): array;
+
+    /**
      * The codes of the F&B outlets with these ids, by id; an id that is not an outlet of the property is left out.
      *
      * @param  list<string>  $ids
@@ -107,7 +122,7 @@ interface ReportQueries
      * @param  list<string>  $actions
      * @return array<string, int> only the actions that happened
      */
-    public function auditActionCounts(PropertyId $property, DateTimeImmutable $fromUtc, DateTimeImmutable $toUtc, array $actions): array;
+    public function auditActionCounts(PropertyId $property, DateTimeImmutable $fromUtc, DateTimeImmutable $toUtc, array $actions, ?string $userId = null): array;
 
     /**
      * @param  array{actor_id?: ?string, module?: ?string, action?: ?string}  $filters

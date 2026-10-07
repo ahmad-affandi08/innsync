@@ -21,6 +21,7 @@ use App\Shared\Application\Security\StaffDirectory;
 use App\Shared\Application\Tenancy\PropertyContext;
 use App\Shared\Application\Tenancy\PropertyScopeViolation;
 use App\Shared\Application\Time\Clock;
+use App\Shared\Domain\Tenancy\DepartmentScope;
 use App\Shared\Domain\Tenancy\PropertyId;
 use App\Shared\Domain\Time\BusinessDate;
 use App\Shared\Domain\Time\CalendarDate;
@@ -50,8 +51,18 @@ final readonly class ReportService
      * that is not a policy. The report counts them and says nothing of who did them or of the guest.
      */
     public const NOTABLE_EVENTS = [
-        'fnb_bill.cancelled', 'fnb_line.voided', 'fnb_bill.refunded', 'fin_exception.raised', 'petty_voucher.voided',
-        'laundry_claim.recorded', 'laundry.order.escalated', 'work_order.escalated',
+        'fnb_bill.cancelled' => 'fnb', 'fnb_line.voided' => 'fnb', 'fnb_bill.refunded' => 'fnb', 'fin_exception.raised' => 'finance', 'petty_voucher.voided' => 'finance',
+        'laundry_claim.recorded' => 'laundry', 'laundry.order.escalated' => 'laundry', 'work_order.escalated' => 'maintenance',
+    ];
+
+    /**
+     * Which of the filters (FR-RPT-002) each report takes: the person who made what is counted, the department it belongs to and the F&B outlet it was sold at. A report
+     * takes a filter only where it has that dimension; a filter it does not take is refused, not ignored. The date range is taken by every report. The audit trail has its
+     * own filters by person and by module.
+     */
+    public const FILTERS = [
+        'flash' => ['user', 'department'], 'payments' => ['user'], 'laundry' => ['user'], 'housekeeping' => ['user'], 'registrations' => ['user'], 'foreign_guests' => ['user'],
+        'sales' => ['user', 'department', 'outlet'],
     ];
 
     /** Exports of personal data: they need the purpose and the right to export guests. */
@@ -62,6 +73,7 @@ final readonly class ReportService
         ['code' => 'flash', 'group' => 'management', 'permission' => self::VIEW_PERMISSION],
         ['code' => 'performance', 'group' => 'management', 'permission' => self::VIEW_PERMISSION],
         ['code' => 'comparison', 'group' => 'management', 'permission' => self::VIEW_PERMISSION],
+        ['code' => 'sales', 'group' => 'management', 'permission' => DashboardService::REVENUE_PERMISSION],
         ['code' => 'payments', 'group' => 'front_office', 'permission' => self::VIEW_PERMISSION],
         ['code' => 'obligations', 'group' => 'management', 'permission' => ObligationService::VIEW_PERMISSION],
         ['code' => 'laundry', 'group' => 'laundry', 'permission' => self::VIEW_PERMISSION],
@@ -115,10 +127,11 @@ final readonly class ReportService
      *
      * @return array<string, mixed>
      */
-    public function flash(PropertyId $property, string $actorId, ?string $preset, ?string $from, ?string $to): array
+    public function flash(PropertyId $property, string $actorId, ?string $preset, ?string $from, ?string $to, array $filters = []): array
     {
         $this->authorize($property, $actorId, self::VIEW_PERMISSION);
         $period = $this->period($property, $preset, $from, $to);
+        $filter = $this->filters($property, 'flash', $filters);
         $days = [];
         $totals = ['room_nights' => 0, 'revenue' => ['base' => 0, 'service_charge' => 0, 'tax' => 0, 'total' => 0], 'collected' => 0];
 
@@ -139,11 +152,12 @@ final readonly class ReportService
         }
 
         return [
-            'meta' => $this->meta('flash', $property, $period, [], ['night_audits (closed business days)']),
+            'meta' => $this->meta('flash', $property, $period, $this->filterMeta($property, $filter), ['night_audits (closed business days)', 'the costs and the events follow the department and person filters; the days do not']),
             'days' => $days,
             'totals' => $totals,
-            'costs' => $this->flashCosts($property, $actorId, $period),
-            'events' => $this->flashEvents($property, $period),
+            'costs' => $this->flashCosts($property, $actorId, $period, $filter['department']),
+            'events' => $this->flashEvents($property, $period, $filter['department'], $filter['user']),
+            'options' => $this->options($property, 'flash'),
         ];
     }
 
@@ -153,7 +167,7 @@ final readonly class ReportService
      *
      * @return array{available: bool, departments?: list<array<string, mixed>>, totals?: array<string, int>}
      */
-    private function flashCosts(PropertyId $property, string $actorId, ReportPeriod $period): array
+    private function flashCosts(PropertyId $property, string $actorId, ReportPeriod $period, ?string $department): array
     {
         if (! $this->permissions->allowsInProperty($actorId, FinanceAccess::REPORT_VIEW, $property)) {
             return ['available' => false];
@@ -165,12 +179,15 @@ final readonly class ReportService
             return ['available' => false];
         }
 
+        $rows = array_values(array_map(static fn (array $d): array => [
+            'department' => $d['department'], 'supplier_minor' => $d['expenses_minor'], 'petty_minor' => $d['petty_minor'], 'recurring_minor' => $d['recurring_minor'], 'stock_minor' => $d['stock_minor'], 'cost_total_minor' => $d['cost_total_minor'],
+        ], array_filter($pnl['departments'], static fn (array $d): bool => $d['cost_total_minor'] !== 0 && ($department === null || $d['department'] === $department))));
+        $sum = static fn (string $key): int => array_sum(array_column($rows, $key));
+
         return [
             'available' => true,
-            'departments' => array_values(array_map(static fn (array $d): array => [
-                'department' => $d['department'], 'supplier_minor' => $d['expenses_minor'], 'petty_minor' => $d['petty_minor'], 'recurring_minor' => $d['recurring_minor'], 'stock_minor' => $d['stock_minor'], 'cost_total_minor' => $d['cost_total_minor'],
-            ], array_filter($pnl['departments'], static fn (array $d): bool => $d['cost_total_minor'] !== 0))),
-            'totals' => ['supplier_minor' => $pnl['totals']['expenses_minor'], 'petty_minor' => $pnl['totals']['petty_minor'], 'recurring_minor' => $pnl['totals']['recurring_minor'], 'stock_minor' => $pnl['totals']['stock_minor'], 'cost_total_minor' => $pnl['totals']['cost_total_minor']],
+            'departments' => $rows,
+            'totals' => ['supplier_minor' => $sum('supplier_minor'), 'petty_minor' => $sum('petty_minor'), 'recurring_minor' => $sum('recurring_minor'), 'stock_minor' => $sum('stock_minor'), 'cost_total_minor' => $sum('cost_total_minor')],
         ];
     }
 
@@ -179,13 +196,14 @@ final readonly class ReportService
      *
      * @return list<array{action: string, count: int}>
      */
-    private function flashEvents(PropertyId $property, ReportPeriod $period): array
+    private function flashEvents(PropertyId $property, ReportPeriod $period, ?string $department, ?string $userId): array
     {
         $zone = $this->zones->forProperty($property) ?? throw Refusal::notFound('Property not found.');
-        $counts = $this->queries->auditActionCounts($property, $zone->utcAt(CalendarDate::fromString($period->from->toString())), $zone->utcAt(CalendarDate::fromString($period->to->next()->toString())), self::NOTABLE_EVENTS);
+        $actions = array_keys(array_filter(self::NOTABLE_EVENTS, static fn (string $owner): bool => $department === null || $owner === $department));
+        $counts = $this->queries->auditActionCounts($property, $zone->utcAt(CalendarDate::fromString($period->from->toString())), $zone->utcAt(CalendarDate::fromString($period->to->next()->toString())), $actions, $userId);
         $events = [];
 
-        foreach (self::NOTABLE_EVENTS as $action) {
+        foreach ($actions as $action) {
             if (($counts[$action] ?? 0) > 0) {
                 $events[] = ['action' => $action, 'count' => $counts[$action]];
             }
@@ -352,18 +370,20 @@ final readonly class ReportService
      *
      * @return array<string, mixed>
      */
-    public function housekeeping(PropertyId $property, string $actorId, ?string $preset, ?string $from, ?string $to): array
+    public function housekeeping(PropertyId $property, string $actorId, ?string $preset, ?string $from, ?string $to, array $filters = []): array
     {
         $this->authorize($property, $actorId, self::HOUSEKEEPING_PERMISSION);
+        $filter = $this->filters($property, 'housekeeping', $filters);
         $zone = $this->zones->forProperty($property) ?? throw Refusal::notFound('Property not found.');
         $period = $this->period($property, $preset, $from, $to);
-        $data = $this->queries->housekeepingProductivity($property, $zone->utcAt(CalendarDate::fromString($period->from->toString())), $zone->utcAt(CalendarDate::fromString($period->to->next()->toString())), $period);
+        $data = $this->queries->housekeepingProductivity($property, $zone->utcAt(CalendarDate::fromString($period->from->toString())), $zone->utcAt(CalendarDate::fromString($period->to->next()->toString())), $period, $filter['user']);
         $names = $this->staff->namesOf($property, array_column($data['staff'], 'user_id'));
         $average = static fn (int $seconds, int $rooms): int => $rooms === 0 ? 0 : intdiv($seconds, $rooms);
         $inspected = $data['inspections']['passed'] + $data['inspections']['rework'];
 
         return [
-            'meta' => $this->meta('housekeeping', $property, $period, [], ['housekeeping_tasks (finished, by clock date of the property)', 'room_inspections', 'hk_checklist_runs and completions (started in the period)']),
+            'meta' => $this->meta('housekeeping', $property, $period, $this->filterMeta($property, $filter), ['housekeeping_tasks (finished, by clock date of the property)', 'room_inspections', 'hk_checklist_runs and completions (started in the period)']),
+            'options' => $this->options($property, 'housekeeping'),
             'staff' => array_map(static fn (array $r): array => ['user_id' => $r['user_id'], 'name' => $names[$r['user_id']] ?? null, 'rooms' => $r['rooms'], 'average_seconds' => $average($r['seconds'], $r['rooms'])], $data['staff']),
             'kinds' => array_map(static fn (array $r): array => ['kind' => $r['kind'], 'rooms' => $r['rooms'], 'average_seconds' => $average($r['seconds'], $r['rooms'])], $data['kinds']),
             'totals' => ['rooms' => array_sum(array_column($data['kinds'], 'rooms')), 'average_seconds' => $average(array_sum(array_column($data['kinds'], 'seconds')), array_sum(array_column($data['kinds'], 'rooms')))],
@@ -373,9 +393,9 @@ final readonly class ReportService
     }
 
     /** @return array{filename: string, contents: string} */
-    public function exportHousekeeping(PropertyId $property, string $actorId, ?string $preset, ?string $from, ?string $to): array
+    public function exportHousekeeping(PropertyId $property, string $actorId, ?string $preset, ?string $from, ?string $to, array $filters = []): array
     {
-        $report = $this->housekeeping($property, $actorId, $preset, $from, $to);
+        $report = $this->housekeeping($property, $actorId, $preset, $from, $to, $filters);
         $contents = CsvWriter::build(['Person', 'Rooms cleaned', 'Average seconds per room'], array_map(static fn (array $r): array => [$r['name'] ?? $r['user_id'], $r['rooms'], $r['average_seconds']], $report['staff']));
         $this->recordExport($property, $actorId, 'housekeeping', $report['meta'], count($report['staff']), null, false);
 
@@ -389,9 +409,10 @@ final readonly class ReportService
      *
      * @return array<string, mixed>
      */
-    public function laundry(PropertyId $property, string $actorId, ?string $preset, ?string $from, ?string $to): array
+    public function laundry(PropertyId $property, string $actorId, ?string $preset, ?string $from, ?string $to, array $filters = []): array
     {
         $this->authorize($property, $actorId, self::VIEW_PERMISSION);
+        $filter = $this->filters($property, 'laundry', $filters);
         $zone = $this->zones->forProperty($property) ?? throw Refusal::notFound('Property not found.');
         $period = $this->period($property, $preset, $from, $to);
         $start = $zone->utcAt(CalendarDate::fromString($period->from->toString()));
@@ -400,7 +421,7 @@ final readonly class ReportService
         $blank = static fn (): array => ['received' => 0, 'pieces' => 0, 'express' => 0, 'ready' => 0, 'on_time' => 0, 'seconds' => 0, 'charged_minor' => 0, 'discrepancies' => 0, 'cancelled' => 0];
         $utc = static fn (string $v): \DateTimeImmutable => new \DateTimeImmutable($v, new \DateTimeZone('UTC'));
 
-        foreach ($this->queries->laundryOrders($property, $start, $end) as $o) {
+        foreach ($this->queries->laundryOrders($property, $start, $end, $filter['user']) as $o) {
             $created = $utc($o['created_at']);
 
             if ($created >= $start && $created < $end) {
@@ -440,21 +461,22 @@ final readonly class ReportService
         }
 
         return [
-            'meta' => $this->meta('laundry', $property, $period, [], ['laundry_orders (by the calendar date of the property when handed over and when ready)']),
+            'meta' => $this->meta('laundry', $property, $period, $this->filterMeta($property, $filter), ['laundry_orders (by the calendar date of the property when handed over and when ready)']),
             'rows' => array_map(static function (array $r): array {
                 unset($r['seconds']);
 
                 return $r;
             }, $rows),
             'totals' => [...array_diff_key($total, ['seconds' => 0]), 'average_seconds' => $total['ready'] === 0 ? null : intdiv($total['seconds'], $total['ready']), 'on_time_percent' => $total['ready'] === 0 ? null : intdiv($total['on_time'] * 100, $total['ready'])],
+            'options' => $this->options($property, 'laundry'),
             'cost_note' => 'Cost per kilogram is not part of this report: the weight of laundry and laundry costs are not recorded.',
         ];
     }
 
     /** @return array{filename: string, contents: string} */
-    public function exportLaundry(PropertyId $property, string $actorId, ?string $preset, ?string $from, ?string $to): array
+    public function exportLaundry(PropertyId $property, string $actorId, ?string $preset, ?string $from, ?string $to, array $filters = []): array
     {
-        $report = $this->laundry($property, $actorId, $preset, $from, $to);
+        $report = $this->laundry($property, $actorId, $preset, $from, $to, $filters);
         $contents = CsvWriter::build(
             ['Date', 'Orders received', 'Pieces', 'Express', 'Orders ready', 'Ready on time', 'Average seconds to ready', 'Charged (minor units)', 'With a difference', 'Cancelled'],
             array_map(static fn (array $r): array => [$r['date'], $r['received'], $r['pieces'], $r['express'], $r['ready'], $r['on_time'], $r['average_seconds'], $r['charged_minor'], $r['discrepancies'], $r['cancelled']], $report['rows']),
@@ -557,14 +579,16 @@ final readonly class ReportService
     }
 
     /** @return array<string, mixed> */
-    public function payments(PropertyId $property, string $actorId, ?string $preset, ?string $from, ?string $to): array
+    public function payments(PropertyId $property, string $actorId, ?string $preset, ?string $from, ?string $to, array $filters = []): array
     {
         $this->authorize($property, $actorId, self::VIEW_PERMISSION);
         $period = $this->period($property, $preset, $from, $to);
-        $rows = $this->queries->paymentsByMethod($property, $period);
+        $filter = $this->filters($property, 'payments', $filters);
+        $rows = $this->queries->paymentsByMethod($property, $period, $filter['user']);
 
         return [
-            'meta' => $this->meta('payments', $property, $period, [], ['folio_postings (payments, refunds and their reversals, by business date)']),
+            'meta' => $this->meta('payments', $property, $period, $this->filterMeta($property, $filter), ['folio_postings (payments, refunds and their reversals, by business date)']),
+            'options' => $this->options($property, 'payments'),
             'rows' => $rows,
             'totals' => ['received_minor' => array_sum(array_column($rows, 'received_minor')), 'paid_back_minor' => array_sum(array_column($rows, 'paid_back_minor')), 'net_minor' => array_sum(array_column($rows, 'net_minor'))],
         ];
@@ -576,17 +600,18 @@ final readonly class ReportService
      *
      * @return array<string, mixed>
      */
-    public function registrations(PropertyId $property, string $actorId, ?string $preset, ?string $from, ?string $to, ?string $nationality, bool $foreignOnly): array
+    public function registrations(PropertyId $property, string $actorId, ?string $preset, ?string $from, ?string $to, ?string $nationality, bool $foreignOnly, array $filters = []): array
     {
         $this->authorize($property, $actorId, self::GUESTS_PERMISSION);
         $period = $this->period($property, $preset, $from, $to);
+        $filter = $this->filters($property, $foreignOnly ? 'foreign_guests' : 'registrations', $filters);
         $nationality = $nationality === null || trim($nationality) === '' ? null : strtoupper(trim($nationality));
 
         if ($nationality !== null && preg_match('/^[A-Z]{2}$/D', $nationality) !== 1) {
             throw Refusal::invalid('Nationality is a two-letter country code.', ['nationality']);
         }
 
-        $rows = $this->queries->registrations($property, $period, $nationality, $foreignOnly);
+        $rows = $this->queries->registrations($property, $period, $nationality, $foreignOnly, $filter['user']);
         $clear = $this->permissions->allowsInProperty($actorId, self::IDENTITY_PERMISSION, $property);
         $code = $foreignOnly ? 'foreign_guests' : 'registrations';
 
@@ -597,8 +622,9 @@ final readonly class ReportService
         $rows = array_map(static fn (array $r): array => $clear ? $r : [...$r, 'id_number' => self::mask($r['id_number']), 'visa_number' => $r['visa_number'] === null ? null : self::mask($r['visa_number']), 'address' => null], $rows);
 
         return [
-            'meta' => $this->meta($code, $property, $period, array_filter(['nationality' => $nationality, 'foreign_only' => $foreignOnly ? 'yes' : null]), ['stays and guests (registered at check-in)']),
+            'meta' => $this->meta($code, $property, $period, [...array_filter(['nationality' => $nationality, 'foreign_only' => $foreignOnly ? 'yes' : null]), ...$this->filterMeta($property, $filter)], ['stays and guests (registered at check-in)']),
             'identity_visible' => $clear,
+            'options' => $this->options($property, $code),
             'rows' => $rows,
         ];
     }
@@ -609,7 +635,7 @@ final readonly class ReportService
      *
      * @return array{filename: string, contents: string}
      */
-    public function exportRegistrations(PropertyId $property, string $actorId, ?string $preset, ?string $from, ?string $to, ?string $nationality, bool $foreignOnly, string $purpose): array
+    public function exportRegistrations(PropertyId $property, string $actorId, ?string $preset, ?string $from, ?string $to, ?string $nationality, bool $foreignOnly, string $purpose, array $filters = []): array
     {
         $this->authorize($property, $actorId, self::GUESTS_EXPORT_PERMISSION);
 
@@ -617,7 +643,7 @@ final readonly class ReportService
             throw Refusal::invalid('State why this is exported, at most 300 characters.', ['purpose']);
         }
 
-        $report = $this->registrations($property, $actorId, $preset, $from, $to, $nationality, $foreignOnly);
+        $report = $this->registrations($property, $actorId, $preset, $from, $to, $nationality, $foreignOnly, $filters);
         $code = $foreignOnly ? 'foreign_guests' : 'registrations';
         $contents = CsvWriter::build(
             ['Reservation', 'Room', 'Full name', 'Nationality', 'Identity type', 'Identity number', 'Valid until', 'Visa number', 'Adults', 'Children', 'Address', 'Checked in', 'Expected departure', 'Checked out'],
@@ -630,9 +656,9 @@ final readonly class ReportService
     }
 
     /** @return array{filename: string, contents: string} */
-    public function exportPayments(PropertyId $property, string $actorId, ?string $preset, ?string $from, ?string $to): array
+    public function exportPayments(PropertyId $property, string $actorId, ?string $preset, ?string $from, ?string $to, array $filters = []): array
     {
-        $report = $this->payments($property, $actorId, $preset, $from, $to);
+        $report = $this->payments($property, $actorId, $preset, $from, $to, $filters);
         $contents = CsvWriter::build(['Payment method', 'Received (minor units)', 'Paid back (minor units)', 'Net (minor units)', 'Postings'], array_map(static fn (array $r): array => [$r['method'], $r['received_minor'], $r['paid_back_minor'], $r['net_minor'], $r['count']], $report['rows']));
         $this->recordExport($property, $actorId, 'payments', $report['meta'], count($report['rows']), null, false);
 
@@ -640,9 +666,9 @@ final readonly class ReportService
     }
 
     /** @return array{filename: string, contents: string} */
-    public function exportFlash(PropertyId $property, string $actorId, ?string $preset, ?string $from, ?string $to): array
+    public function exportFlash(PropertyId $property, string $actorId, ?string $preset, ?string $from, ?string $to, array $filters = []): array
     {
-        $report = $this->flash($property, $actorId, $preset, $from, $to);
+        $report = $this->flash($property, $actorId, $preset, $from, $to, $filters);
         $contents = CsvWriter::build(
             ['Business date', 'Occupancy (basis points)', 'Rooms in house', 'Rooms', 'Arrivals', 'Departures', 'Room nights', 'Room revenue base (minor units)', 'ADR (minor units)', 'Net charges (minor units)', 'Collected (minor units)'],
             array_map(static fn (array $d): array => [$d['business_date'], $d['occupancy_bp'], $d['in_house'], $d['rooms_total'], $d['arrivals'], $d['departures'], $d['room_nights'], $d['room_revenue_minor'], $d['adr_minor'], $d['revenue']['total'], $d['collected']], $report['days']),
@@ -710,7 +736,154 @@ final readonly class ReportService
         return ['currency' => $this->currencies->currencyOf($property), 'business_date' => $this->businessDate->current($property)->toString()];
     }
 
+    /**
+     * Sales by outlet (FR-RPT-002, FR-DSH-004, FR-FIN-002): what each outlet sold in the period, with the rooms and the laundry, as base, service charge and tax, for those who see the
+     * revenue. It is where all the filters of a report meet: by the F&B outlet, by the department that owns the revenue (SCOPE-MODEL.md), and by the person who posted or settled it.
+     *
+     * @param  array<string, ?string>  $filters  `outlet` (an F&B outlet id), `department`, `user`
+     * @return array<string, mixed>
+     */
+    public function sales(PropertyId $property, string $actorId, ?string $preset, ?string $from, ?string $to, array $filters = []): array
+    {
+        $this->authorize($property, $actorId, DashboardService::REVENUE_PERMISSION);
+        $period = $this->period($property, $preset, $from, $to);
+        $filter = $this->filters($property, 'sales', $filters);
+        $scope = null;
+
+        if ($filter['department'] !== null) {
+            $scope = RevenueScope::of([$filter['department']], []);
+        }
+
+        if ($filter['outlet'] !== null) {
+            $outlet = RevenueScope::of([], array_values($this->queries->fnbOutletCodes($property, [$filter['outlet']])));
+            $scope = $scope === null ? $outlet : $scope->narrowedBy($outlet);
+        }
+
+        $outlets = array_column($this->queries->fnbOutlets($property), 'name', 'code');
+        $rows = [];
+        $totals = ['base' => 0, 'service_charge' => 0, 'tax' => 0, 'total' => 0];
+
+        foreach ($this->queries->revenueBySource($property, $period, $scope, $filter['user']) as $r) {
+            // An F&B outlet's sales carry the source `pos_` and its code in lower case: they are shown under the outlet, whether or not the owner grouped them under a revenue outlet.
+            $code = str_starts_with($r['source'], 'pos_') ? strtoupper(substr($r['source'], 4)) : null;
+            $isOutlet = $code !== null && isset($outlets[$code]);
+            $rows[] = [
+                'code' => $isOutlet ? $code : $r['source'], 'name' => $isOutlet ? $outlets[$code] : ($r['source'] === 'night_audit' ? 'rooms' : $r['source']),
+                'kind' => $isOutlet ? 'outlet' : ($r['kind'] === 'outlet' ? 'outlet' : $r['kind']),
+                'base' => $r['base'], 'service_charge' => $r['service_charge'], 'tax' => $r['tax'], 'total' => $r['total'],
+            ];
+
+            foreach (array_keys($totals) as $key) {
+                $totals[$key] += $r[$key];
+            }
+        }
+
+        usort($rows, static fn (array $a, array $b): int => [$a['kind'] === 'outlet' ? 1 : 0, $a['code']] <=> [$b['kind'] === 'outlet' ? 1 : 0, $b['code']]);
+
+        return [
+            'meta' => $this->meta('sales', $property, $period, $this->filterMeta($property, $filter), ['folio_postings (charges and their reversals, by business date and posting source)', 'fin_pos_sales (outlet sales paid by cash, card or QRIS and not charged to a room)']),
+            'rows' => $rows,
+            'totals' => $totals,
+            'options' => $this->options($property, 'sales'),
+        ];
+    }
+
+    /** @return array{filename: string, contents: string} */
+    public function exportSales(PropertyId $property, string $actorId, ?string $preset, ?string $from, ?string $to, array $filters = []): array
+    {
+        $report = $this->sales($property, $actorId, $preset, $from, $to, $filters);
+        $contents = CsvWriter::build(
+            ['Code', 'Name', 'Kind', 'Base (minor units)', 'Service charge (minor units)', 'Tax (minor units)', 'Total (minor units)'],
+            array_map(static fn (array $r): array => [$r['code'], $r['name'], $r['kind'], $r['base'], $r['service_charge'], $r['tax'], $r['total']], $report['rows']),
+        );
+        $this->recordExport($property, $actorId, 'sales', $report['meta'], count($report['rows']), null, false);
+
+        return ['filename' => sprintf('sales-%s-%s.csv', $report['meta']['period']['from'], $report['meta']['period']['to']), 'contents' => $contents];
+    }
+
     // ---- internals ----
+
+    /**
+     * The filters of a report, checked (FR-RPT-002): only those the report takes, a person who works in the property, a department of the list and an F&B outlet of the
+     * property. An empty value is no filter.
+     *
+     * @param  array<string, ?string>  $filters
+     * @return array{user: ?string, department: ?string, outlet: ?string}
+     */
+    private function filters(PropertyId $property, string $report, array $filters): array
+    {
+        $allowed = self::FILTERS[$report] ?? [];
+        $clean = ['user' => null, 'department' => null, 'outlet' => null];
+
+        foreach (array_keys($clean) as $name) {
+            $value = $filters[$name] ?? null;
+
+            if ($value === null || trim($value) === '') {
+                continue;
+            }
+
+            if (! in_array($name, $allowed, true)) {
+                throw Refusal::invalid('This report has no filter by '.$name.'.', [$name]);
+            }
+
+            $value = $name === 'department' ? trim($value) : strtolower(trim($value));
+            $valid = match ($name) {
+                'user' => in_array($value, array_column($this->staff->members($property), 'id'), true),
+                'department' => in_array($value, DepartmentScope::DEPARTMENTS, true),
+                'outlet' => $this->queries->fnbOutletCodes($property, [$value]) !== [],
+            };
+
+            if (! $valid) {
+                throw Refusal::invalid('Choose a '.$name.' of this property.', [$name]);
+            }
+
+            $clean[$name] = $value;
+        }
+
+        return $clean;
+    }
+
+    /**
+     * The filters as the meta of a report states them: a person by name, a department by its code and an outlet by its code.
+     *
+     * @param  array{user: ?string, department: ?string, outlet: ?string}  $filter
+     * @return array<string, string>
+     */
+    private function filterMeta(PropertyId $property, array $filter): array
+    {
+        $meta = [];
+
+        if ($filter['user'] !== null) {
+            $meta['user'] = $this->staff->namesOf($property, [$filter['user']])[$filter['user']] ?? $filter['user'];
+        }
+
+        if ($filter['department'] !== null) {
+            $meta['department'] = $filter['department'];
+        }
+
+        if ($filter['outlet'] !== null) {
+            $meta['outlet'] = $this->queries->fnbOutletCodes($property, [$filter['outlet']])[$filter['outlet']] ?? $filter['outlet'];
+        }
+
+        return $meta;
+    }
+
+    /**
+     * What a screen needs to offer the filters a report takes.
+     *
+     * @return array{filters: list<string>, staff: list<array{id: string, name: string}>, departments: list<string>, outlets: list<array{id: string, code: string, name: string}>}
+     */
+    private function options(PropertyId $property, string $report): array
+    {
+        $takes = self::FILTERS[$report] ?? [];
+
+        return [
+            'filters' => $takes,
+            'staff' => in_array('user', $takes, true) ? $this->staff->members($property) : [],
+            'departments' => in_array('department', $takes, true) ? DepartmentScope::DEPARTMENTS : [],
+            'outlets' => in_array('outlet', $takes, true) ? $this->queries->fnbOutlets($property) : [],
+        ];
+    }
 
     /** @param array<string, mixed> $filters @param list<string> $sources @return array<string, mixed> */
     private function meta(string $code, PropertyId $property, ReportPeriod $period, array $filters, array $sources): array

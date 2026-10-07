@@ -2,12 +2,13 @@ import { Button } from '@/components/ui/button';
 import { DataGrid, type DataGridColumn } from '@/components/ui/data-grid';
 import { EmptyState } from '@/components/ui/empty-state';
 import { PeriodPicker } from '@/modules/reporting/components/period-picker';
+import { ReportFilterBar, useReportFilters, type FilterOptions } from '@/modules/reporting/components/report-filters';
 import { ReportMeta, type Meta } from '@/modules/reporting/components/report-meta';
 import { ReportingShell } from '@/modules/reporting/components/reporting-shell';
 import { useFormatters, useTranslation } from '@/shared/i18n/i18n';
 
 type Row = { received: number; pieces: number; express: number; ready: number; on_time: number; average_seconds: number | null; charged_minor: number; discrepancies: number; cancelled: number };
-type Report = {
+type Report = { options: FilterOptions;
     meta: Meta & { period: { preset: string; from: string; to: string } };
     rows: (Row & { date: string })[];
     totals: Row & { on_time_percent: number | null };
@@ -17,7 +18,8 @@ type Report = {
 export default function LaundryReportPage({ context, report: r }: { context: { currency: string }; report: Report }) {
     const { t } = useTranslation();
     const format = useFormatters();
-    const q = new URLSearchParams({ from: r.meta.period.from, to: r.meta.period.to }).toString();
+    const filters = useReportFilters();
+    const q = new URLSearchParams({ from: r.meta.period.from, to: r.meta.period.to, ...filters.values }).toString();
     const minutes = (seconds: number | null) => (seconds === null ? '—' : t('rpt.ldy.minutes', { minutes: format.number(Math.round(seconds / 60)) }));
     const col = (k: string) => t(`rpt.ldy.col.${k}` as 'rpt.ldy.col.date');
     const columns: DataGridColumn<Report['rows'][number]>[] = [
@@ -35,7 +37,8 @@ export default function LaundryReportPage({ context, report: r }: { context: { c
 
     return (
         <ReportingShell description={t('rpt.ldy.description')} title={t('rpt.ldy.title')} wide>
-            <PeriodPicker from={r.meta.period.from} path="/reports/laundry" preset={r.meta.period.preset} to={r.meta.period.to} />
+            <PeriodPicker extra={filters.values} from={r.meta.period.from} path="/reports/laundry" preset={r.meta.period.preset} to={r.meta.period.to} />
+            <ReportFilterBar options={r.options} path="/reports/laundry" />
             <div className="flex flex-wrap gap-2 print:hidden">
                 <Button asChild size="sm" variant="outline"><a href={`/reports/laundry/export?${q}`}>{t('rpt.export.csv')}</a></Button>
                 <Button asChild size="sm" variant="outline"><a href={`/reports/laundry/export?${q}&format=pdf`}>{t('rpt.export.pdf')}</a></Button>

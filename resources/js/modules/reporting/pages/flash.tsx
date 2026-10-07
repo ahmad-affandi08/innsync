@@ -3,19 +3,21 @@ import { DataGrid, type DataGridColumn } from '@/components/ui/data-grid';
 import { EmptyState } from '@/components/ui/empty-state';
 import type { MessageKey } from '@/locales/en/index';
 import { PeriodPicker } from '@/modules/reporting/components/period-picker';
+import { ReportFilterBar, useReportFilters, type FilterOptions } from '@/modules/reporting/components/report-filters';
 import { ReportMeta, type Meta } from '@/modules/reporting/components/report-meta';
 import { ReportingShell } from '@/modules/reporting/components/reporting-shell';
 import { useFormatters, useTranslation } from '@/shared/i18n/i18n';
 
 type Day = { business_date: string; occupancy_bp: number; in_house: number; rooms_total: number; arrivals: number; departures: number; room_nights: number; adr_minor: number; revenue: { total: number }; collected: number };
-type Report = { meta: Meta & { period: { preset: string; from: string; to: string } }; days: Day[]; totals: { room_nights: number; revenue: { total: number }; collected: number }; costs: Costs; events: { action: string; count: number }[] };
+type Report = { options: FilterOptions; meta: Meta & { period: { preset: string; from: string; to: string } }; days: Day[]; totals: { room_nights: number; revenue: { total: number }; collected: number }; costs: Costs; events: { action: string; count: number }[] };
 type CostRow = { department: string; supplier_minor: number; petty_minor: number; recurring_minor: number; stock_minor: number; cost_total_minor: number };
 type Costs = { available: false } | { available: true; departments: CostRow[]; totals: Omit<CostRow, 'department'> };
 
 export default function FlashPage({ context, report: r }: { context: { currency: string }; report: Report }) {
     const { t } = useTranslation();
     const format = useFormatters();
-    const q = new URLSearchParams({ from: r.meta.period.from, to: r.meta.period.to }).toString();
+    const filters = useReportFilters();
+    const q = new URLSearchParams({ from: r.meta.period.from, to: r.meta.period.to, ...filters.values }).toString();
 
     const money = (minor: number) => format.money(minor, context.currency);
     const costColumns = (totals: Omit<CostRow, 'department'>): DataGridColumn<CostRow>[] => [
@@ -39,7 +41,8 @@ export default function FlashPage({ context, report: r }: { context: { currency:
 
     return (
         <ReportingShell description={t('rpt.flash.description')} title={t('rpt.flash.title')} wide>
-            <PeriodPicker from={r.meta.period.from} path="/reports/flash" preset={r.meta.period.preset} to={r.meta.period.to} />
+            <PeriodPicker extra={filters.values} from={r.meta.period.from} path="/reports/flash" preset={r.meta.period.preset} to={r.meta.period.to} />
+            <ReportFilterBar options={r.options} path="/reports/flash" />
             <div className="flex flex-wrap gap-2 print:hidden">
                 <Button asChild size="sm" variant="outline"><a href={`/reports/flash/export?${q}`}>{t('rpt.export.csv')}</a></Button>
                 <Button asChild size="sm" variant="outline"><a href={`/reports/flash/export?${q}&format=pdf`}>{t('rpt.export.pdf')}</a></Button>

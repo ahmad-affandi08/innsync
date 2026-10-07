@@ -8,6 +8,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
 import { PeriodPicker } from '@/modules/reporting/components/period-picker';
+import { ReportFilterBar, useReportFilters, type FilterOptions } from '@/modules/reporting/components/report-filters';
 import { ReportMeta, type Meta } from '@/modules/reporting/components/report-meta';
 import { ReportingShell } from '@/modules/reporting/components/reporting-shell';
 import { useFormatters, useTranslation } from '@/shared/i18n/i18n';
@@ -16,7 +17,7 @@ type Row = {
     stay_id: string; reservation: string; room: string; full_name: string; nationality: string; id_type: string; id_number: string; id_valid_until: string | null; visa_number: string | null;
     adults: number; children: number; address: string | null; checked_in: string; expected_departure: string; checked_out: string | null;
 };
-type Report = { meta: Meta & { period: { preset: string; from: string; to: string } }; identity_visible: boolean; rows: Row[] };
+type Report = { options: FilterOptions; meta: Meta & { period: { preset: string; from: string; to: string } }; identity_visible: boolean; rows: Row[] };
 
 export default function RegistrationsPage({ foreign, may_export, report: r }: { foreign: boolean; may_export: boolean; report: Report }) {
     const { t } = useTranslation();
@@ -24,7 +25,8 @@ export default function RegistrationsPage({ foreign, may_export, report: r }: { 
     const path = foreign ? '/reports/foreign-guests' : '/reports/registrations';
     const [nationality, setNationality] = useState(r.meta.filters.nationality ?? '');
     const [purpose, setPurpose] = useState('');
-    const query = new URLSearchParams({ from: r.meta.period.from, to: r.meta.period.to, ...(nationality !== '' ? { nationality } : {}), purpose }).toString();
+    const filters = useReportFilters();
+    const query = new URLSearchParams({ from: r.meta.period.from, to: r.meta.period.to, ...(nationality !== '' ? { nationality } : {}), ...filters.values, purpose }).toString();
 
     const columns: DataGridColumn<Row>[] = [
         { id: 'room', label: t('rpt.reg.col.room'), value: (row) => row.room, rowHeader: true },
@@ -42,9 +44,10 @@ export default function RegistrationsPage({ foreign, may_export, report: r }: { 
 
     return (
         <ReportingShell description={t('rpt.reg.description')} title={foreign ? t('rpt.reg.foreignTitle') : t('rpt.reg.title')} wide>
-            <PeriodPicker extra={nationality !== '' ? { nationality } : {}} from={r.meta.period.from} path={path} preset={r.meta.period.preset} to={r.meta.period.to} />
+            <PeriodPicker extra={{ ...(nationality !== '' ? { nationality } : {}), ...filters.values }} from={r.meta.period.from} path={path} preset={r.meta.period.preset} to={r.meta.period.to} />
+            <ReportFilterBar options={r.options} path={path} />
             {!foreign && (
-                <form className="flex flex-wrap items-end gap-3 print:hidden" onSubmit={(e) => { e.preventDefault(); router.get(path, { from: r.meta.period.from, to: r.meta.period.to, ...(nationality !== '' ? { nationality } : {}) }); }}>
+                <form className="flex flex-wrap items-end gap-3 print:hidden" onSubmit={(e) => { e.preventDefault(); router.get(path, { from: r.meta.period.from, to: r.meta.period.to, ...(nationality !== '' ? { nationality } : {}), ...filters.values }); }}>
                     <FormField label={t('rpt.reg.nationality')}><Input maxLength={2} onChange={(e) => setNationality(e.target.value.toUpperCase())} value={nationality} /></FormField>
                     <Button type="submit" variant="outline">{t('rpt.period.apply')}</Button>
                 </form>

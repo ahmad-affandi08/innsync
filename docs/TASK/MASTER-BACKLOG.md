@@ -245,7 +245,7 @@
 | TASK-FIN-036 | FR-FIN-036 | Finance | Wajib | REVIEW |
 | TASK-FIN-037 | FR-FIN-037 | Finance | Wajib | REVIEW |
 | TASK-RPT-001 | FR-RPT-001 | Reporting & Analytics | Wajib | REVIEW |
-| TASK-RPT-002 | FR-RPT-002 | Reporting & Analytics | Wajib | IN_PROGRESS |
+| TASK-RPT-002 | FR-RPT-002 | Reporting & Analytics | Wajib | REVIEW |
 | TASK-RPT-003 | FR-RPT-003 | Reporting & Analytics | Wajib | REVIEW |
 | TASK-RPT-004 | FR-RPT-004 | Reporting & Analytics | Sebaiknya | REVIEW |
 | TASK-RPT-005 | FR-RPT-005 | Reporting & Analytics | Wajib | REVIEW |

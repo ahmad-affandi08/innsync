@@ -30,7 +30,7 @@ The response says which scope each card was limited to, so the screen can say so
 
 ## What the reports do with it
 
-A report takes optional filters for the date range, the outlet, the department and the person, as the PRD asks (FR-RPT-002). A filter is offered only where the report has that dimension, and an unknown value is refused, not ignored. The filters narrow what a person who may see the whole report sees; they never widen it. Reading the grants of a limited person into the reports is not done: a report is for those who hold its permission at property scope.
+A report takes optional filters for the date range, the outlet, the department and the person, as the PRD asks (FR-RPT-002). A filter is offered only where the report has that dimension (`ReportService::FILTERS`), and a filter a report does not take, or a value that is not of the property, is refused, not ignored. The filters narrow what a person who may see the whole report sees; they never widen it. The department of a sale is read as the dashboard reads it (the table above), and an outlet is an F&B outlet. A report is for those who hold its permission at property scope: the reading of a limited grant is done by the dashboard only.
 
 ## What is not done
 

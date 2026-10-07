@@ -6,6 +6,7 @@ Release notes for every release (NFR-14). Newest first. Each entry names the tas
 
 ### Added
 
+- TASK-RPT-002 (FR-RPT-002): the reports filter by person, department and outlet where they have that dimension and refuse a filter they do not take; the flash, payments, laundry, housekeeping and guest registration reports take the person (the flash report also the department), and a new report, Sales by outlet, takes outlet, department and person together. The filters stay with the period and go with the exports.
 - TASK-DSH-022 (FR-DSH-022, NFR-06): the dashboard applies the scope of a grant. A head of an outlet or of a department, with a role assigned at that scope, sees the cards that belong to it and only its part of the revenue, hours, staff, stock and alerts; the whole property sees everything as before (docs/OPERATIONS/SCOPE-MODEL.md).
 - TASK-LDY-012 (FR-LDY-012, FR-FO-038, BR-004): a guest can check out with laundry still in hand when each order is turned into a late charge (charged to the late folio when ready) or into a claim (the order leaves the laundry's work), with a mandatory recorded approval that names exactly those orders; the approval, the reason and the way out are kept and cannot be changed.
 - TASK-FIN-006 (FR-FIN-006): the postings that a person or a refund makes (supplier payments, receipts and notes, petty cash, cash deposits, corrections, finance exceptions, POS refunds) now keep the correlation ID of the request or message that made them, as the postings made from events already did.

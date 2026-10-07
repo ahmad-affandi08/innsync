@@ -75,6 +75,44 @@ final readonly class DatabaseReportQueries implements ReportQueries
             $result['outlets'][$code] = ['code' => $code, 'name' => $name, ...self::zero()];
         }
 
+        foreach ($this->revenueRows($property, $period, $scope, $userId, $named['sources']) as $row) {
+            $bucket = match ($row['kind']) {
+                'room', 'laundry', 'other' => $row['kind'],
+                default => null,
+            };
+
+            foreach (['base', 'service_charge', 'tax', 'total'] as $key) {
+                if ($bucket === null) {
+                    $result['outlets'][$row['outlet']][$key] += $row[$key];
+                } else {
+                    $result[$bucket][$key] += $row[$key];
+                }
+
+                $result['net'][$key] += $row[$key];
+            }
+        }
+
+        // A limited view names only the outlets that sold something it may see.
+        $outlets = $scope === null ? $result['outlets'] : array_filter($result['outlets'], static fn (array $o): bool => $o['total'] !== 0 || $o['base'] !== 0);
+        $result['outlets'] = array_values($outlets);
+
+        return $result;
+    }
+
+    public function revenueBySource(PropertyId $property, ReportPeriod $period, ?RevenueScope $scope = null, ?string $userId = null): array
+    {
+        return array_values($this->revenueRows($property, $period, $scope, $userId, $this->outletsBySource($property)['sources']));
+    }
+
+    /**
+     * What was posted as revenue in the period, one row for each posting source, with the kind it belongs to (`room`, `laundry`, `outlet` when the owner named an outlet for the
+     * source, or `other`), after the scope and the person are applied. The folio's charges and the outlet sales that were not charged to a room are added together.
+     *
+     * @param  array<string, string>  $outletOfSource  revenue outlet code by posting source
+     * @return array<string, array{source: string, kind: string, outlet: ?string, base: int, service_charge: int, tax: int, total: int}>
+     */
+    private function revenueRows(PropertyId $property, ReportPeriod $period, ?RevenueScope $scope, ?string $userId, array $outletOfSource): array
+    {
         $rows = DB::table('folio_postings')
             ->where('property_id', $property->toString())->whereBetween('business_date', [$period->from->toString(), $period->to->toString()])
             ->whereIn('entry_type', ['charge', 'reversal'])
@@ -89,37 +127,31 @@ final readonly class DatabaseReportQueries implements ReportQueries
             ->when($userId !== null, static fn ($q) => $q->where('actor_id', $userId))
             ->groupBy('source')
             ->get(['source', DB::raw('SUM(base_minor) as base'), DB::raw('SUM(service_charge_minor) as service_charge'), DB::raw('SUM(tax_minor) as tax'), DB::raw('SUM(total_minor) as total')]);
-        $rows = collect($rows->all())->concat($sales->all());
+        $out = [];
 
-        foreach ($rows as $row) {
-            $outlet = $named['sources'][$row->source] ?? null;
+        foreach (collect($rows->all())->concat($sales->all()) as $row) {
+            $source = (string) $row->source;
+            $outlet = $outletOfSource[$source] ?? null;
+            $kind = $source === 'night_audit' ? 'room' : ($source === 'laundry' ? 'laundry' : ($outlet === null ? 'other' : 'outlet'));
 
-            if ($scope !== null && ! $scope->allows($row->source === 'night_audit' ? 'room' : ($row->source === 'laundry' ? 'laundry' : ($outlet === null ? 'other' : 'outlet')), (string) $row->source)) {
+            if ($scope !== null && ! $scope->allows($kind, $source)) {
                 continue;
             }
 
-            $bucket = match ($row->source) {
-                'night_audit' => 'room',
-                'laundry' => 'laundry',
-                default => $outlet === null ? 'other' : null,
-            };
-
-            foreach (['base' => (int) $row->base, 'service_charge' => (int) $row->service_charge, 'tax' => (int) $row->tax, 'total' => (int) $row->total] as $key => $value) {
-                if ($bucket === null) {
-                    $result['outlets'][$outlet][$key] += $value;
-                } else {
-                    $result[$bucket][$key] += $value;
-                }
-
-                $result['net'][$key] += $value;
-            }
+            $out[$source] ??= ['source' => $source, 'kind' => $kind, 'outlet' => $outlet, 'base' => 0, 'service_charge' => 0, 'tax' => 0, 'total' => 0];
+            $out[$source]['base'] += (int) $row->base;
+            $out[$source]['service_charge'] += (int) $row->service_charge;
+            $out[$source]['tax'] += (int) $row->tax;
+            $out[$source]['total'] += (int) $row->total;
         }
 
-        // A limited view names only the outlets that sold something it may see.
-        $outlets = $scope === null ? $result['outlets'] : array_filter($result['outlets'], static fn (array $o): bool => $o['total'] !== 0 || $o['base'] !== 0);
-        $result['outlets'] = array_values($outlets);
+        return $out;
+    }
 
-        return $result;
+    public function fnbOutlets(PropertyId $property): array
+    {
+        return DB::table('fnb_outlets')->where('property_id', $property->toString())->orderBy('code')->get(['id', 'code', 'name'])
+            ->map(static fn ($o): array => ['id' => (string) $o->id, 'code' => (string) $o->code, 'name' => (string) $o->name])->all();
     }
 
     public function fnbOutletCodes(PropertyId $property, array $ids): array
@@ -374,14 +406,14 @@ final readonly class DatabaseReportQueries implements ReportQueries
             ->map(static fn ($r): array => ['business_date' => substr((string) $r->business_date, 0, 10), 'report' => json_decode((string) $r->report, true, 512, JSON_THROW_ON_ERROR)])->all();
     }
 
-    public function auditActionCounts(PropertyId $property, DateTimeImmutable $fromUtc, DateTimeImmutable $toUtc, array $actions): array
+    public function auditActionCounts(PropertyId $property, DateTimeImmutable $fromUtc, DateTimeImmutable $toUtc, array $actions, ?string $userId = null): array
     {
         if ($actions === []) {
             return [];
         }
 
         $rows = DB::table('audit_entries')->where('property_id', $property->toString())->where('occurred_at', '>=', $fromUtc)->where('occurred_at', '<', $toUtc)
-            ->whereIn('action', $actions)->groupBy('action')->selectRaw('action, COUNT(*) as n')->get();
+            ->whereIn('action', $actions)->when($userId !== null, static fn ($q) => $q->where('actor_id', $userId))->groupBy('action')->selectRaw('action, COUNT(*) as n')->get();
         $counts = [];
 
         foreach ($rows as $row) {
