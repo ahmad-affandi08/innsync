@@ -1819,6 +1819,16 @@
             "photo"
         ]
     },
+    "POST /fnb/menu/import": {
+        "required": [
+            "dry_run",
+            "file"
+        ],
+        "declared": [
+            "dry_run",
+            "file"
+        ]
+    },
     "POST /fnb/minibar/checks": {
         "required": [
             "lines",
@@ -3626,6 +3636,16 @@
             "user_id"
         ]
     },
+    "POST /hr/employees/import": {
+        "required": [
+            "dry_run",
+            "file"
+        ],
+        "declared": [
+            "dry_run",
+            "file"
+        ]
+    },
     "POST /hr/employees/{id}": {
         "required": [
             "contract_type",
@@ -4760,6 +4780,16 @@
             "tax_id"
         ]
     },
+    "POST /inventory/suppliers/import": {
+        "required": [
+            "dry_run",
+            "file"
+        ],
+        "declared": [
+            "dry_run",
+            "file"
+        ]
+    },
     "POST /inventory/suppliers/{id}": {
         "required": [
             "active",
@@ -5683,6 +5713,14 @@
             "property_id"
         ]
     },
+    "POST /property/messaging/{channel}/test": {
+        "required": [
+            "destination"
+        ],
+        "declared": [
+            "destination"
+        ]
+    },
     "POST /property/policies": {
         "required": [
             "cancel_free_days",
@@ -6109,6 +6147,18 @@
             "current_password",
             "password",
             "password_confirmation"
+        ]
+    },
+    "PUT /property/messaging/{channel}": {
+        "required": [
+            "enabled",
+            "provider"
+        ],
+        "declared": [
+            "enabled",
+            "provider",
+            "values",
+            "values.*"
         ]
     },
     "PUT /property/profile": {

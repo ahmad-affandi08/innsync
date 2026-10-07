@@ -1,3 +1,5 @@
+import { Link } from '@inertiajs/react';
+
 import { Alert } from '@/components/ui/alert';
 import { StatusBadge, type StatusTone } from '@/components/ui/status-badge';
 import type { MessageKey } from '@/locales/en/index';
@@ -56,7 +58,7 @@ export default function SystemStatusPage({ status, checks, backup, environment }
 
             <section aria-labelledby="sys-env" className="flex flex-col gap-3">
                 <h2 className="text-lg font-semibold" id="sys-env">{t('sys.env.title')}</h2>
-                {!environment.mail_delivers ? <Alert title={t('sys.env.mailTitle')} tone="warning">{t('sys.env.mailHint')}</Alert> : <Alert title={t('sys.env.mailOk')} tone="success" />}
+                {!environment.mail_delivers ? <Alert title={t('sys.env.mailTitle')} tone="warning">{t('sys.env.mailHint')} <Link className="font-medium underline underline-offset-2" href="/property/messaging">{t('msg.nav')}</Link></Alert> : <Alert title={t('sys.env.mailOk')} tone="success" />}
                 {environment.production && !environment.debug_off ? <Alert title={t('sys.env.debugTitle')} tone="danger">{t('sys.env.debugHint')}</Alert> : null}
                 <p className="text-sm text-muted-foreground">{t('sys.env.version', { version: environment.version })}</p>
             </section>

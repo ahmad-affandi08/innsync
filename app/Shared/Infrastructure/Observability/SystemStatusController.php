@@ -6,6 +6,7 @@ namespace App\Shared\Infrastructure\Observability;
 
 use App\Shared\Application\Observability\Health\RunHealthChecks;
 use App\Shared\Infrastructure\Backup\BackupRunLog;
+use App\Shared\Application\Messaging\MessagingSettings;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -15,7 +16,7 @@ use Inertia\Response;
  */
 final readonly class SystemStatusController
 {
-    public function __construct(private RunHealthChecks $checks, private BackupRunLog $backups) {}
+    public function __construct(private RunHealthChecks $checks, private BackupRunLog $backups, private MessagingSettings $messaging) {}
 
     public function show(): Response
     {
@@ -29,7 +30,7 @@ final readonly class SystemStatusController
             'environment' => [
                 'version' => (string) config('app.version'),
                 // What a person can fix without a developer: mail that goes nowhere, debug left on in production.
-                'mail_delivers' => ! in_array($mailer, ['log', 'array', 'null'], true),
+                'mail_delivers' => ($this->messaging->get('email')?->enabled ?? false) || ! in_array($mailer, ['log', 'array', 'null'], true),
                 'debug_off' => ! (bool) config('app.debug'),
                 'production' => app()->environment('production'),
             ],

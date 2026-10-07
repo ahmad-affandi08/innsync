@@ -160,6 +160,7 @@ export const PROPERTY_LINKS: readonly NavLink[] = [
     { href: '/access/roles', label: 'acc.nav.roles' },
     { href: '/sync/exceptions', label: 'sync.nav' },
     { href: '/property/system', label: 'sys.nav' },
+    { href: '/property/messaging', label: 'msg.nav' },
 ];
 
 export const REPORT_LINKS: readonly NavLink[] = [

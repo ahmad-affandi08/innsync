@@ -330,7 +330,14 @@ use App\Shared\Application\Integration\WebhookProtocol;
 use App\Shared\Application\Integration\WebhookReceiptStore;
 use App\Shared\Application\Integration\WebhookReceiver;
 use App\Shared\Application\Localization\LocaleNegotiator;
+use App\Shared\Application\Messaging\MessageTransport;
+use App\Shared\Application\Messaging\MessagingSettings;
 use App\Shared\Application\Notifications\EmailNotifier;
+use App\Shared\Application\Notifications\WhatsAppNotifier;
+use App\Shared\Infrastructure\Messaging\ConfiguredEmailNotifier;
+use App\Shared\Infrastructure\Messaging\ConfiguredWhatsAppNotifier;
+use App\Shared\Infrastructure\Messaging\DatabaseMessagingSettings;
+use App\Shared\Infrastructure\Messaging\HttpMessageTransport;
 use App\Shared\Application\Observability\CorrelationId;
 use App\Shared\Application\Observability\Health\AlertNotifier;
 use App\Shared\Application\Observability\Health\AlertStore;
@@ -645,7 +652,10 @@ class AppServiceProvider extends ServiceProvider
             (int) config('integrations.webhooks.max_body_bytes'),
         ));
         $this->app->bind(SyncExceptionRepository::class, DatabaseSyncExceptionRepository::class);
-        $this->app->bind(EmailNotifier::class, MailEmailNotifier::class);
+        $this->app->bind(EmailNotifier::class, ConfiguredEmailNotifier::class);
+        $this->app->bind(WhatsAppNotifier::class, ConfiguredWhatsAppNotifier::class);
+        $this->app->bind(MessagingSettings::class, DatabaseMessagingSettings::class);
+        $this->app->bind(MessageTransport::class, HttpMessageTransport::class);
         $this->app->bind(DeviceStatusRepository::class, DatabaseDeviceStatusRepository::class);
         $this->app->bind(UnexpectedFailureReporter::class, ReportingFailureReporter::class);
         $this->app->singleton(OfflineHandlerRegistry::class, static fn ($app): OfflineHandlerRegistry => new ConfiguredHandlerRegistry(

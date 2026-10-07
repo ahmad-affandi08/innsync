@@ -27,6 +27,14 @@ How InnSYnc talks to the outside world (`TASK-FND-020`, `NFR-25`, `NFR-28`, `NFR
 - Bodies over 256 KB get `413`. Refusals for a known provider are security events (`integration.webhook.refused`) with a reason code and no secret or body.
 - Stored callbacks can be payment evidence, so they are retained like `financial_record` (10 years) and are not purged by `retention:purge`.
 
+## Email and WhatsApp keys are set on screen (owner decision 2026-10-07)
+
+The owner decided that email and WhatsApp are chosen and filled in on screen (**Property settings → Email and WhatsApp**, `/property/messaging`), not in the server's `.env`. This is the one exception to "secrets live only in the environment": the provider keys of these two channels are stored in `messaging_channels`, encrypted with the application key (`APP_KEY`), shown to nobody after saving (a saved key reads "saved"; an empty field on a later save keeps it), changed only by a person who holds `property.settings.manage` after a password confirmation, and audited by what changed, never by the key. If `APP_KEY` is lost or replaced, the saved keys cannot be read and the channel reads as not set up; fill them in again. One setting serves the whole installation. Payment gateway and accounting keys stay in the environment.
+
+Providers: email by SMTP, Resend, Brevo, Mailgun, Postmark, SendGrid; WhatsApp by the official Meta WhatsApp Cloud API and Twilio, and by the non-official gateways Fonnte, Wablas and an own HTTP gateway. All use Laravel's own HTTP client and mailer; no package was added. The non-official gateways link an ordinary phone number, which breaks WhatsApp's terms and can get the number blocked; the screen says so. Gateway addresses a person types must be https and resolve to a public address. A failed test shows only the provider's HTTP status, never its answer.
+
+Not done: the calls are made directly, not yet through `ExternalCallExecutor` with the circuit breaker, and nothing in the system sends WhatsApp on its own yet. Email is used by password reset and the scheduled-report notice. What to send to guests by WhatsApp needs a decision on consent (PDP law) first.
+
 ## Contract versioning and compatibility (`NFR-28`) — baseline policy
 
 This is a baseline set by the engineering team under the owner's instruction to follow standard practice; the owner confirms it before the first partner integration.

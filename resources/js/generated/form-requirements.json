@@ -606,8 +606,6 @@
     "inventory-purchasing/pages/supplier": [
         "aspect",
         "item_id",
-        "name",
-        "payment_terms_days",
         "score",
         "unit",
         "unit_price_minor",

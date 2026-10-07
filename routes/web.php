@@ -80,6 +80,7 @@ use App\Modules\HumanResource\Presentation\Http\Controllers\ShiftSwapController;
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\ApprovalController;
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\AccessAdminController;
 use App\Shared\Infrastructure\Setup\SetupChecklistController;
+use App\Shared\Infrastructure\Messaging\MessagingSettingsController;
 use App\Shared\Infrastructure\Observability\SystemStatusController;
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\ApprovalPolicyController;
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\AuthenticatedSessionController;
@@ -296,6 +297,12 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])
 // Is the system healthy and being backed up: one screen for the owner, read only.
 Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])
     ->get('/property/system', [SystemStatusController::class, 'show'])->middleware('permission:property.settings.manage')->name('property.system');
+Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property', 'permission:property.settings.manage'])->prefix('property/messaging')->group(function (): void {
+    Route::get('/', [MessagingSettingsController::class, 'show'])->name('property.messaging');
+    Route::put('/{channel}', [MessagingSettingsController::class, 'save'])->middleware(['password.confirm', 'throttle:access-admin'])->name('property.messaging.save');
+    Route::post('/{channel}/off', [MessagingSettingsController::class, 'turnOff'])->middleware(['password.confirm', 'throttle:access-admin'])->name('property.messaging.off');
+    Route::post('/{channel}/test', [MessagingSettingsController::class, 'test'])->middleware('throttle:access-admin')->name('property.messaging.test');
+});
 
 // Property configuration (TASK-FO-007 groundwork): settings, business date, room types and rooms.
 // Permissions are enforced in the application services; the middleware only establishes who and where.
