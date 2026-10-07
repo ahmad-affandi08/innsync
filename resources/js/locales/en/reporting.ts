@@ -13,6 +13,8 @@ export const reporting = {
     'rpt.period.apply': 'Apply',
     'rpt.period.shown': '{from} to {to}',
     'rpt.dash.title': 'Dashboard',
+    'rpt.dash.limited': 'You see part of the property',
+    'rpt.dash.limitedDetail': 'Your access is limited to the departments {departments} and {outlets} outlet(s). The cards show only what belongs to them.',
     'rpt.dash.description': 'Today at a glance, read from front office, housekeeping and laundry. Business date {date}.',
     'rpt.dash.updated': 'Updated {time}; refreshes every minute',
     'rpt.dash.asOf': 'Data as of {time}',

@@ -6,6 +6,7 @@ namespace App\Modules\FrontOffice\Presentation\Http\Controllers;
 
 use App\Modules\FrontOffice\Application\Reservations\ReservationService;
 use App\Modules\FrontOffice\Application\Stays\CheckInRequest;
+use App\Modules\FrontOffice\Application\Stays\CheckOutLaundryException;
 use App\Modules\FrontOffice\Application\Stays\GuestCorrectionService;
 use App\Modules\FrontOffice\Application\Stays\StayAmendmentService;
 use App\Modules\FrontOffice\Application\Stays\StayService;
@@ -22,7 +23,7 @@ use Inertia\Response;
 /** Check-in, the guests in the house and check-out. Rules, permissions and privacy live in `StayService`. */
 final readonly class StayController
 {
-    public function __construct(private StayService $stays, private StayAmendmentService $amendments, private GuestCorrectionService $corrections, private StayTimeFeeService $timeFees, private ReservationService $reservations, private PropertyContext $property) {}
+    public function __construct(private StayService $stays, private StayAmendmentService $amendments, private GuestCorrectionService $corrections, private StayTimeFeeService $timeFees, private ReservationService $reservations, private CheckOutLaundryException $laundryExceptions, private PropertyContext $property) {}
 
     public function index(Request $request): Response
     {
@@ -171,9 +172,25 @@ final readonly class StayController
 
     public function checkOut(Request $request, string $id): JsonResponse
     {
-        $data = $request->validate(['lock_version' => ['required', 'integer', 'min:0']]);
+        $data = $request->validate([
+            'lock_version' => ['required', 'integer', 'min:0'],
+            'laundry_exception' => ['nullable', 'array'], 'laundry_exception.mode' => ['required_with:laundry_exception', 'string', 'max:12'],
+            'laundry_exception.reason' => ['required_with:laundry_exception', 'string', 'max:300'], 'laundry_exception.approval_id' => ['nullable', 'string', 'size:26'],
+        ]);
+        $exception = isset($data['laundry_exception'])
+            ? ['mode' => $data['laundry_exception']['mode'], 'reason' => $data['laundry_exception']['reason'], 'approval_id' => $data['laundry_exception']['approval_id'] ?? null]
+            : null;
 
-        return $this->json(['stay' => $this->stays->checkOut($this->property->current(), $this->actor($request), $id, (int) $data['lock_version'])]);
+        return $this->json(['stay' => $this->stays->checkOut($this->property->current(), $this->actor($request), $id, (int) $data['lock_version'], $exception)]);
+    }
+
+    /** Opens the approval of settling the laundry in hand as a late charge or a claim (FR-LDY-012). */
+    public function laundryExceptionApproval(Request $request, string $id): JsonResponse
+    {
+        $data = $request->validate(['mode' => ['required', 'string', 'max:12'], 'reason' => ['required', 'string', 'max:300']]);
+        $approval = $this->laundryExceptions->requestApproval($this->property->current(), $this->actor($request), $id, $data['mode'], $data['reason'], IdempotencyKey::fromString((string) $request->header('Idempotency-Key')));
+
+        return response()->json(['approval' => $approval->toArray()], 201)->header('Cache-Control', 'no-store');
     }
 
     /** @return list<array<string, mixed>> */

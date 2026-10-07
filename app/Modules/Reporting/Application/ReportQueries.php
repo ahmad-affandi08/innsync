@@ -37,7 +37,15 @@ interface ReportQueries
      *
      * @return array{room: array<string, int>, laundry: array<string, int>, other: array<string, int>, net: array<string, int>, outlets: list<array<string, mixed>>}
      */
-    public function revenue(PropertyId $property, ReportPeriod $period): array;
+    public function revenue(PropertyId $property, ReportPeriod $period, ?RevenueScope $scope = null, ?string $userId = null): array;
+
+    /**
+     * The codes of the F&B outlets with these ids, by id; an id that is not an outlet of the property is left out.
+     *
+     * @param  list<string>  $ids
+     * @return array<string, string>
+     */
+    public function fnbOutletCodes(PropertyId $property, array $ids): array;
 
     /**
      * Conditions that need someone's attention today, each with a few examples.
@@ -72,14 +80,14 @@ interface ReportQueries
      *
      * @return list<array<string, mixed>> identity fields are returned in clear; the caller masks them
      */
-    public function registrations(PropertyId $property, ReportPeriod $period, ?string $nationality, bool $foreignOnly): array;
+    public function registrations(PropertyId $property, ReportPeriod $period, ?string $nationality, bool $foreignOnly, ?string $userId = null): array;
 
     /**
      * Money received and paid back per payment method on the dates of the period (FR-FO-042).
      *
      * @return list<array{method: string, received_minor: int, paid_back_minor: int, net_minor: int, count: int}>
      */
-    public function paymentsByMethod(PropertyId $property, ReportPeriod $period): array;
+    public function paymentsByMethod(PropertyId $property, ReportPeriod $period, ?string $userId = null): array;
 
     /**
      * The day's movements for the front desk (FR-FO-043): who arrives, who leaves, who sleeps in the house. For a day up to the
@@ -113,7 +121,7 @@ interface ReportQueries
      *
      * @return array{staff: list<array{user_id: string, rooms: int, seconds: int}>, kinds: list<array{kind: string, rooms: int, seconds: int}>, inspections: array{passed: int, rework: int}, checklists: array{items: int, completed: int, runs: int}}
      */
-    public function housekeepingProductivity(PropertyId $property, DateTimeImmutable $fromUtc, DateTimeImmutable $toUtc, ReportPeriod $period): array;
+    public function housekeepingProductivity(PropertyId $property, DateTimeImmutable $fromUtc, DateTimeImmutable $toUtc, ReportPeriod $period, ?string $userId = null): array;
 
     /**
      * Guest laundry orders that were handed over or became ready between the two instants (FR-LDY-010), one row per order, with
@@ -121,7 +129,7 @@ interface ReportQueries
      *
      * @return list<array{created_at: string, ready_at: ?string, promised_at: string, status: string, express: bool, pieces: int, charged_minor: ?int, has_discrepancy: bool}>
      */
-    public function laundryOrders(PropertyId $property, DateTimeImmutable $fromUtc, DateTimeImmutable $toUtc): array;
+    public function laundryOrders(PropertyId $property, DateTimeImmutable $fromUtc, DateTimeImmutable $toUtc, ?string $userId = null): array;
 
     /**
      * Service charge and tax on the charges (and reversals of charges) posted on the business dates, per calendar month and where the
@@ -148,7 +156,7 @@ interface ReportQueries
     /**
      * FR-DSH-011: the bills settled in each hour of the day (clock of the property) for each outlet.
      *
-     * @return list<array{code: string, name: string, hours: list<int>, total: int}>
+     * @return list<array{id: string, code: string, name: string, hours: list<int>, total: int}>
      */
     public function outletHours(PropertyId $property, DateTimeImmutable $fromUtc, DateTimeImmutable $toUtc, PropertyTimeZone $zone, BusinessDate $from, BusinessDate $to): array;
 

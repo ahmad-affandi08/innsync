@@ -317,6 +317,7 @@
     "front-office/pages/stay": [
         "changes",
         "departure",
+        "mode",
         "photo",
         "reason",
         "room_id"

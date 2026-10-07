@@ -4,15 +4,22 @@ declare(strict_types=1);
 
 namespace Tests\Integration\Laundry;
 
+use App\Modules\FrontOffice\Application\Charging\GuestCharging;
+use App\Modules\FrontOffice\Application\Folios\ApprovalRequired;
 use App\Modules\FrontOffice\Application\Folios\FolioRepository;
 use App\Modules\FrontOffice\Application\Folios\FolioService;
 use App\Modules\FrontOffice\Application\Stays\CheckInRequest;
+use App\Modules\FrontOffice\Application\Stays\CheckOutLaundryException;
 use App\Modules\FrontOffice\Application\Stays\StayService;
+use App\Modules\IdentityAccess\Application\Approval\ApprovalPolicyAdmin;
+use App\Modules\IdentityAccess\Application\Approval\ApprovalService;
 use App\Modules\Laundry\Application\LaundryEscalationService;
 use App\Modules\Laundry\Application\LaundryRequest;
 use App\Modules\Laundry\Application\LaundryService;
 use App\Modules\Property\Application\Rates\ChargeSchemeService;
 use App\Modules\Reporting\Application\ReportService;
+use App\Shared\Application\Approval\ApprovalNotUsable;
+use App\Shared\Application\Approval\MissingApprovalPolicy;
 use App\Shared\Application\Errors\Refusal;
 use App\Shared\Application\Idempotency\IdempotencyKey;
 use App\Shared\Application\Notifications\EmailNotifier;
@@ -301,6 +308,158 @@ final class LaundryTest extends TestCase
         $folioId = app(FolioRepository::class)->byReservation($this->property(), $this->reservationId)[0]->id;
         $folios->pay($this->property(), $this->managerId, $folioId, 'cash', $this->folioBalance(), null, 'settlement');
         self::assertSame('checked_out', $checkOut()['status']);
+    }
+
+    private function checkOutWith(?array $exception): array
+    {
+        return app(StayService::class)->checkOut($this->property(), $this->managerId, $this->stay['id'], $this->stay['lock_version'], $exception);
+    }
+
+    private function requireLaundryApproval(): void
+    {
+        app(ApprovalPolicyAdmin::class)->define($this->property(), $this->adminId, CheckOutLaundryException::SUBJECT, 0, [['permission' => 'front-office.folio.approve']], 'Initial chain');
+    }
+
+    private function approvedException(string $mode, string $reason = 'Guest left in a hurry'): string
+    {
+        $view = app(CheckOutLaundryException::class)->requestApproval($this->property(), $this->managerId, $this->stay['id'], $mode, $reason, IdempotencyKey::fromString('lde-'.bin2hex(random_bytes(8))));
+        app(ApprovalService::class)->approve($this->property(), $view->id, $this->supervisorId);
+
+        return $view->id;
+    }
+
+    /** FR-LDY-012: a stay is closed with laundry still in hand only as a late charge or a claim, and only with an approval that is recorded. */
+    public function test_a_stay_closes_with_laundry_in_hand_as_a_claim_only_with_a_recorded_approval(): void
+    {
+        $this->configureLaundryScheme();
+        $order = $this->toIroned($this->handOver());
+        $exception = fn (?string $approval) => ['mode' => 'claim', 'reason' => 'Guest left in a hurry', 'approval_id' => $approval];
+
+        // No policy: the exception is mandatory, so it fails closed. Without an approval named, it asks for one.
+        try {
+            app(CheckOutLaundryException::class)->requestApproval($this->property(), $this->managerId, $this->stay['id'], 'claim', 'Guest left in a hurry', IdempotencyKey::fromString('lde-nopolicy-0001'));
+            self::fail('A mandatory approval was opened without a policy.');
+        } catch (MissingApprovalPolicy $e) {
+            self::assertSame(409, $e->status());
+        }
+
+        try {
+            $this->checkOutWith($exception(null));
+            self::fail('Checked out with laundry in hand and no approval.');
+        } catch (MissingApprovalPolicy) {
+            $this->addToAssertionCount(1);
+        }
+
+        $this->requireLaundryApproval();
+
+        try {
+            $this->checkOutWith($exception(null));
+            self::fail('Checked out with laundry in hand and no approval.');
+        } catch (ApprovalRequired $e) {
+            self::assertSame('approval_required', $e->conflict()['reason']);
+        }
+
+        // A request nobody decided cannot be used; one made for the other way out cannot be borrowed; a bad mode or an empty reason is refused.
+        $pending = app(CheckOutLaundryException::class)->requestApproval($this->property(), $this->managerId, $this->stay['id'], 'claim', 'Guest left in a hurry', IdempotencyKey::fromString('lde-pending-0001'));
+        $this->expectApprovalNotUsable(fn () => $this->checkOutWith($exception($pending->id)));
+        $lateApproval = $this->approvedException('late_charge');
+        $this->expectApprovalNotUsable(fn () => $this->checkOutWith($exception($lateApproval)));
+        $this->assertRefused(422, fn () => app(CheckOutLaundryException::class)->requestApproval($this->property(), $this->managerId, $this->stay['id'], 'gift', 'x', IdempotencyKey::fromString('lde-badmode-0001')));
+        $this->assertRefused(422, fn () => app(CheckOutLaundryException::class)->requestApproval($this->property(), $this->managerId, $this->stay['id'], 'claim', '  ', IdempotencyKey::fromString('lde-noreason-001')));
+        $this->assertRefused(403, fn () => app(CheckOutLaundryException::class)->requestApproval($this->property(), $this->clerkId, $this->stay['id'], 'claim', 'Guest left', IdempotencyKey::fromString('lde-forbidden-01')));
+        self::assertSame('in_house', DB::table('stays')->value('status'), 'every failed attempt left the stay open');
+        self::assertSame(['ironing'], DB::table('laundry_orders')->pluck('status')->all());
+
+        $approval = $this->approvedException('claim');
+        $out = $this->checkOutWith($exception($approval));
+
+        self::assertSame('checked_out', $out['status']);
+        $row = (array) DB::table('laundry_orders')->first();
+        self::assertSame(['claimed', 'claim', $approval, 'Guest left in a hurry'], [$row['status'], $row['settlement'], $row['settlement_approval_id'], $row['settlement_reason']]);
+        self::assertNull($row['active_barcode_key'], 'the bag tag is free again');
+        self::assertSame(0, app(LaundryService::class)->activeOrdersOfStay($this->property(), $this->stay['id']));
+        self::assertSame(['claim', $approval, [$order['id']]], [DB::table('stay_laundry_exceptions')->value('mode'), DB::table('stay_laundry_exceptions')->value('approval_id'), json_decode((string) DB::table('stay_laundry_exceptions')->value('order_ids'), true)]);
+        self::assertSame(1, DB::table('audit_entries')->where('action', 'stay.laundry_exception')->count());
+        self::assertSame(1, DB::table('audit_entries')->where('action', 'laundry.order.settled_at_checkout')->count());
+        self::assertSame(['ironing', 'claimed'], [DB::table('laundry_status_log')->where('to_status', 'claimed')->value('from_status'), DB::table('laundry_status_log')->where('to_status', 'claimed')->value('to_status')]);
+        self::assertSame(0, (int) DB::table('folio_postings')->where('source', 'laundry')->count(), 'nothing is charged for a claim');
+
+        // The record, and the order it finished, cannot be changed afterwards; the approval cannot be used again.
+        foreach ([fn () => DB::table('stay_laundry_exceptions')->update(['mode' => 'late_charge']), fn () => DB::table('stay_laundry_exceptions')->delete(), fn () => DB::table('laundry_orders')->update(['settlement_reason' => 'x'])] as $change) {
+            try {
+                $change();
+                self::fail('A settled record was changed.');
+            } catch (QueryException) {
+                $this->addToAssertionCount(1);
+            }
+        }
+    }
+
+    public function test_laundry_left_in_hand_as_a_late_charge_goes_on_and_is_charged_to_the_late_folio_when_ready(): void
+    {
+        $this->configureLaundryScheme();
+        $order = $this->toIroned($this->handOver());
+        $this->requireLaundryApproval();
+
+        // Without an exception the charge to a closed folio is not allowed for anyone.
+        $charge = fn () => app(GuestCharging::class)->chargeLate($this->property(), $this->laundererId, $this->reservationId, 'laundry', 'LAUNDRY', 'Laundry', 1_000_000, 'laundry', $order['id'], 'No exception');
+        $this->assertRefused(409, $charge);
+
+        $approval = $this->approvedException('late_charge');
+        $this->checkOutWith(['mode' => 'late_charge', 'reason' => 'Guest left in a hurry', 'approval_id' => $approval]);
+
+        $row = (array) DB::table('laundry_orders')->first();
+        self::assertSame(['ironing', 'late_charge'], [$row['status'], $row['settlement']], 'the order goes on');
+        self::assertSame('checked_out', DB::table('stays')->value('status'));
+        $origin = app(FolioRepository::class)->byReservation($this->property(), $this->reservationId)[0];
+        self::assertTrue($origin->isClosed);
+        self::assertSame(0, $origin->balance->amountMinor);
+
+        // The laundry's person marks it ready: it is charged to the late folio of the stay, once, and the closed folio and its day stay as they were.
+        $ready = $this->laundry()->markReady($this->property(), $this->laundererId, $order['id'], (int) $row['lock_version']);
+        self::assertSame('ready', $ready['status']);
+        $late = (array) DB::table('folios')->where('origin_folio_id', $origin->id)->first();
+        self::assertNotEmpty($late);
+        $postings = DB::table('folio_postings')->where('folio_id', $late['id'])->get();
+        self::assertCount(1, $postings);
+        self::assertSame($order['id'], $postings[0]->source_ref);
+        self::assertGreaterThan(0, (int) $postings[0]->total_minor);
+        self::assertSame(1, DB::table('audit_entries')->where('action', 'folio.late_charge.posted')->count());
+        self::assertSame(0, app(FolioRepository::class)->byReservation($this->property(), $this->reservationId)[0]->balance->amountMinor);
+        self::assertSame(0, (int) DB::table('folio_postings')->where('folio_id', $origin->id)->where('source', 'laundry')->count());
+
+        // The same charge sent again posts nothing twice, and a different one under the same source is refused.
+        $this->assertRefused(409, fn () => app(GuestCharging::class)->chargeLate($this->property(), $this->laundererId, $this->reservationId, 'laundry', 'LAUNDRY', 'Laundry '.$order['number'], 1_000_000, 'laundry', $order['id'], 'Different'));
+        $again = app(GuestCharging::class)->chargeLate($this->property(), $this->laundererId, $this->reservationId, 'laundry', 'LAUNDRY', 'Laundry '.$order['number'], $ready['billable_minor'], 'laundry', $order['id'], 'Again');
+        self::assertTrue($again['replayed']);
+        self::assertCount(1, DB::table('folio_postings')->where('folio_id', $late['id'])->get());
+    }
+
+    public function test_an_approval_is_for_exactly_the_orders_it_named(): void
+    {
+        $this->configureLaundryScheme();
+        $this->handOver();
+        $this->requireLaundryApproval();
+        $approval = $this->approvedException('claim');
+        $this->handOver('BAG-0002');
+
+        $this->expectApprovalNotUsable(fn () => $this->checkOutWith(['mode' => 'claim', 'reason' => 'Guest left in a hurry', 'approval_id' => $approval]));
+        self::assertSame('in_house', DB::table('stays')->value('status'));
+        self::assertSame(2, app(LaundryService::class)->activeOrdersOfStay($this->property(), $this->stay['id']));
+
+        $both = $this->approvedException('claim');
+        $this->checkOutWith(['mode' => 'claim', 'reason' => 'Guest left in a hurry', 'approval_id' => $both]);
+        self::assertSame(['claimed', 'claimed'], DB::table('laundry_orders')->orderBy('number')->pluck('status')->all());
+    }
+
+    private function expectApprovalNotUsable(callable $action): void
+    {
+        try {
+            $action();
+            self::fail('An approval that cannot be used was used.');
+        } catch (ApprovalNotUsable) {
+            $this->addToAssertionCount(1);
+        }
     }
 
     public function test_an_order_can_be_cancelled_before_work_begins_and_then_the_stay_can_close(): void

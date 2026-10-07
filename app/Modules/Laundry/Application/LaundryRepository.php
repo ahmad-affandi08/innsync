@@ -65,4 +65,7 @@ interface LaundryRepository
     public function history(PropertyId $property, string $orderId): array;
 
     public function activeOrdersOfStay(PropertyId $property, string $stayId): int;
+
+    /** @return list<string> the ids of the orders of this stay that are neither delivered, cancelled nor claimed, in id order */
+    public function activeOrderIdsOfStay(PropertyId $property, string $stayId): array;
 }

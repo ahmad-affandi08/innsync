@@ -83,6 +83,41 @@ final readonly class LaundryService implements LaundryLiability
         return $this->repository->activeOrdersOfStay($property, strtolower($stayId));
     }
 
+    public function activeOrderIdsOfStay(PropertyId $property, string $stayId): array
+    {
+        return $this->repository->activeOrderIdsOfStay($property, strtolower($stayId));
+    }
+
+    public function settleAfterCheckOut(PropertyId $property, string $actorId, string $stayId, string $mode, string $approvalId, string $reason): int
+    {
+        $actor = strtolower($actorId);
+        $reason = trim($reason);
+
+        return $this->transactions->run(function () use ($property, $actor, $stayId, $mode, $approvalId, $reason): int {
+            $settled = 0;
+
+            foreach ($this->repository->activeOrderIdsOfStay($property, strtolower($stayId)) as $id) {
+                $before = $this->repository->findOrder($property, $id) ?? throw Refusal::notFound('Order not found.');
+                $after = $this->transition(static fn () => $before->settleAfterCheckOut($mode));
+                $now = $this->clock->nowUtc();
+                $saved = $this->save($property, $after, $before->lockVersion, ['settlement_approval_id' => strtolower($approvalId), 'settlement_reason' => $reason], $now);
+
+                if ($saved->status !== $before->status) {
+                    $this->repository->logStatus($property, $before->id, $before->status, $saved->status, $actor, $now);
+                }
+
+                $this->audit->record(new AuditEntry(
+                    $property->toString(), $actor, 'laundry.order.settled_at_checkout', 'laundry_order', $before->id, ['status' => $before->status->value],
+                    ['status' => $saved->status->value, 'settlement' => $mode, 'approval_id' => strtolower($approvalId)], $reason,
+                ));
+                $this->announce($property, 'laundry.order.settled', $saved, $actor);
+                $settled++;
+            }
+
+            return $settled;
+        });
+    }
+
     // ---- price list ----
 
     /** @return list<array{id: string, code: string, name: string, unit_price_minor: int, is_active: bool, lock_version: int}> */
@@ -330,8 +365,11 @@ final readonly class LaundryService implements LaundryLiability
             $after = $this->transition(static fn () => $before->markReady());
             $this->assertVersion($before, $expectedLockVersion);
             $total = $after->billableMinor();
+            // The guest left with this order in hand and an approval was recorded for it: the charge goes to the late folio of the stay, not to a folio that is closed (FR-LDY-012).
             $posting = $total > 0
-                ? $this->charging->charge($property, $actor, $before->reservationId, self::CHARGE_SCOPE, self::CHARGE_CODE, 'Laundry '.$before->number, $total, 'laundry', $before->id)
+                ? ($before->settlement === LaundryOrder::LATE_CHARGE
+                    ? $this->charging->chargeLate($property, $actor, $before->reservationId, self::CHARGE_SCOPE, self::CHARGE_CODE, 'Laundry '.$before->number, $total, 'laundry', $before->id, 'Laundry left in hand at check-out: '.$before->number)
+                    : $this->charging->charge($property, $actor, $before->reservationId, self::CHARGE_SCOPE, self::CHARGE_CODE, 'Laundry '.$before->number, $total, 'laundry', $before->id))
                 : null;
             $now = $this->clock->nowUtc();
             $saved = $this->save($property, $after, $expectedLockVersion, ['processed_by' => $actor, 'ready_at' => $now, 'currency_code' => $posting['currency'] ?? null], $now);
@@ -588,6 +626,7 @@ final readonly class LaundryService implements LaundryLiability
             'notes' => $o->notes,
             'discrepancy_note' => $o->discrepancyNote,
             'charged_minor' => $o->chargedMinor,
+            'settlement' => $o->settlement,
             'delivered_at' => $o->deliveredAt?->format('Y-m-d\TH:i:s\Z'),
             'billable_minor' => $o->billableMinor(),
             'lines' => array_map(static fn (LaundryLine $l): array => [

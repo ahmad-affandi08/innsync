@@ -23,7 +23,7 @@
 | TASK-DSH-019 | FR-DSH-019 | Dashboard Manajemen | Bisa | REVIEW |
 | TASK-DSH-020 | FR-DSH-020 | Dashboard Manajemen | Wajib | REVIEW |
 | TASK-DSH-021 | FR-DSH-021 | Dashboard Manajemen | Wajib | REVIEW |
-| TASK-DSH-022 | FR-DSH-022 | Dashboard Manajemen | Wajib | IN_PROGRESS |
+| TASK-DSH-022 | FR-DSH-022 | Dashboard Manajemen | Wajib | REVIEW |
 | TASK-FO-001 | FR-FO-001 | Front Office | Wajib | REVIEW |
 | TASK-FO-002 | FR-FO-002 | Front Office | Wajib | REVIEW |
 | TASK-FO-003 | FR-FO-003 | Front Office | Wajib | REVIEW |
@@ -103,7 +103,7 @@
 | TASK-LDY-009 | FR-LDY-009 | Laundry | Wajib | REVIEW |
 | TASK-LDY-010 | FR-LDY-010 | Laundry | Sebaiknya | REVIEW |
 | TASK-LDY-011 | FR-LDY-011 | Laundry | Wajib | REVIEW |
-| TASK-LDY-012 | FR-LDY-012 | Laundry | Wajib | IN_PROGRESS |
+| TASK-LDY-012 | FR-LDY-012 | Laundry | Wajib | REVIEW |
 | TASK-FBS-001 | FR-FBS-001 | F&B Service | Wajib | REVIEW |
 | TASK-FBS-002 | FR-FBS-002 | F&B Service | Wajib | REVIEW |
 | TASK-FBS-003 | FR-FBS-003 | F&B Service | Wajib | REVIEW |

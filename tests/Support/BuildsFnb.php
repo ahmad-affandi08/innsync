@@ -42,6 +42,11 @@ trait BuildsFnb
 
                 return ['posting_id' => '01arz3ndektsv4rrffq69g5fc4', 'total_minor' => intdiv($quotedMinor * 121, 100), 'currency' => 'IDR', 'replayed' => false];
             }
+
+            public function chargeLate(PropertyId $property, string $actorId, string $reservationId, string $scope, string $code, string $description, int $quotedMinor, string $source, string $sourceRef, string $reason): array
+            {
+                throw new \LogicException('A late charge is not used by this test.');
+            }
         });
         $this->app->instance(RoomCatalogReader::class, new class implements RoomCatalogReader
         {

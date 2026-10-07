@@ -190,6 +190,11 @@ final class MinibarAndRoomServiceHttpTest extends TestCase
             {
                 throw new LogicException('a closed folio is never charged');
             }
+
+            public function chargeLate(PropertyId $property, string $actorId, string $reservationId, string $scope, string $code, string $description, int $quotedMinor, string $source, string $sourceRef, string $reason): array
+            {
+                throw new LogicException('A late charge is not used by this test.');
+            }
         });
         $this->actAs($this->attendant);
         $scan = $this->page('?code=101')['scanned'];

@@ -13,6 +13,8 @@ export const reporting = {
     'rpt.period.apply': 'Terapkan',
     'rpt.period.shown': '{from} sampai {to}',
     'rpt.dash.title': 'Dasbor',
+    'rpt.dash.limited': 'Anda melihat sebagian dari properti',
+    'rpt.dash.limitedDetail': 'Akses Anda dibatasi pada departemen {departments} dan {outlets} outlet. Kartu hanya menampilkan yang menjadi milik mereka.',
     'rpt.dash.description': 'Gambaran hari ini dari front office, tata graha dan laundry. Business date {date}.',
     'rpt.dash.updated': 'Diperbarui {time}; diperbarui otomatis setiap menit',
     'rpt.dash.asOf': 'Data per {time}',

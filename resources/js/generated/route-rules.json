@@ -2625,6 +2625,10 @@
             "lock_version"
         ],
         "declared": [
+            "laundry_exception",
+            "laundry_exception.approval_id",
+            "laundry_exception.mode",
+            "laundry_exception.reason",
             "lock_version"
         ]
     },
@@ -2682,6 +2686,16 @@
         ],
         "declared": [
             "photo"
+        ]
+    },
+    "POST /front-office/stays/{id}/laundry-exception/approval": {
+        "required": [
+            "mode",
+            "reason"
+        ],
+        "declared": [
+            "mode",
+            "reason"
         ]
     },
     "POST /front-office/stays/{id}/move": {

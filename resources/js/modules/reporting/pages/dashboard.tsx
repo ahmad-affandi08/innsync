@@ -4,14 +4,15 @@ import { Fragment, useEffect, useState } from 'react';
 
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
+import type { MessageKey } from '@/locales/en/index';
 import { PeriodPicker } from '@/modules/reporting/components/period-picker';
 import { ReportingShell } from '@/modules/reporting/components/reporting-shell';
 import { useServerAction } from '@/shared/api/use-server-action';
 import { useFormatters, useTranslation } from '@/shared/i18n/i18n';
 
 type Money = { base: number; service_charge: number; tax: number; total: number };
-type Card = { key: string; kind: 'now' | 'period'; business_date: string | null; period: { from: string; to: string } | null; as_of: string; href: string; values: Record<string, any> };
-type Snapshot = { period: { preset: string; from: string; to: string }; business_date: string; as_of: string; cards: Card[]; alerts: { code: string; count: number; items: string[]; href: string }[] };
+type Card = { key: string; kind: 'now' | 'period'; business_date: string | null; period: { from: string; to: string } | null; as_of: string; href: string; limited: boolean; values: Record<string, any> };
+type Snapshot = { period: { preset: string; from: string; to: string }; business_date: string; as_of: string; scope: { property: boolean; departments: string[]; outlets: string[] }; cards: Card[]; alerts: { code: string; count: number; items: string[]; href: string }[] };
 
 type MenuRow = { code: string; name: string; outlet: string; quantity: number; total_minor: number };
 type MenuPerformance = { top: MenuRow[]; bottom: MenuRow[] };
@@ -102,6 +103,7 @@ export default function DashboardPage({ currency, preferences, snapshot: s, tv }
     return (
         <ReportingShell description={t('rpt.dash.description', { date: format.date(s.business_date, 'long') })} title={t('rpt.dash.title')} wide>
             <PeriodPicker from={s.period.from} path="/dashboard" preset={s.period.preset} to={s.period.to} />
+            {s.scope.property ? null : <Alert title={t('rpt.dash.limited')} tone="info">{t('rpt.dash.limitedDetail', { departments: s.scope.departments.map((d) => t(`inv.dept.${d}` as MessageKey)).join(', ') || '-', outlets: s.scope.outlets.length })}</Alert>}
             <div className="flex flex-wrap items-center justify-between gap-2">
                 <p aria-live="polite" className="text-xs text-muted-foreground" data-testid="updated">{t('rpt.dash.updated', { time: format.instant(shownAt) })}</p>
                 <div className="flex gap-2">
@@ -165,7 +167,7 @@ export default function DashboardPage({ currency, preferences, snapshot: s, tv }
                             <>
                                 <p className="text-3xl font-semibold tabular-nums tracking-tight" data-testid="staff-line">{t('rpt.card.staff.line', { present: c.values.present, expected: c.values.expected })}</p>
                                 <ul className="flex flex-col gap-1 text-sm">{((c.values.groups ?? []) as { department: string; code: string; expected: number; present: number }[]).map((g) => <li className="flex justify-between" key={`${g.department}-${g.code}`}><span>{t(`hr.department.${g.department}` as 'hr.department.general')} · {g.code}</span><span className="tabular-nums">{g.present}/{g.expected}</span></li>)}</ul>
-                                <p className="text-sm" data-testid="staff-off">{t('rpt.card.staff.off', { n: c.values.off ?? 0 })}</p>
+                                {c.values.off === null ? null : <p className="text-sm" data-testid="staff-off">{t('rpt.card.staff.off', { n: c.values.off ?? 0 })}</p>}
                                 {((c.values.leave ?? []) as { name: string; type: string }[]).length > 0 ? <p className="text-sm" data-testid="staff-leave">{t('rpt.card.staff.leave')}: {((c.values.leave ?? []) as { name: string; type: string }[]).map((l) => `${l.name} (${l.type})`).join(', ')}</p> : null}
                                 {((c.values.absent ?? []) as { name: string }[]).length > 0 ? <p className="text-sm text-danger" data-testid="staff-absent">{t('rpt.card.staff.absent')}: {((c.values.absent ?? []) as { name: string }[]).map((a) => a.name).join(', ')}</p> : null}
                             </>

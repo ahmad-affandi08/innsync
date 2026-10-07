@@ -6,6 +6,8 @@ Release notes for every release (NFR-14). Newest first. Each entry names the tas
 
 ### Added
 
+- TASK-DSH-022 (FR-DSH-022, NFR-06): the dashboard applies the scope of a grant. A head of an outlet or of a department, with a role assigned at that scope, sees the cards that belong to it and only its part of the revenue, hours, staff, stock and alerts; the whole property sees everything as before (docs/OPERATIONS/SCOPE-MODEL.md).
+- TASK-LDY-012 (FR-LDY-012, FR-FO-038, BR-004): a guest can check out with laundry still in hand when each order is turned into a late charge (charged to the late folio when ready) or into a claim (the order leaves the laundry's work), with a mandatory recorded approval that names exactly those orders; the approval, the reason and the way out are kept and cannot be changed.
 - TASK-FIN-006 (FR-FIN-006): the postings that a person or a refund makes (supplier payments, receipts and notes, petty cash, cash deposits, corrections, finance exceptions, POS refunds) now keep the correlation ID of the request or message that made them, as the postings made from events already did.
 - TASK-RPT-005 (FR-RPT-005): the daily flash report adds the main operating costs per department (for those who may see finance's management reports) and the notable events of the period, counted from the audit trail.
 - TASK-KIT-006 (FR-KIT-006, BR-005): the kitchen records the ingredients it uses up outside of a sale (a staff meal, a tasting) from a store (`/kitchen/ingredient-use`, permission `kitchen.ingredients.use`); one issue movement at the average cost, never below zero, audited.
@@ -86,6 +88,7 @@ Release notes for every release (NFR-14). Newest first. Each entry names the tas
 
 ### Fixed
 
+- Moving a guest to another room left the database key of "one guest per room" on the old room, so the database no longer stopped two guests from being put in one room (migration 117 puts the trigger and the keys right).
 - The Administrator role made by the seeder and `innsync:create-admin` lacked six permissions the application checks (`inventory.requisition.request`, `laundry.supplies.use`, `privacy.request.manage`, `privacy.retention.manage`, `privacy.legal-hold.manage`, `kitchen.damage.report`), so that account could not use those screens.
 - Finance pages for payables and receivables failed for a hotel with no documents yet (no currency to format zero in), and a property that had not gone live got a server error on every page that needs the business date; it is now a clear 409.
 

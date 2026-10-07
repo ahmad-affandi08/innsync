@@ -25,4 +25,14 @@ interface GuestCharging
      * @throws Refusal when the guest has no open folio or no scheme is configured for the scope
      */
     public function charge(PropertyId $property, string $actorId, string $reservationId, string $scope, string $code, string $description, int $quotedMinor, string $source, string $sourceRef): array;
+
+    /**
+     * The same charge for a guest who has checked out leaving something in hand that was approved to be charged late (FR-LDY-012): it goes to the late folio of the
+     * stay (FR-FO-038), never to a closed folio and never to a changed past day. It is posted once per `$source` and `$sourceRef`.
+     *
+     * @return array{posting_id: string, total_minor: int, currency: string, replayed: bool}
+     *
+     * @throws Refusal when no exception for a late charge was recorded at the guest's check-out, or no scheme is configured for the scope
+     */
+    public function chargeLate(PropertyId $property, string $actorId, string $reservationId, string $scope, string $code, string $description, int $quotedMinor, string $source, string $sourceRef, string $reason): array;
 }

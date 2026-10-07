@@ -18,6 +18,9 @@ return [
         'front-office.rate.change' => ['mandatory' => false],
         // FR-FO-039: a correction of a guest's identity after check-in may need approval. The owner decides whether it does, by configuring a policy.
         'front-office.guest.correction' => ['mandatory' => false],
+        // FR-LDY-012: closing a stay while the guest's laundry is still in hand needs the laundry turned into a late charge or a claim with a recorded approval. Mandatory: with no
+        // policy configured the exception is refused, never allowed. The owner configures who approves per property.
+        'front-office.laundry-exception' => ['mandatory' => true],
         // FR-PUR-002, FR-PUR-011: a purchase request, a purchase order and a revision of one that moves its value or quantities beyond the tolerance. The owner configures
         // the chain by amount band; with no policy for an amount, the document needs no approval.
         'inventory.purchase-request' => ['mandatory' => false],

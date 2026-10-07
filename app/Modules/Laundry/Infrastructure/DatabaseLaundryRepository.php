@@ -137,7 +137,7 @@ final readonly class DatabaseLaundryRepository implements LaundryRepository
     {
         $values = [
             'status' => $order->status->value, 'has_discrepancy' => $order->hasDiscrepancy, 'discrepancy_note' => $order->discrepancyNote, 'charged_minor' => $order->chargedMinor,
-            'delivered_at' => $order->deliveredAt, 'lock_version' => $expectedLockVersion + 1, 'updated_at' => $at,
+            'delivered_at' => $order->deliveredAt, 'settlement' => $order->settlement, 'lock_version' => $expectedLockVersion + 1, 'updated_at' => $at,
             ...$extra,
         ];
 
@@ -178,7 +178,12 @@ final readonly class DatabaseLaundryRepository implements LaundryRepository
 
     public function activeOrdersOfStay(PropertyId $property, string $stayId): int
     {
-        return DB::table('laundry_orders')->where('property_id', $property->toString())->where('stay_id', $stayId)->whereNotIn('status', ['delivered', 'cancelled'])->count();
+        return DB::table('laundry_orders')->where('property_id', $property->toString())->where('stay_id', $stayId)->whereNotIn('status', ['delivered', 'cancelled', 'claimed'])->count();
+    }
+
+    public function activeOrderIdsOfStay(PropertyId $property, string $stayId): array
+    {
+        return DB::table('laundry_orders')->where('property_id', $property->toString())->where('stay_id', $stayId)->whereNotIn('status', ['delivered', 'cancelled', 'claimed'])->orderBy('id')->pluck('id')->map(static fn ($id): string => (string) $id)->all();
     }
 
     /** @param list<string> $orderIds @return array<string, list<LaundryLine>> */
@@ -205,7 +210,7 @@ final readonly class DatabaseLaundryRepository implements LaundryRepository
         return new LaundryOrder(
             $r->id, $r->number, $r->barcode, $r->room_id, $r->stay_id, $r->reservation_id, LaundryStatus::from($r->status), (bool) $r->express, substr((string) $r->pickup_date, 0, 10),
             new DateTimeImmutable((string) $r->promised_at, $utc), $r->notes, (bool) $r->has_discrepancy, $r->discrepancy_note, $r->charged_minor === null ? null : (int) $r->charged_minor,
-            $r->delivered_at === null ? null : new DateTimeImmutable((string) $r->delivered_at, $utc), (int) $r->lock_version, $lines,
+            $r->delivered_at === null ? null : new DateTimeImmutable((string) $r->delivered_at, $utc), (int) $r->lock_version, $lines, $r->settlement,
         );
     }
 

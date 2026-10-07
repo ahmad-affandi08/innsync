@@ -33,4 +33,12 @@ final readonly class ScopedAuthorizer
             $scope,
         );
     }
+
+    /**
+     * @return array{outlet: list<string>, department: list<string>}
+     */
+    public function scopesOf(string $userId, string $permission, string $propertyId): array
+    {
+        return $this->permissionGrants->scopesOf($userId, PermissionCode::fromString($permission), PropertyId::fromString($propertyId));
+    }
 }

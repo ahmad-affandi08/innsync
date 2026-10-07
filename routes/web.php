@@ -324,6 +324,7 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
     Route::post('/stays/{id}/corrections', [StayController::class, 'correct'])->where('id', $id)->middleware('password.confirm')->name('front-office.stays.correct');
     Route::post('/stays/{id}/corrections/approval', [StayController::class, 'correctionApproval'])->where('id', $id)->middleware('idempotent')->name('front-office.stays.correction-approval');
     Route::post('/stays/{id}/check-out', [StayController::class, 'checkOut'])->where('id', $id)->name('front-office.stays.check-out');
+    Route::post('/stays/{id}/laundry-exception/approval', [StayController::class, 'laundryExceptionApproval'])->where('id', $id)->middleware('idempotent')->name('front-office.stays.laundry-exception-approval');
     Route::get('/reservations/{id}/check-in', [StayController::class, 'checkInForm'])->where('id', $id)->name('front-office.check-in');
     Route::post('/reservations/{id}/guest-lookup', [StayController::class, 'lookup'])->where('id', $id)->middleware('throttle:bookings')->name('front-office.check-in.lookup');
     Route::post('/reservations/{id}/check-in', [StayController::class, 'checkIn'])->where('id', $id)->middleware(['idempotent', 'throttle:bookings'])->name('front-office.check-in.store');

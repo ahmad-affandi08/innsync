@@ -13,6 +13,7 @@ import { StatusBadge } from '@/components/ui/status-badge';
 import { Textarea } from '@/components/ui/textarea';
 import { FrontOfficeShell } from '@/modules/front-office/components/front-office-shell';
 import { GuestCorrections, type Corrections } from '@/modules/front-office/components/guest-correction';
+import { LaundryExceptionPanel, NO_LAUNDRY_CHOICE, type LaundryChoice, type LaundryHold } from '@/modules/front-office/components/laundry-exception';
 import { StayTimeFeesPanel, type StayTimeFees } from '@/modules/front-office/components/stay-time-fees';
 import { useServerAction } from '@/shared/api/use-server-action';
 import { useFormatters, useTranslation } from '@/shared/i18n/i18n';
@@ -26,7 +27,7 @@ type Option = { id: string; number: string; floor: string | null; type: string; 
 type Quote = { currency: string; nights: { date: string; total_minor: number }[]; total_minor: number; bookable: boolean; violations: string[]; availability: string[] };
 type Stay = {
     id: string; reservation_id: string; room_number: string | null; status: string; adults: number; children: number; checked_in_date: string; expected_departure: string;
-    checked_out_date: string | null; has_id_photo: boolean; lock_version: number; guest: Guest; moves: Move[];
+    checked_out_date: string | null; has_id_photo: boolean; lock_version: number; guest: Guest; moves: Move[]; laundry: LaundryHold | null;
 };
 
 export default function StayPage({ corrections, reservation, stay: s, time_fees: timeFees }: { corrections: Corrections; reservation: { number: string; currency?: string }; stay: Stay; time_fees: StayTimeFees }) {
@@ -45,6 +46,7 @@ export default function StayPage({ corrections, reservation, stay: s, time_fees:
     const [reason, setReason] = useState('');
     const [departure, setDeparture] = useState('');
     const [quote, setQuote] = useState<Quote | null>(null);
+    const [laundryChoice, setLaundryChoice] = useState<LaundryChoice>(NO_LAUNDRY_CHOICE);
     const lookup = useServerAction();
     const inHouse = s.status === 'in_house';
     const reload = ['stay'];
@@ -90,7 +92,8 @@ export default function StayPage({ corrections, reservation, stay: s, time_fees:
     }
 
     async function checkOut() {
-        const done = await action.run(`/front-office/stays/${s.id}/check-out`, { body: { lock_version: s.lock_version }, reload });
+        const exception = laundryChoice.approvalId === '' ? undefined : { mode: laundryChoice.mode, reason: laundryChoice.reason, approval_id: laundryChoice.approvalId };
+        const done = await action.run(`/front-office/stays/${s.id}/check-out`, { body: { lock_version: s.lock_version, laundry_exception: exception }, reload });
         setConfirming(false);
         if (done !== null) setSaved('out');
     }
@@ -237,6 +240,7 @@ export default function StayPage({ corrections, reservation, stay: s, time_fees:
                 pending={action.busy}
                 title={t('fo.stay.checkOut')}
             >
+                {s.laundry !== null ? <LaundryExceptionPanel choice={laundryChoice} laundry={s.laundry} onChange={setLaundryChoice} stayId={s.id} /> : null}
                 {action.error !== null ? <ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /> : null}
             </ConfirmDialog>
         </FrontOfficeShell>

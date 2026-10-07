@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Modules\Reporting\Infrastructure;
 
 use App\Modules\Reporting\Application\ReportQueries;
+use App\Modules\Reporting\Application\RevenueScope;
 use App\Modules\Reporting\Domain\ReportPeriod;
 use App\Shared\Application\Privacy\FieldCipher;
 use App\Shared\Domain\Tenancy\PropertyId;
@@ -65,7 +66,7 @@ final readonly class DatabaseReportQueries implements ReportQueries
         return DB::table('reservations')->where('property_id', $property->toString())->where('created_at', '>=', $fromUtc)->where('created_at', '<', $toUtc)->count();
     }
 
-    public function revenue(PropertyId $property, ReportPeriod $period): array
+    public function revenue(PropertyId $property, ReportPeriod $period, ?RevenueScope $scope = null, ?string $userId = null): array
     {
         $result = ['room' => self::zero(), 'laundry' => self::zero(), 'other' => self::zero(), 'net' => self::zero(), 'outlets' => []];
         $named = $this->outletsBySource($property);
@@ -78,18 +79,25 @@ final readonly class DatabaseReportQueries implements ReportQueries
             ->where('property_id', $property->toString())->whereBetween('business_date', [$period->from->toString(), $period->to->toString()])
             ->whereIn('entry_type', ['charge', 'reversal'])
             ->where(static fn ($q) => $q->where('base_minor', '<>', 0)->orWhere('service_charge_minor', '<>', 0)->orWhere('tax_minor', '<>', 0))
+            ->when($userId !== null, static fn ($q) => $q->where('posted_by', $userId))
             ->groupBy('source')
             ->get(['source', DB::raw('SUM(base_minor) as base'), DB::raw('SUM(service_charge_minor) as service_charge'), DB::raw('SUM(tax_minor) as tax'), DB::raw('SUM(total_minor) as total')]);
 
         // What the outlets sold for cash, card or QRIS (FR-DSH-004): the bills settled on those days that were not charged to a room, whose revenue is on the folio already.
         $sales = DB::table('fin_pos_sales')
             ->where('property_id', $property->toString())->whereBetween('business_date', [$period->from->toString(), $period->to->toString()])->where('room_minor', 0)
+            ->when($userId !== null, static fn ($q) => $q->where('actor_id', $userId))
             ->groupBy('source')
             ->get(['source', DB::raw('SUM(base_minor) as base'), DB::raw('SUM(service_charge_minor) as service_charge'), DB::raw('SUM(tax_minor) as tax'), DB::raw('SUM(total_minor) as total')]);
         $rows = collect($rows->all())->concat($sales->all());
 
         foreach ($rows as $row) {
             $outlet = $named['sources'][$row->source] ?? null;
+
+            if ($scope !== null && ! $scope->allows($row->source === 'night_audit' ? 'room' : ($row->source === 'laundry' ? 'laundry' : ($outlet === null ? 'other' : 'outlet')), (string) $row->source)) {
+                continue;
+            }
+
             $bucket = match ($row->source) {
                 'night_audit' => 'room',
                 'laundry' => 'laundry',
@@ -107,9 +115,20 @@ final readonly class DatabaseReportQueries implements ReportQueries
             }
         }
 
-        $result['outlets'] = array_values($result['outlets']);
+        // A limited view names only the outlets that sold something it may see.
+        $outlets = $scope === null ? $result['outlets'] : array_filter($result['outlets'], static fn (array $o): bool => $o['total'] !== 0 || $o['base'] !== 0);
+        $result['outlets'] = array_values($outlets);
 
         return $result;
+    }
+
+    public function fnbOutletCodes(PropertyId $property, array $ids): array
+    {
+        if ($ids === []) {
+            return [];
+        }
+
+        return DB::table('fnb_outlets')->where('property_id', $property->toString())->whereIn('id', $ids)->pluck('code', 'id')->map(static fn ($code): string => (string) $code)->all();
     }
 
     public function alerts(PropertyId $property, BusinessDate $today, DateTimeImmutable $nowUtc): array
@@ -262,7 +281,7 @@ final readonly class DatabaseReportQueries implements ReportQueries
         ];
     }
 
-    public function registrations(PropertyId $property, ReportPeriod $period, ?string $nationality, bool $foreignOnly): array
+    public function registrations(PropertyId $property, ReportPeriod $period, ?string $nationality, bool $foreignOnly, ?string $userId = null): array
     {
         $query = DB::table('stays as s')
             ->join('guests as g', 'g.id', '=', 's.guest_id')->join('rooms', 'rooms.id', '=', 's.room_id')->join('reservations as r', 'r.id', '=', 's.reservation_id')
@@ -274,6 +293,10 @@ final readonly class DatabaseReportQueries implements ReportQueries
 
         if ($foreignOnly) {
             $query->where('g.nationality', '<>', 'ID');
+        }
+
+        if ($userId !== null) {
+            $query->where('s.checked_in_by', $userId);
         }
 
         return $query->orderBy('s.checked_in_business_date')->orderBy('rooms.number')->get([
@@ -288,11 +311,12 @@ final readonly class DatabaseReportQueries implements ReportQueries
         ])->all();
     }
 
-    public function paymentsByMethod(PropertyId $property, ReportPeriod $period): array
+    public function paymentsByMethod(PropertyId $property, ReportPeriod $period, ?string $userId = null): array
     {
         $rows = DB::table('folio_postings')
             ->where('property_id', $property->toString())->whereBetween('business_date', [$period->from->toString(), $period->to->toString()])
             ->whereIn('entry_type', ['payment', 'refund', 'reversal'])->where('base_minor', 0)->where('service_charge_minor', 0)->where('tax_minor', 0)
+            ->when($userId !== null, static fn ($q) => $q->where('posted_by', $userId))
             ->groupBy('payment_method')
             ->get(['payment_method', DB::raw('SUM(CASE WHEN total_minor < 0 THEN -total_minor ELSE 0 END) as received'), DB::raw('SUM(CASE WHEN total_minor > 0 THEN total_minor ELSE 0 END) as paid_back'), DB::raw('COUNT(*) as n')]);
 
@@ -401,10 +425,10 @@ final readonly class DatabaseReportQueries implements ReportQueries
         return ['base' => 0, 'service_charge' => 0, 'tax' => 0, 'total' => 0];
     }
 
-    public function housekeepingProductivity(PropertyId $property, DateTimeImmutable $fromUtc, DateTimeImmutable $toUtc, ReportPeriod $period): array
+    public function housekeepingProductivity(PropertyId $property, DateTimeImmutable $fromUtc, DateTimeImmutable $toUtc, ReportPeriod $period, ?string $userId = null): array
     {
         $pid = $property->toString();
-        $done = static fn () => DB::table('housekeeping_tasks')->where('property_id', $pid)->where('status', 'done')->where('finished_at', '>=', $fromUtc)->where('finished_at', '<', $toUtc);
+        $done = static fn () => DB::table('housekeeping_tasks')->where('property_id', $pid)->where('status', 'done')->where('finished_at', '>=', $fromUtc)->where('finished_at', '<', $toUtc)->when($userId !== null, static fn ($q) => $q->where('assigned_to', $userId));
         $seconds = 'SUM(TIMESTAMPDIFF(SECOND, started_at, finished_at))';
 
         $staff = $done()->whereNotNull('assigned_to')->groupBy('assigned_to')->orderByDesc(DB::raw('COUNT(*)'))
@@ -428,12 +452,12 @@ final readonly class DatabaseReportQueries implements ReportQueries
         ];
     }
 
-    public function laundryOrders(PropertyId $property, DateTimeImmutable $fromUtc, DateTimeImmutable $toUtc): array
+    public function laundryOrders(PropertyId $property, DateTimeImmutable $fromUtc, DateTimeImmutable $toUtc, ?string $userId = null): array
     {
         $pid = $property->toString();
         $pieces = DB::table('laundry_order_lines')->selectRaw('order_id, SUM(quantity) as pieces')->where('property_id', $pid)->groupBy('order_id');
 
-        return DB::table('laundry_orders as o')->leftJoinSub($pieces, 'l', 'l.order_id', '=', 'o.id')->where('o.property_id', $pid)
+        return DB::table('laundry_orders as o')->leftJoinSub($pieces, 'l', 'l.order_id', '=', 'o.id')->where('o.property_id', $pid)->when($userId !== null, static fn ($q) => $q->where('o.created_by', $userId))
             ->where(static fn ($q) => $q->where(static fn ($c) => $c->where('o.created_at', '>=', $fromUtc)->where('o.created_at', '<', $toUtc))
                 ->orWhere(static fn ($c) => $c->where('o.ready_at', '>=', $fromUtc)->where('o.ready_at', '<', $toUtc)))
             ->orderBy('o.created_at')
@@ -546,7 +570,7 @@ final readonly class DatabaseReportQueries implements ReportQueries
         $outlets = [];
 
         foreach (DB::table('fnb_outlets')->where('property_id', $pid)->where('is_active', true)->orderBy('code')->get(['id', 'code', 'name']) as $o) {
-            $outlets[(string) $o->id] = ['code' => (string) $o->code, 'name' => (string) $o->name, 'hours' => array_fill(0, 24, 0), 'total' => 0];
+            $outlets[(string) $o->id] = ['id' => (string) $o->id, 'code' => (string) $o->code, 'name' => (string) $o->name, 'hours' => array_fill(0, 24, 0), 'total' => 0];
         }
 
         foreach (DB::table('fnb_bills')->where('property_id', $pid)->where('status', 'settled')->whereBetween('business_date', [$from->toString(), $to->toString()])->whereNotNull('closed_at')->limit(200_000)->get(['outlet_id', 'closed_at']) as $b) {

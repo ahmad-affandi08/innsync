@@ -90,6 +90,7 @@ final readonly class StayService
         private RoomReadiness $readiness,
         private RoomHandover $handover,
         private LaundryLiability $laundry,
+        private CheckOutLaundryException $laundryException,
         private FolioRepository $folioStore,
         private FolioService $folios,
         private BusinessDateProvider $businessDate,
@@ -336,17 +337,19 @@ final readonly class StayService
 
     /**
      * Ends the stay. Every folio must be settled (balance zero); open ones are closed. The reservation is completed,
-     * which releases the nights of an early departure, and the identity photo's retention starts from today (BR-009).
+     * which releases the nights of an early departure, and the identity photo's retention starts from today (BR-009). Laundry that is still in hand
+     * stops the check-out, unless it is turned into a late charge or a claim with an approval that was recorded (FR-LDY-012).
      *
+     * @param  array{mode: string, reason: string, approval_id: ?string}|null  $laundryException
      * @return array<string, mixed>
      */
-    public function checkOut(PropertyId $property, string $actorId, string $stayId, int $expectedLockVersion): array
+    public function checkOut(PropertyId $property, string $actorId, string $stayId, int $expectedLockVersion, ?array $laundryException = null): array
     {
         $this->authorize($property, $actorId, self::MANAGE_PERMISSION);
         $actor = strtolower($actorId);
         $before = $this->stays->find($property, strtolower($stayId)) ?? throw Refusal::notFound('Stay not found.');
 
-        $this->transactions->run(function () use ($property, $actor, $before, $expectedLockVersion): void {
+        $this->transactions->run(function () use ($property, $actor, $before, $expectedLockVersion, $laundryException): void {
             $reservation = $this->reservations->find($property, $before->reservationId) ?? throw Refusal::notFound('Reservation not found.');
             // Completing releases inventory, so it takes the same lock as selling it.
             $this->inventory->lockRoomType($property, $reservation->roomTypeId);
@@ -367,7 +370,11 @@ final readonly class StayService
             $now = $this->clock->nowUtc();
 
             if ($this->laundry->activeOrdersOfStay($property, $stay->id) > 0) {
-                throw Refusal::stateConflict('The guest still has laundry that has not been delivered. Deliver or cancel it before checking out.');
+                if ($laundryException === null) {
+                    throw Refusal::stateConflict('The guest still has laundry that has not been delivered. Deliver or cancel it, or check out with it as a late charge or a claim that is approved.');
+                }
+
+                $this->laundryException->apply($property, $actor, $stay->id, $reservation->id, $laundryException);
             }
 
             foreach ($this->folioStore->byReservation($property, $reservation->id) as $folio) {
@@ -561,6 +568,8 @@ final readonly class StayService
                 'identity_visible' => $mayReadIdentity && $audited,
                 'preferences' => $audited ? $this->guests->preferencesOf($property, $guest->idType->value, $guest->idNumber) : null,
             ],
+            // The laundry still in hand and what was agreed about it at check-out (FR-LDY-012); only the screen of one stay needs it.
+            'laundry' => $audited ? $this->laundryException->overview($property, $actorId, $stay->id) : null,
         ];
     }
 

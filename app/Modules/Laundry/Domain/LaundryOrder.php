@@ -12,6 +12,10 @@ use DateTimeImmutable;
  */
 final readonly class LaundryOrder
 {
+    public const LATE_CHARGE = 'late_charge';
+
+    public const CLAIM = 'claim';
+
     /** @param list<LaundryLine> $lines */
     public function __construct(
         public string $id,
@@ -31,6 +35,8 @@ final readonly class LaundryOrder
         public ?DateTimeImmutable $deliveredAt,
         public int $lockVersion,
         public array $lines,
+        /** How the order was settled when the guest checked out with it still in hand (FR-LDY-012): `late_charge` or `claim`; null when it was not. */
+        public ?string $settlement = null,
     ) {
         if (preg_match('/^[A-Za-z0-9._\/-]{3,40}$/D', $barcode) !== 1) {
             throw LaundryRuleViolation::invalid('The bag tag is 3 to 40 letters, digits or . _ / -.', 'barcode');
@@ -121,6 +127,27 @@ final readonly class LaundryOrder
         return $this->copy(LaundryStatus::Cancelled, $this->hasDiscrepancy, $this->discrepancyNote, $this->chargedMinor, $this->deliveredAt, $this->lines);
     }
 
+    /**
+     * The guest checks out while the order is still in the laundry's hands (FR-LDY-012), with an approval that is recorded. As a `late_charge` the order goes on
+     * and is charged to the late folio of the stay when it is ready; as a `claim` it leaves the laundry's work and goes through the claim procedure.
+     */
+    public function settleAfterCheckOut(string $mode): self
+    {
+        if (! in_array($mode, [self::LATE_CHARGE, self::CLAIM], true)) {
+            throw LaundryRuleViolation::invalid('Choose a late charge or a claim.', 'mode');
+        }
+
+        if (! $this->status->isActive()) {
+            throw LaundryRuleViolation::notAllowed('This order is finished already.');
+        }
+
+        if ($this->settlement !== null) {
+            throw LaundryRuleViolation::notAllowed('This order was settled at check-out already.');
+        }
+
+        return $this->copy($mode === self::CLAIM ? LaundryStatus::Claimed : $this->status, $this->hasDiscrepancy, $this->discrepancyNote, $this->chargedMinor, $this->deliveredAt, $this->lines, $mode);
+    }
+
     /** The price of what is billable: counted quantities times the prices copied at hand-over. */
     public function billableMinor(): int
     {
@@ -134,11 +161,11 @@ final readonly class LaundryOrder
     }
 
     /** @param list<LaundryLine> $lines */
-    private function copy(LaundryStatus $status, bool $discrepancy, ?string $note, ?int $charged, ?DateTimeImmutable $deliveredAt, array $lines): self
+    private function copy(LaundryStatus $status, bool $discrepancy, ?string $note, ?int $charged, ?DateTimeImmutable $deliveredAt, array $lines, ?string $settlement = null): self
     {
         return new self(
             $this->id, $this->number, $this->barcode, $this->roomId, $this->stayId, $this->reservationId, $status, $this->express, $this->pickupDate, $this->promisedAt, $this->notes,
-            $discrepancy, $note, $charged, $deliveredAt, $this->lockVersion, $lines,
+            $discrepancy, $note, $charged, $deliveredAt, $this->lockVersion, $lines, $settlement ?? $this->settlement,
         );
     }
 }

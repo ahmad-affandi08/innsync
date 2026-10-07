@@ -70,6 +70,18 @@ final readonly class LateChargeService
             throw Refusal::forbidden('This person may not post a late charge.');
         }
 
+        return $this->postAuthorized($property, $actorId, $originFolioId, $code, $description, $quotedMinor, $pricesIncludeCharges, $reason, $sourceRef, 'rooms');
+    }
+
+    /**
+     * The same late charge for a caller whose authority is not the privilege to post one but a record that front office keeps, such as the approval of the laundry
+     * a guest left in hand (FR-LDY-012). The caller has checked that record; the tax and service charge follow the scheme of `$scope`.
+     *
+     * @return array<string, mixed>
+     */
+    public function postAuthorized(PropertyId $property, string $actorId, string $originFolioId, string $code, string $description, int $quotedMinor, bool $pricesIncludeCharges, string $reason, ?string $sourceRef, string $scope): array
+    {
+        $this->assertProperty($property);
         $reason = trim($reason);
 
         if ($reason === '' || mb_strlen($reason) > 300) {
@@ -91,7 +103,7 @@ final readonly class LateChargeService
         }
 
         $actor = strtolower($actorId);
-        $split = $this->charges->breakdown($property, 'rooms', $this->businessDate->current($property), $quotedMinor, $pricesIncludeCharges);
+        $split = $this->charges->breakdown($property, $scope, $this->businessDate->current($property), $quotedMinor, $pricesIncludeCharges);
 
         return $this->transactions->run(function () use ($property, $actor, $origin, $code, $description, $split, $reason, $sourceRef): array {
             // A folio that is still open takes its charges the normal way; the late path is only for a closed one.
