@@ -29,6 +29,8 @@ final readonly class DatabaseSetupFacts implements SetupFacts
 
         return $off + [
             'profile' => $count('property_profiles'),
+            'backup_ok' => (int) DB::table('backup_runs')->where('kind', 'backup')->where('status', 'succeeded')->exists(),
+            'mail_ok' => (int) ! in_array((string) config('mail.default'), ['log', 'array', 'null'], true),
             'approvals_single' => $this->approvalsWithOneApprover($p, $mandatory),
             'settings' => $count('property_settings'),
             'business_date' => (int) DB::table('property_settings')->where('property_id', $p)->whereNotNull('business_date')->count(),

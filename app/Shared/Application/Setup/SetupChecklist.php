@@ -32,6 +32,7 @@ final class SetupChecklist
             self::step('rates', 'property', true, '/property/rates', $f('rate_plans') > 0 && $f('rate_periods') > 0, ['plans' => $f('rate_plans'), 'prices' => $f('rate_periods')]),
             self::step('tax', 'property', true, '/property/tax', $f('charge_schemes') > 0, []),
             self::step('booking_policies', 'property', false, '/property/policies', $f('booking_policies') > 0, ['policies' => $f('booking_policies')]),
+            self::step('system', 'property', false, '/property/system', $f('backup_ok') > 0 && $f('mail_ok') > 0, []),
             self::step('roles', 'people', true, '/access/roles', $f('roles') > 0, ['roles' => $f('roles')]),
             self::step('people', 'people', true, '/access/users', $f('people') > 1, ['people' => $f('people')]),
             self::step('approvals', 'people', true, '/approvals/policies', $f('approvals_total') > 0 && $f('approvals_missing') === 0 && $f('approvals_single') === 0, ['missing' => $f('approvals_missing'), 'total' => $f('approvals_total'), 'single' => $f('approvals_single')]),

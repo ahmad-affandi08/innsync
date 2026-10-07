@@ -77,6 +77,7 @@ use App\Modules\HumanResource\Presentation\Http\Controllers\ShiftSwapController;
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\ApprovalController;
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\AccessAdminController;
 use App\Shared\Infrastructure\Setup\SetupChecklistController;
+use App\Shared\Infrastructure\Observability\SystemStatusController;
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\ApprovalPolicyController;
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\AuthenticatedSessionController;
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\MfaController;
@@ -283,6 +284,10 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
 // First-time set-up as one ordered list: what is done and what the hotel still cannot work without.
 Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])
     ->get('/setup', [SetupChecklistController::class, 'show'])->middleware('permission:property.settings.manage')->name('setup');
+
+// Is the system healthy and being backed up: one screen for the owner, read only.
+Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])
+    ->get('/property/system', [SystemStatusController::class, 'show'])->middleware('permission:property.settings.manage')->name('property.system');
 
 // Property configuration (TASK-FO-007 groundwork): settings, business date, room types and rooms.
 // Permissions are enforced in the application services; the middleware only establishes who and where.

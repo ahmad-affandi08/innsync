@@ -84,7 +84,7 @@ final class SetupAndImportTest extends TestCase
 
         $this->get('/setup')->assertOk()->assertInertia(fn (Assert $page) => $page
             ->component('foundation/pages/setup')
-            ->has('steps', 16)
+            ->has('steps', 17)
             ->where('progress.total', 8)
             ->where('steps.0.key', 'profile')->has('profile.presets'));
 
