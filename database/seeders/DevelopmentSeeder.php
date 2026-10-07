@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Database\Seeders;
 
+use App\Modules\IdentityAccess\Infrastructure\Approval\DatabaseDefaultApprovalInstaller;
 use App\Modules\IdentityAccess\Infrastructure\Authorization\DatabaseDefaultRoleInstaller;
 use App\Modules\IdentityAccess\Infrastructure\Persistence\Eloquent\UserRecord;
 use App\Modules\Property\Application\Settings\PropertySettingsService;
@@ -251,6 +252,7 @@ final class DevelopmentSeeder extends Seeder
         $this->grantAllPermissions($property->id, $roleId);
         $this->assignUserToRole($property->id, $user->id, $roleId);
         (new DatabaseDefaultRoleInstaller)->install($property->id);
+        (new DatabaseDefaultApprovalInstaller)->install($property->id);
         $this->initializeBusinessDateIfNeeded($property->id, $user->id);
 
         $this->command?->info(sprintf(

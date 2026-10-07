@@ -34,6 +34,8 @@ final readonly class AccessAdmin
 
     public const PROTECTED_ROLE = 'Administrator';
 
+    public const MAX_BULK = 50;
+
     public function __construct(
         private AccessDirectory $directory,
         private PermissionChecker $permissions,
@@ -99,6 +101,44 @@ final readonly class AccessAdmin
             ], trim($reason)));
 
             return $userId;
+        });
+    }
+
+    /**
+     * Creates several accounts with the same role in one step: all of them or none. Each person is given the password in `password`; the list is checked first so
+     * the refusal names the row (`people.N.email`) that cannot be used.
+     *
+     * @param  list<array{name: string, email: string, password: string}>  $people
+     * @return list<string> the ids of the new accounts, in the order given
+     */
+    public function createAccounts(PropertyId $property, string $actorId, array $people, string $roleId, string $scopeType, ?string $scopeId, string $reason): array
+    {
+        $this->authorize($property, $actorId, self::USER_PERMISSION);
+
+        if ($people === [] || count($people) > self::MAX_BULK) {
+            throw AccessRefused::because(AccessRefused::INVALID, 'Between 1 and '.self::MAX_BULK.' people can be added at once.', 'people');
+        }
+
+        $seen = [];
+
+        foreach (array_values($people) as $i => $person) {
+            $email = mb_strtolower(trim($person['email']));
+
+            if (isset($seen[$email]) || $this->directory->emailTaken($email)) {
+                throw AccessRefused::because(AccessRefused::EMAIL_TAKEN, 'This email already has an account.', "people.{$i}.email");
+            }
+
+            $seen[$email] = true;
+        }
+
+        return $this->transactions->run(function () use ($property, $actorId, $people, $roleId, $scopeType, $scopeId, $reason): array {
+            $ids = [];
+
+            foreach ($people as $person) {
+                $ids[] = $this->createAccount($property, $actorId, $person['name'], $person['email'], $person['password'], [['role_id' => $roleId, 'scope_type' => $scopeType, 'scope_id' => $scopeId]], $reason);
+            }
+
+            return $ids;
         });
     }
 

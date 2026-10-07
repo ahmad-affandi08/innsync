@@ -45,6 +45,7 @@ final class CreateAdminCommand extends Command
         $this->grantAllPermissions($propertyId, $roleId);
         $this->assignUserToRole($propertyId, $userId, $roleId);
         $this->call('innsync:install-default-roles', ['--property' => $propertyId]);
+        $this->call('innsync:install-default-approvals', ['--property' => $propertyId]);
         $this->initializeBusinessDateIfNeeded($propertyId, $userId);
 
         $this->newLine();

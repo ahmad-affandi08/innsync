@@ -189,6 +189,8 @@ use App\Modules\IdentityAccess\Infrastructure\Authentication\EloquentUserPasswor
 use App\Modules\IdentityAccess\Infrastructure\Authorization\DatabaseStaffAccess;
 use App\Modules\IdentityAccess\Infrastructure\Authorization\DatabaseStaffContacts;
 use App\Modules\IdentityAccess\Application\Ports\AccessDirectory;
+use App\Shared\Application\Setup\SetupFacts;
+use App\Shared\Infrastructure\Setup\DatabaseSetupFacts;
 use App\Modules\IdentityAccess\Infrastructure\Authorization\DatabaseAccessDirectory;
 use App\Modules\IdentityAccess\Infrastructure\Authorization\DatabaseStaffDirectory;
 use App\Modules\IdentityAccess\Infrastructure\Authorization\DatabaseSystemActors;
@@ -459,6 +461,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(ShiftAttribution::class, CashierService::class);
         $this->app->bind(StaffDirectory::class, DatabaseStaffDirectory::class);
         $this->app->bind(AccessDirectory::class, DatabaseAccessDirectory::class);
+        $this->app->bind(SetupFacts::class, DatabaseSetupFacts::class);
         $this->app->bind(StaffContacts::class, DatabaseStaffContacts::class);
         $this->app->bind(ReportScheduleRepository::class, DatabaseReportScheduleRepository::class);
         $this->app->bind(ReportNotifier::class, MailReportNotifier::class);

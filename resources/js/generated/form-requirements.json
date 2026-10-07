@@ -492,6 +492,7 @@
     "identity-access/pages/users": [
         "email",
         "name",
+        "people",
         "reason",
         "role_id",
         "scope_type"

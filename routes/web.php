@@ -76,6 +76,7 @@ use App\Modules\HumanResource\Presentation\Http\Controllers\ServiceChargeControl
 use App\Modules\HumanResource\Presentation\Http\Controllers\ShiftSwapController;
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\ApprovalController;
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\AccessAdminController;
+use App\Shared\Infrastructure\Setup\SetupChecklistController;
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\ApprovalPolicyController;
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\AuthenticatedSessionController;
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\MfaController;
@@ -118,6 +119,7 @@ use App\Modules\Property\Presentation\Http\Controllers\ChargeSchemeController;
 use App\Modules\Property\Presentation\Http\Controllers\PropertySettingsController;
 use App\Modules\Property\Presentation\Http\Controllers\RatePlanController;
 use App\Modules\Property\Presentation\Http\Controllers\RoomCatalogController;
+use App\Modules\Property\Presentation\Http\Controllers\RoomImportController;
 use App\Modules\Reporting\Presentation\Http\Controllers\DashboardController;
 use App\Modules\Reporting\Presentation\Http\Controllers\ExportJobController;
 use App\Modules\Reporting\Presentation\Http\Controllers\ObligationController;
@@ -266,6 +268,7 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
     Route::get('/roles', [AccessAdminController::class, 'roles'])->middleware('permission:identity.role.manage')->name('access.roles');
     Route::middleware(['password.confirm', 'throttle:access-admin'])->group(function () use ($id): void {
         Route::post('/users', [AccessAdminController::class, 'createUser'])->middleware('permission:identity.user.manage')->name('access.users.create');
+        Route::post('/users/bulk', [AccessAdminController::class, 'createUsers'])->middleware('permission:identity.user.manage')->name('access.users.bulk');
         Route::post('/users/{id}/roles', [AccessAdminController::class, 'assign'])->middleware('permission:identity.user.manage')->where('id', $id)->name('access.users.assign');
         Route::post('/users/{id}/active', [AccessAdminController::class, 'setActive'])->middleware('permission:identity.user.manage')->where('id', $id)->name('access.users.active');
         Route::post('/users/{id}/reset-password', [AccessAdminController::class, 'resetPassword'])->middleware('permission:identity.user.manage')->where('id', $id)->name('access.users.reset');
@@ -276,6 +279,10 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
     });
 });
 
+// First-time set-up as one ordered list: what is done and what the hotel still cannot work without.
+Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])
+    ->get('/setup', [SetupChecklistController::class, 'show'])->middleware('permission:property.settings.manage')->name('setup');
+
 // Property configuration (TASK-FO-007 groundwork): settings, business date, room types and rooms.
 // Permissions are enforced in the application services; the middleware only establishes who and where.
 Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix('property')->group(function (): void {
@@ -284,6 +291,9 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
     Route::post('/settings/business-date', [PropertySettingsController::class, 'initializeBusinessDate'])->middleware('password.confirm')->name('property.business-date.initialize');
 
     Route::get('/rooms', [RoomCatalogController::class, 'index'])->name('property.rooms');
+    // The room master from two CSV files: check first, then apply. Applying is sensitive, so it needs a recent password confirmation.
+    Route::get('/rooms/import/template/{kind}', [RoomImportController::class, 'template'])->where('kind', 'types|rooms')->name('property.rooms.import.template');
+    Route::post('/rooms/import', [RoomImportController::class, 'run'])->middleware(['password.confirm', 'throttle:access-admin'])->name('property.rooms.import');
     Route::post('/room-types', [RoomCatalogController::class, 'storeType'])->name('property.room-types.store');
     Route::put('/room-types/{id}', [RoomCatalogController::class, 'updateType'])->where('id', '[0-9A-Za-z]{26}')->name('property.room-types.update');
     Route::post('/room-types/{id}/active', [RoomCatalogController::class, 'typeActive'])->where('id', '[0-9A-Za-z]{26}')->name('property.room-types.active');

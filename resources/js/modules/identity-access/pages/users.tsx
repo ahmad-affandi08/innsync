@@ -7,11 +7,13 @@ import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { PropertyShell } from '@/modules/property/components/property-shell';
 import { useServerAction } from '@/shared/api/use-server-action';
 import { useFormatters, useTranslation } from '@/shared/i18n/i18n';
 import { useErrorStateCopy } from '@/shared/i18n/use-ui-copy';
+import { parsePeople } from '@/shared/lib/people-list';
 
 type Assignment = { id: string; role_id: string; role_name: string; scope_type: string; scope_id: string; scope_name: string; is_active: boolean };
 type Person = { id: string; name: string; email: string; is_active: boolean; must_change_password: boolean; mfa: boolean; last_login_at: string | null; assignments: Assignment[] };
@@ -20,6 +22,7 @@ type Outlet = { id: string; name: string };
 
 type Dialogue =
     | { kind: 'create'; name: string; email: string; roleId: string; scopeType: string; outletId: string; reason: string }
+    | { kind: 'bulk'; text: string; roleId: string; scopeType: string; outletId: string; reason: string }
     | { kind: 'assign'; person: Person; roleId: string; scopeType: string; outletId: string; reason: string }
     | { kind: 'revoke'; person: Person; assignment: Assignment; reason: string }
     | { kind: 'active'; person: Person; active: boolean; reason: string }
@@ -31,7 +34,7 @@ export default function UsersPage({ people, roles, outlets }: { people: Person[]
     const errorCopy = useErrorStateCopy();
     const action = useServerAction();
     const [dialogue, setDialogue] = useState<Dialogue | null>(null);
-    const [handOver, setHandOver] = useState<{ email: string; password: string } | null>(null);
+    const [handOver, setHandOver] = useState<{ name: string; email: string; password: string }[] | null>(null);
     const [copied, setCopied] = useState(false);
     const activeRoles = roles.filter((r) => r.is_active);
 
@@ -55,7 +58,17 @@ export default function UsersPage({ people, roles, outlets }: { people: Person[]
             });
             if (result !== null) {
                 setCopied(false);
-                setHandOver({ email: result.email, password: result.temporary_password });
+                setHandOver([{ name: dialogue.name, email: result.email, password: result.temporary_password }]);
+            }
+            done = result;
+        } else if (dialogue.kind === 'bulk') {
+            const result = await action.run<{ created: { name: string; email: string; temporary_password: string }[] }>('/access/users/bulk', {
+                body: { people: parsePeople(dialogue.text).people, role_id: dialogue.roleId, reason: dialogue.reason, ...scope(dialogue) },
+                reload,
+            });
+            if (result !== null) {
+                setCopied(false);
+                setHandOver(result.created.map((c) => ({ name: c.name, email: c.email, password: c.temporary_password })));
             }
             done = result;
         } else if (dialogue.kind === 'assign') {
@@ -68,7 +81,7 @@ export default function UsersPage({ people, roles, outlets }: { people: Person[]
             const result = await action.run<{ temporary_password: string }>(`/access/users/${dialogue.person.id}/reset-password`, { body: { reason: dialogue.reason }, reload });
             if (result !== null) {
                 setCopied(false);
-                setHandOver({ email: dialogue.person.email, password: result.temporary_password });
+                setHandOver([{ name: dialogue.person.name, email: dialogue.person.email, password: result.temporary_password }]);
             }
             done = result;
         }
@@ -89,6 +102,7 @@ export default function UsersPage({ people, roles, outlets }: { people: Person[]
         if (dialogue === null) return '';
         switch (dialogue.kind) {
             case 'create': return t('acc.create.title');
+            case 'bulk': return t('acc.bulk.title');
             case 'assign': return t('acc.assign.title', { name: dialogue.person.name });
             case 'revoke': return t('acc.revoke.title', { role: dialogue.assignment.role_name, name: dialogue.person.name });
             case 'active': return t(dialogue.active ? 'acc.activate.title' : 'acc.deactivate.title', { name: dialogue.person.name });
@@ -98,13 +112,14 @@ export default function UsersPage({ people, roles, outlets }: { people: Person[]
 
     const submitLabel = dialogue === null ? '' : {
         create: t('acc.create.submit'),
+        bulk: t('acc.bulk.submit', { count: dialogue.kind === 'bulk' ? parsePeople(dialogue.text).people.length : 0 }),
         assign: t('acc.assign.submit'),
         revoke: t('acc.revoke.submit'),
         active: dialogue.kind === 'active' && dialogue.active ? t('acc.users.activate') : t('acc.users.deactivate'),
         reset: t('acc.users.resetPassword'),
     }[dialogue.kind];
 
-    const roleFields = dialogue !== null && (dialogue.kind === 'create' || dialogue.kind === 'assign') ? (
+    const roleFields = dialogue !== null && (dialogue.kind === 'create' || dialogue.kind === 'assign' || dialogue.kind === 'bulk') ? (
         <>
             <FormField error={action.fieldError('role_id')} field="role_id" label={t('acc.field.role')}>
                 <Select onChange={(e) => setDialogue({ ...dialogue, roleId: e.target.value })} searchable={false} value={dialogue.roleId}>
@@ -132,6 +147,7 @@ export default function UsersPage({ people, roles, outlets }: { people: Person[]
             <PropertyShell
                 actions={<>
                     <Button asChild variant="outline"><a href="/access/roles">{t('acc.users.rolesLink')}</a></Button>
+                    <Button disabled={activeRoles.length === 0} onClick={() => open({ kind: 'bulk', text: '', roleId: '', scopeType: 'property', outletId: '', reason: '' })} type="button" variant="outline">{t('acc.users.addMany')}</Button>
                     <Button
                         disabled={activeRoles.length === 0}
                         onClick={() => open({ kind: 'create', name: '', email: '', roleId: '', scopeType: 'property', outletId: '', reason: '' })}
@@ -209,6 +225,20 @@ export default function UsersPage({ people, roles, outlets }: { people: Person[]
                                 </FormField>
                             </>
                         ) : null}
+                        {dialogue.kind === 'bulk' ? (() => {
+                            const parsed = parsePeople(dialogue.text);
+
+                            return (
+                                <>
+                                    <p className="text-sm text-muted-foreground">{t('acc.bulk.hint')}</p>
+                                    <FormField error={action.fieldError('people') ?? action.fieldError('people.*.email')} field="people" label={t('acc.bulk.list')}>
+                                        <Textarea onChange={(e) => setDialogue({ ...dialogue, text: e.target.value })} placeholder={t('acc.bulk.placeholder')} rows={6} value={dialogue.text} />
+                                    </FormField>
+                                    <p className="text-sm">{t('acc.bulk.count', { count: parsed.people.length })}</p>
+                                    {parsed.invalid.length > 0 ? <Alert title={t('acc.bulk.invalid', { count: parsed.invalid.length })} tone="warning"><ul className="mt-1 list-disc pl-5 text-sm">{parsed.invalid.slice(0, 5).map((l, i) => <li key={i}>{l}</li>)}</ul></Alert> : null}
+                                </>
+                            );
+                        })() : null}
                         {dialogue.kind === 'active' && !dialogue.active ? <p className="text-sm text-muted-foreground">{t('acc.deactivate.body')}</p> : null}
                         {dialogue.kind === 'reset' ? <p className="text-sm text-muted-foreground">{t('acc.reset.body')}</p> : null}
                         {roleFields}
@@ -227,9 +257,16 @@ export default function UsersPage({ people, roles, outlets }: { people: Person[]
             >
                 {handOver !== null && (
                     <div className="flex flex-col gap-3">
-                        <p className="text-sm text-muted-foreground">{t('acc.temp.body', { email: handOver.email })}</p>
-                        <code className="block break-all border border-border bg-muted px-3 py-2 font-mono text-base" data-testid="temporary-password">{handOver.password}</code>
-                        <div><Button onClick={() => void copy(handOver.password)} size="sm" type="button" variant="outline">{copied ? t('acc.temp.copied') : t('acc.temp.copy')}</Button></div>
+                        <p className="text-sm text-muted-foreground">{t('acc.temp.body')}</p>
+                        <ul className="max-h-72 divide-y divide-border overflow-y-auto border border-border">
+                            {handOver.map((h) => (
+                                <li className="flex flex-col gap-0.5 px-3 py-2" key={h.email}>
+                                    <span className="text-sm font-medium">{h.name} <span className="font-normal text-muted-foreground">· {h.email}</span></span>
+                                    <code className="break-all font-mono text-base" data-testid="temporary-password">{h.password}</code>
+                                </li>
+                            ))}
+                        </ul>
+                        <div><Button onClick={() => void copy(handOver.map((h) => `${h.name}\t${h.email}\t${h.password}`).join('\n'))} size="sm" type="button" variant="outline">{copied ? t('acc.temp.copied') : t('acc.temp.copy')}</Button></div>
                     </div>
                 )}
             </Dialog>

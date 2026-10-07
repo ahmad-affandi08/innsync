@@ -10,6 +10,7 @@ import { Select } from '@/components/ui/select';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { Textarea } from '@/components/ui/textarea';
 import { PropertyShell } from '@/modules/property/components/property-shell';
+import { RoomImportDialog } from '@/modules/property/components/room-import-dialog';
 import { useServerAction } from '@/shared/api/use-server-action';
 import { useTranslation } from '@/shared/i18n/i18n';
 import { useErrorStateCopy } from '@/shared/i18n/use-ui-copy';
@@ -43,6 +44,7 @@ export default function RoomCatalogPage({ rooms, types }: { rooms: Room[]; types
     const [roomForm, setRoomForm] = useState<RoomForm | null>(null);
     const [toggle, setToggle] = useState<Toggle | null>(null);
     const [reason, setReason] = useState('');
+    const [importing, setImporting] = useState(false);
     const typeName = (id: string) => types.find((x) => x.id === id)?.name ?? '';
 
     function closeAll() {
@@ -97,7 +99,7 @@ export default function RoomCatalogPage({ rooms, types }: { rooms: Room[]; types
     };
 
     return (
-        <PropertyShell description={t('property.rooms.description')} title={t('property.rooms.title')}>
+        <PropertyShell actions={<Button onClick={() => setImporting(true)} type="button" variant="outline">{t('prop.import.open')}</Button>} description={t('property.rooms.description')} title={t('property.rooms.title')}>
             {action.error !== null && toggle === null && typeForm === null && roomForm === null ? (
                 <ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} />
             ) : null}
@@ -249,6 +251,7 @@ export default function RoomCatalogPage({ rooms, types }: { rooms: Room[]; types
                     </FormField>
                 </div>
             </ConfirmDialog>
+            <RoomImportDialog onClose={() => setImporting(false)} open={importing} />
         </PropertyShell>
     );
 }

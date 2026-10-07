@@ -6,6 +6,8 @@ Release notes for every release (NFR-14). Newest first. Each entry names the tas
 
 ### Added
 
+- Easier first-time setup (owner instruction 2026-10-07): a **First-time setup** list (`/setup`) shows every step in order with what is done and what is missing; **rooms and room types can be imported from two CSV files on screen** (checked first, nothing changes until imported, every bad row listed with its line); **several accounts can be added at once** from a pasted list; and every property now gets **a starting approver for each of the 11 actions that are refused without one** (void, refund, leave, payroll and others), editable on the Approval policies screen. Migration 120 creates them for existing properties that have an administrator. See `docs/OPERATIONS/FIRST-TIME-SETUP.md`.
+
 - Pickers: a list opened inside a dialog (for example the role in "Add person") can be scrolled by wheel and finger again, shows a search box whenever it has more than 7 rows (a short list has none), and an unchosen value shows "Select" instead of a dash. Every select, date picker and popover in a dialog is covered. Checked in a browser at phone width.
 
 - Phone layout fix: a form with a long option label (for example the report of an export in Indonesian) no longer widens the page past the screen; form fields and select buttons can shrink, and the maintenance toolbar wraps. Checked in a browser at 390 px and 320 px width over 171 pages.

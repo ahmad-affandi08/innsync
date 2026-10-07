@@ -46,6 +46,24 @@ final readonly class AccessAdminController
         return $this->once(['id' => $id, 'email' => mb_strtolower(trim($data['email'])), 'temporary_password' => $password], 201);
     }
 
+    public function createUsers(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'people' => ['required', 'array', 'min:1', 'max:'.AccessAdmin::MAX_BULK],
+            'people.*.name' => ['required', 'string', 'max:255'],
+            'people.*.email' => ['required', 'string', 'email:rfc', 'max:255'],
+            'role_id' => ['required', 'string', 'size:26'],
+            'scope_type' => ['required', 'string', 'in:property,outlet'],
+            'scope_id' => ['nullable', 'string', 'size:26', 'required_if:scope_type,outlet'],
+            'reason' => ['required', 'string', 'max:500'],
+        ]);
+
+        $people = array_map(fn (array $p): array => ['name' => $p['name'], 'email' => $p['email'], 'password' => $this->temporaryPassword()], array_values($data['people']));
+        $ids = $this->access->createAccounts($this->property->current(), $this->actor($request), $people, $data['role_id'], $data['scope_type'], $data['scope_id'] ?? null, $data['reason']);
+
+        return $this->once(['created' => array_map(static fn (array $p, string $id): array => ['id' => $id, 'name' => $p['name'], 'email' => mb_strtolower(trim($p['email'])), 'temporary_password' => $p['password']], $people, $ids)], 201);
+    }
+
     public function assign(Request $request, string $id): JsonResponse
     {
         $data = $request->validate([

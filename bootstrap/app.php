@@ -19,6 +19,7 @@ use App\Shared\Infrastructure\Backup\BackupDecryptCommand;
 use App\Shared\Infrastructure\Backup\BackupKeygenCommand;
 use App\Shared\Infrastructure\Backup\BackupRunCommand;
 use App\Shared\Infrastructure\Backup\BackupVerifyCommand;
+use App\Modules\IdentityAccess\Infrastructure\Console\InstallDefaultApprovalsCommand;
 use App\Modules\IdentityAccess\Infrastructure\Console\InstallDefaultRolesCommand;
 use App\Shared\Infrastructure\Deployment\CreateAdminCommand;
 use App\Shared\Infrastructure\Deployment\PreflightCommand;
@@ -64,6 +65,7 @@ return Application::configure(basePath: dirname(__DIR__))
         PreflightCommand::class,
         CreateAdminCommand::class,
         InstallDefaultRolesCommand::class,
+        InstallDefaultApprovalsCommand::class,
         ImportRoomMasterCommand::class,
         SmokeCommand::class,
         RetentionPurgeCommand::class,

@@ -150,6 +150,7 @@ export const FINANCE_LINKS: readonly NavLink[] = [
 ];
 
 export const PROPERTY_LINKS: readonly NavLink[] = [
+    { href: '/setup', label: 'setup.nav' },
     { href: '/property/settings', label: 'property.action.settings' },
     { href: '/property/rooms', label: 'property.action.rooms' },
     { href: '/property/rates', label: 'property.action.rates' },

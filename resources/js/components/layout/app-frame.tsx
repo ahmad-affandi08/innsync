@@ -63,7 +63,7 @@ const MODULES: ModuleEntry[] = [
     { key: 'dashboard', href: '/dashboard', icon: LayoutDashboard, label: 'rpt.nav.dashboard', prefixes: ['/dashboard'], group: 'insight' },
     { key: 'reports', href: '/reports', icon: ChartNoAxesCombined, label: 'rpt.nav.reports', prefixes: ['/reports'], group: 'insight' },
     { key: 'approvals', href: '/approvals', icon: ShieldCheck, label: 'identity.approvals.title', prefixes: ['/approvals'], group: 'control' },
-    { key: 'property', href: '/property/settings', icon: Settings2, label: 'property.nav.label', prefixes: ['/property', '/sync', '/access'], group: 'control' },
+    { key: 'property', href: '/property/settings', icon: Settings2, label: 'property.nav.label', prefixes: ['/property', '/sync', '/access', '/setup'], group: 'control' },
 ];
 
 const GROUPS = ['start', 'operations', 'insight', 'control'] as const;

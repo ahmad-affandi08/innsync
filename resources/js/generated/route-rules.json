@@ -878,6 +878,25 @@
             "scope_type"
         ]
     },
+    "POST /access/users/bulk": {
+        "required": [
+            "people",
+            "people.*.email",
+            "people.*.name",
+            "reason",
+            "role_id",
+            "scope_type"
+        ],
+        "declared": [
+            "people",
+            "people.*.email",
+            "people.*.name",
+            "reason",
+            "role_id",
+            "scope_id",
+            "scope_type"
+        ]
+    },
     "POST /access/users/{id}/active": {
         "required": [
             "active",
@@ -5819,6 +5838,20 @@
             "number",
             "reason",
             "room_type_id"
+        ]
+    },
+    "POST /property/rooms/import": {
+        "required": [
+            "dry_run",
+            "rooms",
+            "types"
+        ],
+        "declared": [
+            "dry_run",
+            "expect_rooms",
+            "expect_types",
+            "rooms",
+            "types"
         ]
     },
     "POST /property/rooms/{id}/active": {
