@@ -66,46 +66,42 @@ final readonly class DatabaseDrillQueries implements DrillQueries
         $pid = $property->toString();
         $range = [$period->from->toString(), $period->to->toString()];
         $outletOf = $this->outletOfSource($pid);
+        $charged = static fn () => DB::table('folio_postings as p')->join('folios as f', 'f.id', '=', 'p.folio_id')->where('p.property_id', $pid)->whereBetween('p.business_date', $range)->whereIn('p.entry_type', ['charge', 'reversal'])
+            ->where(static fn ($q) => $q->where('p.base_minor', '<>', 0)->orWhere('p.service_charge_minor', '<>', 0)->orWhere('p.tax_minor', '<>', 0));
+        $sold = static fn () => DB::table('fin_pos_sales as s')->where('s.property_id', $pid)->whereBetween('s.business_date', $range)->where('s.room_minor', 0);
+
+        // The sources that are posted in the period are few; which of them the figure and the scope allow is decided here, so that the database does the cutting and counting.
+        $sources = array_values(array_unique([...$charged()->distinct()->pluck('p.source')->all(), ...$sold()->distinct()->pluck('s.source')->all()]));
+        $kindOf = static fn (string $source): string => $source === 'night_audit' ? 'room' : ($source === 'laundry' ? 'laundry' : (isset($outletOf[$source]) ? 'outlet' : 'other'));
+        $allowed = array_values(array_filter($sources, static fn (string $source): bool => ($scope === null || $scope->allows($kindOf($source), $source)) && ($kind === 'net' || $kind === $kindOf($source))));
+
+        if ($allowed === []) {
+            return ['rows' => [], 'total' => 0];
+        }
+
+        $folio = $charged()->whereIn('p.source', $allowed);
+        $pos = $sold()->whereIn('s.source', $allowed);
+        $total = (int) (clone $folio)->count() + (int) (clone $pos)->count();
         $rows = [];
 
-        $postings = DB::table('folio_postings as p')->join('folios as f', 'f.id', '=', 'p.folio_id')->where('p.property_id', $pid)->whereBetween('p.business_date', $range)->whereIn('p.entry_type', ['charge', 'reversal'])
-            ->where(static fn ($q) => $q->where('p.base_minor', '<>', 0)->orWhere('p.service_charge_minor', '<>', 0)->orWhere('p.tax_minor', '<>', 0))
-            ->orderBy('p.business_date')->orderBy('p.posted_at')->orderBy('p.id')
-            ->get(['p.id', 'p.business_date', 'p.source', 'p.entry_type', 'p.description', 'f.number as document', 'f.id as folio_id', 'p.base_minor', 'p.service_charge_minor', 'p.tax_minor', 'p.total_minor']);
-
-        foreach ($postings as $p) {
-            $rows[] = ['sort' => (string) $p->business_date.'|1|'.$p->id, 'source' => (string) $p->source, 'date' => substr((string) $p->business_date, 0, 10), 'document' => (string) $p->document,
-                'what' => (string) ($p->entry_type === 'reversal' ? 'reversal: ' : '').$p->description, 'base' => (int) $p->base_minor, 'service_charge' => (int) $p->service_charge_minor, 'tax' => (int) $p->tax_minor, 'total' => (int) $p->total_minor,
+        foreach ($folio->orderBy('p.business_date')->orderBy('p.id')->limit($limit)->get(['p.id', 'p.business_date', 'p.source', 'p.entry_type', 'p.description', 'f.number as document', 'f.id as folio_id', 'p.base_minor', 'p.service_charge_minor', 'p.tax_minor', 'p.total_minor']) as $p) {
+            $rows[] = ['sort' => substr((string) $p->business_date, 0, 10).'|1|'.$p->id, 'kind' => $kindOf((string) $p->source), 'source' => (string) $p->source, 'date' => substr((string) $p->business_date, 0, 10), 'document' => (string) $p->document,
+                'what' => ($p->entry_type === 'reversal' ? 'reversal: ' : '').$p->description, 'base' => (int) $p->base_minor, 'service_charge' => (int) $p->service_charge_minor, 'tax' => (int) $p->tax_minor, 'total' => (int) $p->total_minor,
                 'href' => '/front-office/folios/'.$p->folio_id];
         }
 
-        $sales = DB::table('fin_pos_sales')->where('property_id', $pid)->whereBetween('business_date', $range)->where('room_minor', 0)->orderBy('business_date')->orderBy('occurred_at')->orderBy('id')
-            ->get(['id', 'business_date', 'source', 'bill_id', 'bill_number', 'outlet_code', 'base_minor', 'service_charge_minor', 'tax_minor', 'total_minor']);
-
-        foreach ($sales as $s) {
-            $rows[] = ['sort' => (string) $s->business_date.'|2|'.$s->id, 'source' => (string) $s->source, 'date' => substr((string) $s->business_date, 0, 10), 'document' => (string) $s->bill_number,
-                'what' => 'sale at '.$s->outlet_code, 'base' => (int) $s->base_minor, 'service_charge' => (int) $s->service_charge_minor, 'tax' => (int) $s->tax_minor, 'total' => (int) $s->total_minor, 'href' => '/fnb/bills/'.$s->bill_id];
+        foreach ($pos->orderBy('s.business_date')->orderBy('s.id')->limit($limit)->get(['s.id', 's.business_date', 's.source', 's.bill_id', 's.bill_number', 's.outlet_code', 's.base_minor', 's.service_charge_minor', 's.tax_minor', 's.total_minor']) as $r) {
+            $rows[] = ['sort' => substr((string) $r->business_date, 0, 10).'|2|'.$r->id, 'kind' => $kindOf((string) $r->source), 'source' => (string) $r->source, 'date' => substr((string) $r->business_date, 0, 10), 'document' => (string) $r->bill_number,
+                'what' => 'sale at '.$r->outlet_code, 'base' => (int) $r->base_minor, 'service_charge' => (int) $r->service_charge_minor, 'tax' => (int) $r->tax_minor, 'total' => (int) $r->total_minor, 'href' => '/fnb/bills/'.$r->bill_id];
         }
 
-        $out = [];
-
-        foreach ($rows as $row) {
-            $rowKind = $row['source'] === 'night_audit' ? 'room' : ($row['source'] === 'laundry' ? 'laundry' : (isset($outletOf[$row['source']]) ? 'outlet' : 'other'));
-
-            if (($scope !== null && ! $scope->allows($rowKind, $row['source'])) || ($kind !== 'net' && $kind !== $rowKind)) {
-                continue;
-            }
-
-            $out[] = [...$row, 'kind' => $rowKind];
-        }
-
-        usort($out, static fn (array $a, array $b): int => strcmp($a['sort'], $b['sort']));
+        usort($rows, static fn (array $a, array $b): int => strcmp($a['sort'], $b['sort']));
 
         return ['rows' => array_map(static function (array $r): array {
             unset($r['sort']);
 
             return $r;
-        }, array_slice($out, 0, $limit)), 'total' => count($out)];
+        }, array_slice($rows, 0, $limit)), 'total' => $total];
     }
 
     public function owedPayables(PropertyId $property, int $limit): array
