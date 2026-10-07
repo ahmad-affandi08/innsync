@@ -16,6 +16,15 @@
             "tv"
         ]
     },
+    "GET /dashboard/drill/{card}": {
+        "required": [],
+        "declared": [
+            "from",
+            "metric",
+            "preset",
+            "to"
+        ]
+    },
     "GET /finance/aging": {
         "required": [],
         "declared": [

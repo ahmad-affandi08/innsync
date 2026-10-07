@@ -595,6 +595,7 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
 Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->group(function (): void {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/dashboard/today', [DashboardController::class, 'today'])->name('dashboard.today');
+    Route::get('/dashboard/drill/{card}', [DashboardController::class, 'drill'])->where('card', '[a-z_]{3,20}')->name('dashboard.drill');
     Route::post('/dashboard/preferences', [DashboardController::class, 'savePreferences'])->name('dashboard.preferences');
     Route::delete('/dashboard/preferences', [DashboardController::class, 'resetPreferences'])->name('dashboard.preferences.reset');
     Route::prefix('reports')->group(function (): void {

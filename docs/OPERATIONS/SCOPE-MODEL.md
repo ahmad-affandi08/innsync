@@ -26,7 +26,7 @@ A person sees a card when the permission it needs is granted at property scope (
 
 The alerts are filtered the same way: each alert belongs to a department (the table in `DashboardService::ALERT_DEPARTMENT`), and an alert that belongs to none (a synchronisation failure) is for property scope only.
 
-The response says which scope each card was limited to, so the screen can say so.
+The response says which scope each card was limited to, so the screen can say so. The list of rows behind a card (FR-DSH-016) is under the same rule: `DashboardService::cardGrant` decides, for the card and for its list, who sees what.
 
 ## What the reports do with it
 

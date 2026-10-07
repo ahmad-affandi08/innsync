@@ -148,6 +148,33 @@ final readonly class DashboardService
     }
 
     /**
+     * The grant under which a person sees a card, or null when they do not see it (FR-DSH-022): the same rule the snapshot applies, kept in one place so that the list behind
+     * a card (FR-DSH-016) can never show what the card itself would not.
+     */
+    public function cardGrant(string $actorId, PropertyId $property, string $card): ?DashboardGrant
+    {
+        $view = $this->grant($actorId, $property, [self::VIEW_PERMISSION]);
+
+        if (! $view->any()) {
+            return null;
+        }
+
+        $grant = match ($card) {
+            'occupancy', 'movements', 'activity', 'arrivals' => $view->department('front_office') ? $view : null,
+            'revenue' => $this->grant($actorId, $property, [self::REVENUE_PERMISSION]),
+            'products' => $this->grant($actorId, $property, [self::REVENUE_PERMISSION])->property ? $this->grant($actorId, $property, [self::REVENUE_PERMISSION]) : null,
+            'staff' => $this->grant($actorId, $property, ['hr.employee.view', 'hr.employee.manage', 'hr.roster.manage', 'hr.attendance.manage']),
+            'spend' => $this->grant($actorId, $property, ['finance.payable.view', 'finance.payable.manage', 'finance.payment.record'])->property ? new DashboardGrant(true, [], []) : null,
+            'stock' => $this->grant($actorId, $property, ['inventory.stock.view', 'inventory.catalog.view']),
+            'maintenance' => ($m = $this->grant($actorId, $property, ['maintenance.work.manage', 'maintenance.work.perform', 'maintenance.work.report']))->department('maintenance') ? $m : null,
+            'outlet_hours' => $view->department('fnb') || $view->outlets !== [] ? $view : null,
+            default => null,
+        };
+
+        return $grant !== null && $grant->any() ? $grant : null;
+    }
+
+    /**
      * What a person holds of the permissions, as the whole property or as departments and outlets (FR-DSH-022). Whoever holds one at property scope is not asked
      * about the scopes, so a person with the whole property costs no more than before.
      *
@@ -189,7 +216,7 @@ final readonly class DashboardService
     }
 
     /** The part of the revenue a limited grant sees: what each of its departments owns, and the sales of each of its outlets. */
-    private function revenueScope(PropertyId $property, DashboardGrant $grant): RevenueScope
+    public function revenueScope(PropertyId $property, DashboardGrant $grant): RevenueScope
     {
         return RevenueScope::of($grant->departments, array_values($this->queries->fnbOutletCodes($property, $grant->outlets)));
     }
@@ -201,7 +228,7 @@ final readonly class DashboardService
      * @param  list<string>  $departments
      * @return array<string, mixed>
      */
-    private function staffOf(array $staff, array $departments): array
+    public function staffOf(array $staff, array $departments): array
     {
         $in = static fn (array $row): bool => in_array($row['department'] ?? '', $departments, true);
         $groups = array_values(array_filter($staff['groups'] ?? [], $in));
@@ -260,6 +287,8 @@ final readonly class DashboardService
             'period' => $scope instanceof ReportPeriod ? $scope->toArray() : null,
             'as_of' => $asOf,
             'href' => $href,
+            // The list of the rows each figure of the card is made of (FR-DSH-016); a card of a period carries its period.
+            'drill' => '/dashboard/drill/'.$key.($scope instanceof ReportPeriod ? '?'.http_build_query(['from' => $scope->from->toString(), 'to' => $scope->to->toString()]) : ''),
             'values' => $values,
         ];
     }

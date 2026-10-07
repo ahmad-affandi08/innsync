@@ -6,6 +6,7 @@ namespace App\Modules\Reporting\Presentation\Http\Controllers;
 
 use App\Modules\Reporting\Application\DashboardPreferenceService;
 use App\Modules\Reporting\Application\DashboardService;
+use App\Modules\Reporting\Application\DrillDownService;
 use App\Modules\Reporting\Application\ReportService;
 use App\Shared\Application\Tenancy\PropertyContext;
 use Illuminate\Http\JsonResponse;
@@ -16,7 +17,7 @@ use Inertia\Response;
 /** The dashboard screen; the page refreshes itself with a partial reload. Every rule and permission lives in `DashboardService`. */
 final readonly class DashboardController
 {
-    public function __construct(private DashboardService $dashboard, private DashboardPreferenceService $preferences, private ReportService $reports, private PropertyContext $property) {}
+    public function __construct(private DashboardService $dashboard, private DashboardPreferenceService $preferences, private DrillDownService $drills, private ReportService $reports, private PropertyContext $property) {}
 
     public function index(Request $request): Response
     {
@@ -44,6 +45,17 @@ final readonly class DashboardController
             'movements' => $values['movements'] ?? null,
             'alerts' => count($snapshot['alerts']),
         ])->header('Cache-Control', 'no-store');
+    }
+
+    /** The rows behind the figures of a card (FR-DSH-016). The page is one card, one figure at a time, for the period the card was opened with. */
+    public function drill(Request $request, string $card): Response
+    {
+        $input = $request->validate(['metric' => ['nullable', 'string', 'max:30'], 'preset' => ['nullable', 'string', 'max:10'], 'from' => ['nullable', 'string', 'size:10'], 'to' => ['nullable', 'string', 'size:10']]);
+
+        return Inertia::render('reporting/pages/drill', [
+            'drill' => $this->drills->drill($this->property->current(), $this->actor($request), $card, $input['metric'] ?? null, $input['preset'] ?? null, $input['from'] ?? null, $input['to'] ?? null),
+            'currency' => $this->reports->context($this->property->current(), $this->actor($request))['currency'],
+        ]);
     }
 
     public function savePreferences(Request $request): JsonResponse

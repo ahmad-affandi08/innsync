@@ -11,7 +11,7 @@ import { useServerAction } from '@/shared/api/use-server-action';
 import { useFormatters, useTranslation } from '@/shared/i18n/i18n';
 
 type Money = { base: number; service_charge: number; tax: number; total: number };
-type Card = { key: string; kind: 'now' | 'period'; business_date: string | null; period: { from: string; to: string } | null; as_of: string; href: string; limited: boolean; values: Record<string, any> };
+type Card = { key: string; kind: 'now' | 'period'; business_date: string | null; period: { from: string; to: string } | null; as_of: string; href: string; drill: string; limited: boolean; values: Record<string, any> };
 type Snapshot = { period: { preset: string; from: string; to: string }; business_date: string; as_of: string; scope: { property: boolean; departments: string[]; outlets: string[] }; cards: Card[]; alerts: { code: string; count: number; items: string[]; href: string }[] };
 
 type MenuRow = { code: string; name: string; outlet: string; quantity: number; total_minor: number };
@@ -285,7 +285,10 @@ export default function DashboardPage({ currency, preferences, snapshot: s, tv }
                             <p className="mt-1">{t(`rpt.card.${c.key}.def` as 'rpt.card.occupancy.def')}</p>
                             <p className="mt-1">{t('rpt.dash.asOf', { time: format.instant(c.as_of) })}</p>
                         </details>
-                        <Link className="mt-auto inline-flex items-center gap-1 border-t border-border pt-3 text-sm font-medium text-accent hover:underline" href={c.href}>{t('rpt.dash.openSource')}<ArrowRight aria-hidden="true" className="size-4" /></Link>
+                        <div className="mt-auto flex flex-wrap items-center justify-between gap-2 border-t border-border pt-3 text-sm font-medium">
+                            <Link className="inline-flex items-center gap-1 text-accent hover:underline" data-testid={`drill-${c.key}`} href={c.drill}>{t('rpt.dash.openRows')}<ArrowRight aria-hidden="true" className="size-4" /></Link>
+                            <Link className="inline-flex items-center gap-1 text-accent hover:underline" href={c.href}>{t('rpt.dash.openSource')}</Link>
+                        </div>
                     </article>
                 ))}
             </div>

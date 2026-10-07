@@ -200,6 +200,19 @@ final class ReportingHttpTest extends TestCase
         $this->get("/reports/laundry/export?user={$me}")->assertOk();
     }
 
+    public function test_a_card_opens_the_rows_behind_its_figures_and_refuses_what_is_not_there(): void
+    {
+        $this->get('/dashboard/drill/occupancy')->assertOk()->assertInertia(fn (Assert $p) => $p->component('reporting/pages/drill')->where('currency', 'IDR')->where('drill.card', 'occupancy')->where('drill.metric', 'occupied')
+            ->where('drill.total', 1)->where('drill.metrics.0.count', 1)->has('drill.rows', 1)->where('drill.rows.0.room', '101'));
+        $this->get('/dashboard/drill/movements?metric=arrivals_checked_in')->assertOk()->assertInertia(fn (Assert $p) => $p->where('drill.total', 1)->where('drill.columns.0.key', 'reservation'));
+        $this->get('/dashboard/drill/revenue?metric=net&preset=month')->assertOk()->assertInertia(fn (Assert $p) => $p->where('drill.period.preset', 'month'));
+        $this->get('/dashboard')->assertInertia(fn (Assert $p) => $p->where('snapshot.cards.0.drill', '/dashboard/drill/occupancy'));
+
+        $this->get('/dashboard/drill/weather')->assertNotFound();
+        $this->getJson('/dashboard/drill/occupancy?metric=rainfall')->assertStatus(422);
+        $this->getJson('/dashboard/drill/occupancy?preset=forever')->assertStatus(422);
+    }
+
     public function test_people_without_the_permissions_see_nothing(): void
     {
         $this->post('/logout');
