@@ -369,6 +369,11 @@
         "scope_ref",
         "use_quantity"
     ],
+    "housekeeping/pages/supplies": [
+        "item_id",
+        "location_id",
+        "quantity"
+    ],
     "hr/pages/announcements": [
         "audience",
         "body",

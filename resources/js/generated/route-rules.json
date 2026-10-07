@@ -1,4 +1,12 @@
 {
+    "DELETE /fnb/items/{id}/photo": {
+        "required": [
+            "lock_version"
+        ],
+        "declared": [
+            "lock_version"
+        ]
+    },
     "GET /dashboard": {
         "required": [],
         "declared": [
@@ -1621,6 +1629,16 @@
             "lock_version"
         ]
     },
+    "POST /fnb/items/{id}/photo": {
+        "required": [
+            "lock_version",
+            "photo"
+        ],
+        "declared": [
+            "lock_version",
+            "photo"
+        ]
+    },
     "POST /fnb/minibar/checks": {
         "required": [
             "lines",
@@ -3105,6 +3123,21 @@
             "inspection_required",
             "lock_version",
             "reason"
+        ]
+    },
+    "POST /housekeeping/supplies": {
+        "required": [
+            "item_id",
+            "location_id",
+            "quantity",
+            "unit"
+        ],
+        "declared": [
+            "item_id",
+            "location_id",
+            "note",
+            "quantity",
+            "unit"
         ]
     },
     "POST /housekeeping/tasks": {

@@ -8,6 +8,7 @@ const LINKS = [
     { href: '/housekeeping/checklists', label: 'hk.nav.checklists' },
     { href: '/housekeeping/linen', label: 'hk.nav.linen' },
     { href: '/housekeeping/par-levels', label: 'hk.nav.par' },
+    { href: '/housekeeping/supplies', label: 'hk.nav.supplies' },
     { href: '/housekeeping/lost-found', label: 'hk.nav.lostfound' },
     { href: '/housekeeping/damage-reports', label: 'hk.nav.damage' },
     { href: '/inventory/requests?department=housekeeping', label: 'hk.nav.purchasing' },

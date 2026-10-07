@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\InventoryPurchasing;
 
+use App\Modules\Housekeeping\Application\HousekeepingService;
+use App\Modules\Housekeeping\Application\SupplyUseService as HousekeepingSupplyUseService;
 use App\Modules\InventoryPurchasing\Application\InventoryCatalogService;
 use App\Modules\InventoryPurchasing\Application\StockRequisitionService;
 use App\Modules\InventoryPurchasing\Application\StockService;
@@ -177,6 +179,38 @@ final class RequisitionAndSupplyHttpTest extends TestCase
         $this->postJson('/laundry/supplies', ['item_id' => $this->soap, 'location_id' => $this->main, 'unit' => 'KG', 'quantity' => '1'], $this->key())->assertStatus(403);
         $this->as(['housekeeping.view']);
         $this->get('/laundry/supplies')->assertStatus(403);
+    }
+
+    /** FR-INV-004: what housekeeping uses up leaves the stock card of a store at the average cost, as housekeeping consumption. */
+    public function test_housekeeping_records_the_supplies_it_uses_and_the_stock_card_follows(): void
+    {
+        $category = (string) DB::table('inventory_categories')->value('id');
+        $this->as([InventoryCatalogService::MANAGE_PERMISSION, StockService::POST_PERMISSION, StockService::VIEW_PERMISSION]);
+        $soap = $this->postJson('/inventory/items', ['code' => 'SOAP', 'name' => 'Guest soap', 'category_id' => $category, 'department' => 'housekeeping', 'base_unit' => 'PCS'])->assertCreated()->json('item.id');
+        $this->postJson('/inventory/stock/opening', ['unit_cost_minor' => 3_000, 'item_id' => $soap, 'location_id' => $this->main, 'unit' => 'PCS', 'quantity' => '200'])->assertCreated();
+
+        $this->as([HousekeepingSupplyUseService::USE_PERMISSION]);
+        $page = $this->get('/housekeeping/supplies')->assertOk()->viewData('page')['props']['overview'];
+        self::assertSame(['SOAP'], array_column($page['items'], 'code'), 'only the items of housekeeping are offered');
+
+        $made = $this->postJson('/housekeeping/supplies', ['item_id' => $soap, 'location_id' => $this->main, 'unit' => 'PCS', 'quantity' => '30', 'note' => 'Floor 2'], $this->key())->assertCreated()->json('use');
+        self::assertSame(170_000, $made['balance_milli']);
+        $movement = (array) DB::table('stock_movements')->where('item_id', $soap)->where('kind', 'issue')->first();
+        self::assertSame(['housekeeping', -30_000, 'Floor 2'], [$movement['reason_code'], (int) $movement['base_qty_milli'], $movement['note']]);
+        self::assertSame(1, DB::table('audit_entries')->where('action', 'housekeeping.supplies.used')->count());
+        $this->get('/housekeeping/supplies')->assertInertia(fn (Assert $p) => $p->has('overview.recent', 1)->where('overview.recent.0.item_code', 'SOAP')->where('overview.recent.0.quantity_milli', 30_000));
+
+        // Never below zero; only an item of housekeeping; a quantity above zero.
+        $this->postJson('/housekeeping/supplies', ['item_id' => $soap, 'location_id' => $this->main, 'unit' => 'PCS', 'quantity' => '500'], $this->key())->assertStatus(409);
+        $this->postJson('/housekeeping/supplies', ['item_id' => $this->soap, 'location_id' => $this->main, 'unit' => 'KG', 'quantity' => '1'], $this->key())->assertStatus(422);
+        $this->postJson('/housekeeping/supplies', ['item_id' => $soap, 'location_id' => $this->main, 'unit' => 'PCS', 'quantity' => '0'], $this->key())->assertStatus(422);
+
+        // An attendant sees it but cannot record; others see nothing.
+        $this->as([HousekeepingService::PERFORM_PERMISSION]);
+        $this->get('/housekeeping/supplies')->assertOk()->assertInertia(fn (Assert $p) => $p->where('overview.may.use', false)->has('overview.items', 0)->has('overview.recent', 1));
+        $this->postJson('/housekeeping/supplies', ['item_id' => $soap, 'location_id' => $this->main, 'unit' => 'PCS', 'quantity' => '1'], $this->key())->assertStatus(403);
+        $this->as([SupplyUseService::USE_PERMISSION]);
+        $this->get('/housekeeping/supplies')->assertStatus(403);
     }
 
     public function test_a_department_sees_the_counts_of_its_own_stores(): void

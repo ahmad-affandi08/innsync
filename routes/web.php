@@ -58,6 +58,7 @@ use App\Modules\Housekeeping\Presentation\Http\Controllers\HousekeepingControlle
 use App\Modules\Housekeeping\Presentation\Http\Controllers\LinenController;
 use App\Modules\Housekeeping\Presentation\Http\Controllers\LostFoundController;
 use App\Modules\Housekeeping\Presentation\Http\Controllers\ParLevelController;
+use App\Modules\Housekeeping\Presentation\Http\Controllers\SupplyUseController as HousekeepingSupplyUseController;
 use App\Modules\HumanResource\Presentation\Http\Controllers\AnnouncementController;
 use App\Modules\HumanResource\Presentation\Http\Controllers\AppraisalController;
 use App\Modules\HumanResource\Presentation\Http\Controllers\AttendanceAdjustmentController;
@@ -449,6 +450,10 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
     Route::post('/linen/transfers', [LinenController::class, 'send'])->middleware('idempotent')->name('housekeeping.linen.transfers.store');
     Route::post('/linen/transfers/{id}/receive', [LinenController::class, 'receive'])->where('id', $id)->name('housekeeping.linen.transfers.receive');
     Route::post('/linen/transfers/{id}/cancel', [LinenController::class, 'cancel'])->where('id', $id)->name('housekeeping.linen.transfers.cancel');
+
+    // The cleaning supplies and amenities used up, taken from a store's stock card (FR-INV-004).
+    Route::get('/supplies', [HousekeepingSupplyUseController::class, 'index'])->name('housekeeping.supplies');
+    Route::post('/supplies', [HousekeepingSupplyUseController::class, 'store'])->middleware(['idempotent'])->name('housekeeping.supplies.store');
 
     // Lost and found (FR-HK-012).
     Route::get('/damage-reports', [HousekeepingDamageReportController::class, 'index'])->name('housekeeping.damage');

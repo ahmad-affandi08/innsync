@@ -163,7 +163,7 @@
 | TASK-INV-001 | FR-INV-001 | Inventory | Wajib | REVIEW |
 | TASK-INV-002 | FR-INV-002 | Inventory | Wajib | REVIEW |
 | TASK-INV-003 | FR-INV-003 | Inventory | Wajib | REVIEW |
-| TASK-INV-004 | FR-INV-004 | Inventory | Wajib | IN_PROGRESS |
+| TASK-INV-004 | FR-INV-004 | Inventory | Wajib | REVIEW |
 | TASK-INV-005 | FR-INV-005 | Inventory | Wajib | REVIEW |
 | TASK-INV-006 | FR-INV-006 | Inventory | Wajib | REVIEW |
 | TASK-INV-007 | FR-INV-007 | Inventory | Sebaiknya | REVIEW |
@@ -179,7 +179,7 @@
 | TASK-PUR-005 | FR-PUR-005 | Purchasing | Sebaiknya | REVIEW |
 | TASK-PUR-006 | FR-PUR-006 | Purchasing | Wajib | REVIEW |
 | TASK-PUR-007 | FR-PUR-007 | Purchasing | Wajib | REVIEW |
-| TASK-PUR-008 | FR-PUR-008 | Purchasing | Wajib | IN_PROGRESS |
+| TASK-PUR-008 | FR-PUR-008 | Purchasing | Wajib | REVIEW |
 | TASK-PUR-009 | FR-PUR-009 | Purchasing | Wajib | REVIEW |
 | TASK-PUR-010 | FR-PUR-010 | Purchasing | Sebaiknya | REVIEW |
 | TASK-PUR-011 | FR-PUR-011 | Purchasing | Wajib | REVIEW |
@@ -246,7 +246,7 @@
 | TASK-FIN-037 | FR-FIN-037 | Finance | Wajib | IN_PROGRESS |
 | TASK-RPT-001 | FR-RPT-001 | Reporting & Analytics | Wajib | REVIEW |
 | TASK-RPT-002 | FR-RPT-002 | Reporting & Analytics | Wajib | IN_PROGRESS |
-| TASK-RPT-003 | FR-RPT-003 | Reporting & Analytics | Wajib | IN_PROGRESS |
+| TASK-RPT-003 | FR-RPT-003 | Reporting & Analytics | Wajib | REVIEW |
 | TASK-RPT-004 | FR-RPT-004 | Reporting & Analytics | Sebaiknya | REVIEW |
 | TASK-RPT-005 | FR-RPT-005 | Reporting & Analytics | Wajib | IN_PROGRESS |
 | TASK-RPT-006 | FR-RPT-006 | Reporting & Analytics | Sebaiknya | REVIEW |

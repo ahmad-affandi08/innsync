@@ -15,7 +15,7 @@
 | --- | --- | --- | --- | --- |
 | TASK-RPT-001 | FR-RPT-001 | Wajib | Menyediakan pusat laporan yang mengelompokkan seluruh laporan berdasarkan department dan tema. | REVIEW |
 | TASK-RPT-002 | FR-RPT-002 | Wajib | Seluruh laporan mendukung penyaring rentang tanggal, outlet, department, dan pengguna. | IN_PROGRESS |
-| TASK-RPT-003 | FR-RPT-003 | Wajib | Seluruh laporan dapat diekspor ke PDF dan lembar kerja, serta dicetak. | IN_PROGRESS |
+| TASK-RPT-003 | FR-RPT-003 | Wajib | Seluruh laporan dapat diekspor ke PDF dan lembar kerja, serta dicetak. | REVIEW |
 | TASK-RPT-004 | FR-RPT-004 | Sebaiknya | Laporan dapat dijadwalkan untuk dikirim otomatis melalui surel atau pesan instan pada waktu tertentu kepada penerima tertentu. | REVIEW |
 | TASK-RPT-005 | FR-RPT-005 | Wajib | Menyediakan laporan ringkas harian untuk manajemen (flash report) yang memuat okupansi, pendapatan, biaya utama, dan kejadian penting. | IN_PROGRESS |
 | TASK-RPT-006 | FR-RPT-006 | Sebaiknya | Menyediakan pembanding antar periode: hari ini dibanding kemarin, bulan ini dibanding bulan lalu, dan tahun berjalan dibanding tahun sebelumnya. | REVIEW |
