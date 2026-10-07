@@ -13,6 +13,9 @@ namespace App\Shared\Application\Setup;
  */
 final class SetupChecklist
 {
+    /** @var array<string, string> step => the department it belongs to, for the steps that belong to one */
+    private const MODULE_OF = ['fnb' => 'fnb', 'laundry' => 'laundry', 'inventory' => 'inventory', 'hr' => 'hr', 'finance' => 'finance'];
+
     /**
      * @param  array<string, int>  $facts
      * @return list<array{key: string, group: string, required: bool, href: string, done: bool, counts: array<string, int>}>
@@ -21,7 +24,8 @@ final class SetupChecklist
     {
         $f = static fn (string $key): int => (int) ($facts[$key] ?? 0);
 
-        return [
+        $steps = [
+            self::step('profile', 'property', false, '#profile', $f('profile') > 0, []),
             self::step('settings', 'property', true, '/property/settings', $f('settings') > 0, []),
             self::step('business_date', 'property', true, '/property/settings', $f('business_date') > 0, []),
             self::step('rooms', 'property', true, '/property/rooms', $f('room_types') > 0 && $f('rooms') > 0, ['types' => $f('room_types'), 'rooms' => $f('rooms')]),
@@ -30,7 +34,7 @@ final class SetupChecklist
             self::step('booking_policies', 'property', false, '/property/policies', $f('booking_policies') > 0, ['policies' => $f('booking_policies')]),
             self::step('roles', 'people', true, '/access/roles', $f('roles') > 0, ['roles' => $f('roles')]),
             self::step('people', 'people', true, '/access/users', $f('people') > 1, ['people' => $f('people')]),
-            self::step('approvals', 'people', true, '/approvals/policies', $f('approvals_total') > 0 && $f('approvals_missing') === 0, ['missing' => $f('approvals_missing'), 'total' => $f('approvals_total')]),
+            self::step('approvals', 'people', true, '/approvals/policies', $f('approvals_total') > 0 && $f('approvals_missing') === 0 && $f('approvals_single') === 0, ['missing' => $f('approvals_missing'), 'total' => $f('approvals_total'), 'single' => $f('approvals_single')]),
             self::step('fnb', 'operations', false, '/fnb/outlets', $f('fnb_outlets') > 0 && $f('fnb_items') > 0, ['outlets' => $f('fnb_outlets'), 'items' => $f('fnb_items')]),
             self::step('laundry', 'operations', false, '/laundry/prices', $f('laundry_prices') > 0, ['items' => $f('laundry_prices')]),
             self::step('housekeeping', 'operations', false, '/housekeeping/checklists/templates', $f('hk_templates') > 0, ['templates' => $f('hk_templates')]),
@@ -38,6 +42,9 @@ final class SetupChecklist
             self::step('hr', 'operations', false, '/hr/employees', $f('employees') > 0, ['employees' => $f('employees')]),
             self::step('finance', 'operations', false, '/finance/accounts', $f('expense_accounts') > 0, ['accounts' => $f('expense_accounts')]),
         ];
+
+        // A department the property says it does not use has no step: the list is only what this property needs.
+        return array_values(array_filter($steps, static fn (array $s): bool => ! (isset(self::MODULE_OF[$s['key']]) && $f('off.'.self::MODULE_OF[$s['key']]) > 0)));
     }
 
     /**

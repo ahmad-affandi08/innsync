@@ -33,7 +33,7 @@ final class DefaultRolesTest extends TestCase
     {
         $catalog = DatabaseDefaultRoleInstaller::catalog();
 
-        foreach (DefaultRoles::all() as $role => $patterns) {
+        foreach (DefaultRoles::all() + DefaultRoles::small() as $role => $patterns) {
             foreach ($patterns as $pattern) {
                 $positive = ltrim($pattern, '!');
                 self::assertNotEmpty(array_filter($catalog, static fn (string $c): bool => DefaultRoles::matches($positive, $c)), "{$role}: '{$pattern}' matches no permission (a typo or a removed permission).");
@@ -47,7 +47,7 @@ final class DefaultRolesTest extends TestCase
     {
         $catalog = DatabaseDefaultRoleInstaller::catalog();
 
-        foreach (DefaultRoles::all() as $role => $patterns) {
+        foreach (DefaultRoles::all() + DefaultRoles::small() as $role => $patterns) {
             $codes = DefaultRoles::resolve($patterns, $catalog);
             self::assertNotContains('identity.user.manage', $codes, $role);
             self::assertNotContains('identity.role.manage', $codes, $role);

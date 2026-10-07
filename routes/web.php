@@ -118,6 +118,7 @@ use App\Modules\Property\Presentation\Http\Controllers\BookingPolicyController;
 use App\Modules\Property\Presentation\Http\Controllers\ChargeSchemeController;
 use App\Modules\Property\Presentation\Http\Controllers\PropertySettingsController;
 use App\Modules\Property\Presentation\Http\Controllers\RatePlanController;
+use App\Modules\Property\Presentation\Http\Controllers\PropertyProfileController;
 use App\Modules\Property\Presentation\Http\Controllers\RoomCatalogController;
 use App\Modules\Property\Presentation\Http\Controllers\RoomImportController;
 use App\Modules\Reporting\Presentation\Http\Controllers\DashboardController;
@@ -288,6 +289,8 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])
 Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix('property')->group(function (): void {
     Route::get('/settings', [PropertySettingsController::class, 'show'])->name('property.settings');
     Route::put('/settings', [PropertySettingsController::class, 'update'])->middleware('password.confirm')->name('property.settings.update');
+    // How the property works: its profile and the optional departments it uses. Hides menu entries and offers the roles of a small team; removes nothing.
+    Route::put('/profile', [PropertyProfileController::class, 'update'])->middleware('password.confirm')->name('property.profile.update');
     Route::post('/settings/business-date', [PropertySettingsController::class, 'initializeBusinessDate'])->middleware('password.confirm')->name('property.business-date.initialize');
 
     Route::get('/rooms', [RoomCatalogController::class, 'index'])->name('property.rooms');

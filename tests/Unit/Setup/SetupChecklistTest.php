@@ -12,7 +12,7 @@ final class SetupChecklistTest extends TestCase
     /** @return array<string, int> */
     private function ready(): array
     {
-        return ['settings' => 1, 'business_date' => 1, 'room_types' => 2, 'rooms' => 40, 'rate_plans' => 1, 'rate_periods' => 3, 'charge_schemes' => 1, 'roles' => 19, 'people' => 4, 'approvals_total' => 11, 'approvals_missing' => 0];
+        return ['settings' => 1, 'business_date' => 1, 'room_types' => 2, 'rooms' => 40, 'rate_plans' => 1, 'rate_periods' => 3, 'charge_schemes' => 1, 'roles' => 19, 'people' => 4, 'approvals_total' => 11, 'approvals_missing' => 0, 'approvals_single' => 0];
     }
 
     public function test_a_new_property_has_every_required_step_open(): void
@@ -22,8 +22,7 @@ final class SetupChecklistTest extends TestCase
 
         self::assertSame(0, $progress['done']);
         self::assertSame(8, $progress['total']);
-        self::assertSame('settings', $steps[0]['key']);
-        self::assertSame(['settings', 'business_date', 'rooms', 'rates', 'tax'], array_slice(array_column($steps, 'key'), 0, 5), 'the order is the order of work');
+        self::assertSame(['profile', 'settings', 'business_date', 'rooms', 'rates', 'tax'], array_slice(array_column($steps, 'key'), 0, 6), 'the order is the order of work');
     }
 
     public function test_the_required_steps_complete_from_the_data(): void
@@ -54,5 +53,25 @@ final class SetupChecklistTest extends TestCase
         $open = array_column(array_filter(SetupChecklist::evaluate($facts), static fn (array $s): bool => $s['required'] && ! $s['done']), 'key');
 
         self::assertEqualsCanonicalizing(['rooms', 'approvals', 'people'], $open);
+    }
+
+    public function test_an_approval_with_only_one_possible_approver_is_not_done(): void
+    {
+        $facts = $this->ready();
+        $facts['approvals_single'] = 2;
+        $open = array_column(array_filter(SetupChecklist::evaluate($facts), static fn (array $s): bool => $s['required'] && ! $s['done']), 'key');
+
+        self::assertSame(['approvals'], array_values($open), 'the person who asks never approves their own request, so one approver is a dead end');
+    }
+
+    public function test_a_department_the_property_does_not_use_has_no_step(): void
+    {
+        $keys = array_column(SetupChecklist::evaluate(['off.hr' => 1, 'off.inventory' => 1, 'off.fnb' => 1]), 'key');
+
+        self::assertNotContains('hr', $keys);
+        self::assertNotContains('inventory', $keys);
+        self::assertNotContains('fnb', $keys);
+        self::assertContains('laundry', $keys);
+        self::assertContains('housekeeping', $keys, 'housekeeping is core and never hidden');
     }
 }

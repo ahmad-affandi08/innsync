@@ -76,6 +76,34 @@ final class DefaultRoles
     }
 
     /**
+     * The roles of a small team (a resort or a villa), where one person does several jobs. They are made when the property says it is small; the starting roles
+     * for a hotel that nobody holds and nobody changed are then switched off, so the team is not offered nineteen roles.
+     *
+     * @return array<string, list<string>> role name => permission patterns
+     */
+    public static function small(): array
+    {
+        $hotel = self::all();
+
+        return [
+            'Resort Manager' => ['*', ...self::NO_ACCESS_ADMIN],
+            'Front Desk & Cashier' => [
+                ...$hotel['Receptionist'], 'front-office.night-audit.run', 'front-office.cashier.operate', 'fnb.pos.operate', 'fnb.cashier.operate', 'fnb.receipt.reprint',
+                'laundry.order.intake',
+            ],
+            'Housekeeping Team' => [
+                'housekeeping.view', 'housekeeping.task.perform', 'housekeeping.checklist.perform', 'housekeeping.checklist.view', 'housekeeping.supplies.use', 'housekeeping.lostfound.record',
+                'maintenance.work.report', 'laundry.view', 'laundry.order.intake', 'laundry.order.process', 'laundry.order.deliver', 'laundry.linen.handle', 'laundry.supplies.use',
+                'front-office.availability.view',
+            ],
+            'Kitchen & Bar' => [
+                'kitchen.board.operate', 'kitchen.damage.report', 'kitchen.ingredients.use', 'kitchen.production.record', 'kitchen.waste.record', 'fnb.pos.operate',
+                'fnb.cashier.operate', 'fnb.minibar.operate', 'inventory.requisition.request', 'inventory.stock.view',
+            ],
+        ];
+    }
+
+    /**
      * The permission codes of a role among the codes that exist.
      *
      * @param  list<string>  $patterns

@@ -180,6 +180,9 @@
         "code",
         "seats"
     ],
+    "foundation/pages/setup": [
+        "reason"
+    ],
     "front-office/pages/cashier": [
         "amount_minor",
         "counted_cash_minor",

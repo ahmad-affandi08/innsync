@@ -80,7 +80,7 @@ function isHere(links: readonly NavLink[], href: string, path: string): boolean 
     return match(href) && best?.href === href;
 }
 
-type Shell = { propertyName: string | null; businessDate: string | null; userName: string } | null;
+type Shell = { propertyName: string | null; businessDate: string | null; userName: string; disabledModules?: string[] } | null;
 
 type FrameProps = {
     title: string;
@@ -112,6 +112,8 @@ export function AppFrame({ actions, children, description, links = [], printClas
     const shell = (page.props as { shell?: Shell }).shell ?? null;
     const version = (page.props as { app?: { version?: string } }).app?.version ?? '';
     const current = activeModule(path);
+    // A department the property does not use is left out of the menu (never the one the person is on, so a link still shows where they are).
+    const modules = MODULES.filter((m) => m.key === current.key || !(shell?.disabledModules ?? []).includes(m.key));
     const [open, setOpen] = useState(false);
     // On a phone the menu is a list of modules: touching one opens its pages and does not leave the page. The module the person is in starts open.
     const [expanded, setExpanded] = useState<ReadonlySet<string>>(() => new Set([current.key]));
@@ -130,7 +132,7 @@ export function AppFrame({ actions, children, description, links = [], printClas
             {GROUPS.map((group) => (
                 <div className="flex flex-col gap-0.5" key={group}>
                     {group !== 'start' ? <p className="px-3 pb-1 text-[0.6875rem] font-semibold uppercase tracking-wider text-muted-foreground">{t(`shell.group.${group}`as MessageKey)}</p> : null}
-                    {MODULES.filter((m) => m.group === group).map((m) => {
+                    {modules.filter((m) => m.group === group).map((m) => {
                         const Icon = m.icon;
                         const isActive = m.key === current.key;
                         const expandable = isActive && links.length > 0;
@@ -184,7 +186,7 @@ export function AppFrame({ actions, children, description, links = [], printClas
             {GROUPS.map((group) => (
                 <div className="flex flex-col gap-0.5" key={group}>
                     {group !== 'start' ? <p className="px-3 pb-1 text-[0.6875rem] font-semibold uppercase tracking-wider text-muted-foreground">{t(`shell.group.${group}` as MessageKey)}</p> : null}
-                    {MODULES.filter((m) => m.group === group).map((m) => {
+                    {modules.filter((m) => m.group === group).map((m) => {
                         const Icon = m.icon;
                         const isActive = m.key === current.key;
                         const pages = isActive && hasLinks ? links : (MODULE_LINKS[m.key] ?? []);
@@ -354,7 +356,7 @@ export function AppFrame({ actions, children, description, links = [], printClas
                 </Link>
                 <ScrollArea className="w-full flex-1">
                     <nav aria-label={t('shell.menu')} className="flex flex-col gap-1 py-3">
-                        {MODULES.map((m) => {
+                        {modules.map((m) => {
                             const Icon = m.icon;
                             const isActive = m.key === current.key;
 
@@ -405,7 +407,7 @@ export function AppFrame({ actions, children, description, links = [], printClas
                 {menuButton}
                 <Link className="flex shrink-0 items-center" href="/"><img alt="InnSYnc" className="h-8 w-auto" height={32} src={logo} width={116} /></Link>
                 <nav aria-label={t('shell.menu')} className="ml-4 hidden min-w-0 flex-1 items-stretch gap-0.5 self-stretch overflow-x-auto no-scrollbar lg:flex">
-                    {MODULES.filter((m) => m.key !== 'home').map((m) => {
+                    {modules.filter((m) => m.key !== 'home').map((m) => {
                         const Icon = m.icon;
                         const isActive = m.key === current.key;
 

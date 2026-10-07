@@ -6074,6 +6074,18 @@
             "password_confirmation"
         ]
     },
+    "PUT /property/profile": {
+        "required": [
+            "profile",
+            "reason"
+        ],
+        "declared": [
+            "disabled",
+            "disabled.*",
+            "profile",
+            "reason"
+        ]
+    },
     "PUT /property/rate-plans/{id}": {
         "required": [
             "kind",

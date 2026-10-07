@@ -6,7 +6,7 @@ Traceability: owner instruction of 2026-10-07 ("the setup is still very hard"), 
 
 One ordered list with the status of every step, read from the data (so it is always current), each step opening the screen where it is done. It needs the permission `property.settings.manage`. Code: `app/Shared/Application/Setup/SetupChecklist.php` (the order and the rules), `app/Shared/Infrastructure/Setup/DatabaseSetupFacts.php` (the counts).
 
-Required steps (they count towards progress), in order: check-in and check-out times; the business date (go live); room types and rooms; rate plans and prices; service charge and tax; roles; people (more than the administrator); an approver for every mandatory action.
+Required steps (they count towards progress), in order, after the optional first step "How the property works": check-in and check-out times; the business date (go live); room types and rooms; rate plans and prices; service charge and tax; roles; people (more than the administrator); an approver for every mandatory action.
 
 Listed but not required: deposit and cancellation rules; restaurant and bar (outlets and menu); laundry prices; housekeeping checklists; stock items and suppliers; employees; expense accounts. A hotel that does not use a department ignores it.
 
@@ -43,6 +43,23 @@ Two CSV files (room types, then rooms; templates can be downloaded on the screen
 ## Several accounts at once (People & access → Add several)
 
 Paste one person per line (`Name, email`, or a copy from a spreadsheet); all get the chosen role and scope; all are created or none (a repeated or existing email names its row). Each gets a temporary password shown once on a list that can be copied; each person must choose their own at the first sign-in. At most 50 at a time.
+
+## A small resort or a villa
+
+A property says how it works in the first step of the checklist, **How the property works** (`PUT /property/profile`, needs `property.settings.manage`, a reason, a recent password confirmation; audited as `property.profile.changed`). Code: `PropertyProfileService`, `app/Shared/Application/Setup/PropertyProfiles.php`.
+
+| Profile | Departments off at the start | Roles |
+|---|---|---|
+| Hotel | none | the 19 starting roles |
+| Small resort | stock and purchasing, HR and payroll | 4 roles for a small team: Resort Manager, Front Desk & Cashier, Housekeeping Team, Kitchen & Bar |
+| Villa | laundry, restaurant and bar, kitchen, maintenance, HR, stock | the same 4 roles |
+
+The owner can switch any of the seven optional departments (laundry, restaurant and bar, kitchen, maintenance, HR, stock and purchasing, finance) on or off whatever the profile. Front office, housekeeping, reports and property settings are always on.
+
+- **Only the menu changes.** A department that is off is left out of the menu and has no step in the checklist. Its screens still open by address, no data is removed and no rule is relaxed; switching it on again shows it. (Blocking the screens on the server was considered and not done: it touches most routes and gives no safety the permissions do not already give.)
+- **Roles for a small team.** The four roles are created when a small profile is chosen. The starting hotel roles that nobody holds and nobody changed are switched off (not deleted), so the team is not offered nineteen roles; a role somebody holds or changed stays. Choosing Hotel again creates the missing hotel roles but does not switch the others back on; do that on the Roles screen.
+- **No change to maker-checker (BR-004).** A person never approves their own request, in a small property too. With two people who can approve (the owner, who has every permission, and the Resort Manager) each approves the other's requests. The checklist shows an approval step as not done while any mandatory action has only one person who can approve, and says so. If the owner wants to approve their own requests, that is a change to BR-004 and needs a Change Request.
+- **Open:** whether a small property may run the night audit in a simpler way is not decided; the night audit is unchanged.
 
 ## Not guessed
 

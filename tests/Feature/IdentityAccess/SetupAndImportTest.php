@@ -84,9 +84,9 @@ final class SetupAndImportTest extends TestCase
 
         $this->get('/setup')->assertOk()->assertInertia(fn (Assert $page) => $page
             ->component('foundation/pages/setup')
-            ->has('steps', 15)
+            ->has('steps', 16)
             ->where('progress.total', 8)
-            ->where('steps.0.key', 'settings'));
+            ->where('steps.0.key', 'profile')->has('profile.presets'));
 
         $this->post('/logout');
         $this->flushSession();
@@ -169,5 +169,49 @@ final class SetupAndImportTest extends TestCase
             'role_id' => $roleId, 'scope_type' => 'property', 'reason' => 'x',
         ])->assertStatus(422);
         self::assertSame(0, DB::table('users')->where('email', 'same@example.test')->count());
+    }
+
+    public function test_a_small_resort_hides_departments_gets_small_team_roles_and_keeps_roles_in_use(): void
+    {
+        (new DatabaseDefaultRoleInstaller)->install(self::A);
+        $actor = $this->signIn(self::A, ['property.settings.manage']);
+
+        // A starting role somebody holds, and one the property changed, must survive the switch.
+        $held = (string) DB::table('roles')->where('property_id', self::A)->where('name', 'Receptionist')->value('id');
+        DB::table('user_role_assignments')->insert(['id' => strtolower((string) \Illuminate\Support\Str::ulid()), 'property_id' => self::A, 'user_id' => $actor->getKey(), 'role_id' => $held, 'scope_type' => 'property', 'scope_id' => self::A, 'is_active' => true, 'lock_version' => 0, 'created_at' => now(), 'updated_at' => now()]);
+        $changed = (string) DB::table('roles')->where('property_id', self::A)->where('name', 'Night Auditor')->value('id');
+        DB::table('role_permissions')->where('role_id', $changed)->limit(1)->delete();
+
+        $r = $this->putJson('/property/profile', ['profile' => 'small_resort', 'disabled' => ['inventory', 'hr'], 'reason' => 'We are a small resort'])->assertOk();
+
+        self::assertEqualsCanonicalizing(['Resort Manager', 'Front Desk & Cashier', 'Housekeeping Team', 'Kitchen & Bar'], $r->json('roles.created'));
+        self::assertContains('Laundry Staff', $r->json('roles.deactivated'));
+        self::assertNotContains('Receptionist', $r->json('roles.deactivated'), 'a role somebody holds stays');
+        self::assertNotContains('Night Auditor', $r->json('roles.deactivated'), 'a role the property changed stays');
+        self::assertSame(1, (int) DB::table('roles')->where('id', $held)->value('is_active'));
+        self::assertSame(1, DB::table('audit_entries')->where('action', 'property.profile.changed')->count());
+
+        // The menu leaves the departments out, and the checklist has no step for them.
+        $this->get('/setup')->assertOk()->assertInertia(fn (Assert $page) => $page
+            ->where('profile.profile', 'small_resort')->where('profile.disabled', ['inventory', 'hr'])
+            ->where('steps', fn ($steps) => ! in_array('hr', array_column($steps->toArray(), 'key'), true)));
+        $this->get('/property/settings')->assertInertia(fn (Assert $page) => $page->where('shell.disabledModules', ['inventory', 'hr']));
+
+        // Switching back is allowed and nothing is lost.
+        $this->putJson('/property/profile', ['profile' => 'hotel', 'disabled' => [], 'reason' => 'We grew'])->assertOk();
+    }
+
+    public function test_the_profile_needs_permission_a_valid_choice_and_a_reason(): void
+    {
+        $this->signIn(self::A, ['front-office.reservation.view']);
+        $this->putJson('/property/profile', ['profile' => 'villa', 'disabled' => [], 'reason' => 'x'])->assertForbidden();
+
+        $this->post('/logout');
+        $this->flushSession();
+        $this->signIn(self::A, ['property.settings.manage']);
+        $this->putJson('/property/profile', ['profile' => 'castle', 'disabled' => [], 'reason' => 'x'])->assertStatus(422);
+        $this->putJson('/property/profile', ['profile' => 'villa', 'disabled' => ['front-office'], 'reason' => 'x'])->assertStatus(422);
+        $this->putJson('/property/profile', ['profile' => 'villa', 'disabled' => [], 'reason' => ''])->assertStatus(422);
+        self::assertSame(0, DB::table('property_profiles')->count());
     }
 }

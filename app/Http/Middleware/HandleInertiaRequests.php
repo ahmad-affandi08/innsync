@@ -7,6 +7,7 @@ namespace App\Http\Middleware;
 use App\Modules\Property\Application\Ports\PropertyProfileReader;
 use App\Modules\Property\Application\Ports\PropertyTimeZoneReader;
 use App\Modules\Property\Application\Settings\BusinessDateProvider;
+use App\Shared\Application\Setup\ModuleSettings;
 use App\Shared\Domain\Tenancy\PropertyId;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
@@ -84,7 +85,7 @@ final class HandleInertiaRequests extends Middleware
      * What the frame around every page shows: the property, its business date and who is signed in. Shown only to the signed-in
      * person themselves; the business date is null before go-live.
      *
-     * @return array{propertyName: string|null, businessDate: string|null, userName: string}|null
+     * @return array{propertyName: string|null, businessDate: string|null, userName: string, disabledModules?: list<string>}|null
      */
     private function shell(Request $request): ?array
     {
@@ -109,6 +110,12 @@ final class HandleInertiaRequests extends Middleware
             $date = null;
         }
 
-        return ['propertyName' => $name, 'businessDate' => $date, 'userName' => (string) $request->user()->name];
+        try {
+            $disabled = app(ModuleSettings::class)->disabled($property);
+        } catch (Throwable) {
+            $disabled = [];
+        }
+
+        return ['propertyName' => $name, 'businessDate' => $date, 'userName' => (string) $request->user()->name, 'disabledModules' => $disabled];
     }
 }
