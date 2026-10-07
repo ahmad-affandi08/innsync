@@ -15,7 +15,7 @@
 | Task ID | FR | Priority | Requirement | Status |
 | --- | --- | --- | --- | --- |
 | TASK-FBS-001 | FR-FBS-001 | Wajib | Menampilkan denah meja per outlet dengan status kosong, terisi, dan sudah memesan; kasir dapat membuka bill dari meja atau dari nomor kamar. | IN_PROGRESS |
-| TASK-FBS-002 | FR-FBS-002 | Wajib | Mengambil pesanan dengan katalog menu bergambar, kategori, varian, catatan khusus, dan jumlah porsi. | IN_PROGRESS |
+| TASK-FBS-002 | FR-FBS-002 | Wajib | Mengambil pesanan dengan katalog menu bergambar, kategori, varian, catatan khusus, dan jumlah porsi. | REVIEW |
 | TASK-FBS-003 | FR-FBS-003 | Wajib | Mengirim pesanan ke layar dapur dan bar sesuai kategori item, serta mencetak tiket pada printer masing-masing bila diperlukan. | IN_PROGRESS |
 | TASK-FBS-004 | FR-FBS-004 | Sebaiknya | Mendukung pemisahan bill, penggabungan bill, dan pemindahan pesanan antar meja. | REVIEW |
 | TASK-FBS-005 | FR-FBS-005 | Wajib | Void item dan pembatalan bill hanya dapat dilakukan dengan alasan dan persetujuan penyelia; seluruh tindakan tercatat pada jejak audit. | IN_PROGRESS |
@@ -52,6 +52,7 @@
 - **Sold out.** Whoever takes orders may mark an item sold out or on sale again (audited); only the menu's owner changes the rest. The kitchen will use the same switch (`TASK-KIT-005`).
 - Not yet: bills and the floor plan (`FBS-001` live status), pictures of the dishes, price lists and schedules per outlet or channel (`FBS-015`), recipes that make a variant or a choice consume stock (`KIT-003`, `KIT-004`), and the revenue source mapping of an outlet to the reporting outlets (the owner does it where the revenue outlets are mapped, as for laundry).
 - Evidence: `tests/Feature/FnbSales/SetupHttpTest.php` (outlet setup with lock and audit, the fnb scheme can be defined, tables unique per outlet, variants with own price and their deactivation and return, groups of choices with their limits, sold out by a waiter, permissions, property scope). Seen in the browser: outlet, table, category, group and item created, item marked sold out.
+- Evidence (TASK-FBS-002, the picture of a dish): `tests/Feature/FnbSales/SetupHttpTest.php::test_a_dish_has_a_picture_that_the_owner_sets_and_the_staff_see` (JPEG/PNG only, 2 MB, lock, owner-only change, private file served only to those who see the menu, audit of set and removal). The pictures show on the POS bill, the register and the menu setup; typecheck, frontend tests and the build pass. Not yet seen in a browser. The guest QR menu does not show pictures yet.
 
 ### Slice 26 (2026-10-03): discounts and complimentary items
 

@@ -4,6 +4,10 @@ Release notes for every release (NFR-14). Newest first. Each entry names the tas
 
 ## [Unreleased]
 
+### Added
+
+- TASK-FBS-002 (FR-FBS-002): a dish on the menu can have a picture (JPEG or PNG, up to 2 MB) that the menu's owner sets, replaces or removes; it shows on the POS bill, the register and the menu setup, is kept in the private file store and is served only to those who see the menu.
+
 ## [0.1.0] - 2026-10-07
 
 ### Added

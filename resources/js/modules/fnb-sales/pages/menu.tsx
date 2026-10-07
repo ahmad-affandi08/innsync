@@ -102,6 +102,18 @@ export default function MenuPage({ menu }: { menu: MenuView }) {
         await action.run(`/fnb/items/${i.id}/availability`, { body: { available: !i.is_available, lock_version: i.lock_version }, reload });
     }
 
+    async function sendPhoto(i: MenuItem, file: File | null) {
+        if (file === null) return;
+        const body = new FormData();
+        body.set('photo', file);
+        body.set('lock_version', String(i.lock_version));
+        await action.run(`/fnb/items/${i.id}/photo`, { body, reload });
+    }
+
+    async function removePhoto(i: MenuItem) {
+        await action.run(`/fnb/items/${i.id}/photo`, { method: 'DELETE', body: { lock_version: i.lock_version }, reload });
+    }
+
     // ---- groups ----
     function openGroup(g: ModifierGroup | null) {
         action.clear();
@@ -139,7 +151,12 @@ export default function MenuPage({ menu }: { menu: MenuView }) {
 
     const itemColumns: DataGridColumn<MenuItem>[] = [
         { id: 'code', label: t('fnb.menu.code'), value: (i) => i.code, rowHeader: true },
-        { id: 'name', label: t('fnb.menu.name'), value: (i) => i.name },
+        { id: 'name', label: t('fnb.menu.name'), value: (i) => i.name, cell: (i) => (
+            <span className="flex items-center gap-2">
+                {i.has_photo ? <img alt="" className="size-8 object-cover" loading="lazy" src={`/fnb/items/${i.id}/photo?v=${i.lock_version}`} /> : null}
+                {i.name}
+            </span>
+        ) },
         { id: 'category', label: t('fnb.menu.colCategory'), value: (i) => categoryName(i.category_id), filter: 'select' },
         { id: 'price', label: t('fnb.menu.price', { currency }), align: 'right', value: (i) => i.price_minor, cell: (i) => money(i.price_minor) },
         { id: 'variants', label: t('fnb.menu.colVariants'), align: 'right', value: (i) => i.variants.filter((v) => v.is_active).length },
@@ -154,6 +171,13 @@ export default function MenuPage({ menu }: { menu: MenuView }) {
             cell: (i) => (
                 <span className="flex gap-2">
                     {menu.may.availability && i.is_active ? <Button disabled={action.busy} onClick={() => void toggleAvailable(i)} size="sm" type="button" variant="outline">{t(i.is_available ? 'fnb.menu.markSoldOut' : 'fnb.menu.markOnSale')}</Button> : null}
+                    {menu.may.manage ? (
+                        <label className="inline-flex cursor-pointer items-center border border-border px-3 py-1 text-sm font-medium hover:bg-muted">
+                            {t(i.has_photo ? 'fnb.menu.changePhoto' : 'fnb.menu.addPhoto')}
+                            <input accept="image/jpeg,image/png" className="sr-only" disabled={action.busy} onChange={(e) => { void sendPhoto(i, e.target.files?.[0] ?? null); e.target.value = ''; }} type="file" />
+                        </label>
+                    ) : null}
+                    {menu.may.manage && i.has_photo ? <Button disabled={action.busy} onClick={() => void removePhoto(i)} size="sm" type="button" variant="outline">{t('fnb.menu.removePhoto')}</Button> : null}
                     {menu.may.manage ? <Button onClick={() => openItem(i)} size="sm" type="button" variant="outline">{t('fnb.menu.edit')}</Button> : null}
                 </span>
             ),

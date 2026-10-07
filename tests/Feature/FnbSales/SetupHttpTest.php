@@ -8,6 +8,7 @@ use App\Modules\FnbSales\Application\FnbAccess;
 use App\Modules\IdentityAccess\Infrastructure\Persistence\Eloquent\UserRecord;
 use App\Modules\Property\Application\Rates\ChargeSchemeService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Inertia\Testing\AssertableInertia as Assert;
 use LogicException;
@@ -23,6 +24,8 @@ final class SetupHttpTest extends TestCase
     private const A = '01arz3ndektsv4rrffq69g5fav';
 
     private const B = '01arz3ndektsv4rrffq69g5faw';
+
+    private const PNG = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==';
 
     private UserRecord $manager;
 
@@ -195,6 +198,37 @@ final class SetupHttpTest extends TestCase
         $this->postJson("/fnb/items/{$item['id']}/availability", ['available' => true, 'lock_version' => 1])->assertForbidden();
         $this->get('/fnb/outlets')->assertForbidden();
         $this->get('/fnb/menu')->assertForbidden();
+    }
+
+    /** FR-FBS-002: the menu has pictures; only the owner sets them, whoever sees the menu sees them. */
+    public function test_a_dish_has_a_picture_that_the_owner_sets_and_the_staff_see(): void
+    {
+        $this->actAs($this->manager);
+        $category = $this->category($this->outlet());
+        $item = $this->postJson('/fnb/items', $this->itemBody($category))->assertCreated()->assertJsonPath('item.has_photo', false)->json('item');
+        $this->get("/fnb/items/{$item['id']}/photo")->assertNotFound();
+
+        $png = (string) base64_decode(self::PNG, true);
+        $this->postJson("/fnb/items/{$item['id']}/photo", ['photo' => UploadedFile::fake()->createWithContent('nasi.png', 'not an image'), 'lock_version' => 0])->assertStatus(422);
+        $this->postJson("/fnb/items/{$item['id']}/photo", ['photo' => UploadedFile::fake()->createWithContent('nasi.png', $png), 'lock_version' => 5])->assertStatus(409);
+        $this->postJson("/fnb/items/{$item['id']}/photo", ['photo' => UploadedFile::fake()->createWithContent('nasi.png', $png), 'lock_version' => 0])->assertOk()->assertJsonPath('item.has_photo', true)->assertJsonPath('item.lock_version', 1);
+        $this->get("/fnb/items/{$item['id']}/photo")->assertOk()->assertHeader('Content-Type', 'image/png');
+
+        $this->actAs($this->waiter);
+        $this->get("/fnb/items/{$item['id']}/photo")->assertOk()->assertHeader('X-Content-Type-Options', 'nosniff');
+        $this->get('/fnb/menu')->assertOk()->assertInertia(fn (Assert $page) => $page->where('menu.items.0.has_photo', true));
+        $this->postJson("/fnb/items/{$item['id']}/photo", ['photo' => UploadedFile::fake()->createWithContent('x.png', $png), 'lock_version' => 1])->assertForbidden();
+        $this->deleteJson("/fnb/items/{$item['id']}/photo", ['lock_version' => 1])->assertForbidden();
+
+        $this->actAs($this->nobody);
+        $this->get("/fnb/items/{$item['id']}/photo")->assertForbidden();
+
+        $this->actAs($this->manager);
+        $this->deleteJson("/fnb/items/{$item['id']}/photo", ['lock_version' => 1])->assertOk()->assertJsonPath('item.has_photo', false);
+        $this->deleteJson("/fnb/items/{$item['id']}/photo", ['lock_version' => 2])->assertStatus(409);
+        $this->get("/fnb/items/{$item['id']}/photo")->assertNotFound();
+        self::assertSame(1, DB::table('audit_entries')->where('action', 'fnb_item.photo_set')->count());
+        self::assertSame(1, DB::table('audit_entries')->where('action', 'fnb_item.photo_removed')->count());
     }
 
     public function test_another_propertys_outlet_is_not_found(): void

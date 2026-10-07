@@ -105,7 +105,7 @@
 | TASK-LDY-011 | FR-LDY-011 | Laundry | Wajib | REVIEW |
 | TASK-LDY-012 | FR-LDY-012 | Laundry | Wajib | IN_PROGRESS |
 | TASK-FBS-001 | FR-FBS-001 | F&B Service | Wajib | IN_PROGRESS |
-| TASK-FBS-002 | FR-FBS-002 | F&B Service | Wajib | IN_PROGRESS |
+| TASK-FBS-002 | FR-FBS-002 | F&B Service | Wajib | REVIEW |
 | TASK-FBS-003 | FR-FBS-003 | F&B Service | Wajib | IN_PROGRESS |
 | TASK-FBS-004 | FR-FBS-004 | F&B Service | Sebaiknya | REVIEW |
 | TASK-FBS-005 | FR-FBS-005 | F&B Service | Wajib | IN_PROGRESS |

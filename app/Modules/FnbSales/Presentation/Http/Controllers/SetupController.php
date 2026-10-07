@@ -9,6 +9,7 @@ use App\Modules\FnbSales\Application\OutletService;
 use App\Shared\Application\Tenancy\PropertyContext;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response as HttpResponse;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -103,6 +104,31 @@ final readonly class SetupController
         $data = $request->validate(['available' => ['required', 'boolean'], 'lock_version' => ['required', 'integer', 'min:0']]);
 
         return $this->json(['item' => $this->menu->setAvailability($this->property->current(), $this->actor($request), $id, (bool) $data['available'], (int) $data['lock_version'])]);
+    }
+
+    public function photo(Request $request, string $id): HttpResponse
+    {
+        $content = $this->menu->photo($this->property->current(), $this->actor($request), $id);
+
+        return response($content->contents, 200, [
+            'Content-Type' => $content->file->mimeType, 'Content-Disposition' => 'inline; filename="menu-item"',
+            'Cache-Control' => 'private, max-age=300', 'X-Content-Type-Options' => 'nosniff',
+        ]);
+    }
+
+    public function storePhoto(Request $request, string $id): JsonResponse
+    {
+        $data = $request->validate(['photo' => ['required', 'file', 'max:2048'], 'lock_version' => ['required', 'integer', 'min:0']]);
+        $upload = $request->file('photo');
+
+        return $this->json(['item' => $this->menu->setPhoto($this->property->current(), $this->actor($request), $id, (string) $upload?->get(), $upload?->getClientOriginalName(), (int) $data['lock_version'])]);
+    }
+
+    public function removePhoto(Request $request, string $id): JsonResponse
+    {
+        $data = $request->validate(['lock_version' => ['required', 'integer', 'min:0']]);
+
+        return $this->json(['item' => $this->menu->removePhoto($this->property->current(), $this->actor($request), $id, (int) $data['lock_version'])]);
     }
 
     public function storeGroup(Request $request): JsonResponse

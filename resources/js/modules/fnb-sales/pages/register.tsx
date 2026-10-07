@@ -17,7 +17,7 @@ import { useOfflineQueue } from '@/shared/offline/offline-provider';
 import { minorToMajorText, parseMajorToMinor } from '@/shared/money/money';
 
 type Prices = { dine_in: number; takeaway: number };
-type Item = { id: string; code: string; name: string; is_available: boolean; groups: OrderGroup[]; prices: Prices; variants: { id: string; name: string; prices: Prices }[] };
+type Item = { id: string; code: string; name: string; has_photo: boolean; is_available: boolean; groups: OrderGroup[]; prices: Prices; variants: { id: string; name: string; prices: Prices }[] };
 type Register = {
     currency: string; outlets: { id: string; code: string; name: string }[]; outlet: { id: string; code: string; name: string } | null; tables: { id: string; code: string; area: string | null; seats: number }[];
     menu: { id: string; name: string; items: Item[] }[]; cashier: boolean; shift_open: boolean;
@@ -158,6 +158,7 @@ export default function RegisterPage({ register }: { register: Register }) {
                                 <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
                                     {c.items.map((i) => (
                                         <button className="flex flex-col items-start gap-1 border border-border bg-surface p-3 text-left text-sm disabled:opacity-50" disabled={!i.is_available} key={i.id} onClick={() => choose(i)} type="button">
+                                            {i.has_photo ? <img alt="" className="h-20 w-full object-cover" loading="lazy" src={`/fnb/items/${i.id}/photo`} /> : null}
                                             <span className="font-medium">{i.name}</span>
                                             <span className="tabular-nums text-muted-foreground">{money(i.prices[channel])}</span>
                                         </button>

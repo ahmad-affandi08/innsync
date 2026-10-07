@@ -8,7 +8,7 @@ export type Category = { id: string; outlet_id: string; code: string; name: stri
 export type Variant = { id: string | null; name: string; price_minor: number; is_active?: boolean };
 export type MenuItem = {
     id: string; category_id: string; outlet_id: string; code: string; name: string; description: string | null; price_minor: number; station: string | null; effective_station: string;
-    is_available: boolean; is_active: boolean; sort_order: number; lock_version: number; variants: (Variant & { id: string; is_active: boolean })[]; group_ids: string[];
+    has_photo: boolean; is_available: boolean; is_active: boolean; sort_order: number; lock_version: number; variants: (Variant & { id: string; is_active: boolean })[]; group_ids: string[];
 };
 export type Choice = { id: string | null; name: string; price_delta_minor: number; is_active?: boolean };
 export type ModifierGroup = { id: string; code: string; name: string; min_select: number; max_select: number; is_active: boolean; lock_version: number; modifiers: (Choice & { id: string; is_active: boolean })[] };
@@ -33,7 +33,7 @@ export type BillLine = {
 };
 export type RearrangeTargets = { tables: { id: string; code: string }[]; bills: { id: string; number: string; table: string | null; lock_version: number }[] };
 export type OrderGroup = { id: string; name: string; min_select: number; max_select: number; modifiers: { id: string; name: string; price_delta_minor: number }[] };
-export type OrderItem = { id: string; code: string; name: string; description: string | null; price_minor: number; list_price_minor: number; is_available: boolean; variants: { id: string; name: string; price_minor: number; list_price_minor: number }[]; groups: OrderGroup[] };
+export type OrderItem = { id: string; code: string; name: string; description: string | null; price_minor: number; list_price_minor: number; has_photo: boolean; is_available: boolean; variants: { id: string; name: string; price_minor: number; list_price_minor: number }[]; groups: OrderGroup[] };
 export type OrderCategory = { id: string; name: string; station: string; items: OrderItem[] };
 export type BillApproval = { id: string; subject_type: string; subject_ref: string; status: string; consumed: boolean };
 export type BillView = {

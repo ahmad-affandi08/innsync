@@ -700,6 +700,9 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
     Route::post('/items', [SetupController::class, 'storeItem'])->name('fnb.items.store');
     Route::post('/items/{id}', [SetupController::class, 'updateItem'])->where('id', $id)->name('fnb.items.update');
     Route::post('/items/{id}/availability', [SetupController::class, 'availability'])->where('id', $id)->name('fnb.items.availability');
+    Route::get('/items/{id}/photo', [SetupController::class, 'photo'])->where('id', $id)->name('fnb.items.photo');
+    Route::post('/items/{id}/photo', [SetupController::class, 'storePhoto'])->where('id', $id)->middleware('throttle:bookings')->name('fnb.items.photo.store');
+    Route::delete('/items/{id}/photo', [SetupController::class, 'removePhoto'])->where('id', $id)->name('fnb.items.photo.remove');
     Route::post('/modifier-groups', [SetupController::class, 'storeGroup'])->name('fnb.groups.store');
     Route::post('/modifier-groups/{id}', [SetupController::class, 'updateGroup'])->where('id', $id)->name('fnb.groups.update');
 });

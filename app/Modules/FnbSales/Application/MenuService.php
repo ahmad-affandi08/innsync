@@ -8,6 +8,17 @@ use App\Modules\Property\Application\Rates\PropertyCurrencyReader;
 use App\Shared\Application\Audit\AuditEntry;
 use App\Shared\Application\Audit\AuditTrail;
 use App\Shared\Application\Errors\Refusal;
+use App\Shared\Application\Files\DownloadFile;
+use App\Shared\Application\Files\FileAccessDenied;
+use App\Shared\Application\Files\FileAccessPolicy;
+use App\Shared\Application\Files\FileContent;
+use App\Shared\Application\Files\FilePolicy;
+use App\Shared\Application\Files\FileRejected;
+use App\Shared\Application\Files\FileSensitivity;
+use App\Shared\Application\Files\FileUpload;
+use App\Shared\Application\Files\StoredFile;
+use App\Shared\Application\Files\StoredFileNotFound;
+use App\Shared\Application\Files\StoreFile;
 use App\Shared\Application\Identifiers\IdentifierGenerator;
 use App\Shared\Application\Time\Clock;
 use App\Shared\Application\Transactions\TransactionRunner;
@@ -25,6 +36,10 @@ final readonly class MenuService
 
     public const MAX_PRICE_MINOR = 9_000_000_000_000;
 
+    public const PHOTO_PURPOSE = 'fnb.menu_item';
+
+    public const PHOTO_MAX_BYTES = 2_097_152;
+
     public function __construct(
         private SetupStore $store,
         private FnbAccess $access,
@@ -33,6 +48,8 @@ final readonly class MenuService
         private AuditTrail $audit,
         private IdentifierGenerator $ids,
         private Clock $clock,
+        private StoreFile $storeFile,
+        private DownloadFile $downloadFile,
     ) {}
 
     /** @return array<string, mixed> */
@@ -191,6 +208,82 @@ final readonly class MenuService
         });
 
         return $this->shapeItem($this->store->item($property, $before['id']) ?? throw Refusal::notFound('Item not found.'));
+    }
+
+    /**
+     * Sets or replaces the picture of a dish (FR-FBS-002), a JPEG or PNG of at most 2 MB; only the menu's owner does. The picture is kept in the private
+     * file store and served only to those who see the menu. @return array<string, mixed>
+     */
+    public function setPhoto(PropertyId $property, string $actorId, string $id, string $contents, ?string $name, int $lock): array
+    {
+        $this->access->require($property, $actorId, FnbAccess::SETUP_MANAGE, 'This person may not change the menu.');
+        $before = $this->store->item($property, strtolower($id)) ?? throw Refusal::notFound('Item not found.');
+
+        try {
+            $file = $this->storeFile->execute(new FileUpload($property, strtolower($actorId), self::PHOTO_PURPOSE, 'fnb-menu-item', $before['id'], $contents, new FilePolicy(['image/jpeg', 'image/png'], self::PHOTO_MAX_BYTES, FileSensitivity::Standard, false), $name));
+        } catch (FileRejected $e) {
+            throw Refusal::invalid($e->getMessage(), ['photo']);
+        }
+
+        $this->transactions->run(function () use ($property, $actorId, $before, $file, $lock): void {
+            if (! $this->store->updateItem($property, $before['id'], $lock, ['photo_file_id' => $file->id], $this->variantRows($before['variants']), $before['group_ids'], $this->clock->nowUtc())) {
+                throw Refusal::stateConflict('This item changed after you opened it.');
+            }
+
+            $this->audit->record(new AuditEntry($property->toString(), strtolower($actorId), 'fnb_item.photo_set', 'fnb_item', $before['id'], ['has_photo' => ($before['photo_file_id'] ?? null) !== null], ['has_photo' => true]));
+        });
+
+        return $this->shapeItem($this->store->item($property, $before['id']) ?? throw Refusal::notFound('Item not found.'));
+    }
+
+    /** Takes the picture off a dish. The file is kept as it was stored; only the menu stops showing it. @return array<string, mixed> */
+    public function removePhoto(PropertyId $property, string $actorId, string $id, int $lock): array
+    {
+        $this->access->require($property, $actorId, FnbAccess::SETUP_MANAGE, 'This person may not change the menu.');
+        $before = $this->store->item($property, strtolower($id)) ?? throw Refusal::notFound('Item not found.');
+
+        if (($before['photo_file_id'] ?? null) === null) {
+            throw Refusal::stateConflict('This item has no picture.');
+        }
+
+        $this->transactions->run(function () use ($property, $actorId, $before, $lock): void {
+            if (! $this->store->updateItem($property, $before['id'], $lock, ['photo_file_id' => null], $this->variantRows($before['variants']), $before['group_ids'], $this->clock->nowUtc())) {
+                throw Refusal::stateConflict('This item changed after you opened it.');
+            }
+
+            $this->audit->record(new AuditEntry($property->toString(), strtolower($actorId), 'fnb_item.photo_removed', 'fnb_item', $before['id'], ['has_photo' => true], ['has_photo' => false]));
+        });
+
+        return $this->shapeItem($this->store->item($property, $before['id']) ?? throw Refusal::notFound('Item not found.'));
+    }
+
+    /** The picture of a dish, for whoever sees the menu. */
+    public function photo(PropertyId $property, string $actorId, string $id): FileContent
+    {
+        $this->access->requireView($property, $actorId);
+        $item = $this->store->item($property, strtolower($id)) ?? throw Refusal::notFound('Item not found.');
+
+        if (($item['photo_file_id'] ?? null) === null) {
+            throw Refusal::notFound('This item has no picture.');
+        }
+
+        $policy = new class($this->access, $property) implements FileAccessPolicy
+        {
+            public function __construct(private FnbAccess $access, private PropertyId $property) {}
+
+            public function allows(string $actorId, StoredFile $file): bool
+            {
+                return $this->access->may($this->property, $actorId, FnbAccess::SETUP_MANAGE) || $this->access->may($this->property, $actorId, FnbAccess::POS_OPERATE);
+            }
+        };
+
+        try {
+            return $this->downloadFile->execute($property, $item['photo_file_id'], strtolower($actorId), $policy);
+        } catch (StoredFileNotFound) {
+            throw Refusal::notFound('The picture is no longer kept.');
+        } catch (FileAccessDenied) {
+            throw Refusal::forbidden('This person may not see the menu.');
+        }
     }
 
     // ---- modifier groups ----
@@ -416,7 +509,7 @@ final readonly class MenuService
     {
         return [
             'id' => $i['id'], 'category_id' => $i['category_id'], 'outlet_id' => $i['outlet_id'], 'code' => $i['code'], 'name' => $i['name'], 'description' => $i['description'], 'price_minor' => (int) $i['price_minor'],
-            'station' => $i['station'], 'effective_station' => $i['station'] ?? $i['category_station'], 'is_available' => (bool) $i['is_available'], 'is_active' => (bool) $i['is_active'], 'sort_order' => (int) $i['sort_order'], 'lock_version' => (int) $i['lock_version'],
+            'station' => $i['station'], 'effective_station' => $i['station'] ?? $i['category_station'], 'has_photo' => ($i['photo_file_id'] ?? null) !== null, 'is_available' => (bool) $i['is_available'], 'is_active' => (bool) $i['is_active'], 'sort_order' => (int) $i['sort_order'], 'lock_version' => (int) $i['lock_version'],
             'variants' => array_map(static fn (array $v): array => ['id' => $v['id'], 'name' => $v['name'], 'price_minor' => (int) $v['price_minor'], 'is_active' => (bool) $v['is_active']], $i['variants']), 'group_ids' => $i['group_ids'],
         ];
     }

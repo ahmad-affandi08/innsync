@@ -602,7 +602,7 @@ final readonly class BillService
             foreach ($items as $i) {
                 if ($i['category_id'] === $c['id'] && (bool) $i['is_active']) {
                     $list[] = [
-                        'id' => $i['id'], 'code' => $i['code'], 'name' => $i['name'], 'description' => $i['description'], 'price_minor' => $book->price($i['id'], null, $channel, (int) $i['price_minor'])[0], 'list_price_minor' => (int) $i['price_minor'], 'is_available' => (bool) $i['is_available'],
+                        'id' => $i['id'], 'code' => $i['code'], 'name' => $i['name'], 'description' => $i['description'], 'price_minor' => $book->price($i['id'], null, $channel, (int) $i['price_minor'])[0], 'list_price_minor' => (int) $i['price_minor'], 'has_photo' => ($i['photo_file_id'] ?? null) !== null, 'is_available' => (bool) $i['is_available'],
                         'variants' => array_values(array_map(static fn (array $v): array => ['id' => $v['id'], 'name' => $v['name'], 'price_minor' => $book->price($i['id'], $v['id'], $channel, (int) $v['price_minor'])[0], 'list_price_minor' => (int) $v['price_minor']], array_filter($i['variants'], static fn (array $v): bool => (bool) $v['is_active']))),
                         'groups' => array_values(array_filter(array_map(static fn (string $g): ?array => $groups[$g] ?? null, $i['group_ids']))),
                     ];

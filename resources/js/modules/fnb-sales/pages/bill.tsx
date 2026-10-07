@@ -289,6 +289,7 @@ export default function BillPage({ targets, view }: { targets: RearrangeTargets;
                                                             onClick={() => choose(i)}
                                                             type="button"
                                                         >
+                                                            {i.has_photo ? <img alt="" className="h-20 w-full object-cover" loading="lazy" src={`/fnb/items/${i.id}/photo`} /> : null}
                                                             <span className="font-medium">{i.name}</span>
                                                             {i.description !== null ? <span className="line-clamp-2 text-xs text-muted-foreground">{i.description}</span> : null}
                                                             <span className="flex items-center justify-between gap-2 text-sm">

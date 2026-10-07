@@ -67,7 +67,7 @@ final readonly class RegisterService
                     }
 
                     $items[] = [
-                        'id' => $i['id'], 'code' => $i['code'], 'name' => $i['name'], 'is_available' => $i['is_available'], 'groups' => $i['groups'],
+                        'id' => $i['id'], 'code' => $i['code'], 'name' => $i['name'], 'has_photo' => ($i['photo_file_id'] ?? null) !== null, 'is_available' => $i['is_available'], 'groups' => $i['groups'],
                         'prices' => ['dine_in' => $i['price_minor'], 'takeaway' => $t['price_minor']],
                         'variants' => array_map(static fn (array $v): array => ['id' => $v['id'], 'name' => $v['name'], 'prices' => ['dine_in' => $v['price_minor'], 'takeaway' => $variantTake[$v['id']] ?? $v['price_minor']]], $i['variants']),
                     ];
