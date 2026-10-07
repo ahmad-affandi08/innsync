@@ -1,1 +1,0 @@
-import{S as e,m as t}from"./app-ehXvkgvm.js";import{c as n,t as r}from"./app-frame-C7aR7rJ2.js";var i=e({KitchenShell:()=>o}),a=t();function o({actions:e,children:t,description:i,printClass:o,printHead:s,title:c}){return(0,a.jsx)(r,{actions:e,description:i,links:n,printClass:o,printHead:s,title:c,wide:!0,children:t})}export{i as n,o as t};

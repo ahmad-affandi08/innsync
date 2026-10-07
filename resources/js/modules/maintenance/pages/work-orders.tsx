@@ -159,7 +159,7 @@ export default function WorkOrdersPage({ overview }: { overview: Overview }) {
 
     return (
         <MaintenanceShell
-            actions={<div className="flex gap-2">{overview.may.manage ? <Button onClick={() => setSla({ urgent: String(overview.sla.urgent), high: String(overview.sla.high), normal: String(overview.sla.normal), low: String(overview.sla.low), warn: String(overview.escalation.warn), escalate: String(overview.escalation.escalate), nightFrom: String(overview.escalation.night_from), nightTo: String(overview.escalation.night_to) })} type="button" variant="outline">{t('mtc.sla.open')}</Button> : null}{overview.may.report ? <Button onClick={() => { action.clear(); setReport(BLANK); }} type="button">{t('mtc.report')}</Button> : null}</div>}
+            actions={<div className="flex flex-wrap gap-2">{overview.may.manage ? <Button onClick={() => setSla({ urgent: String(overview.sla.urgent), high: String(overview.sla.high), normal: String(overview.sla.normal), low: String(overview.sla.low), warn: String(overview.escalation.warn), escalate: String(overview.escalation.escalate), nightFrom: String(overview.escalation.night_from), nightTo: String(overview.escalation.night_to) })} type="button" variant="outline">{t('mtc.sla.open')}</Button> : null}{overview.may.report ? <Button onClick={() => { action.clear(); setReport(BLANK); }} type="button">{t('mtc.report')}</Button> : null}</div>}
             description={t('mtc.description')}
             title={t('mtc.title')}
         >
