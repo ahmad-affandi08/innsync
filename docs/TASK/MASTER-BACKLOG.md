@@ -243,7 +243,7 @@
 | TASK-FIN-034 | FR-FIN-034 | Finance | Wajib | REVIEW |
 | TASK-FIN-035 | FR-FIN-035 | Finance | Wajib | REVIEW |
 | TASK-FIN-036 | FR-FIN-036 | Finance | Wajib | REVIEW |
-| TASK-FIN-037 | FR-FIN-037 | Finance | Wajib | IN_PROGRESS |
+| TASK-FIN-037 | FR-FIN-037 | Finance | Wajib | REVIEW |
 | TASK-RPT-001 | FR-RPT-001 | Reporting & Analytics | Wajib | REVIEW |
 | TASK-RPT-002 | FR-RPT-002 | Reporting & Analytics | Wajib | IN_PROGRESS |
 | TASK-RPT-003 | FR-RPT-003 | Reporting & Analytics | Wajib | REVIEW |

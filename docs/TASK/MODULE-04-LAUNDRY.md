@@ -50,3 +50,5 @@
 - Emit audit evidence for sensitive/state-changing operations.
 - Add happy, negative, conflict/retry, and permission tests as applicable.
 - Update traceability/evidence before marking DONE.
+
+- Open design decision (2026-10-07). `TASK-LDY-012` is `IN_PROGRESS`: a stay cannot be closed while guest laundry is active, and the way out today is to deliver or cancel the order. The exception the requirement allows ("changed into a late charge or a claim with a recorded approval") is not built because its meaning is not fixed: a *late charge* may mean that the order is billed on the late folio after the guest left (`LateChargeService`), but a *claim* in this system is compensation to the guest for damaged or lost laundry (`ClaimService`), which is something else. It needs the Housekeeping Manager or the General Manager to say what the exception does to the order, who approves it (an approval subject with a policy) and what the guest is owed or charged, before it is built.

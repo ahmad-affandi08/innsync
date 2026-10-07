@@ -75,3 +75,7 @@
 - Emit audit evidence for sensitive/state-changing operations.
 - Add happy, negative, conflict/retry, and permission tests as applicable.
 - Update traceability/evidence before marking DONE.
+
+- Open design decisions (2026-10-07), recorded so they are not guessed:
+  - `TASK-DSH-022` (scope by outlet and department): the permission checker already grants by scope (`ScopeType` property, outlet, department; `allowsInScope`), but the dashboard only asks at property level. Two things must be decided before building it: which registry an outlet scope means (the F&B outlets of `fnb_outlets` or the revenue outlets of Reporting, `TASK-DSH-005`), and whether a person with only an outlet or department scope sees a card limited to it or no card. Until then the dashboard stays at property and permission scope.
+  - `TASK-DSH-016` (cards open the list of their rows): each card links to the screen where its numbers come from, filtered only where that screen already filters (the room board for occupancy, the reservations, the stays and the payables). A list of exactly the rows behind each number needs a filter on each target screen (for example reservations created in a period, which the reservation search does not have); it is to be built screen by screen once the owner says which numbers matter most.

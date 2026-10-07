@@ -45,7 +45,6 @@ final readonly class ReportService
 
     public const IDENTITY_PERMISSION = 'front-office.guest-identity.view';
 
-    /** Exports of personal data: they need the purpose and the right to export guests. */
     /**
      * The audit actions that count as notable events in the flash report (FR-RPT-005): what a manager wants to hear about after a day, as a baseline list
      * that is not a policy. The report counts them and says nothing of who did them or of the guest.
@@ -55,6 +54,7 @@ final readonly class ReportService
         'laundry_claim.recorded', 'laundry.order.escalated', 'work_order.escalated',
     ];
 
+    /** Exports of personal data: they need the purpose and the right to export guests. */
     public const PERSONAL_EXPORTS = ['movements', 'registrations', 'foreign_guests'];
 
     public const CATALOGUE = [
