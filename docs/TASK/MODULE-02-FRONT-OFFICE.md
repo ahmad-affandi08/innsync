@@ -56,7 +56,7 @@
 | TASK-FO-038 | FR-FO-038 | Wajib | Late charge setelah folio ditutup harus menggunakan alur khusus yang menaut ke stay/folio asal dan tidak mengubah laporan hari lama tanpa adjustment. | REVIEW |
 | TASK-FO-039 | FR-FO-039 | Wajib | Koreksi nama tamu, identitas, room move, dan routing finansial setelah check-in disimpan sebagai perubahan ter-audit; perubahan data kritis dapat memerlukan approval. | REVIEW |
 | TASK-FO-040 | FR-FO-040 | Wajib | Menerbitkan laporan registrasi tamu harian sesuai kolom di atas dengan penyaring tanggal dan kewarganegaraan. | REVIEW |
-| TASK-FO-041 | FR-FO-041 | Wajib | Menerbitkan berkas laporan tamu warga negara asing dalam format yang siap disampaikan kepada instansi terkait. | IN_PROGRESS |
+| TASK-FO-041 | FR-FO-041 | Wajib | Menerbitkan berkas laporan tamu warga negara asing dalam format yang siap disampaikan kepada instansi terkait. | BLOCKED |
 | TASK-FO-042 | FR-FO-042 | Wajib | Menerbitkan laporan pendapatan kamar per metode pembayaran: tunai, QRIS, transfer bank, kartu, dan pembayaran kanal daring. | REVIEW |
 | TASK-FO-043 | FR-FO-043 | Wajib | Menerbitkan laporan kedatangan, keberangkatan, dan tamu menginap untuk keperluan operasional harian. | REVIEW |
 | TASK-FO-044 | FR-FO-044 | Wajib | Menerbitkan laporan okupansi, ADR, dan RevPAR per hari, bulan, dan tahun berjalan. | REVIEW |
@@ -78,3 +78,5 @@
 - Emit audit evidence for sensitive/state-changing operations.
 - Add happy, negative, conflict/retry, and permission tests as applicable.
 - Update traceability/evidence before marking DONE.
+
+- Status (2026-10-07). `TASK-FO-041` is `BLOCKED`: the report is issued with the registration columns, but the layout the authority requires is PRD `Q-09` and is still open; it must not be guessed. It returns to `IN_PROGRESS` when the Front Office Manager supplies the format.

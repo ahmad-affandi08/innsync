@@ -64,7 +64,7 @@
 | TASK-FO-038 | FR-FO-038 | Front Office | Wajib | REVIEW |
 | TASK-FO-039 | FR-FO-039 | Front Office | Wajib | REVIEW |
 | TASK-FO-040 | FR-FO-040 | Front Office | Wajib | REVIEW |
-| TASK-FO-041 | FR-FO-041 | Front Office | Wajib | IN_PROGRESS |
+| TASK-FO-041 | FR-FO-041 | Front Office | Wajib | BLOCKED |
 | TASK-FO-042 | FR-FO-042 | Front Office | Wajib | REVIEW |
 | TASK-FO-043 | FR-FO-043 | Front Office | Wajib | REVIEW |
 | TASK-FO-044 | FR-FO-044 | Front Office | Wajib | REVIEW |
@@ -104,19 +104,19 @@
 | TASK-LDY-010 | FR-LDY-010 | Laundry | Sebaiknya | REVIEW |
 | TASK-LDY-011 | FR-LDY-011 | Laundry | Wajib | REVIEW |
 | TASK-LDY-012 | FR-LDY-012 | Laundry | Wajib | IN_PROGRESS |
-| TASK-FBS-001 | FR-FBS-001 | F&B Service | Wajib | IN_PROGRESS |
+| TASK-FBS-001 | FR-FBS-001 | F&B Service | Wajib | REVIEW |
 | TASK-FBS-002 | FR-FBS-002 | F&B Service | Wajib | REVIEW |
-| TASK-FBS-003 | FR-FBS-003 | F&B Service | Wajib | IN_PROGRESS |
+| TASK-FBS-003 | FR-FBS-003 | F&B Service | Wajib | REVIEW |
 | TASK-FBS-004 | FR-FBS-004 | F&B Service | Sebaiknya | REVIEW |
-| TASK-FBS-005 | FR-FBS-005 | F&B Service | Wajib | IN_PROGRESS |
+| TASK-FBS-005 | FR-FBS-005 | F&B Service | Wajib | REVIEW |
 | TASK-FBS-006 | FR-FBS-006 | F&B Service | Wajib | REVIEW |
 | TASK-FBS-007 | FR-FBS-007 | F&B Service | Wajib | REVIEW |
 | TASK-FBS-008 | FR-FBS-008 | F&B Service | Wajib | REVIEW |
 | TASK-FBS-009 | FR-FBS-009 | F&B Service | Wajib | REVIEW |
 | TASK-FBS-010 | FR-FBS-010 | F&B Service | Wajib | REVIEW |
-| TASK-FBS-011 | FR-FBS-011 | F&B Service | Wajib | IN_PROGRESS |
+| TASK-FBS-011 | FR-FBS-011 | F&B Service | Wajib | REVIEW |
 | TASK-FBS-012 | FR-FBS-012 | F&B Service | Wajib | REVIEW |
-| TASK-FBS-013 | FR-FBS-013 | F&B Service | Wajib | IN_PROGRESS |
+| TASK-FBS-013 | FR-FBS-013 | F&B Service | Wajib | BLOCKED |
 | TASK-FBS-014 | FR-FBS-014 | F&B Service | Wajib | REVIEW |
 | TASK-FBS-015 | FR-FBS-015 | F&B Service | Sebaiknya | REVIEW |
 | TASK-FBS-020 | FR-FBS-020 | F&B Service | Wajib | REVIEW |
@@ -144,7 +144,7 @@
 | TASK-KIT-012 | FR-KIT-012 | F&B Product / Kitchen | Sebaiknya | REVIEW |
 | TASK-KIT-013 | FR-KIT-013 | F&B Product / Kitchen | Wajib | REVIEW |
 | TASK-KIT-014 | FR-KIT-014 | F&B Product / Kitchen | Sebaiknya | REVIEW |
-| TASK-KIT-015 | FR-KIT-015 | F&B Product / Kitchen | Wajib | IN_PROGRESS |
+| TASK-KIT-015 | FR-KIT-015 | F&B Product / Kitchen | Wajib | REVIEW |
 | TASK-MTC-001 | FR-MTC-001 | Maintenance / Engineering | Wajib | REVIEW |
 | TASK-MTC-002 | FR-MTC-002 | Maintenance / Engineering | Wajib | REVIEW |
 | TASK-MTC-003 | FR-MTC-003 | Maintenance / Engineering | Wajib | REVIEW |

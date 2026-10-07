@@ -14,19 +14,19 @@
 
 | Task ID | FR | Priority | Requirement | Status |
 | --- | --- | --- | --- | --- |
-| TASK-FBS-001 | FR-FBS-001 | Wajib | Menampilkan denah meja per outlet dengan status kosong, terisi, dan sudah memesan; kasir dapat membuka bill dari meja atau dari nomor kamar. | IN_PROGRESS |
+| TASK-FBS-001 | FR-FBS-001 | Wajib | Menampilkan denah meja per outlet dengan status kosong, terisi, dan sudah memesan; kasir dapat membuka bill dari meja atau dari nomor kamar. | REVIEW |
 | TASK-FBS-002 | FR-FBS-002 | Wajib | Mengambil pesanan dengan katalog menu bergambar, kategori, varian, catatan khusus, dan jumlah porsi. | REVIEW |
-| TASK-FBS-003 | FR-FBS-003 | Wajib | Mengirim pesanan ke layar dapur dan bar sesuai kategori item, serta mencetak tiket pada printer masing-masing bila diperlukan. | IN_PROGRESS |
+| TASK-FBS-003 | FR-FBS-003 | Wajib | Mengirim pesanan ke layar dapur dan bar sesuai kategori item, serta mencetak tiket pada printer masing-masing bila diperlukan. | REVIEW |
 | TASK-FBS-004 | FR-FBS-004 | Sebaiknya | Mendukung pemisahan bill, penggabungan bill, dan pemindahan pesanan antar meja. | REVIEW |
-| TASK-FBS-005 | FR-FBS-005 | Wajib | Void item dan pembatalan bill hanya dapat dilakukan dengan alasan dan persetujuan penyelia; seluruh tindakan tercatat pada jejak audit. | IN_PROGRESS |
+| TASK-FBS-005 | FR-FBS-005 | Wajib | Void item dan pembatalan bill hanya dapat dilakukan dengan alasan dan persetujuan penyelia; seluruh tindakan tercatat pada jejak audit. | REVIEW |
 | TASK-FBS-006 | FR-FBS-006 | Wajib | Diskon dan pemberian gratis (complimentary) memerlukan alasan dan persetujuan sesuai ambang yang dikonfigurasi. | REVIEW |
 | TASK-FBS-007 | FR-FBS-007 | Wajib | Menerima pembayaran tunai, QRIS, kartu melalui EDC, dan pembebanan ke kamar. Pembebanan ke kamar wajib memvalidasi bahwa kamar berstatus terisi dan mencocokkan nama tamu. | REVIEW |
 | TASK-FBS-008 | FR-FBS-008 | Wajib | Menghitung pajak dan service charge secara otomatis sesuai konfigurasi per outlet dan menampilkannya terpisah pada struk. | REVIEW |
 | TASK-FBS-009 | FR-FBS-009 | Wajib | Membuka dan menutup shift kasir dengan penghitungan kas fisik, kas sistem, serta pencatatan selisih beserta alasan. | REVIEW |
 | TASK-FBS-010 | FR-FBS-010 | Wajib | POS tetap dapat mencatat transaksi saat jaringan terputus melalui antrean lokal terenkripsi. Setiap transaksi memiliki idempotency key dan status sinkronisasi sehingga pemulihan jaringan tidak menghasilkan bill, pembayaran, atau pengurangan stok ganda. | REVIEW |
-| TASK-FBS-011 | FR-FBS-011 | Wajib | Mendukung modifier/add-on, tingkat kematangan, pilihan varian, dan catatan khusus yang dapat memengaruhi harga dan resep tanpa membuat item menu duplikat. | IN_PROGRESS |
+| TASK-FBS-011 | FR-FBS-011 | Wajib | Mendukung modifier/add-on, tingkat kematangan, pilihan varian, dan catatan khusus yang dapat memengaruhi harga dan resep tanpa membuat item menu duplikat. | REVIEW |
 | TASK-FBS-012 | FR-FBS-012 | Wajib | Perubahan bill oleh beberapa perangkat menggunakan kontrol konkurensi; sistem mencegah lost update dan menampilkan konflik bila bill telah berubah di perangkat lain. | REVIEW |
-| TASK-FBS-013 | FR-FBS-013 | Wajib | Pembayaran QRIS/daring memiliki state initiated, pending, paid, failed, expired, unknown, dan refunded. Status unknown tidak boleh dianggap lunas sebelum rekonsiliasi atau callback valid diterima. | IN_PROGRESS |
+| TASK-FBS-013 | FR-FBS-013 | Wajib | Pembayaran QRIS/daring memiliki state initiated, pending, paid, failed, expired, unknown, dan refunded. Status unknown tidak boleh dianggap lunas sebelum rekonsiliasi atau callback valid diterima. | BLOCKED |
 | TASK-FBS-014 | FR-FBS-014 | Wajib | Refund, void setelah pembayaran, dan reprint struk memerlukan hak akses sesuai kebijakan, alasan, serta referensi transaksi awal pada audit trail. | REVIEW |
 | TASK-FBS-015 | FR-FBS-015 | Sebaiknya | Mendukung price list dan jadwal harga per outlet/channel/waktu, termasuk promo terjadwal, tanpa mengubah histori harga transaksi yang sudah ditutup. | REVIEW |
 | TASK-FBS-020 | FR-FBS-020 | Wajib | Petugas memeriksa mini bar di kamar tamu dengan memindai barcode kamar lalu memilih menu mini bar. | REVIEW |
@@ -155,3 +155,6 @@
 - Evidence: `tests/Feature/FnbSales/PaymentHttpTest.php` (one shift per cashier and no payment without it, cash with change and the settled snapshot, split payments and the card code, QRIS states and reservation of the amount, a room charge with the name match and one folio posting, closing the shift with variance and its reason, the name matching). Seen in the browser: opening a shift, ordering, sending, paying cash with change, paying by QRIS and marking it paid with a reference, and the shift totals.
 
 - `TASK-FBS-032` is `REVIEW` (slice 46): the outlets keep their own daily, weekly and monthly checklists and storage temperatures, with the completion share announced for Human Resource; see `MODULE-06-KITCHEN.md`, slice 46, for the design and the evidence.
+
+- Status refresh (2026-10-07). `TASK-FBS-001`, `-003`, `-005`, `-011` are `REVIEW`: the slices that the earlier status lines waited for exist (payment, receipt, kitchen screen, discounts, refund, recipes). Evidence: `tests/Feature/FnbSales/BillHttpTest.php` (a bill from a table, a room or the counter and the floor with `free`/`occupied`/`ordered`; variants and choices priced without a duplicate item; a line not yet sent taken off and one batch per station; void and cancel with reason and approval), `tests/Feature/Kitchen/BoardHttpTest.php` (one ticket per station, none for what no station prepares) and the menu pictures (see above). Tickets print from the kitchen and bar screen through the browser on the station's own printer (`TASK-KIT-015`); direct ESC/POS from the server is not provided. Not yet seen in a browser on a real printer.
+- `TASK-FBS-013` is `BLOCKED`: the seven states and the rule that an `unknown` payment is never taken as paid are built, but a valid provider callback or a settlement file cannot be built before the provider is chosen (PRD `Q-04`, `Q-16`). Until then a person confirms the payment by entering the reference.

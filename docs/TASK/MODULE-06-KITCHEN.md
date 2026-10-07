@@ -28,7 +28,7 @@
 | TASK-KIT-012 | FR-KIT-012 | Sebaiknya | Menerbitkan laporan penjualan menu, rasio biaya bahan terhadap penjualan, dan analisis menu berdasarkan popularitas serta kontribusi margin. | REVIEW |
 | TASK-KIT-013 | FR-KIT-013 | Wajib | Setiap perubahan resep menghasilkan versi baru bertanggal efektif; transaksi lama selalu mereferensikan versi resep yang berlaku saat transaksi diposting. | REVIEW |
 | TASK-KIT-014 | FR-KIT-014 | Sebaiknya | Mendukung produksi/preparation batch (misalnya sauce, dough, stock) yang mengonsumsi bahan baku dan menghasilkan semi-finished goods beserta yield aktual. | REVIEW |
-| TASK-KIT-015 | FR-KIT-015 | Wajib | KDS menyediakan indikator koneksi dan antrean; bila layar atau jaringan bermasalah, tiket tetap tersimpan dan dapat dialihkan ke printer/fallback queue tanpa kehilangan order. | IN_PROGRESS |
+| TASK-KIT-015 | FR-KIT-015 | Wajib | KDS menyediakan indikator koneksi dan antrean; bila layar atau jaringan bermasalah, tiket tetap tersimpan dan dapat dialihkan ke printer/fallback queue tanpa kehilangan order. | REVIEW |
 
 ## Progress notes
 
@@ -112,3 +112,5 @@
 - Update traceability/evidence before marking DONE.
 
 - Evidence (TASK-KIT-006, ingredient use outside a sale): the screen `/kitchen/ingredient-use` (`SupplyUseService` over the `DepartmentSupplyUse` contract, department kitchen, permission `kitchen.ingredients.use`, never below zero, audited): `tests/Feature/InventoryPurchasing/RequisitionAndSupplyHttpTest.php::test_the_kitchen_records_the_ingredients_it_uses_outside_a_sale_and_the_stock_card_follows`. Not yet seen in a browser.
+
+- Status refresh (2026-10-07). `TASK-KIT-015` is `REVIEW`: the board reloads every 15 seconds, says when it last got the tickets and keeps what it has when the network fails; a ticket, or all open tickets of the station, can be printed from what the screen already holds (`printTickets` in `resources/js/modules/kitchen/pages/board.tsx`), which is the fallback queue when a screen is dead. Printing goes through the browser to the printer of the device; there is no server-side ESC/POS. Not yet tried on a real printer.
