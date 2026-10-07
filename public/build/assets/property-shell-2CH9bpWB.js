@@ -1,0 +1,1 @@
+import{m as e}from"./app-CgCGFGRm.js";import{d as t,t as n}from"./app-frame-yjVi8s6Q.js";var r=e();function i({actions:e,children:i,description:a,title:o}){return(0,r.jsx)(n,{actions:e,description:a,links:t,title:o,children:i})}export{i as PropertyShell};

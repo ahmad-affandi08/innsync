@@ -6,6 +6,8 @@ Release notes for every release (NFR-14). Newest first. Each entry names the tas
 
 ### Added
 
+- User and role administration (owner instruction 2026-10-07, BR-004, NFR-06, NFR-22): the menu **People & access** creates accounts, gives and takes away roles (property or outlet scope), deactivates people and resets passwords; **Roles** creates roles and chooses their permissions. A person never changes their own access, nobody gives access they do not hold, the Administrator role is protected, every change needs a reason and is audited, and a password set by an administrator must be changed at the first sign-in. Migration 118 adds the permissions `identity.user.manage` and `identity.role.manage` and gives them to every `Administrator` role. See `docs/OPERATIONS/ACCESS-ADMINISTRATION.md`.
+
 - Mobile menu and form fixes (NFR-24): in the phone drawer a module opens the list of its pages instead of navigating and closing; text fields are 16px on touch screens so the page no longer zooms on focus; times use one `TimeInput` of the same height as other fields (property settings, report schedules, prices, room service, laundry intake); the guest ID validity date uses the shared date picker.
 
 - TASK-DSH-016 (FR-DSH-016): every dashboard card opens the list of the rows behind each of its figures, with a tab for each figure and a link on each row to its own screen. The list is found with the card's own conditions and under its own grant, so its rows are exactly what the figure counts; the money adds up to the card.
