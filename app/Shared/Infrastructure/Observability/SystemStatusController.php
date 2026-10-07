@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Shared\Infrastructure\Observability;
 
+use App\Shared\Application\Messaging\MessagingSettings;
 use App\Shared\Application\Observability\Health\RunHealthChecks;
 use App\Shared\Infrastructure\Backup\BackupRunLog;
-use App\Shared\Application\Messaging\MessagingSettings;
 use Inertia\Inertia;
 use Inertia\Response;
 

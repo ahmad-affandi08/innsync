@@ -18,7 +18,7 @@ return new class extends Migration
         foreach (DB::table('properties')->pluck('id') as $propertyId) {
             try {
                 $installer->install((string) $propertyId);
-            } catch (\RuntimeException) {
+            } catch (RuntimeException) {
                 // No administrator yet; innsync:create-admin installs them.
             }
         }

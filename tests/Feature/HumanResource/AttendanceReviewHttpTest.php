@@ -5,16 +5,13 @@ declare(strict_types=1);
 namespace Tests\Feature\HumanResource;
 
 use App\Modules\HumanResource\Application\HrAccess;
-use App\Modules\HumanResource\Application\StaffOnDuty;
 use App\Modules\IdentityAccess\Infrastructure\Persistence\Eloquent\UserRecord;
 use App\Modules\Property\Application\Settings\PropertySettingsService;
-use App\Shared\Application\Tenancy\PropertyContext;
 use App\Shared\Application\Time\Clock;
-use App\Shared\Domain\Tenancy\PropertyId;
+use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
 use Inertia\Testing\AssertableInertia as Assert;
 use LogicException;
 use Tests\Support\AdjustableClock;
@@ -143,7 +140,7 @@ final class AttendanceReviewHttpTest extends TestCase
         self::assertSame(64, strlen((string) $row->in_photo_hash));
 
         // A device id that is not an id is dropped, never stored.
-        $this->punch('clock-out', ['device' => "bad id; DROP", 'accuracy' => 5], 422);
+        $this->punch('clock-out', ['device' => 'bad id; DROP', 'accuracy' => 5], 422);
     }
 
     public function test_one_phone_clocking_in_for_two_people_is_put_in_front_of_a_supervisor_who_answers_once(): void
@@ -169,7 +166,7 @@ final class AttendanceReviewHttpTest extends TestCase
         $this->get('/hr/attendance')->assertInertia(fn (Assert $page) => $page->has('review', 1));
 
         // The answer is final: the database itself refuses a change.
-        $this->expectException(\Illuminate\Database\QueryException::class);
+        $this->expectException(QueryException::class);
         DB::table('hr_attendance_reviews')->update(['decision' => 'ok']);
     }
 

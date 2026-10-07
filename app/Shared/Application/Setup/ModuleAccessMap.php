@@ -34,7 +34,7 @@ final class ModuleAccessMap
     }
 
     /**
-     * @param  list<string>  $permissions codes the person holds
+     * @param  list<string>  $permissions  codes the person holds
      * @return list<string> menu keys to offer
      */
     public static function forPermissions(array $permissions): array

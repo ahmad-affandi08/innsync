@@ -3,6 +3,8 @@
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Modules\GuestExperience\Presentation\Http\Middleware\ResolveCheckInLink;
 use App\Modules\GuestExperience\Presentation\Http\Middleware\ResolveGuestSession;
+use App\Modules\IdentityAccess\Infrastructure\Console\InstallDefaultApprovalsCommand;
+use App\Modules\IdentityAccess\Infrastructure\Console\InstallDefaultRolesCommand;
 use App\Modules\IdentityAccess\Presentation\Http\Middleware\EnsureActiveUser;
 use App\Modules\IdentityAccess\Presentation\Http\Middleware\EnsureMfaVerified;
 use App\Modules\IdentityAccess\Presentation\Http\Middleware\RequirePermission;
@@ -19,8 +21,6 @@ use App\Shared\Infrastructure\Backup\BackupDecryptCommand;
 use App\Shared\Infrastructure\Backup\BackupKeygenCommand;
 use App\Shared\Infrastructure\Backup\BackupRunCommand;
 use App\Shared\Infrastructure\Backup\BackupVerifyCommand;
-use App\Modules\IdentityAccess\Infrastructure\Console\InstallDefaultApprovalsCommand;
-use App\Modules\IdentityAccess\Infrastructure\Console\InstallDefaultRolesCommand;
 use App\Shared\Infrastructure\Deployment\CreateAdminCommand;
 use App\Shared\Infrastructure\Deployment\PreflightCommand;
 use App\Shared\Infrastructure\Deployment\SmokeCommand;

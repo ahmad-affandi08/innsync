@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Middleware;
 
+use App\Modules\IdentityAccess\Application\Approval\ApprovalService;
 use App\Modules\Property\Application\Ports\PropertyProfileReader;
 use App\Modules\Property\Application\Ports\PropertyTimeZoneReader;
 use App\Modules\Property\Application\Settings\BusinessDateProvider;
@@ -11,6 +12,7 @@ use App\Shared\Application\Setup\ModuleAccess;
 use App\Shared\Application\Setup\ModuleSettings;
 use App\Shared\Domain\Tenancy\PropertyId;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Inertia\Middleware;
 use Throwable;
 
@@ -128,10 +130,10 @@ final class HandleInertiaRequests extends Middleware
         $userId = (string) $request->user()->getAuthIdentifier();
 
         try {
-            $waiting = (int) \Illuminate\Support\Facades\Cache::remember(
+            $waiting = (int) Cache::remember(
                 'shell.waiting.'.$propertyId.'.'.$userId,
                 60,
-                static fn (): int => count(app(\App\Modules\IdentityAccess\Application\Approval\ApprovalService::class)->pendingFor($property, $userId, 99)),
+                static fn (): int => count(app(ApprovalService::class)->pendingFor($property, $userId, 99)),
             );
         } catch (Throwable) {
             $waiting = 0;

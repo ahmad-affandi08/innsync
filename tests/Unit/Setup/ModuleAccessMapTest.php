@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Setup;
 
+use App\Modules\IdentityAccess\Infrastructure\Authorization\DatabaseDefaultRoleInstaller;
 use App\Shared\Application\Setup\ModuleAccessMap;
 use PHPUnit\Framework\TestCase;
 
@@ -35,7 +36,7 @@ final class ModuleAccessMapTest extends TestCase
 
     public function test_every_permission_of_the_catalog_opens_something(): void
     {
-        $catalog = \App\Modules\IdentityAccess\Infrastructure\Authorization\DatabaseDefaultRoleInstaller::catalog();
+        $catalog = DatabaseDefaultRoleInstaller::catalog();
         $orphans = array_filter($catalog, static fn (string $code): bool => array_diff(ModuleAccessMap::forPermissions([$code]), ModuleAccessMap::ALWAYS) === []);
 
         self::assertSame([], array_values($orphans), 'a permission that opens no menu entry leaves its holder with no way in');

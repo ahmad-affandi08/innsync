@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Shared\Infrastructure\Setup;
 
 use App\Shared\Application\Approval\ApprovalSubjects;
+use App\Shared\Application\Messaging\MessagingSettings;
 use App\Shared\Application\Setup\ModuleSettings;
 use App\Shared\Application\Setup\SetupFacts;
 use App\Shared\Domain\Tenancy\PropertyId;
@@ -30,7 +31,7 @@ final readonly class DatabaseSetupFacts implements SetupFacts
         return $off + [
             'profile' => $count('property_profiles'),
             'backup_ok' => (int) DB::table('backup_runs')->where('kind', 'backup')->where('status', 'succeeded')->exists(),
-            'mail_ok' => (int) ((app(\App\Shared\Application\Messaging\MessagingSettings::class)->get('email')?->enabled ?? false) || ! in_array((string) config('mail.default'), ['log', 'array', 'null'], true)),
+            'mail_ok' => (int) ((app(MessagingSettings::class)->get('email')?->enabled ?? false) || ! in_array((string) config('mail.default'), ['log', 'array', 'null'], true)),
             'approvals_single' => $this->approvalsWithOneApprover($p, $mandatory),
             'settings' => $count('property_settings'),
             'business_date' => (int) DB::table('property_settings')->where('property_id', $p)->whereNotNull('business_date')->count(),

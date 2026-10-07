@@ -11,6 +11,7 @@ use App\Modules\IdentityAccess\Infrastructure\Persistence\Eloquent\UserRecord;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia as Assert;
 use LogicException;
 use Tests\Support\SignsInToProperty;
@@ -67,7 +68,7 @@ final class SetupAndImportTest extends TestCase
 
         // The owner already configured one action: it stays.
         DB::table('approval_policies')->insert([
-            'id' => strtolower((string) \Illuminate\Support\Str::ulid()), 'property_id' => self::A, 'subject_type' => 'fnb.comp', 'band_min_amount_minor' => 0, 'version' => 1,
+            'id' => strtolower((string) Str::ulid()), 'property_id' => self::A, 'subject_type' => 'fnb.comp', 'band_min_amount_minor' => 0, 'version' => 1,
             'steps' => json_encode([['permission' => 'fnb.pos.operate', 'approvals_required' => 2]]), 'created_by' => $admin->getKey(), 'change_reason' => 'Owner', 'created_at' => now(),
         ]);
 
@@ -178,7 +179,7 @@ final class SetupAndImportTest extends TestCase
 
         // A starting role somebody holds, and one the property changed, must survive the switch.
         $held = (string) DB::table('roles')->where('property_id', self::A)->where('name', 'Receptionist')->value('id');
-        DB::table('user_role_assignments')->insert(['id' => strtolower((string) \Illuminate\Support\Str::ulid()), 'property_id' => self::A, 'user_id' => $actor->getKey(), 'role_id' => $held, 'scope_type' => 'property', 'scope_id' => self::A, 'is_active' => true, 'lock_version' => 0, 'created_at' => now(), 'updated_at' => now()]);
+        DB::table('user_role_assignments')->insert(['id' => strtolower((string) Str::ulid()), 'property_id' => self::A, 'user_id' => $actor->getKey(), 'role_id' => $held, 'scope_type' => 'property', 'scope_id' => self::A, 'is_active' => true, 'lock_version' => 0, 'created_at' => now(), 'updated_at' => now()]);
         $changed = (string) DB::table('roles')->where('property_id', self::A)->where('name', 'Night Auditor')->value('id');
         DB::table('role_permissions')->where('role_id', $changed)->limit(1)->delete();
 

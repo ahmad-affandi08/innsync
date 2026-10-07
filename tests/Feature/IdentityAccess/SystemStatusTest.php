@@ -6,6 +6,7 @@ namespace Tests\Feature\IdentityAccess;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia as Assert;
 use LogicException;
 use Tests\Support\SignsInToProperty;
@@ -34,7 +35,7 @@ final class SystemStatusTest extends TestCase
 
     public function test_the_screen_shows_the_checks_the_backup_and_the_settings_that_need_a_person(): void
     {
-        DB::table('backup_runs')->insert(['id' => strtolower((string) \Illuminate\Support\Str::ulid()), 'kind' => 'backup', 'status' => 'succeeded', 'started_at' => now()->subMinutes(5), 'finished_at' => now()->subMinutes(4), 'duration_ms' => 60000, 'size_bytes' => 1000]);
+        DB::table('backup_runs')->insert(['id' => strtolower((string) Str::ulid()), 'kind' => 'backup', 'status' => 'succeeded', 'started_at' => now()->subMinutes(5), 'finished_at' => now()->subMinutes(4), 'duration_ms' => 60000, 'size_bytes' => 1000]);
         $this->signIn(self::A, ['property.settings.manage']);
 
         $this->get('/property/system')->assertOk()->assertInertia(fn (Assert $page) => $page

@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Feature\IdentityAccess;
 
+use App\Modules\IdentityAccess\Infrastructure\Persistence\Eloquent\UserRecord;
 use App\Shared\Application\Notifications\EmailNotifier;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Str;
 use LogicException;
 use Tests\Support\SignsInToProperty;
 use Tests\TestCase;
@@ -36,7 +38,7 @@ final class PasswordResetTest extends TestCase
 
     private function person(bool $active = true): string
     {
-        $id = strtolower((string) \Illuminate\Support\Str::ulid());
+        $id = strtolower((string) Str::ulid());
         DB::table('users')->insert([
             'id' => $id, 'name' => 'Rina', 'email' => 'rina@example.test', 'password' => Hash::make('Old-password-1!'),
             'is_active' => $active, 'must_change_password' => true, 'failed_login_attempts' => 5, 'locked_until' => now()->addHour(),
@@ -50,7 +52,8 @@ final class PasswordResetTest extends TestCase
     {
         $this->person();
         $sent = [];
-        $this->app->instance(EmailNotifier::class, new class($sent) implements EmailNotifier {
+        $this->app->instance(EmailNotifier::class, new class($sent) implements EmailNotifier
+        {
             public function __construct(public array &$sent) {}
 
             public function notify(string $address, string $subject, string $body): bool
@@ -74,7 +77,8 @@ final class PasswordResetTest extends TestCase
     public function test_an_inactive_account_is_sent_nothing(): void
     {
         $this->person(false);
-        $this->app->instance(EmailNotifier::class, new class implements EmailNotifier {
+        $this->app->instance(EmailNotifier::class, new class implements EmailNotifier
+        {
             public function notify(string $address, string $subject, string $body): bool
             {
                 throw new LogicException('No mail for an inactive account.');
@@ -88,7 +92,7 @@ final class PasswordResetTest extends TestCase
     {
         $id = $this->person();
         DB::table((string) config('session.table'))->insert(['id' => 'sess1', 'user_id' => $id, 'ip_address' => '1.1.1.1', 'user_agent' => 'x', 'payload' => '', 'last_activity' => time()]);
-        $token = Password::broker()->createToken(\App\Modules\IdentityAccess\Infrastructure\Persistence\Eloquent\UserRecord::query()->findOrFail($id));
+        $token = Password::broker()->createToken(UserRecord::query()->findOrFail($id));
         $new = 'Brand-New-Passw0rd!x';
 
         $this->post('/reset-password', ['token' => $token, 'email' => 'rina@example.test', 'password' => $new, 'password_confirmation' => $new])->assertRedirect('/login');

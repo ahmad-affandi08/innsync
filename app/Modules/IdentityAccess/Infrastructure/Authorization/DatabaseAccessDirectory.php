@@ -6,6 +6,7 @@ namespace App\Modules\IdentityAccess\Infrastructure\Authorization;
 
 use App\Modules\IdentityAccess\Application\Ports\AccessDirectory;
 use App\Shared\Domain\Tenancy\PropertyId;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 
@@ -37,7 +38,7 @@ final readonly class DatabaseAccessDirectory implements AccessDirectory
                 'is_active' => (bool) $u->is_active,
                 'must_change_password' => (bool) $u->must_change_password,
                 'mfa' => $u->two_factor_confirmed_at !== null,
-                'last_login_at' => $u->last_login_at === null ? null : \Illuminate\Support\Carbon::parse((string) $u->last_login_at, 'UTC')->toIso8601String(),
+                'last_login_at' => $u->last_login_at === null ? null : Carbon::parse((string) $u->last_login_at, 'UTC')->toIso8601String(),
                 'assignments' => $assignments->get($u->id, collect())->map(static fn ($a): array => [
                     'id' => strtolower((string) $a->id),
                     'role_id' => strtolower((string) $a->role_id),

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\IdentityAccess\Infrastructure\Persistence\Eloquent;
 
+use App\Shared\Application\Notifications\EmailNotifier;
 use App\Shared\Infrastructure\Persistence\Eloquent\UsesOptimisticLocking;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -35,7 +36,7 @@ final class UserRecord extends Authenticatable
     public function sendPasswordResetNotification(#[\SensitiveParameter] $token): void
     {
         $url = url(route('password.reset', ['token' => $token, 'email' => $this->email], false));
-        app(\App\Shared\Application\Notifications\EmailNotifier::class)->notify(
+        app(EmailNotifier::class)->notify(
             (string) $this->email,
             __('identity.reset_subject'),
             __('identity.reset_body', ['url' => $url, 'minutes' => (int) config('auth.passwords.users.expire', 60)]),

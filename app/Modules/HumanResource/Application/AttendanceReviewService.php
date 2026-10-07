@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\HumanResource\Application;
 
+use App\Modules\Property\Application\Ports\PropertyTimeZoneReader;
 use App\Shared\Application\Audit\AuditEntry;
 use App\Shared\Application\Audit\AuditTrail;
 use App\Shared\Application\Errors\Refusal;
@@ -11,7 +12,6 @@ use App\Shared\Application\Identifiers\IdentifierGenerator;
 use App\Shared\Application\Time\Clock;
 use App\Shared\Application\Transactions\TransactionRunner;
 use App\Shared\Domain\Tenancy\PropertyId;
-use App\Modules\Property\Application\Ports\PropertyTimeZoneReader;
 
 /**
  * The clock-ins that look unusual, in front of a supervisor (owner request 2026-10-07: stronger attendance). `AttendanceAnomalies` marks them; here a person with the attendance

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Foundation;
 
+use App\Http\Middleware\HandleInertiaRequests;
 use App\Modules\IdentityAccess\Infrastructure\Persistence\Eloquent\UserRecord;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
@@ -49,7 +50,7 @@ final class ErrorPageTest extends TestCase
     {
         $this->signIn();
 
-        $this->get('/finance/payables', ['X-Inertia' => 'true', 'X-Requested-With' => 'XMLHttpRequest', 'X-Inertia-Version' => (string) app(\App\Http\Middleware\HandleInertiaRequests::class)->version(request())])
+        $this->get('/finance/payables', ['X-Inertia' => 'true', 'X-Requested-With' => 'XMLHttpRequest', 'X-Inertia-Version' => (string) app(HandleInertiaRequests::class)->version(request())])
             ->assertForbidden()->assertHeader('X-Inertia', 'true')->assertJsonPath('component', 'foundation/pages/error')->assertJsonPath('props.status', 403);
     }
 

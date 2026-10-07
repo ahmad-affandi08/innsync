@@ -103,7 +103,7 @@ final class StockReportsHttpTest extends TestCase
 
             return $id;
         };
-        $location = function (string $code) : string {
+        $location = function (string $code): string {
             $id = $this->ulid();
             DB::table('inventory_locations')->insert(['id' => $id, 'property_id' => self::A, 'code' => $code, 'name' => $code.' store', 'kind' => 'main', 'negative_blocked' => false, 'is_active' => true, 'lock_version' => 0, 'created_at' => now(), 'updated_at' => now()]);
 
