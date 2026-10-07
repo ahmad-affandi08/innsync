@@ -31,6 +31,14 @@ return new class extends Migration
         });
     }
 
+    public function down(): void
+    {
+        Schema::table('laundry_orders', function (Blueprint $table): void {
+            $table->dropColumn('escalated_at');
+        });
+        Schema::dropIfExists('guest_preferences');
+    }
+
     private function configureTable(Blueprint $table): void
     {
         $table->engine = 'InnoDB';
