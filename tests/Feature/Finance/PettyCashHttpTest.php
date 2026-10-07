@@ -191,6 +191,8 @@ final class PettyCashHttpTest extends TestCase
         $this->actAs($this->custodian);
         $post(['amount_minor' => 40_000_001])->assertStatus(409);
         self::assertSame(30_000_000 + 50_000_000 + 50_000_000 + 40_000_000, (int) DB::table('fin_petty_vouchers')->sum('amount_minor'));
+        self::assertSame(0, DB::table('fin_petty_vouchers')->whereNull('correlation_id')->count(), 'every voucher keeps the correlation of the request');
+        self::assertSame(0, DB::table('fin_petty_entries')->whereNull('correlation_id')->count(), 'every entry of the fund card keeps it too');
 
         try {
             DB::table('fin_petty_entries')->insert(['id' => '01arz3ndektsv4rrffq69g5fc1', 'property_id' => self::A, 'fund_id' => $fund['id'], 'seq' => 99, 'kind' => 'expense', 'signed_minor' => -30_000_001, 'business_date' => '2026-10-03', 'created_by' => $this->custodian->getKey(), 'created_at' => now()]);

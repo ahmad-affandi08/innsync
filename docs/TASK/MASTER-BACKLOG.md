@@ -219,7 +219,7 @@
 | TASK-FIN-003 | FR-FIN-003 | Finance | Wajib | REVIEW |
 | TASK-FIN-004 | FR-FIN-004 | Finance | Sebaiknya | REVIEW |
 | TASK-FIN-005 | FR-FIN-005 | Finance | Wajib | REVIEW |
-| TASK-FIN-006 | FR-FIN-006 | Finance | Wajib | IN_PROGRESS |
+| TASK-FIN-006 | FR-FIN-006 | Finance | Wajib | REVIEW |
 | TASK-FIN-010 | FR-FIN-010 | Finance | Wajib | REVIEW |
 | TASK-FIN-011 | FR-FIN-011 | Finance | Wajib | REVIEW |
 | TASK-FIN-012 | FR-FIN-012 | Finance | Wajib | REVIEW |

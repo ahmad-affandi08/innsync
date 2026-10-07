@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Modules\Finance\Infrastructure;
 
 use App\Modules\Finance\Application\CorrectionStore;
+use App\Shared\Application\Observability\CorrelationId;
 use App\Shared\Domain\Tenancy\PropertyId;
 use DateTimeImmutable;
 use Illuminate\Database\QueryException;
@@ -12,6 +13,8 @@ use Illuminate\Support\Facades\DB;
 
 final readonly class DatabaseCorrectionStore implements CorrectionStore
 {
+    public function __construct(private CorrelationId $correlation) {}
+
     public function corrections(PropertyId $property, ?string $status, ?string $dayDate): array
     {
         $lines = DB::table('fin_correction_lines')->groupBy('correction_id')->selectRaw("correction_id, COUNT(*) as line_count, SUM(CASE WHEN kind = 'revenue' THEN total_minor ELSE 0 END) as revenue, SUM(received_minor) as received");
@@ -52,7 +55,7 @@ final readonly class DatabaseCorrectionStore implements CorrectionStore
     public function add(PropertyId $property, array $row, array $lines, DateTimeImmutable $at): bool
     {
         try {
-            DB::table('fin_corrections')->insert([...$row, 'property_id' => $property->toString(), 'status' => 'pending', 'lock_version' => 0, 'created_at' => $at]);
+            DB::table('fin_corrections')->insert([...$row, 'correlation_id' => $this->correlation->current(), 'property_id' => $property->toString(), 'status' => 'pending', 'lock_version' => 0, 'created_at' => $at]);
         } catch (QueryException $e) {
             if (($e->errorInfo[1] ?? null) === 1062) {
                 return false;

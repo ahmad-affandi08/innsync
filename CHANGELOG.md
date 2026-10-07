@@ -6,6 +6,7 @@ Release notes for every release (NFR-14). Newest first. Each entry names the tas
 
 ### Added
 
+- TASK-FIN-006 (FR-FIN-006): the postings that a person or a refund makes (supplier payments, receipts and notes, petty cash, cash deposits, corrections, finance exceptions, POS refunds) now keep the correlation ID of the request or message that made them, as the postings made from events already did.
 - TASK-RPT-005 (FR-RPT-005): the daily flash report adds the main operating costs per department (for those who may see finance's management reports) and the notable events of the period, counted from the audit trail.
 - TASK-KIT-006 (FR-KIT-006, BR-005): the kitchen records the ingredients it uses up outside of a sale (a staff meal, a tasting) from a store (`/kitchen/ingredient-use`, permission `kitchen.ingredients.use`); one issue movement at the average cost, never below zero, audited.
 - TASK-INV-004 (FR-INV-004, BR-005): housekeeping records the cleaning supplies and amenities it uses up from a store (`/housekeeping/supplies`, permission `housekeeping.supplies.use`); each use is one issue movement at the average cost as housekeeping consumption, never below zero, and audited.

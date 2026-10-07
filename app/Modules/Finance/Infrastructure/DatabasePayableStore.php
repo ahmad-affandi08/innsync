@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Modules\Finance\Infrastructure;
 
 use App\Modules\Finance\Application\PayableStore;
+use App\Shared\Application\Observability\CorrelationId;
 use App\Shared\Domain\Tenancy\PropertyId;
 use DateTimeImmutable;
 use Illuminate\Database\Query\Builder;
@@ -13,6 +14,8 @@ use Illuminate\Support\Facades\DB;
 
 final readonly class DatabasePayableStore implements PayableStore
 {
+    public function __construct(private CorrelationId $correlation) {}
+
     public function accounts(PropertyId $property): array
     {
         return $this->rows(DB::table('finance_expense_accounts')->where('property_id', $property->toString())->orderBy('code')->get());
@@ -106,7 +109,7 @@ final readonly class DatabasePayableStore implements PayableStore
 
     public function addPayment(PropertyId $property, array $row, DateTimeImmutable $at): bool
     {
-        return $this->insert('ap_payments', [...$row, 'property_id' => $property->toString(), 'lock_version' => 0, 'created_at' => $at, 'updated_at' => $at]);
+        return $this->insert('ap_payments', [...$row, 'correlation_id' => $this->correlation->current(), 'property_id' => $property->toString(), 'lock_version' => 0, 'created_at' => $at, 'updated_at' => $at]);
     }
 
     public function payments(PropertyId $property, ?string $status, int $limit): array

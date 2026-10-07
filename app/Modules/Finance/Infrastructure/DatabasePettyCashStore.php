@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Modules\Finance\Infrastructure;
 
 use App\Modules\Finance\Application\PettyCashStore;
+use App\Shared\Application\Observability\CorrelationId;
 use App\Shared\Domain\Tenancy\PropertyId;
 use DateTimeImmutable;
 use Illuminate\Database\Query\Builder;
@@ -13,6 +14,8 @@ use Illuminate\Support\Facades\DB;
 
 final readonly class DatabasePettyCashStore implements PettyCashStore
 {
+    public function __construct(private CorrelationId $correlation) {}
+
     public function funds(PropertyId $property, ?string $custodianId): array
     {
         return $this->rows($this->fundQuery($property)->when($custodianId !== null, static fn ($q) => $q->where('f.custodian_id', $custodianId))->orderBy('f.code')->get());
@@ -41,7 +44,7 @@ final readonly class DatabasePettyCashStore implements PettyCashStore
     public function addEntry(PropertyId $property, array $row, DateTimeImmutable $at): void
     {
         $seq = (int) DB::table('fin_petty_entries')->where('fund_id', $row['fund_id'])->max('seq') + 1;
-        DB::table('fin_petty_entries')->insert([...$row, 'property_id' => $property->toString(), 'seq' => $seq, 'created_at' => $at]);
+        DB::table('fin_petty_entries')->insert([...$row, 'correlation_id' => $this->correlation->current(), 'property_id' => $property->toString(), 'seq' => $seq, 'created_at' => $at]);
     }
 
     public function entries(PropertyId $property, string $fundId, int $limit): array
@@ -63,7 +66,7 @@ final readonly class DatabasePettyCashStore implements PettyCashStore
 
     public function addVoucher(PropertyId $property, array $row, DateTimeImmutable $at): bool
     {
-        return $this->insert('fin_petty_vouchers', [...$row, 'property_id' => $property->toString(), 'created_at' => $at]);
+        return $this->insert('fin_petty_vouchers', [...$row, 'correlation_id' => $this->correlation->current(), 'property_id' => $property->toString(), 'created_at' => $at]);
     }
 
     public function vouchers(PropertyId $property, string $fundId, int $limit): array
@@ -98,12 +101,12 @@ final readonly class DatabasePettyCashStore implements PettyCashStore
 
     public function addVoid(PropertyId $property, array $row, DateTimeImmutable $at): void
     {
-        DB::table('fin_petty_voids')->insert([...$row, 'property_id' => $property->toString(), 'created_at' => $at]);
+        DB::table('fin_petty_voids')->insert([...$row, 'correlation_id' => $this->correlation->current(), 'property_id' => $property->toString(), 'created_at' => $at]);
     }
 
     public function addSettlement(PropertyId $property, array $row, array $voucherIds, DateTimeImmutable $at): bool
     {
-        if (! $this->insert('fin_petty_settlements', [...$row, 'property_id' => $property->toString(), 'status' => 'submitted', 'lock_version' => 0, 'created_at' => $at])) {
+        if (! $this->insert('fin_petty_settlements', [...$row, 'correlation_id' => $this->correlation->current(), 'property_id' => $property->toString(), 'status' => 'submitted', 'lock_version' => 0, 'created_at' => $at])) {
             return false;
         }
 

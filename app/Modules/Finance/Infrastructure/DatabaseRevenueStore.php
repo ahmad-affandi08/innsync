@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Modules\Finance\Infrastructure;
 
 use App\Modules\Finance\Application\RevenueStore;
+use App\Shared\Application\Observability\CorrelationId;
 use App\Shared\Domain\Tenancy\PropertyId;
 use DateTimeImmutable;
 use Illuminate\Database\Query\Builder;
@@ -13,6 +14,8 @@ use Illuminate\Support\Facades\DB;
 
 final readonly class DatabaseRevenueStore implements RevenueStore
 {
+    public function __construct(private CorrelationId $correlation) {}
+
     public function outletsBySource(PropertyId $property): array
     {
         $out = [];
@@ -113,7 +116,7 @@ final readonly class DatabaseRevenueStore implements RevenueStore
 
     public function addDeposit(PropertyId $property, array $row, DateTimeImmutable $at): bool
     {
-        return $this->insert('fin_cash_deposits', [...$row, 'property_id' => $property->toString(), 'created_at' => $at]);
+        return $this->insert('fin_cash_deposits', [...$row, 'correlation_id' => $this->correlation->current(), 'property_id' => $property->toString(), 'created_at' => $at]);
     }
 
     public function addException(PropertyId $property, array $row, DateTimeImmutable $at): void
@@ -215,7 +218,7 @@ final readonly class DatabaseRevenueStore implements RevenueStore
 
     public function addPosRefund(PropertyId $property, array $row, DateTimeImmutable $at): bool
     {
-        return $this->insert('fin_pos_refunds', [...$row, 'property_id' => $property->toString(), 'created_at' => $at]);
+        return $this->insert('fin_pos_refunds', [...$row, 'correlation_id' => $this->correlation->current(), 'property_id' => $property->toString(), 'created_at' => $at]);
     }
 
     public function posSalesOf(PropertyId $property, string $date): array

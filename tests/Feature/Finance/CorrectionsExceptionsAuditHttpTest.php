@@ -155,6 +155,7 @@ final class CorrectionsExceptionsAuditHttpTest extends TestCase
         $c = $this->postJson('/finance/corrections', $body, $headers)->assertCreated()->json('correction');
         $this->postJson('/finance/corrections', $body, $headers);
         self::assertSame(1, DB::table('fin_corrections')->count(), 'a retry with the same key asks once');
+        self::assertSame(1, DB::table('fin_corrections')->whereNotNull('correlation_id')->count(), 'a correction keeps the correlation of the request');
         self::assertSame(['COR-000001', 'pending', '2026-10-01', 3, -1_210_000, -300_000, null], [$c['number'], $c['status'], $c['day_date'], $c['line_count'], $c['revenue_minor'], $c['received_minor'], $c['effective_date']]);
         self::assertSame('rooms', $c['lines'][0]['outlet_code']);
         self::assertSame(['verified'], [DB::table('fin_revenue_days')->value('status')], 'the verified day is not touched');

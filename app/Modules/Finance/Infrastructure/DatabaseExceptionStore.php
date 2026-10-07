@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Modules\Finance\Infrastructure;
 
 use App\Modules\Finance\Application\ExceptionStore;
+use App\Shared\Application\Observability\CorrelationId;
 use App\Shared\Domain\Tenancy\PropertyId;
 use DateTimeImmutable;
 use Illuminate\Database\Query\Builder;
@@ -13,6 +14,8 @@ use Illuminate\Support\Facades\DB;
 
 final readonly class DatabaseExceptionStore implements ExceptionStore
 {
+    public function __construct(private CorrelationId $correlation) {}
+
     public function exceptions(PropertyId $property, ?string $status): array
     {
         return $this->query($property)->when($status !== null, static fn ($q) => $q->where('e.status', $status))->orderByRaw("e.status = 'open' DESC")->orderByDesc('e.business_date')->orderByDesc('e.number')->limit(500)->get()->map(static fn ($r): array => (array) $r)->all();
@@ -33,7 +36,7 @@ final readonly class DatabaseExceptionStore implements ExceptionStore
     public function add(PropertyId $property, array $row, DateTimeImmutable $at): bool
     {
         try {
-            DB::table('fin_exceptions')->insert([...$row, 'property_id' => $property->toString(), 'status' => 'open', 'lock_version' => 0, 'created_at' => $at]);
+            DB::table('fin_exceptions')->insert([...$row, 'correlation_id' => $this->correlation->current(), 'property_id' => $property->toString(), 'status' => 'open', 'lock_version' => 0, 'created_at' => $at]);
 
             return true;
         } catch (QueryException $e) {

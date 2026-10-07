@@ -240,6 +240,7 @@ final class AccountsPayableHttpTest extends TestCase
         $this->pay($p['id'], 1, ['paid_on' => '01-10-2026'], 422);
         $this->pay(strtolower((string) Str::ulid()), 1, [], 404);
         $this->assertSame(1, DB::table('ap_payments')->count());
+        self::assertSame(1, DB::table('ap_payments')->whereNotNull('correlation_id')->count(), 'a payment keeps the correlation of the request');
     }
 
     public function test_the_same_request_with_the_same_key_pays_once(): void

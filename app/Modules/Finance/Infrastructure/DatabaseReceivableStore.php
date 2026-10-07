@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Modules\Finance\Infrastructure;
 
 use App\Modules\Finance\Application\ReceivableStore;
+use App\Shared\Application\Observability\CorrelationId;
 use App\Shared\Domain\Tenancy\PropertyId;
 use DateTimeImmutable;
 use Illuminate\Database\Query\Builder;
@@ -13,6 +14,8 @@ use Illuminate\Support\Facades\DB;
 
 final readonly class DatabaseReceivableStore implements ReceivableStore
 {
+    public function __construct(private CorrelationId $correlation) {}
+
     public function customers(PropertyId $property): array
     {
         return $this->rows(DB::table('fin_customers')->where('property_id', $property->toString())->orderBy('name')->orderBy('id')->get());
@@ -82,12 +85,12 @@ final readonly class DatabaseReceivableStore implements ReceivableStore
 
     public function addReceipt(PropertyId $property, array $row, DateTimeImmutable $at): bool
     {
-        return $this->insert('ar_receipts', [...$row, 'property_id' => $property->toString(), 'created_at' => $at]);
+        return $this->insert('ar_receipts', [...$row, 'correlation_id' => $this->correlation->current(), 'property_id' => $property->toString(), 'created_at' => $at]);
     }
 
     public function addNote(PropertyId $property, array $row, DateTimeImmutable $at): void
     {
-        DB::table('ar_notes')->insert([...$row, 'property_id' => $property->toString(), 'created_at' => $at]);
+        DB::table('ar_notes')->insert([...$row, 'correlation_id' => $this->correlation->current(), 'property_id' => $property->toString(), 'created_at' => $at]);
     }
 
     public function outstandingAsOf(PropertyId $property, string $asOf): array

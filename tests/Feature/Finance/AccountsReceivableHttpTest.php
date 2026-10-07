@@ -179,6 +179,7 @@ final class AccountsReceivableHttpTest extends TestCase
         $this->postJson($url, ['amount_minor' => 6_000_000, 'method' => 'giro', 'reference' => 'GIRO-22'], $headers);
         self::assertSame(2, DB::table('ar_receipts')->count(), 'a retry with the same key receives once');
         self::assertSame(['RCP-000001', 'RCP-000002'], DB::table('ar_receipts')->orderBy('number')->pluck('number')->all());
+        self::assertSame(2, DB::table('ar_receipts')->whereNotNull('correlation_id')->count(), 'a receipt keeps the correlation of the request');
         $pay(['amount_minor' => 1])->assertStatus(409);
 
         self::assertSame(2, DB::table('outbox_messages')->where('event_type', 'finance.receivable.received')->count());

@@ -200,6 +200,7 @@ final class RevenueReconciliationHttpTest extends TestCase
 
         $this->postJson("/finance/cash/shifts/{$id}/receive", ['deposited_minor' => 8_500_000], $this->key())->assertStatus(409);
         self::assertSame(1, DB::table('fin_cash_deposits')->count());
+        self::assertSame(1, DB::table('fin_cash_deposits')->whereNotNull('correlation_id')->count(), 'a deposit keeps the correlation of the request');
         self::assertNotNull(DB::table('audit_entries')->where('action', 'cash_deposit.recorded')->first());
         self::assertNotNull(DB::table('outbox_messages')->where('event_type', 'finance.cash.received')->first());
     }

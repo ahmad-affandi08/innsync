@@ -217,6 +217,7 @@ final class RefundHttpTest extends TestCase
         self::assertSame([['method' => 'cash', 'amount_minor' => 10_890_000, 'paid_back_minor' => 10_890_000, 'count' => 1]], $store->posPaymentsOf($this->property(), '2026-10-03'));
 
         self::assertSame(1, DB::table('fin_pos_refunds')->count());
+        self::assertSame(1, DB::table('fin_pos_refunds')->whereNotNull('correlation_id')->count(), 'a refund posting keeps the correlation of the message that made it');
         self::assertSame(0, DB::table('fin_exceptions')->count());
 
         // A refund that arrives after its day was booked is late, and is to be settled with a correction.
