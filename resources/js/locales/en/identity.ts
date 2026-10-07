@@ -78,7 +78,6 @@ export const identity = {
     'identity.approvalPolicies.count': 'Approvals needed',
     'identity.approvalPolicies.addStep': 'Add a step',
     'identity.approvalPolicies.removeStep': 'Remove step',
-    'identity.approvalPolicies.step': 'Step {n}: {count} approval(s) from people with {permission}',
-    'identity.approvalPolicies.row': 'From {band}: version {version}',
+    'identity.approvalPolicies.step': 'Step {n}: {count} approval(s) from {permission}',
     'identity.approvalPolicies.inbox': 'Approvals inbox',
 } as const

@@ -80,7 +80,7 @@ function isHere(links: readonly NavLink[], href: string, path: string): boolean 
     return match(href) && best?.href === href;
 }
 
-type Shell = { propertyName: string | null; businessDate: string | null; userName: string; disabledModules?: string[] } | null;
+type Shell = { propertyName: string | null; businessDate: string | null; userName: string; disabledModules?: string[]; accessibleModules?: string[] | null } | null;
 
 type FrameProps = {
     title: string;
@@ -113,7 +113,8 @@ export function AppFrame({ actions, children, description, links = [], printClas
     const version = (page.props as { app?: { version?: string } }).app?.version ?? '';
     const current = activeModule(path);
     // A department the property does not use is left out of the menu (never the one the person is on, so a link still shows where they are).
-    const modules = MODULES.filter((m) => m.key === current.key || !(shell?.disabledModules ?? []).includes(m.key));
+    // The menu offers a person the departments their roles give them something to do in; the page the person is on always stays. This is what is shown, not what is allowed: every page checks the permission on the server.
+    const modules = MODULES.filter((m) => m.key === current.key || (!(shell?.disabledModules ?? []).includes(m.key) && (shell?.accessibleModules == null || shell.accessibleModules.includes(m.key))));
     const [open, setOpen] = useState(false);
     // On a phone the menu is a list of modules: touching one opens its pages and does not leave the page. The module the person is in starts open.
     const [expanded, setExpanded] = useState<ReadonlySet<string>>(() => new Set([current.key]));

@@ -206,4 +206,13 @@ final class AccessAdministrationTest extends TestCase
         $this->postJson('/access/users', ['name' => 'Nope', 'email' => 'nope@example.test', 'role_id' => $other, 'scope_type' => 'property', 'reason' => 'x'])->assertStatus(404);
         self::assertSame(0, DB::table('users')->where('email', 'nope@example.test')->count());
     }
+
+    public function test_the_menu_offers_a_person_only_the_departments_their_roles_reach(): void
+    {
+        $this->signIn(self::A, ['front-office.reservation.view', 'housekeeping.view']);
+
+        $this->get('/approvals')->assertOk()->assertInertia(fn (Assert $page) => $page
+            ->where('shell.accessibleModules', fn ($keys) => in_array('front-office', $keys->toArray(), true) && in_array('housekeeping', $keys->toArray(), true)
+                && ! in_array('hr', $keys->toArray(), true) && ! in_array('finance', $keys->toArray(), true) && in_array('approvals', $keys->toArray(), true)));
+    }
 }

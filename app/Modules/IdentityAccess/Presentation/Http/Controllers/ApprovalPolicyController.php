@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Modules\IdentityAccess\Presentation\Http\Controllers;
 
 use App\Modules\IdentityAccess\Application\Approval\ApprovalPolicyAdmin;
+use App\Modules\IdentityAccess\Application\Ports\AccessDirectory;
 use App\Shared\Application\Tenancy\PropertyContext;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -14,12 +15,13 @@ use Inertia\Response;
 /** Approver chains per property (BR-004): who must approve which sensitive action, from which amount. */
 final readonly class ApprovalPolicyController
 {
-    public function __construct(private ApprovalPolicyAdmin $policies, private PropertyContext $property) {}
+    public function __construct(private ApprovalPolicyAdmin $policies, private PropertyContext $property, private AccessDirectory $directory) {}
 
     public function index(Request $request): Response
     {
         return Inertia::render('identity-access/pages/approval-policies', [
             'subjects' => $this->policies->overview($this->property->current(), (string) $request->user()->getAuthIdentifier()),
+            'permissions' => $this->directory->permissionCodes(),
         ]);
     }
 

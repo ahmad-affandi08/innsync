@@ -1,0 +1,1 @@
+import{m as e}from"./app-qHHtV2Y6.js";import{s as t,t as n}from"./app-frame-BMYUJ5Af.js";var r=e();function i({actions:e,children:i,description:a,title:o,wide:s}){return(0,r.jsx)(n,{actions:e,description:a,links:t,title:o,wide:s,children:i})}export{i as InventoryShell};

@@ -192,6 +192,8 @@ use App\Modules\IdentityAccess\Application\Ports\AccessDirectory;
 use App\Modules\IdentityAccess\Infrastructure\Authorization\DatabaseProfileRoles;
 use App\Modules\Property\Application\Profile\PropertyProfileRepository;
 use App\Modules\Property\Infrastructure\Persistence\DatabasePropertyProfileRepository;
+use App\Modules\IdentityAccess\Infrastructure\Authorization\DatabaseModuleAccess;
+use App\Shared\Application\Setup\ModuleAccess;
 use App\Shared\Application\Setup\ModuleSettings;
 use App\Shared\Application\Setup\ProfileRoles;
 use App\Shared\Application\Setup\SetupFacts;
@@ -470,6 +472,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(SetupFacts::class, DatabaseSetupFacts::class);
         $this->app->bind(ProfileRoles::class, DatabaseProfileRoles::class);
         $this->app->bind(ModuleSettings::class, DatabaseModuleSettings::class);
+        $this->app->singleton(ModuleAccess::class, DatabaseModuleAccess::class);
         $this->app->bind(PropertyProfileRepository::class, DatabasePropertyProfileRepository::class);
         $this->app->bind(StaffContacts::class, DatabaseStaffContacts::class);
         $this->app->bind(ReportScheduleRepository::class, DatabaseReportScheduleRepository::class);
