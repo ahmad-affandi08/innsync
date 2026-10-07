@@ -4,7 +4,7 @@ Traceability: owner instruction of 2026-10-07 ("create accounts from a menu"), `
 
 ## Status of this document
 
-The PRD has no functional requirement for screens that create accounts and roles; before this change an account was made only by `php artisan innsync:create-admin`. The owner asked for the screens on 2026-10-07 and decided "everything allowed, best and perfect". This document records the policy the implementation applies so the owner can accept it or change it; it is not a PRD edit. Items marked **Open** are business decisions the owner has not made.
+The PRD has no functional requirement for screens that create accounts and roles; before this change an account was made only by `php artisan innsync:create-admin`. The owner asked for the screens on 2026-10-07. This document records the policy the implementation applies; it is not a PRD edit. The owner settled the remaining questions on 2026-10-07 (see "Decisions").
 
 ## Where
 
@@ -26,24 +26,23 @@ Both permissions are created by migration 118 and given to every role named `Adm
 5. **Nothing is deleted.** Roles are deactivated; assignments are switched off; accounts are deactivated. History and audit stay. A deactivated person is signed out at their next request and cannot sign in.
 6. **Every change is audited** (`identity.account.created`, `identity.role.assigned`, `identity.role.revoked`, `identity.account.deactivated`, `identity.account.activated`, `identity.account.password-reset`, `identity.role.created`, `identity.role.updated`, `identity.role.deactivated`, `identity.role.activated`) with the actor, the property, the before and after, and the reason. A reason of at most 500 characters is required for every change. Passwords are never written to the audit trail.
 7. **Recent password confirmation** is required for every write (HTTP 423 sends the person to confirm and back), and the writes are rate limited to 30 a minute per person and address.
-8. **Property scope.** A role or assignment of another property is not found (404). An outlet scope must be an outlet of this property. Accounts are global (one login per person): an email that already has an account is refused, so a person who works in two properties is added to the second one by that property's owner through the database team, **Open**: the owner has not decided how a person is shared between properties.
+8. **Property scope.** A role or assignment of another property is not found (404). An outlet scope must be an outlet of this property. Accounts are global (one login per person): an email that already has an account is refused, and this is final (decision below).
 
 ## Passwords
 
 The server makes a temporary password (14 random characters plus a fixed tail so the strength rules always pass) and returns it once, with `Cache-Control: no-store`. It is not stored in clear text and not audited. The administrator hands it to the person. The person's account is flagged `must_change_password`: until they choose their own, every page except the password form, sign-out and the two-step checks redirects to **Account → Sessions**, which shows a notice. Changing the password clears the flag. A reset by an administrator ends every session of that person and sets the flag again.
 
-## Two-step sign-in
+## Decisions (owner, 2026-10-07)
 
-A role can require two-step sign-in (`roles.requires_mfa`, already enforced at sign-in). The role editor sets it. Whether every role must require it is **Open**.
-
-## Dual control for access changes
-
-Giving a role is not routed through the approval inbox: a second approver for access changes is **Open** (the same position `ApprovalPolicyAdmin` takes for policy changes). When the owner wants it, declare an approval subject such as `identity.role-assignment` in `config/approvals.php` and consume the request in `AccessAdmin::assignRole`.
+- **One email, one account.** An email that already has an account is refused, always. A person is not shared between properties by adding the same email.
+- **Two-step sign-in is not required of roles.** No role is forced to use it. The role editor keeps an optional switch (`roles.requires_mfa`, enforced at sign-in when it is on); people may still set it up themselves under their account.
+- **No second approver for access changes.** Giving a role does not go through the approval inbox. If the owner later wants it, declare an approval subject such as `identity.role-assignment` in `config/approvals.php` and consume the request in `AccessAdmin::assignRole`.
+- **No invitation by email, no department scope.** Not needed.
 
 ## Not in this change
 
 - Inviting by email, self-registration and a "forgot password" email flow: the application sends no email for accounts; the administrator hands the temporary password over.
-- Department scope for a role (there is no department table; only property and outlet scope are offered).
+- Department scope for a role: only property and outlet scope are offered.
 - Editing a person's name or email.
 
 ## Upgrading a running host
