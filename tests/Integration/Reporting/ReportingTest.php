@@ -242,7 +242,7 @@ final class ReportingTest extends TestCase
         self::assertSame('2026-10-02', $report['meta']['business_date']);
         self::assertSame('2026-10-01', $report['meta']['period']['from']);
         self::assertNotEmpty($report['meta']['generated_at']);
-        self::assertSame(['night_audits (closed business days)'], $report['meta']['sources']);
+        self::assertSame(['night_audits (closed business days)', 'the costs and the events follow the department and person filters; the days do not'], $report['meta']['sources']);
         self::assertCount(1, $report['days']);
         self::assertSame(['2026-10-01', 10_000, 2, 2], [$report['days'][0]['business_date'], $report['days'][0]['occupancy_bp'], $report['days'][0]['room_nights'], $report['days'][0]['arrivals']]);
         self::assertSame(100_000_000, $report['days'][0]['adr_minor']);
@@ -393,7 +393,7 @@ final class ReportingTest extends TestCase
 
     public function test_the_report_centre_lists_only_what_the_person_may_open(): void
     {
-        self::assertSame(['movements', 'flash', 'performance', 'comparison', 'payments', 'obligations', 'laundry', 'housekeeping', 'registrations', 'foreign_guests', 'audit'], array_column($this->reports()->catalogue($this->property(), $this->analystId), 'code'));
+        self::assertSame(['movements', 'flash', 'performance', 'comparison', 'sales', 'payments', 'obligations', 'laundry', 'housekeeping', 'registrations', 'foreign_guests', 'audit'], array_column($this->reports()->catalogue($this->property(), $this->analystId), 'code'));
         self::assertSame(['registrations', 'foreign_guests'], array_column($this->reports()->catalogue($this->property(), $this->registrarId), 'code'));
         self::assertSame([], $this->reports()->catalogue($this->property(), $this->viewerId));
     }
