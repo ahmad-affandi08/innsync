@@ -10,6 +10,8 @@ use App\Modules\InventoryPurchasing\Application\InventoryCatalogService;
 use App\Modules\InventoryPurchasing\Application\StockRequisitionService;
 use App\Modules\InventoryPurchasing\Application\StockService;
 use App\Modules\InventoryPurchasing\Application\StockTransferService;
+use App\Modules\Kitchen\Application\KitchenAccess;
+use App\Modules\Kitchen\Application\SupplyUseService as KitchenSupplyUseService;
 use App\Modules\Laundry\Application\LaundryService;
 use App\Modules\Laundry\Application\SupplyUseService;
 use App\Modules\Property\Application\Settings\PropertySettingsService;
@@ -211,6 +213,33 @@ final class RequisitionAndSupplyHttpTest extends TestCase
         $this->postJson('/housekeeping/supplies', ['item_id' => $soap, 'location_id' => $this->main, 'unit' => 'PCS', 'quantity' => '1'], $this->key())->assertStatus(403);
         $this->as([SupplyUseService::USE_PERMISSION]);
         $this->get('/housekeeping/supplies')->assertStatus(403);
+    }
+
+    /** FR-KIT-006: what the kitchen uses up outside of a sale leaves the stock card of a store at the average cost. */
+    public function test_the_kitchen_records_the_ingredients_it_uses_outside_a_sale_and_the_stock_card_follows(): void
+    {
+        $category = (string) DB::table('inventory_categories')->value('id');
+        $this->as([InventoryCatalogService::MANAGE_PERMISSION, StockService::POST_PERMISSION, StockService::VIEW_PERMISSION]);
+        $rice = $this->postJson('/inventory/items', ['code' => 'RICE', 'name' => 'Rice', 'category_id' => $category, 'department' => 'kitchen', 'base_unit' => 'KG'])->assertCreated()->json('item.id');
+        $this->postJson('/inventory/stock/opening', ['unit_cost_minor' => 15_000, 'item_id' => $rice, 'location_id' => $this->main, 'unit' => 'KG', 'quantity' => '50'])->assertCreated();
+
+        $this->as([KitchenSupplyUseService::USE_PERMISSION]);
+        $page = $this->get('/kitchen/ingredient-use')->assertOk()->viewData('page')['props']['overview'];
+        self::assertSame(['RICE'], array_column($page['items'], 'code'), 'only the items of the kitchen are offered');
+
+        $made = $this->postJson('/kitchen/ingredient-use', ['item_id' => $rice, 'location_id' => $this->main, 'unit' => 'KG', 'quantity' => '4.5', 'note' => 'Staff meal'], $this->key())->assertCreated()->json('use');
+        self::assertSame(45_500, $made['balance_milli']);
+        $movement = (array) DB::table('stock_movements')->where('item_id', $rice)->where('kind', 'issue')->first();
+        self::assertSame(['kitchen', -4_500, 'Staff meal'], [$movement['reason_code'], (int) $movement['base_qty_milli'], $movement['note']]);
+        self::assertSame(1, DB::table('audit_entries')->where('action', 'kitchen.ingredients.used')->count());
+        $this->postJson('/kitchen/ingredient-use', ['item_id' => $rice, 'location_id' => $this->main, 'unit' => 'KG', 'quantity' => '500'], $this->key())->assertStatus(409);
+        $this->postJson('/kitchen/ingredient-use', ['item_id' => $this->soap, 'location_id' => $this->main, 'unit' => 'KG', 'quantity' => '1'], $this->key())->assertStatus(422);
+
+        $this->as([KitchenAccess::BOARD_OPERATE]);
+        $this->get('/kitchen/ingredient-use')->assertOk()->assertInertia(fn (Assert $p) => $p->where('overview.may.use', false)->has('overview.items', 0)->has('overview.recent', 1));
+        $this->postJson('/kitchen/ingredient-use', ['item_id' => $rice, 'location_id' => $this->main, 'unit' => 'KG', 'quantity' => '1'], $this->key())->assertStatus(403);
+        $this->as([SupplyUseService::USE_PERMISSION]);
+        $this->get('/kitchen/ingredient-use')->assertStatus(403);
     }
 
     public function test_a_department_sees_the_counts_of_its_own_stores(): void

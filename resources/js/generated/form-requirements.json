@@ -610,6 +610,11 @@
         "category",
         "title"
     ],
+    "kitchen/pages/ingredient-use": [
+        "item_id",
+        "location_id",
+        "quantity"
+    ],
     "kitchen/pages/production": [
         "actual_output_milli",
         "batches",

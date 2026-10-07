@@ -18,8 +18,8 @@
 | TASK-KIT-002 | FR-KIT-002 | Wajib | Mengubah status tiket menjadi diproses, siap, dan sudah diantar sehingga pelayan menerima pemberitahuan. | REVIEW |
 | TASK-KIT-003 | FR-KIT-003 | Wajib | Mengelola resep dan komposisi bahan (bill of material) berversi untuk setiap menu, termasuk yield, waste standar, satuan, dan tanggal efektif, sebagai dasar biaya bahan dan harga pokok. | REVIEW |
 | TASK-KIT-004 | FR-KIT-004 | Wajib | Mengurangi stok bahan secara otomatis berdasarkan versi resep yang berlaku setiap kali item menu diposting sebagai penjualan, tepat satu kali untuk setiap transaksi. | REVIEW |
-| TASK-KIT-005 | FR-KIT-005 | Wajib | Menandai menu yang habis sehingga otomatis tidak dapat dipesan dari POS maupun menu QR tamu. | IN_PROGRESS |
-| TASK-KIT-006 | FR-KIT-006 | Wajib | Mencatat pemakaian bahan, produksi persiapan, dan pembuangan bahan rusak (waste log) beserta alasan. | IN_PROGRESS |
+| TASK-KIT-005 | FR-KIT-005 | Wajib | Menandai menu yang habis sehingga otomatis tidak dapat dipesan dari POS maupun menu QR tamu. | REVIEW |
+| TASK-KIT-006 | FR-KIT-006 | Wajib | Mencatat pemakaian bahan, produksi persiapan, dan pembuangan bahan rusak (waste log) beserta alasan. | REVIEW |
 | TASK-KIT-007 | FR-KIT-007 | Wajib | Melakukan stock opname bahan dapur dan gudang kering dengan pencatatan selisih dan nilai kerugian. | REVIEW |
 | TASK-KIT-008 | FR-KIT-008 | Wajib | Menampilkan daftar periksa kebersihan, suhu penyimpanan, dan tugas harian, mingguan, serta bulanan dapur. | REVIEW |
 | TASK-KIT-009 | FR-KIT-009 | Sebaiknya | Mencatat tanggal kedaluwarsa dan nomor batch bahan sensitif dengan peringatan mendekati kedaluwarsa. | REVIEW |
@@ -34,7 +34,7 @@
 
 ### Slice 24 (2026-10-03): the kitchen and bar screen
 
-- Status: `TASK-KIT-001` and `-002` are `REVIEW`. `TASK-KIT-005` and `-015` are `IN_PROGRESS`: sold out blocks the point of sale and the screen shows its age, but the guest QR menu does not exist yet and a printer fallback is not built. ADR/BR: property scope, the Application layer reads other contexts only through contracts and events, audit of every setting and of every sold-out change.
+- Status: `TASK-KIT-001` and `-002` are `REVIEW`. `TASK-KIT-005` is `REVIEW` (sold out blocks the point of sale and, since the guest self-service was built, the guest QR menu: `tests/Feature/GuestExperience/QrMenuHttpTest.php`); `-015` is `IN_PROGRESS`: a printer fallback is not built. ADR/BR: property scope, the Application layer reads other contexts only through contracts and events, audit of every setting and of every sold-out change.
 - Context: new bounded context `Kitchen` (`app/Modules/Kitchen`), migration 75 (`kitchen_tickets`, `kitchen_ticket_lines`, `kitchen_settings`, and `prep_status` on `fnb_bill_lines`), `TicketStore` with `DatabaseTicketStore`, `TicketIntakeConsumer`, `BoardService`, `BoardController`, page `kitchen/pages/board`, routes `/kitchen`. Permissions `kitchen.board.operate` (works the screen, marks dishes sold out) and `kitchen.settings.manage` (sets the waiting limit).
 - **Tickets.** The point of sale publishes `fnb.order.sent`; the kitchen turns it into one ticket per station (kitchen or bar) with the table, room or counter it goes to, the lines with variant, choices and note, and the moment it was sent. A line no station prepares never reaches a screen and is served when sent. Handling the same send twice makes its tickets once (unique per send and station). A line voided, or a bill cancelled, strikes its dishes off the screens (a ticket left with no dish is cancelled), so nobody cooks what will not be paid.
 - **Steps.** New, preparing, ready, served. A cook may also finish a ticket that was never started. Whoever moves a ticket and when are kept; a move names the version of the ticket the cook saw, so two screens cannot move it twice. Every move publishes `kitchen.ticket.progressed`; the point of sale reads it (`KitchenProgressConsumer`, in F&B) and shows the waiter how far each line is on the bill, and how many lines are ready on the table of the floor plan.
@@ -57,7 +57,7 @@
 
 ### Slice 28 (2026-10-03): the waste log
 
-- Status: `TASK-KIT-006` is `IN_PROGRESS`: the waste log is built; recording the use of ingredients and preparation production is not. ADR/BR: BR-005 (stock written off once per entry), BR-007 (negative-stock policy), append-only log, audit.
+- Status: `TASK-KIT-006` is `REVIEW`: the waste log, preparation production and the use of ingredients outside a sale are built. ADR/BR: BR-005 (stock written off once per entry), BR-007 (negative-stock policy), append-only log, audit.
 - Context: migration 80 (`kitchen_waste`, `kitchen_waste_lines`, append-only by trigger), `WasteStore` with `DatabaseWasteStore`, `WasteService`, `WasteController`, page `kitchen/pages/waste`, routes `/kitchen/waste`, privilege `kitchen.waste.record` (whoever works the screen may read the log); in the inventory `KitchenWasteConsumer`.
 - **Entries.** An ingredient is thrown away by its quantity (three decimals, any unit the inventory counts it in); a dish by its portions, which the recipe in force turns into the ingredients it took (the same rule as a sale, standard waste included). A dish with no recipe in force cannot be recorded: record its ingredients instead. Each entry has a number (`KWL-000001`), a reason (spoiled, expired, dropped or damaged, overcooked or burnt, sent back by the guest, wrong order, other; other needs a note), an optional reference such as the bill, who recorded it and when, and what it cost at the moving average of the stock (partial when an ingredient has no cost yet). The page shows today's cost and the last 30 days by reason.
 - **Stock.** The kitchen publishes the entry and the inventory writes the stock off, one movement per ingredient with the entry as the source (once). The location is the one the kitchen takes its ingredients from; without it nothing is recorded. Waste is real whatever the books say, so the balance may go below zero unless the location or the category blocks it, and then the message waits. Reasons the inventory does not know are written as other. Stock written off is cost in the food cost report of finance.
@@ -94,7 +94,7 @@
 
 ### Slice 61 (2026-10-03): production of semi-finished goods
 
-- Status: `TASK-KIT-014` is `REVIEW`; `TASK-KIT-006` (use of ingredients and preparation production in the log) stays `IN_PROGRESS` only for the recording of ingredient use outside sales.
+- Status: `TASK-KIT-014` is `REVIEW`; `TASK-KIT-006` moved to `REVIEW` when the ingredient use outside sales was added.
 - Context: migration 107 (`kitchen_prep_formulas` and lines with a retire-only trigger, `kitchen_productions` and lines append-only), `ProductionStore`/`DatabaseProductionStore`, `ProductionService`, `ProductionController`, privilege `kitchen.production.record` (formulas need the recipe privilege), `KitchenProductionConsumer` in the inventory (`kitchen.production.recorded`, registered in `config/outbox.php`), page `kitchen/pages/production.tsx`.
 - **Formula.** What one batch of a sauce, dough or stock takes (ingredients, units from the inventory) and what it should make (the product, an item of the inventory, and the standard quantity). The product is not its own ingredient; a formula is never edited, only retired with a reason and replaced.
 - **Batch.** Made from an active formula in whole batches (1–100) with the actual yield the person measured (more than six times the standard is refused as a slipped decimal) and an optional expiry date that becomes the batch of the product in the inventory. The batch is numbered `KPR-…`, keeps its formula, standard, actual quantity, yield in percent and the cost of its ingredients at the moving average (partial when an ingredient has no cost), and is audited; it is never edited or deleted.
@@ -110,3 +110,5 @@
 - Emit audit evidence for sensitive/state-changing operations.
 - Add happy, negative, conflict/retry, and permission tests as applicable.
 - Update traceability/evidence before marking DONE.
+
+- Evidence (TASK-KIT-006, ingredient use outside a sale): the screen `/kitchen/ingredient-use` (`SupplyUseService` over the `DepartmentSupplyUse` contract, department kitchen, permission `kitchen.ingredients.use`, never below zero, audited): `tests/Feature/InventoryPurchasing/RequisitionAndSupplyHttpTest.php::test_the_kitchen_records_the_ingredients_it_uses_outside_a_sale_and_the_stock_card_follows`. Not yet seen in a browser.

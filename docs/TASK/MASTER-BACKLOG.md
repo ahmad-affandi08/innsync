@@ -134,8 +134,8 @@
 | TASK-KIT-002 | FR-KIT-002 | F&B Product / Kitchen | Wajib | REVIEW |
 | TASK-KIT-003 | FR-KIT-003 | F&B Product / Kitchen | Wajib | REVIEW |
 | TASK-KIT-004 | FR-KIT-004 | F&B Product / Kitchen | Wajib | REVIEW |
-| TASK-KIT-005 | FR-KIT-005 | F&B Product / Kitchen | Wajib | IN_PROGRESS |
-| TASK-KIT-006 | FR-KIT-006 | F&B Product / Kitchen | Wajib | IN_PROGRESS |
+| TASK-KIT-005 | FR-KIT-005 | F&B Product / Kitchen | Wajib | REVIEW |
+| TASK-KIT-006 | FR-KIT-006 | F&B Product / Kitchen | Wajib | REVIEW |
 | TASK-KIT-007 | FR-KIT-007 | F&B Product / Kitchen | Wajib | REVIEW |
 | TASK-KIT-008 | FR-KIT-008 | F&B Product / Kitchen | Wajib | REVIEW |
 | TASK-KIT-009 | FR-KIT-009 | F&B Product / Kitchen | Sebaiknya | REVIEW |

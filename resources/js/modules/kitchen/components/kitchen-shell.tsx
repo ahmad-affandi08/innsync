@@ -8,6 +8,7 @@ const LINKS = [
     { href: '/kitchen/menu-report', label: 'kitchen.nav.report' },
     { href: '/kitchen/production', label: 'kitchen.nav.production' },
     { href: '/kitchen/waste', label: 'kitchen.nav.waste' },
+    { href: '/kitchen/ingredient-use', label: 'kitchen.nav.ingredients' },
     { href: '/kitchen/routines', label: 'kitchen.nav.routines' },
     { href: '/inventory/lots?department=kitchen', label: 'kitchen.nav.lots' },
     { href: '/inventory/requisitions', label: 'inv.nav.requisitions' },

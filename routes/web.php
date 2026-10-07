@@ -101,6 +101,7 @@ use App\Modules\Kitchen\Presentation\Http\Controllers\DamageReportController as 
 use App\Modules\Kitchen\Presentation\Http\Controllers\MenuReportController;
 use App\Modules\Kitchen\Presentation\Http\Controllers\ProductionController;
 use App\Modules\Kitchen\Presentation\Http\Controllers\RecipeController;
+use App\Modules\Kitchen\Presentation\Http\Controllers\SupplyUseController as KitchenSupplyUseController;
 use App\Modules\Kitchen\Presentation\Http\Controllers\WasteController;
 use App\Modules\Laundry\Presentation\Http\Controllers\ClaimController;
 use App\Modules\Laundry\Presentation\Http\Controllers\LaundryController;
@@ -843,6 +844,9 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
     Route::post('/damage-reports', [KitchenDamageReportController::class, 'store'])->name('kitchen.damage.store');
     Route::get('/waste', [WasteController::class, 'index'])->name('kitchen.waste');
     Route::post('/waste', [WasteController::class, 'record'])->middleware(['idempotent'])->name('kitchen.waste.record');
+    // Ingredients used up outside of a sale: a staff meal, a tasting (FR-KIT-006).
+    Route::get('/ingredient-use', [KitchenSupplyUseController::class, 'index'])->name('kitchen.ingredients');
+    Route::post('/ingredient-use', [KitchenSupplyUseController::class, 'store'])->middleware(['idempotent'])->name('kitchen.ingredients.store');
     Route::get('/production', [ProductionController::class, 'index'])->name('kitchen.production');
     Route::post('/production/formulas', [ProductionController::class, 'define'])->name('kitchen.production.formulas.define');
     Route::post('/production/formulas/{id}/retire', [ProductionController::class, 'retire'])->where('id', $id)->name('kitchen.production.formulas.retire');
