@@ -722,6 +722,9 @@ class AppServiceProvider extends ServiceProvider
             )));
 
         // Administration of people and roles: a manager sets up several accounts in a sitting, so the limit is higher than for a password change.
+        RateLimiter::for('password-reset', static fn (Request $request): Limit => Limit::perMinute(5)
+            ->by(hash('sha256', strtolower((string) $request->input('email')).'|'.$request->ip())));
+
         RateLimiter::for('access-admin', static fn (Request $request): Limit => Limit::perMinute(30)
             ->by(hash(
                 'sha256',

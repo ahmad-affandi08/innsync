@@ -473,6 +473,9 @@
     "identity-access/pages/confirm-password": [
         "password"
     ],
+    "identity-access/pages/forgot-password": [
+        "email"
+    ],
     "identity-access/pages/login": [
         "email",
         "password"
@@ -482,6 +485,11 @@
     ],
     "identity-access/pages/mfa-setup": [
         "code"
+    ],
+    "identity-access/pages/reset-password": [
+        "email",
+        "password",
+        "password_confirmation"
     ],
     "identity-access/pages/roles": [
         "name",

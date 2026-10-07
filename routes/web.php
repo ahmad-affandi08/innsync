@@ -83,6 +83,7 @@ use App\Modules\IdentityAccess\Presentation\Http\Controllers\AuthenticatedSessio
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\MfaController;
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\PasswordConfirmationController;
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\PasswordController;
+use App\Modules\IdentityAccess\Presentation\Http\Controllers\PasswordResetController;
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\PropertySelectionController;
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\ReconfirmController;
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\UserSessionController;
@@ -168,6 +169,10 @@ Route::middleware('guest')->group(function (): void {
     Route::post('/login', [AuthenticatedSessionController::class, 'store'])
         ->middleware('throttle:login')
         ->name('login.store');
+    Route::get('/forgot-password', [PasswordResetController::class, 'request'])->name('password.request');
+    Route::post('/forgot-password', [PasswordResetController::class, 'email'])->middleware('throttle:password-reset')->name('password.email');
+    Route::get('/reset-password/{token}', [PasswordResetController::class, 'form'])->name('password.reset');
+    Route::post('/reset-password', [PasswordResetController::class, 'update'])->middleware('throttle:password-reset')->name('password.update.guest');
 });
 
 Route::middleware(['auth', 'auth.session', 'active'])->group(function (): void {

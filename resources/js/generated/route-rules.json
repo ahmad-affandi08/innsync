@@ -2130,6 +2130,14 @@
             "value_tenth"
         ]
     },
+    "POST /forgot-password": {
+        "required": [
+            "email"
+        ],
+        "declared": [
+            "email"
+        ]
+    },
     "POST /front-office/cashier/settings": {
         "required": [
             "lock_version",
@@ -6055,6 +6063,20 @@
         "declared": [
             "active",
             "lock_version"
+        ]
+    },
+    "POST /reset-password": {
+        "required": [
+            "email",
+            "password",
+            "password_confirmation",
+            "token"
+        ],
+        "declared": [
+            "email",
+            "password",
+            "password_confirmation",
+            "token"
         ]
     },
     "POST /sync/batch": {

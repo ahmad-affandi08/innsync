@@ -31,6 +31,17 @@ final class UserRecord extends Authenticatable
         'lock_version' => 0,
     ];
 
+    /** The reset link by the installation's mailer, in the language of the request. The broker hands the token; the link is the only secret in it. */
+    public function sendPasswordResetNotification(#[\SensitiveParameter] $token): void
+    {
+        $url = url(route('password.reset', ['token' => $token, 'email' => $this->email], false));
+        app(\App\Shared\Application\Notifications\EmailNotifier::class)->notify(
+            (string) $this->email,
+            __('identity.reset_subject'),
+            __('identity.reset_body', ['url' => $url, 'minutes' => (int) config('auth.passwords.users.expire', 60)]),
+        );
+    }
+
     /**
      * @return array<string, string>
      */

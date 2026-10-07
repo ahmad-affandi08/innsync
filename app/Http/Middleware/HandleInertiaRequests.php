@@ -31,6 +31,7 @@ final class HandleInertiaRequests extends Middleware
         return [
             ...parent::share($request),
             'locale' => app()->getLocale(),
+            'status' => fn (): ?string => is_string($status = $request->session()->get('status')) ? $status : null,
             'timeZone' => fn (): ?string => $this->activeTimeZone($request),
             'auth' => fn (): ?array => $this->activeIdentity($request),
             'shell' => fn (): ?array => $this->shell($request),
