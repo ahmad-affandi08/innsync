@@ -67,7 +67,7 @@ function FormField({
             .join(' ') || undefined;
 
     return (
-        <div className={cn('flex flex-col gap-1.5', className)}>
+        <div className={cn('flex min-w-0 flex-col gap-1.5', className)}>
             <Label htmlFor={controlId}>
                 {label}
                 {required ? (
