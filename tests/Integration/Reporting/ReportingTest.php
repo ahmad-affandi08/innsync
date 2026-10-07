@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Integration\Reporting;
 
+use App\Modules\Finance\Application\FinanceAccess;
 use App\Modules\FrontOffice\Application\Feedback\FeedbackService;
 use App\Modules\FrontOffice\Application\Folios\FolioRepository;
 use App\Modules\FrontOffice\Application\Folios\FolioService;
@@ -14,6 +15,8 @@ use App\Modules\FrontOffice\Application\Stays\StayService;
 use App\Modules\IdentityAccess\Infrastructure\Persistence\Eloquent\UserRecord;
 use App\Modules\Reporting\Application\DashboardService;
 use App\Modules\Reporting\Application\ReportService;
+use App\Shared\Application\Audit\AuditEntry;
+use App\Shared\Application\Audit\AuditTrail;
 use App\Shared\Application\Errors\Refusal;
 use App\Shared\Application\Idempotency\IdempotencyKey;
 use App\Shared\Application\Tenancy\PropertyContext;
@@ -244,9 +247,38 @@ final class ReportingTest extends TestCase
         self::assertSame(['2026-10-01', 10_000, 2, 2], [$report['days'][0]['business_date'], $report['days'][0]['occupancy_bp'], $report['days'][0]['room_nights'], $report['days'][0]['arrivals']]);
         self::assertSame(100_000_000, $report['days'][0]['adr_minor']);
         self::assertSame(2 * 121_000_000, $report['totals']['revenue']['total']);
-        self::assertStringContainsString('cost', $report['costs_note']);
+        // Without the right to see the management reports of finance there is no cost part; the events are counted for everyone who sees the report.
+        self::assertSame(['available' => false], $report['costs']);
+        self::assertSame([], $report['events']);
         // A day that was not closed is simply not in it.
         self::assertSame([], $this->reports()->flash($this->property(), $this->analystId, 'today', null, null)['days']);
+    }
+
+    public function test_the_flash_report_adds_the_main_costs_for_finance_and_counts_the_notable_events(): void
+    {
+        $this->operate();
+        $this->closeDay();
+        $audit = app(AuditTrail::class);
+        $audit->record(new AuditEntry($this->property()->toString(), $this->managerId, 'fnb_bill.cancelled', 'fnb_bill', '01arz3ndektsv4rrffq69g5faa', null, ['reason' => 'x']));
+        $audit->record(new AuditEntry($this->property()->toString(), $this->managerId, 'fnb_bill.cancelled', 'fnb_bill', '01arz3ndektsv4rrffq69g5fab', null, ['reason' => 'y']));
+        $audit->record(new AuditEntry($this->property()->toString(), $this->managerId, 'work_order.escalated', 'work_order', '01arz3ndektsv4rrffq69g5fac', null, ['level' => 1]));
+        $audit->record(new AuditEntry($this->property()->toString(), $this->managerId, 'guest.registered', 'stay', '01arz3ndektsv4rrffq69g5fad', null, []));
+
+        $report = $this->reports()->flash($this->property(), $this->analystId, 'custom', '2026-09-01', '2026-10-31');
+        self::assertSame([['action' => 'fnb_bill.cancelled', 'count' => 2], ['action' => 'work_order.escalated', 'count' => 1]], $report['events']);
+        self::assertSame(['available' => false], $report['costs']);
+
+        $accountant = UserRecord::factory()->create();
+        $this->grant($accountant, '01arz3ndektsv4rrffq69g5fav', [ReportService::VIEW_PERMISSION, FinanceAccess::REPORT_VIEW]);
+        $withCosts = $this->reports()->flash($this->property(), (string) $accountant->getKey(), 'custom', '2026-09-01', '2026-10-31');
+        self::assertTrue($withCosts['costs']['available']);
+        self::assertSame(0, $withCosts['costs']['totals']['cost_total_minor']);
+        self::assertSame([], $withCosts['costs']['departments']);
+        self::assertSame($report['events'], $withCosts['events']);
+
+        // A range finance does not report (over 366 days, though the flash allows 400) leaves the cost part out and keeps the rest.
+        $long = $this->reports()->flash($this->property(), (string) $accountant->getKey(), 'custom', '2025-10-01', '2026-10-31');
+        self::assertSame(['available' => false], $long['costs']);
     }
 
     public function test_payments_by_method_count_money_in_and_out(): void

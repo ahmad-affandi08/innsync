@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Modules\Reporting\Application;
 
+use App\Modules\Finance\Application\FinanceAccess;
+use App\Modules\Finance\Application\ManagementReportService;
 use App\Modules\Property\Application\Ports\PropertyTimeZoneReader;
 use App\Modules\Property\Application\Rates\PropertyCurrencyReader;
 use App\Modules\Property\Application\Settings\BusinessDateProvider;
@@ -44,6 +46,15 @@ final readonly class ReportService
     public const IDENTITY_PERMISSION = 'front-office.guest-identity.view';
 
     /** Exports of personal data: they need the purpose and the right to export guests. */
+    /**
+     * The audit actions that count as notable events in the flash report (FR-RPT-005): what a manager wants to hear about after a day, as a baseline list
+     * that is not a policy. The report counts them and says nothing of who did them or of the guest.
+     */
+    public const NOTABLE_EVENTS = [
+        'fnb_bill.cancelled', 'fnb_line.voided', 'fnb_bill.refunded', 'fin_exception.raised', 'petty_voucher.voided',
+        'laundry_claim.recorded', 'laundry.order.escalated', 'work_order.escalated',
+    ];
+
     public const PERSONAL_EXPORTS = ['movements', 'registrations', 'foreign_guests'];
 
     public const CATALOGUE = [
@@ -62,6 +73,7 @@ final readonly class ReportService
 
     public function __construct(
         private ReportQueries $queries,
+        private ManagementReportService $management,
         private BusinessDateProvider $businessDate,
         private PropertyTimeZoneReader $zones,
         private PropertyCurrencyReader $currencies,
@@ -130,8 +142,56 @@ final readonly class ReportService
             'meta' => $this->meta('flash', $property, $period, [], ['night_audits (closed business days)']),
             'days' => $days,
             'totals' => $totals,
-            'costs_note' => 'Operating costs are not part of this report: no cost data exists yet.',
+            'costs' => $this->flashCosts($property, $actorId, $period),
+            'events' => $this->flashEvents($property, $period),
         ];
+    }
+
+    /**
+     * The main operating costs of the period, per department, from the management profit and loss of finance (FR-RPT-005). Only for someone who may see
+     * that report; for anyone else, or for a range finance does not report, there is no cost part and the flash says so.
+     *
+     * @return array{available: bool, departments?: list<array<string, mixed>>, totals?: array<string, int>}
+     */
+    private function flashCosts(PropertyId $property, string $actorId, ReportPeriod $period): array
+    {
+        if (! $this->permissions->allowsInProperty($actorId, FinanceAccess::REPORT_VIEW, $property)) {
+            return ['available' => false];
+        }
+
+        try {
+            $pnl = $this->management->pnl($property, $actorId, $period->from->toString(), $period->to->toString());
+        } catch (Refusal) {
+            return ['available' => false];
+        }
+
+        return [
+            'available' => true,
+            'departments' => array_values(array_map(static fn (array $d): array => [
+                'department' => $d['department'], 'supplier_minor' => $d['expenses_minor'], 'petty_minor' => $d['petty_minor'], 'recurring_minor' => $d['recurring_minor'], 'stock_minor' => $d['stock_minor'], 'cost_total_minor' => $d['cost_total_minor'],
+            ], array_filter($pnl['departments'], static fn (array $d): bool => $d['cost_total_minor'] !== 0))),
+            'totals' => ['supplier_minor' => $pnl['totals']['expenses_minor'], 'petty_minor' => $pnl['totals']['petty_minor'], 'recurring_minor' => $pnl['totals']['recurring_minor'], 'stock_minor' => $pnl['totals']['stock_minor'], 'cost_total_minor' => $pnl['totals']['cost_total_minor']],
+        ];
+    }
+
+    /**
+     * How many of each notable event happened in the period (FR-RPT-005), counted from the audit trail.
+     *
+     * @return list<array{action: string, count: int}>
+     */
+    private function flashEvents(PropertyId $property, ReportPeriod $period): array
+    {
+        $zone = $this->zones->forProperty($property) ?? throw Refusal::notFound('Property not found.');
+        $counts = $this->queries->auditActionCounts($property, $zone->utcAt(CalendarDate::fromString($period->from->toString())), $zone->utcAt(CalendarDate::fromString($period->to->next()->toString())), self::NOTABLE_EVENTS);
+        $events = [];
+
+        foreach (self::NOTABLE_EVENTS as $action) {
+            if (($counts[$action] ?? 0) > 0) {
+                $events[] = ['action' => $action, 'count' => $counts[$action]];
+            }
+        }
+
+        return $events;
     }
 
     /**

@@ -350,6 +350,23 @@ final readonly class DatabaseReportQueries implements ReportQueries
             ->map(static fn ($r): array => ['business_date' => substr((string) $r->business_date, 0, 10), 'report' => json_decode((string) $r->report, true, 512, JSON_THROW_ON_ERROR)])->all();
     }
 
+    public function auditActionCounts(PropertyId $property, DateTimeImmutable $fromUtc, DateTimeImmutable $toUtc, array $actions): array
+    {
+        if ($actions === []) {
+            return [];
+        }
+
+        $rows = DB::table('audit_entries')->where('property_id', $property->toString())->where('occurred_at', '>=', $fromUtc)->where('occurred_at', '<', $toUtc)
+            ->whereIn('action', $actions)->groupBy('action')->selectRaw('action, COUNT(*) as n')->get();
+        $counts = [];
+
+        foreach ($rows as $row) {
+            $counts[(string) $row->action] = (int) $row->n;
+        }
+
+        return $counts;
+    }
+
     public function auditTrail(PropertyId $property, DateTimeImmutable $fromUtc, DateTimeImmutable $toUtc, array $filters, int $limit, int $offset): array
     {
         $query = DB::table('audit_entries as a')->leftJoin('users as u', 'u.id', '=', 'a.actor_id')

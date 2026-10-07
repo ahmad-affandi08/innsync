@@ -94,6 +94,14 @@ interface ReportQueries
     public function closedDays(PropertyId $property, ReportPeriod $period): array;
 
     /**
+     * How many times each of the given audit actions happened in the range of UTC instants, for the notable events of the flash report (FR-RPT-005).
+     *
+     * @param  list<string>  $actions
+     * @return array<string, int> only the actions that happened
+     */
+    public function auditActionCounts(PropertyId $property, DateTimeImmutable $fromUtc, DateTimeImmutable $toUtc, array $actions): array;
+
+    /**
      * @param  array{actor_id?: ?string, module?: ?string, action?: ?string}  $filters
      * @return array{rows: list<array<string, mixed>>, total: int}
      */

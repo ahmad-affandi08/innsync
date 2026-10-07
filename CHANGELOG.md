@@ -6,6 +6,7 @@ Release notes for every release (NFR-14). Newest first. Each entry names the tas
 
 ### Added
 
+- TASK-RPT-005 (FR-RPT-005): the daily flash report adds the main operating costs per department (for those who may see finance's management reports) and the notable events of the period, counted from the audit trail.
 - TASK-KIT-006 (FR-KIT-006, BR-005): the kitchen records the ingredients it uses up outside of a sale (a staff meal, a tasting) from a store (`/kitchen/ingredient-use`, permission `kitchen.ingredients.use`); one issue movement at the average cost, never below zero, audited.
 - TASK-INV-004 (FR-INV-004, BR-005): housekeeping records the cleaning supplies and amenities it uses up from a store (`/housekeeping/supplies`, permission `housekeeping.supplies.use`); each use is one issue movement at the average cost as housekeeping consumption, never below zero, and audited.
 - TASK-FBS-002 (FR-FBS-002): a dish on the menu can have a picture (JPEG or PNG, up to 2 MB) that the menu's owner sets, replaces or removes; it shows on the POS bill, the register and the menu setup, is kept in the private file store and is served only to those who see the menu.

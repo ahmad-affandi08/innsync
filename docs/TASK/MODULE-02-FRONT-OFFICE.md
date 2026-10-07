@@ -35,7 +35,7 @@
 | TASK-FO-017 | FR-FO-017 | Sebaiknya | Sistem mencetak atau mengirim kartu registrasi elektronik untuk ditandatangani tamu, termasuk tanda tangan digital pada tablet. | REVIEW |
 | TASK-FO-018 | FR-FO-018 | Wajib | Mendukung perpindahan kamar (room move) dengan pemindahan seluruh saldo folio dan pencatatan alasan. | REVIEW |
 | TASK-FO-019 | FR-FO-019 | Wajib | Mendukung perpanjangan masa menginap (Stay Over) dan check-out dipercepat dengan penyesuaian tagihan otomatis. | REVIEW |
-| TASK-FO-020 | FR-FO-020 | Wajib | Setiap stay memiliki minimal satu folio dan dapat memiliki beberapa folio/window untuk routing tagihan. Folio menampung room charge, pajak, service charge, charge outlet, koreksi, dan pembayaran secara terurut dan dapat ditelusuri. | IN_PROGRESS |
+| TASK-FO-020 | FR-FO-020 | Wajib | Setiap stay memiliki minimal satu folio dan dapat memiliki beberapa folio/window untuk routing tagihan. Folio menampung room charge, pajak, service charge, charge outlet, koreksi, dan pembayaran secara terurut dan dapat ditelusuri. | REVIEW |
 | TASK-FO-021 | FR-FO-021 | Wajib | Mencetak rincian tagihan (bill print out) yang menampilkan seluruh transaksi terperinci per outlet dan per tanggal. | REVIEW |
 | TASK-FO-022 | FR-FO-022 | Sebaiknya | Mendukung pemisahan tagihan (split bill) menjadi beberapa folio, misalnya folio perusahaan dan folio pribadi tamu. | REVIEW |
 | TASK-FO-023 | FR-FO-023 | Sebaiknya | Mendukung pemindahan item tagihan antar folio atau antar kamar dengan pencatatan alasan. | REVIEW |
@@ -80,3 +80,4 @@
 - Update traceability/evidence before marking DONE.
 
 - Status (2026-10-07). `TASK-FO-041` is `BLOCKED`: the report is issued with the registration columns, but the layout the authority requires is PRD `Q-09` and is still open; it must not be guessed. It returns to `IN_PROGRESS` when the Front Office Manager supplies the format.
+- Status (2026-10-07). `TASK-FO-020` is `REVIEW`: check-in opens a folio when the reservation has none (`StayService`), several windows are supported, and outlet and laundry charges and late charges reach the folio through the same ledger. Evidence: `tests/Integration/FrontOffice/StayTest.php::test_check_in_registers_the_guest_starts_the_stay_and_opens_the_folio`, `tests/Integration/FrontOffice/FolioTest.php`, `tests/Integration/FrontOffice/LateChargeTest.php`.

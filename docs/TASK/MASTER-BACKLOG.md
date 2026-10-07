@@ -43,7 +43,7 @@
 | TASK-FO-017 | FR-FO-017 | Front Office | Sebaiknya | REVIEW |
 | TASK-FO-018 | FR-FO-018 | Front Office | Wajib | REVIEW |
 | TASK-FO-019 | FR-FO-019 | Front Office | Wajib | REVIEW |
-| TASK-FO-020 | FR-FO-020 | Front Office | Wajib | IN_PROGRESS |
+| TASK-FO-020 | FR-FO-020 | Front Office | Wajib | REVIEW |
 | TASK-FO-021 | FR-FO-021 | Front Office | Wajib | REVIEW |
 | TASK-FO-022 | FR-FO-022 | Front Office | Sebaiknya | REVIEW |
 | TASK-FO-023 | FR-FO-023 | Front Office | Sebaiknya | REVIEW |
@@ -248,7 +248,7 @@
 | TASK-RPT-002 | FR-RPT-002 | Reporting & Analytics | Wajib | IN_PROGRESS |
 | TASK-RPT-003 | FR-RPT-003 | Reporting & Analytics | Wajib | REVIEW |
 | TASK-RPT-004 | FR-RPT-004 | Reporting & Analytics | Sebaiknya | REVIEW |
-| TASK-RPT-005 | FR-RPT-005 | Reporting & Analytics | Wajib | IN_PROGRESS |
+| TASK-RPT-005 | FR-RPT-005 | Reporting & Analytics | Wajib | REVIEW |
 | TASK-RPT-006 | FR-RPT-006 | Reporting & Analytics | Sebaiknya | REVIEW |
 | TASK-RPT-007 | FR-RPT-007 | Reporting & Analytics | Wajib | REVIEW |
 | TASK-RPT-008 | FR-RPT-008 | Reporting & Analytics | Bisa | REVIEW |

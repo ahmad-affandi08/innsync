@@ -17,7 +17,7 @@
 | TASK-RPT-002 | FR-RPT-002 | Wajib | Seluruh laporan mendukung penyaring rentang tanggal, outlet, department, dan pengguna. | IN_PROGRESS |
 | TASK-RPT-003 | FR-RPT-003 | Wajib | Seluruh laporan dapat diekspor ke PDF dan lembar kerja, serta dicetak. | REVIEW |
 | TASK-RPT-004 | FR-RPT-004 | Sebaiknya | Laporan dapat dijadwalkan untuk dikirim otomatis melalui surel atau pesan instan pada waktu tertentu kepada penerima tertentu. | REVIEW |
-| TASK-RPT-005 | FR-RPT-005 | Wajib | Menyediakan laporan ringkas harian untuk manajemen (flash report) yang memuat okupansi, pendapatan, biaya utama, dan kejadian penting. | IN_PROGRESS |
+| TASK-RPT-005 | FR-RPT-005 | Wajib | Menyediakan laporan ringkas harian untuk manajemen (flash report) yang memuat okupansi, pendapatan, biaya utama, dan kejadian penting. | REVIEW |
 | TASK-RPT-006 | FR-RPT-006 | Sebaiknya | Menyediakan pembanding antar periode: hari ini dibanding kemarin, bulan ini dibanding bulan lalu, dan tahun berjalan dibanding tahun sebelumnya. | REVIEW |
 | TASK-RPT-007 | FR-RPT-007 | Wajib | Menyediakan jejak audit yang dapat dicari berdasarkan pengguna, modul, dan rentang waktu. | REVIEW |
 | TASK-RPT-008 | FR-RPT-008 | Bisa | Menyediakan pembuat laporan sederhana bagi pengguna mahir untuk memilih kolom dan penyaring sendiri. | REVIEW |
@@ -43,3 +43,5 @@
 - Emit audit evidence for sensitive/state-changing operations.
 - Add happy, negative, conflict/retry, and permission tests as applicable.
 - Update traceability/evidence before marking DONE.
+
+- Evidence (TASK-RPT-005, the flash report): the report now has the main operating costs per department (supplier invoices, petty cash, recurring expenses and stock consumed, from the management profit and loss of finance, shown only to those who may see that report and only for a range finance reports, at most 366 days) and the notable events of the period (a baseline list of audit actions counted without who did them or the guest: bills cancelled, items voided after sending, bills refunded, finance exceptions raised, petty cash vouchers voided, laundry claims, laundry orders and work orders escalated). `tests/Integration/Reporting/ReportingTest.php::test_the_flash_report_adds_the_main_costs_for_finance_and_counts_the_notable_events`. The list of notable events is a baseline for the General Manager to confirm. The CSV export still holds the daily rows only. Not yet seen in a browser.
