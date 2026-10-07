@@ -4,6 +4,8 @@ Release notes for every release (NFR-14). Newest first. Each entry names the tas
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-10-07
+
 ### Added
 
 - TASK-FND-001 to TASK-FND-011 (ADR-0001 to ADR-0008): Laravel 13, Inertia, React and Tailwind baseline; module and layer boundaries; MySQL 8 with property scope, ULID identifiers and optimistic locking; authentication, MFA and scoped RBAC; immutable audit and security events; idempotency; transactional outbox; private file storage; error envelope; health and alerts; encrypted backup, restore test and DR runbook.

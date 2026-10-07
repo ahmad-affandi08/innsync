@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace App\Shared\Infrastructure\Deployment;
 
-use App\Modules\IdentityAccess\Infrastructure\Persistence\Eloquent\UserRecord;
-use App\Modules\Property\Application\Settings\PropertySettingsService;
-use App\Modules\Property\Infrastructure\Persistence\Eloquent\PropertyRecord;
+use App\Shared\Application\Deployment\GoLiveBusinessDate;
 use App\Shared\Application\Tenancy\PropertyContext;
 use App\Shared\Domain\Tenancy\PropertyId;
 use Database\Seeders\DevelopmentSeeder;
@@ -38,41 +36,22 @@ final class CreateAdminCommand extends Command
         $propertyName = (string) ($this->option('property') ?: 'InnSYnc Hotel');
 
         $this->info("Creating/updating property: {$propertyName}...");
-        $property = PropertyRecord::firstOrCreate(
-            ['name' => $propertyName],
-            ['timezone' => 'Asia/Jakarta', 'currency_code' => 'IDR'],
-        );
+        $propertyId = $this->property($propertyName);
 
         $this->info("Creating/updating admin user: {$email}...");
-        $user = UserRecord::firstOrCreate(
-            ['email' => $email],
-            [
-                'name' => $name,
-                'password' => Hash::make($password),
-                'email_verified_at' => now(),
-            ],
-        );
+        $userId = $this->user($email, $name, $password);
 
-        // Update password if user already existed
-        if (! $user->wasRecentlyCreated) {
-            $user->update([
-                'name' => $name,
-                'password' => Hash::make($password),
-                'email_verified_at' => $user->email_verified_at ?? now(),
-            ]);
-        }
-
-        $roleId = $this->administratorRole($property->id);
-        $this->grantAllPermissions($property->id, $roleId);
-        $this->assignUserToRole($property->id, $user->id, $roleId);
-        $this->initializeBusinessDateIfNeeded($property->id, $user->id);
+        $roleId = $this->administratorRole($propertyId);
+        $this->grantAllPermissions($propertyId, $roleId);
+        $this->assignUserToRole($propertyId, $userId, $roleId);
+        $this->initializeBusinessDateIfNeeded($propertyId, $userId);
 
         $this->newLine();
         $this->info('✓ Administrator ready:');
         $this->table(
             ['Field', 'Value'],
             [
-                ['Property', $property->name],
+                ['Property', $propertyName],
                 ['Email', $email],
                 ['Password', $password],
                 ['Role', 'Administrator (All Permissions)'],
@@ -80,6 +59,61 @@ final class CreateAdminCommand extends Command
         );
 
         return self::SUCCESS;
+    }
+
+    private function property(string $name): string
+    {
+        $existing = DB::table('properties')->where('name', $name)->value('id');
+
+        if ($existing !== null) {
+            return (string) $existing;
+        }
+
+        $id = strtolower((string) Str::ulid());
+
+        DB::table('properties')->insert([
+            'id' => $id,
+            'name' => $name,
+            'timezone' => 'Asia/Jakarta',
+            'currency_code' => 'IDR',
+            'is_active' => true,
+            'lock_version' => 0,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        return $id;
+    }
+
+    private function user(string $email, string $name, string $password): string
+    {
+        $existing = DB::table('users')->where('email', $email)->first(['id', 'email_verified_at']);
+
+        if ($existing !== null) {
+            DB::table('users')->where('id', $existing->id)->update([
+                'name' => $name,
+                'password' => Hash::make($password),
+                'email_verified_at' => $existing->email_verified_at ?? now(),
+                'updated_at' => now(),
+            ]);
+
+            return (string) $existing->id;
+        }
+
+        $id = strtolower((string) Str::ulid());
+
+        DB::table('users')->insert([
+            'id' => $id,
+            'name' => $name,
+            'email' => $email,
+            'password' => Hash::make($password),
+            'email_verified_at' => now(),
+            'lock_version' => 0,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        return $id;
     }
 
     private function administratorRole(string $propertyId): string
@@ -165,23 +199,10 @@ final class CreateAdminCommand extends Command
     private function initializeBusinessDateIfNeeded(string $propertyId, string $userId): void
     {
         $property = PropertyId::fromString($propertyId);
-        $context = app(PropertyContext::class);
-        $service = app(PropertySettingsService::class);
+        $goLive = app(GoLiveBusinessDate::class);
 
-        $context->run($property, function () use ($service, $property, $userId): void {
-            $settings = $service->get($property);
-
-            if ($settings->businessDate !== null) {
-                return;
-            }
-
-            $service->initializeBusinessDate(
-                $property,
-                $userId,
-                now()->toDateString(),
-                $settings->lockVersion,
-                'Initial system go-live.',
-            );
+        app(PropertyContext::class)->run($property, function () use ($goLive, $property, $userId): void {
+            $goLive->initializeIfMissing($property, $userId, now()->toDateString(), 'Initial system go-live.');
         });
     }
 
