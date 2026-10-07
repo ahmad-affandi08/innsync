@@ -32,6 +32,18 @@ Both permissions are created by migration 118 and given to every role named `Adm
 
 The server makes a temporary password (14 random characters plus a fixed tail so the strength rules always pass) and returns it once, with `Cache-Control: no-store`. It is not stored in clear text and not audited. The administrator hands it to the person. The person's account is flagged `must_change_password`: until they choose their own, every page except the password form, sign-out and the two-step checks redirects to **Account → Sessions**, which shows a notice. Changing the password clears the flag. A reset by an administrator ends every session of that person and sets the flag again.
 
+## Starting roles (owner instruction, 2026-10-07)
+
+Every property starts with these roles so the Administrator does not build them from nothing. They are ordinary roles: change, rename or deactivate them on the Roles screen. The list and the permissions of each are in `app/Modules/IdentityAccess/Application/Access/DefaultRoles.php`.
+
+General Manager, Owner (read only), Front Office Manager, Receptionist, Night Auditor, Housekeeping Supervisor, Room Attendant, Laundry Staff, F&B Cashier, F&B Supervisor, Kitchen Staff, Kitchen Head, Maintenance Technician, Maintenance Head, Storekeeper, Purchasing Officer, Finance Staff, Finance Manager, HR Manager.
+
+- No starting role can manage users or roles; only the Administrator can (and gives that right to others by choosing it in a role).
+- The permissions of each role are a first proposal built from the people named in the PRD. **The hotel's managers should review them** (Roles screen) before staff are given them; the owner decides what each job may do.
+- Where they come from: migration 119 creates them for every existing property; `innsync:create-admin` and the development seeder create them for a new property; `php artisan innsync:install-default-roles [--property=ID]` creates the missing ones later.
+- Never overwritten: a role is created only when the property has no role of that name. A role the property changed keeps its changes. Because the check is by name, a starting role that was **renamed** is created again the next time the command runs (and a role that was only deactivated is not).
+- A permission added to the application later is not added to roles that already exist; add it on the Roles screen.
+
 ## Decisions (owner, 2026-10-07)
 
 - **One email, one account.** An email that already has an account is refused, always. A person is not shared between properties by adding the same email.
@@ -47,4 +59,4 @@ The server makes a temporary password (14 random characters plus a fixed tail so
 
 ## Upgrading a running host
 
-`php artisan migrate --force` (migration 118) adds the flag and the two permissions and gives them to the `Administrator` role of every property. After that, sign out and in again as the administrator and the menu entries open.
+`php artisan migrate --force` (migrations 118 and 119) adds the flag and the two permissions, gives them to the `Administrator` role of every property, and creates the starting roles. After that, sign out and in again as the administrator and the menu entries open.
