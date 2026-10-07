@@ -1,1 +1,0 @@
-import{S as e,m as t}from"./app-qHHtV2Y6.js";import{a as n,t as r}from"./app-frame-BMYUJ5Af.js";var i=e({HousekeepingShell:()=>o}),a=t();function o({children:e,description:t,title:i,wide:o}){return(0,a.jsx)(r,{description:t,links:n,title:i,wide:o,children:e})}export{i as n,o as t};

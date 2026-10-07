@@ -1,0 +1,1 @@
+import{m as e}from"./app-Cgw3cZT3.js";import{t}from"./utils-DOQQTBMN.js";var n=e();function r({className:e,...r}){return(0,n.jsx)(`div`,{className:t(`border border-border bg-surface text-foreground`,e),"data-slot":`card`,...r})}export{r as t};

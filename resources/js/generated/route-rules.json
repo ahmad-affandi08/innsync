@@ -3494,6 +3494,8 @@
     "POST /hr/attendance/clock-in": {
         "required": [],
         "declared": [
+            "accuracy",
+            "device",
             "latitude",
             "longitude",
             "photo"
@@ -3502,6 +3504,8 @@
     "POST /hr/attendance/clock-out": {
         "required": [],
         "declared": [
+            "accuracy",
+            "device",
             "latitude",
             "longitude",
             "photo"
@@ -3554,6 +3558,17 @@
             "longitude",
             "radius_m",
             "require_selfie"
+        ]
+    },
+    "POST /hr/attendance/{id}/review": {
+        "required": [
+            "decision",
+            "side"
+        ],
+        "declared": [
+            "decision",
+            "note",
+            "side"
         ]
     },
     "POST /hr/conduct": {

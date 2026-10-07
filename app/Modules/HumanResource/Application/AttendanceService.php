@@ -111,7 +111,7 @@ final readonly class AttendanceService
     }
 
     /** @return array<string, mixed> the person's shift now, as `overview` shows it */
-    public function clockIn(PropertyId $property, string $actorId, ?float $latitude, ?float $longitude, ?string $photo, ?string $photoName): array
+    public function clockIn(PropertyId $property, string $actorId, ?float $latitude, ?float $longitude, ?string $photo, ?string $photoName, ?float $accuracy = null, ?string $device = null): array
     {
         $employee = $this->ownEmployee($property, $actorId);
         $tz = $this->zone($property);
@@ -132,10 +132,12 @@ final readonly class AttendanceService
         $id = $this->ids->next();
         $actor = strtolower($actorId);
 
-        $this->transactions->run(function () use ($property, $actor, $employee, $shift, $now, $distance, $file, $id): void {
+        $evidence = self::evidence($accuracy, $device, $photo);
+
+        $this->transactions->run(function () use ($property, $actor, $employee, $shift, $now, $distance, $file, $id, $evidence): void {
             $this->employees->lockEmployee($property, $employee['id']);
 
-            if (! $this->store->add($property, ['id' => $id, 'employee_id' => $employee['id'], 'work_date' => $shift['date'], 'in_at' => $now->format('Y-m-d H:i:s.u'), 'in_method' => 'mobile', 'in_distance_m' => $distance, 'in_photo_file_id' => $file?->id, 'recorded_by' => $actor], $now)) {
+            if (! $this->store->add($property, ['id' => $id, 'employee_id' => $employee['id'], 'work_date' => $shift['date'], 'in_at' => $now->format('Y-m-d H:i:s.u'), 'in_method' => 'mobile', 'in_distance_m' => $distance, 'in_accuracy_m' => $evidence['accuracy'], 'in_device' => $evidence['device'], 'in_photo_file_id' => $file?->id, 'in_photo_hash' => $evidence['photo'], 'recorded_by' => $actor], $now)) {
                 throw Refusal::stateConflict('You clocked in for this shift already.');
             }
 
@@ -147,7 +149,7 @@ final readonly class AttendanceService
     }
 
     /** @return array<string, mixed> */
-    public function clockOut(PropertyId $property, string $actorId, ?float $latitude, ?float $longitude, ?string $photo, ?string $photoName): array
+    public function clockOut(PropertyId $property, string $actorId, ?float $latitude, ?float $longitude, ?string $photo, ?string $photoName, ?float $accuracy = null, ?string $device = null): array
     {
         $employee = $this->ownEmployee($property, $actorId);
         $tz = $this->zone($property);
@@ -178,10 +180,12 @@ final readonly class AttendanceService
         $file = $this->photo($property, strtolower($actorId), $settings, $photo, $photoName);
         $actor = strtolower($actorId);
 
-        $this->transactions->run(function () use ($property, $actor, $employee, $open, $now, $distance, $file): void {
+        $evidence = self::evidence($accuracy, $device, $photo);
+
+        $this->transactions->run(function () use ($property, $actor, $employee, $open, $now, $distance, $file, $evidence): void {
             $this->employees->lockEmployee($property, $employee['id']);
 
-            if (! $this->store->update($property, $open['id'], (int) $open['lock_version'], ['out_at' => $now->format('Y-m-d H:i:s.u'), 'out_method' => 'mobile', 'out_distance_m' => $distance, 'out_photo_file_id' => $file?->id], $now)) {
+            if (! $this->store->update($property, $open['id'], (int) $open['lock_version'], ['out_at' => $now->format('Y-m-d H:i:s.u'), 'out_method' => 'mobile', 'out_distance_m' => $distance, 'out_accuracy_m' => $evidence['accuracy'], 'out_device' => $evidence['device'], 'out_photo_file_id' => $file?->id, 'out_photo_hash' => $evidence['photo']], $now)) {
                 throw Refusal::stateConflict('You clocked out already.');
             }
 
@@ -697,6 +701,21 @@ final readonly class AttendanceService
     }
 
     /** @param array{latitude: float|null, longitude: float|null, radius_m: int, geofence: bool} $settings */
+    /**
+     * What a phone clock-in leaves behind for a supervisor to weigh later (see `AttendanceAnomalies`): the accuracy the phone claimed, a fingerprint of the identifier the phone keeps, and a
+     * fingerprint of the selfie. None of it decides anything now, and none of it is a face or a position.
+     *
+     * @return array{accuracy: ?int, device: ?string, photo: ?string}
+     */
+    private static function evidence(?float $accuracy, ?string $device, ?string $photo): array
+    {
+        return [
+            'accuracy' => $accuracy === null || $accuracy < 0 ? null : (int) min(65535, round($accuracy)),
+            'device' => $device !== null && preg_match('/^[A-Za-z0-9-]{16,64}$/', $device) === 1 ? hash('sha256', $device) : null,
+            'photo' => $photo === null || $photo === '' ? null : hash('sha256', $photo),
+        ];
+    }
+
     private function checkPlace(array $settings, ?float $latitude, ?float $longitude): ?int
     {
         if ($latitude === null || $longitude === null) {

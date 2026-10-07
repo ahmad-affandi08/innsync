@@ -29,4 +29,15 @@ interface AttendanceStore
 
     /** @return list<array<string, mixed>> the records of the days between two dates, optionally of one employee */
     public function between(PropertyId $property, string $from, string $to, ?string $employeeId): array;
+
+    /**
+     * Which clock-ins and clock-outs already have a supervisor's decision.
+     *
+     * @param  list<string>  $attendanceIds
+     * @return array<string, array{decision: string, reviewed_by: string, reviewed_at: string, note: ?string}> keyed `"<attendance id>:in"` or `":out"`
+     */
+    public function reviews(PropertyId $property, array $attendanceIds): array;
+
+    /** @param list<string> $flags @return bool false when this clock-in or clock-out already has a decision */
+    public function addReview(PropertyId $property, string $id, string $attendanceId, string $side, array $flags, string $decision, ?string $note, string $by, DateTimeImmutable $at): bool;
 }

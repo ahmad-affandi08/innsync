@@ -919,6 +919,7 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
     Route::post('/attendance/corrections', [AttendanceAdjustmentController::class, 'requestCorrection'])->middleware(['idempotent'])->name('hr.attendance.corrections.request');
     Route::post('/attendance/corrections/{id}/apply', [AttendanceAdjustmentController::class, 'applyCorrection'])->where('id', $id)->name('hr.attendance.corrections.apply');
     Route::post('/attendance/corrections/{id}/cancel', [AttendanceAdjustmentController::class, 'cancelCorrection'])->where('id', $id)->name('hr.attendance.corrections.cancel');
+    Route::post('/attendance/{id}/review', [AttendanceController::class, 'review'])->where('id', $id)->middleware('throttle:access-admin')->name('hr.attendance.review');
     Route::get('/attendance/{id}/photo/{which}', [AttendanceController::class, 'photo'])->where('id', $id)->where('which', 'in|out')->name('hr.attendance.photo');
     Route::get('/performance', [PerformanceController::class, 'index'])->name('hr.performance');
     Route::get('/payroll', [PayrollController::class, 'index'])->name('hr.payroll');

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Modules\HumanResource\Presentation\Http\Controllers;
 
 use App\Modules\HumanResource\Application\AttendanceCorrectionService;
+use App\Modules\HumanResource\Application\AttendanceReviewService;
 use App\Modules\HumanResource\Application\AttendanceService;
 use App\Modules\HumanResource\Application\OvertimeService;
 use App\Shared\Application\Tenancy\PropertyContext;
@@ -18,7 +19,7 @@ use Inertia\Response;
 /** Attendance: clocking in and out, the day and period views, and how attendance is taken. Every rule and permission lives in `AttendanceService`. */
 final readonly class AttendanceController
 {
-    public function __construct(private AttendanceService $attendance, private OvertimeService $overtime, private AttendanceCorrectionService $corrections, private PropertyContext $property) {}
+    public function __construct(private AttendanceService $attendance, private OvertimeService $overtime, private AttendanceCorrectionService $corrections, private AttendanceReviewService $reviews, private PropertyContext $property) {}
 
     public function index(Request $request): Response
     {
@@ -32,21 +33,22 @@ final readonly class AttendanceController
             'overview' => $overview,
             'overtime' => $manage ? $this->overtime->overview($property, $this->actor($request)) : null,
             'corrections' => $manage ? $this->corrections->overview($property, $this->actor($request)) : null,
+            'review' => $manage ? $this->reviews->queue($property, $this->actor($request)) : null,
         ]);
     }
 
     public function clockIn(Request $request): JsonResponse
     {
-        [$lat, $lng, $photo] = $this->punch($request);
+        [$lat, $lng, $photo, $accuracy, $device] = $this->punch($request);
 
-        return $this->json(['me' => $this->attendance->clockIn($this->property->current(), $this->actor($request), $lat, $lng, $photo?->get() === null ? null : (string) $photo->get(), $photo?->getClientOriginalName())]);
+        return $this->json(['me' => $this->attendance->clockIn($this->property->current(), $this->actor($request), $lat, $lng, $photo?->get() === null ? null : (string) $photo->get(), $photo?->getClientOriginalName(), $accuracy, $device)]);
     }
 
     public function clockOut(Request $request): JsonResponse
     {
-        [$lat, $lng, $photo] = $this->punch($request);
+        [$lat, $lng, $photo, $accuracy, $device] = $this->punch($request);
 
-        return $this->json(['me' => $this->attendance->clockOut($this->property->current(), $this->actor($request), $lat, $lng, $photo?->get() === null ? null : (string) $photo->get(), $photo?->getClientOriginalName())]);
+        return $this->json(['me' => $this->attendance->clockOut($this->property->current(), $this->actor($request), $lat, $lng, $photo?->get() === null ? null : (string) $photo->get(), $photo?->getClientOriginalName(), $accuracy, $device)]);
     }
 
     public function manual(Request $request): JsonResponse
@@ -69,6 +71,14 @@ final readonly class AttendanceController
             (int) $data['late_grace_minutes'], (int) $data['early_grace_minutes'], (int) $data['extra_after_minutes'], isset($data['lock_version']) ? (int) $data['lock_version'] : null));
     }
 
+    public function review(Request $request, string $id): JsonResponse
+    {
+        $data = $request->validate(['side' => ['required', 'string', 'in:in,out'], 'decision' => ['required', 'string', 'in:ok,questioned'], 'note' => ['nullable', 'string', 'max:300']]);
+        $this->reviews->decide($this->property->current(), $this->actor($request), $id, $data['side'], $data['decision'], $data['note'] ?? null);
+
+        return $this->json(['ok' => true]);
+    }
+
     public function photo(Request $request, string $id, string $which): HttpResponse
     {
         $content = $this->attendance->download($this->property->current(), $this->actor($request), $id, $which);
@@ -76,13 +86,13 @@ final readonly class AttendanceController
         return response($content->contents, 200, ['Content-Type' => $content->file->mimeType, 'Content-Disposition' => 'inline; filename="selfie"', 'Cache-Control' => 'no-store, private', 'X-Content-Type-Options' => 'nosniff']);
     }
 
-    /** @return array{0: float|null, 1: float|null, 2: UploadedFile|null} */
+    /** @return array{0: float|null, 1: float|null, 2: UploadedFile|null, 3: float|null, 4: string|null} */
     private function punch(Request $request): array
     {
-        $data = $request->validate(['latitude' => ['nullable', 'numeric', 'between:-90,90'], 'longitude' => ['nullable', 'numeric', 'between:-180,180'], 'photo' => ['nullable', 'file', 'max:3072']]);
+        $data = $request->validate(['latitude' => ['nullable', 'numeric', 'between:-90,90'], 'longitude' => ['nullable', 'numeric', 'between:-180,180'], 'photo' => ['nullable', 'file', 'max:3072'], 'accuracy' => ['nullable', 'numeric', 'min:0', 'max:100000'], 'device' => ['nullable', 'string', 'regex:/^[A-Za-z0-9-]{16,64}$/']]);
         $photo = $request->file('photo');
 
-        return [isset($data['latitude']) ? (float) $data['latitude'] : null, isset($data['longitude']) ? (float) $data['longitude'] : null, $photo];
+        return [isset($data['latitude']) ? (float) $data['latitude'] : null, isset($data['longitude']) ? (float) $data['longitude'] : null, $photo, isset($data['accuracy']) ? (float) $data['accuracy'] : null, $data['device'] ?? null];
     }
 
     /** @param array<string, mixed> $body */

@@ -13,8 +13,10 @@ import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
 import { StatusBadge, type StatusTone } from '@/components/ui/status-badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { AttendanceReview, type ReviewItem } from '@/modules/hr/components/attendance-review';
 import { HrShell } from '@/modules/hr/components/hr-shell';
 import type { AttendanceCorrection, AttendanceOverview, AttendanceRow, AttendanceStatus, AttendanceSummaryRow, CorrectionOverview, CorrectionStatus, OvertimeOverview, OvertimeRequest, OvertimeStatus } from '@/modules/hr/lib/hr';
+import { deviceId } from '@/modules/hr/lib/device';
 import { newIdempotencyKey } from '@/shared/api/http';
 import { useServerAction } from '@/shared/api/use-server-action';
 import { useFormatters, useTranslation } from '@/shared/i18n/i18n';
@@ -26,15 +28,15 @@ const OVERTIME_TONE: Record<OvertimeStatus, StatusTone> = { pending_approval: 'p
 const CORRECTION_TONE: Record<CorrectionStatus, StatusTone> = { pending_approval: 'pending', applied: 'success', rejected: 'danger', cancelled: 'neutral' };
 const hm = (minutes: number) => `${Math.floor(minutes / 60)}:${String(minutes % 60).padStart(2, '0')}`;
 
-function position(): Promise<{ latitude: number; longitude: number } | null> {
+function position(): Promise<{ latitude: number; longitude: number; accuracy: number } | null> {
     return new Promise((resolve) => {
         if (typeof navigator === 'undefined' || !('geolocation' in navigator)) return resolve(null);
-        navigator.geolocation.getCurrentPosition((p) => resolve({ latitude: p.coords.latitude, longitude: p.coords.longitude }), () => resolve(null), { enableHighAccuracy: true, timeout: 10_000, maximumAge: 0 });
+        navigator.geolocation.getCurrentPosition((p) => resolve({ latitude: p.coords.latitude, longitude: p.coords.longitude, accuracy: p.coords.accuracy }), () => resolve(null), { enableHighAccuracy: true, timeout: 10_000, maximumAge: 0 });
     });
 }
 
 /** Attendance: the person's own shift to clock in and out of, who came on a day, and how the period went (for those who manage it). */
-export default function AttendancePage({ overview, overtime, corrections }: { overview: AttendanceOverview; overtime: OvertimeOverview | null; corrections: CorrectionOverview | null }) {
+export default function AttendancePage({ overview, overtime, corrections, review = null }: { overview: AttendanceOverview; overtime: OvertimeOverview | null; corrections: CorrectionOverview | null; review?: ReviewItem[] | null }) {
     const { t, locale } = useTranslation();
     const format = useFormatters();
     const errorCopy = useErrorStateCopy();
@@ -63,7 +65,11 @@ export default function AttendancePage({ overview, overtime, corrections }: { ov
         if (where !== null) {
             body.set('latitude', String(where.latitude));
             body.set('longitude', String(where.longitude));
+            body.set('accuracy', String(where.accuracy));
         }
+
+        const device = deviceId();
+        if (device !== null) body.set('device', device);
 
         if (photo !== null) body.set('photo', photo);
         const result = await action.run(`/hr/attendance/${kind}`, { idempotencyKey: newIdempotencyKey(), body, reload: ['overview'] });
@@ -178,6 +184,8 @@ export default function AttendancePage({ overview, overtime, corrections }: { ov
                     )}
                 </section>
             ) : null}
+            {overview.may.manage && review !== null ? <AttendanceReview items={review} /> : null}
+
             {overview.may.manage && overview.day !== null && overview.summary !== null ? (
                 <Tabs defaultValue="day">
                     <TabsList aria-label={t('hr.att.title')}>

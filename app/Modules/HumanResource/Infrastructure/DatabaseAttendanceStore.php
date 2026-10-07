@@ -76,4 +76,33 @@ final class DatabaseAttendanceStore implements AttendanceStore
     {
         return DB::table('hr_attendance')->where('property_id', $property->toString())->whereBetween('work_date', [$from, $to])->when($employeeId !== null, static fn ($q) => $q->where('employee_id', $employeeId))->get()->map(static fn ($r): array => (array) $r)->all();
     }
+
+    public function reviews(PropertyId $property, array $attendanceIds): array
+    {
+        if ($attendanceIds === []) {
+            return [];
+        }
+
+        $out = [];
+
+        foreach (DB::table('hr_attendance_reviews')->where('property_id', $property->toString())->whereIn('attendance_id', $attendanceIds)->get() as $r) {
+            $out[$r->attendance_id.':'.$r->side] = ['decision' => (string) $r->decision, 'reviewed_by' => (string) $r->reviewed_by, 'reviewed_at' => (string) $r->reviewed_at, 'note' => $r->note === null ? null : (string) $r->note];
+        }
+
+        return $out;
+    }
+
+    public function addReview(PropertyId $property, string $id, string $attendanceId, string $side, array $flags, string $decision, ?string $note, string $by, DateTimeImmutable $at): bool
+    {
+        try {
+            DB::table('hr_attendance_reviews')->insert([
+                'id' => $id, 'property_id' => $property->toString(), 'attendance_id' => $attendanceId, 'side' => $side, 'flags' => json_encode($flags, JSON_THROW_ON_ERROR),
+                'decision' => $decision, 'note' => $note, 'reviewed_by' => $by, 'reviewed_at' => $at->format('Y-m-d H:i:s.u'),
+            ]);
+
+            return true;
+        } catch (UniqueConstraintViolationException) {
+            return false;
+        }
+    }
 }
