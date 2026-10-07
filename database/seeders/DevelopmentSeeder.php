@@ -147,6 +147,8 @@ final class DevelopmentSeeder extends Seeder
         'hr.roster.manage',
         'hr.service-charge.manage',
         'identity.approval-policy.manage',
+        'identity.role.manage',
+        'identity.user.manage',
         'inventory.catalog.manage',
         'inventory.catalog.view',
         'inventory.count.approve',
