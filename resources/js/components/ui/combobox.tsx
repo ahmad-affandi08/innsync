@@ -16,7 +16,8 @@ export type ComboboxProps = {
     searchPlaceholder?: string;
     emptyLabel?: string;
     /** A search box above the list. Turn it off only for a short fixed list such as a page size. */
-    searchable?: boolean;
+    /** `auto` (default) shows the search box when the list has more than a few rows. `false` hides it only on a short list; a long list always has it. */
+    searchable?: boolean | 'auto';
     id?: string;
     name?: string;
     disabled?: boolean;
@@ -27,6 +28,9 @@ export type ComboboxProps = {
     'aria-label'?: string;
 };
 
+/** A list with more rows than this gets a search box. */
+const SEARCH_FROM = 7;
+
 export const fieldClass =
     'flex h-10 min-h-10 w-full min-w-0 max-w-full cursor-pointer items-center justify-between gap-2 border border-input bg-surface px-3 py-2 text-left text-sm text-foreground outline-none transition focus-visible:border-brand focus-visible:ring-2 focus-visible:ring-ring/40 disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-danger';
 
@@ -35,10 +39,12 @@ export const fieldClass =
  * there is no room) and is never drawn over the field itself, so the chosen
  * value stays readable while choosing.
  */
-function Combobox({ className, disabled, emptyLabel, id, name, onValueChange, options, placeholder, searchPlaceholder, searchable = true, value, ...aria }: ComboboxProps) {
+function Combobox({ className, disabled, emptyLabel, id, name, onValueChange, options, placeholder, searchPlaceholder, searchable = 'auto', value, ...aria }: ComboboxProps) {
     const { t } = useTranslation();
     const [open, setOpen] = useState(false);
     const selected = options.find((o) => o.value === value);
+    // A short list needs no search box; a long one (more than a screen of rows) always gets one.
+    const showSearch = options.length > SEARCH_FROM || searchable === true;
     const listId = `${id ?? 'combobox'}-list`;
 
     function openOnArrow(event: KeyboardEvent<HTMLButtonElement>) {
@@ -74,7 +80,7 @@ function Combobox({ className, disabled, emptyLabel, id, name, onValueChange, op
                     className="flex flex-col"
                     filter={(_value, search, keywords) => ((keywords ?? []).join(' ').toLocaleLowerCase().includes(search.trim().toLocaleLowerCase()) ? 1 : 0)}
                 >
-                    {searchable ? (
+                    {showSearch ? (
                         <div className="flex items-center gap-2 border-b border-border px-3">
                             <Search aria-hidden="true" className="size-4 shrink-0 text-muted-foreground" />
                             <CommandPrimitive.Input
@@ -84,7 +90,7 @@ function Combobox({ className, disabled, emptyLabel, id, name, onValueChange, op
                             />
                         </div>
                     ) : null}
-                    <CommandPrimitive.List className="max-h-[min(16rem,calc(var(--radix-popover-content-available-height)-3.5rem))] overflow-y-auto p-1" id={listId}>
+                    <CommandPrimitive.List className={cn('overflow-y-auto p-1', showSearch ? 'max-h-[min(18rem,calc(var(--radix-popover-content-available-height)-3rem))]' : 'max-h-[min(18rem,var(--radix-popover-content-available-height))]')} id={listId}>
                         <CommandPrimitive.Empty className="px-3 py-6 text-center text-sm text-muted-foreground">{emptyLabel ?? t('ui.picker.empty')}</CommandPrimitive.Empty>
                         {options.map((option) => (
                             <CommandPrimitive.Item

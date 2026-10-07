@@ -11,8 +11,8 @@ type SelectProps = Omit<SelectHTMLAttributes<HTMLSelectElement>, 'onChange' | 'v
     onChange?: (event: SelectChange) => void;
     /** The `<option>` elements, as for a native select. */
     children?: ReactNode;
-    /** A search box in the list; on by default. Turn it off only for a short fixed list. */
-    searchable?: boolean;
+    /** A search box in the list: automatic (shown when the list has more than a few rows). `false` hides it only on a short list. */
+    searchable?: boolean | 'auto';
 };
 
 const textOf = (node: ReactNode): string => Children.toArray(node).map((c) => (typeof c === 'string' || typeof c === 'number' ? String(c) : isValidElement<{ children?: ReactNode }>(c) ? textOf(c.props.children) : '')).join('');
@@ -36,7 +36,7 @@ function collect(children: ReactNode, into: ComboboxOption[]) {
  * opens a searchable list below the field (see `Combobox`), so a long list of
  * guests, rooms or items can be searched instead of scrolled.
  */
-function Select({ children, className, defaultValue, disabled, id, name, onChange, searchable = true, value, ...rest }: SelectProps) {
+function Select({ children, className, defaultValue, disabled, id, name, onChange, searchable = 'auto', value, ...rest }: SelectProps) {
     const options = useMemo(() => {
         const list: ComboboxOption[] = [];
 

@@ -1,0 +1,1 @@
+import{m as e}from"./app-BxkzQ8cl.js";import{t,u as n}from"./app-frame-mzV6vT2e.js";var r=e();function i({actions:e,children:i,description:a,title:o}){return(0,r.jsx)(t,{actions:e,description:a,links:n,title:o,wide:!0,children:i})}export{i as MaintenanceShell};

@@ -108,7 +108,6 @@ export default function UsersPage({ people, roles, outlets }: { people: Person[]
         <>
             <FormField error={action.fieldError('role_id')} field="role_id" label={t('acc.field.role')}>
                 <Select onChange={(e) => setDialogue({ ...dialogue, roleId: e.target.value })} searchable={false} value={dialogue.roleId}>
-                    <option value="">—</option>
                     {activeRoles.map((r) => <option key={r.id} value={r.id}>{r.name}</option>)}
                 </Select>
             </FormField>
@@ -121,7 +120,6 @@ export default function UsersPage({ people, roles, outlets }: { people: Person[]
             {dialogue.scopeType === 'outlet' ? (
                 <FormField error={action.fieldError('scope_id')} field="scope_id" label={t('acc.field.outlet')}>
                     <Select onChange={(e) => setDialogue({ ...dialogue, outletId: e.target.value })} searchable={false} value={dialogue.outletId}>
-                        <option value="">—</option>
                         {outlets.map((o) => <option key={o.id} value={o.id}>{o.name}</option>)}
                     </Select>
                 </FormField>

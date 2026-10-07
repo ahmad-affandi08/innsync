@@ -3,7 +3,14 @@ import type { ComponentProps } from 'react';
 
 import { cn } from '@/shared/lib/utils';
 
-const Popover = PopoverPrimitive.Root;
+/**
+ * Modal by default: inside a dialog, the dialog locks the scroll of everything outside it, and a popover is drawn outside it, so a long list
+ * (roles, rooms, guests) could not be scrolled by wheel or finger. A modal popover takes the scroll lock over while it is open.
+ */
+function Popover({ modal = true, ...props }: ComponentProps<typeof PopoverPrimitive.Root>) {
+    return <PopoverPrimitive.Root modal={modal} {...props} />;
+}
+
 const PopoverTrigger = PopoverPrimitive.Trigger;
 const PopoverAnchor = PopoverPrimitive.Anchor;
 

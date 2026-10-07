@@ -6,6 +6,8 @@ Release notes for every release (NFR-14). Newest first. Each entry names the tas
 
 ### Added
 
+- Pickers: a list opened inside a dialog (for example the role in "Add person") can be scrolled by wheel and finger again, shows a search box whenever it has more than 7 rows (a short list has none), and an unchosen value shows "Select" instead of a dash. Every select, date picker and popover in a dialog is covered. Checked in a browser at phone width.
+
 - Phone layout fix: a form with a long option label (for example the report of an export in Indonesian) no longer widens the page past the screen; form fields and select buttons can shrink, and the maintenance toolbar wraps. Checked in a browser at 390 px and 320 px width over 171 pages.
 
 - Starting roles for every property (owner instruction 2026-10-07, NFR-06): 19 roles (General Manager, Receptionist, Night Auditor, Housekeeping Supervisor, F&B Cashier, Finance Manager and others) exist from the start, so the Administrator does not build them from nothing. They are editable and never overwritten, none can manage users or roles, and the managers should review their permissions. Migration 119 creates them for existing properties; `php artisan innsync:install-default-roles` creates missing ones. See `docs/OPERATIONS/ACCESS-ADMINISTRATION.md`.
