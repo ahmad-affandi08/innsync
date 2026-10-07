@@ -14,6 +14,7 @@ import { Metric } from '@/components/ui/metric';
 import { Select } from '@/components/ui/select';
 import { StatusBadge, type StatusTone } from '@/components/ui/status-badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { CsvImportDialog } from '@/components/csv-import-dialog';
 import { HrShell } from '@/modules/hr/components/hr-shell';
 import type { Employee, EmployeeDetail, HrDocument, HrOverview, HrSettings, HrWarning } from '@/modules/hr/lib/hr';
 import { apiRequest, newIdempotencyKey } from '@/shared/api/http';
@@ -33,6 +34,7 @@ export default function EmployeesPage({ overview }: { overview: HrOverview }) {
     const format = useFormatters();
     const errorCopy = useErrorStateCopy();
     const action = useServerAction();
+    const [importing, setImporting] = useState(false);
     const [form, setForm] = useState<typeof BLANK | null>(null);
     const [detail, setDetail] = useState<EmployeeDetail | null>(null);
     const [papers, setPapers] = useState<HrDocument[]>([]);
@@ -147,7 +149,7 @@ export default function EmployeesPage({ overview }: { overview: HrOverview }) {
 
     return (
         <HrShell
-            actions={overview.may.manage ? <><Button onClick={() => { action.clear(); setSettings({ warnDays: String(overview.settings.warn_days), required: overview.settings.required_kinds, lock: overview.settings.lock_version }); }} type="button" variant="outline">{t('hr.settings')}</Button><Button onClick={() => { action.clear(); setForm({ ...BLANK, joinedOn: overview.business_date }); }} type="button">{t('hr.new')}</Button></> : undefined}
+            actions={overview.may.manage ? <><Button onClick={() => setImporting(true)} type="button" variant="outline">{t('import.open')}</Button><Button onClick={() => { action.clear(); setSettings({ warnDays: String(overview.settings.warn_days), required: overview.settings.required_kinds, lock: overview.settings.lock_version }); }} type="button" variant="outline">{t('hr.settings')}</Button><Button onClick={() => { action.clear(); setForm({ ...BLANK, joinedOn: overview.business_date }); }} type="button">{t('hr.new')}</Button></> : undefined}
             description={t('hr.description')}
             title={t('hr.title')}
         >
@@ -282,6 +284,7 @@ export default function EmployeesPage({ overview }: { overview: HrOverview }) {
                     </div>
                 )}
             </Dialog>
+            <CsvImportDialog endpoint="/hr/employees/import" hint={t('import.emp.hint')} onClose={() => setImporting(false)} open={importing} title={t('import.emp.title')} />
         </HrShell>
     );
 }

@@ -13,6 +13,7 @@ import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { CsvImportDialog } from '@/components/csv-import-dialog';
 import { FnbShell } from '@/modules/fnb-sales/components/fnb-shell';
 import type { Category, MenuItem, MenuView, ModifierGroup } from '@/modules/fnb-sales/lib/fnb';
 import { useServerAction } from '@/shared/api/use-server-action';
@@ -38,6 +39,7 @@ export default function MenuPage({ menu }: { menu: MenuView }) {
     const format = useFormatters();
     const errorCopy = useErrorStateCopy();
     const action = useServerAction();
+    const [importing, setImporting] = useState(false);
     const [category, setCategory] = useState<CategoryForm | null>(null);
     const [item, setItem] = useState<ItemForm | null>(null);
     const [group, setGroup] = useState<GroupForm | null>(null);
@@ -222,7 +224,7 @@ export default function MenuPage({ menu }: { menu: MenuView }) {
     }
 
     return (
-        <FnbShell description={t('fnb.menu.description')} title={t('fnb.menu.title')} wide>
+        <FnbShell actions={menu.may.manage ? <Button onClick={() => setImporting(true)} type="button" variant="outline">{t('import.open')}</Button> : undefined} description={t('fnb.menu.description')} title={t('fnb.menu.title')} wide>
             <div className="flex flex-wrap items-end gap-4 border border-border bg-surface p-4">
                 <FormField label={t('fnb.menu.outlet')}>
                     <Select disabled={menu.outlets.length === 0} onChange={(e) => pickOutlet(e.target.value)} value={outlet?.id ?? ''}>
@@ -397,6 +399,7 @@ export default function MenuPage({ menu }: { menu: MenuView }) {
                     </div>
                 )}
             </Dialog>
+            <CsvImportDialog endpoint="/fnb/menu/import" hint={t('import.menu.hint')} onClose={() => setImporting(false)} open={importing} title={t('import.menu.title')} />
         </FnbShell>
     );
 }

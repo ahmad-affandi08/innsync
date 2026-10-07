@@ -87,7 +87,7 @@ final class HandleInertiaRequests extends Middleware
      * What the frame around every page shows: the property, its business date and who is signed in. Shown only to the signed-in
      * person themselves; the business date is null before go-live.
      *
-     * @return array{propertyName: string|null, businessDate: string|null, userName: string, disabledModules?: list<string>, accessibleModules?: list<string>|null}|null
+     * @return array{propertyName: string|null, businessDate: string|null, userName: string, disabledModules?: list<string>, waitingApprovals?: int, accessibleModules?: list<string>|null}|null
      */
     private function shell(Request $request): ?array
     {
@@ -124,6 +124,19 @@ final class HandleInertiaRequests extends Middleware
             $accessible = null; // when it cannot be read, the whole menu is offered rather than none of it
         }
 
-        return ['propertyName' => $name, 'businessDate' => $date, 'userName' => (string) $request->user()->name, 'disabledModules' => $disabled, 'accessibleModules' => $accessible];
+        // What waits for this person's decision, counted at most once a minute so the frame costs nothing on every page.
+        $userId = (string) $request->user()->getAuthIdentifier();
+
+        try {
+            $waiting = (int) \Illuminate\Support\Facades\Cache::remember(
+                'shell.waiting.'.$propertyId.'.'.$userId,
+                60,
+                static fn (): int => count(app(\App\Modules\IdentityAccess\Application\Approval\ApprovalService::class)->pendingFor($property, $userId, 99)),
+            );
+        } catch (Throwable) {
+            $waiting = 0;
+        }
+
+        return ['propertyName' => $name, 'businessDate' => $date, 'userName' => (string) $request->user()->name, 'disabledModules' => $disabled, 'accessibleModules' => $accessible, 'waitingApprovals' => $waiting];
     }
 }

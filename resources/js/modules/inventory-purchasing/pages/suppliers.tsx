@@ -9,6 +9,7 @@ import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
 import { StatusBadge } from '@/components/ui/status-badge';
+import { CsvImportDialog } from '@/components/csv-import-dialog';
 import { InventoryShell } from '@/modules/inventory-purchasing/components/inventory-shell';
 import { useServerAction } from '@/shared/api/use-server-action';
 import { useFormatters, useTranslation } from '@/shared/i18n/i18n';
@@ -28,6 +29,7 @@ export default function SuppliersPage({ overview }: { overview: Overview }) {
     const format = useFormatters();
     const errorCopy = useErrorStateCopy();
     const action = useServerAction();
+    const [importing, setImporting] = useState(false);
     const [form, setForm] = useState<Form | null>(null);
 
     function openNew() {
@@ -65,7 +67,7 @@ export default function SuppliersPage({ overview }: { overview: Overview }) {
     ];
 
     return (
-        <InventoryShell actions={overview.may.manage ? <Button onClick={openNew} type="button">{t('inv.sup.new')}</Button> : undefined} description={t('inv.sup.description')} title={t('inv.sup.title')} wide>
+        <InventoryShell actions={overview.may.manage ? <><Button onClick={() => setImporting(true)} type="button" variant="outline">{t('import.open')}</Button><Button onClick={openNew} type="button">{t('inv.sup.new')}</Button></> : undefined} description={t('inv.sup.description')} title={t('inv.sup.title')} wide>
             <DataGrid caption={t('inv.sup.title')} columns={columns} empty={<EmptyState title={t('inv.sup.empty')} />} getRowId={(s) => s.id} id="inv.suppliers" rows={overview.suppliers} testId="suppliers" />
 
             <Dialog
@@ -112,6 +114,7 @@ export default function SuppliersPage({ overview }: { overview: Overview }) {
                     </div>
                 )}
             </Dialog>
+            <CsvImportDialog endpoint="/inventory/suppliers/import" hint={t('import.sup.hint')} onClose={() => setImporting(false)} open={importing} title={t('import.sup.title')} />
         </InventoryShell>
     );
 }

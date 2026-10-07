@@ -44,6 +44,14 @@ Two CSV files (room types, then rooms; templates can be downloaded on the screen
 
 Paste one person per line (`Name, email`, or a copy from a spreadsheet); all get the chosen role and scope; all are created or none (a repeated or existing email names its row). Each gets a temporary password shown once on a list that can be copied; each person must choose their own at the first sign-in. At most 50 at a time.
 
+## Staff, suppliers and menu from a file
+
+Staff (HR → Staff), Suppliers (Inventory → Suppliers) and the menu (F&B → Menu) each have **Import from file**. Download the example file, fill it in a spreadsheet, save as CSV (comma, semicolon or tab). **Check file** changes nothing and lists every bad row by line; **Import now** is all or nothing. Rows pass the same rules as the form: a department that does not exist, a contract without an end date, a duplicate supplier code are all refused with their line. The menu file names the outlet and category by code, so create those first; the price is typed in whole currency units (`25000`), and a grouped number such as `1.500` is refused rather than guessed. At most 300 rows per file.
+
+## A forgotten password
+
+The sign-in page has **Forgot your password**. It needs the hosting mail settings (the System status screen says whether email will be delivered). The link works once and lasts 60 minutes; the person's other sessions end when it is used. An administrator can still reset a password from People & access.
+
 ## A small resort or a villa
 
 A property says how it works in the first step of the checklist, **How the property works** (`PUT /property/profile`, needs `property.settings.manage`, a reason, a recent password confirmation; audited as `property.profile.changed`). Code: `PropertyProfileService`, `app/Shared/Application/Setup/PropertyProfiles.php`.

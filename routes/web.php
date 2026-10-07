@@ -64,6 +64,9 @@ use App\Modules\HumanResource\Presentation\Http\Controllers\AppraisalController;
 use App\Modules\HumanResource\Presentation\Http\Controllers\AttendanceAdjustmentController;
 use App\Modules\HumanResource\Presentation\Http\Controllers\AttendanceController;
 use App\Modules\HumanResource\Presentation\Http\Controllers\ConductController;
+use App\Modules\HumanResource\Presentation\Http\Controllers\EmployeeImportController;
+use App\Modules\InventoryPurchasing\Presentation\Http\Controllers\SupplierImportController;
+use App\Modules\FnbSales\Presentation\Http\Controllers\MenuImportController;
 use App\Modules\HumanResource\Presentation\Http\Controllers\EmployeeController;
 use App\Modules\HumanResource\Presentation\Http\Controllers\EmployeePortalController;
 use App\Modules\HumanResource\Presentation\Http\Controllers\LeaveController;
@@ -549,6 +552,8 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
     Route::post('/transfers/{id}/receive', [StockMovementController::class, 'receive'])->where('id', $id)->name('inventory.transfers.receive');
     Route::post('/transfers/{id}/reject', [StockMovementController::class, 'reject'])->where('id', $id)->name('inventory.transfers.reject');
     Route::post('/transfers/{id}/cancel', [StockMovementController::class, 'cancel'])->where('id', $id)->name('inventory.transfers.cancel');
+    Route::post('/suppliers/import', [SupplierImportController::class, 'run'])->middleware('throttle:access-admin')->name('inventory.suppliers.import');
+    Route::get('/suppliers/import/template', [SupplierImportController::class, 'template'])->name('inventory.suppliers.import.template');
     Route::get('/suppliers', [SupplierController::class, 'index'])->name('inventory.suppliers');
     Route::get('/suppliers/{id}', [SupplierController::class, 'show'])->where('id', $id)->name('inventory.suppliers.show');
     Route::post('/suppliers', [SupplierController::class, 'store'])->name('inventory.suppliers.store');
@@ -746,6 +751,8 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
     Route::get('/outlets/{id}/tables', [SetupController::class, 'tables'])->where('id', $id)->name('fnb.tables');
     Route::post('/outlets/{id}/tables', [SetupController::class, 'storeTable'])->where('id', $id)->name('fnb.tables.store');
     Route::post('/tables/{id}', [SetupController::class, 'updateTable'])->where('id', $id)->name('fnb.tables.update');
+    Route::post('/menu/import', [MenuImportController::class, 'run'])->middleware('throttle:access-admin')->name('fnb.menu.import');
+    Route::get('/menu/import/template', [MenuImportController::class, 'template'])->name('fnb.menu.import.template');
     Route::get('/menu', [SetupController::class, 'menu'])->name('fnb.menu');
     Route::post('/outlets/{id}/categories', [SetupController::class, 'storeCategory'])->where('id', $id)->name('fnb.categories.store');
     Route::post('/categories/{id}', [SetupController::class, 'updateCategory'])->where('id', $id)->name('fnb.categories.update');
@@ -906,6 +913,8 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
 Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix('hr')->group(function (): void {
     $id = '[0-9a-z]{26}';
 
+    Route::post('/employees/import', [EmployeeImportController::class, 'run'])->middleware('throttle:access-admin')->name('hr.employees.import');
+    Route::get('/employees/import/template', [EmployeeImportController::class, 'template'])->name('hr.employees.import.template');
     Route::get('/employees', [EmployeeController::class, 'index'])->name('hr.employees');
     Route::post('/employees', [EmployeeController::class, 'create'])->middleware(['idempotent'])->name('hr.employees.create');
     Route::post('/settings', [EmployeeController::class, 'settings'])->name('hr.settings');

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Modules\IdentityAccess\Presentation\Http\Controllers;
 
-use App\Modules\IdentityAccess\Infrastructure\Persistence\Eloquent\UserRecord;
 use Illuminate\Auth\Events\PasswordReset;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -50,7 +50,7 @@ final class PasswordResetController
 
         $status = Password::broker()->reset(
             ['email' => $data['email'], 'token' => $data['token'], 'password' => $data['password'], 'password_confirmation' => $data['password']],
-            function (UserRecord $user, string $password): void {
+            function (Model $user, string $password): void {
                 if (! $user->is_active) {
                     return;
                 }

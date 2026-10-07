@@ -1,6 +1,7 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import {
     BedDouble,
+    Bell,
     BookOpen,
     CalendarDays,
     ChartNoAxesCombined,
@@ -80,7 +81,7 @@ function isHere(links: readonly NavLink[], href: string, path: string): boolean 
     return match(href) && best?.href === href;
 }
 
-type Shell = { propertyName: string | null; businessDate: string | null; userName: string; disabledModules?: string[]; accessibleModules?: string[] | null } | null;
+type Shell = { propertyName: string | null; businessDate: string | null; userName: string; disabledModules?: string[]; accessibleModules?: string[] | null; waitingApprovals?: number } | null;
 
 type FrameProps = {
     title: string;
@@ -114,6 +115,14 @@ export function AppFrame({ actions, children, description, links = [], printClas
     const current = activeModule(path);
     // A department the property does not use is left out of the menu (never the one the person is on, so a link still shows where they are).
     // The menu offers a person the departments their roles give them something to do in; the page the person is on always stays. This is what is shown, not what is allowed: every page checks the permission on the server.
+    const waiting = shell?.waitingApprovals ?? 0;
+    const bell = waiting > 0 ? (
+        <Link className="relative inline-flex h-9 items-center gap-1.5 border border-border bg-surface px-2.5 text-sm font-medium hover:bg-surface-muted" href="/approvals" title={t('identity.approvals.waiting', { count: waiting })}>
+            <Bell aria-hidden="true" className="size-4" />
+            <span className="bg-accent px-1.5 text-xs font-semibold text-accent-foreground" data-testid="waiting-approvals">{waiting > 98 ? '99+' : waiting}</span>
+            <span className="sr-only">{t('identity.approvals.waiting', { count: waiting })}</span>
+        </Link>
+    ) : null;
     const modules = MODULES.filter((m) => m.key === current.key || (!(shell?.disabledModules ?? []).includes(m.key) && (shell?.accessibleModules == null || shell.accessibleModules.includes(m.key))));
     const [open, setOpen] = useState(false);
     // On a phone the menu is a list of modules: touching one opens its pages and does not leave the page. The module the person is in starts open.
@@ -428,6 +437,7 @@ export function AppFrame({ actions, children, description, links = [], printClas
                     })}
                 </nav>
                 <div className="ml-auto flex items-center gap-2 lg:ml-0">
+                    {bell}
                     <LanguageSwitcher />
                     {layoutSwitcher}
                     {userMenu}
@@ -500,6 +510,7 @@ export function AppFrame({ actions, children, description, links = [], printClas
                             {menuButton}
                             {crumbs}
                             {dateChip}
+                            {bell}
                             <LanguageSwitcher />
                             {layoutSwitcher}
                             {userMenu}
