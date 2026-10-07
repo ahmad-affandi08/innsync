@@ -40,6 +40,7 @@ final class UserRecord extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'is_active' => 'boolean',
+            'must_change_password' => 'boolean',
             'failed_login_attempts' => 'integer',
             'locked_until' => 'immutable_datetime',
             'last_login_at' => 'immutable_datetime',

@@ -155,6 +155,8 @@ export const PROPERTY_LINKS: readonly NavLink[] = [
     { href: '/property/rates', label: 'property.action.rates' },
     { href: '/property/tax', label: 'property.action.tax' },
     { href: '/property/policies', label: 'policy.nav' },
+    { href: '/access/users', label: 'acc.nav.users' },
+    { href: '/access/roles', label: 'acc.nav.roles' },
     { href: '/sync/exceptions', label: 'sync.nav' },
 ];
 

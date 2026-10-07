@@ -75,6 +75,7 @@ use App\Modules\HumanResource\Presentation\Http\Controllers\RosterController;
 use App\Modules\HumanResource\Presentation\Http\Controllers\ServiceChargeController;
 use App\Modules\HumanResource\Presentation\Http\Controllers\ShiftSwapController;
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\ApprovalController;
+use App\Modules\IdentityAccess\Presentation\Http\Controllers\AccessAdminController;
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\ApprovalPolicyController;
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\AuthenticatedSessionController;
 use App\Modules\IdentityAccess\Presentation\Http\Controllers\MfaController;
@@ -255,6 +256,24 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
         ->middleware(['password.confirm', 'throttle:approvals'])->where('id', '[0-9A-Za-z]{26}')->name('approvals.reject');
     Route::post('/{id}/cancel', [ApprovalController::class, 'cancel'])
         ->middleware('throttle:approvals')->where('id', '[0-9A-Za-z]{26}')->name('approvals.cancel');
+});
+
+// People and roles of the property: accounts, role assignments, role permissions. Reading needs the permission; every write also needs a recent
+// password confirmation. The rules live in AccessAdmin.
+Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix('access')->group(function (): void {
+    $id = '[0-9A-Za-z]{26}';
+    Route::get('/users', [AccessAdminController::class, 'users'])->middleware('permission:identity.user.manage')->name('access.users');
+    Route::get('/roles', [AccessAdminController::class, 'roles'])->middleware('permission:identity.role.manage')->name('access.roles');
+    Route::middleware(['password.confirm', 'throttle:access-admin'])->group(function () use ($id): void {
+        Route::post('/users', [AccessAdminController::class, 'createUser'])->middleware('permission:identity.user.manage')->name('access.users.create');
+        Route::post('/users/{id}/roles', [AccessAdminController::class, 'assign'])->middleware('permission:identity.user.manage')->where('id', $id)->name('access.users.assign');
+        Route::post('/users/{id}/active', [AccessAdminController::class, 'setActive'])->middleware('permission:identity.user.manage')->where('id', $id)->name('access.users.active');
+        Route::post('/users/{id}/reset-password', [AccessAdminController::class, 'resetPassword'])->middleware('permission:identity.user.manage')->where('id', $id)->name('access.users.reset');
+        Route::post('/assignments/{id}/revoke', [AccessAdminController::class, 'revoke'])->middleware('permission:identity.user.manage')->where('id', $id)->name('access.assignments.revoke');
+        Route::post('/roles', [AccessAdminController::class, 'createRole'])->middleware('permission:identity.role.manage')->name('access.roles.create');
+        Route::post('/roles/{id}', [AccessAdminController::class, 'updateRole'])->middleware('permission:identity.role.manage')->where('id', $id)->name('access.roles.update');
+        Route::post('/roles/{id}/active', [AccessAdminController::class, 'setRoleActive'])->middleware('permission:identity.role.manage')->where('id', $id)->name('access.roles.active');
+    });
 });
 
 // Property configuration (TASK-FO-007 groundwork): settings, business date, room types and rooms.

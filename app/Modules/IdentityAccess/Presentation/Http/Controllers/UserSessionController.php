@@ -23,6 +23,7 @@ final class UserSessionController
         $currentSessionId = $request->session()->getId();
 
         return Inertia::render('identity-access/pages/sessions', [
+            'mustChangePassword' => $request->user()->must_change_password === true,
             'sessions' => array_map(
                 static fn (UserSession $session): array => [
                     'id' => $session->id,

@@ -2,6 +2,7 @@ import { router, useForm } from '@inertiajs/react';
 import type { FormEvent } from 'react';
 
 import { AppFrame } from '@/components/layout/app-frame';
+import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
@@ -15,7 +16,7 @@ type Session = {
     current: boolean;
 };
 
-export default function SessionsPage({ sessions }: { sessions: Session[] }) {
+export default function SessionsPage({ sessions, mustChangePassword = false }: { sessions: Session[]; mustChangePassword?: boolean }) {
     const { t } = useTranslation();
     const format = useFormatters();
     const passwordForm = useForm({
@@ -34,6 +35,7 @@ export default function SessionsPage({ sessions }: { sessions: Session[] }) {
     return (
         <>
             <AppFrame description={t('identity.sessions.description')} title={t('identity.sessions.title')} wide={false}>
+                {mustChangePassword ? <Alert title={t('acc.sessions.mustChangeTitle')} tone="warning">{t('acc.sessions.mustChangeBody')}</Alert> : null}
                     <ul className="mt-6 divide-y divide-border border-y border-border">
                         {sessions.map((session) => (
                             <li className="flex flex-wrap items-center justify-between gap-4 py-4" key={session.id}>

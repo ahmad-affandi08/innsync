@@ -480,10 +480,21 @@
     "identity-access/pages/mfa-setup": [
         "code"
     ],
+    "identity-access/pages/roles": [
+        "name",
+        "reason"
+    ],
     "identity-access/pages/sessions": [
         "current_password",
         "password",
         "password_confirmation"
+    ],
+    "identity-access/pages/users": [
+        "email",
+        "name",
+        "reason",
+        "role_id",
+        "scope_type"
     ],
     "inventory-purchasing/pages/counts": [
         "kind",

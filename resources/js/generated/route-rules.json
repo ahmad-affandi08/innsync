@@ -815,6 +815,100 @@
             "status"
         ]
     },
+    "POST /access/assignments/{id}/revoke": {
+        "required": [
+            "reason"
+        ],
+        "declared": [
+            "reason"
+        ]
+    },
+    "POST /access/roles": {
+        "required": [
+            "name",
+            "reason",
+            "requires_mfa"
+        ],
+        "declared": [
+            "name",
+            "permissions",
+            "permissions.*",
+            "reason",
+            "requires_mfa"
+        ]
+    },
+    "POST /access/roles/{id}": {
+        "required": [
+            "name",
+            "reason",
+            "requires_mfa"
+        ],
+        "declared": [
+            "name",
+            "permissions",
+            "permissions.*",
+            "reason",
+            "requires_mfa"
+        ]
+    },
+    "POST /access/roles/{id}/active": {
+        "required": [
+            "active",
+            "reason"
+        ],
+        "declared": [
+            "active",
+            "reason"
+        ]
+    },
+    "POST /access/users": {
+        "required": [
+            "email",
+            "name",
+            "reason",
+            "role_id",
+            "scope_type"
+        ],
+        "declared": [
+            "email",
+            "name",
+            "reason",
+            "role_id",
+            "scope_id",
+            "scope_type"
+        ]
+    },
+    "POST /access/users/{id}/active": {
+        "required": [
+            "active",
+            "reason"
+        ],
+        "declared": [
+            "active",
+            "reason"
+        ]
+    },
+    "POST /access/users/{id}/reset-password": {
+        "required": [
+            "reason"
+        ],
+        "declared": [
+            "reason"
+        ]
+    },
+    "POST /access/users/{id}/roles": {
+        "required": [
+            "reason",
+            "role_id",
+            "scope_type"
+        ],
+        "declared": [
+            "reason",
+            "role_id",
+            "scope_id",
+            "scope_type"
+        ]
+    },
     "POST /approvals/policies": {
         "required": [
             "band_min_amount_minor",

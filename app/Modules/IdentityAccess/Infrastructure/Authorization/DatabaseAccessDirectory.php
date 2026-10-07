@@ -37,7 +37,7 @@ final readonly class DatabaseAccessDirectory implements AccessDirectory
                 'is_active' => (bool) $u->is_active,
                 'must_change_password' => (bool) $u->must_change_password,
                 'mfa' => $u->two_factor_confirmed_at !== null,
-                'last_login_at' => $u->last_login_at === null ? null : (string) $u->last_login_at,
+                'last_login_at' => $u->last_login_at === null ? null : \Illuminate\Support\Carbon::parse((string) $u->last_login_at, 'UTC')->toIso8601String(),
                 'assignments' => $assignments->get($u->id, collect())->map(static fn ($a): array => [
                     'id' => strtolower((string) $a->id),
                     'role_id' => strtolower((string) $a->role_id),

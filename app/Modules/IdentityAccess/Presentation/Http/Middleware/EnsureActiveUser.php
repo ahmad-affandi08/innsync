@@ -38,6 +38,11 @@ final readonly class EnsureActiveUser
             ]);
         }
 
+        // A person whose password an administrator set must choose their own first: only the password form, sign-out and the checks that lead to it stay open.
+        if ($request->user()->must_change_password === true && ! $request->routeIs('logout', 'security.sessions', 'security.password.update', 'password.confirm', 'password.confirm.store', 'mfa.*')) {
+            return redirect()->route('security.sessions');
+        }
+
         return $next($request);
     }
 }

@@ -35,6 +35,7 @@ final readonly class EloquentUserPasswordUpdater implements UserPasswordUpdater
 
             $user->password = $newPassword;
             $user->password_changed_at = now();
+            $user->must_change_password = false;
             $user->save();
             $this->securityLog->record(new SecurityEvent(
                 IdentityAccessSecurityEvent::PasswordChange->value,

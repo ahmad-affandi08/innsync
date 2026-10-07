@@ -1,4 +1,5 @@
 import type { MessageKey } from '../en/index.ts'
+import { access } from './access.ts'
 import { finance } from './finance.ts'
 import { fnb } from './fnb.ts'
 import { guest } from './guest.ts'
@@ -23,7 +24,7 @@ import { reporting } from './reporting.ts'
 export const id: Record<MessageKey, string> = {
     ...offline,
     ...finance,
-    ...fnb, ...guest, ...guide, ...sync,
+    ...access, ...fnb, ...guest, ...guide, ...sync,
     ...kitchen,
     ...routines,
     ...maintenance,

@@ -188,6 +188,8 @@ use App\Modules\IdentityAccess\Infrastructure\Authentication\EloquentCredentialA
 use App\Modules\IdentityAccess\Infrastructure\Authentication\EloquentUserPasswordUpdater;
 use App\Modules\IdentityAccess\Infrastructure\Authorization\DatabaseStaffAccess;
 use App\Modules\IdentityAccess\Infrastructure\Authorization\DatabaseStaffContacts;
+use App\Modules\IdentityAccess\Application\Ports\AccessDirectory;
+use App\Modules\IdentityAccess\Infrastructure\Authorization\DatabaseAccessDirectory;
 use App\Modules\IdentityAccess\Infrastructure\Authorization\DatabaseStaffDirectory;
 use App\Modules\IdentityAccess\Infrastructure\Authorization\DatabaseSystemActors;
 use App\Modules\IdentityAccess\Infrastructure\Authorization\EloquentPermissionGrantReader;
@@ -456,6 +458,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(RoutineRepository::class, DatabaseRoutineRepository::class);
         $this->app->bind(ShiftAttribution::class, CashierService::class);
         $this->app->bind(StaffDirectory::class, DatabaseStaffDirectory::class);
+        $this->app->bind(AccessDirectory::class, DatabaseAccessDirectory::class);
         $this->app->bind(StaffContacts::class, DatabaseStaffContacts::class);
         $this->app->bind(ReportScheduleRepository::class, DatabaseReportScheduleRepository::class);
         $this->app->bind(ReportNotifier::class, MailReportNotifier::class);
@@ -701,6 +704,13 @@ class AppServiceProvider extends ServiceProvider
             ->by(hash(
                 'sha256',
                 (string) $request->user()?->getAuthIdentifier().'|'.$request->ip(),
+            )));
+
+        // Administration of people and roles: a manager sets up several accounts in a sitting, so the limit is higher than for a password change.
+        RateLimiter::for('access-admin', static fn (Request $request): Limit => Limit::perMinute(30)
+            ->by(hash(
+                'sha256',
+                'access-admin|'.(string) $request->user()?->getAuthIdentifier().'|'.$request->ip(),
             )));
     }
 }
