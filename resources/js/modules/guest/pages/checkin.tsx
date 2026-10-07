@@ -5,6 +5,7 @@ import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { FormField } from '@/components/ui/form-field';
+import { DatePicker } from '@/components/ui/date-picker';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
 import { GuestShell } from '@/modules/guest/components/guest-shell';
@@ -131,7 +132,7 @@ export default function CheckInPage({ token, view: first }: { token: string; vie
                         </Select>
                     </FormField>
                     <FormField error={action.fieldError('id_number')} label={t('guest.checkin.idNumber')}><Input autoComplete="off" maxLength={40} onChange={(e) => set({ idNumber: e.target.value })} value={form.idNumber} /></FormField>
-                    <FormField error={action.fieldError('id_valid_until')} label={t('guest.checkin.idValidUntil')}><Input onChange={(e) => set({ idValidUntil: e.target.value })} type="date" value={form.idValidUntil} /></FormField>
+                    <FormField error={action.fieldError('id_valid_until')} label={t('guest.checkin.idValidUntil')}><DatePicker onChange={(e) => set({ idValidUntil: e.target.value })} value={form.idValidUntil} /></FormField>
                     <FormField error={action.fieldError('visa_number')} label={t('guest.checkin.visa')}><Input maxLength={40} onChange={(e) => set({ visa: e.target.value })} value={form.visa} /></FormField>
                     <FormField error={action.fieldError('phone')} label={t('guest.checkin.phone')}><Input autoComplete="tel" maxLength={30} onChange={(e) => set({ phone: e.target.value })} type="tel" value={form.phone} /></FormField>
                 </div>

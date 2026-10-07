@@ -9,6 +9,7 @@ import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
+import { TimeInput } from '@/components/ui/time-input';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { ReportingShell } from '@/modules/reporting/components/reporting-shell';
 import { useServerAction } from '@/shared/api/use-server-action';
@@ -140,7 +141,7 @@ export default function SchedulesPage({ overview }: { overview: Overview }) {
                                 </FormField>
                             ) : null}
                             {form.cadence === 'monthly' ? <FormField error={action.fieldError('month_day')} field="month_day" hint={t('rpt.sch.monthDayHint')} label={t('rpt.sch.monthDay')}><Input inputMode="numeric" onChange={(e) => setForm({ ...form, monthDay: e.target.value.replace(/\D/g, '') })} value={form.monthDay} /></FormField> : null}
-                            <FormField error={action.fieldError('at_time')} field="at_time" hint={t('rpt.sch.zone', { zone: overview.time_zone })} label={t('rpt.sch.atTime')}><Input onChange={(e) => setForm({ ...form, atTime: e.target.value })} type="time" value={form.atTime} /></FormField>
+                            <FormField error={action.fieldError('at_time')} field="at_time" hint={t('rpt.sch.zone', { zone: overview.time_zone })} label={t('rpt.sch.atTime')}><TimeInput onChange={(e) => setForm({ ...form, atTime: e.target.value })} value={form.atTime} /></FormField>
                         </div>
                         <fieldset className="flex flex-col gap-2">
                             <legend className="text-sm font-medium">{t('rpt.sch.colTo')}</legend>

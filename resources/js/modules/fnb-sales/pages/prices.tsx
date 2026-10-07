@@ -11,6 +11,7 @@ import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
+import { TimeInput } from '@/components/ui/time-input';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { FnbShell } from '@/modules/fnb-sales/components/fnb-shell';
@@ -150,8 +151,8 @@ export default function PricesPage({ overview }: { overview: PriceOverview }) {
                         <FormField error={action.fieldError('price_minor')} field="price_minor" label={t('fnb.px.price')}><Input inputMode="decimal" onChange={(e) => setForm({ ...form, price: e.target.value })} value={form.price} /></FormField>
                         <FormField error={action.fieldError('valid_from')} field="valid_from" label={t('fnb.px.validFrom')}><DatePicker onChange={(e) => setForm({ ...form, from: e.target.value })} value={form.from} /></FormField>
                         <FormField error={action.fieldError('valid_to')} field="valid_to" hint={t('fnb.px.validToHint')} label={t('fnb.px.validTo')}><DatePicker onChange={(e) => setForm({ ...form, to: e.target.value })} value={form.to} /></FormField>
-                        <FormField error={action.fieldError('from_time')} field="from_time" hint={t('fnb.px.hoursHint')} label={t('fnb.px.fromTime')}><Input onChange={(e) => setForm({ ...form, fromTime: e.target.value })} type="time" value={form.fromTime} /></FormField>
-                        <FormField error={action.fieldError('to_time')} field="to_time" label={t('fnb.px.toTime')}><Input onChange={(e) => setForm({ ...form, toTime: e.target.value })} type="time" value={form.toTime} /></FormField>
+                        <FormField error={action.fieldError('from_time')} field="from_time" hint={t('fnb.px.hoursHint')} label={t('fnb.px.fromTime')}><TimeInput onChange={(e) => setForm({ ...form, fromTime: e.target.value })} value={form.fromTime} /></FormField>
+                        <FormField error={action.fieldError('to_time')} field="to_time" label={t('fnb.px.toTime')}><TimeInput onChange={(e) => setForm({ ...form, toTime: e.target.value })} value={form.toTime} /></FormField>
                         <fieldset className="flex flex-wrap gap-3 sm:col-span-2">
                             <legend className="text-sm font-medium">{t('fnb.px.days')}</legend>
                             {DAYS.map((d) => (

@@ -1,30 +1,15 @@
 import type { ReactNode } from 'react';
 
 import { AppFrame } from '@/components/layout/app-frame';
+import { FNB_LINKS } from '@/components/layout/module-links';
 
-const LINKS = [
-    { href: '/fnb/pos', label: 'fnb.nav.pos' },
-    { href: '/guest/orders', label: 'guest.nav.orders' },
-    { href: '/fnb/register', label: 'fnb.nav.register' },
-    { href: '/fnb/shift', label: 'fnb.nav.shift' },
-    { href: '/fnb/outlets', label: 'fnb.nav.outlets' },
-    { href: '/fnb/menu', label: 'fnb.nav.menu' },
-    { href: '/fnb/prices', label: 'fnb.nav.prices' },
-    { href: '/fnb/room-service', label: 'fnb.nav.roomService' },
-    { href: '/fnb/minibar', label: 'fnb.nav.minibar' },
-    { href: '/inventory/requisitions', label: 'inv.nav.requisitions' },
-    { href: '/inventory/counts?location_kind=bar', label: 'fnb.nav.counts' },
-    { href: '/fnb/routines', label: 'fnb.nav.routines' },
-    { href: '/fnb/damage-reports', label: 'fnb.nav.damage' },
-    { href: '/inventory/requests?department=fnb', label: 'fnb.nav.purchasing' },
-] as const;
 
 type Props = { title: string; description: string; children: ReactNode; actions?: ReactNode; wide?: boolean; printClass?: string };
 
 /** Common frame of the F&B pages. */
 export function FnbShell({ actions, children, description, printClass, title, wide }: Props) {
     return (
-        <AppFrame actions={actions} description={description} links={LINKS} printClass={printClass} title={title} wide={wide}>
+        <AppFrame actions={actions} description={description} links={FNB_LINKS} printClass={printClass} title={title} wide={wide}>
             {children}
         </AppFrame>
     );

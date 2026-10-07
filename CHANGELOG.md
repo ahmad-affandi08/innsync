@@ -6,6 +6,8 @@ Release notes for every release (NFR-14). Newest first. Each entry names the tas
 
 ### Added
 
+- Mobile menu and form fixes (NFR-24): in the phone drawer a module opens the list of its pages instead of navigating and closing; text fields are 16px on touch screens so the page no longer zooms on focus; times use one `TimeInput` of the same height as other fields (property settings, report schedules, prices, room service, laundry intake); the guest ID validity date uses the shared date picker.
+
 - TASK-DSH-016 (FR-DSH-016): every dashboard card opens the list of the rows behind each of its figures, with a tab for each figure and a link on each row to its own screen. The list is found with the card's own conditions and under its own grant, so its rows are exactly what the figure counts; the money adds up to the card.
 - TASK-RPT-002 (FR-RPT-002): the reports filter by person, department and outlet where they have that dimension and refuse a filter they do not take; the flash, payments, laundry, housekeeping and guest registration reports take the person (the flash report also the department), and a new report, Sales by outlet, takes outlet, department and person together. The filters stay with the period and go with the exports.
 - TASK-DSH-022 (FR-DSH-022, NFR-06): the dashboard applies the scope of a grant. A head of an outlet or of a department, with a role assigned at that scope, sees the cards that belong to it and only its part of the revenue, hours, staff, stock and alerts; the whole property sees everything as before (docs/OPERATIONS/SCOPE-MODEL.md).

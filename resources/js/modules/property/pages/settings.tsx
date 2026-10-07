@@ -8,6 +8,7 @@ import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
+import { TimeInput } from '@/components/ui/time-input';
 import { PropertyShell } from '@/modules/property/components/property-shell';
 import { useServerAction } from '@/shared/api/use-server-action';
 import { useFormatters, useTranslation } from '@/shared/i18n/i18n';
@@ -93,13 +94,13 @@ export default function SettingsPage({ settings }: { settings: Settings }) {
                 <h2 className="text-lg font-semibold">{t('property.settings.times')}</h2>
                 <div className="grid gap-3 sm:grid-cols-3">
                     <FormField field="check_in_time" error={action.fieldError('check_in_time')} label={t('property.settings.checkIn')}>
-                        <Input onChange={(e) => setForm({ ...form, checkIn: e.target.value })} type="time" value={form.checkIn} />
+                        <TimeInput onChange={(e) => setForm({ ...form, checkIn: e.target.value })} value={form.checkIn} />
                     </FormField>
                     <FormField field="check_out_time" error={action.fieldError('check_out_time')} label={t('property.settings.checkOut')}>
-                        <Input onChange={(e) => setForm({ ...form, checkOut: e.target.value })} type="time" value={form.checkOut} />
+                        <TimeInput onChange={(e) => setForm({ ...form, checkOut: e.target.value })} value={form.checkOut} />
                     </FormField>
                     <FormField field="night_audit_earliest_time" error={action.fieldError('night_audit_earliest_time')} hint={t('property.settings.nightAuditHint')} label={t('property.settings.nightAudit')}>
-                        <Input onChange={(e) => setForm({ ...form, nightAudit: e.target.value })} type="time" value={form.nightAudit} />
+                        <TimeInput onChange={(e) => setForm({ ...form, nightAudit: e.target.value })} value={form.nightAudit} />
                     </FormField>
                 </div>
                 <h2 className="text-lg font-semibold">{t('property.settings.rounding')}</h2>

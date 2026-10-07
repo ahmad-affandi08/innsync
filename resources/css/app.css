@@ -215,6 +215,18 @@
     margin: 3mm;
 }
 
+/*
+ * A phone zooms the page in when a field with text smaller than 16px gets the focus, and the page stays zoomed after. On a touch screen every field is 16px, whatever
+ * its component sets; the rule is outside the layers on purpose, so that it is stronger than the type size of a utility class. A desktop keeps the denser 14px.
+ */
+@media (hover: none) and (pointer: coarse) {
+    input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='file']),
+    select,
+    textarea {
+        font-size: 1rem;
+    }
+}
+
 @media print {
     .receipt-page {
         page: receipt;

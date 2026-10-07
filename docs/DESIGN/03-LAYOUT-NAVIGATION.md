@@ -36,6 +36,10 @@
 
 Below `lg` every layout uses the same drawer (`<Sheet>`), which also wraps menu content in `<ScrollArea>`. Pages are not aware of the layout.
 
+In the drawer every module is a collapsible group: tapping a module opens or closes the list of its pages (the active module starts open) and does not navigate or close the drawer; only choosing a page navigates and closes it. Every module's pages come from `components/layout/module-links.ts`, the one list shared with the module shells, so a module that is not the current one can still show its pages. The desktop layouts are unchanged.
+
+On a touch screen every text field, select and text area is at least 16px so the browser does not zoom on focus (`resources/css/app.css`). Times are entered with `TimeInput` (`components/ui/time-input.tsx`): the same height and look as every `Input`, numeric keypad, `HH:MM` completed on leaving the field; the browser's own time widget is not used.
+
 ## Language Switcher (2026-10-05)
 
 The header includes a `LanguageSwitcher` (`resources/js/components/ui/language-switcher.tsx`) positioned beside the layout switcher:

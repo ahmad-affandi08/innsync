@@ -8,6 +8,7 @@ import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
+import { TimeInput } from '@/components/ui/time-input';
 import { Textarea } from '@/components/ui/textarea';
 import { LaundryShell } from '@/modules/laundry/components/laundry-shell';
 import { newIdempotencyKey } from '@/shared/api/http';
@@ -74,7 +75,7 @@ export default function LaundryIntakePage({ currency, lookups }: { currency: str
                 </FormField>
                 <FormField field="barcode" error={action.fieldError('barcode')} label={t('ldy.intake.barcode')}><Input autoComplete="off" maxLength={40} onChange={(e) => set({ barcode: e.target.value })} required value={form.barcode} /></FormField>
                 <FormField field="promised_date" error={action.fieldError('promised_date')} label={t('ldy.intake.promisedDate')}><DatePicker min={lookups.business_date} onChange={(e) => set({ date: e.target.value })} required value={form.date} /></FormField>
-                <FormField field="promised_time" error={action.fieldError('promised_time')} label={t('ldy.intake.promisedTime', { zone: lookups.zone })}><Input onChange={(e) => set({ time: e.target.value })} required type="time" value={form.time} /></FormField>
+                <FormField field="promised_time" error={action.fieldError('promised_time')} label={t('ldy.intake.promisedTime', { zone: lookups.zone })}><TimeInput onChange={(e) => set({ time: e.target.value })} required value={form.time} /></FormField>
                 <label className="flex items-center gap-2 text-sm sm:col-span-2"><input checked={form.express} onChange={(e) => set({ express: e.target.checked })} type="checkbox" />{t('ldy.intake.express')}{expressTreatment !== undefined ? ` (${expressTreatment.pricing === 'percent' ? `+${expressTreatment.value / 100}%` : `+${format.money(expressTreatment.value, currency)}`})` : ''}</label>
 
                 <fieldset className="flex flex-col gap-3 sm:col-span-2">

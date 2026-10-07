@@ -37,13 +37,14 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { LanguageSwitcher } from '@/components/ui/language-switcher';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
+import { MODULE_LINKS, type NavLink } from '@/components/layout/module-links';
 import { Sheet, SheetContent, SheetDescription, SheetTitle } from '@/components/ui/sheet';
 import { useFormatters, useTranslation } from '@/shared/i18n/i18n';
 import { LAYOUT_MODES, useLayout, type LayoutMode } from '@/shared/lib/use-layout';
 import { cn } from '@/shared/lib/utils';
 import type { MessageKey } from '@/locales/en/index';
 
-export type NavLink = { href: string; label: string };
+export type { NavLink };
 
 type ModuleEntry = { key: string; href: string; icon: LucideIcon; label: MessageKey; prefixes: string[]; group: 'start' | 'operations' | 'insight' | 'control' };
 
@@ -112,6 +113,15 @@ export function AppFrame({ actions, children, description, links = [], printClas
     const version = (page.props as { app?: { version?: string } }).app?.version ?? '';
     const current = activeModule(path);
     const [open, setOpen] = useState(false);
+    // On a phone the menu is a list of modules: touching one opens its pages and does not leave the page. The module the person is in starts open.
+    const [expanded, setExpanded] = useState<ReadonlySet<string>>(() => new Set([current.key]));
+    const toggle = (key: string) => setExpanded((now) => {
+        const next = new Set(now);
+
+        if (!next.delete(key)) next.add(key);
+
+        return next;
+    });
     const [layout, setLayout] = useLayout();
     const hasLinks = links.length > 0;
 
@@ -150,6 +160,70 @@ export function AppFrame({ actions, children, description, links = [], printClas
                                                     <Link
                                                         aria-current={here ? 'page' : undefined}
                                                         className={cn('-ml-px block border-l-2 px-4 py-1.5 text-[0.8125rem] transition-colors', here ? 'border-brand font-semibold text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground')}
+                                                        href={l.href}
+                                                        onClick={() => setOpen(false)}
+                                                    >
+                                                        {t(l.label as MessageKey)}
+                                                    </Link>
+                                                </li>
+                                            );
+                                        })}
+                                    </ul>
+                                </CollapsibleContent>
+                            </Collapsible>
+                        );
+                    })}
+                </div>
+            ))}
+        </nav>
+    );
+
+    // The menu of a phone (and of the tablet): every module is a row that opens the list of its pages. A page is the only thing that takes the person away and closes the menu.
+    const drawerMenu = (
+        <nav aria-label={t('shell.menu')} className="flex flex-col gap-5 px-3 py-4">
+            {GROUPS.map((group) => (
+                <div className="flex flex-col gap-0.5" key={group}>
+                    {group !== 'start' ? <p className="px-3 pb-1 text-[0.6875rem] font-semibold uppercase tracking-wider text-muted-foreground">{t(`shell.group.${group}` as MessageKey)}</p> : null}
+                    {MODULES.filter((m) => m.group === group).map((m) => {
+                        const Icon = m.icon;
+                        const isActive = m.key === current.key;
+                        const pages = isActive && hasLinks ? links : (MODULE_LINKS[m.key] ?? []);
+                        const row = cn(
+                            'group flex min-h-11 w-full items-center gap-3 border-l-2 px-3 py-2 text-left text-sm transition-colors',
+                            isActive ? 'border-brand bg-surface-muted font-semibold text-foreground' : 'border-transparent text-muted-foreground hover:bg-surface-muted hover:text-foreground',
+                        );
+                        const icon = <Icon aria-hidden="true" className={cn('size-[1.125rem] shrink-0', isActive ? 'text-brand' : 'text-muted-foreground group-hover:text-foreground')} strokeWidth={1.75} />;
+
+                        if (pages.length === 0) {
+                            return (
+                                <Link aria-current={isActive ? 'page' : undefined} className={row} href={m.href} key={m.key} onClick={() => setOpen(false)}>
+                                    {icon}
+                                    <span className="flex-1 truncate">{t(m.label)}</span>
+                                </Link>
+                            );
+                        }
+
+                        const isOpen = expanded.has(m.key);
+
+                        return (
+                            <Collapsible key={m.key} onOpenChange={() => toggle(m.key)} open={isOpen}>
+                                <CollapsibleTrigger asChild>
+                                    <button className={row} data-testid={`menu-${m.key}`} type="button">
+                                        {icon}
+                                        <span className="flex-1 truncate">{t(m.label)}</span>
+                                        <ChevronRight aria-hidden="true" className={cn('size-4 shrink-0 text-muted-foreground transition-transform', isOpen && 'rotate-90')} />
+                                    </button>
+                                </CollapsibleTrigger>
+                                <CollapsibleContent>
+                                    <ul className="ml-[1.4rem] flex flex-col border-l border-border py-1">
+                                        {pages.map((l) => {
+                                            const here = isActive && isHere(pages, l.href, path);
+
+                                            return (
+                                                <li key={l.href}>
+                                                    <Link
+                                                        aria-current={here ? 'page' : undefined}
+                                                        className={cn('-ml-px flex min-h-10 items-center border-l-2 px-4 py-2 text-[0.8125rem] transition-colors', here ? 'border-brand font-semibold text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground')}
                                                         href={l.href}
                                                         onClick={() => setOpen(false)}
                                                     >
@@ -413,7 +487,7 @@ export function AppFrame({ actions, children, description, links = [], printClas
                         <SheetDescription className="sr-only">{t('shell.menu')}</SheetDescription>
                         {brand}
                         <Separator />
-                        <ScrollArea className="flex-1">{menu}</ScrollArea>
+                        <ScrollArea className="flex-1">{drawerMenu}</ScrollArea>
                     </SheetContent>
                 </Sheet>
 

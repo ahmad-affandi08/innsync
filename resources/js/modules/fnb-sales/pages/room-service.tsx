@@ -8,6 +8,7 @@ import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
+import { TimeInput } from '@/components/ui/time-input';
 import { StatusBadge, type StatusTone } from '@/components/ui/status-badge';
 import { FnbShell } from '@/modules/fnb-sales/components/fnb-shell';
 import { newIdempotencyKey } from '@/shared/api/http';
@@ -64,7 +65,7 @@ export default function RoomServicePage({ board }: { board: Board }) {
                         {failure !== null ? <div className="sm:col-span-2">{failure}</div> : null}
                         <FormField error={action.fieldError('outlet_id')} field="outlet_id" label={t('fnb.pos.outlet')}><Select onChange={(e) => setAdd({ ...add, outletId: e.target.value })} value={add.outletId}>{board.outlets.map((o) => <option key={o.id} value={o.id}>{o.name}</option>)}</Select></FormField>
                         <FormField error={action.fieldError('room_id')} field="room_id" label={t('fnb.mini.room')}><Select onChange={(e) => setAdd({ ...add, roomId: e.target.value })} value={add.roomId}>{board.rooms.map((r) => <option key={r.id} value={r.id}>{r.number} · {r.guest_name}</option>)}</Select></FormField>
-                        <FormField error={action.fieldError('promised_time')} field="promised_time" hint={t('fnb.rs.timeHint')} label={t('fnb.rs.promised')}><Input onChange={(e) => setAdd({ ...add, time: e.target.value })} type="time" value={add.time} /></FormField>
+                        <FormField error={action.fieldError('promised_time')} field="promised_time" hint={t('fnb.rs.timeHint')} label={t('fnb.rs.promised')}><TimeInput onChange={(e) => setAdd({ ...add, time: e.target.value })} value={add.time} /></FormField>
                         <FormField error={action.fieldError('covers')} field="covers" label={t('fnb.rs.covers')}><Input inputMode="numeric" onChange={(e) => setAdd({ ...add, covers: e.target.value.replace(/\D/g, '') })} value={add.covers} /></FormField>
                         <div className="sm:col-span-2"><FormField error={action.fieldError('note')} field="note" label={t('fnb.rs.note')}><Input maxLength={200} onChange={(e) => setAdd({ ...add, note: e.target.value })} value={add.note} /></FormField></div>
                     </div>
