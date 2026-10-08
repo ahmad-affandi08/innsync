@@ -84,6 +84,7 @@ use App\Modules\FrontOffice\Application\Inventory\RoomBlocking;
 use App\Modules\FrontOffice\Application\Inventory\RoomBlockingService;
 use App\Modules\FrontOffice\Application\Inventory\RoomBlockRepository;
 use App\Modules\FrontOffice\Application\NightAudit\NightAuditRepository;
+use App\Modules\FrontOffice\Application\Reminders\AutoReminderSource;
 use App\Modules\FrontOffice\Application\Reminders\ReminderStore;
 use App\Modules\FrontOffice\Application\Requests\GuestRequestRepository;
 use App\Modules\FrontOffice\Application\Requests\GuestRequestsForHousekeeping;
@@ -115,6 +116,7 @@ use App\Modules\FrontOffice\Infrastructure\Inventory\DatabaseInventoryHoldReposi
 use App\Modules\FrontOffice\Infrastructure\Inventory\DatabaseInventoryRepository;
 use App\Modules\FrontOffice\Infrastructure\Inventory\DatabaseRoomBlockRepository;
 use App\Modules\FrontOffice\Infrastructure\NightAudit\DatabaseNightAuditRepository;
+use App\Modules\FrontOffice\Infrastructure\Reminders\DatabaseAutoReminderSource;
 use App\Modules\FrontOffice\Infrastructure\Reminders\DatabaseReminderStore;
 use App\Modules\FrontOffice\Infrastructure\Requests\DatabaseGuestRequestRepository;
 use App\Modules\FrontOffice\Infrastructure\Reservations\DatabaseReservationRepository;
@@ -573,6 +575,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(ReservationRepository::class, DatabaseReservationRepository::class);
         $this->app->bind(GuestNoteStore::class, DatabaseGuestNoteStore::class);
         $this->app->bind(ReminderStore::class, DatabaseReminderStore::class);
+        $this->app->bind(AutoReminderSource::class, DatabaseAutoReminderSource::class);
         $this->app->bind(RoomPlanStore::class, DatabaseRoomPlanStore::class);
         $this->app->bind(TapeChartReader::class, DatabaseTapeChartReader::class);
         $this->app->bind(GuestDirectoryReader::class, DatabaseGuestDirectoryReader::class);

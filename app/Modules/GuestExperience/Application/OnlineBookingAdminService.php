@@ -34,13 +34,13 @@ final readonly class OnlineBookingAdminService
         $s = $this->store->settings($property);
 
         return [
-            'enabled' => $s['enabled'] ?? false, 'rate_plan_id' => $s['rate_plan_id'] ?? null, 'max_nights' => $s['max_nights'] ?? 14, 'notify_email' => $s['notify_email'] ?? null, 'notice' => $s['notice'] ?? null,
+            'enabled' => $s['enabled'] ?? false, 'rate_plan_id' => $s['rate_plan_id'] ?? null, 'max_nights' => $s['max_nights'] ?? 14, 'notify_email' => $s['notify_email'] ?? null, 'notice' => $s['notice'] ?? null, 'remind_before_arrival' => $s['remind_before_arrival'] ?? false, 'thank_after_stay' => $s['thank_after_stay'] ?? false,
             'plans' => $this->desk->ratePlans($property), 'url' => rtrim($baseUrl, '/').'/book/'.$property->toString(),
             'awaiting' => $this->actorAwaiting($property),
         ];
     }
 
-    public function save(PropertyId $property, string $actorId, bool $enabled, ?string $ratePlanId, int $maxNights, ?string $notifyEmail, ?string $notice): void
+    public function save(PropertyId $property, string $actorId, bool $enabled, ?string $ratePlanId, int $maxNights, ?string $notifyEmail, ?string $notice, ?bool $remindBeforeArrival = null, ?bool $thankAfterStay = null): void
     {
         $this->authorize($property, $actorId);
         $ratePlanId = $ratePlanId === null || $ratePlanId === '' ? null : strtolower($ratePlanId);
@@ -69,10 +69,11 @@ final readonly class OnlineBookingAdminService
 
         $before = $this->store->settings($property);
 
-        $this->transactions->run(function () use ($property, $actorId, $enabled, $ratePlanId, $maxNights, $notifyEmail, $notice, $before): void {
+        $this->transactions->run(function () use ($property, $actorId, $enabled, $ratePlanId, $maxNights, $notifyEmail, $notice, $before, $remindBeforeArrival, $thankAfterStay): void {
             // The account the web bookings are recorded under is made the first time it is switched on, and remembered so the header never has to look for it.
             $account = $enabled ? $this->actors->onlineBooking($property, [self::BOOKING_PERMISSION]) : null;
             $this->store->save($property, $enabled, $ratePlanId, $maxNights, $notifyEmail, $notice, $account, strtolower($actorId));
+            $this->store->saveMessages($property, $remindBeforeArrival ?? (bool) ($before['remind_before_arrival'] ?? false), $thankAfterStay ?? (bool) ($before['thank_after_stay'] ?? false));
             $this->audit->record(new AuditEntry($property->toString(), strtolower($actorId), 'online_booking.saved', 'online_booking', $property->toString(), $before === null ? null : ['enabled' => $before['enabled'], 'rate_plan_id' => $before['rate_plan_id'], 'max_nights' => $before['max_nights']], ['enabled' => $enabled, 'rate_plan_id' => $ratePlanId, 'max_nights' => $maxNights, 'has_notify_email' => $notifyEmail !== null]));
         });
     }

@@ -16,6 +16,8 @@ final readonly class DatabaseSystemActors implements SystemActors
 
     private const ONLINE_BOOKING = ['name' => 'Online booking', 'role' => 'System: online booking', 'email' => 'online-booking'];
 
+    private const AUTOMATION = ['name' => 'Automation', 'role' => 'System: automation', 'email' => 'automation'];
+
     public function guestSelfService(PropertyId $property, array $permissions): string
     {
         return $this->account($property, self::SELF_SERVICE, $permissions);
@@ -24,6 +26,11 @@ final readonly class DatabaseSystemActors implements SystemActors
     public function onlineBooking(PropertyId $property, array $permissions): string
     {
         return $this->account($property, self::ONLINE_BOOKING, $permissions);
+    }
+
+    public function automation(PropertyId $property, array $permissions): string
+    {
+        return $this->account($property, self::AUTOMATION, $permissions);
     }
 
     /**

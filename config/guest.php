@@ -63,4 +63,7 @@ return [
             'en' => 'We ask for your name and your phone number or email address only to handle this booking request and to contact you. Authorised hotel staff see this data; it is kept as the service and the hotel\'s obligations require and not shared with anyone else unless the law requires it. You can ask the hotel to correct or erase your data.',
         ],
     ],
+
+    // When the reminder before arrival and the thank-you after the stay go out (property clock is not used; this is the server's time). Only for hotels that switched them on.
+    'messages_at' => (string) env('GUEST_MESSAGES_AT', '09:00'),
 ];

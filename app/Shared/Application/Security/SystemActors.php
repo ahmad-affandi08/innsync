@@ -27,4 +27,12 @@ interface SystemActors
      * @return string the user id
      */
     public function onlineBooking(PropertyId $property, array $permissions): string;
+
+    /**
+     * The account the system's own scheduled work (such as a restock draft) is recorded under, so a record names "Automation" as its maker and every rule and permission check still runs.
+     *
+     * @param  list<string>  $permissions
+     * @return string the user id
+     */
+    public function automation(PropertyId $property, array $permissions): string;
 }

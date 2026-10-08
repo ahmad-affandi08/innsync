@@ -60,6 +60,16 @@ Property settings → **Online booking**. Off until the hotel switches it on. Ch
 
 When a guest already paid the agency (for example in the Traveloka app), the cashier must not charge them for the room. Create the agency under Front Office → Companies with the type **Travel agent (including OTA)** and let it take the rooms. On a reservation that came from an agency, the reservation page says so and offers the agency first under "Bill to"; the room charge then goes to the agency's folio and becomes a receivable at check-out. When the agency pays, record it in Finance → Receivables; the commission the agency keeps is entered there as a credit note, so the receivable closes exactly.
 
+## What the system does by itself
+
+Each morning the scheduler (the same one that runs backups) does three things. None of them decides anything for staff.
+
+- **Front desk reminders**: a tentative booking arriving within two days, and a hold lapsing by tomorrow, appear on Front office → Reminders. Turn off with `FRONTDESK_AUTO_REMINDERS=false`.
+- **Restock drafts**: items below the minimum set in Inventory → Stock become a draft purchase request per department. A person must open, adjust and submit it. Turn off with `INVENTORY_RESTOCK_DRAFTS=false`. Items with no minimum are never drafted.
+- **Guest emails**: off until the owner switches them on in Online booking. Needs email set up under Email and WhatsApp. The owner should have the privacy notice wording reviewed before switching on: the notice shown at booking says the contact details are used to handle the booking and to contact the guest.
+
+Already automatic before: kitchen tickets from the till, a room becoming dirty at check-out, the day's close with its checks, scheduled reports, daily backup.
+
 ## Where each person starts
 
 Menus follow the person's account and role, so there is no separate link per department. A person whose role covers one department only is taken straight to that department's page after signing in (reception staff land on Front desk today); everyone else sees the home page, which `/?home=1` always shows.

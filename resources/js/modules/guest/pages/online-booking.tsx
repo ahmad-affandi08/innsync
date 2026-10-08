@@ -15,7 +15,7 @@ import { useServerAction } from '@/shared/api/use-server-action';
 import { useTranslation } from '@/shared/i18n/i18n';
 import { useErrorStateCopy } from '@/shared/i18n/use-ui-copy';
 
-type Settings = { enabled: boolean; rate_plan_id: string | null; max_nights: number; notify_email: string | null; notice: string | null; plans: { id: string; code: string; name: string }[]; url: string; awaiting: number };
+type Settings = { enabled: boolean; rate_plan_id: string | null; max_nights: number; notify_email: string | null; notice: string | null; remind_before_arrival: boolean; thank_after_stay: boolean; plans: { id: string; code: string; name: string }[]; url: string; awaiting: number };
 
 /** How the hotel takes bookings from its own web page. Off until the hotel switches it on; every request is tentative until staff confirm it, and the guest pays at the hotel. */
 export default function OnlineBookingPage({ settings: initial }: { settings: Settings }) {
@@ -23,7 +23,7 @@ export default function OnlineBookingPage({ settings: initial }: { settings: Set
     const errorCopy = useErrorStateCopy();
     const action = useServerAction();
     const [state, setState] = useState(initial);
-    const [form, setForm] = useState({ enabled: initial.enabled, rate_plan_id: initial.rate_plan_id ?? '', max_nights: String(initial.max_nights), notify_email: initial.notify_email ?? '', notice: initial.notice ?? '' });
+    const [form, setForm] = useState({ enabled: initial.enabled, rate_plan_id: initial.rate_plan_id ?? '', max_nights: String(initial.max_nights), notify_email: initial.notify_email ?? '', notice: initial.notice ?? '', remind_before_arrival: initial.remind_before_arrival, thank_after_stay: initial.thank_after_stay });
     const [copied, setCopied] = useState(false);
 
     async function save() {
@@ -64,6 +64,11 @@ export default function OnlineBookingPage({ settings: initial }: { settings: Set
                     <FormField error={action.fieldError('notify_email')} hint={t('ob.notifyHint')} label={t('ob.notify')}><Input onChange={(e) => setForm({ ...form, notify_email: e.target.value })} type="email" value={form.notify_email} /></FormField>
                 </div>
                 <FormField error={action.fieldError('notice')} hint={t('ob.noticeHint')} label={t('ob.notice')}><Textarea maxLength={500} onChange={(e) => setForm({ ...form, notice: e.target.value })} rows={3} value={form.notice} /></FormField>
+                <div className="flex flex-col gap-2">
+                    <label className="flex items-center gap-3 text-sm font-medium"><Switch checked={form.remind_before_arrival} onCheckedChange={(v) => setForm({ ...form, remind_before_arrival: v })} />{t('ob.remind')}</label>
+                    <label className="flex items-center gap-3 text-sm font-medium"><Switch checked={form.thank_after_stay} onCheckedChange={(v) => setForm({ ...form, thank_after_stay: v })} />{t('ob.thank')}</label>
+                    <p className="max-w-2xl text-sm text-muted-foreground">{t('ob.messagesHint')}</p>
+                </div>
                 <div><Button loading={action.busy} onClick={() => void save()} type="button">{t('ob.save')}</Button></div>
             </section>
 

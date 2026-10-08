@@ -6282,7 +6282,9 @@
             "max_nights",
             "notice",
             "notify_email",
-            "rate_plan_id"
+            "rate_plan_id",
+            "remind_before_arrival",
+            "thank_after_stay"
         ]
     },
     "PUT /property/profile": {

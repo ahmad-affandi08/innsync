@@ -563,4 +563,7 @@ export const access = {
     'fo.today.goCalendar': "Room calendar",
     'fo.today.goGuests': "Guests",
     'fo.today.goStays': "In house",
+    'ob.remind': "Email a reminder the day before arrival",
+    'ob.thank': "Email a thank-you after the stay",
+    'ob.messagesHint': "Only for guests who booked on this page and agreed to the privacy notice, by email, once per booking. Bookings made by staff are never written to. The wording is fixed and carries no price or payment detail.",
 } as const

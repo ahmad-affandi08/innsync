@@ -246,4 +246,29 @@ final class GoodsReceiptHttpTest extends TestCase
         $this->as([InventoryCatalogService::VIEW_PERMISSION]);
         $this->get('/inventory/receipts')->assertForbidden();
     }
+
+    public function test_items_below_their_minimum_are_drafted_into_one_request_once_and_never_submitted(): void
+    {
+        $this->as([PropertySettingsService::MANAGE_PERMISSION, InventoryCatalogService::MANAGE_PERMISSION, StockService::POST_PERMISSION, StockService::VIEW_PERMISSION]);
+        $this->postJson('/inventory/stock-limits', ['item_id' => $this->item, 'location_id' => $this->main, 'min' => '12', 'max' => '40'])->assertOk();
+        $this->postJson('/inventory/stock-limits', ['item_id' => $this->juice, 'location_id' => $this->main, 'min' => '5'])->assertOk();
+        $this->postJson('/inventory/stock/opening', ['unit_cost_minor' => 1_000, 'item_id' => $this->juice, 'location_id' => $this->main, 'unit' => 'BTL', 'quantity' => '9'])->assertCreated();
+
+        $this->artisan('purchasing:restock-drafts')->assertSuccessful();
+
+        self::assertSame(1, DB::table('purchase_requests')->count(), 'only the water is short, and one draft per department');
+        $request = DB::table('purchase_requests')->first();
+        self::assertSame('draft', $request->status);
+        self::assertSame('fnb', $request->department);
+        self::assertSame('Automation', DB::table('users')->where('id', $request->requested_by)->value('name'));
+        self::assertSame([40_000], DB::table('purchase_request_lines')->where('request_id', $request->id)->pluck('qty_milli')->map(fn ($q) => (int) $q)->all(), 'it asks for the shortfall up to the maximum');
+
+        $this->artisan('purchasing:restock-drafts')->assertSuccessful();
+        self::assertSame(1, DB::table('purchase_requests')->count(), 'what is already on a request is not asked for again');
+
+        $this->postJson('/inventory/stock-limits', ['item_id' => $this->juice, 'location_id' => $this->main, 'min' => '50', 'lock_version' => 0])->assertOk();
+        config(['inventory.restock.enabled' => false]);
+        $this->artisan('purchasing:restock-drafts')->assertSuccessful();
+        self::assertSame(1, DB::table('purchase_requests')->count(), 'switched off, it drafts nothing');
+    }
 }

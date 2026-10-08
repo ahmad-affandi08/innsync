@@ -260,4 +260,28 @@ final class OnlineBookingHttpTest extends TestCase
 
         $this->get('/front-office/reservations')->assertOk()->assertInertia(fn (Assert $p) => $p->where('shell.attention.0', ['key' => 'online', 'count' => 1]));
     }
+
+    public function test_the_guest_messages_are_off_by_default_and_go_once_only_to_guests_who_agreed_when_switched_on(): void
+    {
+        $this->postJson('/property/rooms', ['number' => '102', 'room_type_id' => $this->typeId, 'reason' => 'x'])->assertCreated();
+        $this->enable();
+        $this->postJson('/book/'.self::A, $this->body(['arrival' => '2026-10-02', 'departure' => '2026-10-03', 'key' => 'msg-key-fixed-000001']))->assertCreated();
+        $this->postJson('/front-office/reservations', ['source' => 'phone', 'guest_name' => 'Staff Made', 'guest_email' => 'staff@example.com', 'arrival' => '2026-10-02', 'departure' => '2026-10-03', 'adults' => 1, 'children' => 0, 'room_type_id' => $this->typeId, 'rate_plan_id' => $this->planId, 'status' => 'tentative'], ['Idempotency-Key' => 'msg-staff-key-000001'])->assertCreated();
+        $this->sent = [];
+
+        $this->artisan('guestmessages:send')->assertSuccessful();
+        $this->assertSame([], $this->sent, 'nothing is sent until the hotel switches a message on');
+
+        $this->putJson('/property/online-booking', ['enabled' => true, 'rate_plan_id' => $this->planId, 'max_nights' => 10, 'notify_email' => 'front@hotel.test', 'notice' => 'x', 'remind_before_arrival' => true])->assertOk()->assertJsonPath('remind_before_arrival', true)->assertJsonPath('thank_after_stay', false);
+        $this->artisan('guestmessages:send')->assertSuccessful();
+        $this->assertCount(1, $this->sent, 'the staff-made booking has no consent record and is never written to');
+        $this->assertSame('budi@example.com', $this->sent[0][0]);
+        $this->assertStringContainsString('tomorrow', $this->sent[0][2]);
+        $this->assertStringNotContainsString('Rp', $this->sent[0][2]);
+
+        $this->artisan('guestmessages:send')->assertSuccessful();
+        $this->assertCount(1, $this->sent, 'the same reminder is never sent twice');
+
+        $this->putJson('/property/online-booking', ['enabled' => true, 'rate_plan_id' => $this->planId, 'max_nights' => 10, 'notify_email' => 'front@hotel.test', 'notice' => 'x'])->assertOk()->assertJsonPath('remind_before_arrival', true);
+    }
 }

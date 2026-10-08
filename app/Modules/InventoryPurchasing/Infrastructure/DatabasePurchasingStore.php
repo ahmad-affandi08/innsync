@@ -115,6 +115,12 @@ final readonly class DatabasePurchasingStore implements PurchasingStore
         return true;
     }
 
+    public function itemsOnOpenRequests(PropertyId $property): array
+    {
+        return DB::table('purchase_request_lines as l')->join('purchase_requests as r', 'r.id', '=', 'l.request_id')->where('r.property_id', $property->toString())
+            ->whereIn('r.status', ['draft', 'pending_approval', 'approved'])->whereNull('l.po_id')->distinct()->pluck('l.item_id')->map(static fn ($id): string => (string) $id)->all();
+    }
+
     public function requests(PropertyId $property, ?string $status, int $limit): array
     {
         $lines = DB::table('purchase_request_lines')->groupBy('request_id')->selectRaw('request_id, COUNT(*) as line_count, SUM(po_id IS NOT NULL) as ordered_count');

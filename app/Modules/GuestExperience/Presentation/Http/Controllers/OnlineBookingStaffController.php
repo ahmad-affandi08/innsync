@@ -23,8 +23,8 @@ final readonly class OnlineBookingStaffController
 
     public function save(Request $request): JsonResponse
     {
-        $data = $request->validate(['enabled' => ['required', 'boolean'], 'rate_plan_id' => ['nullable', 'string', 'size:26'], 'max_nights' => ['required', 'integer', 'min:1', 'max:60'], 'notify_email' => ['nullable', 'string', 'max:190'], 'notice' => ['nullable', 'string', 'max:500']]);
-        $this->admin->save($this->property->current(), $this->actor($request), (bool) $data['enabled'], $data['rate_plan_id'] ?? null, (int) $data['max_nights'], $data['notify_email'] ?? null, $data['notice'] ?? null);
+        $data = $request->validate(['enabled' => ['required', 'boolean'], 'rate_plan_id' => ['nullable', 'string', 'size:26'], 'max_nights' => ['required', 'integer', 'min:1', 'max:60'], 'notify_email' => ['nullable', 'string', 'max:190'], 'notice' => ['nullable', 'string', 'max:500'], 'remind_before_arrival' => ['sometimes', 'boolean'], 'thank_after_stay' => ['sometimes', 'boolean']]);
+        $this->admin->save($this->property->current(), $this->actor($request), (bool) $data['enabled'], $data['rate_plan_id'] ?? null, (int) $data['max_nights'], $data['notify_email'] ?? null, $data['notice'] ?? null, isset($data['remind_before_arrival']) ? (bool) $data['remind_before_arrival'] : null, isset($data['thank_after_stay']) ? (bool) $data['thank_after_stay'] : null);
 
         return response()->json($this->admin->show($this->property->current(), $this->actor($request), $request->getSchemeAndHttpHost()))->header('Cache-Control', 'no-store');
     }

@@ -563,4 +563,7 @@ export const access = {
     'fo.today.goCalendar': "Kalender kamar",
     'fo.today.goGuests': "Tamu",
     'fo.today.goStays': "Sedang menginap",
+    'ob.remind': "Kirim email pengingat sehari sebelum tiba",
+    'ob.thank': "Kirim email terima kasih setelah menginap",
+    'ob.messagesHint': "Hanya untuk tamu yang memesan lewat halaman ini dan menyetujui pemberitahuan privasi, lewat email, satu kali per pemesanan. Pemesanan yang dibuat staf tidak pernah dikirimi. Isi pesan tetap dan tidak memuat harga atau data pembayaran.",
 }

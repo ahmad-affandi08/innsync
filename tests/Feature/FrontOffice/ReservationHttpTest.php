@@ -278,4 +278,27 @@ final class ReservationHttpTest extends TestCase
         $this->get('/front-office/availability')->assertForbidden();
         $this->get('/front-office/reservations')->assertForbidden();
     }
+
+    public function test_the_desk_gets_reminders_by_itself_for_tentative_arrivals_and_lapsing_holds_once_only(): void
+    {
+        $this->travelTo('2026-10-01 08:00:00');
+        $this->staff();
+        $this->postJson('/front-office/reservations', $this->body(['arrival' => '2026-10-02', 'departure' => '2026-10-03']), ['Idempotency-Key' => 'auto-rem-key-00001'])->assertCreated();
+        $this->postJson('/front-office/reservations', $this->body(['arrival' => '2026-10-20', 'departure' => '2026-10-21']), ['Idempotency-Key' => 'auto-rem-key-00002'])->assertCreated();
+        $this->postJson('/front-office/holds', ['room_type_id' => $this->typeId, 'from' => '2026-11-01', 'to' => '2026-11-02', 'rooms' => 1, 'reason' => 'Group', 'expires_at' => '2026-10-02 10:00:00'])->assertCreated();
+
+        $this->artisan('frontdesk:auto-reminders')->assertSuccessful();
+        self::assertSame(2, DB::table('fo_reminders')->whereNotNull('auto_key')->count(), 'the far-off tentative booking gets none');
+        self::assertSame(2, DB::table('fo_reminders')->where('due_on', '2026-10-01')->whereNull('created_by')->count());
+
+        $this->artisan('frontdesk:auto-reminders')->assertSuccessful();
+        self::assertSame(2, DB::table('fo_reminders')->count(), 'running again makes none twice');
+
+        $this->get('/front-office/reminders')->assertOk()->assertInertia(fn (Assert $p) => $p->has('reminders.open', 2));
+
+        config(['frontdesk.auto_reminders.enabled' => false]);
+        DB::table('fo_reminders')->delete();
+        $this->artisan('frontdesk:auto-reminders')->assertSuccessful();
+        self::assertSame(0, DB::table('fo_reminders')->count());
+    }
 }

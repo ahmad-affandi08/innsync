@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Middleware\HandleInertiaRequests;
+use App\Modules\FrontOffice\Infrastructure\Reminders\MakeAutoRemindersCommand;
+use App\Modules\GuestExperience\Infrastructure\SendGuestMessagesCommand;
 use App\Modules\GuestExperience\Presentation\Http\Middleware\ResolveCheckInLink;
 use App\Modules\GuestExperience\Presentation\Http\Middleware\ResolveGuestSession;
 use App\Modules\GuestExperience\Presentation\Http\Middleware\ResolveOnlineBookingProperty;
@@ -10,6 +12,7 @@ use App\Modules\IdentityAccess\Presentation\Http\Middleware\EnsureActiveUser;
 use App\Modules\IdentityAccess\Presentation\Http\Middleware\EnsureMfaVerified;
 use App\Modules\IdentityAccess\Presentation\Http\Middleware\RequirePermission;
 use App\Modules\IdentityAccess\Presentation\Http\Middleware\ResolvePropertyContext;
+use App\Modules\InventoryPurchasing\Infrastructure\MakeRestockDraftsCommand;
 use App\Modules\Laundry\Infrastructure\EscalateLaundryCommand;
 use App\Modules\Maintenance\Infrastructure\EscalateWorkOrdersCommand;
 use App\Modules\Maintenance\Infrastructure\GenerateDutyRunsCommand;
@@ -76,6 +79,9 @@ return Application::configure(basePath: dirname(__DIR__))
         EscalateLaundryCommand::class,
         GenerateRoutineWorkCommand::class,
         GenerateDutyRunsCommand::class,
+        MakeAutoRemindersCommand::class,
+        MakeRestockDraftsCommand::class,
+        SendGuestMessagesCommand::class,
     ])
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->prepend(AssignCorrelationId::class);

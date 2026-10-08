@@ -6,6 +6,10 @@ Release notes for every release (NFR-14). Newest first. Each entry names the tas
 
 ### Added
 
+- Automation that only drafts or reminds, never decides:
+  - Front desk reminders by themselves (`frontdesk:auto-reminders`, every morning, `FRONTDESK_AUTO_REMINDERS*`): a tentative booking that arrives within two days and a hold that lapses by tomorrow each get one reminder on the reminders page. Nothing is confirmed or released by itself.
+  - Restock drafts (`purchasing:restock-drafts`, every morning, `INVENTORY_RESTOCK_*`): items under the minimum stock set per location become one draft purchase request per department, made by the account "Automation", asking for the shortfall up to the maximum (or the minimum when no maximum is set). Items already on a draft, pending or approved request are skipped. A person reads, changes and submits the draft, so approvals and budgets still apply.
+  - Guest emails (`guestmessages:send`, 09:00, `GUEST_MESSAGES_AT`): a reminder the day before arrival and a thank-you after the stay, switched on separately under Guest experience → Online booking, both off by default. Only for guests who booked on the hotel's web page and agreed to the privacy notice (a consent record exists), only by email, once per booking and kind, with fixed wording that carries no price or payment detail. Bookings made by staff are never written to.
 - Front desk today (`/front-office/today`): arrivals with a Check in button, departures and overdue departures, rooms in house and ready to sell, reminders due and open guest requests on one screen. It adds no rules of its own; it gathers what the room board, reminders and guest requests already know, each under its own permission. It is now the first item of the Front office menu and where reception staff land.
 - A person who may open one department only is taken to that department's page after signing in instead of the general home page. `/?home=1` always shows the home page. Anyone with two or more departments sees the home page as before.
 

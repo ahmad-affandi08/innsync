@@ -61,6 +61,9 @@ interface PurchasingStore
      */
     public function addRequest(PropertyId $property, array $row, array $lines, DateTimeImmutable $at): bool;
 
+    /** @return list<string> ids of the items on a request that is still a draft, waiting for approval or approved and not yet on an order */
+    public function itemsOnOpenRequests(PropertyId $property): array;
+
     /** @return list<array<string, mixed>> newest first, each with the number of lines */
     public function requests(PropertyId $property, ?string $status, int $limit): array;
 

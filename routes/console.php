@@ -48,6 +48,22 @@ Schedule::command('maintenance:duties')
     ->hourly()
     ->withoutOverlapping(30);
 
+if (config('frontdesk.auto_reminders.enabled')) {
+    Schedule::command('frontdesk:auto-reminders')
+        ->dailyAt((string) config('frontdesk.auto_reminders.run_at'))
+        ->withoutOverlapping(30);
+}
+
+if (config('inventory.restock.enabled')) {
+    Schedule::command('purchasing:restock-drafts')
+        ->dailyAt((string) config('inventory.restock.run_at'))
+        ->withoutOverlapping(30);
+}
+
+Schedule::command('guestmessages:send')
+    ->dailyAt((string) config('guest.messages_at'))
+    ->withoutOverlapping(30);
+
 Schedule::command('health:heartbeat')->everyMinute();
 
 Schedule::command('health:alerts')
