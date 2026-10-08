@@ -119,6 +119,7 @@ use App\Modules\Maintenance\Presentation\Http\Controllers\VendorJobController;
 use App\Modules\Maintenance\Presentation\Http\Controllers\WorkOrderController;
 use App\Modules\Property\Presentation\Http\Controllers\BookingPolicyController;
 use App\Modules\Property\Presentation\Http\Controllers\ChargeSchemeController;
+use App\Modules\Property\Presentation\Http\Controllers\PropertyLogoController;
 use App\Modules\Property\Presentation\Http\Controllers\PropertyProfileController;
 use App\Modules\Property\Presentation\Http\Controllers\PropertySettingsController;
 use App\Modules\Property\Presentation\Http\Controllers\RatePlanController;
@@ -297,6 +298,13 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])
 // Is the system healthy and being backed up: one screen for the owner, read only.
 Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])
     ->get('/property/system', [SystemStatusController::class, 'show'])->middleware('permission:property.settings.manage')->name('property.system');
+// The logo of the property: every signed-in person sees it; only a person who manages the property changes it.
+Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->get('/property/logo', [PropertyLogoController::class, 'picture'])->name('property.logo');
+Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property', 'permission:property.settings.manage'])->prefix('property/branding')->group(function (): void {
+    Route::get('/', [PropertyLogoController::class, 'show'])->name('property.branding');
+    Route::post('/logo', [PropertyLogoController::class, 'replace'])->middleware(['password.confirm', 'throttle:access-admin'])->name('property.branding.replace');
+    Route::delete('/logo', [PropertyLogoController::class, 'remove'])->middleware(['password.confirm', 'throttle:access-admin'])->name('property.branding.remove');
+});
 Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property', 'permission:property.settings.manage'])->prefix('property/messaging')->group(function (): void {
     Route::get('/', [MessagingSettingsController::class, 'show'])->name('property.messaging');
     Route::put('/{channel}', [MessagingSettingsController::class, 'save'])->middleware(['password.confirm', 'throttle:access-admin'])->name('property.messaging.save');

@@ -81,7 +81,7 @@ function isHere(links: readonly NavLink[], href: string, path: string): boolean 
     return match(href) && best?.href === href;
 }
 
-type Shell = { propertyName: string | null; businessDate: string | null; userName: string; disabledModules?: string[]; accessibleModules?: string[] | null; waitingApprovals?: number } | null;
+type Shell = { propertyName: string | null; businessDate: string | null; userName: string; disabledModules?: string[]; accessibleModules?: string[] | null; waitingApprovals?: number; logoUrl?: string | null } | null;
 
 type FrameProps = {
     title: string;
@@ -254,9 +254,12 @@ export function AppFrame({ actions, children, description, links = [], printClas
         </nav>
     );
 
+    // A property that uploaded its logo shows it; a small InnSYnc credit stays beneath it in the side menu.
+    const own = shell?.logoUrl ?? null;
     const brand = (
-        <Link className="flex h-14 items-center px-6" href="/">
-            <img alt="InnSYnc" className="h-8 w-auto" height={32} src={logo} width={116} />
+        <Link className="flex h-14 items-center gap-3 px-6" href="/">
+            {own !== null ? <img alt={shell?.propertyName ?? ''} className="max-h-10 max-w-[10rem] w-auto object-contain" src={own} /> : <img alt="InnSYnc" className="h-8 w-auto" height={32} src={logo} width={116} />}
+            {own !== null ? <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">InnSYnc</span> : null}
         </Link>
     );
 
@@ -415,7 +418,7 @@ export function AppFrame({ actions, children, description, links = [], printClas
         <header className="sticky top-0 z-30 border-b border-border bg-surface print:hidden">
             <div className="flex h-14 items-center gap-3 px-4 lg:px-6">
                 {menuButton}
-                <Link className="flex shrink-0 items-center" href="/"><img alt="InnSYnc" className="h-8 w-auto" height={32} src={logo} width={116} /></Link>
+                <Link className="flex shrink-0 items-center" href="/">{own !== null ? <img alt={shell?.propertyName ?? ''} className="max-h-8 max-w-[9rem] w-auto object-contain" src={own} /> : <img alt="InnSYnc" className="h-8 w-auto" height={32} src={logo} width={116} />}</Link>
                 <nav aria-label={t('shell.menu')} className="ml-4 hidden min-w-0 flex-1 items-stretch gap-0.5 self-stretch overflow-x-auto no-scrollbar lg:flex">
                     {modules.filter((m) => m.key !== 'home').map((m) => {
                         const Icon = m.icon;

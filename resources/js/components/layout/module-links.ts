@@ -161,6 +161,7 @@ export const PROPERTY_LINKS: readonly NavLink[] = [
     { href: '/sync/exceptions', label: 'sync.nav' },
     { href: '/property/system', label: 'sys.nav' },
     { href: '/property/messaging', label: 'msg.nav' },
+    { href: '/property/branding', label: 'brand.nav' },
 ];
 
 export const REPORT_LINKS: readonly NavLink[] = [

@@ -5713,6 +5713,14 @@
             "property_id"
         ]
     },
+    "POST /property/branding/logo": {
+        "required": [
+            "logo"
+        ],
+        "declared": [
+            "logo"
+        ]
+    },
     "POST /property/messaging/{channel}/test": {
         "required": [
             "destination"

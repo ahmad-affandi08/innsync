@@ -48,6 +48,10 @@ Paste one person per line (`Name, email`, or a copy from a spreadsheet); all get
 
 Staff (HR → Staff), Suppliers (Inventory → Suppliers) and the menu (F&B → Menu) each have **Import from file**. Download the example file, fill it in a spreadsheet, save as CSV (comma, semicolon or tab). **Check file** changes nothing and lists every bad row by line; **Import now** is all or nothing. Rows pass the same rules as the form: a department that does not exist, a contract without an end date, a duplicate supplier code are all refused with their line. The menu file names the outlet and category by code, so create those first; the price is typed in whole currency units (`25000`), and a grouped number such as `1.500` is refused rather than guessed. At most 300 rows per file.
 
+## The hotel's own logo
+
+Property settings → **Logo**. Upload a wide logo on a transparent or white background (PNG, JPEG, WebP or SVG up to 512 KB). It replaces the InnSYnc logo in the header and prints at the top of every bill, receipt, pay slip and report. Remove it to go back to the InnSYnc logo.
+
 ## A forgotten password
 
 The sign-in page has **Forgot your password**. It needs the hosting mail settings (the System status screen says whether email will be delivered). The link works once and lasts 60 minutes; the person's other sessions end when it is used. An administrator can still reset a password from People & access.

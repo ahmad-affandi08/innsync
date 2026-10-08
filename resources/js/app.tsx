@@ -3,8 +3,9 @@ import '../css/app.css';
 import { createInertiaApp, type ResolvedComponent } from '@inertiajs/react';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
-import type { ComponentType } from 'react';
+import type { ComponentType, ReactNode } from 'react';
 
+import { PrintLetterhead } from '@/components/layout/print-letterhead';
 import { createAppQueryClient } from '@/shared/api/query-client';
 import { ensureMessages, localeFromProps } from '@/shared/i18n/i18n';
 import { OfflineProvider } from '@/shared/offline/offline-provider';
@@ -14,6 +15,16 @@ const pages = import.meta.glob<{ default: ComponentType }>(
     './modules/**/*.tsx',
 );
 const queryClient = createAppQueryClient();
+
+/** Wraps every page: the offline queue, and the property's logo at the top of what is printed. */
+function AppLayout({ children }: { children: ReactNode }) {
+    return (
+        <OfflineProvider>
+            <PrintLetterhead />
+            {children}
+        </OfflineProvider>
+    );
+}
 
 void createInertiaApp({
     title: (title) => (title ? `${title} — ${appName}` : appName),
@@ -29,7 +40,7 @@ void createInertiaApp({
         ).default as ResolvedComponent;
 
         // The same layout component on every page keeps the offline queue mounted across navigation.
-        component.layout ??= OfflineProvider;
+        component.layout ??= AppLayout;
 
         return component;
     },
