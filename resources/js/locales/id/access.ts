@@ -373,4 +373,6 @@ export const access = {
     'brand.powered.body': "Satu baris kecil di bagian bawah setiap halaman dan dokumen cetak yang menyebut InnSYnc. Bisa dimatikan. Baris ini hanya tampil bila properti memakai logonya sendiri.",
     'brand.powered.show': "Tampilkan \"Powered by InnSYnc\"",
     'brand.powered.needsLogo': "Tanpa logo sendiri, logo InnSYnc yang tampil di header, jadi baris ini tidak diperlukan.",
+    'sys.license.unlimited': "Properti di instalasi ini: {held}, tanpa batas.",
+    'sys.license.limited': "Properti di instalasi ini: {held} dari {limit} sesuai kesepakatan.",
 }

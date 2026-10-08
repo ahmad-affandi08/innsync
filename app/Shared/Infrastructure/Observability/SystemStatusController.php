@@ -7,6 +7,7 @@ namespace App\Shared\Infrastructure\Observability;
 use App\Shared\Application\Messaging\MessagingSettings;
 use App\Shared\Application\Observability\Health\RunHealthChecks;
 use App\Shared\Infrastructure\Backup\BackupRunLog;
+use App\Shared\Infrastructure\Licensing\PropertyLicense;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -33,6 +34,7 @@ final readonly class SystemStatusController
                 'mail_delivers' => ($this->messaging->get('email')?->enabled ?? false) || ! in_array($mailer, ['log', 'array', 'null'], true),
                 'debug_off' => ! (bool) config('app.debug'),
                 'production' => app()->environment('production'),
+                'properties' => ['held' => ($license = new PropertyLicense)->count(), 'limit' => $license->limit()],
             ],
         ]);
     }

@@ -373,4 +373,6 @@ export const access = {
     'brand.powered.body': "A small line at the bottom of every page and printed document that credits InnSYnc. You can switch it off. It is only shown when the property has its own logo.",
     'brand.powered.show': "Show \"Powered by InnSYnc\"",
     'brand.powered.needsLogo': "Without your own logo the InnSYnc logo is shown in the header, so this line is not needed.",
+    'sys.license.unlimited': "Properties in this installation: {held}, no limit set.",
+    'sys.license.limited': "Properties in this installation: {held} of {limit} under the agreement.",
 } as const

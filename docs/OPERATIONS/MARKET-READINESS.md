@@ -48,6 +48,10 @@ Not code, and not decided here. Each needs the owner, and legal items need a law
 - Who holds the hotel's `APP_KEY` and backups, and what happens to the data when a hotel leaves (export exists; the promise does not).
 - Trademark check for the name and logo.
 
+## Property limit (licensing)
+
+One purchase is normally one property; a client with several hotels buys several, or agrees otherwise. `INNSYNC_MAX_PROPERTIES` (server environment, default `0` = no limit) enforces the agreed number when a property is created. It is not tamper-proof: whoever controls the server's `.env` can change it. If the agreement must hold against a client that runs its own server, a signed license key checked by the application is needed; that is a design and key-management decision for the owner, not made here.
+
 ## 5. Recommended path
 
 1. Owner settles section 2 (a one-hour decision meeting; every item has a named owner).

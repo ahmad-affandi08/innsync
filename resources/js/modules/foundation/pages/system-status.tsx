@@ -12,7 +12,7 @@ type Props = {
     status: 'ok' | 'degraded' | 'down';
     checks: Check[];
     backup: { last: Run; verify: Run };
-    environment: { version: string; mail_delivers: boolean; debug_off: boolean; production: boolean };
+    environment: { version: string; mail_delivers: boolean; debug_off: boolean; production: boolean; properties: { held: number; limit: number } };
 };
 
 const TONE: Record<Check['status'], StatusTone> = { ok: 'success', degraded: 'warning', down: 'danger' };
@@ -61,6 +61,7 @@ export default function SystemStatusPage({ status, checks, backup, environment }
                 {!environment.mail_delivers ? <Alert title={t('sys.env.mailTitle')} tone="warning">{t('sys.env.mailHint')} <Link className="font-medium underline underline-offset-2" href="/property/messaging">{t('msg.nav')}</Link></Alert> : <Alert title={t('sys.env.mailOk')} tone="success" />}
                 {environment.production && !environment.debug_off ? <Alert title={t('sys.env.debugTitle')} tone="danger">{t('sys.env.debugHint')}</Alert> : null}
                 <p className="text-sm text-muted-foreground">{t('sys.env.version', { version: environment.version })}</p>
+                <p className="text-sm text-muted-foreground" data-testid="license-properties">{environment.properties.limit === 0 ? t('sys.license.unlimited', { held: environment.properties.held }) : t('sys.license.limited', { held: environment.properties.held, limit: environment.properties.limit })}</p>
             </section>
         </PropertyShell>
     );

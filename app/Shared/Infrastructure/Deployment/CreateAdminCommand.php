@@ -7,6 +7,7 @@ namespace App\Shared\Infrastructure\Deployment;
 use App\Shared\Application\Deployment\GoLiveBusinessDate;
 use App\Shared\Application\Tenancy\PropertyContext;
 use App\Shared\Domain\Tenancy\PropertyId;
+use App\Shared\Infrastructure\Licensing\PropertyLicense;
 use Database\Seeders\DevelopmentSeeder;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
@@ -34,6 +35,14 @@ final class CreateAdminCommand extends Command
 
         $name = (string) ($this->option('name') ?: 'Administrator');
         $propertyName = (string) ($this->option('property') ?: 'InnSYnc Hotel');
+
+        $license = new PropertyLicense;
+
+        if (DB::table('properties')->where('name', $propertyName)->doesntExist() && ! $license->allowsAnother()) {
+            $this->error("This installation is licensed for {$license->limit()} property(ies) and already holds {$license->count()}. Nothing was created. To add another, the agreement must change and INNSYNC_MAX_PROPERTIES be raised.");
+
+            return self::FAILURE;
+        }
 
         $this->info("Creating/updating property: {$propertyName}...");
         $propertyId = $this->property($propertyName);
