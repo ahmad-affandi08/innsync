@@ -182,7 +182,17 @@ export const REPORT_LINKS: readonly NavLink[] = [
 export const REPORTING_LINKS: readonly NavLink[] = [{ href: '/dashboard', label: 'rpt.nav.dashboard' }, ...REPORT_LINKS];
 
 /** The pages of each module, by the key of the module in the frame. A module with no list of pages is a single page. */
+/** What the guests' self-service gives the staff: shown under Beranda, so a phone can reach the QR codes and the guests' orders. */
+export const GUEST_LINKS: readonly NavLink[] = [
+    { href: '/guest/orders', label: 'guest.nav.orders' },
+    { href: '/guest/checkins', label: 'guest.nav.checkins' },
+    { href: '/guest/surveys', label: 'guest.nav.surveys' },
+    { href: '/guest/qr', label: 'guest.nav.qr' },
+    { href: '/fnb/pos', label: 'fnb.nav.pos' },
+];
+
 export const MODULE_LINKS: Readonly<Record<string, readonly NavLink[]>> = {
+    home: GUEST_LINKS,
     'front-office': FRONT_OFFICE_LINKS,
     housekeeping: HOUSEKEEPING_LINKS,
     laundry: LAUNDRY_LINKS,

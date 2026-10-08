@@ -1,0 +1,1 @@
+import{v as e}from"./app-aoWojwDp.js";import{t,u as n}from"./app-frame-8myZXCfV.js";var r=e();function i({children:e,description:i,title:a,wide:o}){return(0,r.jsx)(t,{description:i,links:n,title:a,wide:o,children:e})}export{i as LaundryShell};

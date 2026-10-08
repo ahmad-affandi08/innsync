@@ -1,21 +1,14 @@
 import type { ReactNode } from 'react';
 
 import { AppFrame } from '@/components/layout/app-frame';
-
-const LINKS = [
-    { href: '/guest/orders', label: 'guest.nav.orders' },
-    { href: '/guest/checkins', label: 'guest.nav.checkins' },
-    { href: '/guest/surveys', label: 'guest.nav.surveys' },
-    { href: '/guest/qr', label: 'guest.nav.qr' },
-    { href: '/fnb/pos', label: 'fnb.nav.pos' },
-] as const;
+import { GUEST_LINKS } from '@/components/layout/module-links';
 
 type Props = { title: string; description: string; children: ReactNode; actions?: ReactNode; wide?: boolean };
 
 /** Common frame of the staff pages of the guest self-service. */
 export function GuestStaffShell({ actions, children, description, title, wide }: Props) {
     return (
-        <AppFrame actions={actions} description={description} links={LINKS} title={title} wide={wide}>
+        <AppFrame actions={actions} description={description} links={GUEST_LINKS} title={title} wide={wide}>
             {children}
         </AppFrame>
     );

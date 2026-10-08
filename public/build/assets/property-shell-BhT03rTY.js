@@ -1,1 +1,0 @@
-import{v as e}from"./app-BP4Rou_D.js";import{d as t,t as n}from"./app-frame-ByOpQucm.js";var r=e();function i({actions:e,children:i,description:a,title:o}){return(0,r.jsx)(n,{actions:e,description:a,links:t,title:o,children:i})}export{i as PropertyShell};

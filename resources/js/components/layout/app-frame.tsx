@@ -217,7 +217,8 @@ export function AppFrame({ actions, children, description, links = [], printClas
                     {modules.filter((m) => m.group === group).map((m) => {
                         const Icon = m.icon;
                         const isActive = m.key === current.key;
-                        const pages = isActive && hasLinks ? links : (MODULE_LINKS[m.key] ?? []);
+                        // Beranda lists the guests' self-service pages only for people who work the front desk or the restaurant, so nobody is offered a page they cannot open.
+                        const pages = isActive && hasLinks ? links : m.key === 'home' && !modules.some((x) => x.key === 'front-office' || x.key === 'fnb') ? [] : (MODULE_LINKS[m.key] ?? []);
                         const row = cn(
                             'group flex min-h-11 w-full items-center gap-3 border-l-2 px-3 py-2 text-left text-sm transition-colors',
                             isActive ? 'border-brand bg-surface-muted font-semibold text-foreground' : 'border-transparent text-muted-foreground hover:bg-surface-muted hover:text-foreground',
