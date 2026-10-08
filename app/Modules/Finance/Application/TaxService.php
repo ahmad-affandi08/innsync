@@ -18,6 +18,7 @@ use App\Shared\Application\Time\Clock;
 use App\Shared\Application\Transactions\TransactionRunner;
 use App\Shared\Domain\Tenancy\PropertyId;
 use App\Shared\Domain\Time\BusinessDate;
+use App\Shared\Domain\Time\DateMath;
 
 /**
  * The regional tax and the service charge (FR-FIN-020 to -025). The books give, for each month and outlet, the base the tax was charged on, the service charge and the tax, as they were posted with the scheme in force on the day
@@ -49,19 +50,19 @@ final readonly class TaxService
         $this->access->require($property, $actorId, FinanceAccess::TAX_VIEW, 'This person may not see the tax.');
         $today = $this->businessDate->current($property)->toString();
         $settings = $this->settings($property);
-        $first = date('Y-m-01', strtotime(substr($today, 0, 8).'01 -'.($months - 1).' months'));
+        $first = DateMath::format('Y-m-01', substr($today, 0, 8).'01 -'.($months - 1).' months');
         $rows = $this->queries->byOutlet($property, $first, $today);
         $aside = $this->queries->setAside($property, $first, $today);
         $filings = $this->store->filings($property);
         $manage = $this->access->may($property, $actorId, FinanceAccess::TAX_MANAGE);
         $out = [];
 
-        for ($d = substr($today, 0, 7); $d >= substr($first, 0, 7); $d = date('Y-m', strtotime($d.'-01 -1 month'))) {
+        for ($d = substr($today, 0, 7); $d >= substr($first, 0, 7); $d = DateMath::format('Y-m', $d.'-01 -1 month')) {
             $outlets = array_values(array_filter($rows, static fn (array $r): bool => $r['period'] === $d));
             $filing = $filings[$d] ?? null;
-            $end = date('Y-m-t', strtotime($d.'-01'));
+            $end = DateMath::format('Y-m-t', $d.'-01');
             $over = $today > $end;
-            $due = substr(date('Y-m-d', strtotime($end.' +1 day')), 0, 8).str_pad((string) $settings['report_day'], 2, '0', STR_PAD_LEFT);
+            $due = substr(DateMath::format('Y-m-d', $end.' +1 day'), 0, 8).str_pad((string) $settings['report_day'], 2, '0', STR_PAD_LEFT);
             $status = $filing === null ? ($over ? 'to_report' : 'collecting') : ($filing['deposited_on'] === null ? 'reported' : 'deposited');
             $totals = ['base_minor' => array_sum(array_column($outlets, 'base_minor')), 'service_charge_minor' => array_sum(array_column($outlets, 'service_charge_minor')), 'tax_minor' => array_sum(array_column($outlets, 'tax_minor')), 'total_minor' => array_sum(array_column($outlets, 'total_minor'))];
 
@@ -129,12 +130,12 @@ final readonly class TaxService
         $today = $this->businessDate->current($property)->toString();
         $this->month($period);
 
-        if ($today <= date('Y-m-t', strtotime($period.'-01'))) {
+        if ($today <= DateMath::format('Y-m-t', $period.'-01')) {
             throw Refusal::stateConflict('The month is not over yet.');
         }
 
         $this->transactions->run(function () use ($property, $actor, $period, $reference, $today): void {
-            $rows = $this->queries->byOutlet($property, $period.'-01', date('Y-m-t', strtotime($period.'-01')));
+            $rows = $this->queries->byOutlet($property, $period.'-01', DateMath::format('Y-m-t', $period.'-01'));
             $amounts = ['base_minor' => array_sum(array_column($rows, 'base_minor')), 'service_charge_minor' => array_sum(array_column($rows, 'service_charge_minor')), 'tax_minor' => array_sum(array_column($rows, 'tax_minor'))];
 
             if (! $this->store->addFiling($property, ['id' => $this->ids->next(), 'period' => $period, ...$amounts, 'reported_on' => $today, 'report_reference' => $reference, 'reported_by' => $actor], $this->clock->nowUtc())) {
@@ -197,7 +198,7 @@ final readonly class TaxService
         $this->access->require($property, $actorId, FinanceAccess::TAX_VIEW, 'This person may not take the tax recap.');
         $this->month($period);
         $from = $period.'-01';
-        $to = date('Y-m-t', strtotime($from));
+        $to = DateMath::format('Y-m-t', $from);
         $rows = $this->queries->byOutlet($property, $from, $to);
         $aside = $this->queries->setAside($property, $from, $to)[$period] ?? [];
         $money = static fn (int $minor): string => ($minor < 0 ? '-' : '').intdiv(abs($minor), 100).'.'.str_pad((string) (abs($minor) % 100), 2, '0', STR_PAD_LEFT);

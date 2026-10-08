@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace App\Modules\Maintenance\Application;
 
 use App\Modules\Property\Application\Rates\PropertyCurrencyReader;
+use App\Modules\Property\Application\Settings\BusinessDateProvider;
 use App\Shared\Application\Errors\Refusal;
 use App\Shared\Domain\Tenancy\PropertyId;
+use App\Shared\Domain\Time\DateMath;
 use DateTimeImmutable;
 use DateTimeZone;
 
@@ -19,12 +21,15 @@ final readonly class ReportService
 {
     private const MAX_DAYS = 366;
 
-    public function __construct(private WorkOrderStore $store, private PartsStore $parts, private VendorJobStore $vendors, private DutyRunService $duties, private MaintenanceAccess $access, private PropertyCurrencyReader $currencies) {}
+    public function __construct(private WorkOrderStore $store, private PartsStore $parts, private VendorJobStore $vendors, private DutyRunService $duties, private MaintenanceAccess $access, private PropertyCurrencyReader $currencies, private BusinessDateProvider $businessDate) {}
 
     /** @return array<string, mixed> */
-    public function report(PropertyId $property, string $actorId, string $from, string $to): array
+    public function report(PropertyId $property, string $actorId, ?string $from, ?string $to): array
     {
         $this->access->require($property, $actorId, MaintenanceAccess::MANAGE, 'This person may not see the maintenance reports.');
+        // Without a period it is the thirty days up to the business date of the property, not up to the date of the server.
+        $to ??= $this->businessDate->current($property)->toString();
+        $from ??= DateMath::format('Y-m-d', $to.' -29 days');
         $start = $this->date($from, 'from');
         $end = $this->date($to, 'to');
 

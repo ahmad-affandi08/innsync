@@ -30,6 +30,7 @@ use App\Shared\Application\Security\StaffDirectory;
 use App\Shared\Application\Time\Clock;
 use App\Shared\Application\Transactions\TransactionRunner;
 use App\Shared\Domain\Tenancy\PropertyId;
+use App\Shared\Domain\Time\DateMath;
 use DateTimeImmutable;
 use DateTimeZone;
 
@@ -600,7 +601,7 @@ final readonly class WorkOrderService
 
         $today = $this->businessDate->current($property)->toString();
         $fields = $plan['trigger_kind'] === 'calendar'
-            ? ['last_done_on' => $today, 'next_due_on' => date('Y-m-d', strtotime($today.' +'.(int) $plan['interval_value'].' days'))]
+            ? ['last_done_on' => $today, 'next_due_on' => DateMath::format('Y-m-d', $today.' +'.(int) $plan['interval_value'].' days')]
             : ['last_done_on' => $today, 'last_meter' => max((int) $plan['last_meter'], $this->assets->currentReading($property, $plan['asset_id']) ?? 0)];
         $this->assets->updatePlan($property, $plan['id'], (int) $plan['lock_version'], $fields, $this->clock->nowUtc());
     }

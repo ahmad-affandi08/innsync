@@ -15,6 +15,7 @@ use App\Shared\Application\Security\StaffDirectory;
 use App\Shared\Application\Time\Clock;
 use App\Shared\Application\Transactions\TransactionRunner;
 use App\Shared\Domain\Tenancy\PropertyId;
+use App\Shared\Domain\Time\DateMath;
 use DateTimeImmutable;
 use DateTimeZone;
 
@@ -52,9 +53,9 @@ final readonly class DutyRunService
 
         foreach ($this->duties->duties($property, true) as $d) {
             $last = $this->duties->lastDue($property, $d['id']);
-            $from = max(substr((string) $d['starts_on'], 0, 10), $last === null ? '0000-00-00' : date('Y-m-d', strtotime($last.' +1 day')), date('Y-m-d', strtotime($today.' -'.(self::CATCH_UP_DAYS - 1).' days')));
+            $from = max(substr((string) $d['starts_on'], 0, 10), $last === null ? '0000-00-00' : DateMath::format('Y-m-d', $last.' +1 day'), DateMath::format('Y-m-d', $today.' -'.(self::CATCH_UP_DAYS - 1).' days'));
 
-            for ($day = $from; $day <= $today; $day = date('Y-m-d', strtotime($day.' +1 day'))) {
+            for ($day = $from; $day <= $today; $day = DateMath::format('Y-m-d', $day.' +1 day')) {
                 if (! $this->falls($d, $day)) {
                     continue;
                 }
@@ -76,10 +77,10 @@ final readonly class DutyRunService
         $caps = $this->capabilities($property, $actorId);
         $this->generate($property);
         $today = $this->businessDate->current($property)->toString();
-        $from = $from === null || $from === '' ? date('Y-m-d', strtotime($today.' -6 days')) : $from;
+        $from = $from === null || $from === '' ? DateMath::format('Y-m-d', $today.' -6 days') : $from;
         $to = $to === null || $to === '' ? $today : $to;
 
-        if (! $this->isDate($from) || ! $this->isDate($to) || $to < $from || strtotime($to) - strtotime($from) > 92 * 86400) {
+        if (! $this->isDate($from) || ! $this->isDate($to) || $to < $from || DateMath::daysBetween($from, $to) > 92) {
             throw Refusal::invalid('Choose a period of at most three months, ending after it starts.', ['from', 'to']);
         }
 
@@ -247,8 +248,8 @@ final readonly class DutyRunService
     {
         return match ($duty['frequency']) {
             'daily' => true,
-            'weekly' => (int) date('N', strtotime($day)) === (int) $duty['weekday'],
-            'monthly' => (int) date('j', strtotime($day)) === (int) $duty['month_day'],
+            'weekly' => (int) DateMath::format('N', $day) === (int) $duty['weekday'],
+            'monthly' => (int) DateMath::format('j', $day) === (int) $duty['month_day'],
             default => false,
         };
     }

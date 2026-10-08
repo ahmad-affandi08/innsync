@@ -114,4 +114,22 @@ final class PasswordResetTest extends TestCase
         $this->post('/reset-password', ['token' => 'nope', 'email' => 'rina@example.test', 'password' => 'Brand-New-Passw0rd!x', 'password_confirmation' => 'Brand-New-Passw0rd!x'])->assertSessionHasErrors('email');
         $this->post('/reset-password', ['token' => 'nope', 'email' => 'rina@example.test', 'password' => 'short', 'password_confirmation' => 'short'])->assertSessionHasErrors('password');
     }
+
+    public function test_an_account_switched_off_after_the_link_was_sent_is_told_it_failed_and_nothing_changes(): void
+    {
+        $id = $this->person();
+        $token = Password::broker()->createToken(UserRecord::query()->findOrFail($id));
+        DB::table('users')->where('id', $id)->update(['is_active' => false]);
+        $new = 'Brand-New-Passw0rd!x';
+
+        $this->post('/reset-password', ['token' => $token, 'email' => 'rina@example.test', 'password' => $new, 'password_confirmation' => $new])->assertSessionHasErrors('email');
+
+        self::assertTrue(Hash::check('Old-password-1!', (string) DB::table('users')->where('id', $id)->value('password')));
+    }
+
+    public function test_the_framework_storage_route_is_not_there(): void
+    {
+        $this->get('/storage/anything.txt')->assertNotFound();
+        self::assertFalse(config('filesystems.disks.local.serve'));
+    }
 }

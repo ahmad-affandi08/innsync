@@ -15,6 +15,7 @@ use App\Shared\Application\Security\StaffDirectory;
 use App\Shared\Application\Time\Clock;
 use App\Shared\Application\Transactions\TransactionRunner;
 use App\Shared\Domain\Tenancy\PropertyId;
+use App\Shared\Domain\Time\DateMath;
 use DateTimeImmutable;
 use DateTimeZone;
 
@@ -319,7 +320,7 @@ final readonly class AssetService
         return [
             'id' => $p['id'], 'title' => $p['title'], 'description' => $p['description'], 'category' => $p['category'], 'priority' => $p['priority'], 'trigger' => $p['trigger_kind'], 'interval' => (int) $p['interval_value'], 'lead_days' => (int) $p['lead_days'],
             'next_due_on' => $p['next_due_on'], 'next_meter' => $calendar ? null : (int) $p['last_meter'] + (int) $p['interval_value'], 'last_done_on' => $p['last_done_on'], 'active' => (bool) $p['is_active'], 'lock_version' => (int) $p['lock_version'],
-            'due' => $calendar ? $today >= date('Y-m-d', strtotime($p['next_due_on'].' -'.(int) $p['lead_days'].' days')) : ($current ?? 0) >= (int) $p['last_meter'] + (int) $p['interval_value'],
+            'due' => $calendar ? $today >= DateMath::format('Y-m-d', $p['next_due_on'].' -'.(int) $p['lead_days'].' days') : ($current ?? 0) >= (int) $p['last_meter'] + (int) $p['interval_value'],
         ];
     }
 

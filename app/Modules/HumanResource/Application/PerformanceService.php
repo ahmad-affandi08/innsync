@@ -10,6 +10,7 @@ use App\Modules\Property\Application\Settings\BusinessDateProvider;
 use App\Shared\Application\Errors\Refusal;
 use App\Shared\Domain\Tenancy\PropertyId;
 use App\Shared\Domain\Time\CalendarDate;
+use App\Shared\Domain\Time\DateMath;
 
 /**
  * How people are doing (FR-HR-020, FR-HR-021): for a period, each person's attendance and punctuality, the share of their routines they did (what the operational modules tell Human Resource when
@@ -34,11 +35,11 @@ final readonly class PerformanceService
     {
         $this->access->require($property, $actorId, HrAccess::PERFORMANCE, 'This person may not see how people are doing.');
         $today = $this->businessDate->current($property)->toString();
-        $from = $from === null || $from === '' ? date('Y-m-d', strtotime($today.' -29 days')) : $from;
+        $from = $from === null || $from === '' ? DateMath::format('Y-m-d', $today.' -29 days') : $from;
         $to = $to === null || $to === '' ? $today : $to;
         $department = $department === '' ? null : $department;
 
-        if (! ShiftTimes::isDate($from) || ! ShiftTimes::isDate($to) || $to < $from || (strtotime($to) - strtotime($from)) / 86400 >= self::MAX_DAYS) {
+        if (! ShiftTimes::isDate($from) || ! ShiftTimes::isDate($to) || $to < $from || DateMath::daysBetween($from, $to) >= self::MAX_DAYS) {
             throw Refusal::invalid('Choose a period of at most '.self::MAX_DAYS.' days that ends after it starts.', ['from', 'to']);
         }
 
@@ -87,7 +88,7 @@ final readonly class PerformanceService
 
         $people = array_values(array_filter($this->employees->employees($property, 'active'), static fn (array $e): bool => $department === null || $e['department'] === $department));
         $complaints = $this->complaints->ownedBy($property, array_values(array_filter(array_map(static fn (array $e): ?string => $e['user_id'] === null ? null : strtolower((string) $e['user_id']), $people))),
-            $zone->utcAt(CalendarDate::fromString($from))->format('Y-m-d H:i:s'), $zone->utcAt(CalendarDate::fromString(date('Y-m-d', strtotime($to.' +1 day'))))->format('Y-m-d H:i:s'));
+            $zone->utcAt(CalendarDate::fromString($from))->format('Y-m-d H:i:s'), $zone->utcAt(CalendarDate::fromString(DateMath::format('Y-m-d', $to.' +1 day')))->format('Y-m-d H:i:s'));
 
         $board = array_map(static function (array $e) use ($attendance, $credits, $complaints): array {
             $a = $attendance[$e['id']] ?? null;

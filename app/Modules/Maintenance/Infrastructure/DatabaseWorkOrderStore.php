@@ -6,6 +6,7 @@ namespace App\Modules\Maintenance\Infrastructure;
 
 use App\Modules\Maintenance\Application\WorkOrderStore;
 use App\Shared\Domain\Tenancy\PropertyId;
+use App\Shared\Domain\Time\DateMath;
 use DateTimeImmutable;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
@@ -112,13 +113,13 @@ final readonly class DatabaseWorkOrderStore implements WorkOrderStore
 
     public function reportedBetween(PropertyId $property, string $from, string $to): array
     {
-        return DB::table('maintenance_work_orders')->where('property_id', $property->toString())->where('reported_at', '>=', $from.' 00:00:00')->where('reported_at', '<', date('Y-m-d', strtotime($to.' +1 day')).' 00:00:00')
+        return DB::table('maintenance_work_orders')->where('property_id', $property->toString())->where('reported_at', '>=', $from.' 00:00:00')->where('reported_at', '<', DateMath::format('Y-m-d', $to.' +1 day').' 00:00:00')
             ->get()->map(static fn (object $r): array => (array) $r)->all();
     }
 
     public function doneBetween(PropertyId $property, string $from, string $to): array
     {
-        return DB::table('maintenance_work_orders')->where('property_id', $property->toString())->where('status', 'done')->where('done_at', '>=', $from.' 00:00:00')->where('done_at', '<', date('Y-m-d', strtotime($to.' +1 day')).' 00:00:00')
+        return DB::table('maintenance_work_orders')->where('property_id', $property->toString())->where('status', 'done')->where('done_at', '>=', $from.' 00:00:00')->where('done_at', '<', DateMath::format('Y-m-d', $to.' +1 day').' 00:00:00')
             ->get()->map(static fn (object $r): array => (array) $r)->all();
     }
 

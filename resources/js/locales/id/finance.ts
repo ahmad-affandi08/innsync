@@ -39,7 +39,6 @@ export const finance = {
     "fin.overdueDays": "Lewat {days} hari",
     "fin.dueIn": "Dalam {days} hari",
     "fin.dueToday": "Jatuh tempo hari ini",
-    "fin.dueSoon": "Jatuh tempo dalam 7 hari",
     "fin.print": "Cetak",
 
     "fin.pay.title": "Utang usaha",

@@ -39,7 +39,6 @@ export const finance = {
     "fin.overdueDays": "{days} days overdue",
     "fin.dueIn": "In {days} days",
     "fin.dueToday": "Due today",
-    "fin.dueSoon": "Due within 7 days",
     "fin.print": "Print",
 
     "fin.pay.title": "Payables",

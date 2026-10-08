@@ -20,10 +20,8 @@ final readonly class ReportController
     public function index(Request $request): Response
     {
         $data = $request->validate(['from' => ['nullable', 'date_format:Y-m-d'], 'to' => ['nullable', 'date_format:Y-m-d']]);
-        $to = $data['to'] ?? date('Y-m-d');
-        $from = $data['from'] ?? date('Y-m-d', strtotime($to.' -29 days'));
 
-        return Inertia::render('maintenance/pages/reports', ['report' => $this->reports->report($this->property->current(), (string) $request->user()->getAuthIdentifier(), $from, $to)]);
+        return Inertia::render('maintenance/pages/reports', ['report' => $this->reports->report($this->property->current(), (string) $request->user()->getAuthIdentifier(), $data['from'] ?? null, $data['to'] ?? null)]);
     }
 
     public function acknowledge(Request $request, string $id): JsonResponse

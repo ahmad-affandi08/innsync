@@ -12,6 +12,7 @@ use App\Shared\Application\Identifiers\IdentifierGenerator;
 use App\Shared\Application\Time\Clock;
 use App\Shared\Application\Transactions\TransactionRunner;
 use App\Shared\Domain\Tenancy\PropertyId;
+use App\Shared\Domain\Time\DateMath;
 
 /**
  * The clock-ins that look unusual, in front of a supervisor (owner request 2026-10-07: stronger attendance). `AttendanceAnomalies` marks them; here a person with the attendance
@@ -107,7 +108,7 @@ final readonly class AttendanceReviewService
     {
         $zone = $this->zones->forProperty($property) ?? throw Refusal::invalid('The property has no time zone.');
         $today = $zone->calendarDateAt($this->clock->nowUtc())->toString();
-        $rows = $this->store->between($property, date('Y-m-d', strtotime($today.' -'.self::CONTEXT_DAYS.' days')), $today, null);
+        $rows = $this->store->between($property, DateMath::format('Y-m-d', $today.' -'.self::CONTEXT_DAYS.' days'), $today, null);
         $radius = (int) ($this->store->settings($property)['radius_m'] ?? AttendanceService::BASELINE['radius_m']);
         $marks = AttendanceAnomalies::flag($rows, $radius);
 
@@ -126,7 +127,7 @@ final readonly class AttendanceReviewService
             $people[(string) $e['id']] = $e;
         }
 
-        $from = date('Y-m-d', strtotime($today.' -'.self::LIST_DAYS.' days'));
+        $from = DateMath::format('Y-m-d', $today.' -'.self::LIST_DAYS.' days');
         $items = [];
 
         foreach ($marks as $key => $flags) {

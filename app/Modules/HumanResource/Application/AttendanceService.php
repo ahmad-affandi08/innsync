@@ -27,6 +27,7 @@ use App\Shared\Application\Security\PermissionChecker;
 use App\Shared\Application\Time\Clock;
 use App\Shared\Application\Transactions\TransactionRunner;
 use App\Shared\Domain\Tenancy\PropertyId;
+use App\Shared\Domain\Time\DateMath;
 use App\Shared\Domain\Time\PropertyTimeZone;
 use DateTimeImmutable;
 use DateTimeZone;
@@ -96,11 +97,11 @@ final readonly class AttendanceService
         }
 
         $date = $date === null || $date === '' ? $today : $date;
-        $from = $from === null || $from === '' ? date('Y-m-d', strtotime($today.' -6 days')) : $from;
+        $from = $from === null || $from === '' ? DateMath::format('Y-m-d', $today.' -6 days') : $from;
         $to = $to === null || $to === '' ? $today : $to;
         $department = $department === '' ? null : $department;
 
-        if (! $this->isDate($date) || ! $this->isDate($from) || ! $this->isDate($to) || $to < $from || (strtotime($to) - strtotime($from)) / 86400 >= self::MAX_DAYS) {
+        if (! $this->isDate($date) || ! $this->isDate($from) || ! $this->isDate($to) || $to < $from || DateMath::daysBetween($from, $to) >= self::MAX_DAYS) {
             throw Refusal::invalid('Choose a day, and a period of at most '.self::MAX_DAYS.' days ending after it starts.', ['date', 'from', 'to']);
         }
 
@@ -159,7 +160,7 @@ final readonly class AttendanceService
         $today = $tz->calendarDateAt($now)->toString();
         $open = null;
 
-        foreach ([date('Y-m-d', strtotime($today.' -1 day')), $today] as $d) {
+        foreach ([DateMath::format('Y-m-d', $today.' -1 day'), $today] as $d) {
             $r = $this->store->record($property, $employee['id'], $d);
 
             if ($r !== null && $r['out_at'] === null) {
@@ -217,7 +218,7 @@ final readonly class AttendanceService
         $now = $this->clock->nowUtc();
         $today = $tz->calendarDateAt($now)->toString();
 
-        if (! $this->isDate($date) || $date > $today || $date < date('Y-m-d', strtotime($today.' -'.self::MANUAL_DAYS_BACK.' days'))) {
+        if (! $this->isDate($date) || $date > $today || $date < DateMath::format('Y-m-d', $today.' -'.self::MANUAL_DAYS_BACK.' days')) {
             throw Refusal::invalid('Give a day from the last '.self::MANUAL_DAYS_BACK.' days, up to today.', ['work_date']);
         }
 
@@ -424,7 +425,7 @@ final readonly class AttendanceService
         $tz = $this->zone($property);
         $now = $this->clock->nowUtc();
         $today = $tz->calendarDateAt($now)->toString();
-        $from = date('Y-m-d', strtotime($today.' -1 day'));
+        $from = DateMath::format('Y-m-d', $today.' -1 day');
         $records = [];
 
         foreach ($this->store->between($property, $from, $today, null) as $r) {
@@ -553,7 +554,7 @@ final readonly class AttendanceService
         $today = $tz->calendarDateAt($now)->toString();
         $best = null;
 
-        foreach ([date('Y-m-d', strtotime($today.' -1 day')), $today] as $d) {
+        foreach ([DateMath::format('Y-m-d', $today.' -1 day'), $today] as $d) {
             $entry = $this->roster->entry($property, $employeeId, $d);
 
             if ($entry === null || (bool) $entry['is_off']) {

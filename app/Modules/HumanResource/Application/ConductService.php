@@ -26,6 +26,7 @@ use App\Shared\Application\Security\PermissionChecker;
 use App\Shared\Application\Time\Clock;
 use App\Shared\Application\Transactions\TransactionRunner;
 use App\Shared\Domain\Tenancy\PropertyId;
+use App\Shared\Domain\Time\DateMath;
 
 /**
  * Reprimands, warning letters and awards (FR-HR-023). A record names the person, the kind (a spoken reprimand, a first, second or third warning letter, or an award), the day it was issued, the reason, the letter as a
@@ -91,7 +92,7 @@ final readonly class ConductService
             throw Refusal::invalid('Choose a kind of the list.', ['kind']);
         }
 
-        if (! ShiftTimes::isDate($issuedOn) || $issuedOn > $today || $issuedOn < date('Y-m-d', strtotime($today.' -'.self::BACK_DAYS.' days'))) {
+        if (! ShiftTimes::isDate($issuedOn) || $issuedOn > $today || $issuedOn < DateMath::format('Y-m-d', $today.' -'.self::BACK_DAYS.' days')) {
             throw Refusal::invalid('The day it was issued is today or at most '.self::BACK_DAYS.' days back.', ['issued_on']);
         }
 
@@ -102,9 +103,9 @@ final readonly class ConductService
         if ($kind === 'award') {
             $until = null;
         } else {
-            $until = $validUntil === null || $validUntil === '' ? date('Y-m-d', strtotime($issuedOn.' +'.self::MONTHS[$kind].' months')) : $validUntil;
+            $until = $validUntil === null || $validUntil === '' ? DateMath::format('Y-m-d', $issuedOn.' +'.self::MONTHS[$kind].' months') : $validUntil;
 
-            if (! ShiftTimes::isDate($until) || $until < $issuedOn || $until > date('Y-m-d', strtotime($issuedOn.' +'.self::MAX_WARNING_MONTHS.' months'))) {
+            if (! ShiftTimes::isDate($until) || $until < $issuedOn || $until > DateMath::format('Y-m-d', $issuedOn.' +'.self::MAX_WARNING_MONTHS.' months')) {
                 throw Refusal::invalid('A warning holds from the day it was issued for at most '.self::MAX_WARNING_MONTHS.' months.', ['valid_until']);
             }
         }

@@ -18,6 +18,7 @@ use App\Shared\Application\Tenancy\PropertyScopeViolation;
 use App\Shared\Application\Time\Clock;
 use App\Shared\Application\Transactions\TransactionRunner;
 use App\Shared\Domain\Tenancy\PropertyId;
+use App\Shared\Domain\Time\DateMath;
 use DateTimeImmutable;
 use DateTimeZone;
 
@@ -51,10 +52,10 @@ final readonly class TemperatureService
         }
 
         $today = $this->businessDate->current($property)->toString();
-        $from = $from === null || $from === '' ? date('Y-m-d', strtotime($today.' -6 days')) : $from;
+        $from = $from === null || $from === '' ? DateMath::format('Y-m-d', $today.' -6 days') : $from;
         $to = $to === null || $to === '' ? $today : $to;
 
-        if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $from) !== 1 || preg_match('/^\d{4}-\d{2}-\d{2}$/', $to) !== 1 || $to < $from || (strtotime($to) - strtotime($from)) / 86400 > 92) {
+        if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $from) !== 1 || preg_match('/^\d{4}-\d{2}-\d{2}$/', $to) !== 1 || $to < $from || DateMath::daysBetween($from, $to) > 92) {
             throw Refusal::invalid('Choose a range of at most 93 days that ends after it starts.', ['from', 'to']);
         }
 

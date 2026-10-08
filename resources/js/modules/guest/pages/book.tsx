@@ -12,12 +12,14 @@ import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { GuestShell } from '@/modules/guest/components/guest-shell';
-import { newIdempotencyKey } from '@/shared/api/http';
+import { apiRequest, newIdempotencyKey } from '@/shared/api/http';
+import { ApiError } from '@/shared/lib/api-error';
 import { useServerAction } from '@/shared/api/use-server-action';
 import { useFormatters, useTranslation } from '@/shared/i18n/i18n';
 import { useErrorStateCopy } from '@/shared/i18n/use-ui-copy';
 
 type Booking = { hotel: string; notice: string | null; max_nights: number; today: string; horizon_days: number; privacy: { version: number; body_id: string; body_en: string } };
+type Offers = { currency: string | null; nights: number; offers: Offer[] };
 type Offer = { room_type_id: string; code: string; name: string; max_adults: number; max_children: number; available: boolean; reason: string | null; currency: string; total_minor: number; nights: { date: string; total_minor: number }[]; photos: string[] };
 type Done = { number: string; status: string; total_minor: number; currency: string; arrival: string; departure: string; emailed: boolean };
 
@@ -64,7 +66,7 @@ export default function BookPage({ booking, property_id: propertyId }: { booking
     const action = useServerAction();
     const [dates, setDates] = useState({ arrival: booking.today, departure: addDays(booking.today, 1) });
     const [party, setParty] = useState({ adults: '2', children: '0' });
-    const [offers, setOffers] = useState<{ currency: string | null; nights: number; offers: Offer[] } | null>(null);
+    const [offers, setOffers] = useState<Offers | null>(null);
     const [searching, setSearching] = useState(false);
     const [searchError, setSearchError] = useState<string | null>(null);
     const [chosen, setChosen] = useState<Offer | null>(null);
@@ -78,18 +80,12 @@ export default function BookPage({ booking, property_id: propertyId }: { booking
         setSearchError(null);
         setChosen(null);
         try {
-            const query = new URLSearchParams({ arrival: dates.arrival, departure: dates.departure, adults: party.adults, children: party.children });
-            const response = await fetch(`/book/${propertyId}/offers?${query.toString()}`, { headers: { Accept: 'application/json' }, credentials: 'same-origin' });
-            const body = await response.json();
-            if (!response.ok) {
-                const fields = (body?.error?.fields ?? {}) as Record<string, string[]>;
-                setSearchError(Object.values(fields)[0]?.[0] ?? t('guest.booking.searchFailed'));
-                setOffers(null);
-            } else {
-                setOffers(body);
-            }
-        } catch {
-            setSearchError(t('guest.booking.searchFailed'));
+            const body = await apiRequest<Offers>(`/book/${propertyId}/offers`, { query: { arrival: dates.arrival, departure: dates.departure, adults: party.adults, children: party.children } });
+            setOffers(body);
+        } catch (error) {
+            const fields = error instanceof ApiError ? error.failure.fields : {};
+            setSearchError(Object.values(fields)[0]?.[0] ?? t('guest.booking.searchFailed'));
+            setOffers(null);
         } finally {
             setSearching(false);
         }

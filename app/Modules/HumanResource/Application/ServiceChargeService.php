@@ -19,6 +19,7 @@ use App\Shared\Application\Outbox\OutboxPublisher;
 use App\Shared\Application\Time\Clock;
 use App\Shared\Application\Transactions\TransactionRunner;
 use App\Shared\Domain\Tenancy\PropertyId;
+use App\Shared\Domain\Time\DateMath;
 
 /**
  * The share of the service charge of a month (FR-HR-032, -033). The simulation takes what Finance booked as service charge from the rooms and the outlets in the month, keeps the staff's share of it, sets aside the reserve
@@ -92,7 +93,7 @@ final readonly class ServiceChargeService
         $start = $period.'-01';
 
         $this->transactions->run(function () use ($property, $actor, $id, $period, $start): void {
-            if (! $this->store->addDistribution($property, ['id' => $id, 'number' => 'SC-'.$period, 'period' => $period, 'period_start' => $start, 'period_end' => date('Y-m-t', strtotime($start)), 'status' => 'draft', 'created_by' => $actor], $this->clock->nowUtc())) {
+            if (! $this->store->addDistribution($property, ['id' => $id, 'number' => 'SC-'.$period, 'period' => $period, 'period_start' => $start, 'period_end' => DateMath::format('Y-m-t', $start), 'status' => 'draft', 'created_by' => $actor], $this->clock->nowUtc())) {
                 throw Refusal::stateConflict('This month has a distribution already.');
             }
 

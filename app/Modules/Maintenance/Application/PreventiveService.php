@@ -6,6 +6,7 @@ namespace App\Modules\Maintenance\Application;
 
 use App\Modules\Property\Application\Settings\BusinessDateProvider;
 use App\Shared\Domain\Tenancy\PropertyId;
+use App\Shared\Domain\Time\DateMath;
 
 /**
  * Makes the work orders that routine care calls for (FR-MTC-008, -014). A plan by the calendar falls due the number of days it is led before its date; a plan by the meter falls
@@ -29,7 +30,7 @@ final readonly class PreventiveService
             }
 
             if ($p['trigger_kind'] === 'calendar') {
-                if ($today < date('Y-m-d', strtotime($p['next_due_on'].' -'.(int) $p['lead_days'].' days'))) {
+                if ($today < DateMath::format('Y-m-d', $p['next_due_on'].' -'.(int) $p['lead_days'].' days')) {
                     continue;
                 }
 

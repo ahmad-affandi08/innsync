@@ -14,6 +14,7 @@ use App\Shared\Application\Outbox\OutboxPublisher;
 use App\Shared\Application\Time\Clock;
 use App\Shared\Application\Transactions\TransactionRunner;
 use App\Shared\Domain\Tenancy\PropertyId;
+use App\Shared\Domain\Time\DateMath;
 
 /**
  * The appraisal of a person for a period (FR-HR-022). The owner makes the forms (what is rated and how much each part weighs, summing to 100); the supervisor of the person, or whoever holds the appraisal right, rates each
@@ -144,7 +145,7 @@ final readonly class AppraisalService
             throw Refusal::invalid('Name the period in at most 30 characters, for example 2026 first half.', ['period_label']);
         }
 
-        if (! ShiftTimes::isDate($start) || ! ShiftTimes::isDate($end) || $end < $start || (strtotime($end) - strtotime($start)) / 86400 >= self::MAX_DAYS) {
+        if (! ShiftTimes::isDate($start) || ! ShiftTimes::isDate($end) || $end < $start || DateMath::daysBetween($start, $end) >= self::MAX_DAYS) {
             throw Refusal::invalid('The period ends after it starts and lasts at most a year.', ['period_start', 'period_end']);
         }
 

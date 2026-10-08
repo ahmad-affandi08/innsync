@@ -17,6 +17,7 @@ use App\Shared\Application\Outbox\OutboxPublisher;
 use App\Shared\Application\Time\Clock;
 use App\Shared\Application\Transactions\TransactionRunner;
 use App\Shared\Domain\Tenancy\PropertyId;
+use App\Shared\Domain\Time\DateMath;
 use App\Shared\Domain\Time\PropertyTimeZone;
 use DateTimeImmutable;
 use DateTimeZone;
@@ -79,7 +80,7 @@ final readonly class AttendanceCorrectionService
         $now = $this->clock->nowUtc();
         $today = $tz->calendarDateAt($now)->toString();
 
-        if (! ShiftTimes::isDate($date) || $date > $today || $date < date('Y-m-d', strtotime($today.' -'.self::DAYS_BACK.' days'))) {
+        if (! ShiftTimes::isDate($date) || $date > $today || $date < DateMath::format('Y-m-d', $today.' -'.self::DAYS_BACK.' days')) {
             throw Refusal::invalid('Give a day from the last '.self::DAYS_BACK.' days, up to today.', ['work_date']);
         }
 

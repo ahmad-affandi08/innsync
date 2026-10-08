@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\InventoryPurchasing\Application;
 
+use App\Modules\InventoryPurchasing\Domain\StockValue;
 use App\Modules\Property\Application\Settings\BusinessDateProvider;
 use App\Shared\Application\Security\SystemActors;
 use App\Shared\Domain\Tenancy\PropertyId;
@@ -58,7 +59,7 @@ final readonly class RestockDraftService
         foreach ($short as $itemId => $milli) {
             $item = $items[$itemId];
             $cost = $this->inventory->lastInflowCost($property, $itemId);
-            $unitCost = $cost === null || $cost['base_qty_milli'] <= 0 ? 0 : (int) round($cost['value_minor'] * 1000 / $cost['base_qty_milli']);
+            $unitCost = $cost === null || $cost['base_qty_milli'] <= 0 ? 0 : StockValue::mulDiv($cost['value_minor'], 1000, $cost['base_qty_milli']);
             $byDepartment[(string) $item['department']][] = ['item_id' => $itemId, 'unit' => (string) $item['base_unit'], 'quantity' => intdiv($milli, 1000).'.'.str_pad((string) ($milli % 1000), 3, '0', STR_PAD_LEFT), 'est_cost_minor' => $unitCost, 'note' => null];
         }
 

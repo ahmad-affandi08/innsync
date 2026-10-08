@@ -10,6 +10,7 @@ use App\Shared\Application\Security\PermissionChecker;
 use App\Shared\Application\Tenancy\PropertyContext;
 use App\Shared\Application\Tenancy\PropertyScopeViolation;
 use App\Shared\Domain\Tenancy\PropertyId;
+use App\Shared\Domain\Time\DateMath;
 
 /**
  * The batches that hold stock and when they expire (FR-INV-008, FR-KIT-009). A batch is made when stock comes in with a batch number or an expiry date (a goods receipt line with an expiry
@@ -52,7 +53,7 @@ final readonly class StockLotService
 
         foreach ($this->inventory->lots($property, null, null, $department) as $l) {
             $expires = $l['expires_on'] === null ? null : substr((string) $l['expires_on'], 0, 10);
-            $days = $expires === null ? null : (int) round((strtotime($expires) - strtotime($today)) / 86400);
+            $days = $expires === null ? null : DateMath::daysBetween($today, $expires);
             $state = $expires === null ? 'no_expiry' : ($days < 0 ? 'expired' : ($days <= self::WARN_DAYS ? 'expiring' : 'ok'));
             $counts['expired'] += $state === 'expired' ? 1 : 0;
             $counts['expiring'] += $state === 'expiring' ? 1 : 0;

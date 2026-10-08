@@ -15,6 +15,7 @@ use App\Shared\Application\Identifiers\IdentifierGenerator;
 use App\Shared\Application\Time\Clock;
 use App\Shared\Application\Transactions\TransactionRunner;
 use App\Shared\Domain\Tenancy\PropertyId;
+use App\Shared\Domain\Time\DateMath;
 use App\Shared\Domain\Time\PropertyTimeZone;
 use DateTimeImmutable;
 use DateTimeZone;
@@ -57,7 +58,7 @@ final readonly class OvertimeService
         $tz = $this->zone($property);
         $today = $tz->calendarDateAt($this->clock->nowUtc())->toString();
 
-        return ['requests' => array_map(fn (array $r): array => $this->shape($property, $r, $tz), $this->store->between($property, date('Y-m-d', strtotime($today.' -'.self::BACK_DAYS.' days')), date('Y-m-d', strtotime($today.' +'.self::AHEAD_DAYS.' days'))))];
+        return ['requests' => array_map(fn (array $r): array => $this->shape($property, $r, $tz), $this->store->between($property, DateMath::format('Y-m-d', $today.' -'.self::BACK_DAYS.' days'), DateMath::format('Y-m-d', $today.' +'.self::AHEAD_DAYS.' days')))];
     }
 
     /** @return array<string, mixed> */
@@ -78,7 +79,7 @@ final readonly class OvertimeService
         $now = $this->clock->nowUtc();
         $today = $tz->calendarDateAt($now)->toString();
 
-        if (! ShiftTimes::isDate($date) || $date < date('Y-m-d', strtotime($today.' -1 day')) || $date > date('Y-m-d', strtotime($today.' +'.self::AHEAD_DAYS.' days'))) {
+        if (! ShiftTimes::isDate($date) || $date < DateMath::format('Y-m-d', $today.' -1 day') || $date > DateMath::format('Y-m-d', $today.' +'.self::AHEAD_DAYS.' days')) {
             throw Refusal::invalid('Give a day from yesterday to '.self::AHEAD_DAYS.' days ahead.', ['work_date']);
         }
 

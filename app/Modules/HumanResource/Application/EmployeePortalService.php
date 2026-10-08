@@ -6,6 +6,7 @@ namespace App\Modules\HumanResource\Application;
 
 use App\Modules\Property\Application\Settings\BusinessDateProvider;
 use App\Shared\Domain\Tenancy\PropertyId;
+use App\Shared\Domain\Time\DateMath;
 
 /**
  * The employee's own page (FR-HR-004): their schedule for the next two weeks, what they did over the last month, what is left of their leave, the payslips of the months that were paid, and the shift exchanges they
@@ -43,7 +44,7 @@ final readonly class EmployeePortalService
             return ['linked' => false, 'today' => $today];
         }
 
-        $to = date('Y-m-d', strtotime($today.' +'.self::AHEAD_DAYS.' days'));
+        $to = DateMath::format('Y-m-d', $today.' +'.self::AHEAD_DAYS.' days');
         $schedule = [];
 
         foreach ($this->roster->entriesBetween($property, $today, $to, $employee['department']) as $e) {
@@ -52,7 +53,7 @@ final readonly class EmployeePortalService
             }
         }
 
-        $history = $this->attendance->historyOf($property, $employee['id'], $employee['department'], date('Y-m-d', strtotime($today.' -'.self::BACK_DAYS.' days')), $today);
+        $history = $this->attendance->historyOf($property, $employee['id'], $employee['department'], DateMath::format('Y-m-d', $today.' -'.self::BACK_DAYS.' days'), $today);
         $leave = $this->leave->overview($property, $actorId, null, null);
         $swaps = $this->swaps->overview($property, $actorId);
         $slips = $this->payslips->mine($property, $actorId);

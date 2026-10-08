@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Modules\HumanResource\Application;
 
 use App\Shared\Domain\Time\CalendarDate;
+use App\Shared\Domain\Time\DateMath;
 use App\Shared\Domain\Time\PropertyTimeZone;
 use DateTimeImmutable;
 use DateTimeZone;
@@ -21,7 +22,7 @@ final class ShiftTimes
         $date = substr((string) $entry['work_date'], 0, 10);
         $lastEnd = $entry['starts2_at'] !== null ? $entry['ends2_at'] : $entry['ends_at'];
         $nextDay = $entry['starts2_at'] === null && $entry['ends_at'] <= $entry['starts_at'];
-        $endDate = $nextDay ? date('Y-m-d', strtotime($date.' +1 day')) : $date;
+        $endDate = $nextDay ? DateMath::format('Y-m-d', $date.' +1 day') : $date;
 
         return [$tz->utcAt(CalendarDate::fromString($date), $entry['starts_at']), $tz->utcAt(CalendarDate::fromString($endDate), $lastEnd)];
     }
@@ -35,7 +36,7 @@ final class ShiftTimes
             return [$inAt, null];
         }
 
-        $outDate = $out <= $in ? date('Y-m-d', strtotime($date.' +1 day')) : $date;
+        $outDate = $out <= $in ? DateMath::format('Y-m-d', $date.' +1 day') : $date;
 
         return [$inAt, $tz->utcAt(CalendarDate::fromString($outDate), $out)];
     }

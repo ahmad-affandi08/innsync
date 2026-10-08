@@ -13,7 +13,6 @@ export const common = {
     'shell.menu': "Main menu",
     'shell.skip': "Skip to the content",
     'shell.openMenu': "Open the menu",
-    'shell.closeMenu': "Close the menu",
     'shell.businessDate': "Business date",
     'shell.sessions': "Sessions and devices",
     'home.description': "Everything the hotel does in one place. Pick up where you left off.",

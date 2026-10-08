@@ -7,6 +7,7 @@ namespace App\Modules\FrontOffice\Infrastructure\GuestDirectory;
 use App\Modules\FrontOffice\Application\GuestDirectory\GuestDirectoryReader;
 use App\Modules\FrontOffice\Application\GuestNotes\GuestKey;
 use App\Shared\Domain\Tenancy\PropertyId;
+use App\Shared\Domain\Time\DateMath;
 use Illuminate\Support\Facades\DB;
 
 final class DatabaseGuestDirectoryReader implements GuestDirectoryReader
@@ -27,7 +28,7 @@ final class DatabaseGuestDirectoryReader implements GuestDirectoryReader
         foreach ($rows as $r) {
             // The same name with the same phone is one guest; a name alone is not enough to say two bookings are the same person.
             $key = GuestKey::of((string) $r->guest_name, $r->guest_phone === null ? null : (string) $r->guest_phone);
-            $nights = max(0, (int) ((strtotime((string) $r->departure_date) - strtotime((string) $r->arrival_date)) / 86400));
+            $nights = max(0, DateMath::daysBetween((string) $r->arrival_date, (string) $r->departure_date));
             $done = in_array($r->status, ['checked_in', 'completed'], true);
 
             if (! isset($guests[$key])) {

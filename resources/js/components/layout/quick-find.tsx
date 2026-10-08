@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Dialog } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import type { MessageKey } from '@/locales/en/index';
+import { apiRequest } from '@/shared/api/http';
 import { useFormatters, useTranslation } from '@/shared/i18n/i18n';
 
 type Found = { id: string; number: string; status: string; guest_name: string; arrival: string; departure: string };
@@ -42,10 +43,9 @@ export function QuickFind() {
         const ticket = ++latest.current;
         const timer = window.setTimeout(async () => {
             try {
-                const response = await fetch(`/front-office/reservations/find?q=${encodeURIComponent(text)}`, { headers: { Accept: 'application/json' }, credentials: 'same-origin' });
+                const found = await apiRequest<{ results: Found[] }>('/front-office/reservations/find', { query: { q: text } });
                 if (ticket !== latest.current) return;
-                if (!response.ok) throw new Error(String(response.status));
-                setResults(((await response.json()) as { results: Found[] }).results);
+                setResults(found.results);
                 setFailed(false);
             } catch {
                 if (ticket === latest.current) setFailed(true);

@@ -6,6 +6,7 @@ namespace App\Modules\GuestExperience\Infrastructure;
 
 use App\Modules\GuestExperience\Application\OnlineBookingStore;
 use App\Shared\Domain\Tenancy\PropertyId;
+use App\Shared\Domain\Time\DateMath;
 use Illuminate\Support\Facades\DB;
 
 final class DatabaseOnlineBookingStore implements OnlineBookingStore
@@ -65,7 +66,7 @@ final class DatabaseOnlineBookingStore implements OnlineBookingStore
         if ($kind === 'pre_arrival') {
             $query->where('r.arrival_date', $day)->whereIn('r.status', ['tentative', 'confirmed', 'guaranteed']);
         } else {
-            $query->where('r.status', 'completed')->where('r.departure_date', '<=', $day)->where('r.departure_date', '>=', date('Y-m-d', (int) strtotime($day.' -1 day')));
+            $query->where('r.status', 'completed')->where('r.departure_date', '<=', $day)->where('r.departure_date', '>=', DateMath::addDays($day, -1));
         }
 
         return $query->orderBy('r.arrival_date')->limit(200)->get(['r.id', 'r.number', 'r.guest_name', 'r.guest_email', 'r.arrival_date', 'r.departure_date'])

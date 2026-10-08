@@ -29,6 +29,7 @@ use App\Shared\Application\Security\PermissionChecker;
 use App\Shared\Application\Time\Clock;
 use App\Shared\Application\Transactions\TransactionRunner;
 use App\Shared\Domain\Tenancy\PropertyId;
+use App\Shared\Domain\Time\DateMath;
 
 /**
  * Leave, sick leave and permits (FR-HR-015, -016). A person asks for a kind of leave for days of a calendar year, for themselves with their own account or, with the leave privilege, for someone else. The
@@ -151,7 +152,7 @@ final readonly class LeaveService
             throw Refusal::invalid('Give the first and the last day, the last not before the first.', ['from_date', 'to_date']);
         }
 
-        $span = (int) round((strtotime($to) - strtotime($from)) / 86400) + 1;
+        $span = DateMath::daysBetween($from, $to) + 1;
         $today = $this->businessDate->current($property)->toString();
         $deducts = (bool) $type['deducts_balance'];
 
@@ -159,7 +160,7 @@ final readonly class LeaveService
             throw Refusal::invalid('A request covers at most '.self::MAX_DAYS.' days.', ['to_date']);
         }
 
-        if ($from < ($deducts ? $today : date('Y-m-d', strtotime($today.' -'.self::BACK_DAYS.' days')))) {
+        if ($from < ($deducts ? $today : DateMath::format('Y-m-d', $today.' -'.self::BACK_DAYS.' days'))) {
             throw Refusal::invalid($deducts ? 'Leave from the balance starts today or later.' : 'This leave may start at most '.self::BACK_DAYS.' days back.', ['from_date']);
         }
 
@@ -302,7 +303,7 @@ final readonly class LeaveService
             $this->approvals->consume($property, (string) $r['approval_id'], self::SUBJECT, $r['id'], $this->payload($employee['id'], $r['leave_type_id'], $from, $to), $actor);
             $taken = 0;
 
-            for ($d = $from; $d <= $to; $d = date('Y-m-d', strtotime($d.' +1 day'))) {
+            for ($d = $from; $d <= $to; $d = DateMath::format('Y-m-d', $d.' +1 day')) {
                 $entry = $this->roster->entry($property, $employee['id'], $d);
                 $counted = $entry === null || ! (bool) $entry['is_off'];
                 $taken += $counted ? 1 : 0;
@@ -439,7 +440,7 @@ final readonly class LeaveService
         $cancelled = 0;
 
         foreach ($this->store->openEndingAfter($property, $employeeId, $leftOn) as $r) {
-            $this->store->removeDays($property, $r['id'], date('Y-m-d', strtotime($leftOn.' +1 day')));
+            $this->store->removeDays($property, $r['id'], DateMath::format('Y-m-d', $leftOn.' +1 day'));
             $this->store->updateRequest($property, $r['id'], (int) $r['lock_version'], ['status' => 'cancelled'], $now);
             $cancelled++;
             $this->audit->record(new AuditEntry($property->toString(), strtolower($actorId), 'leave.cancelled', 'leave', $r['id'], ['status' => $r['status']], ['status' => 'cancelled', 'employee' => $r['number'], 'type' => $r['type_code'], 'reason' => 'offboarding'], null, $r['approval_id']));
@@ -542,7 +543,7 @@ final readonly class LeaveService
     /** @param array<string, mixed> $employee @param array<string, mixed> $type */
     private function eligibleOn(array $employee, array $type): string
     {
-        return date('Y-m-d', strtotime(substr((string) $employee['joined_on'], 0, 10).' +'.(int) $type['eligible_after_months'].' months'));
+        return DateMath::format('Y-m-d', substr((string) $employee['joined_on'], 0, 10).' +'.(int) $type['eligible_after_months'].' months');
     }
 
     /** Calendar days from one day to the other, less the days the roster shows a day off. */
@@ -550,7 +551,7 @@ final readonly class LeaveService
     {
         $n = 0;
 
-        for ($d = $from; $d <= $to; $d = date('Y-m-d', strtotime($d.' +1 day'))) {
+        for ($d = $from; $d <= $to; $d = DateMath::format('Y-m-d', $d.' +1 day')) {
             $entry = $this->roster->entry($property, $employeeId, $d);
             $n += $entry !== null && (bool) $entry['is_off'] ? 0 : 1;
         }

@@ -12,6 +12,7 @@ use App\Shared\Application\Identifiers\IdentifierGenerator;
 use App\Shared\Application\Time\Clock;
 use App\Shared\Application\Transactions\TransactionRunner;
 use App\Shared\Domain\Tenancy\PropertyId;
+use App\Shared\Domain\Time\DateMath;
 use DateTimeImmutable;
 use DateTimeZone;
 
@@ -51,11 +52,11 @@ final readonly class RosterService
     {
         $caps = $this->capabilities($property, $actorId);
         $today = $this->businessDate->current($property)->toString();
-        $from = $from === null || $from === '' ? date('Y-m-d', strtotime('monday this week', strtotime($today))) : $from;
-        $to = $to === null || $to === '' ? date('Y-m-d', strtotime($from.' +6 days')) : $to;
+        $from = $from === null || $from === '' ? DateMath::format('Y-m-d', 'monday this week', $today) : $from;
+        $to = $to === null || $to === '' ? DateMath::format('Y-m-d', $from.' +6 days') : $to;
         $department = $department === '' ? null : $department;
 
-        if (! $this->isDate($from) || ! $this->isDate($to) || $to < $from || (strtotime($to) - strtotime($from)) / 86400 >= self::MAX_DAYS) {
+        if (! $this->isDate($from) || ! $this->isDate($to) || $to < $from || DateMath::daysBetween($from, $to) >= self::MAX_DAYS) {
             throw Refusal::invalid('Choose a period of at most '.self::MAX_DAYS.' days, ending after it starts.', ['from', 'to']);
         }
 
@@ -65,7 +66,7 @@ final readonly class RosterService
 
         $days = [];
 
-        for ($d = $from; $d <= $to; $d = date('Y-m-d', strtotime($d.' +1 day'))) {
+        for ($d = $from; $d <= $to; $d = DateMath::format('Y-m-d', $d.' +1 day')) {
             $days[] = $d;
         }
 
@@ -207,7 +208,7 @@ final readonly class RosterService
         }
 
         $department = $department === '' ? null : $department;
-        $shift = (int) round((strtotime($toStart) - strtotime($fromStart)) / 86400);
+        $shift = DateMath::daysBetween($fromStart, $toStart);
         $today = $this->businessDate->current($property)->toString();
         $copied = 0;
         $skipped = 0;
@@ -215,15 +216,15 @@ final readonly class RosterService
 
         $this->transactions->run(function () use ($property, $actor, $fromStart, $shift, $today, $department, &$copied, &$skipped): void {
             $now = $this->clock->nowUtc();
-            $source = $this->roster->entriesBetween($property, $fromStart, date('Y-m-d', strtotime($fromStart.' +6 days')), $department);
+            $source = $this->roster->entriesBetween($property, $fromStart, DateMath::format('Y-m-d', $fromStart.' +6 days'), $department);
             $leaves = [];
 
-            foreach ($this->leave->daysBetween($property, date('Y-m-d', strtotime($fromStart.' '.($shift >= 0 ? '+' : '').$shift.' days')), date('Y-m-d', strtotime($fromStart.' +6 days '.($shift >= 0 ? '+' : '').$shift.' days')), null) as $l) {
+            foreach ($this->leave->daysBetween($property, DateMath::format('Y-m-d', $fromStart.' '.($shift >= 0 ? '+' : '').$shift.' days'), DateMath::format('Y-m-d', $fromStart.' +6 days '.($shift >= 0 ? '+' : '').$shift.' days'), null) as $l) {
                 $leaves[$l['employee_id'].'|'.substr((string) $l['work_date'], 0, 10)] = true;
             }
 
             foreach ($source as $s) {
-                $date = date('Y-m-d', strtotime(substr((string) $s['work_date'], 0, 10).' '.($shift >= 0 ? '+' : '').$shift.' days'));
+                $date = DateMath::format('Y-m-d', substr((string) $s['work_date'], 0, 10).' '.($shift >= 0 ? '+' : '').$shift.' days');
                 $e = $this->employees->employee($property, $s['employee_id']);
                 $pattern = $this->roster->pattern($property, $s['pattern_id']);
 
@@ -247,7 +248,7 @@ final readonly class RosterService
     /** Takes the days of a person who leaves, from the day after they left, out of the roster. @return int how many days */
     public function closeFor(PropertyId $property, string $employeeId, string $leftOn): int
     {
-        return $this->roster->removeEntriesFrom($property, $employeeId, date('Y-m-d', strtotime($leftOn.' +1 day')));
+        return $this->roster->removeEntriesFrom($property, $employeeId, DateMath::format('Y-m-d', $leftOn.' +1 day'));
     }
 
     /** @return list<array<string, mixed>> */
@@ -422,7 +423,7 @@ final readonly class RosterService
                 continue;
             }
 
-            for ($d = $start; $d <= $to; $d = date('Y-m-d', strtotime($d.' +1 day'))) {
+            for ($d = $start; $d <= $to; $d = DateMath::format('Y-m-d', $d.' +1 day')) {
                 $have = $count[$d.'|'.$m['department'].'|'.$m['pattern_id']] ?? 0;
 
                 if ($have < (int) $m['minimum']) {

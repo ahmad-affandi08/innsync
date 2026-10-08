@@ -19,6 +19,7 @@ use App\Shared\Application\Outbox\OutboxPublisher;
 use App\Shared\Application\Time\Clock;
 use App\Shared\Application\Transactions\TransactionRunner;
 use App\Shared\Domain\Tenancy\PropertyId;
+use App\Shared\Domain\Time\DateMath;
 
 /**
  * The payroll of a month (FR-HR-031, -037, -038): draft, calculated, reviewed, approved, paid, locked. Calculating works out every person's pay from what they earn, the days they were there, overtime that was
@@ -91,7 +92,7 @@ final readonly class PayrollRunService
         $id = $this->ids->next();
         $actor = strtolower($actorId);
         $start = $period.'-01';
-        $end = date('Y-m-t', strtotime($start));
+        $end = DateMath::format('Y-m-t', $start);
 
         $this->transactions->run(function () use ($property, $actor, $id, $period, $start, $end): void {
             if (! $this->store->addRun($property, ['id' => $id, 'number' => 'PAY-'.$period, 'period' => $period, 'period_start' => $start, 'period_end' => $end, 'status' => 'draft', 'created_by' => $actor], $this->clock->nowUtc())) {

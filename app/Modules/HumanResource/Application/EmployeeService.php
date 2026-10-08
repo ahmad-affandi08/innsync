@@ -17,6 +17,7 @@ use App\Shared\Application\Security\StaffDirectory;
 use App\Shared\Application\Time\Clock;
 use App\Shared\Application\Transactions\TransactionRunner;
 use App\Shared\Domain\Tenancy\PropertyId;
+use App\Shared\Domain\Time\DateMath;
 use DateTimeImmutable;
 use DateTimeZone;
 
@@ -292,7 +293,7 @@ final readonly class EmployeeService
     {
         $settings = $this->settings($property);
         $today = $this->businessDate->current($property)->toString();
-        $until = date('Y-m-d', strtotime($today.' +'.$settings['warn_days'].' days'));
+        $until = DateMath::format('Y-m-d', $today.' +'.$settings['warn_days'].' days');
         $out = [];
         $active = $this->store->employees($property, 'active');
 
@@ -328,7 +329,7 @@ final readonly class EmployeeService
      */
     private function warning(string $type, array $e, ?array $d, string $date, string $today): array
     {
-        $days = (int) round((strtotime($date) - strtotime($today)) / 86400);
+        $days = DateMath::daysBetween($today, $date);
 
         return [
             'type' => $type, 'status' => $days < 0 ? 'expired' : 'expiring', 'employee_id' => $e['employee_id'] ?? $e['id'], 'number' => $e['number'], 'name' => $e['full_name'], 'department' => $e['department'],
@@ -364,7 +365,7 @@ final readonly class EmployeeService
             throw Refusal::invalid('Give the position in at most 80 characters.', ['position']);
         }
 
-        if (! $this->isDate($joined) || $joined > date('Y-m-d', strtotime($today.' +90 days'))) {
+        if (! $this->isDate($joined) || $joined > DateMath::format('Y-m-d', $today.' +90 days')) {
             throw Refusal::invalid('Give the day the person joins, at most 90 days ahead.', ['joined_on']);
         }
 

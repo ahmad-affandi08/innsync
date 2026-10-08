@@ -48,9 +48,10 @@ final class PasswordResetController
             'password' => ['required', 'confirmed', \Illuminate\Validation\Rules\Password::defaults()],
         ]);
 
+        $changed = false;
         $status = Password::broker()->reset(
             ['email' => $data['email'], 'token' => $data['token'], 'password' => $data['password'], 'password_confirmation' => $data['password']],
-            function (Model $user, string $password): void {
+            function (Model $user, string $password) use (&$changed): void {
                 if (! $user->is_active) {
                     return;
                 }
@@ -65,11 +66,13 @@ final class PasswordResetController
                     ])->save();
                     DB::table((string) config('session.table'))->where('user_id', $user->getAuthIdentifier())->delete();
                 });
+                $changed = true;
                 event(new PasswordReset($user));
             },
         );
 
-        if ($status !== Password::PASSWORD_RESET) {
+        // An account that was switched off after the link was sent is told the same as a wrong link: nothing was changed, so it must not say that it was.
+        if ($status !== Password::PASSWORD_RESET || ! $changed) {
             throw ValidationException::withMessages(['email' => __('identity.reset_invalid')]);
         }
 

@@ -33,7 +33,8 @@ return [
         'local' => [
             'driver' => 'local',
             'root' => storage_path('app/private'),
-            'serve' => true,
+            // Files are served only by the application, which checks who may read each one; the framework's signed /storage route is not needed.
+            'serve' => false,
             'throw' => false,
             'report' => false,
         ],

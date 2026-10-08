@@ -67,8 +67,6 @@ export const ui = {
     'ui.date.nextMonth': 'Next month',
     'ui.date.rangeHint': 'Pick the first and the last day',
     'ui.date.apply': 'Done',
-    'ui.filter.reset': 'Clear filters',
-    'ui.field.required': 'required',
     'ui.dialog.cancel': 'Cancel',
     'ui.dialog.close': 'Close',
     'ui.breadcrumb': 'Breadcrumb',
