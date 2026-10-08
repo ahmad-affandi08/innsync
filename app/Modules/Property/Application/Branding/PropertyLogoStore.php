@@ -17,4 +17,12 @@ interface PropertyLogoStore
     public function save(PropertyId $property, string $mime, string $content, string $sha256, string $actorId): void;
 
     public function remove(PropertyId $property): bool;
+
+    /** Shown unless the property switched it off. */
+    public function poweredBy(PropertyId $property): bool;
+
+    public function setPoweredBy(PropertyId $property, bool $show, string $actorId): void;
+
+    /** The only active property of the installation, for the sign-in page; null when there are none or several. */
+    public function soleProperty(): ?PropertyId;
 }

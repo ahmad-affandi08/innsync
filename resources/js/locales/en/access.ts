@@ -367,5 +367,10 @@ export const access = {
     'brand.preview': "How it will look",
     'brand.save': "Save logo",
     'brand.where.title': "Where the logo shows",
-    'brand.where.body': "In the header and side menu for everyone signed in to this property, and at the top of every page that is printed or saved as PDF. The sign-in page and the guest pages keep the InnSYnc logo.",
+    'brand.where.body': "In the header and side menu for everyone signed in to this property, on the sign-in page when this is the only property of the installation, on the guest pages (QR menu, bill, check-in), and at the top of every page that is printed or saved as PDF.",
+    'brand.poweredBy': "Powered by InnSYnc",
+    'brand.powered.title': "\"Powered by InnSYnc\" line",
+    'brand.powered.body': "A small line at the bottom of every page and printed document that credits InnSYnc. You can switch it off. It is only shown when the property has its own logo.",
+    'brand.powered.show': "Show \"Powered by InnSYnc\"",
+    'brand.powered.needsLogo': "Without your own logo the InnSYnc logo is shown in the header, so this line is not needed.",
 } as const

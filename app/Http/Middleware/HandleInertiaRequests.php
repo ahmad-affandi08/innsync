@@ -11,6 +11,7 @@ use App\Modules\Property\Application\Ports\PropertyTimeZoneReader;
 use App\Modules\Property\Application\Settings\BusinessDateProvider;
 use App\Shared\Application\Setup\ModuleAccess;
 use App\Shared\Application\Setup\ModuleSettings;
+use App\Shared\Application\Tenancy\PropertyContext;
 use App\Shared\Domain\Tenancy\PropertyId;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -38,6 +39,7 @@ final class HandleInertiaRequests extends Middleware
             'timeZone' => fn (): ?string => $this->activeTimeZone($request),
             'auth' => fn (): ?array => $this->activeIdentity($request),
             'shell' => fn (): ?array => $this->shell($request),
+            'brand' => fn (): array => $this->brand($request),
             'app' => [
                 'name' => (string) config('app.name'),
                 'version' => (string) config('app.version'),
@@ -90,7 +92,7 @@ final class HandleInertiaRequests extends Middleware
      * What the frame around every page shows: the property, its business date and who is signed in. Shown only to the signed-in
      * person themselves; the business date is null before go-live.
      *
-     * @return array{propertyName: string|null, businessDate: string|null, userName: string, disabledModules?: list<string>, waitingApprovals?: int, logoUrl?: string|null, accessibleModules?: list<string>|null}|null
+     * @return array{propertyName: string|null, businessDate: string|null, userName: string, disabledModules?: list<string>, waitingApprovals?: int, accessibleModules?: list<string>|null}|null
      */
     private function shell(Request $request): ?array
     {
@@ -146,6 +148,36 @@ final class HandleInertiaRequests extends Middleware
             $waiting = 0;
         }
 
-        return ['propertyName' => $name, 'businessDate' => $date, 'userName' => (string) $request->user()->name, 'disabledModules' => $disabled, 'accessibleModules' => $accessible, 'waitingApprovals' => $waiting, 'logoUrl' => $logo];
+        return ['propertyName' => $name, 'businessDate' => $date, 'userName' => (string) $request->user()->name, 'disabledModules' => $disabled, 'accessibleModules' => $accessible, 'waitingApprovals' => $waiting];
+    }
+
+    /**
+     * The property's logo and whether "Powered by InnSYnc" shows, for every page: the signed-in person's property, the property of a guest's code or link, or,
+     * on the sign-in page, the only property of the installation. With several properties and nobody signed in, no logo is shown since it cannot be known which is meant.
+     *
+     * @return array{logoUrl: string|null, poweredBy: bool}
+     */
+    private function brand(Request $request): array
+    {
+        $none = ['logoUrl' => null, 'poweredBy' => false];
+
+        try {
+            $branding = app(PropertyBranding::class);
+            $sessionProperty = $request->user() !== null ? $request->session()->get('auth.active_property_id') : null;
+            $context = app(PropertyContext::class);
+
+            $brand = match (true) {
+                is_string($sessionProperty) && $sessionProperty !== '' => $branding->brand(PropertyId::fromString($sessionProperty)),
+                $context->hasActiveProperty() => $branding->brand($context->current()),
+                $request->user() === null => $branding->soleBrand(),
+                default => null,
+            };
+
+            return $brand ?? $none;
+        } catch (Throwable $exception) {
+            report($exception);
+
+            return $none;
+        }
     }
 }

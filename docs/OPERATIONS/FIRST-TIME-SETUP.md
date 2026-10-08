@@ -50,7 +50,7 @@ Staff (HR → Staff), Suppliers (Inventory → Suppliers) and the menu (F&B → 
 
 ## The hotel's own logo
 
-Property settings → **Logo**. Upload a wide logo on a transparent or white background (PNG, JPEG, WebP or SVG up to 512 KB). It replaces the InnSYnc logo in the header and prints at the top of every bill, receipt, pay slip and report. Remove it to go back to the InnSYnc logo.
+Property settings → **Logo**. Upload a wide logo on a transparent or white background (PNG, JPEG, WebP or SVG up to 512 KB). It replaces the InnSYnc logo in the header and prints at the top of every bill, receipt, pay slip and report. Remove it to go back to the InnSYnc logo. A small "Powered by InnSYnc" line stays at the bottom of pages and printed documents; switch it off on the same screen if the hotel prefers. The logo also shows on the sign-in page (when the installation has one property) and on the guest pages.
 
 ## A forgotten password
 

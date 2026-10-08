@@ -5,12 +5,13 @@ import { Button } from '@/components/ui/button';
 import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
+import { Switch } from '@/components/ui/switch';
 import { PropertyShell } from '@/modules/property/components/property-shell';
 import { useServerAction } from '@/shared/api/use-server-action';
 import { useTranslation } from '@/shared/i18n/i18n';
 import { useErrorStateCopy } from '@/shared/i18n/use-ui-copy';
 
-type State = { has_logo: boolean; version: string | null };
+type State = { has_logo: boolean; version: string | null; logo_url: string | null; show_powered_by: boolean };
 
 const MAX_BYTES = 512 * 1024;
 
@@ -50,6 +51,11 @@ export default function BrandingPage(initial: State) {
         if (done !== null) window.location.reload();
     }
 
+    async function togglePoweredBy(show: boolean) {
+        const done = await action.run<State>('/property/branding/powered-by', { method: 'PUT', body: { show } });
+        if (done !== null) setState(done);
+    }
+
     async function remove() {
         const done = await action.run<State>('/property/branding/logo', { method: 'DELETE' });
         if (done !== null) {
@@ -64,7 +70,7 @@ export default function BrandingPage(initial: State) {
                 <h2 className="text-lg font-semibold" id="brand-current">{t('brand.current')}</h2>
                 {state.has_logo ? (
                     <div className="flex flex-wrap items-center gap-4">
-                        <img alt={t('brand.current')} className="max-h-20 max-w-[16rem] border border-border bg-white p-2 object-contain" data-testid="current-logo" src={`/property/logo?v=${state.version ?? ''}`} />
+                        <img alt={t('brand.current')} className="max-h-20 max-w-[16rem] border border-border bg-white p-2 object-contain" data-testid="current-logo" src={state.logo_url ?? ''} />
                         <Button disabled={action.busy} onClick={() => void remove()} type="button" variant="outline">{t('brand.remove')}</Button>
                     </div>
                 ) : <p className="text-sm text-muted-foreground">{t('brand.none')}</p>}
@@ -84,6 +90,16 @@ export default function BrandingPage(initial: State) {
                     </div>
                 ) : null}
                 <div><Button disabled={file === null} loading={action.busy} onClick={() => void save()} type="button">{t('brand.save')}</Button></div>
+            </section>
+
+            <section aria-labelledby="brand-powered" className="flex flex-col gap-3 border border-border bg-surface p-4 sm:p-6">
+                <h2 className="text-lg font-semibold" id="brand-powered">{t('brand.powered.title')}</h2>
+                <p className="text-sm text-muted-foreground">{t('brand.powered.body')}</p>
+                <label className="flex items-center gap-3 text-sm font-medium">
+                    <Switch checked={state.show_powered_by} disabled={action.busy} onCheckedChange={(v) => void togglePoweredBy(v)} />
+                    {t('brand.powered.show')}
+                </label>
+                {!state.has_logo ? <p className="text-sm text-muted-foreground">{t('brand.powered.needsLogo')}</p> : null}
             </section>
 
             <Alert title={t('brand.where.title')} tone="info">{t('brand.where.body')}</Alert>

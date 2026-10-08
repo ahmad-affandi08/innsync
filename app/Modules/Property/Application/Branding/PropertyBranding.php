@@ -26,20 +26,61 @@ final readonly class PropertyBranding
         private PropertyContext $property,
     ) {}
 
-    /** @return array{has_logo: bool, version: string|null} */
+    /** @return array{has_logo: bool, version: string|null, logo_url: string|null, show_powered_by: bool} */
     public function show(PropertyId $property): array
     {
         $hash = $this->logos->hash($property);
 
-        return ['has_logo' => $hash !== null, 'version' => $hash === null ? null : substr($hash, 0, 12)];
+        return ['has_logo' => $hash !== null, 'version' => $hash === null ? null : substr($hash, 0, 12), 'logo_url' => $this->address($property, $hash), 'show_powered_by' => $this->logos->poweredBy($property)];
     }
 
-    /** The header's address for the logo, or null when the property has none. */
-    public function url(PropertyId $property): ?string
+    /**
+     * What every page shows of the property's brand: its logo address and whether "Powered by InnSYnc" is shown. The logo is public by its address (a guest
+     * and the sign-in page need it before anyone is signed in), as any hotel's logo is; it holds nothing private.
+     *
+     * @return array{logoUrl: string|null, poweredBy: bool}
+     */
+    public function brand(PropertyId $property): array
     {
-        $hash = $this->logos->hash($property);
+        return ['logoUrl' => $this->address($property, $this->logos->hash($property)), 'poweredBy' => $this->logos->poweredBy($property)];
+    }
 
-        return $hash === null ? null : '/property/logo?v='.substr($hash, 0, 12);
+    /** The brand of the only property of the installation, for the sign-in page; none when there are several, since the page cannot know which one is meant. */
+    public function soleBrand(): ?array
+    {
+        $property = $this->logos->soleProperty();
+
+        return $property === null ? null : $this->brand($property);
+    }
+
+    private function address(PropertyId $property, ?string $hash): ?string
+    {
+        return $hash === null ? null : '/brand/'.$property->toString().'/logo?v='.substr($hash, 0, 12);
+    }
+
+    public function setPoweredBy(PropertyId $property, string $actorId, bool $show): void
+    {
+        $this->authorize($property, $actorId);
+        $before = $this->logos->poweredBy($property);
+
+        if ($before === $show) {
+            return;
+        }
+
+        $this->transactions->run(function () use ($property, $actorId, $show, $before): void {
+            $this->logos->setPoweredBy($property, $show, strtolower($actorId));
+            $this->audit->record(new AuditEntry($property->toString(), strtolower($actorId), 'property.powered_by.changed', 'property_branding', $property->toString(), ['show_powered_by' => $before], ['show_powered_by' => $show]));
+        });
+    }
+
+    /** @return array{mime: string, content: string, sha256: string}|null the logo of a property by its address; none for an address that is not a property */
+    public function pictureOf(string $property): ?array
+    {
+        try {
+            return $this->logos->find(PropertyId::fromString($property));
+        } catch (\InvalidArgumentException) {
+            return null;
+        }
     }
 
     /** @return array{mime: string, content: string, sha256: string}|null */

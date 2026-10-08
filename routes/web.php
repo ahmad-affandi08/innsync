@@ -298,11 +298,12 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])
 // Is the system healthy and being backed up: one screen for the owner, read only.
 Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])
     ->get('/property/system', [SystemStatusController::class, 'show'])->middleware('permission:property.settings.manage')->name('property.system');
-// The logo of the property: every signed-in person sees it; only a person who manages the property changes it.
-Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->get('/property/logo', [PropertyLogoController::class, 'picture'])->name('property.logo');
+// The logo of the property: public by its address (the sign-in page and guests show it too); only a person who manages the property changes it.
+Route::get('/brand/{property}/logo', [PropertyLogoController::class, 'picture'])->where('property', '[0-9a-z]{26}')->middleware('throttle:guest')->name('brand.logo');
 Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property', 'permission:property.settings.manage'])->prefix('property/branding')->group(function (): void {
     Route::get('/', [PropertyLogoController::class, 'show'])->name('property.branding');
     Route::post('/logo', [PropertyLogoController::class, 'replace'])->middleware(['password.confirm', 'throttle:access-admin'])->name('property.branding.replace');
+    Route::put('/powered-by', [PropertyLogoController::class, 'poweredBy'])->middleware(['password.confirm', 'throttle:access-admin'])->name('property.branding.powered');
     Route::delete('/logo', [PropertyLogoController::class, 'remove'])->middleware(['password.confirm', 'throttle:access-admin'])->name('property.branding.remove');
 });
 Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property', 'permission:property.settings.manage'])->prefix('property/messaging')->group(function (): void {

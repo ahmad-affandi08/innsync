@@ -23,13 +23,23 @@ final readonly class PropertyLogoController
         return Inertia::render('foundation/pages/branding', $this->branding->show($this->property->current()));
     }
 
-    /** The picture, for the header and printed documents. The address carries the fingerprint, so a changed logo is fetched again and an unchanged one is kept by the browser. */
-    public function picture(): HttpResponse
+    /** The picture, for the header, the sign-in page, guest pages and printed documents. The address carries the fingerprint, so a changed logo is fetched again and an unchanged one is kept by the browser. */
+    public function picture(Request $request, string $property): HttpResponse
     {
-        $logo = $this->branding->picture($this->property->current()) ?? throw Refusal::notFound('No logo.');
-        $headers = ['Content-Type' => $logo['mime'], 'X-Content-Type-Options' => 'nosniff', 'Content-Security-Policy' => "default-src 'none'; style-src 'unsafe-inline'; sandbox", 'Cache-Control' => 'private, max-age=86400', 'ETag' => '"'.$logo['sha256'].'"'];
+        $logo = $this->branding->pictureOf($property) ?? throw Refusal::notFound('No logo.');
+        $response = response($logo['content'], 200, ['Content-Type' => $logo['mime'], 'X-Content-Type-Options' => 'nosniff', 'Content-Security-Policy' => "default-src 'none'; style-src 'unsafe-inline'; sandbox", 'Cache-Control' => 'public, max-age=86400']);
+        $response->setEtag($logo['sha256']);
+        $response->isNotModified($request);
 
-        return response($logo['content'], 200, $headers);
+        return $response;
+    }
+
+    public function poweredBy(Request $request): JsonResponse
+    {
+        $data = $request->validate(['show' => ['required', 'boolean']]);
+        $this->branding->setPoweredBy($this->property->current(), (string) $request->user()->getAuthIdentifier(), (bool) $data['show']);
+
+        return response()->json($this->branding->show($this->property->current()))->header('Cache-Control', 'no-store');
     }
 
     public function replace(Request $request): JsonResponse

@@ -367,5 +367,10 @@ export const access = {
     'brand.preview': "Tampilannya nanti",
     'brand.save': "Simpan logo",
     'brand.where.title': "Di mana logo tampil",
-    'brand.where.body': "Di header dan menu samping untuk semua orang yang masuk ke properti ini, dan di bagian atas setiap halaman yang dicetak atau disimpan sebagai PDF. Halaman masuk dan halaman tamu tetap memakai logo InnSYnc.",
+    'brand.where.body': "Di header dan menu samping untuk semua orang yang masuk ke properti ini, di halaman masuk bila ini satu-satunya properti pada instalasi, di halaman tamu (menu QR, tagihan, check-in), dan di bagian atas setiap halaman yang dicetak atau disimpan sebagai PDF.",
+    'brand.poweredBy': "Didukung oleh InnSYnc",
+    'brand.powered.title': "Baris \"Powered by InnSYnc\"",
+    'brand.powered.body': "Satu baris kecil di bagian bawah setiap halaman dan dokumen cetak yang menyebut InnSYnc. Bisa dimatikan. Baris ini hanya tampil bila properti memakai logonya sendiri.",
+    'brand.powered.show': "Tampilkan \"Powered by InnSYnc\"",
+    'brand.powered.needsLogo': "Tanpa logo sendiri, logo InnSYnc yang tampil di header, jadi baris ini tidak diperlukan.",
 }

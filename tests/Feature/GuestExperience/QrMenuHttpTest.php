@@ -151,6 +151,16 @@ final class QrMenuHttpTest extends TestCase
         $this->get('/guest/qr/print')->assertStatus(403);
     }
 
+    public function test_a_guest_page_carries_the_logo_of_the_property_the_code_belongs_to(): void
+    {
+        $cookie = $this->scan('Table T1 · Restaurant');
+        $this->guestGet($cookie, '/g/menu')->assertInertia(fn (Assert $p) => $p->where('brand.logoUrl', null));
+
+        DB::table('property_logos')->insert(['property_id' => self::A, 'mime' => 'image/svg+xml', 'content' => '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><rect width="10" height="10"/></svg>', 'sha256' => str_repeat('a', 64), 'updated_by' => $this->owner->getKey(), 'created_at' => now(), 'updated_at' => now()]);
+
+        $this->guestGet($cookie, '/g/menu')->assertInertia(fn (Assert $p) => $p->where('brand.logoUrl', '/brand/'.self::A.'/logo?v='.str_repeat('a', 12))->where('brand.poweredBy', true));
+    }
+
     public function test_a_code_opens_a_session_on_that_code_only_and_an_unknown_or_switched_off_code_opens_nothing(): void
     {
         $this->get('/g/'.str_repeat('a', 32))->assertStatus(404)->assertInertia(fn (Assert $p) => $p->component('guest/pages/ended'));

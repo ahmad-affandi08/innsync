@@ -1,9 +1,8 @@
-import { usePage } from '@inertiajs/react';
+import { useBrand } from '@/shared/lib/brand';
 
 /** The property's logo at the top of every printed page, so a bill, a receipt, a pay slip or a report carries the hotel's own mark. Nothing shows on screen or when no logo was uploaded. */
 export function PrintLetterhead() {
-    const shell = usePage<{ shell?: { logoUrl?: string | null; propertyName?: string | null } | null }>().props.shell;
-    const url = shell?.logoUrl ?? null;
+    const url = useBrand().logoUrl;
 
     if (url === null) {
         return null;

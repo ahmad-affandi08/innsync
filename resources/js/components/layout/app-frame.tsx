@@ -36,6 +36,8 @@ import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbP
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { LanguageSwitcher } from '@/components/ui/language-switcher';
+import { PoweredBy } from '@/components/layout/powered-by';
+import { useBrand } from '@/shared/lib/brand';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { MODULE_LINKS, type NavLink } from '@/components/layout/module-links';
@@ -81,7 +83,7 @@ function isHere(links: readonly NavLink[], href: string, path: string): boolean 
     return match(href) && best?.href === href;
 }
 
-type Shell = { propertyName: string | null; businessDate: string | null; userName: string; disabledModules?: string[]; accessibleModules?: string[] | null; waitingApprovals?: number; logoUrl?: string | null } | null;
+type Shell = { propertyName: string | null; businessDate: string | null; userName: string; disabledModules?: string[]; accessibleModules?: string[] | null; waitingApprovals?: number } | null;
 
 type FrameProps = {
     title: string;
@@ -254,12 +256,11 @@ export function AppFrame({ actions, children, description, links = [], printClas
         </nav>
     );
 
-    // A property that uploaded its logo shows it; a small InnSYnc credit stays beneath it in the side menu.
-    const own = shell?.logoUrl ?? null;
+    // A property that uploaded its logo shows it; the InnSYnc credit is the "Powered by" line at the bottom of the page.
+    const own = useBrand().logoUrl;
     const brand = (
         <Link className="flex h-14 items-center gap-3 px-6" href="/">
             {own !== null ? <img alt={shell?.propertyName ?? ''} className="max-h-10 max-w-[10rem] w-auto object-contain" src={own} /> : <img alt="InnSYnc" className="h-8 w-auto" height={32} src={logo} width={116} />}
-            {own !== null ? <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">InnSYnc</span> : null}
         </Link>
     );
 
@@ -511,6 +512,7 @@ export function AppFrame({ actions, children, description, links = [], printClas
                     {layout === 'topbar' ? topbar : (
                         <header className="sticky top-0 z-20 flex h-14 items-center gap-3 border-b border-border bg-surface px-4 lg:px-8 print:hidden">
                             {menuButton}
+                            {own !== null && layout === 'rail' ? <Link className="hidden shrink-0 xl:block" href="/"><img alt={shell?.propertyName ?? ''} className="max-h-8 max-w-[7rem] w-auto object-contain" src={own} /></Link> : null}
                             {crumbs}
                             {dateChip}
                             {bell}
@@ -527,6 +529,7 @@ export function AppFrame({ actions, children, description, links = [], printClas
                     ) : body}
                     <footer className="px-4 pb-6 text-xs text-muted-foreground lg:px-8 print:hidden" data-testid="app-version">
                         {version !== '' ? t('shell.version', { version }) : null}{version !== '' ? ' · ' : null}<Link className="underline underline-offset-2" href="/help">{t('shell.help')}</Link>
+                        <PoweredBy className="ml-3" />
                     </footer>
                 </div>
             </div>

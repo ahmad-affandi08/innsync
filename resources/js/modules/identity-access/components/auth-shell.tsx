@@ -7,6 +7,8 @@ import { Card } from '@/components/ui/card';
 import { Illustration } from '@/components/ui/illustration';
 import { LanguageSwitcher } from '@/components/ui/language-switcher';
 import { useTranslation } from '@/shared/i18n/i18n';
+import { PoweredBy } from '@/components/layout/powered-by';
+import { useBrand } from '@/shared/lib/brand';
 
 type AuthShellProps = {
     title: string;
@@ -17,13 +19,16 @@ type AuthShellProps = {
 /** Sign-in frame: the brand beside the form on a large screen, the form alone on a phone. */
 export function AuthShell({ children, description, title }: AuthShellProps) {
     const { t } = useTranslation();
+    const own = useBrand().logoUrl;
 
     return (
         <main className="grid min-h-screen lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)]">
             <aside className="relative hidden flex-col justify-between border-r border-border bg-surface-muted p-12 text-foreground lg:flex">
                 <div className="relative flex items-center gap-3">
-                    <img alt="" className="size-11" height={44} src={favicon} width={44} />
-                    <span className="text-2xl font-bold tracking-tight">Inn<span className="text-accent">SY</span>nc</span>
+                    {own !== null ? <img alt="" className="max-h-14 max-w-[16rem] w-auto object-contain" src={own} /> : <>
+                        <img alt="" className="size-11" height={44} src={favicon} width={44} />
+                        <span className="text-2xl font-bold tracking-tight">Inn<span className="text-accent">SY</span>nc</span>
+                    </>}
                 </div>
                 <div className="relative max-w-md">
                     <Illustration className="mb-8 w-full max-w-xs" name="reception" />
@@ -43,12 +48,12 @@ export function AuthShell({ children, description, title }: AuthShellProps) {
                         ))}
                     </ul>
                 </div>
-                <p className="relative text-xs text-muted-foreground">Smart Hotel Management</p>
+                <p className="relative text-xs text-muted-foreground">{own !== null ? <PoweredBy /> : 'Smart Hotel Management'}</p>
             </aside>
 
             <div className="flex flex-col bg-background px-4 py-8 sm:px-10">
                 <div className="flex items-center justify-between gap-3">
-                    <img alt="InnSYnc" className="h-9 w-auto lg:hidden" height={36} src={logo} width={131} />
+                    {own !== null ? <img alt="" className="max-h-10 max-w-[12rem] w-auto object-contain lg:hidden" src={own} /> : <img alt="InnSYnc" className="h-9 w-auto lg:hidden" height={36} src={logo} width={131} />}
                     <span className="hidden lg:block" />
                     <LanguageSwitcher />
                 </div>

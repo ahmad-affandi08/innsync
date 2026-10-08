@@ -6157,6 +6157,14 @@
             "password_confirmation"
         ]
     },
+    "PUT /property/branding/powered-by": {
+        "required": [
+            "show"
+        ],
+        "declared": [
+            "show"
+        ]
+    },
     "PUT /property/messaging/{channel}": {
         "required": [
             "enabled",

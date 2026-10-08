@@ -55,9 +55,9 @@ final class PropertyLogoTest extends TestCase
         $this->upload($this->png())->assertOk()->assertJsonPath('has_logo', true);
         $this->assertSame(1, DB::table('property_logos')->count());
 
-        $this->get('/property/logo')->assertOk()->assertHeader('Content-Type', 'image/png')->assertHeader('X-Content-Type-Options', 'nosniff');
+        $this->get('/brand/'.self::A.'/logo')->assertOk()->assertHeader('Content-Type', 'image/png')->assertHeader('X-Content-Type-Options', 'nosniff');
         $this->get('/property/branding')->assertOk()->assertInertia(fn ($page) => $page->where('has_logo', true));
-        $this->get('/property/system')->assertInertia(fn ($page) => $page->where('shell.logoUrl', fn ($u) => str_starts_with((string) $u, '/property/logo?v=')));
+        $this->get('/property/system')->assertInertia(fn ($page) => $page->where('brand.logoUrl', fn ($u) => str_starts_with((string) $u, '/brand/'.self::A.'/logo?v='))->where('brand.poweredBy', true));
         $this->assertSame(1, DB::table('audit_entries')->where('action', 'property.logo.replaced')->count());
     }
 
@@ -68,15 +68,51 @@ final class PropertyLogoTest extends TestCase
         $this->post('/logout');
         $this->signIn(self::A, ['housekeeping.view']);
 
-        $this->get('/property/logo')->assertOk();
+        $this->get('/brand/'.self::A.'/logo')->assertOk();
         $this->upload($this->png())->assertForbidden();
         $this->delete('/property/branding/logo')->assertForbidden();
         $this->get('/property/branding')->assertForbidden();
     }
 
-    public function test_a_signed_out_visitor_gets_no_logo(): void
+    public function test_the_logo_is_public_by_its_address_only_and_a_wrong_address_gives_nothing(): void
     {
-        $this->get('/property/logo')->assertRedirect('/login');
+        $this->signIn(self::A, ['property.settings.manage']);
+        $this->upload($this->png())->assertOk();
+        $this->post('/logout');
+
+        $first = $this->get('/brand/'.self::A.'/logo')->assertOk();
+        $this->get('/brand/'.self::A.'/logo', ['If-None-Match' => $first->headers->get('ETag')])->assertStatus(304);
+        $this->get('/brand/01arz3ndektsv4rrffq69g5fax/logo')->assertNotFound();
+        $this->get('/brand/not-an-id/logo')->assertNotFound();
+    }
+
+    public function test_the_sign_in_page_shows_the_logo_of_the_only_property_and_none_when_there_are_several(): void
+    {
+        $this->signIn(self::A, ['property.settings.manage']);
+        $this->upload($this->png())->assertOk();
+        $this->post('/logout');
+
+        $this->get('/login')->assertInertia(fn ($page) => $page->where('brand.logoUrl', fn ($u) => str_contains((string) $u, self::A)));
+
+        $this->createProperty('01arz3ndektsv4rrffq69g5fb0', 'B');
+        $this->get('/login')->assertInertia(fn ($page) => $page->where('brand.logoUrl', null));
+    }
+
+    public function test_the_powered_by_line_can_be_switched_off_by_the_property_and_is_audited(): void
+    {
+        $this->signIn(self::A, ['property.settings.manage']);
+        $this->upload($this->png())->assertOk();
+
+        $this->putJson('/property/branding/powered-by', ['show' => false])->assertOk()->assertJsonPath('show_powered_by', false);
+        $this->get('/property/system')->assertInertia(fn ($page) => $page->where('brand.poweredBy', false));
+        $this->assertSame(1, DB::table('audit_entries')->where('action', 'property.powered_by.changed')->count());
+
+        $this->putJson('/property/branding/powered-by', ['show' => true])->assertOk();
+        $this->get('/property/system')->assertInertia(fn ($page) => $page->where('brand.poweredBy', true));
+
+        $this->post('/logout');
+        $this->signIn(self::A, ['housekeeping.view']);
+        $this->putJson('/property/branding/powered-by', ['show' => false])->assertForbidden();
     }
 
     public function test_bad_pictures_are_refused(): void
@@ -106,7 +142,7 @@ final class PropertyLogoTest extends TestCase
 
         $this->assertSame(0, DB::table('property_logos')->count());
         $this->upload(UploadedFile::fake()->createWithContent('logo.svg', $safe))->assertOk();
-        $this->get('/property/logo')->assertOk()->assertHeader('Content-Type', 'image/svg+xml')->assertHeader('Content-Security-Policy', "default-src 'none'; style-src 'unsafe-inline'; sandbox");
+        $this->get('/brand/'.self::A.'/logo')->assertOk()->assertHeader('Content-Type', 'image/svg+xml')->assertHeader('Content-Security-Policy', "default-src 'none'; style-src 'unsafe-inline'; sandbox");
     }
 
     public function test_removing_the_logo_returns_to_the_product_logo(): void
@@ -115,7 +151,7 @@ final class PropertyLogoTest extends TestCase
         $this->upload($this->png())->assertOk();
 
         $this->delete('/property/branding/logo', [], ['Accept' => 'application/json'])->assertOk()->assertJsonPath('has_logo', false);
-        $this->get('/property/logo')->assertNotFound();
-        $this->get('/property/system')->assertInertia(fn ($page) => $page->where('shell.logoUrl', null));
+        $this->get('/brand/'.self::A.'/logo')->assertNotFound();
+        $this->get('/property/system')->assertInertia(fn ($page) => $page->where('brand.logoUrl', null));
     }
 }

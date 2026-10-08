@@ -42,4 +42,31 @@ final class DatabasePropertyLogoStore implements PropertyLogoStore
     {
         return DB::table('property_logos')->where('property_id', $property->toString())->delete() > 0;
     }
+
+    public function poweredBy(PropertyId $property): bool
+    {
+        $show = DB::table('property_branding_settings')->where('property_id', $property->toString())->value('show_powered_by');
+
+        return $show === null ? true : (bool) $show;
+    }
+
+    public function setPoweredBy(PropertyId $property, bool $show, string $actorId): void
+    {
+        $now = now();
+
+        if (DB::table('property_branding_settings')->where('property_id', $property->toString())->exists()) {
+            DB::table('property_branding_settings')->where('property_id', $property->toString())->update(['show_powered_by' => $show, 'updated_by' => $actorId, 'updated_at' => $now]);
+
+            return;
+        }
+
+        DB::table('property_branding_settings')->insert(['property_id' => $property->toString(), 'show_powered_by' => $show, 'updated_by' => $actorId, 'created_at' => $now, 'updated_at' => $now]);
+    }
+
+    public function soleProperty(): ?PropertyId
+    {
+        $ids = DB::table('properties')->where('is_active', true)->limit(2)->pluck('id');
+
+        return $ids->count() === 1 ? PropertyId::fromString((string) $ids->first()) : null;
+    }
 }

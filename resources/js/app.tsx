@@ -5,6 +5,7 @@ import { QueryClientProvider } from '@tanstack/react-query';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import type { ComponentType, ReactNode } from 'react';
 
+import { PoweredBy } from '@/components/layout/powered-by';
 import { PrintLetterhead } from '@/components/layout/print-letterhead';
 import { createAppQueryClient } from '@/shared/api/query-client';
 import { ensureMessages, localeFromProps } from '@/shared/i18n/i18n';
@@ -22,6 +23,7 @@ function AppLayout({ children }: { children: ReactNode }) {
         <OfflineProvider>
             <PrintLetterhead />
             {children}
+            <PoweredBy print />
         </OfflineProvider>
     );
 }

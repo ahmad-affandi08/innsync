@@ -1,0 +1,1 @@
+import{v as e}from"./app-BPNfPpxc.js";import{o as t,t as n}from"./app-frame-C8Cbj8i3.js";var r=e();function i({actions:e,children:i,description:a,title:o}){return(0,r.jsx)(n,{actions:e,description:a,links:t,title:o,wide:!0,children:i})}export{i as HrShell};
