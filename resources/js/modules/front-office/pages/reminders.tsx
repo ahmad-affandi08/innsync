@@ -2,11 +2,13 @@ import { Link } from '@inertiajs/react';
 import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
+import { DatePicker } from '@/components/ui/date-picker';
 import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
 import { StatusBadge } from '@/components/ui/status-badge';
+import { TimeInput } from '@/components/ui/time-input';
 import { FrontOfficeShell } from '@/modules/front-office/components/front-office-shell';
 import { useServerAction } from '@/shared/api/use-server-action';
 import { useFormatters, useTranslation } from '@/shared/i18n/i18n';
@@ -56,8 +58,8 @@ export default function RemindersPage({ reminders }: Props) {
             {reminders.may_write ? (
                 <form className="grid gap-3 border border-border bg-surface p-4 sm:grid-cols-[minmax(0,1fr)_10rem_8rem_auto] sm:items-end" onSubmit={(e) => { e.preventDefault(); void add(); }}>
                     <FormField error={action.fieldError('text')} label={t('fo.rem.text')}><Input maxLength={300} onChange={(e) => setForm({ ...form, text: e.target.value })} placeholder={t('fo.rem.placeholder')} value={form.text} /></FormField>
-                    <FormField error={action.fieldError('due_on')} label={t('fo.rem.day')}><Input min={reminders.today} onChange={(e) => setForm({ ...form, due_on: e.target.value })} type="date" value={form.due_on} /></FormField>
-                    <FormField error={action.fieldError('due_time')} label={t('fo.rem.time')}><Input onChange={(e) => setForm({ ...form, due_time: e.target.value })} type="time" value={form.due_time} /></FormField>
+                    <FormField error={action.fieldError('due_on')} label={t('fo.rem.day')}><DatePicker min={reminders.today} onChange={(e) => setForm({ ...form, due_on: e.target.value })} value={form.due_on} /></FormField>
+                    <FormField error={action.fieldError('due_time')} label={t('fo.rem.time')}><TimeInput onChange={(e) => setForm({ ...form, due_time: e.target.value })} value={form.due_time} /></FormField>
                     <Button disabled={form.text.trim() === ''} loading={action.busy} type="submit">{t('fo.rem.add')}</Button>
                 </form>
             ) : null}

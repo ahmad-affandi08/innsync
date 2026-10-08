@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
+import { DatePicker } from '@/components/ui/date-picker';
 import { Dialog } from '@/components/ui/dialog';
 import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
@@ -131,8 +132,8 @@ export default function BookPage({ booking, property_id: propertyId }: { booking
             <section aria-labelledby="bk-search" className="flex flex-col gap-3">
                 <h2 className="text-base font-semibold" id="bk-search">{t('guest.booking.when')}</h2>
                 <div className="grid grid-cols-2 gap-3">
-                    <FormField label={t('guest.booking.arrival')}><Input min={booking.today} onChange={(e) => { const arrival = e.target.value; setDates({ arrival, departure: dates.departure > arrival ? dates.departure : addDays(arrival, 1) }); }} type="date" value={dates.arrival} /></FormField>
-                    <FormField label={t('guest.booking.departure')}><Input min={addDays(dates.arrival, 1)} onChange={(e) => setDates({ ...dates, departure: e.target.value })} type="date" value={dates.departure} /></FormField>
+                    <FormField label={t('guest.booking.arrival')}><DatePicker min={booking.today} onChange={(e) => { const arrival = e.target.value; setDates({ arrival, departure: dates.departure > arrival ? dates.departure : addDays(arrival, 1) }); }} value={dates.arrival} /></FormField>
+                    <FormField label={t('guest.booking.departure')}><DatePicker min={addDays(dates.arrival, 1)} onChange={(e) => setDates({ ...dates, departure: e.target.value })} value={dates.departure} /></FormField>
                     <FormField label={t('guest.booking.adults')}><Select onChange={(e) => setParty({ ...party, adults: e.target.value })} value={party.adults}>{[1, 2, 3, 4, 5, 6].map((n) => <option key={n} value={n}>{n}</option>)}</Select></FormField>
                     <FormField label={t('guest.booking.children')}><Select onChange={(e) => setParty({ ...party, children: e.target.value })} value={party.children}>{[0, 1, 2, 3, 4].map((n) => <option key={n} value={n}>{n}</option>)}</Select></FormField>
                 </div>

@@ -4,6 +4,10 @@ Release notes for every release (NFR-14). Newest first. Each entry names the tas
 
 ## [Unreleased]
 
+### Fixed
+
+- Date and time fields spilled out of their card on iPhone Safari (seen on the reminders page): the reminders page and the public booking page used the browser's own date and time controls instead of the project's `DatePicker` and `TimeInput`. Both now use them, and a global rule makes any remaining native date or time field keep the width and height of other fields. Checked at phone width in Chromium; not yet on a real iPhone.
+
 ### Added
 
 - Automation that only drafts or reminds, never decides:
