@@ -4,6 +4,7 @@ import type { FormEvent } from 'react';
 import { Button } from '@/components/ui/button';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
+import { PasswordInput } from '@/components/ui/password-input';
 import { AuthShell } from '@/modules/identity-access/components/auth-shell';
 import { useTranslation } from '@/shared/i18n/i18n';
 
@@ -25,10 +26,10 @@ export default function ResetPasswordPage({ token, email }: { token: string; ema
                         <Input autoComplete="username" name="email" onChange={(e) => form.setData('email', e.target.value)} required type="email" value={form.data.email} />
                     </FormField>
                     <FormField field="password" error={form.errors.password} label={t('identity.reset.password')}>
-                        <Input autoComplete="new-password" autoFocus name="password" onChange={(e) => form.setData('password', e.target.value)} required type="password" value={form.data.password} />
+                        <PasswordInput autoComplete="new-password" autoFocus name="password" onChange={(e) => form.setData('password', e.target.value)} required value={form.data.password} />
                     </FormField>
                     <FormField field="password_confirmation" error={form.errors.password_confirmation} label={t('identity.reset.confirm')}>
-                        <Input autoComplete="new-password" name="password_confirmation" onChange={(e) => form.setData('password_confirmation', e.target.value)} required type="password" value={form.data.password_confirmation} />
+                        <PasswordInput autoComplete="new-password" name="password_confirmation" onChange={(e) => form.setData('password_confirmation', e.target.value)} required value={form.data.password_confirmation} />
                     </FormField>
                     <Button className="w-full" loading={form.processing} type="submit">{t('identity.reset.save')}</Button>
                     <p className="text-center text-sm"><Link className="underline underline-offset-2" href="/forgot-password">{t('identity.reset.again')}</Link></p>

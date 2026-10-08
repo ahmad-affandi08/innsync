@@ -3,7 +3,7 @@ import type { FormEvent } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { FormField } from '@/components/ui/form-field';
-import { Input } from '@/components/ui/input';
+import { PasswordInput } from '@/components/ui/password-input';
 import { AuthShell } from '@/modules/identity-access/components/auth-shell';
 import { useTranslation } from '@/shared/i18n/i18n';
 
@@ -25,12 +25,11 @@ export default function ConfirmPasswordPage() {
             >
                 <form className="space-y-5" onSubmit={submit}>
                     <FormField field="password" error={form.errors.password} label={t('common.field.password')}>
-                        <Input
+                        <PasswordInput
                             autoComplete="current-password"
                             autoFocus
                             onChange={(event) => form.setData('password', event.target.value)}
                             required
-                            type="password"
                             value={form.data.password}
                         />
                     </FormField>

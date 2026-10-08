@@ -70,4 +70,6 @@ export const ui = {
     'ui.filter.reset': 'Clear filters',
     'ui.field.required': 'required',
     'ui.dialog.cancel': 'Cancel',
+    'ui.password.show': 'Show password',
+    'ui.password.hide': 'Hide password',
 } as const

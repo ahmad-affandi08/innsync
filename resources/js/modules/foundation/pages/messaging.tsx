@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
+import { PasswordInput } from '@/components/ui/password-input';
 import { Select } from '@/components/ui/select';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { Switch } from '@/components/ui/switch';
@@ -113,14 +114,23 @@ function ChannelCard({ channel, initial }: { channel: 'email' | 'whatsapp'; init
                                     {f.options?.map((o) => <option key={o} value={o}>{label(`msg.option.${o}`)}</option>)}
                                 </Select>
                             ) : (
-                                <Input
-                                    autoComplete="off"
-                                    inputMode={f.kind === 'number' ? 'numeric' : undefined}
-                                    onChange={(e) => setValues({ ...values, [f.name]: e.target.value })}
-                                    placeholder={saved ? t('msg.saved') : f.default ?? ''}
-                                    type={f.secret ? 'password' : f.kind === 'email' ? 'email' : f.kind === 'url' ? 'url' : 'text'}
-                                    value={values[f.name] ?? ''}
-                                />
+                                f.secret ? (
+                                    <PasswordInput
+                                        autoComplete="off"
+                                        onChange={(e) => setValues({ ...values, [f.name]: e.target.value })}
+                                        placeholder={saved ? t('msg.saved') : f.default ?? ''}
+                                        value={values[f.name] ?? ''}
+                                    />
+                                ) : (
+                                    <Input
+                                        autoComplete="off"
+                                        inputMode={f.kind === 'number' ? 'numeric' : undefined}
+                                        onChange={(e) => setValues({ ...values, [f.name]: e.target.value })}
+                                        placeholder={saved ? t('msg.saved') : f.default ?? ''}
+                                        type={f.kind === 'email' ? 'email' : f.kind === 'url' ? 'url' : 'text'}
+                                        value={values[f.name] ?? ''}
+                                    />
+                                )
                             )}
                         </FormField>
                     );

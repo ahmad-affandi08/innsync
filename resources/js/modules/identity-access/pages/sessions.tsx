@@ -5,7 +5,7 @@ import { AppFrame } from '@/components/layout/app-frame';
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { FormField } from '@/components/ui/form-field';
-import { Input } from '@/components/ui/input';
+import { PasswordInput } from '@/components/ui/password-input';
 import { useFormatters, useTranslation } from '@/shared/i18n/i18n';
 
 type Session = {
@@ -60,13 +60,13 @@ export default function SessionsPage({ sessions, mustChangePassword = false }: {
                             <p className="mt-1 text-sm text-muted-foreground">{t('identity.password.description')}</p>
                         </div>
                         <FormField field="current_password" error={passwordForm.errors.current_password} label={t('identity.password.current')}>
-                            <Input autoComplete="current-password" onChange={(event) => passwordForm.setData('current_password', event.target.value)} required type="password" value={passwordForm.data.current_password} />
+                            <PasswordInput autoComplete="current-password" onChange={(event) => passwordForm.setData('current_password', event.target.value)} required value={passwordForm.data.current_password} />
                         </FormField>
                         <FormField field="password" error={passwordForm.errors.password} label={t('identity.password.new')}>
-                            <Input autoComplete="new-password" onChange={(event) => passwordForm.setData('password', event.target.value)} required type="password" value={passwordForm.data.password} />
+                            <PasswordInput autoComplete="new-password" onChange={(event) => passwordForm.setData('password', event.target.value)} required value={passwordForm.data.password} />
                         </FormField>
                         <FormField field="password_confirmation" label={t('identity.password.confirmNew')}>
-                            <Input autoComplete="new-password" onChange={(event) => passwordForm.setData('password_confirmation', event.target.value)} required type="password" value={passwordForm.data.password_confirmation} />
+                            <PasswordInput autoComplete="new-password" onChange={(event) => passwordForm.setData('password_confirmation', event.target.value)} required value={passwordForm.data.password_confirmation} />
                         </FormField>
                         <Button loading={passwordForm.processing} type="submit">{t('identity.password.update')}</Button>
                     </form>

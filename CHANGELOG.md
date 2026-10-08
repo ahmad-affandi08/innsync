@@ -10,6 +10,7 @@ Release notes for every release (NFR-14). Newest first. Each entry names the tas
 
 ### Added
 
+- Every password field (sign-in, confirm password, reset password, change password, and the secret keys in Email and WhatsApp setup) has an eye at its end that shows or hides what was typed. The new `PasswordInput` also turns off auto-capitalisation and auto-correction. Checked at phone width in Chromium; not yet on a real iPhone.
 - Every money field now groups the thousands as it is typed (1.500.000 in Indonesian, 1,500,000 in English) with the language's own decimal mark, on a number pad on phones, and keeps the caret in place when a digit is inserted in the middle. A pasted amount is read carefully (`Rp 1.500.000`, `1,500.50`; a lone `1.500` is a thousand, not 1.5). What is kept and sent is still the plain amount, so nothing downstream changed: opening a cashier shift with `500.000` stores 50,000,000 minor units. Adjustments that may take money away (payroll adjustment, cash-flow opening, corrections) accept a leading minus. About 60 fields on 40 pages use the new `MoneyInput`; percentages, quantities and counts are left as they were.
 - Automation that only drafts or reminds, never decides:
   - Front desk reminders by themselves (`frontdesk:auto-reminders`, every morning, `FRONTDESK_AUTO_REMINDERS*`): a tentative booking that arrives within two days and a hold that lapses by tomorrow each get one reminder on the reminders page. Nothing is confirmed or released by itself.
