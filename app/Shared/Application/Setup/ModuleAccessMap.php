@@ -29,7 +29,7 @@ final class ModuleAccessMap
             'finance' => ['finance.'],
             'dashboard' => ['reporting.dashboard.'],
             'reports' => ['reporting.'],
-            'property' => ['property.', 'identity.', 'privacy.', 'offline.'],
+            'property' => ['property.', 'identity.', 'privacy.', 'offline.', 'integration.'],
         ];
     }
 
