@@ -147,7 +147,6 @@ use App\Shared\Infrastructure\Messaging\MessagingSettingsController;
 use App\Shared\Infrastructure\Observability\SystemStatusController;
 use App\Shared\Infrastructure\Offline\SyncController;
 use App\Shared\Infrastructure\Offline\SyncExceptionController;
-use App\Shared\Infrastructure\Setup\DepartmentLinksController;
 use App\Shared\Infrastructure\Setup\HomeController;
 use App\Shared\Infrastructure\Setup\SetupChecklistController;
 use Illuminate\Http\Request;
@@ -309,7 +308,6 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])
     ->get('/setup', [SetupChecklistController::class, 'show'])->middleware('permission:property.settings.manage')->name('setup');
 
 // The address to give each department's staff.
-Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property', 'permission:property.settings.manage'])->get('/property/department-links', [DepartmentLinksController::class, 'show'])->name('property.department-links');
 
 // How the property takes bookings from its own web page.
 Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property', 'permission:property.settings.manage'])->prefix('property/online-booking')->group(function (): void {

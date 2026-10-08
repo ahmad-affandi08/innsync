@@ -69,21 +69,4 @@ final class DeskTodayHttpTest extends TestCase
 
         $this->get('/')->assertOk()->assertInertia(fn (Assert $page) => $page->component('foundation/pages/welcome'));
     }
-
-    public function test_work_links_page_needs_the_settings_permission_and_lists_guest_links(): void
-    {
-        $this->signIn(self::A, ['property.settings.manage']);
-        $this->get('/property/department-links')->assertOk()->assertInertia(fn (Assert $page) => $page
-            ->component('foundation/pages/department-links')
-            ->where('guest.rooms', '/guest/qr')
-            ->where('guest.booking', '/book/'.self::A)
-            ->has('departments'));
-    }
-
-    public function test_work_links_page_is_refused_without_the_settings_permission(): void
-    {
-        $this->signIn(self::A, ['front-office.stay.view']);
-
-        $this->get('/property/department-links')->assertForbidden();
-    }
 }

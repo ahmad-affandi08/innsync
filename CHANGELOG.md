@@ -7,7 +7,6 @@ Release notes for every release (NFR-14). Newest first. Each entry names the tas
 ### Added
 
 - Front desk today (`/front-office/today`): arrivals with a Check in button, departures and overdue departures, rooms in house and ready to sell, reminders due and open guest requests on one screen. It adds no rules of its own; it gathers what the room board, reminders and guest requests already know, each under its own permission. It is now the first item of the Front office menu and where reception staff land.
-- Work links (Property settings → Work links, `/property/department-links`): the address to give each department's staff (front desk, housekeeping, laundry, food and beverage, kitchen, maintenance, HR, inventory, finance, management) and the guest addresses (room QR codes, online booking page), each with Copy and Open. Departments switched off in module settings are hidden.
 - A person who may open one department only is taken to that department's page after signing in instead of the general home page. `/?home=1` always shows the home page. Anyone with two or more departments sees the home page as before.
 
 ### Fixed
