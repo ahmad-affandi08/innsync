@@ -4,6 +4,12 @@ Release notes for every release (NFR-14). Newest first. Each entry names the tas
 
 ## [Unreleased]
 
+### Added
+
+- Front desk today (`/front-office/today`): arrivals with a Check in button, departures and overdue departures, rooms in house and ready to sell, reminders due and open guest requests on one screen. It adds no rules of its own; it gathers what the room board, reminders and guest requests already know, each under its own permission. It is now the first item of the Front office menu and where reception staff land.
+- Work links (Property settings → Work links, `/property/department-links`): the address to give each department's staff (front desk, housekeeping, laundry, food and beverage, kitchen, maintenance, HR, inventory, finance, management) and the guest addresses (room QR codes, online booking page), each with Copy and Open. Departments switched off in module settings are hidden.
+- A person who may open one department only is taken to that department's page after signing in instead of the general home page. `/?home=1` always shows the home page. Anyone with two or more departments sees the home page as before.
+
 ### Fixed
 
 - Installation on MariaDB (found 2026-10-08 by running all migrations on MariaDB 10.11): every table was created with the MySQL 8 collation `utf8mb4_0900_ai_ci`, which MariaDB before 11.4.5 does not know, so the very first migration failed and the system could not be installed on a host running MariaDB, although the deployment runbook said it could. Tables now take the collation from the server (`TableCollation`): MySQL 8 keeps `utf8mb4_0900_ai_ci`, so existing installations are unchanged; older MariaDB gets `utf8mb4_unicode_ci`. The connection itself falls back the same way. All 125 migrations now apply on MariaDB 10.11. The application's own test suite was not completed on MariaDB; do that on the real plan before the pilot.

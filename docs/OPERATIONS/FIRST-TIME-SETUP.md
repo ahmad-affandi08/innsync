@@ -60,6 +60,10 @@ Property settings → **Online booking**. Off until the hotel switches it on. Ch
 
 When a guest already paid the agency (for example in the Traveloka app), the cashier must not charge them for the room. Create the agency under Front Office → Companies with the type **Travel agent (including OTA)** and let it take the rooms. On a reservation that came from an agency, the reservation page says so and offers the agency first under "Bill to"; the room charge then goes to the agency's folio and becomes a receivable at check-out. When the agency pays, record it in Finance → Receivables; the commission the agency keeps is entered there as a credit note, so the receivable closes exactly.
 
+## Links for each department
+
+Property settings → **Work links** lists the address of every department (front desk, housekeeping, kitchen, restaurant till, laundry, maintenance, HR, inventory, finance, management) and the guest addresses (room QR codes, online booking page), each with Copy. Give staff the address of their department; they sign in with their own account. A person whose role covers one department only is taken straight to its page after signing in. Reception staff land on **Front desk today**. On a phone, open the address once and choose Add to Home Screen.
+
 ## A forgotten password
 
 The sign-in page has **Forgot your password**. It needs the hosting mail settings (the System status screen says whether email will be delivered). The link works once and lasts 60 minutes; the person's other sessions end when it is used. An administrator can still reset a password from People & access.

@@ -147,7 +147,7 @@ final class AuthenticationSecurityTest extends TestCase
             ->assertSessionHasErrors('property_id');
         $this->post('/properties/select', ['property_id' => self::PROPERTY_A])
             ->assertRedirect('/');
-        $this->get('/')->assertOk();
+        $this->get('/?home=1')->assertOk();
     }
 
     public function test_a_person_with_one_property_goes_straight_in_without_choosing(): void
@@ -158,7 +158,7 @@ final class AuthenticationSecurityTest extends TestCase
 
         $this->post('/login', ['email' => $user->email, 'password' => 'password'])->assertRedirect();
         $this->get('/properties/select')->assertRedirect('/');
-        $this->get('/')->assertOk();
+        $this->get('/?home=1')->assertOk();
         self::assertSame(1, DB::table('security_events')->where('actor_id', $user->getKey())->where('event_type', 'identity.property.selection')->where('outcome', 'success')->count());
     }
 

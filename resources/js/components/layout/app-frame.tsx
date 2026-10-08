@@ -56,7 +56,7 @@ type ModuleEntry = { key: string; href: string; icon: LucideIcon; label: Message
 /** The domains of the back office, as the design asks: one sidebar, grouped by what people do. */
 const MODULES: ModuleEntry[] = [
     { key: 'home', href: '/', icon: Hotel, label: 'shell.home', prefixes: [], group: 'start' },
-    { key: 'front-office', href: '/front-office/room-board', icon: ConciergeBell, label: 'fo.nav.label', prefixes: ['/front-office'], group: 'operations' },
+    { key: 'front-office', href: '/front-office/today', icon: ConciergeBell, label: 'fo.nav.label', prefixes: ['/front-office'], group: 'operations' },
     { key: 'housekeeping', href: '/housekeeping', icon: BedDouble, label: 'hk.nav.label', prefixes: ['/housekeeping'], group: 'operations' },
     { key: 'laundry', href: '/laundry', icon: Shirt, label: 'ldy.nav.label', prefixes: ['/laundry'], group: 'operations' },
     { key: 'fnb', href: '/fnb/pos', icon: UtensilsCrossed, label: 'fnb.nav.label', prefixes: ['/fnb'], group: 'operations' },

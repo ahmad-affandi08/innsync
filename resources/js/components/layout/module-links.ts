@@ -5,6 +5,7 @@ export type NavLink = { href: string; label: string };
  * of a phone shows them for every module, so that touching a module opens its list of pages instead of taking the person to one of them.
  */
 export const FRONT_OFFICE_LINKS: readonly NavLink[] = [
+    { href: '/front-office/today', label: 'fo.today.nav' },
     { href: '/front-office/room-board', label: 'fo.board.nav' },
     { href: '/front-office/availability', label: 'fo.nav.availability' },
     { href: '/front-office/room-calendar', label: 'fo.nav.tape' },
@@ -166,6 +167,7 @@ export const PROPERTY_LINKS: readonly NavLink[] = [
     { href: '/property/messaging', label: 'msg.nav' },
     { href: '/property/branding', label: 'brand.nav' },
     { href: '/property/online-booking', label: 'ob.nav' },
+    { href: '/property/department-links', label: 'dl.nav' },
 ];
 
 export const REPORT_LINKS: readonly NavLink[] = [

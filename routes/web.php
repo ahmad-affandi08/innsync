@@ -31,6 +31,7 @@ use App\Modules\FrontOffice\Presentation\Http\Controllers\AvailabilityController
 use App\Modules\FrontOffice\Presentation\Http\Controllers\CashierController;
 use App\Modules\FrontOffice\Presentation\Http\Controllers\ChecklistController;
 use App\Modules\FrontOffice\Presentation\Http\Controllers\CompanyController;
+use App\Modules\FrontOffice\Presentation\Http\Controllers\DeskTodayController;
 use App\Modules\FrontOffice\Presentation\Http\Controllers\FeedbackController;
 use App\Modules\FrontOffice\Presentation\Http\Controllers\FolioController;
 use App\Modules\FrontOffice\Presentation\Http\Controllers\ForeignPaymentController;
@@ -146,6 +147,8 @@ use App\Shared\Infrastructure\Messaging\MessagingSettingsController;
 use App\Shared\Infrastructure\Observability\SystemStatusController;
 use App\Shared\Infrastructure\Offline\SyncController;
 use App\Shared\Infrastructure\Offline\SyncExceptionController;
+use App\Shared\Infrastructure\Setup\DepartmentLinksController;
+use App\Shared\Infrastructure\Setup\HomeController;
 use App\Shared\Infrastructure\Setup\SetupChecklistController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -240,13 +243,7 @@ Route::middleware(['auth', 'auth.session', 'active'])->group(function (): void {
     });
 });
 
-Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->get('/', function (Request $request) {
-    return Inertia::render('foundation/pages/welcome', [
-        'appVersion' => (string) config('app.version'),
-        'userName' => (string) $request->user()->name,
-        'activePropertyId' => (string) $request->session()->get('auth.active_property_id'),
-    ]);
-})->name('home');
+Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->get('/', [HomeController::class, 'show'])->name('home');
 
 // The guide of the product by role, inside the product (NFR-15).
 Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->get('/help', fn () => Inertia::render('foundation/pages/guide'))->name('help');
@@ -310,6 +307,9 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
 // First-time set-up as one ordered list: what is done and what the hotel still cannot work without.
 Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])
     ->get('/setup', [SetupChecklistController::class, 'show'])->middleware('permission:property.settings.manage')->name('setup');
+
+// The address to give each department's staff.
+Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property', 'permission:property.settings.manage'])->get('/property/department-links', [DepartmentLinksController::class, 'show'])->name('property.department-links');
 
 // How the property takes bookings from its own web page.
 Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property', 'permission:property.settings.manage'])->prefix('property/online-booking')->group(function (): void {
@@ -385,6 +385,7 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
     $id = '[0-9A-Za-z]{26}';
     Route::get('/availability', AvailabilityController::class)->name('front-office.availability');
     Route::get('/guests', [GuestDirectoryController::class, 'index'])->name('front-office.guests');
+    Route::get('/today', [DeskTodayController::class, 'index'])->name('front-office.today');
     Route::get('/room-calendar', [TapeChartController::class, 'index'])->name('front-office.tape');
     Route::get('/reminders', [ReminderController::class, 'index'])->name('front-office.reminders');
     Route::post('/reminders', [ReminderController::class, 'store'])->middleware('throttle:60,1')->name('front-office.reminders.store');

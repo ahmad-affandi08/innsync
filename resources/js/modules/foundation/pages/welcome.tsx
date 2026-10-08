@@ -12,7 +12,7 @@ type Module = { href: string; icon: LucideIcon; label: MessageKey; about: Messag
 
 const CARDS: readonly Module[] = [
     { href: '/dashboard', icon: LayoutDashboard, label: 'rpt.nav.dashboard', about: 'home.about.dashboard' },
-    { href: '/front-office/room-board', icon: ConciergeBell, label: 'fo.nav.label', about: 'home.about.frontOffice' },
+    { href: '/front-office/today', icon: ConciergeBell, label: 'fo.nav.label', about: 'home.about.frontOffice' },
     { href: '/housekeeping', icon: BedDouble, label: 'hk.nav.label', about: 'home.about.housekeeping' },
     { href: '/laundry', icon: Shirt, label: 'ldy.nav.label', about: 'home.about.laundry' },
     { href: '/fnb/pos', icon: UtensilsCrossed, label: 'fnb.nav.label', about: 'home.about.fnb' },
