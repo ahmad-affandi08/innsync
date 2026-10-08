@@ -30,7 +30,7 @@ final readonly class DatabaseAccessDirectory implements AccessDirectory
         return DB::table('users')
             ->whereIn('id', $assignments->keys()->all())
             ->orderBy('name')
-            ->get(['id', 'name', 'email', 'is_active', 'must_change_password', 'two_factor_confirmed_at', 'last_login_at'])
+            ->get(['id', 'name', 'email', 'is_active', 'must_change_password', 'two_factor_confirmed_at', 'last_login_at', 'locked_until'])
             ->map(static fn ($u): array => [
                 'id' => strtolower((string) $u->id),
                 'name' => (string) $u->name,
@@ -38,6 +38,7 @@ final readonly class DatabaseAccessDirectory implements AccessDirectory
                 'is_active' => (bool) $u->is_active,
                 'must_change_password' => (bool) $u->must_change_password,
                 'mfa' => $u->two_factor_confirmed_at !== null,
+                'locked_until' => $u->locked_until !== null && Carbon::parse((string) $u->locked_until, 'UTC')->isFuture() ? Carbon::parse((string) $u->locked_until, 'UTC')->toIso8601String() : null,
                 'last_login_at' => $u->last_login_at === null ? null : Carbon::parse((string) $u->last_login_at, 'UTC')->toIso8601String(),
                 'assignments' => $assignments->get($u->id, collect())->map(static fn ($a): array => [
                     'id' => strtolower((string) $a->id),
@@ -79,6 +80,11 @@ final readonly class DatabaseAccessDirectory implements AccessDirectory
     public function setUserActive(string $userId, bool $active): void
     {
         DB::table('users')->where('id', $userId)->update(['is_active' => $active, 'failed_login_attempts' => 0, 'locked_until' => null, 'updated_at' => now()]);
+    }
+
+    public function unlockUser(string $userId): void
+    {
+        DB::table('users')->where('id', $userId)->update(['failed_login_attempts' => 0, 'locked_until' => null, 'updated_at' => now()]);
     }
 
     public function resetPassword(string $userId, string $password): void

@@ -566,4 +566,11 @@ export const access = {
     'ob.remind': "Kirim email pengingat sehari sebelum tiba",
     'ob.thank': "Kirim email terima kasih setelah menginap",
     'ob.messagesHint': "Hanya untuk tamu yang memesan lewat halaman ini dan menyetujui pemberitahuan privasi, lewat email, satu kali per pemesanan. Pemesanan yang dibuat staf tidak pernah dikirimi. Isi pesan tetap dan tidak memuat harga atau data pembayaran.",
+    'acc.users.locked': "Terkunci sampai {until}",
+    'acc.users.unlock': "Buka kunci",
+    'acc.unlock.title': "Buka kunci akun {name}?",
+    'sys.backup.now': "Cadangkan sekarang",
+    'sys.backup.nowHint': "Meminta satu cadangan lagi. Berjalan di latar belakang dan hasilnya muncul di atas dalam beberapa menit. Mengunduh dan memulihkan tetap dipegang pemegang server.",
+    'sys.backup.queued': "Cadangan sudah diminta. Muat ulang halaman ini beberapa menit lagi untuk melihat hasilnya.",
+    'sys.backup.recent': "Cadangan baru saja diminta. Tunggu beberapa menit sebelum meminta lagi.",
 }

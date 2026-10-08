@@ -215,4 +215,25 @@ final class AccessAdministrationTest extends TestCase
             ->where('shell.accessibleModules', fn ($keys) => in_array('front-office', $keys->toArray(), true) && in_array('housekeeping', $keys->toArray(), true)
                 && ! in_array('hr', $keys->toArray(), true) && ! in_array('finance', $keys->toArray(), true) && in_array('approvals', $keys->toArray(), true)));
     }
+
+    public function test_a_locked_account_is_shown_and_can_be_opened_by_whoever_manages_users_with_a_reason_and_an_audit_entry(): void
+    {
+        $role = $this->role(self::A, 'Front desk', ['front-office.reservation.view']);
+        $this->signIn(self::A, self::MANAGE);
+        $budi = (string) $this->postJson('/access/users', ['name' => 'Budi', 'email' => 'budi@example.test', 'role_id' => $role, 'scope_type' => 'property', 'reason' => 'x'])->assertCreated()->json('id');
+        DB::table('users')->where('id', $budi)->update(['failed_login_attempts' => 5, 'locked_until' => now()->addMinutes(10)]);
+
+        $people = $this->get('/access/users')->assertOk()->viewData('page')['props']['people'];
+        $locked = array_values(array_filter($people, static fn (array $p): bool => $p['locked_until'] !== null));
+        self::assertCount(1, $locked);
+        self::assertSame('Budi', $locked[0]['name']);
+
+        $this->postJson("/access/users/{$budi}/unlock", [])->assertStatus(422);
+        $this->postJson("/access/users/{$budi}/unlock", ['reason' => 'Locked out by repeated tries'])->assertOk();
+
+        $row = DB::table('users')->where('id', $budi)->first();
+        self::assertSame(0, (int) $row->failed_login_attempts);
+        self::assertNull($row->locked_until);
+        self::assertSame(1, DB::table('audit_entries')->where('action', 'identity.account.unlocked')->where('aggregate_id', $budi)->count());
+    }
 }

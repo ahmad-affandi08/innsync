@@ -962,6 +962,14 @@
             "scope_type"
         ]
     },
+    "POST /access/users/{id}/unlock": {
+        "required": [
+            "reason"
+        ],
+        "declared": [
+            "reason"
+        ]
+    },
     "POST /approvals/policies": {
         "required": [
             "band_min_amount_minor",

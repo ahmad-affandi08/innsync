@@ -16,7 +16,7 @@ import { useErrorStateCopy } from '@/shared/i18n/use-ui-copy';
 import { parsePeople } from '@/shared/lib/people-list';
 
 type Assignment = { id: string; role_id: string; role_name: string; scope_type: string; scope_id: string; scope_name: string; is_active: boolean };
-type Person = { id: string; name: string; email: string; is_active: boolean; must_change_password: boolean; mfa: boolean; last_login_at: string | null; assignments: Assignment[] };
+type Person = { id: string; name: string; email: string; is_active: boolean; must_change_password: boolean; mfa: boolean; locked_until: string | null; last_login_at: string | null; assignments: Assignment[] };
 type Role = { id: string; name: string; is_active: boolean };
 type Outlet = { id: string; name: string };
 
@@ -26,6 +26,7 @@ type Dialogue =
     | { kind: 'assign'; person: Person; roleId: string; scopeType: string; outletId: string; reason: string }
     | { kind: 'revoke'; person: Person; assignment: Assignment; reason: string }
     | { kind: 'active'; person: Person; active: boolean; reason: string }
+    | { kind: 'unlock'; person: Person; reason: string }
     | { kind: 'reset'; person: Person; reason: string };
 
 export default function UsersPage({ people, roles, outlets }: { people: Person[]; roles: Role[]; outlets: Outlet[] }) {
@@ -75,6 +76,8 @@ export default function UsersPage({ people, roles, outlets }: { people: Person[]
             done = await action.run(`/access/users/${dialogue.person.id}/roles`, { body: { role_id: dialogue.roleId, reason: dialogue.reason, ...scope(dialogue) }, reload });
         } else if (dialogue.kind === 'revoke') {
             done = await action.run(`/access/assignments/${dialogue.assignment.id}/revoke`, { body: { reason: dialogue.reason }, reload });
+        } else if (dialogue.kind === 'unlock') {
+            done = await action.run(`/access/users/${dialogue.person.id}/unlock`, { body: { reason: dialogue.reason }, reload });
         } else if (dialogue.kind === 'active') {
             done = await action.run(`/access/users/${dialogue.person.id}/active`, { body: { active: dialogue.active, reason: dialogue.reason }, reload });
         } else {
@@ -106,6 +109,7 @@ export default function UsersPage({ people, roles, outlets }: { people: Person[]
             case 'assign': return t('acc.assign.title', { name: dialogue.person.name });
             case 'revoke': return t('acc.revoke.title', { role: dialogue.assignment.role_name, name: dialogue.person.name });
             case 'active': return t(dialogue.active ? 'acc.activate.title' : 'acc.deactivate.title', { name: dialogue.person.name });
+            case 'unlock': return t('acc.unlock.title', { name: dialogue.person.name });
             default: return t('acc.reset.title', { name: dialogue.person.name });
         }
     })();
@@ -116,6 +120,7 @@ export default function UsersPage({ people, roles, outlets }: { people: Person[]
         assign: t('acc.assign.submit'),
         revoke: t('acc.revoke.submit'),
         active: dialogue.kind === 'active' && dialogue.active ? t('acc.users.activate') : t('acc.users.deactivate'),
+        unlock: t('acc.users.unlock'),
         reset: t('acc.users.resetPassword'),
     }[dialogue.kind];
 
@@ -176,6 +181,7 @@ export default function UsersPage({ people, roles, outlets }: { people: Person[]
                                         </div>
                                         <div className="flex flex-wrap gap-2">
                                             <StatusBadge label={t(p.is_active ? 'acc.users.active' : 'acc.users.inactive')} tone={p.is_active ? 'success' : 'neutral'} />
+                                            {p.locked_until !== null ? <StatusBadge label={t('acc.users.locked', { until: format.instant(p.locked_until) })} tone="danger" /> : null}
                                             {p.must_change_password ? <StatusBadge label={t('acc.users.mustChange')} tone="warning" /> : null}
                                             {p.mfa ? <StatusBadge label={t('acc.users.mfa')} tone="info" /> : null}
                                         </div>
@@ -192,6 +198,7 @@ export default function UsersPage({ people, roles, outlets }: { people: Person[]
                                     )}
                                     <div className="flex flex-wrap gap-2">
                                         <Button disabled={activeRoles.length === 0} onClick={() => open({ kind: 'assign', person: p, roleId: '', scopeType: 'property', outletId: '', reason: '' })} size="sm" type="button" variant="outline">{t('acc.users.giveRole')}</Button>
+                                        {p.locked_until !== null ? <Button onClick={() => open({ kind: 'unlock', person: p, reason: '' })} size="sm" type="button" variant="outline">{t('acc.users.unlock')}</Button> : null}
                                         <Button onClick={() => open({ kind: 'reset', person: p, reason: '' })} size="sm" type="button" variant="outline">{t('acc.users.resetPassword')}</Button>
                                         <Button onClick={() => open({ kind: 'active', person: p, active: !p.is_active, reason: '' })} size="sm" type="button" variant="outline">{t(p.is_active ? 'acc.users.deactivate' : 'acc.users.activate')}</Button>
                                     </div>

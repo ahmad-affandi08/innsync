@@ -94,6 +94,14 @@ final readonly class AccessAdminController
         return $this->once(['ok' => true]);
     }
 
+    public function unlock(Request $request, string $id): JsonResponse
+    {
+        $data = $request->validate(['reason' => ['required', 'string', 'max:500']]);
+        $this->access->unlock($this->property->current(), $this->actor($request), $id, $data['reason']);
+
+        return $this->once(['ok' => true]);
+    }
+
     public function resetPassword(Request $request, string $id): JsonResponse
     {
         $data = $request->validate(['reason' => ['required', 'string', 'max:500']]);

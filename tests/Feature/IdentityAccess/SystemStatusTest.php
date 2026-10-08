@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Feature\IdentityAccess;
 
+use App\Shared\Infrastructure\Backup\RunBackupJob;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia as Assert;
 use LogicException;
@@ -52,5 +55,29 @@ final class SystemStatusTest extends TestCase
         $this->signIn(self::A, ['front-office.reservation.view']);
 
         $this->get('/property/system')->assertForbidden();
+    }
+
+    public function test_the_owner_can_ask_for_a_backup_once_every_ten_minutes_and_it_is_recorded(): void
+    {
+        Queue::fake();
+        Cache::forget('backup.requested');
+        $this->signIn(self::A, ['property.settings.manage']);
+
+        $this->postJson('/property/system/backup', [])->assertOk()->assertJsonPath('queued', true);
+        Queue::assertPushed(RunBackupJob::class, 1);
+        self::assertSame(1, DB::table('audit_entries')->where('action', 'system.backup.requested')->count());
+
+        $this->postJson('/property/system/backup', [])->assertStatus(409)->assertJsonPath('queued', false);
+        Queue::assertPushed(RunBackupJob::class, 1);
+    }
+
+    public function test_a_person_who_does_not_manage_the_property_cannot_ask_for_a_backup(): void
+    {
+        Queue::fake();
+        Cache::forget('backup.requested');
+        $this->signIn(self::A, ['front-office.reservation.view']);
+
+        $this->postJson('/property/system/backup', [])->assertForbidden();
+        Queue::assertNothingPushed();
     }
 }

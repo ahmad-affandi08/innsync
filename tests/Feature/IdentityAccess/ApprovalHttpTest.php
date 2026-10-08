@@ -9,6 +9,7 @@ use App\Modules\IdentityAccess\Application\Approval\ApprovalService;
 use App\Modules\IdentityAccess\Infrastructure\Persistence\Eloquent\UserRecord;
 use App\Shared\Application\Approval\ApprovalRequestInput;
 use App\Shared\Application\Idempotency\IdempotencyKey;
+use App\Shared\Application\Notifications\EmailNotifier;
 use App\Shared\Application\Tenancy\PropertyContext;
 use App\Shared\Domain\Tenancy\PropertyId;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -200,5 +201,42 @@ final class ApprovalHttpTest extends TestCase
 
         $this->from('/approvals')->post("/approvals/{$this->requestId}/approve")->assertRedirect('/approvals');
         $this->assertDatabaseHas('approval_requests', ['id' => $this->requestId, 'status' => 'approved']);
+    }
+
+    public function test_approvers_are_told_by_email_only_when_switched_on_and_the_message_names_nothing(): void
+    {
+        $sent = [];
+        $this->app->instance(EmailNotifier::class, new class($sent) implements EmailNotifier
+        {
+            public function __construct(public array &$sent) {}
+
+            public function notify(string $address, string $subject, string $body): bool
+            {
+                $this->sent[] = [$address, $subject, $body];
+
+                return true;
+            }
+        });
+        $work = function (): void {
+            $this->artisan('outbox:drain')->assertSuccessful();
+            $this->artisan('queue:work', ['connection' => (string) config('outbox.queue_connection'), '--queue' => (string) config('outbox.queue_name'), '--stop-when-empty' => true, '--sleep' => 0])->run();
+        };
+
+        $work();
+        self::assertSame([], $sent, 'off by default');
+
+        config(['identity_access.approval_email_notice' => true]);
+        app(PropertyContext::class)->activate(PropertyId::fromString(self::A));
+        app(ApprovalService::class)->request(new ApprovalRequestInput(
+            PropertyId::fromString(self::A), 'fnb.bill.void', 'bill-78', strtolower((string) $this->maker->getKey()),
+            'Guest complaint', ['bill' => 'bill-78'], ['total_minor' => 150000], 150000, 'IDR',
+        ), IdempotencyKey::fromString('request-key-0000002'));
+        $work();
+
+        self::assertCount(1, $sent, 'only the person who may decide the step, not the maker or the outsider');
+        self::assertSame($this->supervisor->email, $sent[0][0]);
+        self::assertStringNotContainsString('bill-78', $sent[0][2]);
+        self::assertStringNotContainsString('150000', $sent[0][2]);
+        self::assertStringContainsString('/approvals', $sent[0][2]);
     }
 }

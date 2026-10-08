@@ -28,6 +28,9 @@ interface AccessDirectory
 
     public function setUserActive(string $userId, bool $active): void;
 
+    /** Clears the failed-sign-in count and any temporary lock of the account. */
+    public function unlockUser(string $userId): void;
+
     /** Sets a new password chosen by an administrator; the person must change it at the next sign-in. */
     public function resetPassword(string $userId, string $password): void;
 

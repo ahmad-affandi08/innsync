@@ -28,6 +28,7 @@ use App\Shared\Infrastructure\Backup\BackupVerifyCommand;
 use App\Shared\Infrastructure\Deployment\CreateAdminCommand;
 use App\Shared\Infrastructure\Deployment\PreflightCommand;
 use App\Shared\Infrastructure\Deployment\SmokeCommand;
+use App\Shared\Infrastructure\Deployment\UnlockAccountCommand;
 use App\Shared\Infrastructure\Http\Errors\ErrorEnvelopeFactory;
 use App\Shared\Infrastructure\Http\Errors\RenderErrorEnvelope;
 use App\Shared\Infrastructure\Idempotency\RequireIdempotencyKey;
@@ -68,6 +69,7 @@ return Application::configure(basePath: dirname(__DIR__))
         BackupDecryptCommand::class,
         PreflightCommand::class,
         CreateAdminCommand::class,
+        UnlockAccountCommand::class,
         InstallDefaultRolesCommand::class,
         InstallDefaultApprovalsCommand::class,
         ImportRoomMasterCommand::class,

@@ -4,7 +4,7 @@
     "type": "project",
     "description": "InnSYnc hotel operating system.",
     "keywords": ["hotel", "laravel", "operations"],
-    "license": "MIT",
+    "license": "proprietary",
     "require": {
         "php": "^8.3",
         "inertiajs/inertia-laravel": "^3.4",

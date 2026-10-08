@@ -142,6 +142,7 @@ use App\Modules\Reporting\Presentation\Http\Controllers\ReportBuilderController;
 use App\Modules\Reporting\Presentation\Http\Controllers\ReportController;
 use App\Modules\Reporting\Presentation\Http\Controllers\ReportScheduleController;
 use App\Modules\Routines\Presentation\Http\Controllers\RoutineController;
+use App\Shared\Infrastructure\Backup\BackupNowController;
 use App\Shared\Infrastructure\Localization\SetLocaleController;
 use App\Shared\Infrastructure\Messaging\MessagingSettingsController;
 use App\Shared\Infrastructure\Observability\SystemStatusController;
@@ -295,6 +296,7 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
         Route::post('/users/bulk', [AccessAdminController::class, 'createUsers'])->middleware('permission:identity.user.manage')->name('access.users.bulk');
         Route::post('/users/{id}/roles', [AccessAdminController::class, 'assign'])->middleware('permission:identity.user.manage')->where('id', $id)->name('access.users.assign');
         Route::post('/users/{id}/active', [AccessAdminController::class, 'setActive'])->middleware('permission:identity.user.manage')->where('id', $id)->name('access.users.active');
+        Route::post('/users/{id}/unlock', [AccessAdminController::class, 'unlock'])->middleware('permission:identity.user.manage')->where('id', $id)->name('access.users.unlock');
         Route::post('/users/{id}/reset-password', [AccessAdminController::class, 'resetPassword'])->middleware('permission:identity.user.manage')->where('id', $id)->name('access.users.reset');
         Route::post('/assignments/{id}/revoke', [AccessAdminController::class, 'revoke'])->middleware('permission:identity.user.manage')->where('id', $id)->name('access.assignments.revoke');
         Route::post('/roles', [AccessAdminController::class, 'createRole'])->middleware('permission:identity.role.manage')->name('access.roles.create');
@@ -318,6 +320,7 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property', 'permiss
 // Is the system healthy and being backed up: one screen for the owner, read only.
 Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])
     ->get('/property/system', [SystemStatusController::class, 'show'])->middleware('permission:property.settings.manage')->name('property.system');
+Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property', 'permission:property.settings.manage', 'throttle:sensitive'])->post('/property/system/backup', [BackupNowController::class, 'store'])->name('property.system.backup');
 // The logo of the property: public by its address (the sign-in page and guests show it too); only a person who manages the property changes it.
 Route::get('/brand/{property}/logo', [PropertyLogoController::class, 'picture'])->where('property', '[0-9a-z]{26}')->middleware('throttle:guest')->name('brand.logo');
 Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property', 'permission:property.settings.manage'])->prefix('property/branding')->group(function (): void {

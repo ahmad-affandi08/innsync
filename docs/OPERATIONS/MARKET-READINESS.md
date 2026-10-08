@@ -23,7 +23,7 @@ The software is feature-complete for the scope of the PRD except two tasks that 
 | QRIS provider and settlement bank (Q-04, Q-16) | `FBS-013`; until chosen the cashier records a reference number by hand | Finance / IT |
 | Foreign guest report format required by the authority (Q-09) | `FO-041`; not guessed | Front Office Manager |
 | Who approves what, with at least two approvers each | Approvals refuse to complete with a single approver | Owner |
-| Product **license**: `composer.json` says `MIT`, which lets anyone copy and resell it | Must be proprietary before anything is sold | Owner |
+| Product **license terms**: `composer.json` now declares `proprietary` (it said `MIT` until 2026-10-08), but the licence agreement itself, support terms and data processing agreement are not written | A hotel cannot be asked to sign what does not exist | Owner and lawyer |
 | What to send guests by WhatsApp, and the consent wording (PDP law) | Nothing sends WhatsApp on its own until decided | Owner / legal |
 | Whether face matching for attendance is wanted | Needs employee consent and a retention rule (specific personal data, PDP law) | Owner |
 

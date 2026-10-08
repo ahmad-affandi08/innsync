@@ -9,6 +9,7 @@ use App\Modules\FnbSales\Application\KitchenProgressConsumer;
 use App\Modules\FrontOffice\Application\Companies\CompanyReceiptConsumer;
 use App\Modules\HumanResource\Application\PayrollPaidConsumer;
 use App\Modules\HumanResource\Application\SopCompletionConsumer;
+use App\Modules\IdentityAccess\Application\Approval\ApprovalNoticeConsumer;
 use App\Modules\InventoryPurchasing\Application\KitchenProductionConsumer;
 use App\Modules\InventoryPurchasing\Application\KitchenWasteConsumer;
 use App\Modules\InventoryPurchasing\Application\MaintenancePartConsumer;
@@ -61,6 +62,7 @@ return [
         PayrollPaidConsumer::class,
         SaleConsumptionConsumer::class,
         ScheduledReportNoticeConsumer::class,
+        ApprovalNoticeConsumer::class,
         TicketIntakeConsumer::class,
     ],
 ];

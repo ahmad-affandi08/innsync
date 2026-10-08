@@ -10,6 +10,9 @@ Release notes for every release (NFR-14). Newest first. Each entry names the tas
 
 ### Added
 
+- Locked accounts are visible and can be opened. The People screen shows "Locked until …" on an account locked by repeated failed sign-ins, and whoever manages users can press Unlock (a reason is required and the audit records it). For an administrator locked out with nobody to unlock them, `php artisan innsync:unlock-account <email>` at the server opens the account without changing its password. The lock itself is unchanged: it stays per account and across addresses, as the foundation requirements say (`docs/TASK/PHASE-0-FOUNDATION.md`).
+- Email to the people who may decide an approval step when one waits (`APPROVAL_EMAIL_NOTICE`, off by default). The message names nothing (no subject, amount or maker), goes only to people who hold the step's permission for the whole property, never to the maker or to someone who already decided, and a missing address or failing mailer never holds anything up. Approvers limited to one outlet are not written to.
+- "Back up now" on the System status screen: asks the worker for one more backup (at most one request every ten minutes, recorded in the audit). It never shows, downloads or restores a backup; those stay with whoever has the server.
 - Every password field (sign-in, confirm password, reset password, change password, and the secret keys in Email and WhatsApp setup) has an eye at its end that shows or hides what was typed. The new `PasswordInput` also turns off auto-capitalisation and auto-correction. Checked at phone width in Chromium; not yet on a real iPhone.
 - Every money field now groups the thousands as it is typed (1.500.000 in Indonesian, 1,500,000 in English) with the language's own decimal mark, on a number pad on phones, and keeps the caret in place when a digit is inserted in the middle. A pasted amount is read carefully (`Rp 1.500.000`, `1,500.50`; a lone `1.500` is a thousand, not 1.5). What is kept and sent is still the plain amount, so nothing downstream changed: opening a cashier shift with `500.000` stores 50,000,000 minor units. Adjustments that may take money away (payroll adjustment, cash-flow opening, corrections) accept a leading minus. About 60 fields on 40 pages use the new `MoneyInput`; percentages, quantities and counts are left as they were.
 - Automation that only drafts or reminds, never decides:
@@ -25,6 +28,7 @@ Release notes for every release (NFR-14). Newest first. Each entry names the tas
 
 ### Changed
 
+- The declared license in `composer.json` is now `proprietary` instead of `MIT`. This is only the declaration that the code is not open source; the actual terms a hotel signs (licence agreement, support, data processing) still have to be written with a lawyer.
 - The breadcrumb (property › module › page) moved from the header to the top of the page, above the title, so the header keeps the logo, the date and the tools and nothing wraps; the header logo now shows from the large-screen width up.
 
 ### Added

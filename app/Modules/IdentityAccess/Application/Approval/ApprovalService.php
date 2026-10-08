@@ -283,6 +283,8 @@ final readonly class ApprovalService implements ApprovalGate
 
                 if ($request->status()->isFinal()) {
                     $this->announce($request);
+                } else {
+                    $this->announceAwaiting($request);
                 }
 
                 return $this->view($request);
@@ -351,6 +353,7 @@ final readonly class ApprovalService implements ApprovalGate
             $request->reason,
             $request->id,
         ));
+        $this->announceAwaiting($request);
 
         return $request->id;
     }
@@ -376,6 +379,12 @@ final readonly class ApprovalService implements ApprovalGate
             $reason,
             $request->id,
         ));
+    }
+
+    /** A step now waits for a decision; the notice consumer may tell the people who can decide it. Carries no subject or amount. */
+    private function announceAwaiting(ApprovalRequest $request): void
+    {
+        $this->outbox->publish(new OutboxEvent(PropertyId::fromString($request->propertyId), 'identity.approval.awaiting', $request->id, 1, ['request_id' => $request->id]));
     }
 
     /** A final outcome other modules may react to, published in the same transaction as the decision. */

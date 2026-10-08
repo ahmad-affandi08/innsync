@@ -566,4 +566,11 @@ export const access = {
     'ob.remind': "Email a reminder the day before arrival",
     'ob.thank': "Email a thank-you after the stay",
     'ob.messagesHint': "Only for guests who booked on this page and agreed to the privacy notice, by email, once per booking. Bookings made by staff are never written to. The wording is fixed and carries no price or payment detail.",
+    'acc.users.locked': "Locked until {until}",
+    'acc.users.unlock': "Unlock",
+    'acc.unlock.title': "Unlock the account of {name}?",
+    'sys.backup.now': "Back up now",
+    'sys.backup.nowHint': "Asks for one more backup. It runs in the background and the result appears above within a few minutes. Downloading and restoring stay with whoever holds the server.",
+    'sys.backup.queued': "A backup was requested. Refresh this page in a few minutes to see the result.",
+    'sys.backup.recent': "A backup was requested a moment ago. Wait a few minutes before asking again.",
 } as const

@@ -209,6 +209,19 @@ final readonly class AccessAdmin
         });
     }
 
+    /** Opens an account that was locked by repeated failed sign-ins, without changing its password. Recorded with the reason, like every account change. */
+    public function unlock(PropertyId $property, string $actorId, string $userId, string $reason): void
+    {
+        $this->authorize($property, $actorId, self::USER_PERMISSION);
+        $this->requireReason($reason);
+        $person = $this->person($property, $userId);
+
+        $this->transactions->run(function () use ($property, $actorId, $person, $reason): void {
+            $this->directory->unlockUser($person['id']);
+            $this->audit->record(new AuditEntry($property->toString(), $actorId, 'identity.account.unlocked', 'user', $person['id'], null, ['locked' => false], trim($reason)));
+        });
+    }
+
     public function resetPassword(PropertyId $property, string $actorId, string $userId, string $password, string $reason): void
     {
         $this->authorize($property, $actorId, self::USER_PERMISSION);

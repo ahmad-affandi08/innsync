@@ -1,9 +1,12 @@
 import { Link } from '@inertiajs/react';
+import { useState } from 'react';
 
 import { Alert } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
 import { StatusBadge, type StatusTone } from '@/components/ui/status-badge';
 import type { MessageKey } from '@/locales/en/index';
 import { PropertyShell } from '@/modules/property/components/property-shell';
+import { useServerAction } from '@/shared/api/use-server-action';
 import { useFormatters, useTranslation } from '@/shared/i18n/i18n';
 
 type Check = { name: string; status: 'ok' | 'degraded' | 'down'; summary: string };
@@ -21,6 +24,8 @@ const TONE: Record<Check['status'], StatusTone> = { ok: 'success', degraded: 'wa
 export default function SystemStatusPage({ status, checks, backup, environment }: Props) {
     const { t } = useTranslation();
     const format = useFormatters();
+    const action = useServerAction();
+    const [asked, setAsked] = useState<'queued' | 'recent' | null>(null);
     const known = (key: string) => t(key as MessageKey) !== key;
     const run = (r: Run, none: MessageKey, ok: MessageKey, failed: MessageKey) => {
         if (r === null || r.finished_at === null) return <Alert title={t(none)} tone="warning" />;
@@ -29,6 +34,12 @@ export default function SystemStatusPage({ status, checks, backup, environment }
             ? <Alert title={t(ok, { when: format.instant(r.finished_at) })} tone="success" />
             : <Alert title={t(failed, { when: format.instant(r.finished_at) })} tone="danger">{t('sys.failedHint')}</Alert>;
     };
+
+    async function backUpNow() {
+        const done = await action.run<{ queued: boolean }>('/property/system/backup', { body: {} });
+
+        setAsked(done !== null && done.queued ? 'queued' : 'recent');
+    }
 
     return (
         <PropertyShell description={t('sys.description')} title={t('sys.title')}>
@@ -39,6 +50,10 @@ export default function SystemStatusPage({ status, checks, backup, environment }
                 <p className="text-sm text-muted-foreground">{t('sys.backup.hint')}</p>
                 {run(backup.last, 'sys.backup.none', 'sys.backup.ok', 'sys.backup.failed')}
                 {run(backup.verify, 'sys.verify.none', 'sys.verify.ok', 'sys.verify.failed')}
+                <div className="flex flex-col items-start gap-2">
+                    <Button loading={action.busy} onClick={() => void backUpNow()} type="button" variant="outline">{t('sys.backup.now')}</Button>
+                    {asked === null ? <p className="text-sm text-muted-foreground">{t('sys.backup.nowHint')}</p> : <Alert title={t(asked === 'queued' ? 'sys.backup.queued' : 'sys.backup.recent')} tone={asked === 'queued' ? 'success' : 'warning'} />}
+                </div>
             </section>
 
             <section aria-labelledby="sys-checks" className="flex flex-col gap-2">
