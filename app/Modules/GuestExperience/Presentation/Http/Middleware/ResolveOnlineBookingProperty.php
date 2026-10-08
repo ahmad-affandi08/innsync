@@ -44,7 +44,11 @@ final readonly class ResolveOnlineBookingProperty
 
     private function harden(Response $response): Response
     {
-        $response->headers->set('Cache-Control', 'no-store');
+        // A room photo is meant to be kept by the browser; everything else on the page is never cached.
+        if (! $response->headers->hasCacheControlDirective('public')) {
+            $response->headers->set('Cache-Control', 'no-store');
+        }
+
         $response->headers->set('Referrer-Policy', 'no-referrer');
 
         return $response;

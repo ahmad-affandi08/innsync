@@ -5969,6 +5969,14 @@
             "reason"
         ]
     },
+    "POST /property/room-types/{id}/photos": {
+        "required": [
+            "photo"
+        ],
+        "declared": [
+            "photo"
+        ]
+    },
     "POST /property/rooms": {
         "required": [
             "number",
@@ -6322,6 +6330,15 @@
             "name",
             "reason",
             "sort_order"
+        ]
+    },
+    "PUT /property/room-types/{id}/photos/order": {
+        "required": [
+            "ids"
+        ],
+        "declared": [
+            "ids",
+            "ids.*"
         ]
     },
     "PUT /property/rooms/{id}": {

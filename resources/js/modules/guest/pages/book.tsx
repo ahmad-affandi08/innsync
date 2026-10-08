@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Dialog } from '@/components/ui/dialog';
 import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
@@ -16,8 +17,41 @@ import { useFormatters, useTranslation } from '@/shared/i18n/i18n';
 import { useErrorStateCopy } from '@/shared/i18n/use-ui-copy';
 
 type Booking = { hotel: string; notice: string | null; max_nights: number; today: string; horizon_days: number; privacy: { version: number; body_id: string; body_en: string } };
-type Offer = { room_type_id: string; code: string; name: string; max_adults: number; max_children: number; available: boolean; reason: string | null; currency: string; total_minor: number; nights: { date: string; total_minor: number }[] };
+type Offer = { room_type_id: string; code: string; name: string; max_adults: number; max_children: number; available: boolean; reason: string | null; currency: string; total_minor: number; nights: { date: string; total_minor: number }[]; photos: string[] };
 type Done = { number: string; status: string; total_minor: number; currency: string; arrival: string; departure: string; emailed: boolean };
+
+/** The photos of a room type: the main one large, the others as small pictures under it to switch to; touching the large one opens it at full size. */
+function RoomPhotos({ name, photos, propertyId }: { name: string; photos: string[]; propertyId: string }) {
+    const { t } = useTranslation();
+    const [index, setIndex] = useState(0);
+    const [zoom, setZoom] = useState(false);
+
+    if (photos.length === 0) return null;
+
+    const url = (id: string, size: 'thumb' | 'full') => `/book/${propertyId}/photos/${id}?size=${size}`;
+
+    return (
+        <div className="flex flex-col gap-1.5">
+            <button aria-label={t('guest.booking.photoOpen')} className="block aspect-[16/9] w-full overflow-hidden bg-surface-muted" onClick={() => setZoom(true)} type="button">
+                <img alt={t('guest.booking.photoAlt', { name, n: index + 1 })} className="size-full object-cover" loading="lazy" src={url(photos[index], 'thumb')} />
+            </button>
+            {photos.length > 1 ? (
+                <ul className="flex gap-1.5 overflow-x-auto">
+                    {photos.map((id, i) => (
+                        <li className="shrink-0" key={id}>
+                            <button aria-label={t('guest.booking.photoShow', { n: i + 1 })} aria-pressed={i === index} className={`block h-12 w-16 overflow-hidden border ${i === index ? 'border-foreground' : 'border-border opacity-80'}`} onClick={() => setIndex(i)} type="button">
+                                <img alt="" className="size-full object-cover" loading="lazy" src={url(id, 'thumb')} />
+                            </button>
+                        </li>
+                    ))}
+                </ul>
+            ) : null}
+            <Dialog onClose={() => setZoom(false)} open={zoom} title={name}>
+                <img alt={t('guest.booking.photoAlt', { name, n: index + 1 })} className="max-h-[70dvh] w-full object-contain" src={url(photos[index], 'full')} />
+            </Dialog>
+        </div>
+    );
+}
 
 const addDays = (date: string, n: number) => new Date(Date.parse(`${date}T00:00:00Z`) + n * 86_400_000).toISOString().slice(0, 10);
 
@@ -113,6 +147,7 @@ export default function BookPage({ booking, property_id: propertyId }: { booking
                         <ul className="flex flex-col gap-3" data-testid="offers">
                             {offers.offers.map((o) => (
                                 <li className="flex flex-col gap-2 border border-border bg-surface p-3" key={o.room_type_id}>
+                                    <RoomPhotos name={o.name} photos={o.photos} propertyId={propertyId} />
                                     <div className="flex flex-wrap items-baseline justify-between gap-2">
                                         <p className="font-semibold">{o.name}</p>
                                         <p className="text-sm text-muted-foreground">{t('guest.booking.fits', { adults: o.max_adults, children: o.max_children })}</p>

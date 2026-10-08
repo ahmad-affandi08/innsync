@@ -9,6 +9,7 @@ use App\Modules\FrontOffice\Application\Inventory\AvailabilityService;
 use App\Modules\FrontOffice\Application\Reservations\ReservationRequest;
 use App\Modules\FrontOffice\Application\Reservations\ReservationService;
 use App\Modules\Property\Application\Catalog\RoomCatalogReader;
+use App\Modules\Property\Application\Catalog\RoomPhotoReader;
 use App\Modules\Property\Application\Rates\RatePlanReader;
 use App\Modules\Property\Application\Rates\RateQuoter;
 use App\Modules\Property\Application\Settings\BusinessDateProvider;
@@ -31,6 +32,7 @@ final readonly class OnlineBookingDeskService implements OnlineBookingDesk
         private BusinessDateProvider $businessDate,
         private PropertySettingsService $settings,
         private OnlineBookingCounts $counts,
+        private RoomPhotoReader $photos,
     ) {}
 
     public function today(PropertyId $property): string
@@ -52,8 +54,10 @@ final readonly class OnlineBookingDeskService implements OnlineBookingDesk
         }
 
         $out = [];
+        $types = $this->rooms->activeTypes($property);
+        $photos = $this->photos->idsByType($property, array_map(static fn ($t): string => $t->id, $types));
 
-        foreach ($this->rooms->activeTypes($property) as $type) {
+        foreach ($types as $type) {
             if ($adults > $type->maxAdults || $children > $type->maxChildren) {
                 continue;
             }
@@ -77,6 +81,7 @@ final readonly class OnlineBookingDeskService implements OnlineBookingDesk
                 'room_type_id' => $type->id, 'code' => $type->code, 'name' => $type->name, 'max_adults' => $type->maxAdults, 'max_children' => $type->maxChildren,
                 'available' => $reason === null, 'reason' => $reason, 'currency' => (string) $quote['currency'], 'total_minor' => (int) $quote['total_minor'],
                 'nights' => array_map(static fn (array $n): array => ['date' => (string) $n['date'], 'total_minor' => (int) $n['total_minor']], $quote['nights']),
+                'photos' => $photos[$type->id] ?? [],
             ];
         }
 

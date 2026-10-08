@@ -11,6 +11,7 @@ use App\Modules\Property\Application\Rates\RatePlanService;
 use App\Modules\Property\Application\Settings\PropertySettingsService;
 use App\Shared\Application\Notifications\EmailNotifier;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Inertia\Testing\AssertableInertia as Assert;
 use LogicException;
@@ -182,6 +183,72 @@ final class OnlineBookingHttpTest extends TestCase
         $this->postJson('/book/'.self::A, $this->body(['website' => 'x']))->assertStatus(422);
         $this->postJson('/book/'.self::A, $this->body(['website' => 'x']))->assertStatus(422);
         $this->postJson('/book/'.self::A, $this->body())->assertStatus(429);
+    }
+
+    private function jpeg(int $w = 800, int $h = 600): UploadedFile
+    {
+        $image = imagecreatetruecolor($w, $h);
+        imagefill($image, 0, 0, (int) imagecolorallocate($image, 20, 90, 140));
+        ob_start();
+        imagejpeg($image);
+
+        return UploadedFile::fake()->createWithContent('room.jpg', (string) ob_get_clean());
+    }
+
+    public function test_room_type_photos_are_added_ordered_and_removed_by_the_staff_who_keep_the_catalog(): void
+    {
+        $base = "/property/room-types/{$this->typeId}/photos";
+        $a = $this->post($base, ['photo' => $this->jpeg(2400, 1800)], ['Accept' => 'application/json'])->assertCreated()->json('photos.0');
+        $b = $this->post($base, ['photo' => $this->jpeg()], ['Accept' => 'application/json'])->assertCreated()->json('photos.1');
+
+        $this->get("{$base}/{$a}")->assertOk()->assertHeader('Content-Type', 'image/jpeg');
+        [$w] = getimagesizefromstring((string) $this->get("{$base}/{$a}")->getContent());
+        [$tw] = getimagesizefromstring((string) $this->get("{$base}/{$a}?size=thumb")->getContent());
+        $this->assertSame(1600, $w);
+        $this->assertSame(640, $tw);
+        $this->get('/property/rooms')->assertInertia(fn (Assert $p) => $p->where('photos.'.$this->typeId, [$a, $b]));
+
+        $this->putJson("{$base}/order", ['ids' => [$b, $a]])->assertOk()->assertJsonPath('photos', [$b, $a]);
+        $this->putJson("{$base}/order", ['ids' => [$b]])->assertStatus(422);
+        $this->deleteJson("{$base}/{$b}")->assertOk()->assertJsonPath('photos', [$a]);
+        $this->deleteJson("{$base}/{$b}")->assertNotFound();
+        $this->assertSame(4, DB::table('audit_entries')->whereIn('action', ['room_type.photo.added', 'room_type.photo.ordered', 'room_type.photo.removed'])->count());
+    }
+
+    public function test_bad_photos_too_many_photos_and_other_peoples_rights_are_refused(): void
+    {
+        $base = "/property/room-types/{$this->typeId}/photos";
+        $json = ['Accept' => 'application/json'];
+
+        $this->post($base, ['photo' => $this->jpeg(100, 100)], $json)->assertStatus(422);
+        $this->post($base, ['photo' => UploadedFile::fake()->createWithContent('room.jpg', 'not a picture')], $json)->assertStatus(422);
+        $this->post($base, ['photo' => UploadedFile::fake()->createWithContent('room.jpg', '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400"><rect width="400" height="400"/></svg>')], $json)->assertStatus(422);
+
+        for ($i = 0; $i < 6; $i++) {
+            $this->post($base, ['photo' => $this->jpeg()], $json)->assertCreated();
+        }
+
+        $this->post($base, ['photo' => $this->jpeg()], $json)->assertStatus(422);
+        $this->post('/property/room-types/01arz3ndektsv4rrffq69g5fa0/photos', ['photo' => $this->jpeg()], $json)->assertNotFound();
+
+        $this->post('/logout');
+        $this->signIn(self::A, ['housekeeping.view']);
+        $this->post($base, ['photo' => $this->jpeg()], $json)->assertForbidden();
+    }
+
+    public function test_the_booking_page_lists_the_photos_and_serves_them_only_while_it_takes_bookings(): void
+    {
+        $id = $this->post("/property/room-types/{$this->typeId}/photos", ['photo' => $this->jpeg()], ['Accept' => 'application/json'])->assertCreated()->json('photos.0');
+        $this->get('/book/'.self::A.'/photos/'.$id)->assertNotFound();
+
+        $this->enable();
+        $this->getJson('/book/'.self::A.'/offers?arrival=2026-10-10&departure=2026-10-12&adults=2')->assertOk()->assertJsonPath('offers.0.photos', [$id]);
+        $photo = $this->get('/book/'.self::A.'/photos/'.$id.'?size=thumb')->assertOk()->assertHeader('Content-Type', 'image/jpeg');
+        $this->assertStringContainsString('public', (string) $photo->headers->get('Cache-Control'));
+        $this->get('/book/'.self::A.'/photos/01arz3ndektsv4rrffq69g5fa0')->assertNotFound();
+
+        $this->putJson('/property/online-booking', ['enabled' => false, 'rate_plan_id' => $this->planId, 'max_nights' => 10])->assertOk();
+        $this->get('/book/'.self::A.'/photos/'.$id)->assertNotFound();
     }
 
     public function test_staff_are_told_how_many_web_requests_wait(): void

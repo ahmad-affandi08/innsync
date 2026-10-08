@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Modules\Property\Presentation\Http\Controllers;
 
 use App\Modules\Property\Application\Catalog\RoomCatalogService;
+use App\Modules\Property\Application\Catalog\RoomPhotoService;
 use App\Shared\Application\Tenancy\PropertyContext;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -14,16 +15,19 @@ use Inertia\Response;
 /** Room types and rooms. Authorization and every rule live in `RoomCatalogService`; this only moves data. */
 final readonly class RoomCatalogController
 {
-    public function __construct(private RoomCatalogService $catalog, private PropertyContext $property) {}
+    public function __construct(private RoomCatalogService $catalog, private PropertyContext $property, private RoomPhotoService $photos) {}
 
     public function index(Request $request): Response
     {
         $property = $this->property->current();
         $actor = (string) $request->user()->getAuthIdentifier();
 
+        $types = array_map(static fn ($t): array => $t->toArray(), $this->catalog->listTypes($property, $actor));
+
         return Inertia::render('property/pages/room-catalog', [
-            'types' => array_map(static fn ($t): array => $t->toArray(), $this->catalog->listTypes($property, $actor)),
+            'types' => $types,
             'rooms' => array_map(static fn ($r): array => $r->toArray(), $this->catalog->listRooms($property, $actor)),
+            'photos' => (object) $this->photos->overview($property, $actor, array_column($types, 'id')),
         ]);
     }
 

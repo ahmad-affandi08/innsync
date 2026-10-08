@@ -132,6 +132,7 @@ use App\Modules\Property\Presentation\Http\Controllers\PropertySettingsControlle
 use App\Modules\Property\Presentation\Http\Controllers\RatePlanController;
 use App\Modules\Property\Presentation\Http\Controllers\RoomCatalogController;
 use App\Modules\Property\Presentation\Http\Controllers\RoomImportController;
+use App\Modules\Property\Presentation\Http\Controllers\RoomTypePhotoController;
 use App\Modules\Reporting\Presentation\Http\Controllers\DashboardController;
 use App\Modules\Reporting\Presentation\Http\Controllers\ExportJobController;
 use App\Modules\Reporting\Presentation\Http\Controllers\ObligationController;
@@ -179,6 +180,7 @@ Route::prefix('g')->middleware(['throttle:guest'])->group(function (): void {
 // Booking from the hotel's own web page: anyone may look and send a request; the request is tentative until staff confirm it, and nothing is charged online.
 Route::middleware(['throttle:guest', 'online.booking'])->prefix('book/{property}')->where(['property' => '[0-9a-z]{26}'])->group(function (): void {
     Route::get('/', [OnlineBookingController::class, 'show'])->name('booking.page');
+    Route::get('/photos/{photo}', [OnlineBookingController::class, 'photo'])->where('photo', '[0-9A-Za-z]{26}')->name('booking.photo');
     Route::get('/offers', [OnlineBookingController::class, 'offers'])->middleware('throttle:online-booking-search')->name('booking.offers');
     Route::post('/', [OnlineBookingController::class, 'reserve'])->middleware('throttle:online-booking-reserve')->name('booking.reserve');
 });
@@ -348,6 +350,10 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
     Route::post('/rooms/import', [RoomImportController::class, 'run'])->middleware(['password.confirm', 'throttle:access-admin'])->name('property.rooms.import');
     Route::post('/room-types', [RoomCatalogController::class, 'storeType'])->name('property.room-types.store');
     Route::put('/room-types/{id}', [RoomCatalogController::class, 'updateType'])->where('id', '[0-9A-Za-z]{26}')->name('property.room-types.update');
+    Route::post('/room-types/{id}/photos', [RoomTypePhotoController::class, 'add'])->where('id', '[0-9A-Za-z]{26}')->middleware('throttle:access-admin')->name('property.room-types.photos.add');
+    Route::put('/room-types/{id}/photos/order', [RoomTypePhotoController::class, 'order'])->where('id', '[0-9A-Za-z]{26}')->name('property.room-types.photos.order');
+    Route::delete('/room-types/{id}/photos/{photo}', [RoomTypePhotoController::class, 'remove'])->where(['id' => '[0-9A-Za-z]{26}', 'photo' => '[0-9A-Za-z]{26}'])->name('property.room-types.photos.remove');
+    Route::get('/room-types/{id}/photos/{photo}', [RoomTypePhotoController::class, 'picture'])->where(['id' => '[0-9A-Za-z]{26}', 'photo' => '[0-9A-Za-z]{26}'])->name('property.room-types.photos.show');
     Route::post('/room-types/{id}/active', [RoomCatalogController::class, 'typeActive'])->where('id', '[0-9A-Za-z]{26}')->name('property.room-types.active');
     Route::post('/rooms', [RoomCatalogController::class, 'storeRoom'])->name('property.rooms.store');
     Route::put('/rooms/{id}', [RoomCatalogController::class, 'updateRoom'])->where('id', '[0-9A-Za-z]{26}')->name('property.rooms.update');

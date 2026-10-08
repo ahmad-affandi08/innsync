@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Modules\GuestExperience\Application;
 
 use App\Modules\FrontOffice\Application\GuestDesk\OnlineBookingDesk;
+use App\Modules\Property\Application\Catalog\RoomPhotoReader;
 use App\Modules\Property\Application\Ports\PropertyProfileReader;
 use App\Shared\Application\Errors\Refusal;
 use App\Shared\Application\Notifications\EmailNotifier;
@@ -32,12 +33,19 @@ final readonly class OnlineBookingService
         private PropertyProfileReader $profile,
         private ConsentLedger $consents,
         private EmailNotifier $mail,
+        private RoomPhotoReader $photos,
     ) {}
 
     /** The property a booking address names when it takes bookings; null for anything else, and the answer is the same whatever the reason. */
     public function resolve(string $propertyId): ?PropertyId
     {
         return $this->store->bookable($propertyId);
+    }
+
+    /** @return array{content: string, sha256: string}|null a room photo for the booking page; none for an id that is not a photo of this property */
+    public function photo(PropertyId $property, string $photoId, bool $thumb): ?array
+    {
+        return preg_match('/^[0-9A-Za-z]{26}$/', $photoId) === 1 ? $this->photos->picture($property, strtolower($photoId), $thumb) : null;
     }
 
     /** @return array<string, mixed> */

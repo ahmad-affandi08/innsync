@@ -20,6 +20,17 @@ final readonly class OnlineBookingController
         return Inertia::render('guest/pages/book', ['property_id' => (string) $request->route('property'), 'booking' => $this->booking->page($request->attributes->get('online.property'))]);
     }
 
+    /** A room photo for the booking page. Public while the property takes bookings, and kept by the browser for a day. */
+    public function photo(Request $request, string $property, string $photo): Response|\Symfony\Component\HttpFoundation\Response
+    {
+        $picture = $this->booking->photo($request->attributes->get('online.property'), $photo, $request->query('size') === 'thumb') ?? abort(404);
+        $response = response($picture['content'], 200, ['Content-Type' => 'image/jpeg', 'X-Content-Type-Options' => 'nosniff', 'Cache-Control' => 'public, max-age=86400']);
+        $response->setEtag($picture['sha256']);
+        $response->isNotModified($request);
+
+        return $response;
+    }
+
     public function offers(Request $request): JsonResponse
     {
         $data = $request->validate(['arrival' => ['required', 'string', 'size:10'], 'departure' => ['required', 'string', 'size:10'], 'adults' => ['required', 'integer', 'min:1', 'max:10'], 'children' => ['nullable', 'integer', 'min:0', 'max:10']]);

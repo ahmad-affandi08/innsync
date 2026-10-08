@@ -22,7 +22,7 @@ interface OnlineBookingDesk
     /**
      * Every room type that can hold the party, with whether it can be sold for every night and the price of the whole stay with the service charge and tax in it.
      *
-     * @return list<array{room_type_id: string, code: string, name: string, max_adults: int, max_children: int, available: bool, reason: string|null, currency: string, total_minor: int, nights: list<array{date: string, total_minor: int}>}>
+     * @return list<array{room_type_id: string, code: string, name: string, max_adults: int, max_children: int, available: bool, reason: string|null, currency: string, total_minor: int, nights: list<array{date: string, total_minor: int}>, photos: list<string>}>
      */
     public function offers(PropertyId $property, string $ratePlanId, string $arrival, string $departure, int $adults, int $children): array;
 

@@ -10,6 +10,7 @@ import { Select } from '@/components/ui/select';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { Textarea } from '@/components/ui/textarea';
 import { PropertyShell } from '@/modules/property/components/property-shell';
+import { RoomPhotosDialog } from '@/modules/property/components/room-photos-dialog';
 import { RoomImportDialog } from '@/modules/property/components/room-import-dialog';
 import { useServerAction } from '@/shared/api/use-server-action';
 import { useTranslation } from '@/shared/i18n/i18n';
@@ -36,7 +37,7 @@ type Toggle = { kind: 'type' | 'room'; id: string; name: string; active: boolean
 const emptyType: TypeForm = { id: null, code: '', name: '', description: '', maxAdults: '2', maxChildren: '0', sortOrder: '0', lockVersion: 0, reason: '' };
 const emptyRoom: RoomForm = { id: null, number: '', roomTypeId: '', floor: '', building: '', lockVersion: 0, reason: '' };
 
-export default function RoomCatalogPage({ rooms, types }: { rooms: Room[]; types: RoomType[] }) {
+export default function RoomCatalogPage({ photos: initialPhotos, rooms, types }: { photos: Record<string, string[]>; rooms: Room[]; types: RoomType[] }) {
     const { t } = useTranslation();
     const errorCopy = useErrorStateCopy();
     const action = useServerAction();
@@ -45,6 +46,8 @@ export default function RoomCatalogPage({ rooms, types }: { rooms: Room[]; types
     const [toggle, setToggle] = useState<Toggle | null>(null);
     const [reason, setReason] = useState('');
     const [importing, setImporting] = useState(false);
+    const [photos, setPhotos] = useState<Record<string, string[]>>(initialPhotos);
+    const [photoType, setPhotoType] = useState<RoomType | null>(null);
     const typeName = (id: string) => types.find((x) => x.id === id)?.name ?? '';
 
     function closeAll() {
@@ -121,6 +124,7 @@ export default function RoomCatalogPage({ rooms, types }: { rooms: Room[]; types
                                 </div>
                                 <div className="flex items-center gap-2">
                                     <StatusBadge label={type.is_active ? t('property.status.active') : t('property.status.inactive')} tone={type.is_active ? 'success' : 'neutral'} />
+                                    <Button onClick={() => setPhotoType(type)} size="sm" type="button" variant="outline">{t('prop.photos.button', { count: (photos[type.id] ?? []).length })}</Button>
                                     <Button onClick={open(() => setTypeForm({ id: type.id, code: type.code, name: type.name, description: type.description ?? '', maxAdults: String(type.max_adults), maxChildren: String(type.max_children), sortOrder: String(type.sort_order), lockVersion: type.lock_version, reason: '' }))} size="sm" type="button" variant="outline">{t('property.action.edit')}</Button>
                                     <Button onClick={open(() => setToggle({ kind: 'type', id: type.id, name: type.name, active: !type.is_active, lockVersion: type.lock_version }))} size="sm" type="button" variant="outline">{type.is_active ? t('property.action.deactivate') : t('property.action.activate')}</Button>
                                 </div>
@@ -252,6 +256,7 @@ export default function RoomCatalogPage({ rooms, types }: { rooms: Room[]; types
                 </div>
             </ConfirmDialog>
             <RoomImportDialog onClose={() => setImporting(false)} open={importing} />
+            {photoType !== null ? <RoomPhotosDialog onClose={(next) => { setPhotos({ ...photos, [photoType.id]: next }); setPhotoType(null); }} open photos={photos[photoType.id] ?? []} typeId={photoType.id} typeName={photoType.name} /> : null}
         </PropertyShell>
     );
 }
