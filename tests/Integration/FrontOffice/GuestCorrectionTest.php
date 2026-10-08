@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Integration\FrontOffice;
 
-use App\Modules\FrontOffice\Application\Folios\ApprovalRequired;
 use App\Modules\FrontOffice\Application\Stays\CheckInRequest;
 use App\Modules\FrontOffice\Application\Stays\GuestCorrectionService;
 use App\Modules\FrontOffice\Application\Stays\GuestRepository;
@@ -12,6 +11,7 @@ use App\Modules\FrontOffice\Application\Stays\StayService;
 use App\Modules\IdentityAccess\Application\Approval\ApprovalPolicyAdmin;
 use App\Modules\IdentityAccess\Application\Approval\ApprovalService;
 use App\Shared\Application\Approval\ApprovalNotUsable;
+use App\Shared\Application\Approval\ApprovalRequired;
 use App\Shared\Application\Errors\Refusal;
 use App\Shared\Application\Idempotency\IdempotencyKey;
 use App\Shared\Application\Tenancy\PropertyContext;

@@ -10,6 +10,8 @@ use App\Modules\Property\Application\Ports\PropertyProfileReader;
 use App\Shared\Application\Errors\Refusal;
 use App\Shared\Application\Notifications\EmailNotifier;
 use App\Shared\Application\Privacy\ConsentLedger;
+use App\Shared\Application\Privacy\FieldCipher;
+use App\Shared\Application\Time\Clock;
 use App\Shared\Domain\Tenancy\PropertyId;
 use DateTimeImmutable;
 use DateTimeZone;
@@ -26,6 +28,12 @@ final readonly class OnlineBookingService
 
     public const PENDING_LIMIT = 3;
 
+    /** A request sent sooner than this after the page was opened was not filled in by a person. */
+    public const MIN_FILL_SECONDS = 3;
+
+    /** A page left open longer than this has to be opened again. */
+    public const MAX_AGE_SECONDS = 21_600;
+
     public function __construct(
         private OnlineBookingStore $store,
         private OnlineBookingDesk $desk,
@@ -34,6 +42,8 @@ final readonly class OnlineBookingService
         private ConsentLedger $consents,
         private EmailNotifier $mail,
         private RoomPhotoReader $photos,
+        private FieldCipher $cipher,
+        private Clock $clock,
     ) {}
 
     /** The property a booking address names when it takes bookings; null for anything else, and the answer is the same whatever the reason. */
@@ -61,7 +71,36 @@ final readonly class OnlineBookingService
             'today' => $this->desk->today($property),
             'horizon_days' => $this->desk->horizonDays($property),
             'privacy' => ['version' => $notice['version'], 'body_id' => $notice['body_id'], 'body_en' => $notice['body_en']],
+            'form_token' => $this->formToken($property),
         ];
+    }
+
+    /**
+     * Proof of when the page was opened, signed with the key of the installation and bound to this property: a program that posts the form without opening the page has none, and one that opens it and posts
+     * at once is too fast to be a person. It carries no personal data.
+     */
+    public function formToken(PropertyId $property): string
+    {
+        $at = $this->clock->nowUtc()->getTimestamp();
+
+        return $at.'.'.$this->cipher->blindIndex('guest.online_booking.form', $property->toString().'|'.$at);
+    }
+
+    private function assertPersonPace(PropertyId $property, ?string $token): void
+    {
+        if ($token === null || preg_match('/^(\d{9,11})\.([0-9a-f]{64})$/D', $token, $m) !== 1 || ! hash_equals($this->cipher->blindIndex('guest.online_booking.form', $property->toString().'|'.$m[1]), $m[2])) {
+            throw Refusal::invalid('This request cannot be sent.', ['website']);
+        }
+
+        $age = $this->clock->nowUtc()->getTimestamp() - (int) $m[1];
+
+        if ($age < self::MIN_FILL_SECONDS) {
+            throw Refusal::invalid('This request cannot be sent.', ['website']);
+        }
+
+        if ($age > self::MAX_AGE_SECONDS) {
+            throw Refusal::stateConflict('This page has been open too long. Reload it and send the request again.');
+        }
     }
 
     /** @return array{currency: string|null, nights: int, offers: list<array<string, mixed>>} */
@@ -76,7 +115,7 @@ final readonly class OnlineBookingService
     }
 
     /**
-     * @param  array{arrival: string, departure: string, adults: int, children: int, room_type_id: string, name: string, phone: string|null, email: string|null, notes: string|null, agree: bool, notice_version: int, key: string, website: string|null}  $in
+     * @param  array{arrival: string, departure: string, adults: int, children: int, room_type_id: string, name: string, phone: string|null, email: string|null, notes: string|null, agree: bool, notice_version: int, key: string, website: string|null, form_token?: string|null}  $in
      * @return array{number: string, status: string, total_minor: int, currency: string, arrival: string, departure: string, emailed: bool}
      */
     public function reserve(PropertyId $property, array $in, string $locale): array
@@ -87,6 +126,7 @@ final readonly class OnlineBookingService
             throw Refusal::invalid('This request cannot be sent.', ['website']);
         }
 
+        $this->assertPersonPace($property, $in['form_token'] ?? null);
         $nights = $this->nights($property, $in['arrival'], $in['departure'], (int) $s['max_nights']);
         $this->party($in['adults'], $in['children']);
         $name = trim($in['name']);

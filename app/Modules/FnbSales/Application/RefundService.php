@@ -8,6 +8,7 @@ use App\Modules\Property\Application\Rates\PropertyCurrencyReader;
 use App\Modules\Property\Application\Settings\BusinessDateProvider;
 use App\Shared\Application\Approval\ApprovalGate;
 use App\Shared\Application\Approval\ApprovalRequestInput;
+use App\Shared\Application\Approval\ApprovalRequired;
 use App\Shared\Application\Audit\AuditEntry;
 use App\Shared\Application\Audit\AuditTrail;
 use App\Shared\Application\Documents\DocumentNumbers;

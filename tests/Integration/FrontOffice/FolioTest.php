@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Integration\FrontOffice;
 
-use App\Modules\FrontOffice\Application\Folios\ApprovalRequired;
 use App\Modules\FrontOffice\Application\Folios\FolioRepository;
 use App\Modules\FrontOffice\Application\Folios\FolioService;
 use App\Modules\FrontOffice\Application\Reservations\ReservationService;
@@ -16,6 +15,7 @@ use App\Modules\IdentityAccess\Infrastructure\Persistence\Eloquent\UserRecord;
 use App\Modules\Property\Application\Rates\ChargeSchemeService;
 use App\Shared\Application\Approval\ApprovalNotUsable;
 use App\Shared\Application\Approval\ApprovalRequestInput;
+use App\Shared\Application\Approval\ApprovalRequired;
 use App\Shared\Application\Approval\MissingApprovalPolicy;
 use App\Shared\Application\Errors\Refusal;
 use App\Shared\Application\Idempotency\IdempotencyKey;

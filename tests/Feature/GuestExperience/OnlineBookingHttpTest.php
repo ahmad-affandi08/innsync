@@ -5,16 +5,20 @@ declare(strict_types=1);
 namespace Tests\Feature\GuestExperience;
 
 use App\Modules\FrontOffice\Application\Reservations\ReservationService;
+use App\Modules\GuestExperience\Application\OnlineBookingService;
 use App\Modules\Property\Application\Catalog\RoomCatalogService;
 use App\Modules\Property\Application\Rates\ChargeSchemeService;
 use App\Modules\Property\Application\Rates\RatePlanService;
 use App\Modules\Property\Application\Settings\PropertySettingsService;
 use App\Shared\Application\Notifications\EmailNotifier;
+use App\Shared\Application\Time\Clock;
+use App\Shared\Domain\Tenancy\PropertyId;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Inertia\Testing\AssertableInertia as Assert;
 use LogicException;
+use Tests\Support\AdjustableClock;
 use Tests\Support\SignsInToProperty;
 use Tests\TestCase;
 
@@ -33,6 +37,8 @@ final class OnlineBookingHttpTest extends TestCase
     /** @var list<array{0: string, 1: string, 2: string}> */
     private array $sent = [];
 
+    private AdjustableClock $clock;
+
     protected function beforeRefreshingDatabase(): void
     {
         if (config('database.default') !== 'mysql' || config('database.connections.mysql.database') !== 'innsync_test') {
@@ -43,6 +49,8 @@ final class OnlineBookingHttpTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        $this->clock = new AdjustableClock(now()->format('Y-m-d H:i:s'));
+        $this->app->instance(Clock::class, $this->clock);
         config(['identity_access.login_rate_limit_per_minute' => 1000, 'guest.online_booking.requests_per_10_minutes' => 100]);
         $this->createProperty(self::A, 'Hotel A');
         $this->signIn(self::A, [ReservationService::MANAGE_PERMISSION, ReservationService::VIEW_PERMISSION, RoomCatalogService::MANAGE_PERMISSION, RatePlanService::MANAGE_PERMISSION, ChargeSchemeService::MANAGE_PERMISSION, PropertySettingsService::MANAGE_PERMISSION]);
@@ -80,6 +88,16 @@ final class OnlineBookingHttpTest extends TestCase
 
     /** @return array<string, mixed> */
     private function body(array $o = []): array
+    {
+        // The form carries the proof of when the page was opened, and a person takes longer than three seconds to fill it in.
+        $token = app(OnlineBookingService::class)->formToken(PropertyId::fromString(self::A));
+        $this->clock->advance('+10 seconds');
+
+        return ['form_token' => $token, ...$this->plainBody($o)];
+    }
+
+    /** @return array<string, mixed> the request without the proof of when the page was opened */
+    private function plainBody(array $o = []): array
     {
         return ['arrival' => '2026-10-10', 'departure' => '2026-10-12', 'adults' => 2, 'children' => 0, 'room_type_id' => $this->typeId, 'name' => 'Budi Santoso', 'phone' => '+62 812 3456', 'email' => 'budi@example.com', 'notes' => 'Late arrival', 'agree' => true, 'notice_version' => 0, 'key' => 'web-key-'.bin2hex(random_bytes(8)), ...$o];
     }
@@ -173,6 +191,31 @@ final class OnlineBookingHttpTest extends TestCase
 
         $this->postJson('/book/'.self::A, $this->body(['arrival' => '2026-10-22', 'departure' => '2026-10-24']))->assertStatus(409);
         $this->assertSame(3, DB::table('reservations')->count());
+    }
+
+    public function test_a_request_needs_the_proof_that_the_page_was_opened_a_moment_ago_and_not_too_long_ago(): void
+    {
+        $this->enable();
+        $page = $this->get('/book/'.self::A)->assertOk();
+        $token = (string) $page->viewData('page')['props']['booking']['form_token'];
+        self::assertMatchesRegularExpression('/^\d{10}\.[0-9a-f]{64}$/', $token);
+
+        // None, a made-up one, one for another moment, and one used at once are all refused as automated.
+        $send = fn (?string $proof) => $this->postJson('/book/'.self::A, $this->plainBody() + ($proof === null ? [] : ['form_token' => $proof]));
+        $send(null)->assertStatus(422);
+        $send(str_repeat('a', 10).'.'.str_repeat('0', 64))->assertStatus(422);
+        $send('1790000000.'.explode('.', $token)[1])->assertStatus(422);
+        $fresh = app(OnlineBookingService::class)->formToken(PropertyId::fromString(self::A));
+        $send($fresh)->assertStatus(422);
+        self::assertSame(0, DB::table('reservations')->count());
+
+        // After a few seconds it is accepted, and so it is a few hours later; after more than six hours the page has to be opened again.
+        $this->clock->advance('+5 seconds');
+        $send($fresh)->assertCreated();
+        $old = app(OnlineBookingService::class)->formToken(PropertyId::fromString(self::A));
+        $this->clock->advance('+6 hours +1 minute');
+        $send($old)->assertStatus(409);
+        self::assertSame(1, DB::table('reservations')->count());
     }
 
     public function test_one_address_can_only_send_so_many_requests_in_a_short_time(): void

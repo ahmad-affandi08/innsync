@@ -44,13 +44,13 @@ final readonly class OnlineBookingController
             'arrival' => ['required', 'string', 'size:10'], 'departure' => ['required', 'string', 'size:10'], 'adults' => ['required', 'integer', 'min:1', 'max:10'], 'children' => ['nullable', 'integer', 'min:0', 'max:10'],
             'room_type_id' => ['required', 'string', 'size:26'], 'name' => ['required', 'string', 'max:150'], 'phone' => ['nullable', 'string', 'max:30'], 'email' => ['nullable', 'string', 'max:190'],
             'notes' => ['nullable', 'string', 'max:300'], 'agree' => ['required', 'boolean'], 'notice_version' => ['required', 'integer', 'min:0'], 'key' => ['required', 'string', 'min:16', 'max:128', 'regex:/^[A-Za-z0-9._:-]+$/'],
-            'website' => ['nullable', 'string', 'max:100'],
+            'website' => ['nullable', 'string', 'max:100'], 'form_token' => ['required', 'string', 'max:100'],
         ]);
 
         $done = $this->booking->reserve($request->attributes->get('online.property'), [
             'arrival' => $data['arrival'], 'departure' => $data['departure'], 'adults' => (int) $data['adults'], 'children' => (int) ($data['children'] ?? 0), 'room_type_id' => $data['room_type_id'],
             'name' => $data['name'], 'phone' => $data['phone'] ?? null, 'email' => $data['email'] ?? null, 'notes' => $data['notes'] ?? null, 'agree' => (bool) $data['agree'],
-            'notice_version' => (int) $data['notice_version'], 'key' => $data['key'], 'website' => $data['website'] ?? null,
+            'notice_version' => (int) $data['notice_version'], 'key' => $data['key'], 'website' => $data['website'] ?? null, 'form_token' => $data['form_token'],
         ], app()->getLocale());
 
         return response()->json($done, 201)->header('Cache-Control', 'no-store');

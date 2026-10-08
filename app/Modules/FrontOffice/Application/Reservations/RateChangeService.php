@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Modules\FrontOffice\Application\Reservations;
 
-use App\Modules\FrontOffice\Application\Folios\ApprovalRequired;
 use App\Modules\FrontOffice\Domain\Reservations\Reservation;
 use App\Modules\Property\Application\Rates\ChargeCalculator;
 use App\Modules\Property\Application\Settings\BusinessDateProvider;
 use App\Shared\Application\Approval\ApprovalGate;
 use App\Shared\Application\Approval\ApprovalRequestInput;
+use App\Shared\Application\Approval\ApprovalRequired;
 use App\Shared\Application\Approval\ApprovalView;
 use App\Shared\Application\Audit\AuditEntry;
 use App\Shared\Application\Audit\AuditTrail;

@@ -1,1 +1,0 @@
-import{v as e}from"./app-C1FOu1UA.js";import{f as t,t as n}from"./app-frame-4NsNL3M1.js";var r=e();function i({actions:e,children:i,description:a,title:o}){return(0,r.jsx)(n,{actions:e,description:a,links:t,title:o,children:i})}export{i as PropertyShell};

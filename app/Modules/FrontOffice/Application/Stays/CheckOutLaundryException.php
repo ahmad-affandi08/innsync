@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Modules\FrontOffice\Application\Stays;
 
-use App\Modules\FrontOffice\Application\Folios\ApprovalRequired;
 use App\Modules\Laundry\Application\LaundryLiability;
 use App\Shared\Application\Approval\ApprovalGate;
 use App\Shared\Application\Approval\ApprovalRequestInput;
+use App\Shared\Application\Approval\ApprovalRequired;
 use App\Shared\Application\Approval\ApprovalView;
 use App\Shared\Application\Audit\AuditEntry;
 use App\Shared\Application\Audit\AuditTrail;

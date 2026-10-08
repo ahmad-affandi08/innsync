@@ -18,7 +18,7 @@ import { useServerAction } from '@/shared/api/use-server-action';
 import { useFormatters, useTranslation } from '@/shared/i18n/i18n';
 import { useErrorStateCopy } from '@/shared/i18n/use-ui-copy';
 
-type Booking = { hotel: string; notice: string | null; max_nights: number; today: string; horizon_days: number; privacy: { version: number; body_id: string; body_en: string } };
+type Booking = { hotel: string; notice: string | null; max_nights: number; today: string; horizon_days: number; privacy: { version: number; body_id: string; body_en: string }; form_token: string };
 type Offers = { currency: string | null; nights: number; offers: Offer[] };
 type Offer = { room_type_id: string; code: string; name: string; max_adults: number; max_children: number; available: boolean; reason: string | null; currency: string; total_minor: number; nights: { date: string; total_minor: number }[]; photos: string[] };
 type Done = { number: string; status: string; total_minor: number; currency: string; arrival: string; departure: string; emailed: boolean };
@@ -96,7 +96,7 @@ export default function BookPage({ booking, property_id: propertyId }: { booking
         const result = await action.run<Done>(`/book/${propertyId}`, {
             body: {
                 ...dates, adults: Number(party.adults), children: Number(party.children), room_type_id: chosen.room_type_id, name: form.name, phone: form.phone, email: form.email, notes: form.notes,
-                agree: form.agree, notice_version: booking.privacy.version, key, website: form.website,
+                agree: form.agree, notice_version: booking.privacy.version, key, website: form.website, form_token: booking.form_token,
             },
         });
         if (result !== null) setDone(result);

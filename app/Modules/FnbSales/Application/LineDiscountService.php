@@ -7,6 +7,7 @@ namespace App\Modules\FnbSales\Application;
 use App\Modules\Property\Application\Rates\PropertyCurrencyReader;
 use App\Shared\Application\Approval\ApprovalGate;
 use App\Shared\Application\Approval\ApprovalRequestInput;
+use App\Shared\Application\Approval\ApprovalRequired;
 use App\Shared\Application\Audit\AuditEntry;
 use App\Shared\Application\Audit\AuditTrail;
 use App\Shared\Application\Errors\Refusal;
