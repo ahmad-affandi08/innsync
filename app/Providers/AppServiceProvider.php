@@ -394,6 +394,7 @@ use App\Shared\Infrastructure\Outbox\DatabaseOutboxMessageStore;
 use App\Shared\Infrastructure\Outbox\DatabaseOutboxPublisher;
 use App\Shared\Infrastructure\Outbox\DatabaseOutboxQueue;
 use App\Shared\Infrastructure\Outbox\DatabaseProcessedOutboxMessageStore;
+use App\Shared\Infrastructure\Persistence\CompatibleMySqlConnector;
 use App\Shared\Infrastructure\Privacy\DatabaseConsentRepository;
 use App\Shared\Infrastructure\Privacy\DatabaseDataSubjectRequestRepository;
 use App\Shared\Infrastructure\Privacy\LaravelFieldCipher;
@@ -420,6 +421,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
+        // A MariaDB host that does not know the MySQL 8 collation still connects.
+        $this->app->bind('db.connector.mysql', static fn (): CompatibleMySqlConnector => new CompatibleMySqlConnector);
+
         $this->app->scoped(PropertyContext::class, static fn (): PropertyContext => new PropertyContext);
         $this->app->scoped(CorrelationId::class, LaravelCorrelationId::class);
         $this->app->scoped(IdempotencyContext::class, static fn (): IdempotencyContext => new IdempotencyContext);

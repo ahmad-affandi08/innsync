@@ -1,5 +1,6 @@
 <?php
 
+use App\Shared\Infrastructure\Persistence\TableCollation;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
@@ -14,7 +15,7 @@ return new class extends Migration
         Schema::create('offline_sync_exceptions', function (Blueprint $table): void {
             $table->engine = 'InnoDB';
             $table->charset = 'utf8mb4';
-            $table->collation = 'utf8mb4_0900_ai_ci';
+            $table->collation = TableCollation::name();
 
             $table->ulid('id')->primary();
             $table->foreignUlid('property_id')->constrained('properties')->restrictOnDelete();
@@ -67,7 +68,7 @@ return new class extends Migration
         Schema::create('offline_device_status', function (Blueprint $table): void {
             $table->engine = 'InnoDB';
             $table->charset = 'utf8mb4';
-            $table->collation = 'utf8mb4_0900_ai_ci';
+            $table->collation = TableCollation::name();
 
             $table->foreignUlid('property_id')->constrained('properties')->restrictOnDelete();
             $table->char('device_id', 26);

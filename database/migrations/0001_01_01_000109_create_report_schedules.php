@@ -1,5 +1,6 @@
 <?php
 
+use App\Shared\Infrastructure\Persistence\TableCollation;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
@@ -38,7 +39,7 @@ return new class extends Migration
         Schema::create('report_schedule_recipients', function (Blueprint $table): void {
             $table->engine = 'InnoDB';
             $table->charset = 'utf8mb4';
-            $table->collation = 'utf8mb4_0900_ai_ci';
+            $table->collation = TableCollation::name();
 
             $table->char('schedule_id', 26);
             $table->char('user_id', 26);
@@ -86,6 +87,6 @@ return new class extends Migration
     {
         $table->engine = 'InnoDB';
         $table->charset = 'utf8mb4';
-        $table->collation = 'utf8mb4_0900_ai_ci';
+        $table->collation = TableCollation::name();
     }
 };

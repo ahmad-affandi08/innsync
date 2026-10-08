@@ -1,5 +1,6 @@
 <?php
 
+use App\Shared\Infrastructure\Persistence\TableCollation;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -14,7 +15,7 @@ return new class extends Migration
         Schema::create('jobs', function (Blueprint $table) {
             $table->engine = 'InnoDB';
             $table->charset = 'utf8mb4';
-            $table->collation = 'utf8mb4_0900_ai_ci';
+            $table->collation = TableCollation::name();
 
             $table->id();
             $table->string('queue')->index();
@@ -28,7 +29,7 @@ return new class extends Migration
         Schema::create('job_batches', function (Blueprint $table) {
             $table->engine = 'InnoDB';
             $table->charset = 'utf8mb4';
-            $table->collation = 'utf8mb4_0900_ai_ci';
+            $table->collation = TableCollation::name();
 
             $table->string('id')->primary();
             $table->string('name');
@@ -45,7 +46,7 @@ return new class extends Migration
         Schema::create('failed_jobs', function (Blueprint $table) {
             $table->engine = 'InnoDB';
             $table->charset = 'utf8mb4';
-            $table->collation = 'utf8mb4_0900_ai_ci';
+            $table->collation = TableCollation::name();
 
             $table->id();
             $table->string('uuid')->unique();

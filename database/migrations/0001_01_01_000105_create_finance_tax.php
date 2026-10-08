@@ -1,5 +1,6 @@
 <?php
 
+use App\Shared\Infrastructure\Persistence\TableCollation;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
@@ -13,7 +14,7 @@ return new class extends Migration
         Schema::create('fin_tax_settings', function (Blueprint $table): void {
             $table->engine = 'InnoDB';
             $table->charset = 'utf8mb4';
-            $table->collation = 'utf8mb4_0900_ai_ci';
+            $table->collation = TableCollation::name();
 
             $table->foreignUlid('property_id')->primary()->constrained('properties')->restrictOnDelete();
             $table->unsignedTinyInteger('report_day');
@@ -27,7 +28,7 @@ return new class extends Migration
         Schema::create('fin_tax_filings', function (Blueprint $table): void {
             $table->engine = 'InnoDB';
             $table->charset = 'utf8mb4';
-            $table->collation = 'utf8mb4_0900_ai_ci';
+            $table->collation = TableCollation::name();
 
             $table->char('id', 26)->primary();
             $table->foreignUlid('property_id')->constrained('properties')->restrictOnDelete();

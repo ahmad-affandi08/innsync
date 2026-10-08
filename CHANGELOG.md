@@ -4,6 +4,10 @@ Release notes for every release (NFR-14). Newest first. Each entry names the tas
 
 ## [Unreleased]
 
+### Fixed
+
+- Installation on MariaDB (found 2026-10-08 by running all migrations on MariaDB 10.11): every table was created with the MySQL 8 collation `utf8mb4_0900_ai_ci`, which MariaDB before 11.4.5 does not know, so the very first migration failed and the system could not be installed on a host running MariaDB, although the deployment runbook said it could. Tables now take the collation from the server (`TableCollation`): MySQL 8 keeps `utf8mb4_0900_ai_ci`, so existing installations are unchanged; older MariaDB gets `utf8mb4_unicode_ci`. The connection itself falls back the same way. All 125 migrations now apply on MariaDB 10.11. The application's own test suite was not completed on MariaDB; do that on the real plan before the pilot.
+
 ### Added
 
 - Property limit per agreement (owner decision 2026-10-08): `INNSYNC_MAX_PROPERTIES` in the server's environment sets how many properties an installation may hold; `0`, the default, means no limit, so nothing is closed until an agreement says so. A limit of `1` makes `innsync:create-admin` refuse a second property (re-running it for the existing one still works), and the System status screen shows how many are held. Multi-property use, the property choice screen and every property-scoped rule are unchanged. The limit lives in the environment on purpose, so the hotel's own administrators cannot raise it from a screen; a person with access to the server's files can, so a limit that must hold against the client needs a signed license key, which is a separate decision.
