@@ -8,6 +8,7 @@ export const FRONT_OFFICE_LINKS: readonly NavLink[] = [
     { href: '/front-office/room-board', label: 'fo.board.nav' },
     { href: '/front-office/availability', label: 'fo.nav.availability' },
     { href: '/front-office/reservations', label: 'fo.nav.reservations' },
+    { href: '/front-office/guests', label: 'fo.nav.guests' },
     { href: '/front-office/stays', label: 'fo.nav.stays' },
     { href: '/front-office/inventory', label: 'fo.nav.inventory' },
     { href: '/front-office/requests', label: 'fo.req.nav' },

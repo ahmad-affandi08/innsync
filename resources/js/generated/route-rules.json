@@ -243,6 +243,12 @@
             "query"
         ]
     },
+    "GET /front-office/guests": {
+        "required": [],
+        "declared": [
+            "query"
+        ]
+    },
     "GET /front-office/requests": {
         "required": [],
         "declared": [
@@ -258,6 +264,14 @@
             "arrival_to",
             "query",
             "status"
+        ]
+    },
+    "GET /front-office/reservations/find": {
+        "required": [
+            "q"
+        ],
+        "declared": [
+            "q"
         ]
     },
     "GET /front-office/reservations/{id}/penalty": {

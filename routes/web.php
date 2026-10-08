@@ -35,6 +35,7 @@ use App\Modules\FrontOffice\Presentation\Http\Controllers\FeedbackController;
 use App\Modules\FrontOffice\Presentation\Http\Controllers\FolioController;
 use App\Modules\FrontOffice\Presentation\Http\Controllers\ForeignPaymentController;
 use App\Modules\FrontOffice\Presentation\Http\Controllers\GroupController;
+use App\Modules\FrontOffice\Presentation\Http\Controllers\GuestDirectoryController;
 use App\Modules\FrontOffice\Presentation\Http\Controllers\GuestRequestController;
 use App\Modules\FrontOffice\Presentation\Http\Controllers\InventoryController;
 use App\Modules\FrontOffice\Presentation\Http\Controllers\LogbookController;
@@ -358,6 +359,8 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
 Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix('front-office')->group(function (): void {
     $id = '[0-9A-Za-z]{26}';
     Route::get('/availability', AvailabilityController::class)->name('front-office.availability');
+    Route::get('/guests', [GuestDirectoryController::class, 'index'])->name('front-office.guests');
+    Route::get('/reservations/find', [ReservationController::class, 'find'])->middleware('throttle:60,1')->name('front-office.reservations.find');
     Route::get('/reservations', [ReservationController::class, 'index'])->name('front-office.reservations');
     Route::post('/reservations/quote', [ReservationController::class, 'quote'])->name('front-office.reservations.quote');
     Route::post('/reservations', [ReservationController::class, 'store'])->middleware(['idempotent', 'throttle:bookings'])->name('front-office.reservations.store');

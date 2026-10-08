@@ -37,6 +37,8 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { LanguageSwitcher } from '@/components/ui/language-switcher';
 import { PoweredBy } from '@/components/layout/powered-by';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { QuickFind } from '@/components/layout/quick-find';
 import { useBrand } from '@/shared/lib/brand';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
@@ -83,7 +85,7 @@ function isHere(links: readonly NavLink[], href: string, path: string): boolean 
     return match(href) && best?.href === href;
 }
 
-type Shell = { propertyName: string | null; businessDate: string | null; userName: string; disabledModules?: string[]; accessibleModules?: string[] | null; waitingApprovals?: number } | null;
+type Shell = { propertyName: string | null; businessDate: string | null; userName: string; disabledModules?: string[]; accessibleModules?: string[] | null; attention?: { key: 'approvals' | 'attendance'; count: number }[] } | null;
 
 type FrameProps = {
     title: string;
@@ -117,13 +119,27 @@ export function AppFrame({ actions, children, description, links = [], printClas
     const current = activeModule(path);
     // A department the property does not use is left out of the menu (never the one the person is on, so a link still shows where they are).
     // The menu offers a person the departments their roles give them something to do in; the page the person is on always stays. This is what is shown, not what is allowed: every page checks the permission on the server.
-    const waiting = shell?.waitingApprovals ?? 0;
-    const bell = waiting > 0 ? (
-        <Link className="relative inline-flex h-9 items-center gap-1.5 border border-border bg-surface px-2.5 text-sm font-medium hover:bg-surface-muted" href="/approvals" title={t('identity.approvals.waiting', { count: waiting })}>
-            <Bell aria-hidden="true" className="size-4" />
-            <span className="bg-accent px-1.5 text-xs font-semibold text-accent-foreground" data-testid="waiting-approvals">{waiting > 98 ? '99+' : waiting}</span>
-            <span className="sr-only">{t('identity.approvals.waiting', { count: waiting })}</span>
-        </Link>
+    const canFind = shell !== null && (shell.accessibleModules == null || shell.accessibleModules.includes('front-office')) && !(shell.disabledModules ?? []).includes('front-office');
+    const attention = shell?.attention ?? [];
+    const attentionTotal = attention.reduce((sum, a) => sum + a.count, 0);
+    const ATTENTION_HREF = { approvals: '/approvals', attendance: '/hr/attendance' } as const;
+    const bell = attentionTotal > 0 ? (
+        <Popover>
+            <PopoverTrigger asChild>
+                <button aria-label={t('attention.title')} className="relative inline-flex h-9 items-center gap-1.5 border border-border bg-surface px-2.5 text-sm font-medium hover:bg-surface-muted" title={t('attention.title')} type="button">
+                    <Bell aria-hidden="true" className="size-4" />
+                    <span className="bg-accent px-1.5 text-xs font-semibold text-accent-foreground" data-testid="waiting-approvals">{attentionTotal > 98 ? '99+' : attentionTotal}</span>
+                </button>
+            </PopoverTrigger>
+            <PopoverContent align="end" className="w-72 p-0">
+                <p className="border-b border-border px-4 py-3 text-sm font-semibold">{t('attention.title')}</p>
+                <ul className="divide-y divide-border">
+                    {attention.map((a) => (
+                        <li key={a.key}><Link className="block px-4 py-3 text-sm hover:bg-surface-muted" data-testid={`attention-${a.key}`} href={ATTENTION_HREF[a.key]}>{t(`attention.${a.key}` as MessageKey, { count: a.count })}</Link></li>
+                    ))}
+                </ul>
+            </PopoverContent>
+        </Popover>
     ) : null;
     const modules = MODULES.filter((m) => m.key === current.key || (!(shell?.disabledModules ?? []).includes(m.key) && (shell?.accessibleModules == null || shell.accessibleModules.includes(m.key))));
     const [open, setOpen] = useState(false);
@@ -441,6 +457,7 @@ export function AppFrame({ actions, children, description, links = [], printClas
                     })}
                 </nav>
                 <div className="ml-auto flex items-center gap-2 lg:ml-0">
+                    {canFind ? <QuickFind /> : null}
                     {bell}
                     <LanguageSwitcher />
                     {layoutSwitcher}
@@ -515,6 +532,7 @@ export function AppFrame({ actions, children, description, links = [], printClas
                             {own !== null && layout === 'rail' ? <Link className="hidden shrink-0 xl:block" href="/"><img alt={shell?.propertyName ?? ''} className="max-h-8 max-w-[7rem] w-auto object-contain" src={own} /></Link> : null}
                             {crumbs}
                             {dateChip}
+                            {canFind ? <QuickFind /> : null}
                             {bell}
                             <LanguageSwitcher />
                             {layoutSwitcher}

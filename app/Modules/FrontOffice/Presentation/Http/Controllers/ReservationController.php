@@ -39,6 +39,15 @@ final readonly class ReservationController
         ]);
     }
 
+    /** The few reservations that match what was typed in the search box of the header: by number, guest name or phone. No contact details leave. */
+    public function find(Request $request): JsonResponse
+    {
+        $data = $request->validate(['q' => ['required', 'string', 'min:2', 'max:100']]);
+        $found = $this->reservations->search($this->property->current(), $this->actor($request), ['query' => trim($data['q'])], 8);
+
+        return response()->json(['results' => array_map(static fn ($r): array => array_intersect_key($r->toArray(), array_flip(['id', 'number', 'status', 'guest_name', 'arrival', 'departure'])), $found)])->header('Cache-Control', 'no-store');
+    }
+
     public function show(Request $request, string $id): Response
     {
         $property = $this->property->current();

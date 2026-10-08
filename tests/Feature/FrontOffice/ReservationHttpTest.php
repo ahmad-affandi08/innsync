@@ -92,6 +92,33 @@ final class ReservationHttpTest extends TestCase
         $this->get('/front-office/inventory')->assertInertia(fn (Assert $p) => $p->component('front-office/pages/inventory')->has('types', 1)->where('types.0.allowance', 0));
     }
 
+    public function test_the_header_search_finds_a_reservation_by_name_or_number_without_contact_details(): void
+    {
+        $this->staff();
+        $this->postJson('/front-office/reservations', $this->body(), ['Idempotency-Key' => 'http-key-0000000020'])->assertCreated();
+        $number = (string) DB::table('reservations')->value('number');
+
+        $byName = $this->getJson('/front-office/reservations/find?q=budi')->assertOk()->assertJsonCount(1, 'results')->assertJsonPath('results.0.guest_name', 'Budi Santoso');
+        self::assertStringNotContainsString('budi@example.com', (string) $byName->getContent());
+        self::assertStringNotContainsString('3456', (string) $byName->getContent());
+        $this->getJson('/front-office/reservations/find?q='.$number)->assertOk()->assertJsonCount(1, 'results');
+        $this->getJson('/front-office/reservations/find?q=zzzz')->assertOk()->assertJsonCount(0, 'results');
+        $this->getJson('/front-office/reservations/find?q=b')->assertStatus(422);
+    }
+
+    public function test_the_guest_list_tells_returning_guests_apart_and_never_lists_contact_details(): void
+    {
+        $this->staff();
+        $this->postJson('/front-office/reservations', $this->body(), ['Idempotency-Key' => 'http-key-0000000030'])->assertCreated();
+        $id = (string) DB::table('reservations')->value('id');
+        $this->postJson("/front-office/reservations/{$id}/confirm", ['lock_version' => 0])->assertOk();
+
+        $page = $this->get('/front-office/guests')->assertOk()->assertInertia(fn (Assert $p) => $p->component('front-office/pages/guests')->has('guests', 1)->where('guests.0.guest_name', 'Budi Santoso')->where('guests.0.upcoming', 1)->where('guests.0.stays', 0));
+        self::assertStringNotContainsString('budi@example.com', (string) $page->getContent());
+        self::assertStringNotContainsString('3456', (string) $page->getContent());
+        $this->get('/front-office/guests?query=zzz')->assertInertia(fn (Assert $p) => $p->has('guests', 0));
+    }
+
     public function test_the_last_room_cannot_be_sold_twice_oversell_needs_the_allowance_and_a_reason_over_http(): void
     {
         $this->staff();

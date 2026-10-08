@@ -152,7 +152,7 @@ final class AttendanceReviewHttpTest extends TestCase
         $this->punch('clock-in', $this->device('shared-phone-0123456789'));
 
         $this->actAs($this->manager);
-        $queue = $this->get('/hr/attendance')->assertOk()->assertInertia(fn (Assert $page) => $page->component('hr/pages/attendance')->has('review', 2))->viewData('page')['props']['review'];
+        $queue = $this->get('/hr/attendance')->assertOk()->assertInertia(fn (Assert $page) => $page->component('hr/pages/attendance')->has('review', 2)->where('shell.attention.0', ['key' => 'attendance', 'count' => 2]))->viewData('page')['props']['review'];
         self::assertEqualsCanonicalizing(['Ani', 'Budi'], array_column($queue, 'employee_name'));
         self::assertContains('shared_device', $queue[0]['flags']);
         $ani = collect($queue)->firstWhere('employee_name', 'Ani');
