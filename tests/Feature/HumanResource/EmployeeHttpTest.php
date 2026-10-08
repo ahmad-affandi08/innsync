@@ -276,7 +276,7 @@ final class EmployeeHttpTest extends TestCase
         $this->paper($staff['id'], [], 409);
         $log = DB::table('audit_entries')->where('action', 'employee.offboarded')->first();
         self::assertNotNull($log);
-        self::assertStringContainsString('"not_returned": 1', (string) $log->after_state);
+        self::assertStringContainsString('"not_returned":1', str_replace(' ', '', (string) $log->after_state));
         $this->get('/hr/employees?status=offboarded')->assertInertia(fn (Assert $p) => $p->has('overview.employees', 1)->where('overview.employees.0.status', 'offboarded'));
         $this->get('/hr/employees?status=gone')->assertStatus(422);
 

@@ -319,7 +319,7 @@ final class LeaveHttpTest extends TestCase
         self::assertSame(['cancelled'], DB::table('hr_leave_requests')->where('employee_id', $this->emp['ani'])->pluck('status')->unique()->values()->all());
         self::assertSame(0, DB::table('hr_leave_days')->count());
         self::assertSame(2, DB::table('audit_entries')->where('action', 'leave.cancelled')->count());
-        self::assertStringContainsString('"leave_cancelled": 2', (string) DB::table('audit_entries')->where('action', 'employee.offboarded')->value('after_state'));
+        self::assertStringContainsString('"leave_cancelled":2', str_replace(' ', '', (string) DB::table('audit_entries')->where('action', 'employee.offboarded')->value('after_state')));
         self::assertSame('cancelled', DB::table('hr_leave_requests')->where('id', $pending['id'])->value('status'));
     }
 }

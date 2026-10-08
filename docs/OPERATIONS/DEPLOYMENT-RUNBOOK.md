@@ -83,6 +83,7 @@ Use a **read-only deploy key**, never a personal credential, and never store it 
 
 1. Select PHP 8.3+ for the domain; confirm the extensions listed in `PreflightEvaluator::REQUIRED_EXTENSIONS`.
 2. Create the MySQL 8 or MariaDB 10.5+ database and a dedicated user (utf8mb4).
+   - **MariaDB first install**: set `DB_COLLATION=utf8mb4_unicode_ci` in `.env` before the first `php artisan migrate`; Laravel creates its own `migrations` table with that setting, and MariaDB before 11.4.5 does not know the MySQL 8 default (`Unknown collation: utf8mb4_0900_ai_ci`). All 131 migrations and the whole automated suite (1,441 tests) were run on MariaDB 10.11.10 on 2026-10-08; other MariaDB versions are untested.
    - **MariaDB Compatibility**: Shared hosts (such as Niagahoster/Hostinger) often run MariaDB. All migrations must remain strictly compatible with both MySQL 8 and MariaDB 10.5+:
      - Use `ALTER TABLE ... DROP CONSTRAINT <name>` rather than `DROP CHECK <name>` when dropping check constraints (MariaDB throws SQL syntax error 1064 on `DROP CHECK`).
      - Use standard SQL `CASE WHEN ... THEN ... ELSE ... END` expressions rather than MySQL-specific `IF()` functions.

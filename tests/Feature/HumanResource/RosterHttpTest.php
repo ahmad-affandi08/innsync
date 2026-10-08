@@ -215,7 +215,7 @@ final class RosterHttpTest extends TestCase
         $this->postJson("/hr/employees/{$this->emp['ani']}/offboard", ['kind' => 'resigned', 'offboarded_on' => '2026-10-03', 'lock_version' => 0])->assertOk();
         self::assertSame(['2026-10-03'], array_map(static fn ($d) => substr((string) $d, 0, 10), DB::table('hr_roster_entries')->where('employee_id', $this->emp['ani'])->pluck('work_date')->all()));
         self::assertSame(4, DB::table('hr_roster_entries')->where('employee_id', $this->emp['budi'])->count());
-        self::assertStringContainsString('"shifts_closed": 3', (string) DB::table('audit_entries')->where('action', 'employee.offboarded')->value('after_state'));
+        self::assertStringContainsString('"shifts_closed":3', str_replace(' ', '', (string) DB::table('audit_entries')->where('action', 'employee.offboarded')->value('after_state')));
         $this->assign(['ani'], ['2026-10-06'], 'P', 422);
     }
 }

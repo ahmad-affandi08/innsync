@@ -6,6 +6,7 @@ Release notes for every release (NFR-14). Newest first. Each entry names the tas
 
 ### Fixed
 
+- MariaDB: the open-bills list of the till selected every column of a grouped bill, which MySQL 8 accepts and MariaDB refuses (`1055 isn't in GROUP BY`), so the restaurant floor, the guest QR table orders and the kitchen board failed on MariaDB. The totals are now made per bill in their own query and joined. Found by running the whole automated suite (1,441 tests) on MariaDB 10.11.10; it now passes there. Three offboarding tests and the engine test assumed MySQL's JSON formatting and version and were made engine-neutral. `/dashboard` budget raised from 120 to 125 queries because the shared frame now counts due reminders and waiting web bookings on every page (the growth check with house size is unchanged).
 - Date and time fields spilled out of their card on iPhone Safari (seen on the reminders page): the reminders page and the public booking page used the browser's own date and time controls instead of the project's `DatePicker` and `TimeInput`. Both now use them, and a global rule makes any remaining native date or time field keep the width and height of other fields. Checked at phone width in Chromium; not yet on a real iPhone.
 
 ### Added

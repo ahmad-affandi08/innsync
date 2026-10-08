@@ -11,6 +11,7 @@ use App\Shared\Application\Tenancy\PropertyContext;
 use App\Shared\Application\Tenancy\PropertyScopeViolation;
 use App\Shared\Domain\Tenancy\PropertyId;
 use App\Shared\Infrastructure\Persistence\Eloquent\PropertyOwnedModel;
+use App\Shared\Infrastructure\Persistence\TableCollation;
 use Illuminate\Database\Eloquent\Attributes\Guarded;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Support\Facades\DB;
@@ -41,7 +42,7 @@ final class MySqlPropertyScopeTest extends TestCase
         Schema::create('testing_property_records', function ($table): void {
             $table->engine = 'InnoDB';
             $table->charset = 'utf8mb4';
-            $table->collation = 'utf8mb4_0900_ai_ci';
+            $table->collation = TableCollation::name();
 
             $table->ulid('id')->primary();
             $table->foreignUlid('property_id')->constrained('properties')->restrictOnDelete();
@@ -77,9 +78,10 @@ final class MySqlPropertyScopeTest extends TestCase
             WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'properties' AND COLUMN_NAME = 'id'
             SQL);
 
-        self::assertStringStartsWith('8.0.', $server->version);
+        // The product runs on MySQL 8.0, and on MariaDB 10.6 or newer (shared hosting often offers only that); anything else is untested.
+        self::assertTrue(str_starts_with($server->version, '8.0.') || (str_contains($server->version, 'MariaDB') && version_compare($server->version, '10.6', '>=')), 'Unsupported database server '.$server->version);
         self::assertSame('InnoDB', $table->engine);
-        self::assertSame('utf8mb4_0900_ai_ci', $table->table_collation);
+        self::assertSame(TableCollation::name(), $table->table_collation);
         self::assertSame('char', $idColumn->data_type);
         self::assertSame(26, $idColumn->character_length);
         self::assertTrue(Schema::hasColumns('properties', [

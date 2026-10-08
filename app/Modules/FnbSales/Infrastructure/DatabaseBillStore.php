@@ -60,10 +60,12 @@ final readonly class DatabaseBillStore implements BillStore
 
     public function openBills(PropertyId $property, string $outletId): array
     {
-        $rows = DB::table('fnb_bills as b')->leftJoin('fnb_bill_lines as l', static fn ($j) => $j->on('l.bill_id', '=', 'b.id')->whereIn('l.status', ['pending', 'sent']))
-            ->where('b.property_id', $property->toString())->where('b.outlet_id', $outletId)->where('b.status', 'open')
-            ->groupBy('b.id')->orderByDesc('b.opened_at')
-            ->get(['b.*', DB::raw('COALESCE(SUM(l.line_total_minor), 0) as subtotal_minor'), DB::raw("COALESCE(SUM(l.status = 'sent'), 0) as sent_lines"), DB::raw("COALESCE(SUM(l.status = 'sent' AND l.prep_status = 'ready'), 0) as ready_lines"), DB::raw('COUNT(l.id) as line_count')]);
+        // The totals are made per bill in their own query and joined, so the bills are not grouped: MariaDB (unlike MySQL 8) refuses to select every column of a grouped bill.
+        $lines = DB::table('fnb_bill_lines')->whereIn('status', ['pending', 'sent'])->groupBy('bill_id')
+            ->selectRaw("bill_id, SUM(line_total_minor) as subtotal_minor, SUM(status = 'sent') as sent_lines, SUM(status = 'sent' AND prep_status = 'ready') as ready_lines, COUNT(id) as line_count");
+        $rows = DB::table('fnb_bills as b')->leftJoinSub($lines, 'l', 'l.bill_id', '=', 'b.id')
+            ->where('b.property_id', $property->toString())->where('b.outlet_id', $outletId)->where('b.status', 'open')->orderByDesc('b.opened_at')
+            ->get(['b.*', DB::raw('COALESCE(l.subtotal_minor, 0) as subtotal_minor'), DB::raw('COALESCE(l.sent_lines, 0) as sent_lines'), DB::raw('COALESCE(l.ready_lines, 0) as ready_lines'), DB::raw('COALESCE(l.line_count, 0) as line_count')]);
 
         return array_map(static fn (object $r): array => (array) $r, $rows->all());
     }

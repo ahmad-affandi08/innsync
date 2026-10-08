@@ -31,7 +31,7 @@ The software is feature-complete for the scope of the PRD except two tasks that 
 
 1. **Staff acceptance test** on real phones: `STAFF-ACCEPTANCE-TEST.md` (10 scenarios) and `CEKLIST-UJI-FITUR.xlsx` (91 items). Nobody has run them.
 2. **iPhone Safari**: only a phone-sized Chromium has been tested.
-3. **MariaDB**: Niagahoster plans often run MariaDB; migrations 114 and later are tested on MySQL 8 only. Rehearse a full install on the target plan before the pilot.
+3. **MariaDB on the real plan**: all 131 migrations and the whole automated suite (1,441 tests) pass on MariaDB 10.11.10 (2026-10-08), after the open-bills query and a few MySQL-only test assumptions were fixed. Still to rehearse: a full install on the actual hosting plan, whose MariaDB version may differ. Set `DB_COLLATION=utf8mb4_unicode_ci` before the first migrate (see the deployment runbook).
 4. **Bad signal in the field**: the offline queue is tested in code, not in a basement kitchen.
 5. **Real load on real data** after a month of use (the 50-user run was against an almost empty database).
 6. **Email and WhatsApp with live accounts**: each provider's request shape is tested against faked answers; no live account was used.
