@@ -7,6 +7,14 @@
             "lock_version"
         ]
     },
+    "DELETE /hr/face/{employee}": {
+        "required": [
+            "reason"
+        ],
+        "declared": [
+            "reason"
+        ]
+    },
     "GET /book/{property}/offers": {
         "required": [
             "adults",
@@ -3596,6 +3604,7 @@
         "declared": [
             "accuracy",
             "device",
+            "face",
             "latitude",
             "longitude",
             "photo"
@@ -3606,6 +3615,7 @@
         "declared": [
             "accuracy",
             "device",
+            "face",
             "latitude",
             "longitude",
             "photo"
@@ -3624,6 +3634,14 @@
             "out_time",
             "reason",
             "work_date"
+        ]
+    },
+    "POST /hr/attendance/face-mode": {
+        "required": [
+            "face_mode"
+        ],
+        "declared": [
+            "face_mode"
         ]
     },
     "POST /hr/attendance/manual": {
@@ -3783,6 +3801,19 @@
             "offboarded_on",
             "reason",
             "reassign_to"
+        ]
+    },
+    "POST /hr/face/{employee}": {
+        "required": [
+            "agreed",
+            "samples",
+            "samples.*"
+        ],
+        "declared": [
+            "agreed",
+            "samples",
+            "samples.*",
+            "samples.*.*"
         ]
     },
     "POST /hr/leave": {

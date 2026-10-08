@@ -17,6 +17,7 @@ import { AttendanceReview, type ReviewItem } from '@/modules/hr/components/atten
 import { HrShell } from '@/modules/hr/components/hr-shell';
 import type { AttendanceCorrection, AttendanceOverview, AttendanceRow, AttendanceStatus, AttendanceSummaryRow, CorrectionOverview, CorrectionStatus, OvertimeOverview, OvertimeRequest, OvertimeStatus } from '@/modules/hr/lib/hr';
 import { deviceId } from '@/modules/hr/lib/device';
+import { descriptorOf } from '@/shared/lib/face';
 import { newIdempotencyKey } from '@/shared/api/http';
 import { useServerAction } from '@/shared/api/use-server-action';
 import { useFormatters, useTranslation } from '@/shared/i18n/i18n';
@@ -49,7 +50,9 @@ export default function AttendancePage({ overview, overtime, corrections, review
     const [manual, setManual] = useState<{ employeeId: string; date: string; inTime: string; outTime: string; reason: string } | null>(null);
     const [ask, setAsk] = useState<{ employeeId: string; date: string; minutes: string; reason: string } | null>(null);
     const [fix, setFix] = useState<{ employeeId: string; date: string; inTime: string; outTime: string; reason: string } | null>(null);
-    const [settings, setSettings] = useState<{ lat: string; lng: string; radius: string; selfie: boolean; late: string; early: string; extra: string; lock: number | null } | null>(null);
+    const [settings, setSettings] = useState<{ lat: string; lng: string; radius: string; selfie: boolean; late: string; early: string; extra: string; face: 'off' | 'flag' | 'require'; lock: number | null } | null>(null);
+    const [reading, setReading] = useState(false);
+    const [faceProblem, setFaceProblem] = useState<MessageKey | null>(null);
     const failure = action.error !== null ? <ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /> : null;
     const label = (prefix: string, key: string) => t(`${prefix}.${key}` as MessageKey);
     const s = overview.settings;
@@ -72,6 +75,33 @@ export default function AttendancePage({ overview, overtime, corrections, review
         if (device !== null) body.set('device', device);
 
         if (photo !== null) body.set('photo', photo);
+
+        // With face matching on, the browser reads the face in the selfie into 128 numbers and sends only those along with it.
+        setFaceProblem(null);
+
+        if (s.face_mode !== 'off' && photo !== null) {
+            setReading(true);
+
+            try {
+                const face = await descriptorOf(photo);
+
+                if (face !== null) body.set('face', JSON.stringify(face));
+                else if (s.face_mode === 'require') {
+                    setFaceProblem('hr.att.faceNone');
+
+                    return;
+                }
+            } catch {
+                if (s.face_mode === 'require') {
+                    setFaceProblem('hr.att.faceUnavailable');
+
+                    return;
+                }
+            } finally {
+                setReading(false);
+            }
+        }
+
         const result = await action.run(`/hr/attendance/${kind}`, { idempotencyKey: newIdempotencyKey(), body, reload: ['overview'] });
 
         if (result !== null) {
@@ -109,6 +139,10 @@ export default function AttendancePage({ overview, overtime, corrections, review
             body: { latitude: number(settings.lat), longitude: number(settings.lng), radius_m: Number(settings.radius), require_selfie: settings.selfie, late_grace_minutes: Number(settings.late), early_grace_minutes: Number(settings.early), extra_after_minutes: Number(settings.extra), lock_version: settings.lock },
             reload: ['overview'],
         });
+
+        if (result !== null && settings.face !== s.face_mode) {
+            await action.run('/hr/attendance/face-mode', { body: { face_mode: settings.face }, reload: ['overview'] });
+        }
 
         if (result !== null) setSettings(null);
     }
@@ -160,7 +194,7 @@ export default function AttendancePage({ overview, overtime, corrections, review
 
     return (
         <HrShell
-            actions={overview.may.manage ? <><Button onClick={() => { action.clear(); setSettings({ lat: s.latitude === null ? '' : String(s.latitude), lng: s.longitude === null ? '' : String(s.longitude), radius: String(s.radius_m), selfie: s.require_selfie, late: String(s.late_grace), early: String(s.early_grace), extra: String(s.extra_after), lock: s.lock_version }); }} type="button" variant="outline">{t('hr.att.settings')}</Button><Button onClick={() => { action.clear(); setManual({ employeeId: overview.day?.rows[0]?.employee.id ?? '', date: overview.day?.date ?? overview.today, inTime: '', outTime: '', reason: '' }); }} type="button">{t('hr.att.record')}</Button></> : undefined}
+            actions={overview.may.manage ? <><Button onClick={() => { action.clear(); setSettings({ lat: s.latitude === null ? '' : String(s.latitude), lng: s.longitude === null ? '' : String(s.longitude), radius: String(s.radius_m), selfie: s.require_selfie, late: String(s.late_grace), early: String(s.early_grace), extra: String(s.extra_after), face: s.face_mode, lock: s.lock_version }); }} type="button" variant="outline">{t('hr.att.settings')}</Button><Button onClick={() => { action.clear(); setManual({ employeeId: overview.day?.rows[0]?.employee.id ?? '', date: overview.day?.date ?? overview.today, inTime: '', outTime: '', reason: '' }); }} type="button">{t('hr.att.record')}</Button></> : undefined}
             description={t('hr.att.description')}
             title={t('hr.att.title')}
         >
@@ -174,11 +208,13 @@ export default function AttendancePage({ overview, overtime, corrections, review
                             <p className="text-sm text-muted-foreground">{t('hr.att.mineLine', { in: time(me.shift.record?.in_at ?? null), out: time(me.shift.record?.out_at ?? null) })}{me.shift.late_minutes > 0 ? ` · ${t('hr.att.late', { n: me.shift.late_minutes })}` : ''}</p>
                             {(me.may_clock_in || me.may_clock_out) ? (
                                 <div className="flex flex-wrap items-end gap-3">
-                                    {s.require_selfie ? <FormField error={action.fieldError('photo')} field="photo" label={t('hr.att.selfieField')}><Input accept="image/*" capture="user" key={photoKey} onChange={(e) => setPhoto(e.target.files?.[0] ?? null)} type="file" /></FormField> : null}
-                                    {me.may_clock_in ? <Button disabled={action.busy || (s.require_selfie && photo === null)} loading={action.busy} onClick={() => void punch('clock-in')} type="button">{t('hr.att.clockIn')}</Button> : null}
-                                    {me.may_clock_out ? <Button disabled={action.busy || (s.require_selfie && photo === null)} loading={action.busy} onClick={() => void punch('clock-out')} type="button" variant="outline">{t('hr.att.clockOut')}</Button> : null}
+                                    {s.require_selfie || s.face_mode !== 'off' ? <FormField error={action.fieldError('photo')} field="photo" label={t('hr.att.selfieField')}><Input accept="image/*" capture="user" key={photoKey} onChange={(e) => setPhoto(e.target.files?.[0] ?? null)} type="file" /></FormField> : null}
+                                    {me.may_clock_in ? <Button disabled={action.busy || reading || ((s.require_selfie || s.face_mode !== 'off') && photo === null)} loading={action.busy || reading} onClick={() => void punch('clock-in')} type="button">{t('hr.att.clockIn')}</Button> : null}
+                                    {me.may_clock_out ? <Button disabled={action.busy || reading || ((s.require_selfie || s.face_mode !== 'off') && photo === null)} loading={action.busy || reading} onClick={() => void punch('clock-out')} type="button" variant="outline">{t('hr.att.clockOut')}</Button> : null}
                                 </div>
                             ) : null}
+                            {faceProblem !== null ? <Alert title={t(faceProblem)} tone="danger" /> : null}
+                            {reading ? <p className="text-xs text-muted-foreground">{t('hr.att.faceReading')}</p> : null}
                             <p className="text-xs text-muted-foreground">{s.geofence ? t('hr.att.geofenceOn', { n: s.radius_m }) : t('hr.att.geofenceOff')}</p>
                         </>
                     )}
@@ -298,6 +334,12 @@ export default function AttendancePage({ overview, overtime, corrections, review
                         <FormField error={action.fieldError('longitude')} field="longitude" label={t('hr.att.longitude')}><Input inputMode="decimal" onChange={(e) => setSettings({ ...settings, lng: e.target.value })} value={settings.lng} /></FormField>
                         <FormField error={action.fieldError('radius_m')} field="radius_m" label={t('hr.att.radius')}><Input inputMode="numeric" onChange={(e) => setSettings({ ...settings, radius: e.target.value })} value={settings.radius} /></FormField>
                         <label className="flex items-center gap-2 self-end text-sm"><input checked={settings.selfie} onChange={(e) => setSettings({ ...settings, selfie: e.target.checked })} type="checkbox" />{t('hr.att.requireSelfie')}</label>
+                        <FormField error={action.fieldError('face_mode')} field="face_mode" hint={t('hr.att.faceModeHint')} label={t('hr.att.faceMode')}>
+                            <Select onChange={(e) => setSettings({ ...settings, face: e.target.value as 'off' | 'flag' | 'require' })} searchable={false} value={settings.face}>
+                                {(['off', 'flag', 'require'] as const).map((m) => <option key={m} value={m}>{t(`hr.att.faceMode.${m}` as MessageKey)}</option>)}
+                            </Select>
+                        </FormField>
+                        {!s.geofence ? <p className="text-sm text-amber-700 sm:col-span-2">{t('hr.att.geofenceWarn')}</p> : null}
                         <FormField error={action.fieldError('late_grace_minutes')} field="late_grace_minutes" label={t('hr.att.lateGrace')}><Input inputMode="numeric" onChange={(e) => setSettings({ ...settings, late: e.target.value })} value={settings.late} /></FormField>
                         <FormField error={action.fieldError('early_grace_minutes')} field="early_grace_minutes" label={t('hr.att.earlyGrace')}><Input inputMode="numeric" onChange={(e) => setSettings({ ...settings, early: e.target.value })} value={settings.early} /></FormField>
                         <FormField error={action.fieldError('extra_after_minutes')} field="extra_after_minutes" hint={t('hr.att.extraHint')} label={t('hr.att.extraAfter')}><Input inputMode="numeric" onChange={(e) => setSettings({ ...settings, extra: e.target.value })} value={settings.extra} /></FormField>

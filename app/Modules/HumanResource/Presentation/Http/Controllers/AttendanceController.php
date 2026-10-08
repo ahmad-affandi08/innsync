@@ -39,16 +39,16 @@ final readonly class AttendanceController
 
     public function clockIn(Request $request): JsonResponse
     {
-        [$lat, $lng, $photo, $accuracy, $device] = $this->punch($request);
+        [$lat, $lng, $photo, $accuracy, $device, $face] = $this->punch($request);
 
-        return $this->json(['me' => $this->attendance->clockIn($this->property->current(), $this->actor($request), $lat, $lng, $photo?->get() === null ? null : (string) $photo->get(), $photo?->getClientOriginalName(), $accuracy, $device)]);
+        return $this->json(['me' => $this->attendance->clockIn($this->property->current(), $this->actor($request), $lat, $lng, $photo?->get() === null ? null : (string) $photo->get(), $photo?->getClientOriginalName(), $accuracy, $device, $face)]);
     }
 
     public function clockOut(Request $request): JsonResponse
     {
-        [$lat, $lng, $photo, $accuracy, $device] = $this->punch($request);
+        [$lat, $lng, $photo, $accuracy, $device, $face] = $this->punch($request);
 
-        return $this->json(['me' => $this->attendance->clockOut($this->property->current(), $this->actor($request), $lat, $lng, $photo?->get() === null ? null : (string) $photo->get(), $photo?->getClientOriginalName(), $accuracy, $device)]);
+        return $this->json(['me' => $this->attendance->clockOut($this->property->current(), $this->actor($request), $lat, $lng, $photo?->get() === null ? null : (string) $photo->get(), $photo?->getClientOriginalName(), $accuracy, $device, $face)]);
     }
 
     public function manual(Request $request): JsonResponse
@@ -71,6 +71,13 @@ final readonly class AttendanceController
             (int) $data['late_grace_minutes'], (int) $data['early_grace_minutes'], (int) $data['extra_after_minutes'], isset($data['lock_version']) ? (int) $data['lock_version'] : null));
     }
 
+    public function faceMode(Request $request): JsonResponse
+    {
+        $data = $request->validate(['face_mode' => ['required', 'string', 'in:off,flag,require']]);
+
+        return $this->json($this->attendance->saveFaceMode($this->property->current(), $this->actor($request), $data['face_mode']));
+    }
+
     public function review(Request $request, string $id): JsonResponse
     {
         $data = $request->validate(['side' => ['required', 'string', 'in:in,out'], 'decision' => ['required', 'string', 'in:ok,questioned'], 'note' => ['nullable', 'string', 'max:300']]);
@@ -86,13 +93,15 @@ final readonly class AttendanceController
         return response($content->contents, 200, ['Content-Type' => $content->file->mimeType, 'Content-Disposition' => 'inline; filename="selfie"', 'Cache-Control' => 'no-store, private', 'X-Content-Type-Options' => 'nosniff']);
     }
 
-    /** @return array{0: float|null, 1: float|null, 2: UploadedFile|null, 3: float|null, 4: string|null} */
+    /** @return array{0: float|null, 1: float|null, 2: UploadedFile|null, 3: float|null, 4: string|null, 5: list<float|int>|null} */
     private function punch(Request $request): array
     {
-        $data = $request->validate(['latitude' => ['nullable', 'numeric', 'between:-90,90'], 'longitude' => ['nullable', 'numeric', 'between:-180,180'], 'photo' => ['nullable', 'file', 'max:3072'], 'accuracy' => ['nullable', 'numeric', 'min:0', 'max:100000'], 'device' => ['nullable', 'string', 'regex:/^[A-Za-z0-9-]{16,64}$/']]);
+        $data = $request->validate(['latitude' => ['nullable', 'numeric', 'between:-90,90'], 'longitude' => ['nullable', 'numeric', 'between:-180,180'], 'photo' => ['nullable', 'file', 'max:3072'], 'accuracy' => ['nullable', 'numeric', 'min:0', 'max:100000'], 'device' => ['nullable', 'string', 'regex:/^[A-Za-z0-9-]{16,64}$/'], 'face' => ['nullable', 'string', 'max:6000']]);
         $photo = $request->file('photo');
+        // The 128 numbers the browser made from the selfie, as JSON text; anything else is treated as no face sent.
+        $face = isset($data['face']) && $data['face'] !== '' ? json_decode($data['face'], true) : null;
 
-        return [isset($data['latitude']) ? (float) $data['latitude'] : null, isset($data['longitude']) ? (float) $data['longitude'] : null, $photo, isset($data['accuracy']) ? (float) $data['accuracy'] : null, $data['device'] ?? null];
+        return [isset($data['latitude']) ? (float) $data['latitude'] : null, isset($data['longitude']) ? (float) $data['longitude'] : null, $photo, isset($data['accuracy']) ? (float) $data['accuracy'] : null, $data['device'] ?? null, is_array($face) ? $face : null];
     }
 
     /** @param array<string, mixed> $body */

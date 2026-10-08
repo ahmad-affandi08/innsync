@@ -46,6 +46,7 @@ final readonly class EmployeeService
         private StaffAccess $staffAccess,
         private RosterService $roster,
         private LeaveService $leave,
+        private FaceService $faces,
         private ConductStore $conduct,
         private BusinessDateProvider $businessDate,
         private DocumentNumbers $numbers,
@@ -227,6 +228,7 @@ final readonly class EmployeeService
             $closed = $this->roster->closeFor($property, $e['id'], $on);
             $leave = $this->leave->closeFor($property, $e['id'], $on, $actor);
             $revoked = $e['user_id'] === null ? 0 : $this->staffAccess->revokeInProperty($property, (string) $e['user_id']);
+            $this->faces->erase($property, $actor, $e['id'], 'Left the property');
             $anchor = new DateTimeImmutable($on.' 00:00:00', new DateTimeZone('UTC'));
 
             foreach ([...$this->store->fileIdsOf($property, $e['id']), ...$leave['files'], ...$this->conduct->fileIdsOf($property, $e['id'])] as $fileId) {

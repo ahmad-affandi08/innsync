@@ -11,6 +11,7 @@ The system is not "done" until real staff have done these on their own phone and
 7. Purchasing: record a goods receipt against an order and see the stock rise.
 8. Approvals: make a request that needs approval (for example a refund); a second person approves it; confirm the first person cannot approve their own.
 9. Turn off the phone's data for two minutes, record something, turn data on, confirm it arrives once and not twice.
-10. Ask each tester: which screen took longest to understand, and which step felt like extra work compared with paper.
+10. Face matching (after HR registered two testers): in Flag mode a tester clocks in with their own face and then a colleague tries with the same phone; check the colleague's clock-in is marked *Face did not match*. Switch to Require: the colleague is refused, the tester is not. Try in a dim room and with glasses on; note how often the right person is refused.
+11. Ask each tester: which screen took longest to understand, and which step felt like extra work compared with paper.
 
 Not yet proven by anyone: iPhone Safari, MariaDB on shared hosting, a bad mobile signal in the field. These lines are where those get tested.

@@ -76,6 +76,7 @@ use App\Modules\HumanResource\Presentation\Http\Controllers\ConductController;
 use App\Modules\HumanResource\Presentation\Http\Controllers\EmployeeController;
 use App\Modules\HumanResource\Presentation\Http\Controllers\EmployeeImportController;
 use App\Modules\HumanResource\Presentation\Http\Controllers\EmployeePortalController;
+use App\Modules\HumanResource\Presentation\Http\Controllers\FaceController;
 use App\Modules\HumanResource\Presentation\Http\Controllers\LeaveController;
 use App\Modules\HumanResource\Presentation\Http\Controllers\PayrollController;
 use App\Modules\HumanResource\Presentation\Http\Controllers\PayrollRunController;
@@ -985,6 +986,10 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
     Route::post('/attendance/clock-out', [AttendanceController::class, 'clockOut'])->middleware(['idempotent'])->name('hr.attendance.out');
     Route::post('/attendance/manual', [AttendanceController::class, 'manual'])->middleware(['idempotent'])->name('hr.attendance.manual');
     Route::post('/attendance/settings', [AttendanceController::class, 'settings'])->name('hr.attendance.settings');
+    Route::post('/attendance/face-mode', [AttendanceController::class, 'faceMode'])->name('hr.attendance.face-mode');
+    Route::get('/face', [FaceController::class, 'index'])->name('hr.face');
+    Route::post('/face/{employee}', [FaceController::class, 'enrol'])->where('employee', '[0-9A-Za-z]{26}')->middleware('throttle:access-admin')->name('hr.face.enrol');
+    Route::delete('/face/{employee}', [FaceController::class, 'remove'])->where('employee', '[0-9A-Za-z]{26}')->middleware('throttle:access-admin')->name('hr.face.remove');
     Route::post('/overtime', [AttendanceAdjustmentController::class, 'requestOvertime'])->middleware(['idempotent'])->name('hr.overtime.request');
     Route::post('/overtime/{id}/release', [AttendanceAdjustmentController::class, 'releaseOvertime'])->where('id', $id)->name('hr.overtime.release');
     Route::post('/overtime/{id}/cancel', [AttendanceAdjustmentController::class, 'cancelOvertime'])->where('id', $id)->name('hr.overtime.cancel');

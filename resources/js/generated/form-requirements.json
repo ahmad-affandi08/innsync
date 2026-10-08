@@ -397,6 +397,7 @@
         "early_grace_minutes",
         "employee_id",
         "extra_after_minutes",
+        "face_mode",
         "in_time",
         "late_grace_minutes",
         "minutes",
@@ -420,6 +421,9 @@
         "position",
         "title",
         "warn_days"
+    ],
+    "hr/pages/face": [
+        "reason"
     ],
     "hr/pages/leave": [
         "code",

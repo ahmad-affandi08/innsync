@@ -16,6 +16,9 @@ interface AttendanceStore
     public function saveSettings(PropertyId $property, array $values, ?int $expectedLock, string $by, DateTimeImmutable $at): bool;
 
     /** @return array<string, mixed>|null */
+    /** Sets what a clock-in does with the face in the selfie (off, flag, require) on the existing settings. */
+    public function saveFaceMode(PropertyId $property, string $mode, string $by, DateTimeImmutable $at): void;
+
     public function record(PropertyId $property, string $employeeId, string $date): ?array;
 
     /** @return array<string, mixed>|null */

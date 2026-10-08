@@ -60,6 +60,7 @@ final readonly class AttendanceService
         private OvertimeStore $overtime,
         private LeaveStore $leave,
         private EmployeeStore $employees,
+        private FaceService $faces,
         private HrAccess $access,
         private PropertyTimeZoneReader $zones,
         private BusinessDateProvider $businessDate,
@@ -111,7 +112,7 @@ final readonly class AttendanceService
     }
 
     /** @return array<string, mixed> the person's shift now, as `overview` shows it */
-    public function clockIn(PropertyId $property, string $actorId, ?float $latitude, ?float $longitude, ?string $photo, ?string $photoName, ?float $accuracy = null, ?string $device = null): array
+    public function clockIn(PropertyId $property, string $actorId, ?float $latitude, ?float $longitude, ?string $photo, ?string $photoName, ?float $accuracy = null, ?string $device = null, mixed $face = null): array
     {
         $employee = $this->ownEmployee($property, $actorId);
         $tz = $this->zone($property);
@@ -128,16 +129,17 @@ final readonly class AttendanceService
 
         $settings = $this->settings($property);
         $distance = $this->checkPlace($settings, $latitude, $longitude);
+        $verdict = $this->faces->check($property, $employee['id'], $settings['face_mode'], $face);
         $file = $this->photo($property, strtolower($actorId), $settings, $photo, $photoName);
         $id = $this->ids->next();
         $actor = strtolower($actorId);
 
         $evidence = self::evidence($accuracy, $device, $photo);
 
-        $this->transactions->run(function () use ($property, $actor, $employee, $shift, $now, $distance, $file, $id, $evidence): void {
+        $this->transactions->run(function () use ($property, $actor, $employee, $shift, $now, $distance, $file, $id, $evidence, $verdict): void {
             $this->employees->lockEmployee($property, $employee['id']);
 
-            if (! $this->store->add($property, ['id' => $id, 'employee_id' => $employee['id'], 'work_date' => $shift['date'], 'in_at' => $now->format('Y-m-d H:i:s.u'), 'in_method' => 'mobile', 'in_distance_m' => $distance, 'in_accuracy_m' => $evidence['accuracy'], 'in_device' => $evidence['device'], 'in_photo_file_id' => $file?->id, 'in_photo_hash' => $evidence['photo'], 'recorded_by' => $actor], $now)) {
+            if (! $this->store->add($property, ['id' => $id, 'employee_id' => $employee['id'], 'work_date' => $shift['date'], 'in_at' => $now->format('Y-m-d H:i:s.u'), 'in_method' => 'mobile', 'in_distance_m' => $distance, 'in_accuracy_m' => $evidence['accuracy'], 'in_device' => $evidence['device'], 'in_photo_file_id' => $file?->id, 'in_photo_hash' => $evidence['photo'], 'in_face' => $verdict['result'], 'in_face_x' => $verdict['x'], 'recorded_by' => $actor], $now)) {
                 throw Refusal::stateConflict('You clocked in for this shift already.');
             }
 
@@ -149,7 +151,7 @@ final readonly class AttendanceService
     }
 
     /** @return array<string, mixed> */
-    public function clockOut(PropertyId $property, string $actorId, ?float $latitude, ?float $longitude, ?string $photo, ?string $photoName, ?float $accuracy = null, ?string $device = null): array
+    public function clockOut(PropertyId $property, string $actorId, ?float $latitude, ?float $longitude, ?string $photo, ?string $photoName, ?float $accuracy = null, ?string $device = null, mixed $face = null): array
     {
         $employee = $this->ownEmployee($property, $actorId);
         $tz = $this->zone($property);
@@ -177,15 +179,16 @@ final readonly class AttendanceService
 
         $settings = $this->settings($property);
         $distance = $this->checkPlace($settings, $latitude, $longitude);
+        $verdict = $this->faces->check($property, $employee['id'], $settings['face_mode'], $face);
         $file = $this->photo($property, strtolower($actorId), $settings, $photo, $photoName);
         $actor = strtolower($actorId);
 
         $evidence = self::evidence($accuracy, $device, $photo);
 
-        $this->transactions->run(function () use ($property, $actor, $employee, $open, $now, $distance, $file, $evidence): void {
+        $this->transactions->run(function () use ($property, $actor, $employee, $open, $now, $distance, $file, $evidence, $verdict): void {
             $this->employees->lockEmployee($property, $employee['id']);
 
-            if (! $this->store->update($property, $open['id'], (int) $open['lock_version'], ['out_at' => $now->format('Y-m-d H:i:s.u'), 'out_method' => 'mobile', 'out_distance_m' => $distance, 'out_accuracy_m' => $evidence['accuracy'], 'out_device' => $evidence['device'], 'out_photo_file_id' => $file?->id, 'out_photo_hash' => $evidence['photo']], $now)) {
+            if (! $this->store->update($property, $open['id'], (int) $open['lock_version'], ['out_at' => $now->format('Y-m-d H:i:s.u'), 'out_method' => 'mobile', 'out_distance_m' => $distance, 'out_accuracy_m' => $evidence['accuracy'], 'out_device' => $evidence['device'], 'out_photo_file_id' => $file?->id, 'out_photo_hash' => $evidence['photo'], 'out_face' => $verdict['result'], 'out_face_x' => $verdict['x']], $now)) {
                 throw Refusal::stateConflict('You clocked out already.');
             }
 
@@ -299,7 +302,7 @@ final readonly class AttendanceService
         return array_reverse($rows);
     }
 
-    /** @return array{latitude: float|null, longitude: float|null, radius_m: int, require_selfie: bool, late_grace: int, early_grace: int, extra_after: int, geofence: bool, is_baseline: bool, lock_version: int|null} */
+    /** @return array{latitude: float|null, longitude: float|null, radius_m: int, require_selfie: bool, late_grace: int, early_grace: int, extra_after: int, face_mode: string, geofence: bool, is_baseline: bool, lock_version: int|null} */
     public function settings(PropertyId $property): array
     {
         $r = $this->store->settings($property);
@@ -308,8 +311,33 @@ final readonly class AttendanceService
             'latitude' => $r === null || $r['latitude'] === null ? null : (float) $r['latitude'], 'longitude' => $r === null || $r['longitude'] === null ? null : (float) $r['longitude'],
             'radius_m' => (int) ($r['radius_m'] ?? self::BASELINE['radius_m']), 'require_selfie' => (bool) ($r['require_selfie'] ?? self::BASELINE['require_selfie']),
             'late_grace' => (int) ($r['late_grace_minutes'] ?? self::BASELINE['late_grace']), 'early_grace' => (int) ($r['early_grace_minutes'] ?? self::BASELINE['early_grace']), 'extra_after' => (int) ($r['extra_after_minutes'] ?? self::BASELINE['extra_after']),
-            'geofence' => $r !== null && $r['latitude'] !== null, 'is_baseline' => $r === null, 'lock_version' => $r === null ? null : (int) $r['lock_version'],
+            'face_mode' => (string) ($r['face_mode'] ?? 'off'), 'geofence' => $r !== null && $r['latitude'] !== null, 'is_baseline' => $r === null, 'lock_version' => $r === null ? null : (int) $r['lock_version'],
         ];
+    }
+
+    /** Chooses what a clock-in does with the face in the selfie: nothing (`off`), mark a face that does not match for a supervisor (`flag`), or refuse it (`require`). */
+    public function saveFaceMode(PropertyId $property, string $actorId, string $mode): array
+    {
+        $this->access->require($property, $actorId, HrAccess::ATTENDANCE, 'This person may not set how attendance is taken.');
+
+        if (! in_array($mode, ['off', 'flag', 'require'], true)) {
+            throw Refusal::invalid('Choose off, flag or require.', ['face_mode']);
+        }
+
+        $before = $this->settings($property);
+
+        if ($before['is_baseline']) {
+            throw Refusal::stateConflict('Save how attendance is taken (the place and the selfie) once before choosing face matching.');
+        }
+
+        $actor = strtolower($actorId);
+
+        $this->transactions->run(function () use ($property, $actor, $mode, $before): void {
+            $this->store->saveFaceMode($property, $mode, $actor, $this->clock->nowUtc());
+            $this->audit->record(new AuditEntry($property->toString(), $actor, 'attendance_settings.face_mode', 'attendance_settings', $property->toString(), ['face_mode' => $before['face_mode']], ['face_mode' => $mode]));
+        });
+
+        return $this->settings($property);
     }
 
     /** @return array<string, mixed> */
@@ -630,8 +658,8 @@ final readonly class AttendanceService
         $utc = static fn (mixed $v): ?string => $v === null ? null : (new DateTimeImmutable((string) $v, new DateTimeZone('UTC')))->format('Y-m-d\TH:i:s\Z');
 
         return $r === null ? null : [
-            'id' => $r['id'], 'in_at' => $utc($r['in_at']), 'in_method' => $r['in_method'], 'in_distance_m' => $r['in_distance_m'] === null ? null : (int) $r['in_distance_m'], 'has_in_photo' => $r['in_photo_file_id'] !== null,
-            'out_at' => $utc($r['out_at']), 'out_method' => $r['out_method'], 'out_distance_m' => $r['out_distance_m'] === null ? null : (int) $r['out_distance_m'], 'has_out_photo' => $r['out_photo_file_id'] !== null,
+            'id' => $r['id'], 'in_at' => $utc($r['in_at']), 'in_method' => $r['in_method'], 'in_distance_m' => $r['in_distance_m'] === null ? null : (int) $r['in_distance_m'], 'has_in_photo' => $r['in_photo_file_id'] !== null, 'in_face' => $r['in_face'] ?? null,
+            'out_at' => $utc($r['out_at']), 'out_method' => $r['out_method'], 'out_distance_m' => $r['out_distance_m'] === null ? null : (int) $r['out_distance_m'], 'has_out_photo' => $r['out_photo_file_id'] !== null, 'out_face' => $r['out_face'] ?? null,
             'manual_reason' => $r['manual_reason'], 'lock_version' => (int) $r['lock_version'],
         ];
     }

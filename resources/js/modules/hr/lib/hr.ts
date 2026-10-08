@@ -47,7 +47,7 @@ export type AttendanceRow = AttendanceEvaluation & {
 
 export type AttendanceSummaryRow = { employee: { id: string; number: string; name: string; department: string }; scheduled: number; present: number; late_days: number; late_minutes: number; early_days: number; early_minutes: number; absent: number; extra_minutes: number; overtime_minutes: number; unapproved_minutes: number; worked_minutes: number };
 
-export type AttendanceSettings = { latitude: number | null; longitude: number | null; radius_m: number; require_selfie: boolean; late_grace: number; early_grace: number; extra_after: number; geofence: boolean; is_baseline: boolean; lock_version: number | null };
+export type AttendanceSettings = { latitude: number | null; longitude: number | null; radius_m: number; require_selfie: boolean; late_grace: number; early_grace: number; extra_after: number; face_mode: 'off' | 'flag' | 'require'; geofence: boolean; is_baseline: boolean; lock_version: number | null };
 
 export type AttendanceMe = {
     employee: { id: string; number: string; name: string; department: string }; active: boolean; may_clock_in: boolean; may_clock_out: boolean;

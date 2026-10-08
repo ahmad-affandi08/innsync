@@ -93,6 +93,7 @@ export const HR_LINKS: readonly NavLink[] = [
     { href: '/hr/employees', label: 'hr.nav.employees' },
     { href: '/hr/roster', label: 'hr.nav.roster' },
     { href: '/hr/attendance', label: 'hr.nav.attendance' },
+    { href: '/hr/face', label: 'hr.nav.face' },
     { href: '/hr/leave', label: 'hr.nav.leave' },
     { href: '/hr/swaps', label: 'hr.nav.swaps' },
     { href: '/hr/announcements', label: 'hr.nav.announcements' },

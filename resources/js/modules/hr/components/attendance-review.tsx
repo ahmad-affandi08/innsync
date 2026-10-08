@@ -54,7 +54,7 @@ export function AttendanceReview({ items }: { items: ReviewItem[] }) {
                             <ul className="flex flex-col gap-1">
                                 {i.flags.map((f) => (
                                     <li className="flex flex-wrap items-baseline gap-2 text-sm" key={f}>
-                                        <StatusBadge label={t(`hr.att.flag.${f}` as MessageKey)} tone={f === 'shared_device' || f === 'reused_photo' ? 'danger' : 'warning'} />
+                                        <StatusBadge label={t(`hr.att.flag.${f}` as MessageKey)} tone={f === 'shared_device' || f === 'reused_photo' || f === 'face_mismatch' ? 'danger' : 'warning'} />
                                         <span className="text-muted-foreground">{t(`hr.att.flag.${f}.hint` as MessageKey)}</span>
                                     </li>
                                 ))}

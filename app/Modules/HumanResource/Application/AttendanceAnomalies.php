@@ -13,6 +13,8 @@ namespace App\Modules\HumanResource\Application;
  *  - `same_spot`      five or more clock-ins by one person at exactly the same distance from the property: a real position drifts, a faked one does not.
  *  - `exact_position` the phone claimed an accuracy of 1 m or better, which a real phone does not.
  *  - `poor_position`  the phone's accuracy was worse than the allowed distance, so it proves little about where the person was.
+ *  - `face_mismatch` the face in the selfie was not the one registered for the person (see `FaceService`).
+ *  - `face_missing`  face matching was on, but the person is not registered or the selfie showed no face, so nothing was checked.
  *  - `new_device`     the first clock-in from a phone after three or more from other phones (a new phone is normal, a changed phone is worth a glance).
  */
 final class AttendanceAnomalies
@@ -29,8 +31,12 @@ final class AttendanceAnomalies
 
     public const NEW_DEVICE = 'new_device';
 
+    public const FACE_MISMATCH = 'face_mismatch';
+
+    public const FACE_MISSING = 'face_missing';
+
     /** The marks that are strong evidence on their own; the review list shows them first. */
-    public const STRONG = [self::SHARED_DEVICE, self::REUSED_PHOTO];
+    public const STRONG = [self::SHARED_DEVICE, self::REUSED_PHOTO, self::FACE_MISMATCH];
 
     public const SAME_SPOT_FROM = 5;
 
@@ -56,7 +62,7 @@ final class AttendanceAnomalies
                 $events[] = [
                     'key' => $r['id'].':'.$side, 'employee' => (string) $r['employee_id'], 'at' => (string) $at,
                     'distance' => $r[$side.'_distance_m'] ?? null, 'accuracy' => $r[$side.'_accuracy_m'] ?? null,
-                    'device' => $r[$side.'_device'] ?? null, 'photo' => $r[$side.'_photo_hash'] ?? null,
+                    'device' => $r[$side.'_device'] ?? null, 'photo' => $r[$side.'_photo_hash'] ?? null, 'face' => $r[$side.'_face'] ?? null,
                 ];
             }
         }
@@ -98,6 +104,12 @@ final class AttendanceAnomalies
         }
 
         foreach ($events as $e) {
+            if ($e['face'] === 'mismatch') {
+                $mark($e['key'], self::FACE_MISMATCH);
+            } elseif ($e['face'] === 'none') {
+                $mark($e['key'], self::FACE_MISSING);
+            }
+
             if ($e['accuracy'] !== null && (int) $e['accuracy'] <= 1) {
                 $mark($e['key'], self::EXACT_POSITION);
             }

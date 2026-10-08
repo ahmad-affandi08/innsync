@@ -40,6 +40,11 @@ final class DatabaseAttendanceStore implements AttendanceStore
         return DB::table('hr_attendance_settings')->where('property_id', $property->toString())->where('lock_version', $expectedLock)->update([...$row, 'lock_version' => $expectedLock + 1, 'updated_by' => $by, 'updated_at' => $stamp]) === 1;
     }
 
+    public function saveFaceMode(PropertyId $property, string $mode, string $by, DateTimeImmutable $at): void
+    {
+        DB::table('hr_attendance_settings')->where('property_id', $property->toString())->update(['face_mode' => $mode, 'updated_by' => $by, 'updated_at' => $at->format('Y-m-d H:i:s.u')]);
+    }
+
     public function record(PropertyId $property, string $employeeId, string $date): ?array
     {
         $r = DB::table('hr_attendance')->where('property_id', $property->toString())->where('employee_id', $employeeId)->where('work_date', $date)->first();

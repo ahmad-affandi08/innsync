@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\HumanResource;
 
+use App\Modules\HumanResource\Application\AttendanceAnomalies;
 use App\Modules\HumanResource\Application\HrAccess;
 use App\Modules\HumanResource\Application\StaffOnDuty;
 use App\Modules\IdentityAccess\Infrastructure\Persistence\Eloquent\UserRecord;
@@ -282,5 +283,120 @@ final class AttendanceHttpTest extends TestCase
         $night = app(StaffOnDuty::class)->now($property);
         self::assertSame(['M'], array_column($night['groups'], 'code'));
         self::assertSame(0, $night['present']);
+    }
+
+    /** A face descriptor: 128 numbers. The same person gives numbers that differ a little; another person gives numbers far away. */
+    private function face(int $person, float $noise = 0.0): array
+    {
+        return array_map(static fn (int $i): float => round(sin(($i + 1) * ($person + 1)) * 0.12 + $noise * cos($i * 7.0) * 0.02, 6), range(0, 127));
+    }
+
+    private function useFaceMode(string $mode): void
+    {
+        $this->actAs($this->manager);
+        $this->postJson('/hr/attendance/settings', ['latitude' => -6.2, 'longitude' => 106.8, 'radius_m' => 100, 'require_selfie' => false, 'late_grace_minutes' => 10, 'early_grace_minutes' => 10, 'extra_after_minutes' => 30, 'lock_version' => DB::table('hr_attendance_settings')->value('lock_version')])->assertOk();
+        $this->postJson('/hr/attendance/face-mode', ['face_mode' => $mode])->assertOk()->assertJsonPath('face_mode', $mode);
+    }
+
+    public function test_a_face_is_registered_in_person_with_consent_kept_encrypted_and_erased_on_removal(): void
+    {
+        $this->postJson('/hr/attendance/face-mode', ['face_mode' => 'flag'])->assertStatus(409);
+        $this->postJson('/hr/attendance/settings', ['latitude' => -6.2, 'longitude' => 106.8, 'radius_m' => 100, 'require_selfie' => false, 'late_grace_minutes' => 10, 'early_grace_minutes' => 10, 'extra_after_minutes' => 30])->assertOk();
+        $this->postJson('/hr/attendance/face-mode', ['face_mode' => 'sometimes'])->assertStatus(422);
+
+        $url = "/hr/face/{$this->emp['ani']}";
+        $samples = [$this->face(1), $this->face(1, 1.0), $this->face(1, -1.0)];
+        $this->postJson($url, ['samples' => $samples, 'agreed' => false])->assertStatus(422);
+        $this->postJson($url, ['samples' => [$samples[0]], 'agreed' => true])->assertStatus(422);
+        $this->postJson($url, ['samples' => [$samples[0], $samples[1], $this->face(2)], 'agreed' => true])->assertStatus(422);
+        $this->postJson($url, ['samples' => [$samples[0], $samples[1], array_slice($samples[2], 0, 100)], 'agreed' => true])->assertStatus(422);
+        self::assertSame(0, DB::table('hr_face_templates')->count());
+
+        $this->actAs($this->ani);
+        $this->postJson($url, ['samples' => $samples, 'agreed' => true])->assertForbidden();
+        $this->actAs($this->manager);
+
+        $this->postJson($url, ['samples' => $samples, 'agreed' => true])->assertCreated();
+        $row = DB::table('hr_face_templates')->first();
+        self::assertSame(3, (int) $row->samples);
+        self::assertStringNotContainsString('[', (string) $row->template, 'the numbers are encrypted at rest');
+        self::assertSame(1, DB::table('consent_records')->where('purpose', 'face_attendance')->where('subject_id', $this->emp['ani'])->where('granted', 1)->count());
+        self::assertSame(1, DB::table('audit_entries')->where('action', 'attendance.face.enrolled')->count());
+        self::assertStringNotContainsString('0.12', (string) json_encode(DB::table('audit_entries')->where('action', 'attendance.face.enrolled')->first()), 'the audit never holds the numbers');
+
+        $this->get('/hr/face')->assertOk()->assertInertia(fn (Assert $p) => $p->component('hr/pages/face')->has('overview.employees', 4)->where('overview.employees.0.enrolled_at', fn ($v) => true));
+
+        $this->deleteJson($url, [])->assertStatus(422);
+        $this->deleteJson($url, ['reason' => 'Asked to be removed'])->assertOk();
+        self::assertSame(0, DB::table('hr_face_templates')->count());
+        self::assertSame(1, DB::table('consent_records')->where('purpose', 'face_attendance')->where('subject_id', $this->emp['ani'])->where('granted', 0)->count());
+        $this->deleteJson($url, ['reason' => 'again'])->assertOk();
+        self::assertSame(1, DB::table('consent_records')->where('purpose', 'face_attendance')->where('granted', 0)->count(), 'nothing to erase, nothing recorded twice');
+    }
+
+    public function test_when_a_match_is_required_only_the_registered_face_clocks_in_and_out(): void
+    {
+        $this->useFaceMode('off');
+        $this->roster('budi', 'P');
+        $this->postJson("/hr/face/{$this->emp['ani']}", ['samples' => [$this->face(1), $this->face(1, 1.0), $this->face(1, -1.0)], 'agreed' => true])->assertCreated();
+        $this->useFaceMode('require');
+
+        $this->actAs($this->ani);
+        $near = ['latitude' => -6.2, 'longitude' => 106.8];
+        $this->punch('clock-in', $near, 422);
+        $this->punch('clock-in', [...$near, 'face' => json_encode($this->face(2))], 422);
+        $this->punch('clock-in', [...$near, 'face' => 'not json'], 422);
+        $this->punch('clock-in', [...$near, 'face' => json_encode(array_slice($this->face(1), 0, 10))], 422);
+        self::assertSame(0, DB::table('hr_attendance')->count(), 'a refused clock-in leaves nothing');
+
+        $this->punch('clock-in', [...$near, 'face' => json_encode($this->face(1, 0.5))]);
+        $row = DB::table('hr_attendance')->first();
+        self::assertSame('match', $row->in_face);
+        self::assertLessThan(500, (int) $row->in_face_x);
+        self::assertNull($row->out_face);
+
+        $this->clock->advance('+8 hours');
+        $this->punch('clock-out', [...$near, 'face' => json_encode($this->face(3))], 422);
+        $this->punch('clock-out', [...$near, 'face' => json_encode($this->face(1, -0.5))]);
+        self::assertSame('match', DB::table('hr_attendance')->value('out_face'));
+
+        $this->actAs($this->budi);
+        $this->punch('clock-in', [...$near, 'face' => json_encode($this->face(1))], 422);
+        self::assertSame(1, DB::table('hr_attendance')->count(), 'someone who is not registered cannot clock in while a match is required');
+    }
+
+    public function test_when_a_mismatch_is_only_flagged_it_is_kept_and_put_before_a_supervisor_as_strong(): void
+    {
+        $this->useFaceMode('off');
+        $this->roster('budi', 'P');
+        $this->postJson("/hr/face/{$this->emp['ani']}", ['samples' => [$this->face(1), $this->face(1, 1.0), $this->face(1, -1.0)], 'agreed' => true])->assertCreated();
+        $this->useFaceMode('flag');
+
+        $this->actAs($this->ani);
+        $this->punch('clock-in', ['latitude' => -6.2, 'longitude' => 106.8, 'face' => json_encode($this->face(5))]);
+        $this->actAs($this->budi);
+        $this->punch('clock-in', ['latitude' => -6.2, 'longitude' => 106.8]);
+
+        $rows = DB::table('hr_attendance')->get()->map(fn ($r) => (array) $r)->all();
+        $marks = AttendanceAnomalies::flag($rows, 100);
+        $ani = array_values(array_filter($rows, fn (array $r): bool => $r['employee_id'] === $this->emp['ani']))[0];
+        $budi = array_values(array_filter($rows, fn (array $r): bool => $r['employee_id'] === $this->emp['budi']))[0];
+        self::assertSame('mismatch', $ani['in_face']);
+        self::assertContains(AttendanceAnomalies::FACE_MISMATCH, $marks[$ani['id'].':in']);
+        self::assertContains(AttendanceAnomalies::FACE_MISMATCH, AttendanceAnomalies::STRONG);
+        self::assertSame('none', $budi['in_face']);
+        self::assertContains(AttendanceAnomalies::FACE_MISSING, $marks[$budi['id'].':in']);
+    }
+
+    public function test_offboarding_erases_the_registered_face_and_withdraws_the_agreement(): void
+    {
+        $this->postJson("/hr/face/{$this->emp['candra']}", ['samples' => [$this->face(4), $this->face(4, 1.0), $this->face(4, -1.0)], 'agreed' => true])->assertCreated();
+        self::assertSame(1, DB::table('hr_face_templates')->count());
+
+        $this->postJson("/hr/employees/{$this->emp['candra']}/offboard", ['kind' => 'resigned', 'offboarded_on' => '2026-10-03', 'reason' => 'Moved', 'lock_version' => (int) DB::table('hr_employees')->where('id', $this->emp['candra'])->value('lock_version'), 'items' => []])->assertOk();
+
+        self::assertSame(0, DB::table('hr_face_templates')->count());
+        self::assertSame(1, DB::table('consent_records')->where('purpose', 'face_attendance')->where('subject_id', $this->emp['candra'])->where('granted', 0)->count());
+        self::assertSame(1, DB::table('audit_entries')->where('action', 'attendance.face.erased')->count());
     }
 }

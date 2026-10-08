@@ -25,7 +25,7 @@ The software is feature-complete for the scope of the PRD except two tasks that 
 | Who approves what, with at least two approvers each | Approvals refuse to complete with a single approver | Owner |
 | Product **license terms**: `composer.json` now declares `proprietary` (it said `MIT` until 2026-10-08), but the licence agreement itself, support terms and data processing agreement are not written | A hotel cannot be asked to sign what does not exist | Owner and lawyer |
 | What to send guests by WhatsApp, and the consent wording (PDP law) | Nothing sends WhatsApp on its own until decided | Owner / legal |
-| Whether face matching for attendance is wanted | Needs employee consent and a retention rule (specific personal data, PDP law) | Owner |
+| Face matching for attendance: **built 2026-10-08**, off until switched on | Still needs the agreement wording and privacy notice checked by a lawyer, and the distance calibrated with real staff in real light (`FACE_MAX_DISTANCE`) | Owner and lawyer |
 
 ## 3. Only a real hotel can prove these
 

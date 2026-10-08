@@ -60,6 +60,14 @@ Property settings → **Online booking**. Off until the hotel switches it on. Ch
 
 When a guest already paid the agency (for example in the Traveloka app), the cashier must not charge them for the room. Create the agency under Front Office → Companies with the type **Travel agent (including OTA)** and let it take the rooms. On a reservation that came from an agency, the reservation page says so and offers the agency first under "Bill to"; the room charge then goes to the agency's folio and becomes a receivable at check-out. When the agency pays, record it in Finance → Receivables; the commission the agency keeps is entered there as a credit note, so the receivable closes exactly.
 
+## Face matching and the distance check for attendance
+
+1. **Distance check (geofence).** Attendance → Settings: enter the latitude and longitude of the property (stand at the front door and read them from a map on a phone) and the distance allowed (100 m is a start). Until a position is set, anyone can clock in from anywhere; the screen says so.
+2. **Register faces, in person.** Human resource → Face matching. With the employee in front of you, take three photos with the phone, confirm they agreed, and register. Do this before the mode is switched on. A face is special personal data (the PDP law): have the privacy notice and the employee's agreement wording checked by a lawyer first.
+3. **Choose the mode.** Attendance → Settings → Face matching. Start with **Flag for review** for a few weeks and read the marks; move to **Require a match** only when the marks are rare. A person who is not registered cannot clock in while a match is required.
+4. A person who leaves is erased automatically. A person who asks to withdraw is removed on the same screen.
+5. If the right people are refused too often, in poor light or with a cheap camera, raise `FACE_MAX_DISTANCE` slightly (0.55, then 0.6); if the wrong people get through, lower it. Calibrate with your own staff before relying on it.
+
 ## What the system does by itself
 
 Each morning the scheduler (the same one that runs backups) does three things. None of them decides anything for staff.
