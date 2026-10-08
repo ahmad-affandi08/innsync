@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\FrontOffice\Application\TapeChart;
 
+use App\Modules\FrontOffice\Application\FrontDeskAccess;
 use App\Modules\FrontOffice\Application\Reservations\ReservationService;
 use App\Modules\Property\Application\Catalog\RoomCatalogReader;
 use App\Modules\Property\Application\Settings\BusinessDateProvider;
@@ -24,7 +25,7 @@ final readonly class TapeChartService
 {
     public const DAYS = [7, 14, 30];
 
-    public function __construct(private TapeChartReader $chart, private RoomCatalogReader $rooms, private BusinessDateProvider $businessDate, private PermissionChecker $permissions, private PropertyContext $property) {}
+    public function __construct(private TapeChartReader $chart, private RoomCatalogReader $rooms, private BusinessDateProvider $businessDate, private PermissionChecker $permissions, private PropertyContext $property, private FrontDeskAccess $desk) {}
 
     /** @return array<string, mixed> */
     public function show(PropertyId $property, string $actorId, ?string $from, int $days): array
@@ -56,12 +57,15 @@ final readonly class TapeChartService
         $unassigned = [];
 
         foreach ($reservations as $r) {
-            $bar = ['kind' => 'reservation', 'id' => $r['id'], 'number' => $r['number'], 'label' => $r['guest_name'], 'status' => $r['status'], 'start' => $r['arrival'], 'end' => $r['departure']];
+            $bar = ['planned' => false, 'kind' => 'reservation', 'id' => $r['id'], 'number' => $r['number'], 'label' => $r['guest_name'], 'status' => $r['status'], 'start' => $r['arrival'], 'end' => $r['departure']];
 
-            if ($r['room_id'] === null) {
-                $unassigned[$r['room_type_id']][] = $bar;
-            } else {
+            if ($r['room_id'] !== null) {
                 $byRoom[$r['room_id']][] = $bar;
+            } elseif ($r['planned_room_id'] !== null) {
+                // Planned, not assigned: shown in the planned room, drawn differently, and still movable.
+                $byRoom[$r['planned_room_id']][] = [...$bar, 'planned' => true];
+            } else {
+                $unassigned[$r['room_type_id']][] = $bar;
             }
         }
 
@@ -83,6 +87,7 @@ final readonly class TapeChartService
             'days' => $days,
             'dates' => $dates,
             'today' => $today,
+            'may_plan' => $this->desk->mayWrite($property, $actorId),
             'types' => array_map(static fn ($t): array => ['id' => $t->id, 'code' => $t->code, 'name' => $t->name], $types),
             'rooms' => $roomsOut,
             'unassigned' => array_map(static fn (string $typeId, array $bars): array => ['type_id' => $typeId, 'bars' => $bars], array_keys($unassigned), array_values($unassigned)),

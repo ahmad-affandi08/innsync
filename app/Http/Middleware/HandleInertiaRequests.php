@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Middleware;
 
+use App\Modules\FrontOffice\Application\Reminders\ReminderService;
 use App\Modules\HumanResource\Application\AttendanceReviewService;
 use App\Modules\IdentityAccess\Application\Approval\ApprovalService;
 use App\Modules\Property\Application\Branding\PropertyBranding;
@@ -143,10 +144,13 @@ final class HandleInertiaRequests extends Middleware
         foreach ([
             'approvals' => static fn (): int => count(app(ApprovalService::class)->pendingFor($property, $userId, 99)),
             'attendance' => static fn (): int => count(app(AttendanceReviewService::class)->queue($property, $userId)),
+            'reminders' => static fn (): int => app(ReminderService::class)->dueCount($property, $userId),
         ] as $key => $count) {
             try {
-                $n = (int) Cache::remember('shell.attention.'.$key.'.'.$propertyId.'.'.$userId, 60, $count);
-            } catch (Throwable) {
+                // Counting approvals and clock-ins is heavy, so they are counted once a minute; reminders are one cheap count and always current.
+                $n = $key === 'reminders' ? (int) $count() : (int) Cache::remember('shell.attention.'.$key.'.'.$propertyId.'.'.$userId, 60, $count);
+            } catch (Throwable $exception) {
+                report($exception);
                 $n = 0;
             }
 

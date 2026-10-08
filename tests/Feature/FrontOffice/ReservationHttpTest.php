@@ -138,6 +138,82 @@ final class ReservationHttpTest extends TestCase
         $this->get('/front-office/room-calendar?from=2026-13-45')->assertOk()->assertInertia(fn (Assert $p) => $p->where('chart.from', '2026-10-01'));
     }
 
+    public function test_a_guest_note_follows_the_guest_to_the_next_booking_and_the_audit_never_holds_its_text(): void
+    {
+        $this->staff();
+        $this->postJson('/property/rooms', ['number' => '102', 'room_type_id' => $this->typeId, 'reason' => 'x'])->assertCreated();
+        $first = $this->postJson('/front-office/reservations', $this->body(), ['Idempotency-Key' => 'http-key-0000000050'])->assertCreated()->json('reservation.id');
+        $later = $this->postJson('/front-office/reservations', $this->body(['arrival' => '2026-11-10', 'departure' => '2026-11-12']), ['Idempotency-Key' => 'http-key-0000000051'])->assertCreated()->json('reservation.id');
+        $other = $this->postJson('/front-office/reservations', $this->body(['guest_name' => 'Sari Wulandari', 'guest_phone' => '+62 899 111', 'arrival' => '2026-12-10', 'departure' => '2026-12-12']), ['Idempotency-Key' => 'http-key-0000000052'])->assertCreated()->json('reservation.id');
+
+        $this->putJson("/front-office/reservations/{$first}/guest-note", ['flag' => 'vip', 'note' => 'Prefers a high floor'])->assertOk()->assertJsonPath('guest_note.flag', 'vip');
+        $this->get("/front-office/reservations/{$later}")->assertInertia(fn (Assert $p) => $p->where('guest_note.flag', 'vip')->where('guest_note.note', 'Prefers a high floor'));
+        $this->get("/front-office/reservations/{$other}")->assertInertia(fn (Assert $p) => $p->where('guest_note.flag', null)->where('guest_note.note', null));
+        $this->postJson("/front-office/reservations/{$first}/confirm", ['lock_version' => 0])->assertOk();
+        $this->get('/front-office/guests')->assertInertia(fn (Assert $p) => $p->has('guests', 1)->where('guests.0.flag', 'vip')->where('guests.0.note', 'Prefers a high floor'));
+
+        $this->putJson("/front-office/reservations/{$first}/guest-note", ['flag' => 'gold', 'note' => 'x'])->assertStatus(422);
+        $this->putJson("/front-office/reservations/{$first}/guest-note", ['flag' => '', 'note' => ''])->assertOk()->assertJsonPath('guest_note.note', null);
+        self::assertStringNotContainsString('high floor', (string) json_encode(DB::table('audit_entries')->where('action', 'guest.note.saved')->get()));
+        self::assertSame(2, DB::table('audit_entries')->where('action', 'guest.note.saved')->count());
+    }
+
+    public function test_a_person_who_only_views_reservations_reads_notes_but_cannot_write_them_or_reminders(): void
+    {
+        $this->staff();
+        $id = $this->postJson('/front-office/reservations', $this->body(), ['Idempotency-Key' => 'http-key-0000000053'])->assertCreated()->json('reservation.id');
+        $this->putJson("/front-office/reservations/{$id}/guest-note", ['flag' => 'attention', 'note' => 'Call before arrival'])->assertOk();
+        $this->post('/logout');
+        $this->signIn(self::A, [ReservationService::VIEW_PERMISSION]);
+
+        $this->get("/front-office/reservations/{$id}")->assertOk()->assertInertia(fn (Assert $p) => $p->where('guest_note.flag', 'attention'));
+        $this->putJson("/front-office/reservations/{$id}/guest-note", ['flag' => 'vip', 'note' => 'x'])->assertForbidden();
+        $this->postJson('/front-office/reminders', ['due_on' => '2026-10-02', 'text' => 'Wake up'])->assertForbidden();
+        $this->putJson("/front-office/reservations/{$id}/room-plan", ['room_id' => null])->assertForbidden();
+        $this->get('/front-office/reminders')->assertOk()->assertInertia(fn (Assert $p) => $p->where('reminders.may_write', false));
+    }
+
+    public function test_reminders_are_added_done_reopened_and_counted_as_due_by_the_business_date(): void
+    {
+        $this->staff();
+        $id = $this->postJson('/front-office/reminders', ['due_on' => '2026-10-01', 'due_time' => '05:00', 'text' => 'Wake-up call room 101'])->assertCreated()->json('id');
+        $this->postJson('/front-office/reminders', ['due_on' => '2026-10-20', 'text' => 'Order extra towels'])->assertCreated();
+
+        $this->get('/front-office/reminders')->assertOk()->assertInertia(fn (Assert $p) => $p->component('front-office/pages/reminders')->has('reminders.open', 2)->where('reminders.open.0.text', 'Wake-up call room 101')->where('reminders.today', '2026-10-01')->where('reminders.may_write', true));
+        $this->get('/front-office/reminders')->assertInertia(fn (Assert $p) => $p->where('shell.attention.0', ['key' => 'reminders', 'count' => 1]));
+
+        $this->postJson("/front-office/reminders/{$id}/done")->assertOk();
+        $this->postJson("/front-office/reminders/{$id}/done")->assertStatus(409);
+        $this->get('/front-office/reminders')->assertInertia(fn (Assert $p) => $p->has('reminders.open', 1)->has('reminders.done', 1));
+        $this->postJson("/front-office/reminders/{$id}/reopen")->assertOk();
+        $this->get('/front-office/reminders')->assertInertia(fn (Assert $p) => $p->has('reminders.open', 2));
+
+        $this->postJson('/front-office/reminders', ['due_on' => '2026-09-01', 'text' => 'In the past'])->assertStatus(422);
+        $this->postJson('/front-office/reminders', ['due_on' => '2026-10-02', 'due_time' => '25:00', 'text' => 'Bad time'])->assertStatus(422);
+        $this->postJson('/front-office/reminders', ['due_on' => '2026-10-02', 'text' => '   '])->assertStatus(422);
+        self::assertSame(4, DB::table('audit_entries')->whereIn('action', ['front_desk.reminder.added', 'front_desk.reminder.done', 'front_desk.reminder.reopened'])->count());
+    }
+
+    public function test_a_room_can_be_planned_for_a_booking_and_the_plan_is_checked_shown_and_offered_at_check_in(): void
+    {
+        $this->staff();
+        $second = $this->postJson('/property/rooms', ['number' => '102', 'room_type_id' => $this->typeId, 'reason' => 'x'])->assertCreated()->json('room.id');
+        $room = (string) DB::table('rooms')->where('number', '101')->value('id');
+        $a = $this->postJson('/front-office/reservations', $this->body(), ['Idempotency-Key' => 'http-key-0000000060'])->assertCreated()->json('reservation.id');
+        $b = $this->postJson('/front-office/reservations', $this->body(['guest_name' => 'Sari Wulandari']), ['Idempotency-Key' => 'http-key-0000000061'])->assertCreated()->json('reservation.id');
+
+        $this->putJson("/front-office/reservations/{$a}/room-plan", ['room_id' => $room])->assertOk();
+        $this->putJson("/front-office/reservations/{$b}/room-plan", ['room_id' => $room])->assertStatus(409);
+        $this->putJson("/front-office/reservations/{$b}/room-plan", ['room_id' => $second])->assertOk();
+        $this->putJson("/front-office/reservations/{$b}/room-plan", ['room_id' => '01arz3ndektsv4rrffq69g5fa0'])->assertStatus(422);
+
+        $this->get('/front-office/room-calendar?from=2026-10-09&days=7')->assertInertia(fn (Assert $p) => $p->where('chart.unassigned', [])->where('chart.rooms.0.bars.0.planned', true)->where('chart.rooms.1.bars.0.planned', true));
+        $this->get("/front-office/reservations/{$a}")->assertInertia(fn (Assert $p) => $p->where('planned_room_id', $room));
+        $this->putJson("/front-office/reservations/{$a}/room-plan", ['room_id' => null])->assertOk();
+        $this->get("/front-office/reservations/{$a}")->assertInertia(fn (Assert $p) => $p->where('planned_room_id', null));
+        self::assertSame(3, DB::table('audit_entries')->whereIn('action', ['room_plan.set', 'room_plan.cleared'])->count());
+    }
+
     public function test_the_last_room_cannot_be_sold_twice_oversell_needs_the_allowance_and_a_reason_over_http(): void
     {
         $this->staff();

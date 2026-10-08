@@ -9,6 +9,7 @@ import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { GuestNotePanel, type GuestNote } from '@/modules/front-office/components/guest-note';
 import { FrontOfficeShell } from '@/modules/front-office/components/front-office-shell';
 import { RateChangePanel, type Rates } from '@/modules/front-office/components/rate-change';
 import { statusTone } from '@/modules/front-office/pages/reservations';
@@ -36,7 +37,7 @@ type Penalty = { amount_minor: number; free: boolean; currency: string; may_waiv
 
 const PATH = { confirm: 'confirm', cancel: 'cancel', noShow: 'no-show' } as const;
 
-export default function ReservationPage({ billing, folios, group, lookups, policy, rates, reservation: r }: { billing: Billing; folios: FolioRow[]; group: Group; lookups: Lookups; policy: Policy | null; rates: Rates; reservation: Reservation }) {
+export default function ReservationPage({ billing, folios, group, guest_note: guestNote, lookups, policy, rates, reservation: r }: { billing: Billing; folios: FolioRow[]; group: Group; guest_note: GuestNote; lookups: Lookups; policy: Policy | null; rates: Rates; reservation: Reservation }) {
     const { t } = useTranslation();
     const format = useFormatters();
     const errorCopy = useErrorStateCopy();
@@ -119,6 +120,8 @@ export default function ReservationPage({ billing, folios, group, lookups, polic
                 <dt className="text-muted-foreground">{t('fo.res.total')}</dt><dd className="font-medium">{format.money(r.total_minor, r.currency)}</dd>
             </dl>
             {r.guest_phone === null && r.guest_email === null ? <p className="text-xs text-muted-foreground">{t('fo.res.contactHidden')}</p> : null}
+
+            <GuestNotePanel note={guestNote} reservationId={r.id} />
 
             <section aria-labelledby="pol-h" className="flex flex-col gap-2">
                 <h2 className="text-lg font-semibold" id="pol-h">{t('fo.res.policy')}</h2>

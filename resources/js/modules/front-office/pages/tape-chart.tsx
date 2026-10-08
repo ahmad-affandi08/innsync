@@ -1,20 +1,26 @@
 import { Link, router } from '@inertiajs/react';
+import { useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
+import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
+import { ErrorState } from '@/components/ui/error-state';
 import { EmptyState } from '@/components/ui/empty-state';
 import type { MessageKey } from '@/locales/en/index';
 import { FrontOfficeShell } from '@/modules/front-office/components/front-office-shell';
+import { useServerAction } from '@/shared/api/use-server-action';
 import { useFormatters, useTranslation } from '@/shared/i18n/i18n';
+import { useErrorStateCopy } from '@/shared/i18n/use-ui-copy';
 import { cn } from '@/shared/lib/utils';
 
-type Bar = { kind: 'reservation' | 'block'; id: string | null; number: string | null; label: string; status: string; start: string; end: string };
+type Bar = { kind: 'reservation' | 'block'; id: string | null; number: string | null; label: string; status: string; start: string; end: string; planned: boolean };
 type Room = { id: string; number: string; type_id: string; floor: string | null; bars: Bar[] };
 type Chart = {
     from: string;
     days: number;
     dates: string[];
     today: string;
+    may_plan: boolean;
     types: { id: string; code: string; name: string }[];
     rooms: Room[];
     unassigned: { type_id: string; bars: Bar[] }[];
@@ -22,6 +28,7 @@ type Chart = {
 
 const DAY = 86_400_000;
 const LABEL_W = '7.5rem';
+const MOVABLE = ['tentative', 'confirmed', 'guaranteed'];
 const STATUS_CLASS: Record<string, string> = {
     checked_in: 'bg-foreground text-background',
     confirmed: 'bg-accent text-accent-foreground',
@@ -39,13 +46,36 @@ const shift = (date: string, days: number) => new Date(Date.parse(`${date}T00:00
 export default function TapeChartPage({ chart }: { chart: Chart }) {
     const { t } = useTranslation();
     const format = useFormatters();
+    const errorCopy = useErrorStateCopy();
+    const action = useServerAction();
+    const [dragging, setDragging] = useState<string | null>(null);
+    const [over, setOver] = useState<string | null>(null);
+    const [notice, setNotice] = useState<string | null>(null);
     const weekday = new Intl.DateTimeFormat(typeof document === 'undefined' ? 'id' : document.documentElement.lang || 'id', { weekday: 'short', timeZone: 'UTC' });
     const cols = `${LABEL_W} repeat(${chart.days}, minmax(2.75rem, 1fr))`;
     const go = (from: string | null, days = chart.days) => router.get('/front-office/room-calendar', { ...(from === null ? {} : { from }), days }, { preserveScroll: true });
 
-    function row(key: string, label: React.ReactNode, bars: Bar[], sub?: string) {
+    async function plan(reservationId: string, roomId: string | null) {
+        setNotice(null);
+        action.clear();
+        const done = await action.run(`/front-office/reservations/${reservationId}/room-plan`, { method: 'PUT', body: { room_id: roomId } });
+        if (done !== null) {
+            setNotice(t(roomId === null ? 'fo.tape.cleared' : 'fo.tape.moved'));
+            router.reload({ only: ['chart'] });
+        }
+    }
+
+    function row(key: string, label: React.ReactNode, bars: Bar[], sub?: string, roomId?: string | null) {
+        const droppable = chart.may_plan && roomId !== undefined;
         return (
-            <div className="relative grid border-b border-border" key={key} style={{ gridTemplateColumns: cols }}>
+            <div
+                className={cn('relative grid border-b border-border', over === key && 'outline outline-2 -outline-offset-2 outline-accent')}
+                key={key}
+                onDragLeave={droppable ? () => setOver((o) => (o === key ? null : o)) : undefined}
+                onDragOver={droppable ? (e) => { e.preventDefault(); setOver(key); } : undefined}
+                onDrop={droppable ? (e) => { e.preventDefault(); setOver(null); const id = e.dataTransfer.getData('text/plain') || dragging; setDragging(null); if (id) void plan(id, roomId ?? null); } : undefined}
+                style={{ gridTemplateColumns: cols }}
+            >
                 <div className="sticky left-0 z-10 flex min-w-0 flex-col justify-center border-r border-border bg-surface px-2 py-1" style={{ gridColumn: 1, gridRow: 1 }}>
                     <span className="truncate text-sm font-medium">{label}</span>
                     {sub ? <span className="truncate text-xs text-muted-foreground">{sub}</span> : null}
@@ -56,12 +86,13 @@ export default function TapeChartPage({ chart }: { chart: Chart }) {
                     const to = Math.min(chart.days, dayIndex(chart.from, b.end));
                     if (to <= from) return null;
                     const text = b.kind === 'block' ? `${t(`fo.tape.${b.status}` as MessageKey)}: ${b.label}` : `${b.label} · ${b.number}`;
-                    const cls = cn('z-[1] m-0.5 flex min-w-0 items-center overflow-hidden px-1.5 text-xs font-medium', STATUS_CLASS[b.status] ?? 'bg-surface-muted');
+                    const movable = chart.may_plan && b.kind === 'reservation' && MOVABLE.includes(b.status);
+                    const cls = cn('z-[1] m-0.5 flex min-w-0 items-center overflow-hidden px-1.5 text-xs font-medium', STATUS_CLASS[b.status] ?? 'bg-surface-muted', b.planned && 'border-2 border-dashed border-foreground/70 !bg-accent/20 !text-foreground', movable && 'cursor-grab active:cursor-grabbing');
                     const style = { gridColumn: `${from + 2} / ${to + 2}`, gridRow: 1 } as const;
 
                     return b.id === null
                         ? <div className={cls} key={`${key}-${i}`} style={style} title={text}><span className="truncate">{text}</span></div>
-                        : <Link className={cn(cls, 'hover:opacity-90')} href={`/front-office/reservations/${b.id}`} key={`${key}-${i}`} style={style} title={`${text} · ${format.date(b.start)} – ${format.date(b.end)}`}><span className="truncate">{text}</span></Link>;
+                        : <Link className={cn(cls, 'hover:opacity-90')} draggable={movable} href={`/front-office/reservations/${b.id}`} key={`${key}-${i}`} onDragEnd={() => { setDragging(null); setOver(null); }} onDragStart={movable ? (e) => { e.dataTransfer.setData('text/plain', b.id ?? ''); e.dataTransfer.effectAllowed = 'move'; setDragging(b.id); } : undefined} style={style} title={`${b.planned ? `${t('fo.tape.planned')} · ` : ''}${text} · ${format.date(b.start)} – ${format.date(b.end)}`}><span className="truncate">{text}</span></Link>;
                 })}
             </div>
         );
@@ -79,6 +110,8 @@ export default function TapeChartPage({ chart }: { chart: Chart }) {
                 </div>
             </div>
 
+            {action.error !== null ? <ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /> : null}
+            {notice !== null && action.error === null ? <Alert title={notice} tone="success" /> : null}
             <ul className="flex flex-wrap gap-x-4 gap-y-1 text-xs" aria-label={t('fo.tape.legend')}>
                 {(['checked_in', 'confirmed', 'tentative', 'completed', 'out_of_order'] as const).map((s) => (
                     <li className="flex items-center gap-1.5" key={s}><span aria-hidden="true" className={cn('inline-block h-3 w-5', STATUS_CLASS[s])} />{t(`fo.tape.status.${s}` as MessageKey)}</li>
@@ -105,15 +138,15 @@ export default function TapeChartPage({ chart }: { chart: Chart }) {
                             return (
                                 <div key={type.id}>
                                     <div className="border-b border-border bg-surface-muted px-2 py-1 text-xs font-semibold uppercase tracking-wide">{type.name} <span className="font-normal text-muted-foreground">{type.code}</span></div>
-                                    {open ? row(`${type.id}-open`, t('fo.tape.noRoom'), open.bars) : null}
-                                    {rooms.map((r) => row(r.id, r.number, r.bars, r.floor ?? undefined))}
+                                    {open || chart.may_plan ? row(`${type.id}-open`, t('fo.tape.noRoom'), open?.bars ?? [], undefined, null) : null}
+                                    {rooms.map((r) => row(r.id, r.number, r.bars, r.floor ?? undefined, r.id))}
                                 </div>
                             );
                         })}
                     </div>
                 </div>
             )}
-            <p className="text-xs text-muted-foreground">{t('fo.tape.note')}</p>
+            <p className="text-xs text-muted-foreground">{t('fo.tape.note')}{chart.may_plan ? ` ${t('fo.tape.dragHint')}` : ''}</p>
         </FrontOfficeShell>
     );
 }

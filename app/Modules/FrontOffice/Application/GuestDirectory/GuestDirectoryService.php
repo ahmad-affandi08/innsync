@@ -19,7 +19,7 @@ final readonly class GuestDirectoryService
 {
     public function __construct(private GuestDirectoryReader $guests, private PermissionChecker $permissions, private PropertyContext $property) {}
 
-    /** @return list<array{guest_name: string, stays: int, nights: int, last_arrival: string, last_departure: string, last_reservation_id: string, upcoming: int}> */
+    /** @return list<array{guest_name: string, stays: int, nights: int, last_arrival: string, last_departure: string, last_reservation_id: string, upcoming: int, flag: string|null, note: string|null}> */
     public function list(PropertyId $property, string $actorId, string $query = ''): array
     {
         $current = $this->property->current();

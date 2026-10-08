@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Modules\FrontOffice\Presentation\Http\Controllers;
 
 use App\Modules\FrontOffice\Application\Reservations\ReservationService;
+use App\Modules\FrontOffice\Application\RoomPlan\RoomPlanService;
 use App\Modules\FrontOffice\Application\Stays\CheckInRequest;
 use App\Modules\FrontOffice\Application\Stays\CheckOutLaundryException;
 use App\Modules\FrontOffice\Application\Stays\GuestCorrectionService;
@@ -23,7 +24,7 @@ use Inertia\Response;
 /** Check-in, the guests in the house and check-out. Rules, permissions and privacy live in `StayService`. */
 final readonly class StayController
 {
-    public function __construct(private StayService $stays, private StayAmendmentService $amendments, private GuestCorrectionService $corrections, private StayTimeFeeService $timeFees, private ReservationService $reservations, private CheckOutLaundryException $laundryExceptions, private PropertyContext $property) {}
+    public function __construct(private StayService $stays, private StayAmendmentService $amendments, private GuestCorrectionService $corrections, private StayTimeFeeService $timeFees, private ReservationService $reservations, private CheckOutLaundryException $laundryExceptions, private PropertyContext $property, private RoomPlanService $roomPlans) {}
 
     public function index(Request $request): Response
     {
@@ -53,7 +54,7 @@ final readonly class StayController
             'reservation' => $this->summary($reservation->toArray()),
             'rooms' => $this->stays->availableRooms($property, $actor, $id),
             'stay' => $this->stays->forReservation($property, $actor, $id),
-            'preselect' => preg_match('/^[0-9A-Za-z]{26}$/D', (string) $request->query('room_id')) === 1 ? strtolower((string) $request->query('room_id')) : null,
+            'preselect' => preg_match('/^[0-9A-Za-z]{26}$/D', (string) $request->query('room_id')) === 1 ? strtolower((string) $request->query('room_id')) : $this->roomPlans->plannedRoom($property, $actor, $id),
         ]);
     }
 

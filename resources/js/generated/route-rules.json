@@ -2594,6 +2594,19 @@
             "reason"
         ]
     },
+    "POST /front-office/reminders": {
+        "required": [
+            "due_on",
+            "text"
+        ],
+        "declared": [
+            "due_on",
+            "due_time",
+            "reservation_id",
+            "room_id",
+            "text"
+        ]
+    },
     "POST /front-office/requests": {
         "required": [
             "category",
@@ -6176,6 +6189,19 @@
             "current_password",
             "password",
             "password_confirmation"
+        ]
+    },
+    "PUT /front-office/reservations/{id}/guest-note": {
+        "required": [],
+        "declared": [
+            "flag",
+            "note"
+        ]
+    },
+    "PUT /front-office/reservations/{id}/room-plan": {
+        "required": [],
+        "declared": [
+            "room_id"
         ]
     },
     "PUT /property/branding/powered-by": {

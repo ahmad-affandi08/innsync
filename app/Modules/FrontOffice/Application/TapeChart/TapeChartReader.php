@@ -11,7 +11,7 @@ interface TapeChartReader
     /**
      * Reservations that hold at least one night in [from, to), not cancelled and not no-show.
      *
-     * @return list<array{id: string, number: string, status: string, guest_name: string, room_id: string|null, room_type_id: string, arrival: string, departure: string}>
+     * @return list<array{id: string, number: string, status: string, guest_name: string, room_id: string|null, planned_room_id: string|null, room_type_id: string, arrival: string, departure: string}>
      */
     public function reservations(PropertyId $property, string $from, string $to): array;
 

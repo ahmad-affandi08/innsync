@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { FrontOfficeShell } from '@/modules/front-office/components/front-office-shell';
 import { useFormatters, useTranslation } from '@/shared/i18n/i18n';
 
-type Guest = { guest_name: string; stays: number; nights: number; last_arrival: string; last_departure: string; last_reservation_id: string; upcoming: number };
+type Guest = { guest_name: string; stays: number; nights: number; last_arrival: string; last_departure: string; last_reservation_id: string; upcoming: number; flag: 'vip' | 'attention' | null; note: string | null };
 
 /** The guests the property has hosted, so a returning guest is recognised. Contact and identity details stay behind the reservation. */
 export default function GuestsPage({ guests, query }: { guests: Guest[]; query: string }) {
@@ -36,7 +36,7 @@ export default function GuestsPage({ guests, query }: { guests: Guest[]; query: 
                         <tbody>
                             {guests.map((g) => (
                                 <tr className="border-b border-border" key={g.last_reservation_id}>
-                                    <td className="py-2 pr-4 font-medium">{g.guest_name}{g.stays > 1 ? <span className="ml-2 border border-border px-1.5 py-0.5 text-xs font-normal text-muted-foreground">{t('fo.guests.returning')}</span> : null}{g.upcoming > 0 ? <span className="ml-2 text-xs font-normal text-muted-foreground">{t('fo.guests.upcoming', { count: g.upcoming })}</span> : null}</td>
+                                    <td className="py-2 pr-4 font-medium">{g.guest_name}{g.stays > 1 ? <span className="ml-2 border border-border px-1.5 py-0.5 text-xs font-normal text-muted-foreground">{t('fo.guests.returning')}</span> : null}{g.upcoming > 0 ? <span className="ml-2 text-xs font-normal text-muted-foreground">{t('fo.guests.upcoming', { count: g.upcoming })}</span> : null}{g.flag !== null ? <span className="ml-2 border border-foreground px-1.5 py-0.5 text-xs font-semibold">{t(`fo.gnote.flag.${g.flag}` as 'fo.gnote.flag.vip')}</span> : null}{g.note !== null ? <span className="block max-w-md truncate text-xs font-normal text-muted-foreground" title={g.note}>{g.note}</span> : null}</td>
                                     <td className="py-2 pr-4 text-right tabular-nums">{g.stays}</td>
                                     <td className="py-2 pr-4 text-right tabular-nums">{g.nights}</td>
                                     <td className="py-2 pr-4">{format.date(g.last_arrival)} – {format.date(g.last_departure)}</td>

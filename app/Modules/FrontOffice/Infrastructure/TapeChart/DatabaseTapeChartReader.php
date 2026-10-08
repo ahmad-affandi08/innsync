@@ -12,15 +12,16 @@ final class DatabaseTapeChartReader implements TapeChartReader
 {
     public function reservations(PropertyId $property, string $from, string $to): array
     {
-        return DB::table('reservations')
-            ->where('property_id', $property->toString())
-            ->whereNotIn('status', ['cancelled', 'no_show'])
-            ->where('arrival_date', '<', $to)
-            ->where('departure_date', '>', $from)
-            ->orderBy('arrival_date')
+        return DB::table('reservations as v')
+            ->leftJoin('room_plans as rp', 'rp.reservation_id', '=', 'v.id')
+            ->where('v.property_id', $property->toString())
+            ->whereNotIn('v.status', ['cancelled', 'no_show'])
+            ->where('v.arrival_date', '<', $to)
+            ->where('v.departure_date', '>', $from)
+            ->orderBy('v.arrival_date')
             ->limit(2000)
-            ->get(['id', 'number', 'status', 'guest_name', 'room_id', 'room_type_id', 'arrival_date', 'departure_date'])
-            ->map(static fn (object $r): array => ['id' => (string) $r->id, 'number' => (string) $r->number, 'status' => (string) $r->status, 'guest_name' => (string) $r->guest_name, 'room_id' => $r->room_id === null ? null : (string) $r->room_id, 'room_type_id' => (string) $r->room_type_id, 'arrival' => (string) $r->arrival_date, 'departure' => (string) $r->departure_date])
+            ->get(['v.id', 'v.number', 'v.status', 'v.guest_name', 'v.room_id', 'rp.room_id as planned_room_id', 'v.room_type_id', 'v.arrival_date', 'v.departure_date'])
+            ->map(static fn (object $r): array => ['id' => (string) $r->id, 'number' => (string) $r->number, 'status' => (string) $r->status, 'guest_name' => (string) $r->guest_name, 'room_id' => $r->room_id === null ? null : (string) $r->room_id, 'planned_room_id' => $r->planned_room_id === null ? null : (string) $r->planned_room_id, 'room_type_id' => (string) $r->room_type_id, 'arrival' => (string) $r->arrival_date, 'departure' => (string) $r->departure_date])
             ->all();
     }
 
