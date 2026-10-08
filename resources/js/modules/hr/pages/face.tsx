@@ -1,3 +1,4 @@
+import { Link } from '@inertiajs/react';
 import { useState } from 'react';
 
 import { Alert } from '@/components/ui/alert';
@@ -78,6 +79,7 @@ export default function FacePage({ overview, mode }: Props) {
             <Alert title={t(`hr.face.mode.${mode}` as 'hr.face.mode.off')} tone={mode === 'off' ? 'warning' : 'info'}>{t('hr.face.modeHint')}</Alert>
             <p className="max-w-3xl text-sm text-muted-foreground">{t('hr.face.privacy')}</p>
             <p className="text-sm font-medium">{t('hr.face.count', { done: enrolled, total: overview.employees.length })}</p>
+            <div><Button asChild size="sm" variant="outline"><Link href="/hr/face/test">{t('hr.face.try')}</Link></Button></div>
 
             {overview.employees.length === 0 ? <EmptyState title={t('hr.face.none')} /> : (
                 <ul className="divide-y divide-border border-y border-border" data-testid="face-list">

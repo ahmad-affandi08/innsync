@@ -17,7 +17,7 @@ use Inertia\Response;
  */
 final readonly class SystemStatusController
 {
-    public function __construct(private RunHealthChecks $checks, private BackupRunLog $backups, private MessagingSettings $messaging) {}
+    public function __construct(private RunHealthChecks $checks, private BackupRunLog $backups, private MessagingSettings $messaging, private RecentSignIns $signIns) {}
 
     public function show(): Response
     {
@@ -27,6 +27,7 @@ final readonly class SystemStatusController
         return Inertia::render('foundation/pages/system-status', [
             'status' => $report['status'],
             'checks' => array_map(static fn (string $name, array $c): array => ['name' => $name, 'status' => $c['status'], 'summary' => $c['summary']], array_keys($report['checks']), array_values($report['checks'])),
+            'logins' => $this->signIns->latest(10),
             'backup' => ['last' => $this->backups->lastFinished('backup'), 'verify' => $this->backups->lastFinished('verify')],
             'environment' => [
                 'version' => (string) config('app.version'),

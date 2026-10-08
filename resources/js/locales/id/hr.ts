@@ -743,4 +743,13 @@ export const hr = {
     "hr.att.flag.face_mismatch.hint": "Wajah di selfie bukan wajah yang terdaftar untuk orang ini.",
     "hr.att.flag.face_missing": "Wajah tidak diperiksa",
     "hr.att.flag.face_missing.hint": "Pencocokan wajah menyala, tetapi orang ini belum terdaftar atau selfie tidak menampilkan wajah.",
+    "hr.face.try": "Coba pembaca wajah",
+    "hr.facetest.title": "Coba pembaca wajah",
+    "hr.facetest.description": "Ambil dua foto dan lihat seberapa jauh pembaca menilai kedua wajah. Tidak ada yang disimpan.",
+    "hr.facetest.how": "Ambil satu foto seseorang, lalu satu foto lagi orang yang sama (coba cahaya redup, berkacamata, hari yang berbeda), lalu foto dua orang yang berbeda. Angkanya adalah jarak antara kedua wajah: makin kecil, makin mirip. Kalau orang yang benar sering lebih jauh dari jarak yang diizinkan, naikkan jaraknya sedikit (FACE_MAX_DISTANCE); kalau dua orang berbeda keluar lebih dekat dari itu, turunkan.",
+    "hr.facetest.same": "Dianggap orang yang sama (jarak yang diizinkan {max}).",
+    "hr.facetest.different": "Dianggap orang yang berbeda (jarak yang diizinkan {max}).",
+    "hr.facetest.hint": "Ini hanya uji. Tidak ada yang dikirim ke server dan tidak ada yang disimpan.",
+    "hr.facetest.again": "Mulai lagi",
+    "hr.facetest.back": "Kembali ke pencocokan wajah",
 } as const

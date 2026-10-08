@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\IdentityAccess;
 
+use App\Modules\IdentityAccess\Infrastructure\Persistence\Eloquent\UserRecord;
 use App\Shared\Infrastructure\Backup\RunBackupJob;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
@@ -79,5 +80,32 @@ final class SystemStatusTest extends TestCase
 
         $this->postJson('/property/system/backup', [])->assertForbidden();
         Queue::assertNothingPushed();
+    }
+
+    public function test_the_latest_sign_in_attempts_show_when_why_and_from_which_network_but_never_an_email_or_a_password(): void
+    {
+        config(['identity_access.login_rate_limit_per_minute' => 1000]);
+        $this->post('/login', ['email' => 'nobody@example.test', 'password' => 'Guess-12345'])->assertSessionHasErrors('email');
+        $known = UserRecord::factory()->create();
+        $this->post('/login', ['email' => $known->email, 'password' => 'wrong-password-1'])->assertSessionHasErrors('email');
+        $this->signIn(self::A, ['property.settings.manage']);
+
+        $response = $this->get('/property/system')->assertOk();
+        $logins = $response->viewData('page')['props']['logins'];
+
+        self::assertGreaterThanOrEqual(2, count($logins));
+        $failed = array_values(array_filter($logins, static fn (array $l): bool => $l['outcome'] === 'failure'));
+        self::assertCount(2, $failed);
+        $onKnown = array_values(array_filter($failed, static fn (array $l): bool => $l['who'] !== null));
+        $onUnknown = array_values(array_filter($failed, static fn (array $l): bool => $l['who'] === null));
+        self::assertCount(1, $onKnown, 'the attempt on a known account names the account');
+        self::assertCount(1, $onUnknown, 'an email nobody has is shown as unknown');
+        self::assertSame($known->name, $onKnown[0]['who']);
+        self::assertSame('invalid_credentials', $onKnown[0]['reason']);
+        self::assertMatchesRegularExpression('/^[0-9a-f]{8}$/', (string) $onKnown[0]['network']);
+        $json = (string) json_encode($logins);
+        self::assertStringNotContainsString('nobody@example.test', $json);
+        self::assertStringNotContainsString('Guess-12345', $json);
+        self::assertStringNotContainsString($known->email, $json);
     }
 }

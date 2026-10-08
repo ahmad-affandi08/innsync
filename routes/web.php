@@ -989,6 +989,7 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
     Route::post('/attendance/settings', [AttendanceController::class, 'settings'])->name('hr.attendance.settings');
     Route::post('/attendance/face-mode', [AttendanceController::class, 'faceMode'])->name('hr.attendance.face-mode');
     Route::get('/face', [FaceController::class, 'index'])->name('hr.face');
+    Route::get('/face/test', [FaceController::class, 'test'])->name('hr.face.test');
     Route::post('/face/{employee}', [FaceController::class, 'enrol'])->where('employee', '[0-9A-Za-z]{26}')->middleware('throttle:access-admin')->name('hr.face.enrol');
     Route::delete('/face/{employee}', [FaceController::class, 'remove'])->where('employee', '[0-9A-Za-z]{26}')->middleware('throttle:access-admin')->name('hr.face.remove');
     Route::post('/overtime', [AttendanceAdjustmentController::class, 'requestOvertime'])->middleware(['idempotent'])->name('hr.overtime.request');

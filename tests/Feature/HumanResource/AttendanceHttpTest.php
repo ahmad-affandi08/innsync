@@ -399,4 +399,12 @@ final class AttendanceHttpTest extends TestCase
         self::assertSame(1, DB::table('consent_records')->where('purpose', 'face_attendance')->where('subject_id', $this->emp['candra'])->where('granted', 0)->count());
         self::assertSame(1, DB::table('audit_entries')->where('action', 'attendance.face.erased')->count());
     }
+
+    public function test_the_face_reader_can_be_tried_by_whoever_runs_attendance_and_by_nobody_else(): void
+    {
+        $this->get('/hr/face/test')->assertOk()->assertInertia(fn (Assert $p) => $p->component('hr/pages/face-test')->where('maxDistance', 0.5));
+
+        $this->actAs($this->ani);
+        $this->get('/hr/face/test')->assertForbidden();
+    }
 }

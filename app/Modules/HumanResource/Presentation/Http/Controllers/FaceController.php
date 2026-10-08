@@ -24,6 +24,14 @@ final readonly class FaceController
         return Inertia::render('hr/pages/face', ['overview' => $this->faces->overview($property, $this->actor($request)), 'mode' => $this->attendance->settings($property)['face_mode']]);
     }
 
+    /** A page to try the face reader with two photos, so the allowed distance can be judged with real staff in real light. It sends nothing back and keeps nothing. */
+    public function test(Request $request): Response
+    {
+        $this->faces->overview($this->property->current(), $this->actor($request));
+
+        return Inertia::render('hr/pages/face-test', ['maxDistance' => (float) config('attendance.face.max_distance')]);
+    }
+
     public function enrol(Request $request, string $employee): JsonResponse
     {
         $data = $request->validate(['samples' => ['required', 'array', 'max:10'], 'samples.*' => ['required', 'array', 'max:128'], 'samples.*.*' => ['numeric'], 'agreed' => ['required', 'boolean']]);

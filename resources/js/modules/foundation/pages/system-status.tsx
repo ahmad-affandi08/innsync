@@ -11,7 +11,9 @@ import { useFormatters, useTranslation } from '@/shared/i18n/i18n';
 
 type Check = { name: string; status: 'ok' | 'degraded' | 'down'; summary: string };
 type Run = { status: string; finished_at: string | null } | null;
+type Login = { at: string; outcome: 'success' | 'failure' | 'denied'; reason: string | null; who: string | null; network: string | null };
 type Props = {
+    logins: Login[];
     status: 'ok' | 'degraded' | 'down';
     checks: Check[];
     backup: { last: Run; verify: Run };
@@ -21,7 +23,7 @@ type Props = {
 const TONE: Record<Check['status'], StatusTone> = { ok: 'success', degraded: 'warning', down: 'danger' };
 
 /** Is the system healthy and being backed up, in words an owner can read. Read only: it shows what the monitor and the backup log already record. */
-export default function SystemStatusPage({ status, checks, backup, environment }: Props) {
+export default function SystemStatusPage({ status, checks, backup, environment, logins }: Props) {
     const { t } = useTranslation();
     const format = useFormatters();
     const action = useServerAction();
@@ -69,6 +71,24 @@ export default function SystemStatusPage({ status, checks, backup, environment }
                         </li>
                     ))}
                 </ul>
+            </section>
+
+            <section aria-labelledby="sys-logins" className="flex flex-col gap-2">
+                <h2 className="text-lg font-semibold" id="sys-logins">{t('sys.logins.title')}</h2>
+                <p className="text-sm text-muted-foreground">{t('sys.logins.hint')}</p>
+                {logins.length === 0 ? <p className="text-sm text-muted-foreground">{t('sys.logins.none')}</p> : (
+                    <ul className="divide-y divide-border border-y border-border" data-testid="recent-logins">
+                        {logins.map((l, i) => (
+                            <li className="flex flex-wrap items-center justify-between gap-2 py-2.5" key={`${l.at}-${i}`}>
+                                <div className="min-w-0">
+                                    <p className="text-sm font-medium">{l.who ?? t('sys.logins.unknown')}</p>
+                                    <p className="text-xs text-muted-foreground">{format.instant(l.at)}{l.network !== null ? ` · ${t('sys.logins.network', { code: l.network })}` : ''}{l.reason !== null ? ` · ${t(`sys.logins.reason.${l.reason}` as MessageKey)}` : ''}</p>
+                                </div>
+                                <StatusBadge label={t(`sys.logins.outcome.${l.outcome}` as MessageKey)} tone={l.outcome === 'success' ? 'success' : l.outcome === 'failure' ? 'warning' : 'danger'} />
+                            </li>
+                        ))}
+                    </ul>
+                )}
             </section>
 
             <section aria-labelledby="sys-env" className="flex flex-col gap-3">

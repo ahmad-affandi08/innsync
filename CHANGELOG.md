@@ -12,6 +12,8 @@ Release notes for every release (NFR-14). Newest first. Each entry names the tas
 
 ### Added
 
+- System status shows the **latest ten sign-in attempts**: when, signed in or failed, why (wrong email or password, account locked, account switched off), the account's name when the email was known, and a short network code (the same code means the same network). The owner can now see whether someone is guessing passwords without running a query. It reads what sign-in already records and shows no email and no password.
+- **Try the face reader** (Human resource → Face matching → Try the face reader): two photos, one number, and whether that counts as the same person at the allowed distance. Nothing is sent to the server or kept. It is for judging `FACE_MAX_DISTANCE` with real staff in real light before face matching is switched on.
 - Show one QR code on its own: each active row of the Kode QR list has **Lihat QR**, which opens that room's or table's code large enough to scan from another phone, with Copy link. Like the printed sheet it shows a token, so it needs the same privilege and every showing is audited (`guest_qr.viewed`, without the token). A code that is switched off is not shown.
 - Room and table names on the guest pages, the QR sheet and the staff lists read "Kamar 101" and "Meja M1 · …" in Indonesian (and "Room 101", "Table M1 · …" in English), whatever language the code was made in.
 - Face matching for attendance (owner decision 2026-10-08), with the distance check (geofence) that was already there:

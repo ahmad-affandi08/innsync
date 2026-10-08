@@ -743,4 +743,13 @@ export const hr = {
     "hr.att.flag.face_mismatch.hint": "The face in the selfie was not the one registered for this person.",
     "hr.att.flag.face_missing": "Face not checked",
     "hr.att.flag.face_missing.hint": "Face matching was on, but this person is not registered or the selfie showed no face.",
+    "hr.face.try": "Try the face reader",
+    "hr.facetest.title": "Try the face reader",
+    "hr.facetest.description": "Take two photos and see how far apart the reader thinks the faces are. Nothing is saved.",
+    "hr.facetest.how": "Take one photo of a person, then another of the same person (try dim light, glasses, a different day), and then of two different people. The number is the distance between the two faces: the smaller, the more alike. If the right person is often farther apart than the allowed distance, raise the allowed distance a little (FACE_MAX_DISTANCE); if two different people come out closer than it, lower it.",
+    "hr.facetest.same": "Counted as the same person (the allowed distance is {max}).",
+    "hr.facetest.different": "Counted as different people (the allowed distance is {max}).",
+    "hr.facetest.hint": "This is a test. Nothing was sent to the server and nothing was kept.",
+    "hr.facetest.again": "Start again",
+    "hr.facetest.back": "Back to face matching",
 } as const
