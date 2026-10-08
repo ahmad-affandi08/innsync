@@ -196,6 +196,7 @@ use App\Modules\IdentityAccess\Application\Approval\ApprovalRepository;
 use App\Modules\IdentityAccess\Application\Approval\ApprovalService;
 use App\Modules\IdentityAccess\Application\Ports\AccessDirectory;
 use App\Modules\IdentityAccess\Application\Ports\CredentialAuthenticator;
+use App\Modules\IdentityAccess\Application\Ports\GrantMemory;
 use App\Modules\IdentityAccess\Application\Ports\MfaStore;
 use App\Modules\IdentityAccess\Application\Ports\OneTimePassword;
 use App\Modules\IdentityAccess\Application\Ports\PermissionGrantReader;
@@ -216,6 +217,8 @@ use App\Modules\IdentityAccess\Infrastructure\Authorization\DatabaseStaffDirecto
 use App\Modules\IdentityAccess\Infrastructure\Authorization\DatabaseSystemActors;
 use App\Modules\IdentityAccess\Infrastructure\Authorization\EloquentPermissionGrantReader;
 use App\Modules\IdentityAccess\Infrastructure\Authorization\EloquentUserAccessReader;
+use App\Modules\IdentityAccess\Infrastructure\Authorization\MemoizedPermissionGrantReader;
+use App\Modules\IdentityAccess\Infrastructure\Authorization\RequestGrantMemo;
 use App\Modules\IdentityAccess\Infrastructure\Authorization\ScopedPermissionChecker;
 use App\Modules\IdentityAccess\Infrastructure\Mfa\EloquentMfaStore;
 use App\Modules\IdentityAccess\Infrastructure\Mfa\TotpOneTimePassword;
@@ -433,6 +436,7 @@ use App\Shared\Infrastructure\Transactions\MySqlTransactionRunner;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Contracts\Encryption\Encrypter;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
@@ -488,7 +492,9 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(CredentialAuthenticator::class, EloquentCredentialAuthenticator::class);
         $this->app->bind(UserAccessReader::class, EloquentUserAccessReader::class);
         $this->app->bind(UserPasswordUpdater::class, EloquentUserPasswordUpdater::class);
-        $this->app->bind(PermissionGrantReader::class, EloquentPermissionGrantReader::class);
+        $this->app->singleton(RequestGrantMemo::class);
+        $this->app->bind(GrantMemory::class, RequestGrantMemo::class);
+        $this->app->bind(PermissionGrantReader::class, fn ($app): PermissionGrantReader => new MemoizedPermissionGrantReader($app->make(EloquentPermissionGrantReader::class), $app->make(RequestGrantMemo::class)));
         $this->app->bind(OneTimePassword::class, TotpOneTimePassword::class);
         $this->app->bind(MfaStore::class, EloquentMfaStore::class);
         $this->app->bind(UserSessionRepository::class, DatabaseUserSessionRepository::class);
@@ -722,6 +728,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Any write to the tables a permission answer is built from empties the one-request memory of answers.
+        DB::listen(fn ($query) => $this->app->make(RequestGrantMemo::class)->noteStatement((string) $query->sql));
+
         Password::defaults(static fn (): Password => Password::min(12)
             ->letters()
             ->mixedCase()

@@ -40,6 +40,7 @@ Release notes for every release (NFR-14). Newest first. Each entry names the tas
 
 ### Changed
 
+- Fewer database questions about who may do what: during one web request the answer to an exact question (person, permission, place) is asked of the database once. It is cautious by design: it is on only for the length of a web request (never in a worker or a command) and is thrown away at its end, and any statement that writes to the access tables (assignments, roles, role permissions, permissions) empties it at once, so a right taken away in the middle of a request is gone for the next question (tests cover both). The dashboard went from 122 to 119 queries and the other hot pages by one to three; its budget is back at 120.
 - The declared license in `composer.json` is now `proprietary` instead of `MIT`. This is only the declaration that the code is not open source; the actual terms a hotel signs (licence agreement, support, data processing) still have to be written with a lawyer.
 - The breadcrumb (property › module › page) moved from the header to the top of the page, above the title, so the header keeps the logo, the date and the tools and nothing wraps; the header logo now shows from the large-screen width up.
 

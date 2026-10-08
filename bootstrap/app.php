@@ -10,6 +10,7 @@ use App\Modules\IdentityAccess\Infrastructure\Console\InstallDefaultApprovalsCom
 use App\Modules\IdentityAccess\Infrastructure\Console\InstallDefaultRolesCommand;
 use App\Modules\IdentityAccess\Presentation\Http\Middleware\EnsureActiveUser;
 use App\Modules\IdentityAccess\Presentation\Http\Middleware\EnsureMfaVerified;
+use App\Modules\IdentityAccess\Presentation\Http\Middleware\MemoizeGrants;
 use App\Modules\IdentityAccess\Presentation\Http\Middleware\RequirePermission;
 use App\Modules\IdentityAccess\Presentation\Http\Middleware\ResolvePropertyContext;
 use App\Modules\InventoryPurchasing\Infrastructure\MakeRestockDraftsCommand;
@@ -87,6 +88,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ])
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->prepend(AssignCorrelationId::class);
+        $middleware->prepend(MemoizeGrants::class);
 
         $middleware->alias([
             'active' => EnsureActiveUser::class,
