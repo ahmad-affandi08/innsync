@@ -912,6 +912,7 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
     Route::get('/qr', [QrPointController::class, 'index'])->name('guest.qr');
     Route::post('/qr', [QrPointController::class, 'provision'])->name('guest.qr.provision');
     Route::get('/qr/print', [QrPointController::class, 'print'])->name('guest.qr.print');
+    Route::get('/qr/{id}', [QrPointController::class, 'show'])->where('id', $id)->middleware('throttle:access-admin')->name('guest.qr.show');
     Route::post('/qr/{id}/rotate', [QrPointController::class, 'rotate'])->where('id', $id)->name('guest.qr.rotate');
     Route::post('/qr/{id}/active', [QrPointController::class, 'active'])->where('id', $id)->name('guest.qr.active');
     Route::get('/surveys', [GuestSurveyController::class, 'index'])->name('guest.surveys');

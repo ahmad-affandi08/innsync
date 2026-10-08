@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/empty-state';
 import { StatusBadge, type StatusTone } from '@/components/ui/status-badge';
 import { GuestShell } from '@/modules/guest/components/guest-shell';
+import { qrLabel } from '@/modules/guest/lib/qr';
 import type { GuestOrders } from '@/modules/guest/lib/guest';
 import { useFormatters, useTranslation } from '@/shared/i18n/i18n';
 import type { MessageKey } from '@/locales/en/index';
@@ -28,7 +29,7 @@ export default function OrdersPage({ view }: { view: GuestOrders }) {
     return (
         <>
             <Head title={t('guest.orders.title')} />
-            <GuestShell hotel={view.hotel} subtitle={view.label} title={t('guest.orders.title')}>
+            <GuestShell hotel={view.hotel} subtitle={qrLabel(view.label, t)} title={t('guest.orders.title')}>
                 <Button asChild size="sm" variant="outline"><Link href="/g/menu">{t('guest.orders.back')}</Link></Button>
                 {view.orders.length === 0 ? <EmptyState illustration="coffee" title={t('guest.orders.none')} /> : null}
                 {view.orders.map((o) => (

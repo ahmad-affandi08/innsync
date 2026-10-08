@@ -154,6 +154,25 @@ final readonly class QrPointService
         return $out;
     }
 
+    /**
+     * The code of one room or table, to show on a screen and scan from another phone. Like the printed sheet it reveals a token, so it needs the same privilege and is audited each time.
+     *
+     * @return array{id: string, kind: string, label: string, token: string}
+     */
+    public function reveal(PropertyId $property, string $actorId, string $id): array
+    {
+        $this->access->require($property, $actorId, GuestAccess::QR_MANAGE, 'This person may not manage the QR codes.');
+        $point = $this->points->find($property, strtolower($id)) ?? throw Refusal::notFound('Code not found.');
+
+        if (! (bool) $point['is_active']) {
+            throw Refusal::stateConflict('This code is switched off. Switch it on to show it.');
+        }
+
+        $this->audit->record(new AuditEntry($property->toString(), strtolower($actorId), 'guest_qr.viewed', 'guest_qr', $point['id'], null, ['label' => $point['label']]));
+
+        return ['id' => $point['id'], 'kind' => $point['kind'], 'label' => $point['label'], 'token' => $this->tokens->reveal((string) $point['token_cipher'])];
+    }
+
     private function make(PropertyId $property, string $actor, string $kind, string $targetId, string $label, \DateTimeImmutable $now): bool
     {
         if ($this->points->byTarget($property, $kind, $targetId) !== null) {

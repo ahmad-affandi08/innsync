@@ -1,5 +1,5 @@
 import { Link } from '@inertiajs/react';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -9,6 +9,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { GuestStaffShell } from '@/modules/guest/components/guest-staff-shell';
+import { qrLabel, qrSvg } from '@/modules/guest/lib/qr';
 import type { QrOverview, QrPoint } from '@/modules/guest/lib/guest';
 import { useServerAction } from '@/shared/api/use-server-action';
 import { useFormatters, useTranslation } from '@/shared/i18n/i18n';
@@ -21,18 +22,43 @@ export default function QrPointsPage({ overview }: { overview: QrOverview }) {
     const errorCopy = useErrorStateCopy();
     const action = useServerAction();
     const [rotate, setRotate] = useState<QrPoint | null>(null);
+    const [shown, setShown] = useState<{ label: string; url: string } | null>(null);
+    const [copied, setCopied] = useState(false);
+    const shownSvg = useMemo(() => (shown === null ? '' : qrSvg(shown.url)), [shown]);
     const reload = ['overview'];
     const failure = action.error !== null ? <ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /> : null;
 
+    async function show(p: QrPoint) {
+        action.clear();
+        const done = await action.run<{ label: string; token: string }>(`/guest/qr/${p.id}`, { method: 'GET' });
+
+        if (done !== null) {
+            setCopied(false);
+            setShown({ label: qrLabel(done.label, t), url: `${window.location.origin}/g/${done.token}` });
+        }
+    }
+
+    async function copy() {
+        if (shown === null) return;
+
+        try {
+            await navigator.clipboard.writeText(shown.url);
+            setCopied(true);
+        } catch {
+            setCopied(false);
+        }
+    }
+
     const columns: DataGridColumn<QrPoint>[] = [
-        { id: 'label', label: t('guest.qr.colLabel'), value: (p) => p.label, rowHeader: true },
+        { id: 'label', label: t('guest.qr.colLabel'), value: (p) => qrLabel(p.label, t), rowHeader: true },
         { id: 'kind', label: t('guest.qr.colKind'), value: (p) => p.kind, filter: 'select', filterLabel: (v) => t(`guest.qr.kind.${v}` as 'guest.qr.kind.room'), cell: (p) => t(`guest.qr.kind.${p.kind}` as 'guest.qr.kind.room') },
         { id: 'rotated', label: t('guest.qr.colRotated'), value: (p) => p.rotated_at ?? '', cell: (p) => (p.rotated_at === null ? '—' : format.instant(p.rotated_at)) },
         { id: 'status', label: t('guest.qr.colStatus'), value: (p) => (p.is_active ? 'on' : 'off'), cell: (p) => <StatusBadge label={p.is_active ? t('guest.qr.on') : t('guest.qr.off')} tone={p.is_active ? 'success' : 'neutral'} /> },
         {
             id: 'act', label: '', value: () => '', sortable: false,
             cell: (p) => (
-                <span className="flex gap-2">
+                <span className="flex flex-wrap gap-2">
+                    {p.is_active ? <Button disabled={action.busy} onClick={() => void show(p)} size="sm" type="button" variant="outline">{t('guest.qr.show')}</Button> : null}
                     <Button disabled={action.busy} onClick={() => void action.run(`/guest/qr/${p.id}/active`, { body: { active: !p.is_active, lock_version: p.lock_version }, reload })} size="sm" type="button" variant="outline">{p.is_active ? t('guest.qr.switchOff') : t('guest.qr.switchOn')}</Button>
                     <Button disabled={action.busy} onClick={() => { action.clear(); setRotate(p); }} size="sm" type="button" variant="outline">{t('guest.qr.rotate')}</Button>
                 </span>
@@ -51,6 +77,19 @@ export default function QrPointsPage({ overview }: { overview: QrOverview }) {
             {overview.room_outlets.length === 0 ? <Alert title={t('guest.qr.noRoomOutlet')} tone="warning" /> : null}
             <DataGrid caption={t('guest.qr.title')} columns={columns} empty={<EmptyState illustration="checklist" title={t('guest.qr.none')} />} getRowId={(p) => p.id} id="guest.qr" rows={overview.points} testId="guest-qr-points" />
             <p className="text-xs text-muted-foreground">{t('guest.qr.note')}</p>
+
+            <Dialog
+                footer={<><Button onClick={() => void copy()} type="button" variant="outline">{t(copied ? 'guest.qr.copied' : 'guest.qr.copy')}</Button><Button onClick={() => setShown(null)} type="button">{t('guest.qr.close')}</Button></>}
+                onClose={() => setShown(null)}
+                open={shown !== null}
+                title={shown?.label ?? ''}
+            >
+                <div className="flex flex-col items-center gap-3">
+                    <div aria-label={shown?.label} className="w-full max-w-[16rem]" dangerouslySetInnerHTML={{ __html: shownSvg }} role="img" />
+                    <p className="text-center text-sm text-muted-foreground">{t('guest.qr.scan')}</p>
+                    <p className="text-center text-xs text-muted-foreground">{t('guest.qr.showNote')}</p>
+                </div>
+            </Dialog>
 
             <Dialog
                 footer={<><Button disabled={action.busy} onClick={() => setRotate(null)} type="button" variant="outline">{t('ui.dialog.cancel')}</Button><Button loading={action.busy} onClick={() => { if (rotate !== null) void action.run(`/guest/qr/${rotate.id}/rotate`, { body: { lock_version: rotate.lock_version }, reload }).then((r) => { if (r !== null) setRotate(null); }); }} type="button">{t('guest.qr.rotateConfirm')}</Button></>}

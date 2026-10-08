@@ -1,0 +1,1 @@
+import{o as e,v as t}from"./app-C7fd35BJ.js";var n=t();function r({className:t,...r}){return(0,n.jsx)(`div`,{className:e(`border border-border bg-surface text-foreground`,t),"data-slot":`card`,...r})}export{r as t};

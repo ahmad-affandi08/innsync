@@ -292,4 +292,11 @@ export const guest = {
     "guest.ck.rejectReason": "Atau kembalikan: alasannya",
     "guest.ck.rejectHint": "Tamu melihat alasan ini. Jangan menulis nomor identitas.",
     "guest.ck.reject": "Kembalikan",
+    "guest.qr.roomLabel": "Kamar {name}",
+    "guest.qr.tableLabel": "Meja {name}",
+    "guest.qr.show": "Lihat QR",
+    "guest.qr.copy": "Salin tautan",
+    "guest.qr.copied": "Tautan tersalin",
+    "guest.qr.close": "Tutup",
+    "guest.qr.showNote": "Siapa pun yang memindai ini membuka menu kamar atau meja ini. Menampilkannya dicatat.",
 } as const

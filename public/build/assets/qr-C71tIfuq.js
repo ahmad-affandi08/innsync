@@ -1,0 +1,1 @@
+import{t as e}from"./qrcode-BPwPmufs.js";function t(t){let n=e(0,`M`);return n.addData(t),n.make(),n.createSvgTag({cellSize:4,margin:2,scalable:!0})}function n(e,t){let n=/^(Room|Table) (.+)$/.exec(e);return n===null?e:t(n[1]===`Room`?`guest.qr.roomLabel`:`guest.qr.tableLabel`,{name:n[2]??``})}export{t as n,n as t};

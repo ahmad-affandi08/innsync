@@ -145,10 +145,19 @@ final class QrMenuHttpTest extends TestCase
         self::assertSame(1, DB::table('audit_entries')->where('action', 'guest_qr.provisioned')->count());
         self::assertSame(1, DB::table('audit_entries')->where('action', 'guest_qr.printed')->count());
 
+        $room = (string) DB::table('ge_qr_points')->where('label', 'Room 101')->value('id');
+        $shown = $this->getJson("/guest/qr/{$room}")->assertOk()->json();
+        self::assertSame($this->code['Room 101'], $shown['token']);
+        self::assertSame('Room 101', $shown['label']);
+        self::assertSame(1, DB::table('audit_entries')->where('action', 'guest_qr.viewed')->where('aggregate_id', $room)->count());
+        self::assertStringNotContainsString($this->code['Room 101'], (string) json_encode(DB::table('audit_entries')->where('action', 'guest_qr.viewed')->first()), 'the audit never holds the token');
+        $this->getJson('/guest/qr/01arz3ndektsv4rrffq69g5faw')->assertNotFound();
+
         $this->actAs($this->waiter);
         $this->get('/guest/qr')->assertStatus(403);
         $this->postJson('/guest/qr')->assertStatus(403);
         $this->get('/guest/qr/print')->assertStatus(403);
+        $this->getJson("/guest/qr/{$room}")->assertStatus(403);
     }
 
     public function test_a_guest_page_carries_the_logo_of_the_property_the_code_belongs_to(): void

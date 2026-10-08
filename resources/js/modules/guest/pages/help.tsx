@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
 import { StatusBadge, type StatusTone } from '@/components/ui/status-badge';
 import { GuestShell } from '@/modules/guest/components/guest-shell';
+import { qrLabel } from '@/modules/guest/lib/qr';
 import { StayProof } from '@/modules/guest/components/stay-proof';
 import type { GuestHelp } from '@/modules/guest/lib/guest';
 import { newIdempotencyKey } from '@/shared/api/http';
@@ -66,7 +67,7 @@ export default function HelpPage({ view }: { view: GuestHelp }) {
     return (
         <>
             <Head title={t('guest.help.title')} />
-            <GuestShell hotel={view.hotel} subtitle={view.label} title={t('guest.help.title')}>
+            <GuestShell hotel={view.hotel} subtitle={qrLabel(view.label, t)} title={t('guest.help.title')}>
                 {!view.verified ? (
                     <>
                         <Alert title={t('guest.help.needsProof')} tone="info" />

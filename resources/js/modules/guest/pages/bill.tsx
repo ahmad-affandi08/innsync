@@ -3,6 +3,7 @@ import { Head, router } from '@inertiajs/react';
 import { Alert } from '@/components/ui/alert';
 import { EmptyState } from '@/components/ui/empty-state';
 import { GuestShell } from '@/modules/guest/components/guest-shell';
+import { qrLabel } from '@/modules/guest/lib/qr';
 import { StayProof } from '@/modules/guest/components/stay-proof';
 import type { GuestBill } from '@/modules/guest/lib/guest';
 import { useFormatters, useTranslation } from '@/shared/i18n/i18n';
@@ -18,7 +19,7 @@ export default function BillPage({ view }: { view: GuestBill }) {
     return (
         <>
             <Head title={t('guest.bill.title')} />
-            <GuestShell hotel={view.hotel} subtitle={view.label} title={t('guest.bill.title')}>
+            <GuestShell hotel={view.hotel} subtitle={qrLabel(view.label, t)} title={t('guest.bill.title')}>
                 {!view.verified ? (
                     <>
                         <Alert title={t('guest.help.needsProof')} tone="info" />

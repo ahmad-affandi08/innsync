@@ -11,6 +11,7 @@ import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
 import { StatusBadge, type StatusTone } from '@/components/ui/status-badge';
 import { GuestStaffShell } from '@/modules/guest/components/guest-staff-shell';
+import { qrLabel } from '@/modules/guest/lib/qr';
 import type { QueueOrder, QueueOverview } from '@/modules/guest/lib/guest';
 import { useServerAction } from '@/shared/api/use-server-action';
 import { useFormatters, useTranslation } from '@/shared/i18n/i18n';
@@ -38,7 +39,7 @@ export default function OrdersQueuePage({ overview }: { overview: QueueOverview 
 
     const columns: DataGridColumn<QueueOrder>[] = [
         { id: 'placed', label: t('guest.queue.colWhen'), value: (o) => o.placed_at, cell: (o) => format.instant(o.placed_at) },
-        { id: 'where', label: t('guest.queue.colWhere'), value: (o) => o.label, rowHeader: true, cell: (o) => <span>{o.label}<span className="block text-xs text-muted-foreground">{o.bill_number} · {t('guest.queue.lines', { count: o.lines })}</span></span> },
+        { id: 'where', label: t('guest.queue.colWhere'), value: (o) => qrLabel(o.label, t), rowHeader: true, cell: (o) => <span>{qrLabel(o.label, t)}<span className="block text-xs text-muted-foreground">{o.bill_number} · {t('guest.queue.lines', { count: o.lines })}</span></span> },
         { id: 'guest', label: t('guest.queue.colGuest'), value: (o) => o.guest_name ?? '', cell: (o) => (o.guest_name === null ? '—' : <span>{o.guest_name}{o.room_number !== null ? <span className="block text-xs text-muted-foreground">{t('guest.queue.room', { room: o.room_number })}</span> : null}</span>) },
         { id: 'total', label: t('guest.queue.colTotal'), align: 'right', value: (o) => o.subtotal_minor, cell: (o) => money(o.subtotal_minor) },
         { id: 'pay', label: t('guest.queue.colPay'), value: (o) => o.payment, cell: (o) => <span>{t(`guest.pay.${o.payment}` as MessageKey)}{o.room_charge !== 'none' ? <span className="mt-1 block"><StatusBadge label={t(`guest.queue.charge.${o.room_charge}` as MessageKey)} tone={TONE[o.room_charge] ?? 'neutral'} /></span> : null}{o.verify_note !== null ? <span className="block text-xs text-muted-foreground">{o.verify_note}</span> : null}</span> },

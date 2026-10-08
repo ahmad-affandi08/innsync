@@ -292,4 +292,11 @@ export const guest = {
     "guest.ck.rejectReason": "Or send it back: why",
     "guest.ck.rejectHint": "The guest sees this reason. Do not write the identity number.",
     "guest.ck.reject": "Send back",
+    "guest.qr.roomLabel": "Room {name}",
+    "guest.qr.tableLabel": "Table {name}",
+    "guest.qr.show": "Show QR",
+    "guest.qr.copy": "Copy link",
+    "guest.qr.copied": "Link copied",
+    "guest.qr.close": "Close",
+    "guest.qr.showNote": "Anyone who scans this opens the menu of this room or table. Showing it is recorded.",
 } as const

@@ -9,6 +9,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
 import { GuestShell } from '@/modules/guest/components/guest-shell';
+import { qrLabel } from '@/modules/guest/lib/qr';
 import type { GuestItem, GuestMenu, GuestOrder } from '@/modules/guest/lib/guest';
 import { newIdempotencyKey } from '@/shared/api/http';
 import { useServerAction } from '@/shared/api/use-server-action';
@@ -120,8 +121,8 @@ export default function MenuPage({ view: first }: { view: GuestMenu }) {
 
     return (
         <>
-            <Head title={view.label} />
-            <GuestShell hotel={view.hotel} subtitle={view.guest_name !== null ? t('guest.menu.hello', { name: view.guest_name }) : undefined} title={view.label}>
+            <Head title={qrLabel(view.label, t)} />
+            <GuestShell hotel={view.hotel} subtitle={view.guest_name !== null ? t('guest.menu.hello', { name: view.guest_name }) : undefined} title={qrLabel(view.label, t)}>
                 {!view.available ? <Alert title={t('guest.menu.unavailable')} tone="warning" /> : null}
                 {placed !== null ? (
                     <Alert actions={<Button asChild size="sm" variant="outline"><Link href="/g/orders">{t('guest.menu.follow')}</Link></Button>} title={t('guest.menu.placed', { number: placed.bill_number })} tone="success">

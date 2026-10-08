@@ -40,6 +40,11 @@ final readonly class QrPointController
         return response()->json($this->points->setActive($this->property->current(), $this->actor($request), $id, (int) $data['lock_version'], (bool) $data['active']))->header('Cache-Control', 'no-store');
     }
 
+    public function show(Request $request, string $id): JsonResponse
+    {
+        return response()->json($this->points->reveal($this->property->current(), $this->actor($request), $id))->header('Cache-Control', 'no-store');
+    }
+
     public function print(Request $request): Response
     {
         return Inertia::render('guest/pages/qr-print', ['codes' => $this->points->printable($this->property->current(), $this->actor($request))]);

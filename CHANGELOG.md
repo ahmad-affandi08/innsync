@@ -12,6 +12,8 @@ Release notes for every release (NFR-14). Newest first. Each entry names the tas
 
 ### Added
 
+- Show one QR code on its own: each active row of the Kode QR list has **Lihat QR**, which opens that room's or table's code large enough to scan from another phone, with Copy link. Like the printed sheet it shows a token, so it needs the same privilege and every showing is audited (`guest_qr.viewed`, without the token). A code that is switched off is not shown.
+- Room and table names on the guest pages, the QR sheet and the staff lists read "Kamar 101" and "Meja M1 · …" in Indonesian (and "Room 101", "Table M1 · …" in English), whatever language the code was made in.
 - Face matching for attendance (owner decision 2026-10-08), with the distance check (geofence) that was already there:
   - Registration: Human resource → Face matching. Someone with the attendance privilege registers an employee **in person**: three photos taken with the phone, the employee's agreement confirmed (recorded in the consent ledger as `face_attendance`, evidence `in_person`). The phone's browser turns each photo into 128 numbers (library `@vladmandic/face-api`, MIT, with its three model files served from `public/face-models`, about 7 MB, loaded only on the screens that need them); the photos are not stored and not sent anywhere for this. The three must look like one person.
   - Only the numbers are kept, encrypted with the application key, one set per employee. They are erased when the person is offboarded or when HR removes them (the agreement is then recorded as withdrawn, with an audit entry holding no numbers).

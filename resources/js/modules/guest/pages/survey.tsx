@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
 import { GuestShell } from '@/modules/guest/components/guest-shell';
+import { qrLabel } from '@/modules/guest/lib/qr';
 import { StayProof } from '@/modules/guest/components/stay-proof';
 import type { GuestSurvey } from '@/modules/guest/lib/guest';
 import { useServerAction } from '@/shared/api/use-server-action';
@@ -31,7 +32,7 @@ export default function SurveyPage({ view }: { view: GuestSurvey }) {
     return (
         <>
             <Head title={t('guest.survey.title')} />
-            <GuestShell hotel={view.hotel} subtitle={view.label} title={t('guest.survey.title')}>
+            <GuestShell hotel={view.hotel} subtitle={qrLabel(view.label, t)} title={t('guest.survey.title')}>
                 {!view.verified ? (
                     <>
                         <Alert title={t('guest.help.needsProof')} tone="info" />
