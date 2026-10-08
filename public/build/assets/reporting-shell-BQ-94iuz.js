@@ -1,0 +1,1 @@
+import{v as e}from"./app-C1FOu1UA.js";import{p as t,t as n}from"./app-frame-4NsNL3M1.js";var r=e();function i({children:e,description:i,title:a,wide:o}){return(0,r.jsx)(n,{description:i,links:t,title:a,wide:o,children:e})}export{i as ReportingShell};
