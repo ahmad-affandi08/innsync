@@ -9,6 +9,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
+import { MoneyInput } from '@/components/ui/money-input';
 import { Select } from '@/components/ui/select';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -203,7 +204,7 @@ export default function QuotesPage({ overview }: { overview: Overview }) {
                             </Select>
                         </FormField>
                         <FormField error={amountError ? t('fo.folio.invalidAmount') : action.fieldError('unit_price_minor')} field="unit_price_minor" label={t('inv.quo.f.price', { unit: form.unit, currency: overview.currency })}>
-                            <Input inputMode="decimal" onChange={(e) => setForm({ ...form, amount: e.target.value })} value={form.amount} />
+                            <MoneyInput onChange={(e) => setForm({ ...form, amount: e.target.value })} value={form.amount} />
                         </FormField>
                         <FormField error={action.fieldError('valid_until')} field="valid_until" label={t('inv.quo.f.validUntil')}>
                             <DatePicker onChange={(e) => setForm({ ...form, valid_until: e.target.value })} value={form.valid_until} />

@@ -9,6 +9,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
+import { MoneyInput } from '@/components/ui/money-input';
 import { Metric } from '@/components/ui/metric';
 import { Select } from '@/components/ui/select';
 import { FinanceShell } from '@/modules/finance/components/finance-shell';
@@ -145,7 +146,7 @@ export default function ReceivablesPage({ filters, overview }: { filters: Filter
                             <Input maxLength={60} onChange={(e) => setForm({ ...form, reference: e.target.value })} value={form.reference} />
                         </FormField>
                         <FormField error={badAmount ? t('fo.folio.invalidAmount') : action.fieldError('amount_minor')} field="amount_minor" label={t('fin.ar.amountField', { currency: overview.currency })}>
-                            <Input inputMode="decimal" onChange={(e) => { setBadAmount(false); setForm({ ...form, amount: e.target.value }); }} value={form.amount} />
+                            <MoneyInput onChange={(e) => { setBadAmount(false); setForm({ ...form, amount: e.target.value }); }} value={form.amount} />
                         </FormField>
                         <FormField error={action.fieldError('issued_on')} field="issued_on" hint={t('fin.ar.issuedHint')} label={t('fin.ar.issued')}>
                             <DatePicker onChange={(e) => setForm({ ...form, issued_on: e.target.value })} value={form.issued_on} />

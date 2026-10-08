@@ -7,6 +7,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
+import { MoneyInput } from '@/components/ui/money-input';
 import { Select } from '@/components/ui/select';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { Textarea } from '@/components/ui/textarea';
@@ -106,7 +107,7 @@ export default function CompaniesPage({ accounts, currency, overview }: Props) {
                         <FormField field="contact_name" error={action.fieldError('contact_name')} label={t('fo.company.contactName')}><Input maxLength={100} onChange={(e) => setForm({ ...form, contact_name: e.target.value })} value={form.contact_name} /></FormField>
                         <FormField field="contact_phone" error={action.fieldError('contact_phone')} label={t('fo.company.contactPhone')}><Input maxLength={30} onChange={(e) => setForm({ ...form, contact_phone: e.target.value })} value={form.contact_phone} /></FormField>
                         <FormField field="contact_email" error={action.fieldError('contact_email')} label={t('fo.company.contactEmail')}><Input maxLength={190} onChange={(e) => setForm({ ...form, contact_email: e.target.value })} value={form.contact_email} /></FormField>
-                        <FormField field="credit_limit_minor" error={invalid ? t('fo.folio.invalidAmount') : action.fieldError('credit_limit_minor')} hint={t('fo.company.limitHint')} label={t('fo.company.limitLabel')}><Input inputMode="decimal" onChange={(e) => setForm({ ...form, limit: e.target.value })} value={form.limit} /></FormField>
+                        <FormField field="credit_limit_minor" error={invalid ? t('fo.folio.invalidAmount') : action.fieldError('credit_limit_minor')} hint={t('fo.company.limitHint')} label={t('fo.company.limitLabel')}><MoneyInput onChange={(e) => setForm({ ...form, limit: e.target.value })} value={form.limit} /></FormField>
                     </div>
                     <FormField field="billing_instruction" error={action.fieldError('billing_instruction')} label={t('fo.company.instruction')}><Textarea maxLength={500} onChange={(e) => setForm({ ...form, billing_instruction: e.target.value })} rows={3} value={form.billing_instruction} /></FormField>
                     <fieldset className="flex flex-col gap-1 text-sm">

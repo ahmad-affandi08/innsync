@@ -9,6 +9,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
+import { MoneyInput } from '@/components/ui/money-input';
 import { Select } from '@/components/ui/select';
 import { StatusBadge, type StatusTone } from '@/components/ui/status-badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -210,7 +211,7 @@ export default function CheckInsPage({ notice, overview, queue }: Props) {
                             </Select>
                         </FormField>
                         {review.deposit.claimed_minor !== null ? <Alert title={t('guest.ck.depositClaim', { amount: money(review.deposit.claimed_minor, review.deposit.currency), reference: review.deposit.reference ?? '—' })} tone="info" /> : null}
-                        <FormField error={action.fieldError('deposit_received_minor')} hint={t('guest.ck.depositHint', { required: money(review.deposit.required_minor, review.deposit.currency), held: money(review.deposit.held_minor, review.deposit.currency) })} label={t('guest.ck.depositReceived')}><Input inputMode="decimal" onChange={(e) => setChoice({ ...choice, deposit: e.target.value })} value={choice.deposit} /></FormField>
+                        <FormField error={action.fieldError('deposit_received_minor')} hint={t('guest.ck.depositHint', { required: money(review.deposit.required_minor, review.deposit.currency), held: money(review.deposit.held_minor, review.deposit.currency) })} label={t('guest.ck.depositReceived')}><MoneyInput onChange={(e) => setChoice({ ...choice, deposit: e.target.value })} value={choice.deposit} /></FormField>
                         <FormField error={action.fieldError('key_note')} label={t('guest.ck.keyNote')}><Input maxLength={300} onChange={(e) => setChoice({ ...choice, note: e.target.value })} value={choice.note} /></FormField>
                         <FormField error={action.fieldError('reason')} hint={t('guest.ck.rejectHint')} label={t('guest.ck.rejectReason')}><Input maxLength={300} onChange={(e) => setChoice({ ...choice, reason: e.target.value })} value={choice.reason} /></FormField>
                     </div>

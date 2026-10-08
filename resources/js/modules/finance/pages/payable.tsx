@@ -7,6 +7,7 @@ import { Dialog } from '@/components/ui/dialog';
 import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
+import { MoneyInput } from '@/components/ui/money-input';
 import { Select } from '@/components/ui/select';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -299,7 +300,7 @@ export default function PayablePage({ payable }: { payable: Payable }) {
                             hint={creditMax === null ? undefined : t('fin.pbl.creditMax', { amount: money(creditMax) })}
                             label={t('fin.pbl.creditAmount', { currency: payable.currency })}
                         >
-                            <Input inputMode="decimal" onChange={(e) => { setBadAmount(false); setCreditForm({ ...creditForm, amount: e.target.value }); }} value={creditForm.amount} />
+                            <MoneyInput onChange={(e) => { setBadAmount(false); setCreditForm({ ...creditForm, amount: e.target.value }); }} value={creditForm.amount} />
                         </FormField>
                     </div>
                 )}
@@ -327,7 +328,7 @@ export default function PayablePage({ payable }: { payable: Payable }) {
                             </span>}
                             label={t('fin.pbl.payAmount', { currency: payable.currency })}
                         >
-                            <Input inputMode="decimal" onChange={(e) => { setBadAmount(false); setPayForm({ ...payForm, amount: e.target.value }); }} value={payForm.amount} />
+                            <MoneyInput onChange={(e) => { setBadAmount(false); setPayForm({ ...payForm, amount: e.target.value }); }} value={payForm.amount} />
                         </FormField>
                         <FormField error={pay.fieldError('method')} field="method" label={t('fin.pbl.method')}>
                             <Select onChange={(e) => setPayForm({ ...payForm, method: e.target.value })} searchable={false} value={payForm.method}>

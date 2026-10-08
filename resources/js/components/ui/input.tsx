@@ -1,8 +1,8 @@
-import type { InputHTMLAttributes } from 'react';
+import type { ComponentProps } from 'react';
 
 import { cn } from '@/shared/lib/utils';
 
-type InputProps = InputHTMLAttributes<HTMLInputElement>;
+type InputProps = ComponentProps<'input'>;
 
 /** Wrap in `FormField` so the label, hint and error are programmatically associated. */
 function Input({ className, ...props }: InputProps) {

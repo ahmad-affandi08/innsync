@@ -10,6 +10,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
+import { MoneyInput } from '@/components/ui/money-input';
 import { Metric } from '@/components/ui/metric';
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Textarea } from '@/components/ui/textarea';
@@ -223,10 +224,10 @@ export default function CashFlowPage({ report }: { report: CashFlowReport }) {
                         {action.error !== null ? <ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /> : null}
                         <div className="grid gap-3 sm:grid-cols-2">
                             <FormField error={badField === 'cash' ? t('fin.cf.badAmount') : action.fieldError('cash_opening_minor')} field="cash_opening_minor" label={t('fin.cf.cashOpening', { currency })}>
-                                <Input inputMode="decimal" onChange={(e) => setForm({ ...form, cash: e.target.value })} value={form.cash} />
+                                <MoneyInput negative onChange={(e) => setForm({ ...form, cash: e.target.value })} value={form.cash} />
                             </FormField>
                             <FormField error={badField === 'bank' ? t('fin.cf.badAmount') : action.fieldError('bank_opening_minor')} field="bank_opening_minor" label={t('fin.cf.bankOpening', { currency })}>
-                                <Input inputMode="decimal" onChange={(e) => setForm({ ...form, bank: e.target.value })} value={form.bank} />
+                                <MoneyInput negative onChange={(e) => setForm({ ...form, bank: e.target.value })} value={form.bank} />
                             </FormField>
                         </div>
                         <FormField error={action.fieldError('opening_date')} field="opening_date" hint={t('fin.cf.dateHint')} label={t('fin.cf.openingDate')}>

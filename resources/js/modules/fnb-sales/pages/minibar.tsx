@@ -9,6 +9,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
+import { MoneyInput } from '@/components/ui/money-input';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { FnbShell } from '@/modules/fnb-sales/components/fnb-shell';
@@ -171,7 +172,7 @@ export default function MinibarPage({ history, overview, refill, scan_error: sca
                         {failure !== null ? <div className="sm:col-span-2">{failure}</div> : null}
                         <FormField error={action.fieldError('code')} field="code" label={t('hr.shift.code')}><Input disabled={item.id !== ''} maxLength={12} onChange={(e) => setItem({ ...item, code: e.target.value })} value={item.code} /></FormField>
                         <FormField error={action.fieldError('name')} field="name" label={t('hr.shift.name')}><Input maxLength={80} onChange={(e) => setItem({ ...item, name: e.target.value })} value={item.name} /></FormField>
-                        <FormField error={action.fieldError('price_minor')} field="price_minor" hint={t('fnb.mini.priceHint')} label={t('fnb.mini.price')}><Input inputMode="decimal" onChange={(e) => setItem({ ...item, price: e.target.value })} value={item.price} /></FormField>
+                        <FormField error={action.fieldError('price_minor')} field="price_minor" hint={t('fnb.mini.priceHint')} label={t('fnb.mini.price')}><MoneyInput onChange={(e) => setItem({ ...item, price: e.target.value })} value={item.price} /></FormField>
                         <FormField error={action.fieldError('par_qty')} field="par_qty" hint={t('fnb.mini.parHint')} label={t('fnb.mini.par')}><Input inputMode="numeric" onChange={(e) => setItem({ ...item, par: e.target.value.replace(/\D/g, '') })} value={item.par} /></FormField>
                     </div>
                 )}

@@ -10,6 +10,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
+import { MoneyInput } from '@/components/ui/money-input';
 import { Select } from '@/components/ui/select';
 import { StatusBadge, type StatusTone } from '@/components/ui/status-badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -177,7 +178,7 @@ export default function InvoicesPage({ overview, status }: { overview: Overview;
                                                             </TableCell>
                                                             <TableCell>
                                                                 <FormField className={CELL} field="lines.*.unit_price_minor" label={<span className="sr-only">{t('inv.inv.invoicePrice')} {l.item_code}</span>}>
-                                                                    <Input className="w-32" inputMode="decimal" onChange={(ev) => setLine(l.id, { price: ev.target.value })} value={e.price} />
+                                                                    <MoneyInput className="w-32" onChange={(ev) => setLine(l.id, { price: ev.target.value })} value={e.price} />
                                                                 </FormField>
                                                             </TableCell>
                                                         </TableRow>
@@ -189,10 +190,10 @@ export default function InvoicesPage({ overview, status }: { overview: Overview;
                                     <p className="text-xs text-muted-foreground">{t('inv.inv.linesHint')}</p>
                                 </div>
                                 <FormField error={action.fieldError('tax_minor')} field="tax_minor" hint={t('inv.inv.taxHint', { percent: format.number(chosen.tax_bp / 100) })} label={t('inv.inv.taxAmount')}>
-                                    <Input inputMode="decimal" onChange={(e) => setForm({ ...form, tax: e.target.value })} value={form.tax} />
+                                    <MoneyInput onChange={(e) => setForm({ ...form, tax: e.target.value })} value={form.tax} />
                                 </FormField>
                                 <FormField error={action.fieldError('total_minor')} field="total_minor" hint={t('inv.inv.totalHint')} label={t('inv.inv.statedTotal')}>
-                                    <Input inputMode="decimal" onChange={(e) => setForm({ ...form, total: e.target.value })} value={form.total} />
+                                    <MoneyInput onChange={(e) => setForm({ ...form, total: e.target.value })} value={form.total} />
                                 </FormField>
                                 {amountError ? <p className="text-sm text-danger sm:col-span-2" role="alert">{t('fo.folio.invalidAmount')}</p> : null}
                             </>

@@ -10,6 +10,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
+import { MoneyInput } from '@/components/ui/money-input';
 import { Metric } from '@/components/ui/metric';
 import { Select } from '@/components/ui/select';
 import { StatusBadge } from '@/components/ui/status-badge';
@@ -279,7 +280,7 @@ export default function PettyFundPage({ fund }: { fund: Fund }) {
                             hint={fund.max_voucher_minor === null ? t('fin.petty.rec.amountHintNoLimit', { balance: money(fund.balance_minor) }) : t('fin.petty.rec.amountHint', { balance: money(fund.balance_minor), limit: limitText })}
                             label={t('fin.petty.rec.amount', { currency: fund.currency })}
                         >
-                            <Input inputMode="decimal" onChange={(e) => { setBadAmount(false); setRecordForm({ ...recordForm, amount: e.target.value }); }} value={recordForm.amount} />
+                            <MoneyInput onChange={(e) => { setBadAmount(false); setRecordForm({ ...recordForm, amount: e.target.value }); }} value={recordForm.amount} />
                         </FormField>
                         {recordAmount !== null && recordAmount > fund.balance_minor ? <p aria-live="polite" className="text-sm text-danger sm:col-span-2">{t('fin.petty.rec.overBalance')}</p> : null}
                         {recordAmount !== null && fund.max_voucher_minor !== null && recordAmount > fund.max_voucher_minor ? <p aria-live="polite" className="text-sm text-danger sm:col-span-2">{t('fin.petty.rec.overLimit')}</p> : null}
@@ -312,7 +313,7 @@ export default function PettyFundPage({ fund }: { fund: Fund }) {
                             hint={t('fin.petty.sub.book', { amount: money(fund.balance_minor) })}
                             label={t('fin.petty.sub.counted', { currency: fund.currency })}
                         >
-                            <Input inputMode="decimal" onChange={(e) => { setBadCounted(false); setSubmitForm({ ...submitForm, counted: e.target.value }); }} value={submitForm.counted} />
+                            <MoneyInput onChange={(e) => { setBadCounted(false); setSubmitForm({ ...submitForm, counted: e.target.value }); }} value={submitForm.counted} />
                         </FormField>
                         {variance !== null && replenish !== null ? (
                             <div aria-live="polite" className="flex flex-col gap-1 text-sm" data-testid="petty-live-variance">
@@ -343,7 +344,7 @@ export default function PettyFundPage({ fund }: { fund: Fund }) {
                             <Input maxLength={80} onChange={(e) => setEditForm({ ...editForm, name: e.target.value })} value={editForm.name} />
                         </FormField>
                         <FormField error={badMax ? t('fin.petty.badAmount') : edit.fieldError('max_voucher_minor')} field="max_voucher_minor" hint={t('fin.petty.maxHint')} label={t('fin.petty.maxField', { currency: fund.currency })}>
-                            <Input inputMode="decimal" onChange={(e) => { setBadMax(false); setEditForm({ ...editForm, max: e.target.value }); }} value={editForm.max} />
+                            <MoneyInput onChange={(e) => { setBadMax(false); setEditForm({ ...editForm, max: e.target.value }); }} value={editForm.max} />
                         </FormField>
                         <label className="flex items-center gap-2 text-sm sm:col-span-2">
                             <input checked={editForm.active} onChange={(e) => setEditForm({ ...editForm, active: e.target.checked })} type="checkbox" />

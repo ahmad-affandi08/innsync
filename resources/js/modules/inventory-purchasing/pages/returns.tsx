@@ -8,6 +8,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
+import { MoneyInput } from '@/components/ui/money-input';
 import { Select } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { InventoryShell } from '@/modules/inventory-purchasing/components/inventory-shell';
@@ -149,7 +150,7 @@ export default function ReturnsPage({ overview }: { overview: Overview }) {
                             <Input maxLength={40} onChange={(e) => setForm({ ...form, credit_note_number: e.target.value })} value={form.credit_note_number} />
                         </FormField>
                         <FormField error={taxError ? t('fo.folio.invalidAmount') : action.fieldError('credit_tax_minor')} field="credit_tax_minor" label={t('inv.ret.f.creditTax', { currency: overview.currency })}>
-                            <Input inputMode="decimal" onChange={(e) => setForm({ ...form, credit_tax: e.target.value })} value={form.credit_tax} />
+                            <MoneyInput onChange={(e) => setForm({ ...form, credit_tax: e.target.value })} value={form.credit_tax} />
                         </FormField>
                     </div>
                 )}

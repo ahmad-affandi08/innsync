@@ -7,6 +7,7 @@ import { Dialog } from '@/components/ui/dialog';
 import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
+import { MoneyInput } from '@/components/ui/money-input';
 import { Select } from '@/components/ui/select';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -286,7 +287,7 @@ export default function ReceivablePage({ receivable }: { receivable: Receivable 
                             hint={t('fin.ar.receiveMax', { amount: money(receivable.balance_minor) })}
                             label={t('fin.ar.amountField', { currency: receivable.currency })}
                         >
-                            <Input inputMode="decimal" onChange={(e) => { setBadAmount(false); setReceiptForm({ ...receiptForm, amount: e.target.value }); }} value={receiptForm.amount} />
+                            <MoneyInput onChange={(e) => { setBadAmount(false); setReceiptForm({ ...receiptForm, amount: e.target.value }); }} value={receiptForm.amount} />
                         </FormField>
                         <FormField error={receive.fieldError('method')} field="method" label={t('fin.ar.methodField')}>
                             <Select onChange={(e) => setReceiptForm({ ...receiptForm, method: e.target.value })} searchable={false} value={receiptForm.method}>
@@ -353,7 +354,7 @@ export default function ReceivablePage({ receivable }: { receivable: Receivable 
                                 hint={t('fin.ar.receiveMax', { amount: money(receivable.balance_minor) })}
                                 label={t('fin.ar.amountField', { currency: receivable.currency })}
                             >
-                                <Input inputMode="decimal" onChange={(e) => { setBadAmount(false); setAdjustForm({ ...adjustForm, amount: e.target.value }); }} value={adjustForm.amount} />
+                                <MoneyInput onChange={(e) => { setBadAmount(false); setAdjustForm({ ...adjustForm, amount: e.target.value }); }} value={adjustForm.amount} />
                             </FormField>
                         </div>
                         <div className="sm:col-span-2">
@@ -394,7 +395,7 @@ export default function ReceivablePage({ receivable }: { receivable: Receivable 
                             <DatePicker onChange={(e) => setNoteForm({ ...noteForm, promised_on: e.target.value })} value={noteForm.promised_on} />
                         </FormField>
                         <FormField error={badPromised ? t('fo.folio.invalidAmount') : note.fieldError('promised_minor')} field="promised_minor" hint={t('fin.ar.promisedAmountHint')} label={t('fin.ar.promisedAmount', { currency: receivable.currency })}>
-                            <Input inputMode="decimal" onChange={(e) => { setBadPromised(false); setNoteForm({ ...noteForm, promised_minor: e.target.value }); }} value={noteForm.promised_minor} />
+                            <MoneyInput onChange={(e) => { setBadPromised(false); setNoteForm({ ...noteForm, promised_minor: e.target.value }); }} value={noteForm.promised_minor} />
                         </FormField>
                     </div>
                 )}

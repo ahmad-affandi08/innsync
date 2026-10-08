@@ -8,6 +8,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
+import { MoneyInput } from '@/components/ui/money-input';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ApprovalProgress } from '@/modules/inventory-purchasing/components/approval-progress';
@@ -378,7 +379,7 @@ export default function OrderPage({ order }: { order: Order }) {
                                         <Input disabled={k.removed} inputMode="decimal" onChange={(e) => setKept(k.key, { quantity: e.target.value })} value={k.quantity} />
                                     </FormField>
                                     <FormField error={badPrices.includes(k.key) ? t('fo.folio.invalidAmount') : undefined} field="lines.*.unit_price_minor" label={t('inv.po.unitPrice', { currency: order.currency })}>
-                                        <Input disabled={k.removed} inputMode="decimal" onChange={(e) => setKept(k.key, { price: e.target.value })} value={k.price} />
+                                        <MoneyInput disabled={k.removed} onChange={(e) => setKept(k.key, { price: e.target.value })} value={k.price} />
                                     </FormField>
                                     <div className="flex items-end">
                                         <Button disabled={k.received > 0} onClick={() => setKept(k.key, { removed: !k.removed })} size="sm" type="button" variant="outline">{t(k.removed ? 'inv.po.keepLine' : 'inv.po.dropLine')}</Button>

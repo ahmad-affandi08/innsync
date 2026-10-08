@@ -25,7 +25,7 @@ export const rates = {
     'rates.prices.to': 'Sampai (termasuk)',
     'rates.prices.days': 'Hari',
     'rates.prices.nightly': 'Harga per malam',
-    'rates.prices.nightlyHint': 'Hanya angka, misalnya 1500000. Tanpa pemisah ribuan.',
+    'rates.prices.nightlyHint': 'Ketik jumlahnya, misalnya 1500000; otomatis diberi titik ribuan.',
     'rates.prices.reprice': 'Ubah harga',
     'rates.prices.remove': 'Hapus',
     'rates.prices.removeTitle': 'Hapus harga ini?',

@@ -7,6 +7,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
+import { MoneyInput } from '@/components/ui/money-input';
 import { Select } from '@/components/ui/select';
 import { StatusBadge, type StatusTone } from '@/components/ui/status-badge';
 import { FinanceShell } from '@/modules/finance/components/finance-shell';
@@ -82,7 +83,7 @@ export default function PayrollPage({ overview }: { overview: { rows: Row[] } })
                     <div className="grid gap-3">
                         {failure !== null ? failure : null}
                         <p className="text-sm text-muted-foreground">{t('fin.payroll.verifyHint', { run: verify.row.number, people: verify.row.employees })}</p>
-                        <FormField error={action.fieldError('confirmed_net_minor')} field="confirmed_net_minor" hint={t('fin.payroll.verifyAmountHint')} label={t('fin.payroll.confirmNet')}><Input inputMode="decimal" onChange={(e) => setVerify({ ...verify, amount: e.target.value })} value={verify.amount} /></FormField>
+                        <FormField error={action.fieldError('confirmed_net_minor')} field="confirmed_net_minor" hint={t('fin.payroll.verifyAmountHint')} label={t('fin.payroll.confirmNet')}><MoneyInput onChange={(e) => setVerify({ ...verify, amount: e.target.value })} value={verify.amount} /></FormField>
                     </div>
                 )}
             </Dialog>

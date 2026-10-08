@@ -10,6 +10,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
+import { MoneyInput } from '@/components/ui/money-input';
 import { Metric } from '@/components/ui/metric';
 import { Select } from '@/components/ui/select';
 import { StatusBadge } from '@/components/ui/status-badge';
@@ -182,7 +183,7 @@ export default function ExceptionsPage({ overview, status }: { overview: Overvie
                             <DatePicker max={overview.today} onChange={(e) => setRaiseForm({ ...raiseForm, date: e.target.value })} value={raiseForm.date} />
                         </FormField>
                         <FormField error={badAmount ? t('fin.exc.badAmount') : raise.fieldError('amount_minor')} field="amount_minor" label={t('fin.exc.amountField', { currency })}>
-                            <Input inputMode="decimal" onChange={(e) => { setBadAmount(false); setRaiseForm({ ...raiseForm, amount: e.target.value }); }} value={raiseForm.amount} />
+                            <MoneyInput onChange={(e) => { setBadAmount(false); setRaiseForm({ ...raiseForm, amount: e.target.value }); }} value={raiseForm.amount} />
                         </FormField>
                         <FormField error={raise.fieldError('method')} field="method" label={t('fin.col.method')}>
                             <Select onChange={(e) => setRaiseForm({ ...raiseForm, method: e.target.value })} searchable={false} value={raiseForm.method}>

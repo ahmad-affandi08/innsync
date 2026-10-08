@@ -10,6 +10,7 @@ import { ErrorState } from '@/components/ui/error-state';
 import { DatePicker } from '@/components/ui/date-picker';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
+import { MoneyInput } from '@/components/ui/money-input';
 import { Select } from '@/components/ui/select';
 import { StatusBadge, type StatusTone } from '@/components/ui/status-badge';
 import { InventoryShell } from '@/modules/inventory-purchasing/components/inventory-shell';
@@ -200,7 +201,7 @@ export default function StockPage({ position, movements, catalog, filters }: { p
                         {['opening', 'receipt', 'adjustment_in'].includes(move.kind) ? (
                             <div className="sm:col-span-2">
                                 <FormField error={costError ? t('fo.folio.invalidAmount') : action.fieldError('unit_cost_minor')} field="unit_cost_minor" hint={move.kind === 'adjustment_in' ? t('inv.move.costHint') : undefined} label={t('inv.move.cost', { unit: move.unit })} required={move.kind !== 'adjustment_in'}>
-                                    <Input inputMode="decimal" onChange={(e) => setMove({ ...move, unit_cost: e.target.value })} value={move.unit_cost} />
+                                    <MoneyInput onChange={(e) => setMove({ ...move, unit_cost: e.target.value })} value={move.unit_cost} />
                                 </FormField>
                             </div>
                         ) : null}

@@ -10,6 +10,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
+import { MoneyInput } from '@/components/ui/money-input';
 import { Select } from '@/components/ui/select';
 import { StatusBadge, type StatusTone } from '@/components/ui/status-badge';
 import { MaintenanceShell } from '@/modules/maintenance/components/maintenance-shell';
@@ -169,7 +170,7 @@ export default function VendorWorkPage({ overview }: { overview: VendorOverview 
                             {d.may.quote ? (
                                 <div className="grid gap-3 sm:grid-cols-2">
                                     <FormField error={action.fieldError('supplier_id')} field="supplier_id" label={t('mtc.vendor.supplier')}><Select onChange={(e) => setQuote({ ...quote, supplierId: e.target.value })} value={quote.supplierId}>{d.suppliers.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}</Select></FormField>
-                                    <FormField error={action.fieldError('amount_minor')} field="amount_minor" label={t('mtc.vendor.amount', { currency: overview.currency })}><Input inputMode="decimal" onChange={(e) => setQuote({ ...quote, amount: e.target.value })} value={quote.amount} /></FormField>
+                                    <FormField error={action.fieldError('amount_minor')} field="amount_minor" label={t('mtc.vendor.amount', { currency: overview.currency })}><MoneyInput onChange={(e) => setQuote({ ...quote, amount: e.target.value })} value={quote.amount} /></FormField>
                                     <FormField error={action.fieldError('valid_until')} field="valid_until" label={t('mtc.vendor.validUntil')}><DatePicker onChange={(e) => setQuote({ ...quote, validUntil: e.target.value })} value={quote.validUntil} /></FormField>
                                     <FormField error={action.fieldError('note')} field="note" label={t('mtc.parts.note')}><Input maxLength={200} onChange={(e) => setQuote({ ...quote, note: e.target.value })} value={quote.note} /></FormField>
                                     <div><Button disabled={action.busy || quote.supplierId === '' || amount === null || amount < 1} onClick={() => void action.run<VendorJobDetail>(`/maintenance/vendor-jobs/${d.id}/quotes`, { body: { supplier_id: quote.supplierId, amount_minor: amount, valid_until: quote.validUntil === '' ? null : quote.validUntil, note: quote.note.trim() === '' ? null : quote.note.trim() } }).then(taken)} size="sm" type="button">{t('mtc.vendor.addQuote')}</Button></div>
@@ -212,7 +213,7 @@ export default function VendorWorkPage({ overview }: { overview: VendorOverview 
                                 <h3 className="text-sm font-semibold" id="mtc-vendor-done-h">{t('mtc.vendor.finish')}</h3>
                                 <p className="text-xs text-muted-foreground">{t('mtc.vendor.finishHint')}</p>
                                 <div className="grid gap-3 sm:grid-cols-2">
-                                    <FormField error={action.fieldError('actual_minor')} field="actual_minor" label={t('mtc.vendor.actualAmount', { currency: overview.currency })}><Input inputMode="decimal" onChange={(e) => setDone({ ...done, actual: e.target.value })} value={done.actual} /></FormField>
+                                    <FormField error={action.fieldError('actual_minor')} field="actual_minor" label={t('mtc.vendor.actualAmount', { currency: overview.currency })}><MoneyInput onChange={(e) => setDone({ ...done, actual: e.target.value })} value={done.actual} /></FormField>
                                     <FormField error={action.fieldError('invoice_ref')} field="invoice_ref" label={t('mtc.vendor.invoice')}><Input maxLength={40} onChange={(e) => setDone({ ...done, invoice: e.target.value })} value={done.invoice} /></FormField>
                                     <div className="sm:col-span-2"><FormField error={action.fieldError('note')} field="note" label={t('mtc.vendor.doneNote')}><Input maxLength={300} onChange={(e) => setDone({ ...done, note: e.target.value })} value={done.note} /></FormField></div>
                                     <div className="sm:col-span-2"><FormField error={action.fieldError('photo')} field="photo" label={t('mtc.vendor.photo')}><Input accept="image/jpeg,image/png" onChange={(e) => setDoneFile(e.target.files?.[0] ?? null)} type="file" /></FormField></div>

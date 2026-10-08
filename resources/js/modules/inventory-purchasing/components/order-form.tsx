@@ -2,6 +2,7 @@ import { Button } from '@/components/ui/button';
 import { DatePicker } from '@/components/ui/date-picker';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
+import { MoneyInput } from '@/components/ui/money-input';
 import { Select } from '@/components/ui/select';
 import { bpToInput, minorToInput, parsePercentToBp } from '@/modules/inventory-purchasing/lib/amounts';
 import { nextLineKey, type ItemChoice } from '@/modules/inventory-purchasing/lib/purchasing';
@@ -146,7 +147,7 @@ export function OrderLineFields({ badPrices, currency, departments, fieldError, 
                 const item = items.find((x) => x.id === l.item_id);
                 const price = (
                     <FormField error={badPrices.includes(l.key) ? t('fo.folio.invalidAmount') : undefined} field="lines.*.unit_price_minor" label={t('inv.po.unitPrice', { currency })}>
-                        <Input inputMode="decimal" onChange={(e) => setLine(l.key, { price: e.target.value })} placeholder={t('inv.po.priceFromList')} value={l.price} />
+                        <MoneyInput onChange={(e) => setLine(l.key, { price: e.target.value })} placeholder={t('inv.po.priceFromList')} value={l.price} />
                     </FormField>
                 );
                 const remove = form.lines.length > minLines ? <Button onClick={() => onChange({ ...form, lines: form.lines.filter((x) => x.key !== l.key) })} size="sm" type="button" variant="outline">{t('inv.trf.removeLine')}</Button> : null;

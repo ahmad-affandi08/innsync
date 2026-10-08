@@ -10,6 +10,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
+import { MoneyInput } from '@/components/ui/money-input';
 import { Select } from '@/components/ui/select';
 import { TimeInput } from '@/components/ui/time-input';
 import { StatusBadge } from '@/components/ui/status-badge';
@@ -148,7 +149,7 @@ export default function PricesPage({ overview }: { overview: PriceOverview }) {
                             </Select>
                         </FormField>
                         <FormField error={action.fieldError('name')} field="name" label={t('fnb.px.name')}><Input maxLength={80} onChange={(e) => setForm({ ...form, name: e.target.value })} value={form.name} /></FormField>
-                        <FormField error={action.fieldError('price_minor')} field="price_minor" label={t('fnb.px.price')}><Input inputMode="decimal" onChange={(e) => setForm({ ...form, price: e.target.value })} value={form.price} /></FormField>
+                        <FormField error={action.fieldError('price_minor')} field="price_minor" label={t('fnb.px.price')}><MoneyInput onChange={(e) => setForm({ ...form, price: e.target.value })} value={form.price} /></FormField>
                         <FormField error={action.fieldError('valid_from')} field="valid_from" label={t('fnb.px.validFrom')}><DatePicker onChange={(e) => setForm({ ...form, from: e.target.value })} value={form.from} /></FormField>
                         <FormField error={action.fieldError('valid_to')} field="valid_to" hint={t('fnb.px.validToHint')} label={t('fnb.px.validTo')}><DatePicker onChange={(e) => setForm({ ...form, to: e.target.value })} value={form.to} /></FormField>
                         <FormField error={action.fieldError('from_time')} field="from_time" hint={t('fnb.px.hoursHint')} label={t('fnb.px.fromTime')}><TimeInput onChange={(e) => setForm({ ...form, fromTime: e.target.value })} value={form.fromTime} /></FormField>

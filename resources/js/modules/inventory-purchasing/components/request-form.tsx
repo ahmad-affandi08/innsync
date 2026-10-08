@@ -2,6 +2,7 @@ import { Button } from '@/components/ui/button';
 import { DatePicker } from '@/components/ui/date-picker';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
+import { MoneyInput } from '@/components/ui/money-input';
 import { Select } from '@/components/ui/select';
 import { minorToInput } from '@/modules/inventory-purchasing/lib/amounts';
 import { nextLineKey, type ItemChoice } from '@/modules/inventory-purchasing/lib/purchasing';
@@ -116,7 +117,7 @@ export function RequestFields({ badCosts, currency, departments, fieldError, for
                                 <Input inputMode="decimal" onChange={(e) => setLine(l.key, { quantity: e.target.value })} value={l.quantity} />
                             </FormField>
                             <FormField error={badCosts.includes(l.key) ? t('fo.folio.invalidAmount') : undefined} field="lines.*.est_cost_minor" hint={suggested === null ? undefined : t('inv.req.suggested', { amount: format.money(suggested, currency) })} label={t('inv.req.estCost', { currency })}>
-                                <Input inputMode="decimal" onChange={(e) => setLine(l.key, { cost: e.target.value })} value={l.cost} />
+                                <MoneyInput onChange={(e) => setLine(l.key, { cost: e.target.value })} value={l.cost} />
                             </FormField>
                             <FormField field="lines.*.note" label={t('inv.col.note')}>
                                 <Input maxLength={200} onChange={(e) => setLine(l.key, { note: e.target.value })} value={l.note} />

@@ -7,6 +7,7 @@ import { Dialog } from '@/components/ui/dialog';
 import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
+import { MoneyInput } from '@/components/ui/money-input';
 import { newIdempotencyKey } from '@/shared/api/http';
 import { useServerAction } from '@/shared/api/use-server-action';
 import { useFormatters, useTranslation } from '@/shared/i18n/i18n';
@@ -96,7 +97,7 @@ export function RateChangePanel({ currency, reservationId, rates }: { currency: 
                     <div className="flex flex-col gap-3">
                         {action.error !== null ? <ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /> : null}
                         <p className="text-xs text-muted-foreground">{t('fo.rate.note')}</p>
-                        <FormField field="price_minor" error={priceError ? t('fo.rate.invalidPrice') : (action.fieldError('price_minor') ?? action.fieldError('price'))} hint={t('fo.rate.priceHint')} label={t('fo.rate.price')}><Input inputMode="decimal" onChange={(e) => { setForm({ ...form, price: e.target.value }); setPreview(null); }} value={form.price} /></FormField>
+                        <FormField field="price_minor" error={priceError ? t('fo.rate.invalidPrice') : (action.fieldError('price_minor') ?? action.fieldError('price'))} hint={t('fo.rate.priceHint')} label={t('fo.rate.price')}><MoneyInput onChange={(e) => { setForm({ ...form, price: e.target.value }); setPreview(null); }} value={form.price} /></FormField>
                         <fieldset className="flex flex-col gap-1 text-sm">
                             <label className="flex items-center gap-2"><input checked={!form.nett} name="rate-nett" onChange={() => { setForm({ ...form, nett: false }); setPreview(null); }} type="radio" />{t('fo.rate.plusPlus')}</label>
                             <label className="flex items-center gap-2"><input checked={form.nett} name="rate-nett" onChange={() => { setForm({ ...form, nett: true }); setPreview(null); }} type="radio" />{t('fo.rate.nett')}</label>

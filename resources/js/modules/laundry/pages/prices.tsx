@@ -6,6 +6,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
+import { MoneyInput } from '@/components/ui/money-input';
 import { Select } from '@/components/ui/select';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { LaundryShell } from '@/modules/laundry/components/laundry-shell';
@@ -80,7 +81,7 @@ export default function LaundryPricesPage({ currency, items, treatments, may }: 
             id: 'actions', label: t('ldy.actions'),
             cell: (i: Item) => (
                 <div className="flex flex-wrap items-center gap-2">
-                    <Input aria-label={`${t('ldy.prices.price')} ${i.code}`} className="min-h-9 w-32" inputMode="decimal" onChange={(e) => setEdit({ ...edit, [i.id]: { price: e.target.value, reason: edit[i.id]?.reason ?? '' } })} placeholder={t('ldy.prices.price')} value={edit[i.id]?.price ?? ''} />
+                    <MoneyInput aria-label={`${t('ldy.prices.price')} ${i.code}`} className="min-h-9 w-32" onChange={(e) => setEdit({ ...edit, [i.id]: { price: e.target.value, reason: edit[i.id]?.reason ?? '' } })} placeholder={t('ldy.prices.price')} value={edit[i.id]?.price ?? ''} />
                     <Input aria-label={`${t('ldy.prices.reason')} ${i.code}`} className="min-h-9 w-44" maxLength={300} onChange={(e) => setEdit({ ...edit, [i.id]: { price: edit[i.id]?.price ?? '', reason: e.target.value } })} placeholder={t('ldy.prices.reason')} value={edit[i.id]?.reason ?? ''} />
                     <Button disabled={action.busy || (edit[i.id]?.reason ?? '').trim() === ''} onClick={() => void save(i, i.is_active)} size="sm" type="button" variant="outline">{t('ldy.prices.save')}</Button>
                     <Button disabled={action.busy || (edit[i.id]?.reason ?? '').trim() === ''} onClick={() => void save(i, !i.is_active)} size="sm" type="button" variant="outline">{i.is_active ? t('ldy.prices.deactivate') : t('ldy.prices.activate')}</Button>
@@ -125,7 +126,7 @@ export default function LaundryPricesPage({ currency, items, treatments, may }: 
                     <form className="grid gap-3 sm:grid-cols-4" onSubmit={(e) => { e.preventDefault(); void add(); }}>
                         <FormField field="code" error={action.fieldError('code')} label={t('ldy.prices.code')}><Input maxLength={20} onChange={(e) => setForm({ ...form, code: e.target.value })} required value={form.code} /></FormField>
                         <FormField field="name" error={action.fieldError('name')} label={t('ldy.prices.name')}><Input maxLength={80} onChange={(e) => setForm({ ...form, name: e.target.value })} required value={form.name} /></FormField>
-                        <FormField field="unit_price_minor" error={action.fieldError('unit_price_minor')} label={t('ldy.prices.price')}><Input inputMode="decimal" onChange={(e) => setForm({ ...form, price: e.target.value })} required value={form.price} /></FormField>
+                        <FormField field="unit_price_minor" error={action.fieldError('unit_price_minor')} label={t('ldy.prices.price')}><MoneyInput onChange={(e) => setForm({ ...form, price: e.target.value })} required value={form.price} /></FormField>
                         <FormField field="reason" error={action.fieldError('reason')} label={t('ldy.prices.reason')}><Input maxLength={300} onChange={(e) => setForm({ ...form, reason: e.target.value })} required value={form.reason} /></FormField>
                         <div className="sm:col-span-4"><Button loading={action.busy} type="submit">{t('ldy.prices.add')}</Button></div>
                     </form>

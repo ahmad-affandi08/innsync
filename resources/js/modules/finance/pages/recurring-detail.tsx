@@ -10,6 +10,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
+import { MoneyInput } from '@/components/ui/money-input';
 import { Metric } from '@/components/ui/metric';
 import { Select } from '@/components/ui/select';
 import { StatusBadge } from '@/components/ui/status-badge';
@@ -179,7 +180,7 @@ export default function RecurringDetailPage({ item }: { item: Item }) {
                             </FormField>
                         </div>
                         <FormField error={badAmount ? t('fin.petty.badAmount') : edit.fieldError('amount_minor')} field="amount_minor" hint={t('fin.rec.amountEditHint')} label={t('fin.rec.amountField', { currency })} required>
-                            <Input inputMode="decimal" onChange={(e) => { setBadAmount(false); setForm({ ...form, amount: e.target.value }); }} value={form.amount} />
+                            <MoneyInput onChange={(e) => { setBadAmount(false); setForm({ ...form, amount: e.target.value }); }} value={form.amount} />
                         </FormField>
                         <FormField error={badRemind ? t('fin.rec.badRemind') : edit.fieldError('remind_days')} field="remind_days" hint={t('fin.rec.remindEditHint')} label={t('fin.rec.remind')}>
                             <Input inputMode="numeric" max={60} min={0} onChange={(e) => { setBadRemind(false); setForm({ ...form, remind_days: e.target.value }); }} type="number" value={form.remind_days} />

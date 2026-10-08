@@ -25,7 +25,7 @@ export const rates = {
     'rates.prices.to': 'To (inclusive)',
     'rates.prices.days': 'Days',
     'rates.prices.nightly': 'Price per night',
-    'rates.prices.nightlyHint': 'Digits only, for example 1500000. No thousands separators.',
+    'rates.prices.nightlyHint': 'Type the amount, for example 1500000; it is grouped as you type.',
     'rates.prices.reprice': 'Change price',
     'rates.prices.remove': 'Remove',
     'rates.prices.removeTitle': 'Remove this price?',

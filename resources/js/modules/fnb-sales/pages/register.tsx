@@ -8,6 +8,7 @@ import { Dialog } from '@/components/ui/dialog';
 import { EmptyState } from '@/components/ui/empty-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
+import { MoneyInput } from '@/components/ui/money-input';
 import { Select } from '@/components/ui/select';
 import { SyncPanel, SyncStatus } from '@/components/ui/sync-status';
 import { FnbShell } from '@/modules/fnb-sales/components/fnb-shell';
@@ -206,7 +207,7 @@ export default function RegisterPage({ register }: { register: Register }) {
                                         <option value="card">{t('fnb.pay.method.card')}</option>
                                     </Select>
                                 </FormField>
-                                {method === 'cash' ? <FormField label={t('fnb.pay.tendered', { currency: register.currency })}><Input inputMode="decimal" onChange={(e) => setTendered(e.target.value)} placeholder={minorToMajorText(subtotal, register.currency)} value={tendered} /></FormField> : null}
+                                {method === 'cash' ? <FormField label={t('fnb.pay.tendered', { currency: register.currency })}><MoneyInput onChange={(e) => setTendered(e.target.value)} placeholder={minorToMajorText(subtotal, register.currency)} value={tendered} /></FormField> : null}
                                 {method === 'card' ? <FormField label={t('fnb.pay.cardCode')}><Input maxLength={60} onChange={(e) => setReference(e.target.value)} value={reference} /></FormField> : null}
                             </>
                         ) : null}

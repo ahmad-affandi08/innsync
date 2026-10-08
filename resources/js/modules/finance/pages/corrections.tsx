@@ -11,6 +11,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
+import { MoneyInput } from '@/components/ui/money-input';
 import { Select } from '@/components/ui/select';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { Textarea } from '@/components/ui/textarea';
@@ -222,13 +223,13 @@ export default function CorrectionsPage({ overview, status }: { overview: Overvi
                                                         </FormField>
                                                     </div>
                                                     <FormField field="lines.*.base_minor" label={t('fin.cor.base', { currency })}>
-                                                        <Input inputMode="decimal" onChange={(e) => setLine(line.key, { base: e.target.value })} value={line.base} />
+                                                        <MoneyInput negative onChange={(e) => setLine(line.key, { base: e.target.value })} value={line.base} />
                                                     </FormField>
                                                     <FormField field="lines.*.service_charge_minor" label={t('fin.cor.service', { currency })}>
-                                                        <Input inputMode="decimal" onChange={(e) => setLine(line.key, { service: e.target.value })} value={line.service} />
+                                                        <MoneyInput negative onChange={(e) => setLine(line.key, { service: e.target.value })} value={line.service} />
                                                     </FormField>
                                                     <FormField field="lines.*.tax_minor" label={t('fin.cor.tax', { currency })}>
-                                                        <Input inputMode="decimal" onChange={(e) => setLine(line.key, { tax: e.target.value })} value={line.tax} />
+                                                        <MoneyInput negative onChange={(e) => setLine(line.key, { tax: e.target.value })} value={line.tax} />
                                                     </FormField>
                                                     {minor !== null ? <p className="text-sm sm:col-span-3">{t('fin.cor.lineTotal')}: <span className="font-medium tabular-nums">{money(minor.revenue)}</span></p> : null}
                                                 </div>
@@ -241,7 +242,7 @@ export default function CorrectionsPage({ overview, status }: { overview: Overvi
                                                         </Select>
                                                     </FormField>
                                                     <FormField field="lines.*.received_minor" label={t('fin.cor.received', { currency })} required>
-                                                        <Input inputMode="decimal" onChange={(e) => setLine(line.key, { received: e.target.value })} value={line.received} />
+                                                        <MoneyInput negative onChange={(e) => setLine(line.key, { received: e.target.value })} value={line.received} />
                                                     </FormField>
                                                 </div>
                                             )}

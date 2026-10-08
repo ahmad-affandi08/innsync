@@ -8,6 +8,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
+import { MoneyInput } from '@/components/ui/money-input';
 import { Select } from '@/components/ui/select';
 import { InventoryShell } from '@/modules/inventory-purchasing/components/inventory-shell';
 import { bpToInput, minorToInput, parsePercentToBp } from '@/modules/inventory-purchasing/lib/amounts';
@@ -151,7 +152,7 @@ export default function PurchasingSettingsPage({ overview }: { overview: Overvie
                         </FormField>
                         <div className="sm:col-span-2">
                             <FormField error={badAmount ? t('fo.folio.invalidAmount') : budgetAction.fieldError('amount_minor')} field="amount_minor" label={t('inv.pset.amountIn', { currency: overview.currency })}>
-                                <Input inputMode="decimal" onChange={(e) => setBudget({ ...budget, amount: e.target.value })} value={budget.amount} />
+                                <MoneyInput onChange={(e) => setBudget({ ...budget, amount: e.target.value })} value={budget.amount} />
                             </FormField>
                         </div>
                     </div>

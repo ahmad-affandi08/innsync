@@ -5,7 +5,7 @@ import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
-import { Input } from '@/components/ui/input';
+import { MoneyInput } from '@/components/ui/money-input';
 import { ShiftActions } from '@/modules/front-office/components/shift-actions';
 import { ShiftSummary, type Shift } from '@/modules/front-office/components/shift-summary';
 import { FrontOfficeShell } from '@/modules/front-office/components/front-office-shell';
@@ -40,7 +40,7 @@ export default function CashierPage({ cashier: c }: Props) {
                 <form className="flex max-w-md flex-col gap-3" onSubmit={(e) => { e.preventDefault(); void open(); }}>
                     <p className="text-sm text-muted-foreground">{t('fo.cash.none')}</p>
                     {action.error !== null ? <ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /> : null}
-                    <FormField field="opening_float_minor" error={floatError ? t('fo.cash.invalidAmount') : (action.fieldError('opening_float_minor') ?? action.fieldError('opening_float'))} hint={t('fo.cash.floatHint')} label={t('fo.cash.float')}><Input inputMode="decimal" onChange={(e) => setFloat(e.target.value)} value={float} /></FormField>
+                    <FormField field="opening_float_minor" error={floatError ? t('fo.cash.invalidAmount') : (action.fieldError('opening_float_minor') ?? action.fieldError('opening_float'))} hint={t('fo.cash.floatHint')} label={t('fo.cash.float')}><MoneyInput onChange={(e) => setFloat(e.target.value)} value={float} /></FormField>
                     <div><Button loading={action.busy} type="submit">{t('fo.cash.open')}</Button></div>
                 </form>
             ) : (

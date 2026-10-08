@@ -8,6 +8,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
+import { MoneyInput } from '@/components/ui/money-input';
 import { Select } from '@/components/ui/select';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { FinanceShell } from '@/modules/finance/components/finance-shell';
@@ -116,10 +117,10 @@ export default function PettyFundsPage({ overview }: { overview: Overview }) {
                             </FormField>
                         </div>
                         <FormField error={badImprest ? t('fin.petty.badAmount') : action.fieldError('imprest_minor')} field="imprest_minor" hint={t('fin.petty.imprestHint')} label={t('fin.petty.imprestField', { currency })}>
-                            <Input inputMode="decimal" onChange={(e) => { setBadImprest(false); setForm({ ...form, imprest: e.target.value }); }} value={form.imprest} />
+                            <MoneyInput onChange={(e) => { setBadImprest(false); setForm({ ...form, imprest: e.target.value }); }} value={form.imprest} />
                         </FormField>
                         <FormField error={badMax ? t('fin.petty.badAmount') : action.fieldError('max_voucher_minor')} field="max_voucher_minor" hint={t('fin.petty.maxHint')} label={t('fin.petty.maxField', { currency })}>
-                            <Input inputMode="decimal" onChange={(e) => { setBadMax(false); setForm({ ...form, max: e.target.value }); }} value={form.max} />
+                            <MoneyInput onChange={(e) => { setBadMax(false); setForm({ ...form, max: e.target.value }); }} value={form.max} />
                         </FormField>
                     </div>
                 )}

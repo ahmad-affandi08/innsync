@@ -9,6 +9,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
+import { MoneyInput } from '@/components/ui/money-input';
 import { Metric } from '@/components/ui/metric';
 import { Select } from '@/components/ui/select';
 import { StatusBadge } from '@/components/ui/status-badge';
@@ -207,7 +208,7 @@ export default function CashPage({ filters, overview }: { filters: Filters; over
                             hint={t('fin.cash.expected', { amount: format.money(receiveForm.shift.cash_net_minor, receiveCurrency) })}
                             label={t('fin.cash.counted', { currency: receiveCurrency })}
                         >
-                            <Input inputMode="decimal" onChange={(e) => setReceiveForm({ ...receiveForm, amount: e.target.value })} value={receiveForm.amount} />
+                            <MoneyInput onChange={(e) => setReceiveForm({ ...receiveForm, amount: e.target.value })} value={receiveForm.amount} />
                         </FormField>
                         {difference !== null ? (
                             <p aria-live="polite" className="text-sm" data-testid="cash-live-variance">

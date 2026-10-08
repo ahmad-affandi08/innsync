@@ -8,6 +8,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
+import { MoneyInput } from '@/components/ui/money-input';
 import { Select } from '@/components/ui/select';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -313,7 +314,7 @@ export default function RatePlansPage({ plans, selected, types }: { plans: Plan[
                             </fieldset>
                         </>)}
                         <FormField field="nightly_minor" error={amountError ? t('rates.prices.invalidAmount') : action.fieldError('nightly_minor')} hint={t('rates.prices.nightlyHint')} label={t('rates.prices.nightly')}>
-                            <Input inputMode="decimal" onChange={(e) => setPriceForm({ ...priceForm, amount: e.target.value })} value={priceForm.amount} />
+                            <MoneyInput onChange={(e) => setPriceForm({ ...priceForm, amount: e.target.value })} value={priceForm.amount} />
                         </FormField>
                         {reasonField(priceForm.reason, (v) => setPriceForm({ ...priceForm, reason: v }))}
                     </div>

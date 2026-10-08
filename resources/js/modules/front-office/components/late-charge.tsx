@@ -5,6 +5,7 @@ import { Dialog } from '@/components/ui/dialog';
 import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
+import { MoneyInput } from '@/components/ui/money-input';
 import { newIdempotencyKey } from '@/shared/api/http';
 import { useServerAction } from '@/shared/api/use-server-action';
 import { useTranslation } from '@/shared/i18n/i18n';
@@ -51,7 +52,7 @@ export function LateChargeButton({ currency, folioId }: { currency: string; foli
                         <p className="text-xs text-muted-foreground">{t('fo.late.note')}</p>
                         <FormField field="code" error={action.fieldError('code')} hint={t('fo.folio.chargeCodeHint')} label={t('fo.folio.chargeCode')}><Input maxLength={20} onChange={(e) => setForm({ ...form, code: e.target.value.toUpperCase() })} value={form.code} /></FormField>
                         <FormField field="description" error={action.fieldError('description')} label={t('fo.folio.chargeDescription')}><Input maxLength={160} onChange={(e) => setForm({ ...form, description: e.target.value })} value={form.description} /></FormField>
-                        <FormField field="amount_minor" error={amountError ? t('fo.folio.invalidAmount') : (action.fieldError('amount_minor') ?? action.fieldError('amount'))} hint={t('fo.folio.chargeAmountHint')} label={t('fo.folio.chargeAmount')}><Input inputMode="decimal" onChange={(e) => setForm({ ...form, amount: e.target.value })} value={form.amount} /></FormField>
+                        <FormField field="amount_minor" error={amountError ? t('fo.folio.invalidAmount') : (action.fieldError('amount_minor') ?? action.fieldError('amount'))} hint={t('fo.folio.chargeAmountHint')} label={t('fo.folio.chargeAmount')}><MoneyInput onChange={(e) => setForm({ ...form, amount: e.target.value })} value={form.amount} /></FormField>
                         <fieldset className="flex flex-col gap-1 text-sm">
                             <label className="flex items-center gap-2"><input checked={!form.nett} name="late-nett" onChange={() => setForm({ ...form, nett: false })} type="radio" />{t('fo.folio.plusPlus')}</label>
                             <label className="flex items-center gap-2"><input checked={form.nett} name="late-nett" onChange={() => setForm({ ...form, nett: true })} type="radio" />{t('fo.folio.nett')}</label>

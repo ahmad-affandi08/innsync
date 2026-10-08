@@ -9,6 +9,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
+import { MoneyInput } from '@/components/ui/money-input';
 import { Select } from '@/components/ui/select';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { FinanceShell } from '@/modules/finance/components/finance-shell';
@@ -96,9 +97,9 @@ export default function SettlementsPage({ overview }: { overview: SettlementOver
                             <FormField error={action.fieldError('covers_to')} field="covers_to" label={t('fin.set.to')}><DatePicker onChange={(e) => setForm({ ...form, to: e.target.value })} value={form.to} /></FormField>
                             <FormField error={action.fieldError('settled_on')} field="settled_on" label={t('fin.set.colSettled')}><DatePicker onChange={(e) => setForm({ ...form, settledOn: e.target.value })} value={form.settledOn} /></FormField>
                             <FormField error={action.fieldError('bank_reference')} field="bank_reference" hint={t('fin.set.referenceHint')} label={t('fin.set.reference')}><Input maxLength={60} onChange={(e) => setForm({ ...form, reference: e.target.value })} value={form.reference} /></FormField>
-                            <FormField error={action.fieldError('gross_minor')} field="gross_minor" hint={t('fin.set.booksHold', { amount: money(expected) })} label={t('fin.set.colGross')}><Input inputMode="decimal" onChange={(e) => setForm({ ...form, gross: e.target.value })} value={form.gross} /></FormField>
-                            <FormField error={action.fieldError('fee_minor')} field="fee_minor" label={t('fin.set.colFee')}><Input inputMode="decimal" onChange={(e) => setForm({ ...form, fee: e.target.value })} value={form.fee} /></FormField>
-                            <FormField error={action.fieldError('net_minor')} field="net_minor" hint={gross !== null && fee !== null ? t('fin.set.netHint', { amount: money(gross - fee) }) : undefined} label={t('fin.set.colNet')}><Input inputMode="decimal" onChange={(e) => setForm({ ...form, net: e.target.value })} value={form.net} /></FormField>
+                            <FormField error={action.fieldError('gross_minor')} field="gross_minor" hint={t('fin.set.booksHold', { amount: money(expected) })} label={t('fin.set.colGross')}><MoneyInput onChange={(e) => setForm({ ...form, gross: e.target.value })} value={form.gross} /></FormField>
+                            <FormField error={action.fieldError('fee_minor')} field="fee_minor" label={t('fin.set.colFee')}><MoneyInput onChange={(e) => setForm({ ...form, fee: e.target.value })} value={form.fee} /></FormField>
+                            <FormField error={action.fieldError('net_minor')} field="net_minor" hint={gross !== null && fee !== null ? t('fin.set.netHint', { amount: money(gross - fee) }) : undefined} label={t('fin.set.colNet')}><MoneyInput onChange={(e) => setForm({ ...form, net: e.target.value })} value={form.net} /></FormField>
                             <FormField error={action.fieldError('note')} field="note" label={t('fin.set.note')}><Input maxLength={200} onChange={(e) => setForm({ ...form, note: e.target.value })} value={form.note} /></FormField>
                         </div>
                         {gross !== null && gross !== expected ? <Alert title={t('fin.set.willRaise', { diff: money(gross - expected) })} tone="warning" /> : null}

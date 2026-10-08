@@ -7,6 +7,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
+import { MoneyInput } from '@/components/ui/money-input';
 import { Select } from '@/components/ui/select';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -82,7 +83,7 @@ export default function ShiftPage({ overview }: { overview: ShiftOverview }) {
                 <Select onChange={(e) => setOutlet(e.target.value)} value={outlet}>{overview.outlets.map((o) => <option key={o.id} value={o.id}>{o.name} ({o.code})</option>)}</Select>
             </FormField>
             <FormField error={bad === 'float' ? t('fnb.shift.badAmount') : action.fieldError('opening_float_minor')} field="opening_float_minor" hint={t('fnb.shift.floatHint')} label={t('fnb.shift.float', { currency })}>
-                <Input inputMode="decimal" onChange={(e) => setFloat(e.target.value)} value={float} />
+                <MoneyInput onChange={(e) => setFloat(e.target.value)} value={float} />
             </FormField>
             <div><Button disabled={outlet === ''} loading={action.busy} onClick={() => void open()} type="button">{t('fnb.shift.open')}</Button></div>
         </section>
@@ -107,7 +108,7 @@ export default function ShiftPage({ overview }: { overview: ShiftOverview }) {
                 <h3 className="font-semibold">{t('fnb.shift.closeTitle')}</h3>
                 {failure}
                 <FormField error={bad === 'counted' ? t('fnb.shift.badAmount') : action.fieldError('counted_cash_minor')} field="counted_cash_minor" label={t('fnb.shift.counted', { currency })}>
-                    <Input inputMode="decimal" onChange={(e) => setCounted(e.target.value)} value={counted} />
+                    <MoneyInput onChange={(e) => setCounted(e.target.value)} value={counted} />
                 </FormField>
                 <FormField error={action.fieldError('reason')} field="reason" hint={t('fnb.shift.reasonHint')} label={t('fnb.shift.reason')}>
                     <Input maxLength={200} onChange={(e) => setReason(e.target.value)} value={reason} />

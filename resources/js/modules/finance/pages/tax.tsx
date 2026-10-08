@@ -8,6 +8,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
+import { MoneyInput } from '@/components/ui/money-input';
 import { StatusBadge, type StatusTone } from '@/components/ui/status-badge';
 import { FinanceShell } from '@/modules/finance/components/finance-shell';
 import { useServerAction } from '@/shared/api/use-server-action';
@@ -139,7 +140,7 @@ export default function TaxPage({ overview }: { overview: Overview }) {
                 {deposit !== null && (
                     <div className="grid gap-3 sm:grid-cols-2">
                         {failure !== null ? <div className="sm:col-span-2">{failure}</div> : null}
-                        <FormField error={action.fieldError('amount_minor')} field="amount_minor" hint={t('fin.tax.amountHint', { tax: money(deposit.month.filing?.tax_minor ?? 0) })} label={t('fin.tax.amount')}><Input inputMode="decimal" onChange={(e) => setDeposit({ ...deposit, amount: e.target.value })} value={deposit.amount} /></FormField>
+                        <FormField error={action.fieldError('amount_minor')} field="amount_minor" hint={t('fin.tax.amountHint', { tax: money(deposit.month.filing?.tax_minor ?? 0) })} label={t('fin.tax.amount')}><MoneyInput onChange={(e) => setDeposit({ ...deposit, amount: e.target.value })} value={deposit.amount} /></FormField>
                         <FormField error={action.fieldError('deposited_on')} field="deposited_on" label={t('fin.tax.on')}><DatePicker max={overview.today} onChange={(e) => setDeposit({ ...deposit, on: e.target.value })} value={deposit.on} /></FormField>
                         <div className="sm:col-span-2"><FormField error={action.fieldError('reference')} field="reference" label={t('fin.tax.depositReference')}><Input maxLength={80} onChange={(e) => setDeposit({ ...deposit, reference: e.target.value })} value={deposit.reference} /></FormField></div>
                     </div>

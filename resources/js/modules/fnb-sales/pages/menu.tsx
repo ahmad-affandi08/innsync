@@ -10,6 +10,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
+import { MoneyInput } from '@/components/ui/money-input';
 import { Select } from '@/components/ui/select';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -212,7 +213,7 @@ export default function MenuPage({ menu }: { menu: MenuView }) {
                             <Input maxLength={40} onChange={(e) => set(list.map((l, k) => (k === index ? { ...l, name: e.target.value } : l)))} value={line.name} />
                         </FormField>
                         <FormField label={priceLabel}>
-                            <Input inputMode="decimal" onChange={(e) => set(list.map((l, k) => (k === index ? { ...l, price: e.target.value } : l)))} value={line.price} />
+                            <MoneyInput onChange={(e) => set(list.map((l, k) => (k === index ? { ...l, price: e.target.value } : l)))} value={line.price} />
                         </FormField>
                         <Button aria-label={removeLabel} onClick={() => set(list.filter((_, k) => k !== index))} size="icon" type="button" variant="outline"><Trash2 aria-hidden="true" className="size-4" /></Button>
                     </div>
@@ -325,7 +326,7 @@ export default function MenuPage({ menu }: { menu: MenuView }) {
                             </Select>
                         </FormField>
                         <FormField error={badPrice ? t('fnb.menu.badPrice') : action.fieldError('price_minor')} field="price_minor" label={t('fnb.menu.price', { currency })}>
-                            <Input inputMode="decimal" onChange={(e) => setItem({ ...item, price: e.target.value })} value={item.price} />
+                            <MoneyInput onChange={(e) => setItem({ ...item, price: e.target.value })} value={item.price} />
                         </FormField>
                         <FormField error={action.fieldError('station')} field="station" label={t('fnb.menu.station')}>
                             <Select onChange={(e) => setItem({ ...item, station: e.target.value })} value={item.station}>

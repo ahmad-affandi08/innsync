@@ -8,6 +8,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
+import { MoneyInput } from '@/components/ui/money-input';
 import { Select } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Textarea } from '@/components/ui/textarea';
@@ -121,7 +122,7 @@ export default function BudgetPage({ budget }: { budget: BudgetOverview }) {
     const fillField = (column: Column) => (
         <div className="flex flex-col gap-1.5">
             <FormField error={badFill === column ? t('fin.petty.badAmount') : undefined} label={t(column === 'revenue' ? 'fin.bud.fillRevenue' : 'fin.bud.fillCost', { currency })}>
-                <Input inputMode="decimal" onChange={(e) => { setBadFill(null); setFill({ ...fill, [column]: e.target.value }); }} value={fill[column]} />
+                <MoneyInput onChange={(e) => { setBadFill(null); setFill({ ...fill, [column]: e.target.value }); }} value={fill[column]} />
             </FormField>
             <Button onClick={() => fillColumn(column)} size="sm" type="button" variant="outline">{t('fin.bud.fillButton')}</Button>
         </div>
@@ -192,10 +193,10 @@ export default function BudgetPage({ budget }: { budget: BudgetOverview }) {
                                     {manage ? (
                                         <>
                                             <TableCell className="text-right">
-                                                <Input aria-invalid={row?.revenue === null ? true : undefined} aria-label={t('fin.bud.cellRevenue', { month })} className="min-h-9 text-right tabular-nums" inputMode="decimal" onChange={(e) => setCell(i, 'revenue', e.target.value)} value={cell.revenue} />
+                                                <MoneyInput aria-invalid={row?.revenue === null ? true : undefined} aria-label={t('fin.bud.cellRevenue', { month })} className="min-h-9 text-right tabular-nums" onChange={(e) => setCell(i, 'revenue', e.target.value)} value={cell.revenue} />
                                             </TableCell>
                                             <TableCell className="text-right">
-                                                <Input aria-invalid={row?.cost === null ? true : undefined} aria-label={t('fin.bud.cellCost', { month })} className="min-h-9 text-right tabular-nums" inputMode="decimal" onChange={(e) => setCell(i, 'cost', e.target.value)} value={cell.cost} />
+                                                <MoneyInput aria-invalid={row?.cost === null ? true : undefined} aria-label={t('fin.bud.cellCost', { month })} className="min-h-9 text-right tabular-nums" onChange={(e) => setCell(i, 'cost', e.target.value)} value={cell.cost} />
                                             </TableCell>
                                         </>
                                     ) : (

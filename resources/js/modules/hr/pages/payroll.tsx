@@ -10,6 +10,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
+import { MoneyInput } from '@/components/ui/money-input';
 import { Select } from '@/components/ui/select';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -112,7 +113,7 @@ export default function PayrollPage({ overview }: { overview: PayrollOverview })
 
     const setField = (key: string, value: string) => settings !== null && setSettings({ ...settings, [key]: value });
     const field = (key: string, text: string, hint?: string, step = '0.01') => (
-        <FormField error={action.fieldError(key)} field={key} hint={hint} label={text}><Input inputMode="decimal" onChange={(e) => setField(key, e.target.value)} step={step} value={settings?.[key] ?? ''} /></FormField>
+        <FormField error={action.fieldError(key)} field={key} hint={hint} label={text}>{key.endsWith('_minor') ? <MoneyInput onChange={(e) => setField(key, e.target.value)} value={settings?.[key] ?? ''} /> : <Input inputMode="decimal" onChange={(e) => setField(key, e.target.value)} step={step} value={settings?.[key] ?? ''} />}</FormField>
     );
 
     const peopleColumns: DataGridColumn<PayPerson>[] = [
@@ -207,7 +208,7 @@ export default function PayrollPage({ overview }: { overview: PayrollOverview })
                     <div className="grid gap-3 sm:grid-cols-2">
                         {failure !== null ? <div className="sm:col-span-2">{failure}</div> : null}
                         <div className="sm:col-span-2"><FormField error={action.fieldError('component_id')} field="component_id" label={t('hr.pay.kind')}><Select onChange={(e) => setPay({ ...pay, componentId: e.target.value, amount: ((m) => (m === undefined ? '' : minorToMajorText(m, overview.currency)))(overview.employees.find((x) => x.id === pay.employeeId)?.pay[e.target.value]?.amount_minor) })} value={pay.componentId}>{active.map((c) => <option key={c.id} value={c.id}>{c.name} ({c.code})</option>)}</Select></FormField></div>
-                        <FormField error={action.fieldError('amount_minor')} field="amount_minor" hint={t('hr.pay.amountHint', { basis: label('hr.pay.basis', named(pay.componentId)?.basis ?? 'monthly') })} label={t('hr.pay.amount')}><Input inputMode="numeric" onChange={(e) => setPay({ ...pay, amount: e.target.value })} value={pay.amount} /></FormField>
+                        <FormField error={action.fieldError('amount_minor')} field="amount_minor" hint={t('hr.pay.amountHint', { basis: label('hr.pay.basis', named(pay.componentId)?.basis ?? 'monthly') })} label={t('hr.pay.amount')}><MoneyInput onChange={(e) => setPay({ ...pay, amount: e.target.value })} value={pay.amount} /></FormField>
                         <FormField error={action.fieldError('effective_from')} field="effective_from" hint={t('hr.pay.fromHint')} label={t('hr.pay.from')}><DatePicker min={overview.earliest} onChange={(e) => setPay({ ...pay, from: e.target.value })} value={pay.from} /></FormField>
                         <div className="sm:col-span-2"><FormField error={action.fieldError('reason')} field="reason" label={t('hr.att.reasonShort')}><Input maxLength={200} onChange={(e) => setPay({ ...pay, reason: e.target.value })} value={pay.reason} /></FormField></div>
                     </div>

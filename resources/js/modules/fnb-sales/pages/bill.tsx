@@ -9,6 +9,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
+import { MoneyInput } from '@/components/ui/money-input';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { BillRearrange } from '@/modules/fnb-sales/components/bill-rearrange';
@@ -512,7 +513,7 @@ export default function BillPage({ targets, view }: { targets: RearrangeTargets;
                                 </FormField>
                                 {discountComp ? null : (
                                     <FormField error={badDiscount ? t('fnb.bill.discountBad') : action.fieldError('value')} field="value" label={discount.kind === 'percent' ? t('fnb.bill.discountPercent') : t('fnb.bill.discountAmount', { currency: view.currency })}>
-                                        <Input inputMode="decimal" onChange={(e) => setDiscount({ ...discount, value: e.target.value })} value={discount.value} />
+                                        {discount.kind === 'percent' ? <Input inputMode="decimal" onChange={(e) => setDiscount({ ...discount, value: e.target.value })} value={discount.value} /> : <MoneyInput onChange={(e) => setDiscount({ ...discount, value: e.target.value })} value={discount.value} />}
                                     </FormField>
                                 )}
                             </div>
@@ -548,11 +549,11 @@ export default function BillPage({ targets, view }: { targets: RearrangeTargets;
                             </FormField>
                         </div>
                         <FormField error={action.fieldError('amount_minor')} field="amount_minor" label={t('fnb.pay.amount', { currency: view.currency })}>
-                            <Input inputMode="decimal" onChange={(e) => setPay({ ...pay, amount: e.target.value })} readOnly={pay.method === 'room'} value={pay.amount} />
+                            <MoneyInput onChange={(e) => setPay({ ...pay, amount: e.target.value })} readOnly={pay.method === 'room'} value={pay.amount} />
                         </FormField>
                         {pay.method === 'cash' ? (
                             <FormField error={action.fieldError('tendered_minor')} field="tendered_minor" hint={payChange > 0 ? t('fnb.pay.change', { amount: money(payChange) }) : undefined} label={t('fnb.pay.tendered', { currency: view.currency })}>
-                                <Input inputMode="decimal" onChange={(e) => setPay({ ...pay, tendered: e.target.value })} value={pay.tendered} />
+                                <MoneyInput onChange={(e) => setPay({ ...pay, tendered: e.target.value })} value={pay.tendered} />
                             </FormField>
                         ) : null}
                         {pay.method === 'card' ? (

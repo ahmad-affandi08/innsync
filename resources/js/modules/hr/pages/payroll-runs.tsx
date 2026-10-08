@@ -9,6 +9,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
+import { MoneyInput } from '@/components/ui/money-input';
 import { Select } from '@/components/ui/select';
 import { StatusBadge, type StatusTone } from '@/components/ui/status-badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -181,7 +182,7 @@ export default function PayrollRunsPage({ overview }: { overview: PayrollRunOver
                     <div className="grid gap-3 sm:grid-cols-2">
                         {failure !== null ? <div className="sm:col-span-2">{failure}</div> : null}
                         <div className="sm:col-span-2"><FormField error={action.fieldError('employee_id')} field="employee_id" label={t('hr.col.name')}><Select onChange={(e) => setAdjust({ ...adjust, employeeId: e.target.value })} value={adjust.employeeId}>{overview.employees.map((e) => <option key={e.id} value={e.id}>{e.name} · {e.number}</option>)}</Select></FormField></div>
-                        <FormField error={action.fieldError('amount_minor')} field="amount_minor" hint={t('hr.run.amountHint')} label={t('hr.pay.amount')}><Input inputMode="numeric" onChange={(e) => setAdjust({ ...adjust, amount: e.target.value })} value={adjust.amount} /></FormField>
+                        <FormField error={action.fieldError('amount_minor')} field="amount_minor" hint={t('hr.run.amountHint')} label={t('hr.pay.amount')}><MoneyInput negative onChange={(e) => setAdjust({ ...adjust, amount: e.target.value })} value={adjust.amount} /></FormField>
                         <FormField error={action.fieldError('label')} field="label" label={t('hr.run.adjustLabel')}><Input maxLength={60} onChange={(e) => setAdjust({ ...adjust, label: e.target.value })} value={adjust.label} /></FormField>
                         <div className="sm:col-span-2"><FormField error={action.fieldError('source_run_id')} field="source_run_id" hint={t('hr.run.sourceHint')} label={t('hr.run.corrects')}><Select onChange={(e) => setAdjust({ ...adjust, sourceRunId: e.target.value })} value={adjust.sourceRunId}><option value="">{t('hr.run.noSource')}</option>{overview.runs.filter((r) => ['approved', 'paid', 'locked'].includes(r.status)).map((r) => <option key={r.id} value={r.id}>{r.period}</option>)}</Select></FormField></div>
                         <div className="sm:col-span-2"><FormField error={action.fieldError('reason')} field="reason" label={t('hr.att.reasonShort')}><Input maxLength={200} onChange={(e) => setAdjust({ ...adjust, reason: e.target.value })} value={adjust.reason} /></FormField></div>

@@ -9,6 +9,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
+import { MoneyInput } from '@/components/ui/money-input';
 import { Metric } from '@/components/ui/metric';
 import { Select } from '@/components/ui/select';
 import { FinanceShell } from '@/modules/finance/components/finance-shell';
@@ -171,7 +172,7 @@ export default function RecurringPage({ overview }: { overview: Overview }) {
                             </FormField>
                         </div>
                         <FormField error={badAmount ? t('fin.petty.badAmount') : create.fieldError('amount_minor')} field="amount_minor" hint={t('fin.rec.amountHint')} label={t('fin.rec.amountField', { currency })} required>
-                            <Input inputMode="decimal" onChange={(e) => { setBadAmount(false); setForm({ ...form, amount: e.target.value }); }} value={form.amount} />
+                            <MoneyInput onChange={(e) => { setBadAmount(false); setForm({ ...form, amount: e.target.value }); }} value={form.amount} />
                         </FormField>
                         <FormField error={create.fieldError('frequency')} field="frequency" label={t('fin.rec.frequency')}>
                             <Select onChange={(e) => setForm({ ...form, frequency: e.target.value })} searchable={false} value={form.frequency}>

@@ -9,6 +9,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
+import { MoneyInput } from '@/components/ui/money-input';
 import { Select } from '@/components/ui/select';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -273,7 +274,7 @@ export default function SupplierPage({ supplier }: { supplier: Supplier }) {
                             </Select>
                         </FormField>
                         <FormField error={amountError ? t('fo.folio.invalidAmount') : action.fieldError('unit_price_minor')} field="unit_price_minor" label={t('inv.sup.f.price', { unit: price.unit, currency: supplier.currency })}>
-                            <Input inputMode="decimal" onChange={(e) => setPrice({ ...price, amount: e.target.value })} value={price.amount} />
+                            <MoneyInput onChange={(e) => setPrice({ ...price, amount: e.target.value })} value={price.amount} />
                         </FormField>
                         <FormField error={action.fieldError('valid_from')} field="valid_from" label={t('inv.sup.f.validFrom')}>
                             <DatePicker onChange={(e) => setPrice({ ...price, valid_from: e.target.value })} value={price.valid_from} />

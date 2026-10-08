@@ -6,6 +6,7 @@ import { Dialog } from '@/components/ui/dialog';
 import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
+import { MoneyInput } from '@/components/ui/money-input';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Select } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
@@ -93,7 +94,7 @@ export function RecurringSettleDialog({ currency, item, methods, onClose, reload
                                 hint={t('fin.rec.settle.amountHint')}
                                 label={t('fin.rec.settle.amount', { currency })}
                             >
-                                <Input inputMode="decimal" onChange={(e) => { setBadAmount(false); setForm({ ...form, amount: e.target.value }); }} value={form.amount} />
+                                <MoneyInput onChange={(e) => { setBadAmount(false); setForm({ ...form, amount: e.target.value }); }} value={form.amount} />
                             </FormField>
                             <FormField error={action.fieldError('paid_on')} field="paid_on" hint={t('fin.rec.settle.paidOnHint')} label={t('fin.rec.settle.paidOn')}>
                                 <DatePicker max={today} min={`${item.start_month}-01`} onChange={(e) => setForm({ ...form, paid_on: e.target.value })} value={form.paid_on} />
