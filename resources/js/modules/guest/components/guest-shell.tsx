@@ -15,15 +15,14 @@ export function GuestShell({ children, hotel, plain = false, subtitle, title }: 
 
     return (
         <div className="min-h-screen bg-background text-foreground">
-            <header className="border-b border-border bg-surface px-4 py-3">
+            <header className="border-b border-border bg-surface px-4 py-4">
                 <div className="mx-auto flex max-w-xl items-center justify-between gap-3">
-                    {own !== null ? <img alt={hotel} className="max-h-10 max-w-[7rem] w-auto shrink-0 object-contain" src={own} /> : null}
-                    <div className="min-w-0 flex-1">
-                        <p className="text-xs uppercase tracking-wide text-muted-foreground">{hotel}</p>
-                        <h1 className="text-lg font-semibold leading-tight">{title}</h1>
-                        {subtitle !== undefined ? <p className="text-sm text-muted-foreground">{subtitle}</p> : null}
-                    </div>
+                    {own !== null ? <img alt={hotel} className="max-h-12 max-w-[11rem] w-auto min-w-0 object-contain" src={own} /> : <p className="min-w-0 truncate text-sm font-semibold uppercase tracking-wide">{hotel}</p>}
                     <LanguageSwitcher />
+                </div>
+                <div className="mx-auto mt-3 max-w-xl">
+                    <h1 className="text-xl font-semibold leading-tight">{title}</h1>
+                    {subtitle !== undefined ? <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p> : null}
                 </div>
                 {plain ? null : <nav aria-label={t('guest.nav.label')} className="mx-auto mt-2 flex max-w-xl flex-wrap gap-x-4 gap-y-1 text-sm">
                     {[['/g/menu', 'guest.nav.menu'], ['/g/orders', 'guest.nav.myOrders'], ['/g/help', 'guest.nav.help'], ['/g/bill', 'guest.nav.bill'], ['/g/survey', 'guest.nav.survey']].map(([href, label]) => (
