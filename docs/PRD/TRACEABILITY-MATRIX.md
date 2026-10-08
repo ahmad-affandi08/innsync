@@ -19,13 +19,15 @@ Every row must eventually point to implementation evidence and tests. Status is 
 | FR-DSH-013 | Dashboard Manajemen | Wajib | ../TASK/MODULE-01-DASHBOARD.md | REVIEW |
 | FR-DSH-014 | Dashboard Manajemen | Wajib | ../TASK/MODULE-01-DASHBOARD.md | REVIEW |
 | FR-DSH-015 | Dashboard Manajemen | Wajib | ../TASK/MODULE-01-DASHBOARD.md | REVIEW |
-| FR-DSH-016 | Dashboard Manajemen | Wajib | ../TASK/MODULE-01-DASHBOARD.md | IN_PROGRESS |
+| FR-DSH-016 | Dashboard Manajemen | Wajib | ../TASK/MODULE-01-DASHBOARD.md | REVIEW |
+
 | FR-DSH-017 | Dashboard Manajemen | Bisa | ../TASK/MODULE-01-DASHBOARD.md | REVIEW |
 | FR-DSH-018 | Dashboard Manajemen | Sebaiknya | ../TASK/MODULE-01-DASHBOARD.md | REVIEW |
 | FR-DSH-019 | Dashboard Manajemen | Bisa | ../TASK/MODULE-01-DASHBOARD.md | REVIEW |
 | FR-DSH-020 | Dashboard Manajemen | Wajib | ../TASK/MODULE-01-DASHBOARD.md | REVIEW |
 | FR-DSH-021 | Dashboard Manajemen | Wajib | ../TASK/MODULE-01-DASHBOARD.md | REVIEW |
-| FR-DSH-022 | Dashboard Manajemen | Wajib | ../TASK/MODULE-01-DASHBOARD.md | IN_PROGRESS |
+| FR-DSH-022 | Dashboard Manajemen | Wajib | ../TASK/MODULE-01-DASHBOARD.md | REVIEW |
+
 | FR-FO-001 | Front Office | Wajib | ../TASK/MODULE-02-FRONT-OFFICE.md | REVIEW |
 | FR-FO-002 | Front Office | Wajib | ../TASK/MODULE-02-FRONT-OFFICE.md | REVIEW |
 | FR-FO-003 | Front Office | Wajib | ../TASK/MODULE-02-FRONT-OFFICE.md | REVIEW |
@@ -45,7 +47,8 @@ Every row must eventually point to implementation evidence and tests. Status is 
 | FR-FO-017 | Front Office | Sebaiknya | ../TASK/MODULE-02-FRONT-OFFICE.md | REVIEW |
 | FR-FO-018 | Front Office | Wajib | ../TASK/MODULE-02-FRONT-OFFICE.md | REVIEW |
 | FR-FO-019 | Front Office | Wajib | ../TASK/MODULE-02-FRONT-OFFICE.md | REVIEW |
-| FR-FO-020 | Front Office | Wajib | ../TASK/MODULE-02-FRONT-OFFICE.md | IN_PROGRESS |
+| FR-FO-020 | Front Office | Wajib | ../TASK/MODULE-02-FRONT-OFFICE.md | REVIEW |
+
 | FR-FO-021 | Front Office | Wajib | ../TASK/MODULE-02-FRONT-OFFICE.md | REVIEW |
 | FR-FO-022 | Front Office | Sebaiknya | ../TASK/MODULE-02-FRONT-OFFICE.md | REVIEW |
 | FR-FO-023 | Front Office | Sebaiknya | ../TASK/MODULE-02-FRONT-OFFICE.md | REVIEW |
@@ -66,7 +69,8 @@ Every row must eventually point to implementation evidence and tests. Status is 
 | FR-FO-038 | Front Office | Wajib | ../TASK/MODULE-02-FRONT-OFFICE.md | REVIEW |
 | FR-FO-039 | Front Office | Wajib | ../TASK/MODULE-02-FRONT-OFFICE.md | REVIEW |
 | FR-FO-040 | Front Office | Wajib | ../TASK/MODULE-02-FRONT-OFFICE.md | REVIEW |
-| FR-FO-041 | Front Office | Wajib | ../TASK/MODULE-02-FRONT-OFFICE.md | IN_PROGRESS |
+| FR-FO-041 | Front Office | Wajib | ../TASK/MODULE-02-FRONT-OFFICE.md | BLOCKED |
+
 | FR-FO-042 | Front Office | Wajib | ../TASK/MODULE-02-FRONT-OFFICE.md | REVIEW |
 | FR-FO-043 | Front Office | Wajib | ../TASK/MODULE-02-FRONT-OFFICE.md | REVIEW |
 | FR-FO-044 | Front Office | Wajib | ../TASK/MODULE-02-FRONT-OFFICE.md | REVIEW |
@@ -105,20 +109,27 @@ Every row must eventually point to implementation evidence and tests. Status is 
 | FR-LDY-009 | Laundry | Wajib | ../TASK/MODULE-04-LAUNDRY.md | REVIEW |
 | FR-LDY-010 | Laundry | Sebaiknya | ../TASK/MODULE-04-LAUNDRY.md | REVIEW |
 | FR-LDY-011 | Laundry | Wajib | ../TASK/MODULE-04-LAUNDRY.md | REVIEW |
-| FR-LDY-012 | Laundry | Wajib | ../TASK/MODULE-04-LAUNDRY.md | IN_PROGRESS |
-| FR-FBS-001 | F&B Service | Wajib | ../TASK/MODULE-05-FNB-SERVICE.md | IN_PROGRESS |
-| FR-FBS-002 | F&B Service | Wajib | ../TASK/MODULE-05-FNB-SERVICE.md | IN_PROGRESS |
-| FR-FBS-003 | F&B Service | Wajib | ../TASK/MODULE-05-FNB-SERVICE.md | IN_PROGRESS |
+| FR-LDY-012 | Laundry | Wajib | ../TASK/MODULE-04-LAUNDRY.md | REVIEW |
+
+| FR-FBS-001 | F&B Service | Wajib | ../TASK/MODULE-05-FNB-SERVICE.md | REVIEW |
+
+| FR-FBS-002 | F&B Service | Wajib | ../TASK/MODULE-05-FNB-SERVICE.md | REVIEW |
+
+| FR-FBS-003 | F&B Service | Wajib | ../TASK/MODULE-05-FNB-SERVICE.md | REVIEW |
+
 | FR-FBS-004 | F&B Service | Sebaiknya | ../TASK/MODULE-05-FNB-SERVICE.md | REVIEW |
-| FR-FBS-005 | F&B Service | Wajib | ../TASK/MODULE-05-FNB-SERVICE.md | IN_PROGRESS |
+| FR-FBS-005 | F&B Service | Wajib | ../TASK/MODULE-05-FNB-SERVICE.md | REVIEW |
+
 | FR-FBS-006 | F&B Service | Wajib | ../TASK/MODULE-05-FNB-SERVICE.md | REVIEW |
 | FR-FBS-007 | F&B Service | Wajib | ../TASK/MODULE-05-FNB-SERVICE.md | REVIEW |
 | FR-FBS-008 | F&B Service | Wajib | ../TASK/MODULE-05-FNB-SERVICE.md | REVIEW |
 | FR-FBS-009 | F&B Service | Wajib | ../TASK/MODULE-05-FNB-SERVICE.md | REVIEW |
 | FR-FBS-010 | F&B Service | Wajib | ../TASK/MODULE-05-FNB-SERVICE.md | REVIEW |
-| FR-FBS-011 | F&B Service | Wajib | ../TASK/MODULE-05-FNB-SERVICE.md | IN_PROGRESS |
+| FR-FBS-011 | F&B Service | Wajib | ../TASK/MODULE-05-FNB-SERVICE.md | REVIEW |
+
 | FR-FBS-012 | F&B Service | Wajib | ../TASK/MODULE-05-FNB-SERVICE.md | REVIEW |
-| FR-FBS-013 | F&B Service | Wajib | ../TASK/MODULE-05-FNB-SERVICE.md | IN_PROGRESS |
+| FR-FBS-013 | F&B Service | Wajib | ../TASK/MODULE-05-FNB-SERVICE.md | BLOCKED |
+
 | FR-FBS-014 | F&B Service | Wajib | ../TASK/MODULE-05-FNB-SERVICE.md | REVIEW |
 | FR-FBS-015 | F&B Service | Sebaiknya | ../TASK/MODULE-05-FNB-SERVICE.md | REVIEW |
 | FR-FBS-020 | F&B Service | Wajib | ../TASK/MODULE-05-FNB-SERVICE.md | REVIEW |
@@ -136,8 +147,10 @@ Every row must eventually point to implementation evidence and tests. Status is 
 | FR-KIT-002 | F&B Product / Kitchen | Wajib | ../TASK/MODULE-06-KITCHEN.md | REVIEW |
 | FR-KIT-003 | F&B Product / Kitchen | Wajib | ../TASK/MODULE-06-KITCHEN.md | REVIEW |
 | FR-KIT-004 | F&B Product / Kitchen | Wajib | ../TASK/MODULE-06-KITCHEN.md | REVIEW |
-| FR-KIT-005 | F&B Product / Kitchen | Wajib | ../TASK/MODULE-06-KITCHEN.md | IN_PROGRESS |
-| FR-KIT-006 | F&B Product / Kitchen | Wajib | ../TASK/MODULE-06-KITCHEN.md | IN_PROGRESS |
+| FR-KIT-005 | F&B Product / Kitchen | Wajib | ../TASK/MODULE-06-KITCHEN.md | REVIEW |
+
+| FR-KIT-006 | F&B Product / Kitchen | Wajib | ../TASK/MODULE-06-KITCHEN.md | REVIEW |
+
 | FR-KIT-007 | F&B Product / Kitchen | Wajib | ../TASK/MODULE-06-KITCHEN.md | REVIEW |
 | FR-KIT-008 | F&B Product / Kitchen | Wajib | ../TASK/MODULE-06-KITCHEN.md | REVIEW |
 | FR-KIT-009 | F&B Product / Kitchen | Sebaiknya | ../TASK/MODULE-06-KITCHEN.md | REVIEW |
@@ -146,7 +159,8 @@ Every row must eventually point to implementation evidence and tests. Status is 
 | FR-KIT-012 | F&B Product / Kitchen | Sebaiknya | ../TASK/MODULE-06-KITCHEN.md | REVIEW |
 | FR-KIT-013 | F&B Product / Kitchen | Wajib | ../TASK/MODULE-06-KITCHEN.md | REVIEW |
 | FR-KIT-014 | F&B Product / Kitchen | Sebaiknya | ../TASK/MODULE-06-KITCHEN.md | REVIEW |
-| FR-KIT-015 | F&B Product / Kitchen | Wajib | ../TASK/MODULE-06-KITCHEN.md | IN_PROGRESS |
+| FR-KIT-015 | F&B Product / Kitchen | Wajib | ../TASK/MODULE-06-KITCHEN.md | REVIEW |
+
 | FR-MTC-001 | Maintenance / Engineering | Wajib | ../TASK/MODULE-07-MAINTENANCE.md | REVIEW |
 | FR-MTC-002 | Maintenance / Engineering | Wajib | ../TASK/MODULE-07-MAINTENANCE.md | REVIEW |
 | FR-MTC-003 | Maintenance / Engineering | Wajib | ../TASK/MODULE-07-MAINTENANCE.md | REVIEW |
@@ -165,7 +179,8 @@ Every row must eventually point to implementation evidence and tests. Status is 
 | FR-INV-001 | Inventory | Wajib | ../TASK/MODULE-08-INVENTORY-PURCHASING.md | REVIEW |
 | FR-INV-002 | Inventory | Wajib | ../TASK/MODULE-08-INVENTORY-PURCHASING.md | REVIEW |
 | FR-INV-003 | Inventory | Wajib | ../TASK/MODULE-08-INVENTORY-PURCHASING.md | REVIEW |
-| FR-INV-004 | Inventory | Wajib | ../TASK/MODULE-08-INVENTORY-PURCHASING.md | IN_PROGRESS |
+| FR-INV-004 | Inventory | Wajib | ../TASK/MODULE-08-INVENTORY-PURCHASING.md | REVIEW |
+
 | FR-INV-005 | Inventory | Wajib | ../TASK/MODULE-08-INVENTORY-PURCHASING.md | REVIEW |
 | FR-INV-006 | Inventory | Wajib | ../TASK/MODULE-08-INVENTORY-PURCHASING.md | REVIEW |
 | FR-INV-007 | Inventory | Sebaiknya | ../TASK/MODULE-08-INVENTORY-PURCHASING.md | REVIEW |
@@ -181,7 +196,8 @@ Every row must eventually point to implementation evidence and tests. Status is 
 | FR-PUR-005 | Purchasing | Sebaiknya | ../TASK/MODULE-08-INVENTORY-PURCHASING.md | REVIEW |
 | FR-PUR-006 | Purchasing | Wajib | ../TASK/MODULE-08-INVENTORY-PURCHASING.md | REVIEW |
 | FR-PUR-007 | Purchasing | Wajib | ../TASK/MODULE-08-INVENTORY-PURCHASING.md | REVIEW |
-| FR-PUR-008 | Purchasing | Wajib | ../TASK/MODULE-08-INVENTORY-PURCHASING.md | IN_PROGRESS |
+| FR-PUR-008 | Purchasing | Wajib | ../TASK/MODULE-08-INVENTORY-PURCHASING.md | REVIEW |
+
 | FR-PUR-009 | Purchasing | Wajib | ../TASK/MODULE-08-INVENTORY-PURCHASING.md | REVIEW |
 | FR-PUR-010 | Purchasing | Sebaiknya | ../TASK/MODULE-08-INVENTORY-PURCHASING.md | REVIEW |
 | FR-PUR-011 | Purchasing | Wajib | ../TASK/MODULE-08-INVENTORY-PURCHASING.md | REVIEW |
@@ -221,7 +237,8 @@ Every row must eventually point to implementation evidence and tests. Status is 
 | FR-FIN-003 | Finance | Wajib | ../TASK/MODULE-10-FINANCE.md | REVIEW |
 | FR-FIN-004 | Finance | Sebaiknya | ../TASK/MODULE-10-FINANCE.md | REVIEW |
 | FR-FIN-005 | Finance | Wajib | ../TASK/MODULE-10-FINANCE.md | REVIEW |
-| FR-FIN-006 | Finance | Wajib | ../TASK/MODULE-10-FINANCE.md | IN_PROGRESS |
+| FR-FIN-006 | Finance | Wajib | ../TASK/MODULE-10-FINANCE.md | REVIEW |
+
 | FR-FIN-010 | Finance | Wajib | ../TASK/MODULE-10-FINANCE.md | REVIEW |
 | FR-FIN-011 | Finance | Wajib | ../TASK/MODULE-10-FINANCE.md | REVIEW |
 | FR-FIN-012 | Finance | Wajib | ../TASK/MODULE-10-FINANCE.md | REVIEW |
@@ -245,12 +262,16 @@ Every row must eventually point to implementation evidence and tests. Status is 
 | FR-FIN-034 | Finance | Wajib | ../TASK/MODULE-10-FINANCE.md | REVIEW |
 | FR-FIN-035 | Finance | Wajib | ../TASK/MODULE-10-FINANCE.md | REVIEW |
 | FR-FIN-036 | Finance | Wajib | ../TASK/MODULE-10-FINANCE.md | REVIEW |
-| FR-FIN-037 | Finance | Wajib | ../TASK/MODULE-10-FINANCE.md | IN_PROGRESS |
+| FR-FIN-037 | Finance | Wajib | ../TASK/MODULE-10-FINANCE.md | REVIEW |
+
 | FR-RPT-001 | Reporting & Analytics | Wajib | ../TASK/MODULE-11-REPORTING.md | REVIEW |
-| FR-RPT-002 | Reporting & Analytics | Wajib | ../TASK/MODULE-11-REPORTING.md | IN_PROGRESS |
-| FR-RPT-003 | Reporting & Analytics | Wajib | ../TASK/MODULE-11-REPORTING.md | IN_PROGRESS |
+| FR-RPT-002 | Reporting & Analytics | Wajib | ../TASK/MODULE-11-REPORTING.md | REVIEW |
+
+| FR-RPT-003 | Reporting & Analytics | Wajib | ../TASK/MODULE-11-REPORTING.md | REVIEW |
+
 | FR-RPT-004 | Reporting & Analytics | Sebaiknya | ../TASK/MODULE-11-REPORTING.md | REVIEW |
-| FR-RPT-005 | Reporting & Analytics | Wajib | ../TASK/MODULE-11-REPORTING.md | IN_PROGRESS |
+| FR-RPT-005 | Reporting & Analytics | Wajib | ../TASK/MODULE-11-REPORTING.md | REVIEW |
+
 | FR-RPT-006 | Reporting & Analytics | Sebaiknya | ../TASK/MODULE-11-REPORTING.md | REVIEW |
 | FR-RPT-007 | Reporting & Analytics | Wajib | ../TASK/MODULE-11-REPORTING.md | REVIEW |
 | FR-RPT-008 | Reporting & Analytics | Bisa | ../TASK/MODULE-11-REPORTING.md | REVIEW |

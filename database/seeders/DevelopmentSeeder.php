@@ -151,6 +151,7 @@ final class DevelopmentSeeder extends Seeder
         'identity.approval-policy.manage',
         'identity.role.manage',
         'identity.user.manage',
+        'integration.reconcile',
         'inventory.catalog.manage',
         'inventory.catalog.view',
         'inventory.count.approve',

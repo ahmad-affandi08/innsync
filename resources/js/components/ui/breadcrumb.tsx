@@ -2,10 +2,13 @@ import { Slot } from '@radix-ui/react-slot';
 import { ChevronRight } from 'lucide-react';
 import type { ComponentProps } from 'react';
 
+import { useTranslation } from '@/shared/i18n/i18n';
 import { cn } from '@/shared/lib/utils';
 
 function Breadcrumb(props: ComponentProps<'nav'>) {
-    return <nav aria-label="breadcrumb" data-slot="breadcrumb" {...props} />;
+    const { t } = useTranslation();
+
+    return <nav aria-label={t('ui.breadcrumb')} data-slot="breadcrumb" {...props} />;
 }
 
 function BreadcrumbList({ className, ...props }: ComponentProps<'ol'>) {

@@ -25,7 +25,7 @@ final class MessagingCatalog
         return [
             self::EMAIL => [
                 'smtp' => ['official' => true, 'fields' => [
-                    ['name' => 'host', 'kind' => 'text', 'secret' => false, 'required' => true],
+                    ['name' => 'host', 'kind' => 'host', 'secret' => false, 'required' => true],
                     ['name' => 'port', 'kind' => 'number', 'secret' => false, 'required' => true, 'default' => '587'],
                     ['name' => 'security', 'kind' => 'select', 'secret' => false, 'required' => true, 'options' => ['tls', 'ssl', 'none'], 'default' => 'tls'],
                     ['name' => 'username', 'kind' => 'text', 'secret' => false, 'required' => false],

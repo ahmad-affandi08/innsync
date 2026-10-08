@@ -3,6 +3,7 @@ import { cva, type VariantProps } from 'class-variance-authority';
 import { X } from 'lucide-react';
 import type { ComponentProps } from 'react';
 
+import { useTranslation } from '@/shared/i18n/i18n';
 import { cn } from '@/shared/lib/utils';
 
 const Sheet = SheetPrimitive.Root;
@@ -27,6 +28,8 @@ const sheetVariants = cva('fixed z-50 flex flex-col gap-4 bg-surface text-foregr
 });
 
 function SheetContent({ children, className, side = 'right', ...props }: ComponentProps<typeof SheetPrimitive.Content> & VariantProps<typeof sheetVariants>) {
+    const { t } = useTranslation();
+
     return (
         <SheetPortal>
             <SheetOverlay />
@@ -34,7 +37,7 @@ function SheetContent({ children, className, side = 'right', ...props }: Compone
                 {children}
                 <SheetPrimitive.Close className="absolute right-3 top-3 p-1 text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
                     <X aria-hidden="true" className="size-4" />
-                    <span className="sr-only">Close</span>
+                    <span className="sr-only">{t('ui.dialog.close')}</span>
                 </SheetPrimitive.Close>
             </SheetPrimitive.Content>
         </SheetPortal>

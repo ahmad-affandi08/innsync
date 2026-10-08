@@ -6,6 +6,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { Select } from '@/components/ui/select';
 import { StatusBadge, type StatusTone } from '@/components/ui/status-badge';
 import { InventoryShell } from '@/modules/inventory-purchasing/components/inventory-shell';
+import { formatMilli } from '@/modules/inventory-purchasing/lib/quantity';
 import { useFormatters, useTranslation } from '@/shared/i18n/i18n';
 import type { MessageKey } from '@/locales/en/index';
 
@@ -16,12 +17,12 @@ type Lot = {
 type Overview = { lots: Lot[]; counts: { expired: number; expiring: number }; warn_days: number; business_date: string; department: string | null };
 
 const TONE: Record<Lot['status'], StatusTone> = { expired: 'danger', expiring: 'warning', ok: 'success', no_expiry: 'neutral' };
-const qty = (milli: number) => (milli / 1000).toLocaleString(undefined, { maximumFractionDigits: 3 });
 
 /** The batches that hold stock, earliest expiry first, with the ones that are expired or about to expire marked (FR-INV-008, FR-KIT-009). */
 export default function LotsPage({ overview, status }: { overview: Overview; status: string }) {
-    const { t } = useTranslation();
+    const { t, locale } = useTranslation();
     const format = useFormatters();
+    const qty = (milli: number) => formatMilli(milli, locale);
     const label = (s: string) => t(`inv.lot.status.${s}` as MessageKey);
     const go = (next: string) => router.get('/inventory/lots', { ...(next === '' ? {} : { status: next }), ...(overview.department === null ? {} : { department: overview.department }) }, { preserveScroll: true });
 

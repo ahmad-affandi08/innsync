@@ -12,7 +12,9 @@ use Database\Seeders\DevelopmentSeeder;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rules\Password;
 
 final class CreateAdminCommand extends Command
 {
@@ -28,9 +30,16 @@ final class CreateAdminCommand extends Command
     {
         $email = (string) ($this->option('email') ?: $this->ask('Admin email', 'admin@innsync.my.id'));
         $password = (string) ($this->option('password') ?: $this->secret('Admin password'));
-        if ($password === '') {
-            $password = 'Admin12345!';
-            $this->warn("No password provided, using default: {$password}");
+        $generated = $password === '';
+
+        if ($generated) {
+            // Never a password that is known in advance: a random one is made, shown once, and the person must choose their own at the first sign-in.
+            $password = Str::password(20);
+            $this->warn('No password was given; a random one was made. It is shown once below, and must be changed at the first sign-in.');
+        } elseif (Validator::make(['password' => $password], ['password' => [Password::defaults()]])->fails()) {
+            $this->error('The password does not meet the password policy (at least 12 characters, with upper and lower case letters, digits and symbols). Nothing was created.');
+
+            return self::FAILURE;
         }
 
         $name = (string) ($this->option('name') ?: 'Administrator');
@@ -48,7 +57,7 @@ final class CreateAdminCommand extends Command
         $propertyId = $this->property($propertyName);
 
         $this->info("Creating/updating admin user: {$email}...");
-        $userId = $this->user($email, $name, $password);
+        $userId = $this->user($email, $name, $password, $generated);
 
         $roleId = $this->administratorRole($propertyId);
         $this->grantAllPermissions($propertyId, $roleId);
@@ -64,7 +73,7 @@ final class CreateAdminCommand extends Command
             [
                 ['Property', $propertyName],
                 ['Email', $email],
-                ['Password', $password],
+                ['Password', $generated ? $password : '(as given)'],
                 ['Role', 'Administrator (All Permissions)'],
             ]
         );
@@ -96,7 +105,7 @@ final class CreateAdminCommand extends Command
         return $id;
     }
 
-    private function user(string $email, string $name, string $password): string
+    private function user(string $email, string $name, string $password, bool $mustChange): string
     {
         $existing = DB::table('users')->where('email', $email)->first(['id', 'email_verified_at']);
 
@@ -105,6 +114,8 @@ final class CreateAdminCommand extends Command
                 'name' => $name,
                 'password' => Hash::make($password),
                 'email_verified_at' => $existing->email_verified_at ?? now(),
+                'must_change_password' => $mustChange,
+                'lock_version' => DB::raw('lock_version + 1'),
                 'updated_at' => now(),
             ]);
 
@@ -119,6 +130,7 @@ final class CreateAdminCommand extends Command
             'email' => $email,
             'password' => Hash::make($password),
             'email_verified_at' => now(),
+            'must_change_password' => $mustChange,
             'lock_version' => 0,
             'created_at' => now(),
             'updated_at' => now(),

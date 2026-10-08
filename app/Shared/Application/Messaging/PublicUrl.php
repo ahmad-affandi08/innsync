@@ -7,6 +7,12 @@ namespace App\Shared\Application\Messaging;
 /** A gateway address typed by a person must be https and point to the public internet, never to this server or the hotel's own network. */
 final class PublicUrl
 {
+    /** A bare host name (no scheme, port or path) that points to the public internet, for a mail server typed by a person. */
+    public static function acceptableHost(string $host): bool
+    {
+        return preg_match('/^(?=.{1,253}$)[A-Za-z0-9]([A-Za-z0-9-]{0,61}[A-Za-z0-9])?(\.[A-Za-z0-9]([A-Za-z0-9-]{0,61}[A-Za-z0-9])?)*$/D', $host) === 1 && self::acceptable('https://'.$host);
+    }
+
     public static function acceptable(string $url): bool
     {
         $parts = parse_url($url);

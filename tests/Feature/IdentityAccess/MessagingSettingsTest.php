@@ -116,6 +116,15 @@ final class MessagingSettingsTest extends TestCase
         }
     }
 
+    public function test_a_mail_server_must_be_a_public_host_like_every_other_gateway_address(): void
+    {
+        foreach (['localhost', '127.0.0.1', '10.0.0.5', '192.168.1.10', 'smtp.example.com:587', 'https://smtp.example.com', 'mail server', '-bad.example.com'] as $bad) {
+            $this->save('email', 'smtp', ['host' => $bad, 'from_address' => 'hotel@example.com'])->assertStatus(422)->assertJsonStructure(['error' => ['fields' => ['host']]]);
+        }
+
+        $this->save('email', 'smtp', ['host' => '93.184.216.34', 'from_address' => 'hotel@example.com'])->assertOk();
+    }
+
     public function test_missing_fields_and_other_channels_are_refused_and_turning_off_falls_back(): void
     {
         $this->save('email', 'smtp', ['host' => 'smtp.example.com'])->assertStatus(422);

@@ -116,6 +116,7 @@ final readonly class MessagingAdmin
             'email' => filter_var($text, FILTER_VALIDATE_EMAIL) !== false ? $text : throw Refusal::invalid('Give a valid email address.', [$name]),
             'number' => preg_match('/^\d{1,5}$/', $text) === 1 && (int) $text >= 1 && (int) $text <= 65535 ? $text : throw Refusal::invalid('Give a number from 1 to 65535.', [$name]),
             'select' => in_array($text, $field['options'] ?? [], true) ? $text : throw Refusal::invalid('Choose one of the options.', [$name]),
+            'host' => PublicUrl::acceptableHost($text) ? $text : throw Refusal::invalid('Give the name of a mail server on the public internet, without https:// or a port.', [$name]),
             'url' => PublicUrl::acceptable($text) ? $text : throw Refusal::invalid('Give a secure (https) address on the public internet.', [$name]),
             default => $text,
         };

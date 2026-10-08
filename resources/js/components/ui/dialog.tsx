@@ -4,6 +4,7 @@ import { X } from 'lucide-react';
 import type { ComponentProps, ReactNode } from 'react';
 
 import { Button } from '@/components/ui/button';
+import { useTranslation } from '@/shared/i18n/i18n';
 import { cn } from '@/shared/lib/utils';
 
 // ---- the shadcn/ui primitives, owned here and without radius or shadow ----
@@ -18,6 +19,8 @@ function DialogOverlay({ className, ...props }: ComponentProps<typeof DialogPrim
 }
 
 function DialogContent({ children, className, ...props }: ComponentProps<typeof DialogPrimitive.Content>) {
+    const { t } = useTranslation();
+
     return (
         <DialogPortal>
             <DialogOverlay />
@@ -29,7 +32,7 @@ function DialogContent({ children, className, ...props }: ComponentProps<typeof 
                 {children}
                 <DialogPrimitive.Close className="absolute right-4 top-4 text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
                     <X aria-hidden="true" className="size-4" />
-                    <span className="sr-only">Close</span>
+                    <span className="sr-only">{t('ui.dialog.close')}</span>
                 </DialogPrimitive.Close>
             </DialogPrimitive.Content>
         </DialogPortal>

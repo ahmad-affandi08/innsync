@@ -5,6 +5,7 @@ import { Alert } from '@/components/ui/alert';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import type { MessageKey } from '@/locales/en/index';
+import { formatMilli } from '@/modules/inventory-purchasing/lib/quantity';
 import { ReportingShell } from '@/modules/reporting/components/reporting-shell';
 import { useFormatters, useTranslation } from '@/shared/i18n/i18n';
 
@@ -16,7 +17,7 @@ type Drill = {
 
 /** The rows a figure of a dashboard card is made of (FR-DSH-016): one tab for each figure, each row linking to its own screen. */
 export default function DrillPage({ currency, drill: d }: { currency: string; drill: Drill }) {
-    const { t } = useTranslation();
+    const { t, locale } = useTranslation();
     const format = useFormatters();
     const query = (metric: string) => `/dashboard/drill/${d.card}?${new URLSearchParams({ metric, from: d.period.from, to: d.period.to }).toString()}`;
     const cell = (col: Column, row: Record<string, string | number | null>): string => {
@@ -26,7 +27,7 @@ export default function DrillPage({ currency, drill: d }: { currency: string; dr
         if (col.type === 'money') return format.money(Number(v), currency);
         if (col.type === 'date') return format.date(String(v));
         if (col.type === 'datetime') return format.instant(String(v).includes('T') ? String(v) : `${String(v).replace(' ', 'T')}Z`);
-        if (col.type === 'quantity') return (Number(v) / 1000).toLocaleString();
+        if (col.type === 'quantity') return formatMilli(Number(v), locale);
         if (col.key === 'department') return t(`inv.dept.${String(v)}` as MessageKey);
 
         return String(v);

@@ -212,6 +212,8 @@ export const id: Record<MessageKey, string> = {
     'ui.filter.reset': 'Hapus filter',
     'ui.field.required': 'wajib diisi',
     'ui.dialog.cancel': 'Batal',
+    'ui.dialog.close': 'Tutup',
+    'ui.breadcrumb': 'Jejak halaman',
     'ui.password.show': 'Tampilkan kata sandi',
     'ui.password.hide': 'Sembunyikan kata sandi',
     'shell.home': 'Beranda',
