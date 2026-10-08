@@ -3,6 +3,7 @@
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Modules\GuestExperience\Presentation\Http\Middleware\ResolveCheckInLink;
 use App\Modules\GuestExperience\Presentation\Http\Middleware\ResolveGuestSession;
+use App\Modules\GuestExperience\Presentation\Http\Middleware\ResolveOnlineBookingProperty;
 use App\Modules\IdentityAccess\Infrastructure\Console\InstallDefaultApprovalsCommand;
 use App\Modules\IdentityAccess\Infrastructure\Console\InstallDefaultRolesCommand;
 use App\Modules\IdentityAccess\Presentation\Http\Middleware\EnsureActiveUser;
@@ -82,6 +83,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'active' => EnsureActiveUser::class,
             'guest.link' => ResolveCheckInLink::class,
+            'online.booking' => ResolveOnlineBookingProperty::class,
             'guest.session' => ResolveGuestSession::class,
             'idempotent' => RequireIdempotencyKey::class,
             'mfa' => EnsureMfaVerified::class,

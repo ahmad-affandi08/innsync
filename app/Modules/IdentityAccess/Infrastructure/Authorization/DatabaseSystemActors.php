@@ -12,33 +12,47 @@ use Illuminate\Support\Str;
 
 final readonly class DatabaseSystemActors implements SystemActors
 {
-    private const NAME = 'Guest self-service';
+    private const SELF_SERVICE = ['name' => 'Guest self-service', 'role' => 'System: guest self-service', 'email' => 'guest-self-service'];
 
-    private const ROLE = 'System: guest self-service';
+    private const ONLINE_BOOKING = ['name' => 'Online booking', 'role' => 'System: online booking', 'email' => 'online-booking'];
 
     public function guestSelfService(PropertyId $property, array $permissions): string
     {
-        $email = 'guest-self-service.'.$property->toString().'@system.invalid';
+        return $this->account($property, self::SELF_SERVICE, $permissions);
+    }
+
+    public function onlineBooking(PropertyId $property, array $permissions): string
+    {
+        return $this->account($property, self::ONLINE_BOOKING, $permissions);
+    }
+
+    /**
+     * @param  array{name: string, role: string, email: string}  $kind
+     * @param  list<string>  $permissions
+     */
+    private function account(PropertyId $property, array $kind, array $permissions): string
+    {
+        $email = $kind['email'].'.'.$property->toString().'@system.invalid';
         $now = now();
 
         if (DB::table('users')->where('email', $email)->doesntExist()) {
-            DB::table('users')->insert(['id' => strtolower((string) Str::ulid()), 'name' => self::NAME, 'email' => $email, 'password' => Hash::make(Str::random(64)), 'is_active' => false, 'lock_version' => 0, 'created_at' => $now, 'updated_at' => $now]);
+            DB::table('users')->insert(['id' => strtolower((string) Str::ulid()), 'name' => $kind['name'], 'email' => $email, 'password' => Hash::make(Str::random(64)), 'is_active' => false, 'lock_version' => 0, 'created_at' => $now, 'updated_at' => $now]);
         }
 
-        return $this->ensure($property, $email, $permissions);
+        return $this->ensure($property, $email, $kind['role'], $permissions);
     }
 
     /** @param list<string> $permissions */
-    private function ensure(PropertyId $property, string $email, array $permissions): string
+    private function ensure(PropertyId $property, string $email, string $roleName, array $permissions): string
     {
         $pid = $property->toString();
         $now = now();
         $userId = (string) DB::table('users')->where('email', $email)->value('id');
-        $role = DB::table('roles')->where('property_id', $pid)->where('name', self::ROLE)->first();
+        $role = DB::table('roles')->where('property_id', $pid)->where('name', $roleName)->first();
         $roleId = $role === null ? strtolower((string) Str::ulid()) : (string) $role->id;
 
         if ($role === null) {
-            DB::table('roles')->insert(['id' => $roleId, 'property_id' => $pid, 'name' => self::ROLE, 'requires_mfa' => false, 'is_active' => true, 'lock_version' => 0, 'created_at' => $now, 'updated_at' => $now]);
+            DB::table('roles')->insert(['id' => $roleId, 'property_id' => $pid, 'name' => $roleName, 'requires_mfa' => false, 'is_active' => true, 'lock_version' => 0, 'created_at' => $now, 'updated_at' => $now]);
         }
 
         foreach ($permissions as $code) {

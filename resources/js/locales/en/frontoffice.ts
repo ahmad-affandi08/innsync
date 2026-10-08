@@ -793,7 +793,7 @@ export const frontOffice = {
     'fo.company.add': 'Add a profile',
     'fo.company.empty': 'No company or agent profiles yet.',
     'fo.company.kind.company': 'Company',
-    'fo.company.kind.agent': 'Travel agent',
+    'fo.company.kind.agent': 'Travel agent (including OTA)',
     'fo.company.limit': 'Limit {amount}',
     'fo.company.inactive': 'Inactive',
     'fo.company.code': 'Code',

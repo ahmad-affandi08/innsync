@@ -25,7 +25,7 @@ type Reservation = {
 };
 type Lookups = { types: { id: string; code: string; name: string }[]; plans: { id: string; code: string; name: string; inclusions: string | null }[] };
 type FolioRow = { id: string; number: string; window: number; label: string; status: string; balance_minor: number; currency: string };
-type Billing = { company: { id: string; code: string; name: string; billing_instruction: string | null; route_rooms: boolean; route_extras: boolean } | null; folio_id: string | null; options: { id: string; code: string; name: string }[]; may_link: boolean };
+type Billing = { company: { id: string; code: string; name: string; billing_instruction: string | null; route_rooms: boolean; route_extras: boolean } | null; folio_id: string | null; options: { id: string; code: string; name: string; kind?: string }[]; may_link: boolean };
 type Group = { id: string; number: string; name: string; billing_mode: string; master_folio_id: string | null } | null;
 type Kind = 'confirm' | 'cancel' | 'noShow';
 type Fee = { kind: string; value: number };
@@ -175,6 +175,7 @@ export default function ReservationPage({ billing, folios, group, guest_note: gu
             {billing.company !== null || billing.may_link ? (
                 <section aria-labelledby="bill-h" className="flex flex-col gap-2" data-testid="billing">
                     <h2 className="text-lg font-semibold" id="bill-h">{t('fo.company.billTo')}</h2>
+                    {r.source === 'ota' && billing.company === null ? <Alert title={t('fo.company.otaTitle')} tone="info">{t('fo.company.otaBody')}</Alert> : null}
                     {billing.company !== null ? (
                         <div className="flex flex-col gap-1 text-sm">
                             <p className="font-medium">{billing.company.code} · {billing.company.name}</p>

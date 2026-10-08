@@ -73,6 +73,10 @@ export default function ChargeSchemesPage({ schemes, scope, scopes }: { schemes:
                             <FormField field="service_charge_rate" error={action.fieldError('service_charge_rate')} hint={t('tax.rateHint')} label={t('tax.serviceCharge')}><Input inputMode="decimal" onChange={(e) => setForm({ ...form, sc: e.target.value })} value={form.sc} /></FormField>
                             <FormField field="tax_rate" error={action.fieldError('tax_rate')} hint={t('tax.rateHint')} label={t('tax.rate')}><Input inputMode="decimal" onChange={(e) => setForm({ ...form, tax: e.target.value })} value={form.tax} /></FormField>
                         </div>
+                        <p className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                            <span>{t('tax.typical')}</span>
+                            <Button onClick={() => setForm({ ...form, tax: '10', sc: '5' })} size="sm" type="button" variant="outline">{t('tax.typicalUse')}</Button>
+                        </p>
                         <label className="flex items-center gap-2 text-sm"><input checked={form.onSc} onChange={(e) => setForm({ ...form, onSc: e.target.checked })} type="checkbox" />{t('tax.onServiceCharge')}</label>
                         <FormField field="reason" error={action.fieldError('reason')} hint={t('property.field.reasonHint')} label={t('property.field.reason')}><Input maxLength={500} onChange={(e) => setForm({ ...form, reason: e.target.value })} value={form.reason} /></FormField>
                     </div>

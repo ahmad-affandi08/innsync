@@ -71,6 +71,9 @@ use App\Modules\FrontOffice\Application\ForeignPayments\ForeignPaymentRepository
 use App\Modules\FrontOffice\Application\Groups\GroupRepository;
 use App\Modules\FrontOffice\Application\GuestDesk\GuestStayDesk;
 use App\Modules\FrontOffice\Application\GuestDesk\GuestStayDeskService;
+use App\Modules\FrontOffice\Application\GuestDesk\OnlineBookingCounts;
+use App\Modules\FrontOffice\Application\GuestDesk\OnlineBookingDesk;
+use App\Modules\FrontOffice\Application\GuestDesk\OnlineBookingDeskService;
 use App\Modules\FrontOffice\Application\GuestDesk\SelfCheckInDesk;
 use App\Modules\FrontOffice\Application\GuestDesk\SelfCheckInDeskService;
 use App\Modules\FrontOffice\Application\GuestDirectory\GuestDirectoryReader;
@@ -105,6 +108,7 @@ use App\Modules\FrontOffice\Infrastructure\Feedback\DatabaseFeedbackRepository;
 use App\Modules\FrontOffice\Infrastructure\Folios\DatabaseFolioRepository;
 use App\Modules\FrontOffice\Infrastructure\ForeignPayments\DatabaseForeignPaymentRepository;
 use App\Modules\FrontOffice\Infrastructure\Groups\DatabaseGroupRepository;
+use App\Modules\FrontOffice\Infrastructure\GuestDesk\DatabaseOnlineBookingCounts;
 use App\Modules\FrontOffice\Infrastructure\GuestDirectory\DatabaseGuestDirectoryReader;
 use App\Modules\FrontOffice\Infrastructure\GuestNotes\DatabaseGuestNoteStore;
 use App\Modules\FrontOffice\Infrastructure\Inventory\DatabaseInventoryHoldRepository;
@@ -127,11 +131,13 @@ use App\Modules\GuestExperience\Application\GuestRoomCharges;
 use App\Modules\GuestExperience\Application\GuestRoomChargeVerdict;
 use App\Modules\GuestExperience\Application\GuestSessionStore;
 use App\Modules\GuestExperience\Application\GuestTokens;
+use App\Modules\GuestExperience\Application\OnlineBookingStore;
 use App\Modules\GuestExperience\Application\QrPointStore;
 use App\Modules\GuestExperience\Application\SelfCheckInStore;
 use App\Modules\GuestExperience\Infrastructure\DatabaseGuestHelpStore;
 use App\Modules\GuestExperience\Infrastructure\DatabaseGuestOrderStore;
 use App\Modules\GuestExperience\Infrastructure\DatabaseGuestSessionStore;
+use App\Modules\GuestExperience\Infrastructure\DatabaseOnlineBookingStore;
 use App\Modules\GuestExperience\Infrastructure\DatabaseQrPointStore;
 use App\Modules\GuestExperience\Infrastructure\DatabaseSelfCheckInStore;
 use App\Modules\GuestExperience\Infrastructure\RandomGuestTokens;
@@ -626,6 +632,9 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(GuestStayDesk::class, GuestStayDeskService::class);
         $this->app->bind(SelfCheckInStore::class, DatabaseSelfCheckInStore::class);
         $this->app->bind(SelfCheckInDesk::class, SelfCheckInDeskService::class);
+        $this->app->bind(OnlineBookingStore::class, DatabaseOnlineBookingStore::class);
+        $this->app->bind(OnlineBookingDesk::class, OnlineBookingDeskService::class);
+        $this->app->bind(OnlineBookingCounts::class, DatabaseOnlineBookingCounts::class);
         $this->app->bind(SystemActors::class, DatabaseSystemActors::class);
         $this->app->bind(TicketStore::class, DatabaseTicketStore::class);
         $this->app->bind(RecipeStore::class, DatabaseRecipeStore::class);
@@ -714,6 +723,10 @@ class AppServiceProvider extends ServiceProvider
         // The lobby code asks for a reservation number and a name: slower than the rest, so a name cannot be tried against many numbers.
         RateLimiter::for('guest-lookup', static fn (Request $request): Limit => Limit::perMinute(10)
             ->by((string) $request->ip()));
+
+        RateLimiter::for('online-booking-search', static fn (Request $request): Limit => Limit::perMinute(30)->by((string) $request->ip()));
+
+        RateLimiter::for('online-booking-reserve', static fn (Request $request): Limit => Limit::perMinutes(10, max(1, (int) config('guest.online_booking.requests_per_10_minutes')))->by((string) $request->ip()));
 
         RateLimiter::for('guest-write', static fn (Request $request): Limit => Limit::perMinute(20)
             ->by(hash('sha256', (string) $request->cookie('ge_session').'|'.$request->ip())));

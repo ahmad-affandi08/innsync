@@ -55,6 +55,8 @@ use App\Modules\GuestExperience\Presentation\Http\Controllers\GuestHelpControlle
 use App\Modules\GuestExperience\Presentation\Http\Controllers\GuestMenuController;
 use App\Modules\GuestExperience\Presentation\Http\Controllers\GuestOrderQueueController;
 use App\Modules\GuestExperience\Presentation\Http\Controllers\GuestSurveyController;
+use App\Modules\GuestExperience\Presentation\Http\Controllers\OnlineBookingController;
+use App\Modules\GuestExperience\Presentation\Http\Controllers\OnlineBookingStaffController;
 use App\Modules\GuestExperience\Presentation\Http\Controllers\QrPointController;
 use App\Modules\GuestExperience\Presentation\Http\Controllers\SelfCheckInController;
 use App\Modules\GuestExperience\Presentation\Http\Controllers\SelfCheckInStaffController;
@@ -172,6 +174,13 @@ Route::prefix('g')->middleware(['throttle:guest'])->group(function (): void {
         Route::post('/', [SelfCheckInController::class, 'submit'])->middleware('throttle:guest-write')->name('guest.checkin.submit');
     });
     Route::get('/{token}', [GuestEntryController::class, 'enter'])->where('token', '[A-Za-z0-9_-]{32}')->name('guest.enter');
+});
+
+// Booking from the hotel's own web page: anyone may look and send a request; the request is tentative until staff confirm it, and nothing is charged online.
+Route::middleware(['throttle:guest', 'online.booking'])->prefix('book/{property}')->where(['property' => '[0-9a-z]{26}'])->group(function (): void {
+    Route::get('/', [OnlineBookingController::class, 'show'])->name('booking.page');
+    Route::get('/offers', [OnlineBookingController::class, 'offers'])->middleware('throttle:online-booking-search')->name('booking.offers');
+    Route::post('/', [OnlineBookingController::class, 'reserve'])->middleware('throttle:online-booking-reserve')->name('booking.reserve');
 });
 
 Route::middleware('guest')->group(function (): void {
@@ -299,6 +308,12 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
 // First-time set-up as one ordered list: what is done and what the hotel still cannot work without.
 Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])
     ->get('/setup', [SetupChecklistController::class, 'show'])->middleware('permission:property.settings.manage')->name('setup');
+
+// How the property takes bookings from its own web page.
+Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property', 'permission:property.settings.manage'])->prefix('property/online-booking')->group(function (): void {
+    Route::get('/', [OnlineBookingStaffController::class, 'show'])->name('property.online-booking');
+    Route::put('/', [OnlineBookingStaffController::class, 'save'])->middleware('throttle:access-admin')->name('property.online-booking.save');
+});
 
 // Is the system healthy and being backed up: one screen for the owner, read only.
 Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])

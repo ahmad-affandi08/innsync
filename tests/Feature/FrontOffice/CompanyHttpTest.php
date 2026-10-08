@@ -62,6 +62,10 @@ final class CompanyHttpTest extends TestCase
         $this->postJson("/front-office/companies/{$company['id']}", ['name' => 'PT Acme', 'kind' => 'company', 'is_active' => true, 'lock_version' => 0, 'reason' => 'Stale'])->assertStatus(409);
 
         $this->get("/front-office/reservations/{$this->reservationId}")->assertInertia(fn (Assert $p) => $p->where('billing.may_link', true)->has('billing.options', 1)->where('billing.company', null));
+
+        // A travel agent, which is what an online travel agency is, comes first in the list however its name sorts.
+        $this->postJson('/front-office/companies', ['code' => 'TRVL', 'name' => 'Zeta Travel', 'kind' => 'agent', 'route_rooms' => true, 'route_extras' => false])->assertCreated();
+        $this->get("/front-office/reservations/{$this->reservationId}")->assertInertia(fn (Assert $p) => $p->has('billing.options', 2)->where('billing.options.0.code', 'TRVL')->where('billing.options.0.kind', 'agent')->where('billing.options.1.code', 'ACME'));
         $this->postJson("/front-office/reservations/{$this->reservationId}/company", ['company_id' => $company['id']])->assertOk()->assertJsonPath('billing.company.code', 'ACME');
         $this->postJson("/front-office/reservations/{$this->reservationId}/company", ['company_id' => $company['id']])->assertStatus(409);
         $this->get("/front-office/reservations/{$this->reservationId}")->assertInertia(fn (Assert $p) => $p->where('billing.company.code', 'ACME')->where('billing.may_link', false)->where('billing.folio_id', fn ($id) => is_string($id)));

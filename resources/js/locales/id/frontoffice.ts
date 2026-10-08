@@ -793,7 +793,7 @@ export const frontOffice = {
     'fo.company.add': 'Tambah profil',
     'fo.company.empty': 'Belum ada profil perusahaan atau agen.',
     'fo.company.kind.company': 'Perusahaan',
-    'fo.company.kind.agent': 'Agen perjalanan',
+    'fo.company.kind.agent': 'Agen perjalanan (termasuk OTA)',
     'fo.company.limit': 'Batas {amount}',
     'fo.company.inactive': 'Nonaktif',
     'fo.company.code': 'Kode',

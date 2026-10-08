@@ -52,6 +52,14 @@ Staff (HR → Staff), Suppliers (Inventory → Suppliers) and the menu (F&B → 
 
 Property settings → **Logo**. Upload a wide logo on a transparent or white background (PNG, JPEG, WebP or SVG up to 512 KB). It replaces the InnSYnc logo in the header and prints at the top of every bill, receipt, pay slip and report. Remove it to go back to the InnSYnc logo. A small "Powered by InnSYnc" line stays at the bottom of pages and printed documents; switch it off on the same screen if the hotel prefers. The logo also shows on the sign-in page (when the installation has one property) and on the guest pages.
 
+## Booking from the hotel's own web page
+
+Property settings → **Online booking**. Off until the hotel switches it on. Choose the rate plan guests book at (their prices come from it), the most nights in one booking, an email for new requests and a short message for the guest, then switch it on. The page shows the address (`/book/<property>`): put it on a button or link on the hotel's website or send it to guests. A guest picks dates and a room, sees the full price with tax and service charge, and sends a request. It becomes a **tentative** reservation made by an account called "Online booking"; staff confirm it from Front Office → Reservations (the bell shows how many wait). Nothing is charged online: the guest pays at the hotel. A request never takes a room beyond what is free, and the privacy notice agreed to is recorded with its version. The page limits how fast one address can send requests, has a hidden field only programs fill, and refuses a person who already has three requests waiting. Not included: online payment and a link to Traveloka or other agencies.
+
+## Guests who paid an online travel agency
+
+When a guest already paid the agency (for example in the Traveloka app), the cashier must not charge them for the room. Create the agency under Front Office → Companies with the type **Travel agent (including OTA)** and let it take the rooms. On a reservation that came from an agency, the reservation page says so and offers the agency first under "Bill to"; the room charge then goes to the agency's folio and becomes a receivable at check-out. When the agency pays, record it in Finance → Receivables; the commission the agency keeps is entered there as a credit note, so the receivable closes exactly.
+
 ## A forgotten password
 
 The sign-in page has **Forgot your password**. It needs the hosting mail settings (the System status screen says whether email will be delivered). The link works once and lasts 60 minutes; the person's other sessions end when it is used. An administrator can still reset a password from People & access.

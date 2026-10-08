@@ -85,7 +85,7 @@ function isHere(links: readonly NavLink[], href: string, path: string): boolean 
     return match(href) && best?.href === href;
 }
 
-type Shell = { propertyName: string | null; businessDate: string | null; userName: string; disabledModules?: string[]; accessibleModules?: string[] | null; attention?: { key: 'approvals' | 'attendance' | 'reminders'; count: number }[] } | null;
+type Shell = { propertyName: string | null; businessDate: string | null; userName: string; disabledModules?: string[]; accessibleModules?: string[] | null; attention?: { key: 'approvals' | 'attendance' | 'reminders' | 'online'; count: number }[] } | null;
 
 type FrameProps = {
     title: string;
@@ -122,7 +122,7 @@ export function AppFrame({ actions, children, description, links = [], printClas
     const canFind = shell !== null && (shell.accessibleModules == null || shell.accessibleModules.includes('front-office')) && !(shell.disabledModules ?? []).includes('front-office');
     const attention = shell?.attention ?? [];
     const attentionTotal = attention.reduce((sum, a) => sum + a.count, 0);
-    const ATTENTION_HREF = { approvals: '/approvals', attendance: '/hr/attendance', reminders: '/front-office/reminders' } as const;
+    const ATTENTION_HREF = { approvals: '/approvals', attendance: '/hr/attendance', reminders: '/front-office/reminders', online: '/front-office/reservations?status=tentative' } as const;
     const bell = attentionTotal > 0 ? (
         <Popover>
             <PopoverTrigger asChild>

@@ -19,4 +19,12 @@ interface SystemActors
      * @return string the user id
      */
     public function guestSelfService(PropertyId $property, array $permissions): string;
+
+    /**
+     * The account bookings made on the hotel's own web page are recorded under, so a reservation names "Online booking" as its maker and every rule and permission check still runs.
+     *
+     * @param  list<string>  $permissions
+     * @return string the user id
+     */
+    public function onlineBooking(PropertyId $property, array $permissions): string;
 }

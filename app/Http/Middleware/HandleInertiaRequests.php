@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Middleware;
 
 use App\Modules\FrontOffice\Application\Reminders\ReminderService;
+use App\Modules\GuestExperience\Application\OnlineBookingAdminService;
 use App\Modules\HumanResource\Application\AttendanceReviewService;
 use App\Modules\IdentityAccess\Application\Approval\ApprovalService;
 use App\Modules\Property\Application\Branding\PropertyBranding;
@@ -145,10 +146,11 @@ final class HandleInertiaRequests extends Middleware
             'approvals' => static fn (): int => count(app(ApprovalService::class)->pendingFor($property, $userId, 99)),
             'attendance' => static fn (): int => count(app(AttendanceReviewService::class)->queue($property, $userId)),
             'reminders' => static fn (): int => app(ReminderService::class)->dueCount($property, $userId),
+            'online' => static fn (): int => app(OnlineBookingAdminService::class)->awaitingFor($property, $userId),
         ] as $key => $count) {
             try {
-                // Counting approvals and clock-ins is heavy, so they are counted once a minute; reminders are one cheap count and always current.
-                $n = $key === 'reminders' ? (int) $count() : (int) Cache::remember('shell.attention.'.$key.'.'.$propertyId.'.'.$userId, 60, $count);
+                // Counting approvals and clock-ins is heavy, so they are counted once a minute; reminders and web bookings are one cheap count and always current.
+                $n = in_array($key, ['reminders', 'online'], true) ? (int) $count() : (int) Cache::remember('shell.attention.'.$key.'.'.$propertyId.'.'.$userId, 60, $count);
             } catch (Throwable $exception) {
                 report($exception);
                 $n = 0;

@@ -138,9 +138,18 @@ final readonly class CompanyService implements CompanyRouting
 
         return [
             'company' => $company, 'folio_id' => $this->companies->companyFolioId($property, strtolower($reservationId)),
-            'options' => $company === null ? array_values(array_map(static fn (array $c): array => ['id' => $c['id'], 'code' => $c['code'], 'name' => $c['name']], $this->companies->list($property, true))) : [],
+            'options' => $company === null ? $this->options($property) : [],
             'may_link' => $company === null && $this->permissions->allowsInProperty($actorId, self::LINK_PERMISSION, $property),
         ];
+    }
+
+    /** The accounts a reservation can be billed to, travel agents (which is what an online travel agency is) first, then by name. @return list<array{id: string, code: string, name: string, kind: string}> */
+    private function options(PropertyId $property): array
+    {
+        $options = array_map(static fn (array $c): array => ['id' => $c['id'], 'code' => $c['code'], 'name' => $c['name'], 'kind' => (string) ($c['kind'] ?? 'company')], $this->companies->list($property, true));
+        usort($options, static fn (array $a, array $b): int => [$a['kind'] === 'agent' ? 0 : 1, $a['name']] <=> [$b['kind'] === 'agent' ? 0 : 1, $b['name']]);
+
+        return $options;
     }
 
     /**

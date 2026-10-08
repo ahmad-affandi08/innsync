@@ -54,4 +54,13 @@ return [
             'en' => 'Pay the deposit by QRIS at the front desk or with the hotel QRIS code, then tick below. The receptionist confirms the money arrived and records it on your folio.',
         ],
     ],
+
+    // Booking from the hotel's own web page: how often one address may send requests, and the notice shown until the hotel writes its own.
+    'online_booking' => [
+        'requests_per_10_minutes' => (int) env('GUEST_BOOKING_REQUESTS_PER_10_MINUTES', 5),
+        'privacy_baseline' => [
+            'id' => 'Kami meminta nama serta nomor telepon atau alamat email Anda hanya untuk memproses permintaan pemesanan ini dan menghubungi Anda. Data ini dilihat petugas hotel yang berwenang, disimpan sesuai kebutuhan layanan dan kewajiban hotel, dan tidak dibagikan kepada pihak lain kecuali diwajibkan hukum. Anda dapat meminta koreksi atau penghapusan data melalui hotel.',
+            'en' => 'We ask for your name and your phone number or email address only to handle this booking request and to contact you. Authorised hotel staff see this data; it is kept as the service and the hotel\'s obligations require and not shared with anyone else unless the law requires it. You can ask the hotel to correct or erase your data.',
+        ],
+    ],
 ];

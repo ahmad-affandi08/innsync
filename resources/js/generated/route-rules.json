@@ -7,6 +7,19 @@
             "lock_version"
         ]
     },
+    "GET /book/{property}/offers": {
+        "required": [
+            "adults",
+            "arrival",
+            "departure"
+        ],
+        "declared": [
+            "adults",
+            "arrival",
+            "children",
+            "departure"
+        ]
+    },
     "GET /dashboard": {
         "required": [],
         "declared": [
@@ -972,6 +985,33 @@
         ],
         "declared": [
             "reason"
+        ]
+    },
+    "POST /book/{property}": {
+        "required": [
+            "adults",
+            "agree",
+            "arrival",
+            "departure",
+            "key",
+            "name",
+            "notice_version",
+            "room_type_id"
+        ],
+        "declared": [
+            "adults",
+            "agree",
+            "arrival",
+            "children",
+            "departure",
+            "email",
+            "key",
+            "name",
+            "notes",
+            "notice_version",
+            "phone",
+            "room_type_id",
+            "website"
         ]
     },
     "POST /confirm-password": {
@@ -6222,6 +6262,19 @@
             "provider",
             "values",
             "values.*"
+        ]
+    },
+    "PUT /property/online-booking": {
+        "required": [
+            "enabled",
+            "max_nights"
+        ],
+        "declared": [
+            "enabled",
+            "max_nights",
+            "notice",
+            "notify_email",
+            "rate_plan_id"
         ]
     },
     "PUT /property/profile": {
