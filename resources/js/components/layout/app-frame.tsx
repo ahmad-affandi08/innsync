@@ -281,7 +281,7 @@ export function AppFrame({ actions, children, description, links = [], printClas
     );
 
     const crumbs = (
-        <Breadcrumb className="min-w-0 flex-1">
+        <Breadcrumb className="min-w-0 print:hidden">
             <BreadcrumbList className="flex-nowrap">
                 {shell?.propertyName ? (
                     <>
@@ -370,6 +370,7 @@ export function AppFrame({ actions, children, description, links = [], printClas
 
     const body = (
         <main className={cn('mx-auto flex w-full flex-1 flex-col gap-8 px-4 py-8 lg:px-8', wide ? 'max-w-[90rem]' : 'max-w-5xl', printClass)} id="content" tabIndex={-1}>
+            <div className="-mb-4">{crumbs}</div>
             {pageHead}
             <div className="flex flex-col gap-8">{children}</div>
         </main>
@@ -529,8 +530,8 @@ export function AppFrame({ actions, children, description, links = [], printClas
                     {layout === 'topbar' ? topbar : (
                         <header className="sticky top-0 z-20 flex h-14 items-center gap-3 border-b border-border bg-surface px-4 lg:px-8 print:hidden">
                             {menuButton}
-                            {own !== null && layout === 'rail' ? <Link className="hidden shrink-0 xl:block" href="/"><img alt={shell?.propertyName ?? ''} className="max-h-8 max-w-[7rem] w-auto object-contain" src={own} /></Link> : null}
-                            {crumbs}
+                            {own !== null && layout === 'rail' ? <Link className="hidden shrink-0 lg:block" href="/"><img alt={shell?.propertyName ?? ''} className="max-h-8 max-w-[10rem] w-auto object-contain" src={own} /></Link> : null}
+                            <span className="flex-1" />
                             {dateChip}
                             {canFind ? <QuickFind /> : null}
                             {bell}
@@ -541,6 +542,7 @@ export function AppFrame({ actions, children, description, links = [], printClas
                     )}
                     {layout === 'topbar' ? (
                         <main className={cn('mx-auto flex w-full flex-1 flex-col gap-8 px-4 py-8 lg:px-8', wide ? 'max-w-[100rem]' : 'max-w-5xl', printClass)} id="content" tabIndex={-1}>
+                            <div className="-mb-4">{crumbs}</div>
                             {pageHead}
                             <div className="flex flex-col gap-8">{children}</div>
                         </main>
