@@ -242,4 +242,22 @@ final class SetupHttpTest extends TestCase
         $this->postJson('/fnb/outlets/01arz3ndektsv4rrffq69g5fb2', ['name' => 'Mine now', 'kind' => 'bar', 'charge_scope' => 'fnb', 'prices_include_charges' => false, 'active' => true, 'lock_version' => 0])->assertNotFound();
         $this->get('/fnb/outlets')->assertOk()->assertInertia(fn (Assert $page) => $page->has('overview.outlets', 0));
     }
+
+    public function test_a_menu_category_is_renamed_moved_to_another_station_and_switched_off_with_a_lock(): void
+    {
+        $this->actAs($this->manager);
+        $category = $this->category($this->outlet());
+        $body = ['name' => 'Mains', 'station' => 'bar', 'sort_order' => 3, 'active' => true, 'lock_version' => 0];
+
+        $this->postJson("/fnb/categories/{$category}", [...$body, 'name' => ''])->assertStatus(422);
+        $this->postJson("/fnb/categories/{$category}", [...$body, 'station' => 'nowhere'])->assertStatus(422);
+        $this->postJson("/fnb/categories/{$category}", $body)->assertOk()->assertJsonPath('category.name', 'Mains')->assertJsonPath('category.station', 'bar')->assertJsonPath('category.lock_version', 1);
+        $this->postJson("/fnb/categories/{$category}", $body)->assertStatus(409);
+        $this->postJson("/fnb/categories/{$category}", [...$body, 'active' => false, 'lock_version' => 1])->assertOk()->assertJsonPath('category.is_active', false);
+        $this->postJson('/fnb/categories/01arz3ndektsv4rrffq69g5fzz', $body)->assertNotFound();
+
+        // Someone who only takes orders may not change the menu.
+        $this->actAs($this->waiter);
+        $this->postJson("/fnb/categories/{$category}", [...$body, 'lock_version' => 2])->assertForbidden();
+    }
 }

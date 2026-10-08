@@ -6,13 +6,19 @@ namespace Tests\Feature\Laundry;
 
 use App\Modules\FrontOffice\Application\Folios\FolioService;
 use App\Modules\FrontOffice\Application\Reservations\ReservationService;
+use App\Modules\FrontOffice\Application\Stays\CheckOutLaundryException;
 use App\Modules\FrontOffice\Application\Stays\StayService;
+use App\Modules\IdentityAccess\Application\Approval\ApprovalPolicyAdmin;
+use App\Modules\IdentityAccess\Application\Approval\ApprovalService;
+use App\Modules\IdentityAccess\Infrastructure\Persistence\Eloquent\UserRecord;
 use App\Modules\Laundry\Application\LaundryService;
 use App\Modules\Property\Application\Catalog\RoomCatalogService;
 use App\Modules\Property\Application\Rates\ChargeSchemeService;
 use App\Modules\Property\Application\Rates\RatePlanService;
 use App\Modules\Property\Application\Settings\PropertySettingsService;
+use App\Shared\Application\Tenancy\PropertyContext;
 use App\Shared\Application\Time\Clock;
+use App\Shared\Domain\Tenancy\PropertyId;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Inertia\Testing\AssertableInertia as Assert;
@@ -125,5 +131,43 @@ final class LaundryHttpTest extends TestCase
         $this->get('/laundry/new')->assertForbidden();
         $this->postJson('/laundry/prices', ['code' => 'X1', 'name' => 'X', 'unit_price_minor' => 1, 'reason' => 'x'])->assertForbidden();
         $this->postJson('/laundry/orders/01arz3ndektsv4rrffq69g5fb1/advance', ['lock_version' => 0])->assertForbidden();
+    }
+
+    public function test_a_guest_who_leaves_with_laundry_in_hand_needs_an_approved_exception_and_the_stay_then_closes(): void
+    {
+        $item = $this->postJson('/laundry/prices', ['code' => 'SHIRT', 'name' => 'Shirt', 'unit_price_minor' => 2_500_000, 'reason' => 'Opening list'])->assertCreated()->json('item.id');
+        $this->postJson('/laundry/orders', ['barcode' => 'BAG-1', 'room_id' => $this->roomId, 'express' => false, 'promised_date' => '2026-10-02', 'promised_time' => '17:00', 'lines' => [['price_item_id' => $item, 'quantity' => 2]]], ['Idempotency-Key' => 'laundry-http-exc-01'])->assertCreated();
+        $stay = DB::table('stays')->first();
+        $ask = fn (array $body, string $key) => $this->postJson("/front-office/stays/{$stay->id}/laundry-exception/approval", $body, ['Idempotency-Key' => $key]);
+
+        // The stay cannot be closed while the laundry is in hand.
+        $this->postJson("/front-office/stays/{$stay->id}/check-out", ['lock_version' => $stay->lock_version])->assertStatus(409);
+
+        $ask(['mode' => 'nonsense', 'reason' => 'Guest left'], 'laundry-exc-ask-01')->assertStatus(422);
+        $ask(['mode' => 'late_charge', 'reason' => ' '], 'laundry-exc-ask-02')->assertStatus(422);
+        $ask(['mode' => 'late_charge', 'reason' => 'Guest left early'], 'laundry-exc-ask-03')->assertStatus(409);
+
+        $admin = UserRecord::factory()->create();
+        $this->grant($admin, self::A, [ApprovalPolicyAdmin::MANAGE_PERMISSION]);
+        $approver = UserRecord::factory()->create();
+        $this->grant($approver, self::A, ['laundry.test.approve']);
+        app(PropertyContext::class)->activate(PropertyId::fromString(self::A));
+        app(ApprovalPolicyAdmin::class)->define(PropertyId::fromString(self::A), strtolower((string) $admin->getKey()), CheckOutLaundryException::SUBJECT, 0, [['permission' => 'laundry.test.approve']], 'Owner policy');
+
+        $approval = (string) $ask(['mode' => 'late_charge', 'reason' => 'Guest left early'], 'laundry-exc-ask-04')->assertCreated()->assertJsonPath('approval.status', 'pending')->json('approval.id');
+        $exception = ['mode' => 'late_charge', 'reason' => 'Guest left early', 'approval_id' => $approval];
+        $this->postJson("/front-office/stays/{$stay->id}/check-out", ['lock_version' => $stay->lock_version, 'laundry_exception' => $exception])->assertStatus(409);
+        self::assertSame(0, DB::table('stay_laundry_exceptions')->count());
+
+        app(PropertyContext::class)->activate(PropertyId::fromString(self::A));
+        app(ApprovalService::class)->approve(PropertyId::fromString(self::A), $approval, strtolower((string) $approver->getKey()));
+
+        // The approval is for this reason and these orders: another reason is not covered by it.
+        $this->postJson("/front-office/stays/{$stay->id}/check-out", ['lock_version' => $stay->lock_version, 'laundry_exception' => [...$exception, 'reason' => 'Something else']])->assertStatus(409);
+        $this->postJson("/front-office/stays/{$stay->id}/check-out", ['lock_version' => $stay->lock_version, 'laundry_exception' => $exception])->assertOk();
+
+        self::assertSame(1, DB::table('stay_laundry_exceptions')->where('mode', 'late_charge')->count());
+        self::assertSame('checked_out', DB::table('stays')->where('id', $stay->id)->value('status'));
+        self::assertSame(1, DB::table('audit_entries')->where('action', 'stay.laundry_exception')->count());
     }
 }

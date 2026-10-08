@@ -127,6 +127,39 @@ final class HousekeepingHttpTest extends TestCase
         self::assertSame(0, (int) DB::table('housekeeping_settings')->value('inspection_required'));
     }
 
+    public function test_a_mandatory_finding_holds_the_room_until_someone_with_the_right_waives_it_with_a_reason_or_it_is_resolved(): void
+    {
+        $this->checkInAndOut();
+        $taskId = (string) DB::table('housekeeping_tasks')->value('id');
+        $this->postJson("/housekeeping/tasks/{$taskId}/assign", ['assigned_to' => $this->attendantId, 'lock_version' => 0])->assertOk();
+        $this->post('/logout');
+        $this->flushSession();
+        $this->actingAsAttendant();
+        $this->postJson("/housekeeping/tasks/{$taskId}/start", ['lock_version' => 1])->assertOk();
+        $this->postJson("/housekeeping/tasks/{$taskId}/finish", ['lock_version' => 2])->assertOk();
+        $this->post('/logout');
+        $this->flushSession();
+
+        $this->signIn(self::A, [HousekeepingService::INSPECT_PERMISSION, HousekeepingService::MANAGE_PERMISSION]);
+        $this->postJson("/housekeeping/rooms/{$this->roomId}/inspections", ['passed' => false, 'findings' => [['description' => 'Stain on the carpet', 'mandatory' => true], ['description' => 'Dusty shelf', 'mandatory' => false]]])->assertCreated();
+        $mandatory = (string) DB::table('inspection_findings')->where('description', 'Stain on the carpet')->value('id');
+        self::assertNotSame('', $mandatory);
+
+        // Without the right to waive, and without a reason, nothing changes.
+        $this->postJson("/housekeeping/findings/{$mandatory}/waive", ['reason' => 'Guest agreed'])->assertForbidden();
+        $this->post('/logout');
+        $this->flushSession();
+        $this->signIn(self::A, [HousekeepingService::WAIVE_PERMISSION, HousekeepingService::INSPECT_PERMISSION, HousekeepingService::MANAGE_PERMISSION]);
+        $this->postJson("/housekeeping/findings/{$mandatory}/waive", ['reason' => ''])->assertStatus(422);
+        $this->postJson('/housekeeping/findings/01arz3ndektsv4rrffq69g5fzz/waive', ['reason' => 'Guest agreed'])->assertNotFound();
+        self::assertSame('open', DB::table('inspection_findings')->where('id', $mandatory)->value('status'));
+
+        $this->postJson("/housekeeping/findings/{$mandatory}/waive", ['reason' => 'Will be cleaned by the carpet crew on Friday'])->assertOk()->assertJsonPath('waived', true);
+        self::assertSame('waived', DB::table('inspection_findings')->where('id', $mandatory)->value('status'));
+        self::assertSame(1, DB::table('audit_entries')->where('action', 'housekeeping.finding.waived')->where('aggregate_id', $mandatory)->count());
+        $this->postJson("/housekeeping/findings/{$mandatory}/waive", ['reason' => 'Again'])->assertStatus(409);
+    }
+
     private function actingAsAttendant(): void
     {
         $user = UserRecord::query()->findOrFail($this->attendantId);

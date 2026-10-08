@@ -98,4 +98,35 @@ final class RatePlanHttpTest extends TestCase
         $this->postJson("/property/rate-plans/{$plan['id']}/quote", ['room_type_id' => $type, 'arrival' => '2026-10-10', 'departure' => '2026-10-11'])->assertOk();
         self::assertSame(0, DB::table('rate_periods')->count());
     }
+
+    public function test_a_price_is_replaced_by_a_new_one_with_a_reason_and_the_old_one_stays_as_history(): void
+    {
+        $type = $this->manager();
+        $this->postJson('/property/tax', ['effective_from' => '2026-01-01', 'service_charge_rate' => '0', 'tax_rate' => '0', 'tax_on_service_charge' => false, 'reason' => 'None'])->assertCreated();
+        $plan = $this->postJson('/property/rate-plans', ['code' => 'bar', 'name' => 'BAR', 'kind' => 'public', 'prices_include_charges' => false, 'reason' => 'x'])->assertCreated()->json('plan');
+        $this->postJson("/property/rate-plans/{$plan['id']}/prices", ['room_type_id' => $type, 'from' => '2026-10-01', 'to' => '2026-12-31', 'weekday_mask' => 127, 'nightly_minor' => 100_000_000, 'reason' => 'Season'])->assertCreated();
+        $old = (string) DB::table('rate_periods')->value('id');
+        $quote = fn (): int => (int) $this->postJson("/property/rate-plans/{$plan['id']}/quote", ['room_type_id' => $type, 'arrival' => '2026-10-10', 'departure' => '2026-10-11'])->assertOk()->json('quote.total_minor');
+        self::assertSame(100_000_000, $quote());
+
+        $this->postJson("/property/rate-prices/{$old}/reprice", ['nightly_minor' => 120_000_000, 'reason' => ''])->assertStatus(422);
+        $this->postJson("/property/rate-prices/{$old}/reprice", ['nightly_minor' => -1, 'reason' => 'Mistake'])->assertStatus(422);
+        $this->postJson('/property/rate-prices/01arz3ndektsv4rrffq69g5fzz/reprice', ['nightly_minor' => 120_000_000, 'reason' => 'Raise'])->assertNotFound();
+
+        $new = (string) $this->postJson("/property/rate-prices/{$old}/reprice", ['nightly_minor' => 120_000_000, 'reason' => 'Peak season'])->assertOk()->json('id');
+        self::assertNotSame($old, $new);
+        self::assertSame(120_000_000, $quote());
+        self::assertSame(2, DB::table('rate_periods')->count(), 'the old price is kept as history');
+        self::assertSame(1, DB::table('audit_entries')->where('action', 'rate_period.repriced')->where('aggregate_id', $new)->count());
+
+        // The price that was replaced is history: it is no longer a price to change.
+        $this->postJson("/property/rate-prices/{$old}/reprice", ['nightly_minor' => 130_000_000, 'reason' => 'Again'])->assertNotFound();
+        self::assertSame(120_000_000, $quote());
+
+        // Someone without the right to manage rates may not.
+        $this->post('/logout');
+        $this->flushSession();
+        $this->signIn(self::A, []);
+        $this->postJson("/property/rate-prices/{$new}/reprice", ['nightly_minor' => 1, 'reason' => 'Nope'])->assertForbidden();
+    }
 }

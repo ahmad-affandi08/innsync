@@ -207,4 +207,22 @@ final class RoutineHttpTest extends TestCase
             self::assertSame(2, DB::table('routine_temperature_readings')->count());
         }
     }
+
+    public function test_the_restaurant_keeps_its_own_temperature_points_apart_from_the_kitchen(): void
+    {
+        $this->actAs($this->outlet);
+        $this->postJson('/fnb/temperatures/points', ['name' => 'Bar fridge', 'min_tenth' => 0, 'max_tenth' => 70])->assertCreated()->assertJsonPath('point.name', 'Bar fridge');
+        $point = DB::table('routine_temperature_points')->where('name', 'Bar fridge')->first();
+        self::assertSame('fnb', $point->department);
+
+        $this->postJson("/fnb/temperatures/points/{$point->id}", ['name' => 'Bar fridge', 'min_tenth' => 0, 'max_tenth' => 60, 'active' => true, 'lock_version' => 9])->assertStatus(409);
+        $this->postJson("/fnb/temperatures/points/{$point->id}", ['name' => 'Bar fridge', 'min_tenth' => 0, 'max_tenth' => 60, 'active' => true, 'lock_version' => 0])->assertOk()->assertJsonPath('point.max_tenth', 60);
+
+        // The kitchen's people have no right in the restaurant's list, and the restaurant's people none in the kitchen's.
+        $this->postJson('/kitchen/temperatures/points', ['name' => 'Walk-in chiller', 'min_tenth' => 0, 'max_tenth' => 50])->assertForbidden();
+        $this->actAs($this->chef);
+        $this->postJson('/fnb/temperatures/points', ['name' => 'Other', 'min_tenth' => 0, 'max_tenth' => 50])->assertForbidden();
+        $this->postJson("/fnb/temperatures/points/{$point->id}", ['name' => 'Taken over', 'min_tenth' => 0, 'max_tenth' => 60, 'active' => true, 'lock_version' => 1])->assertForbidden();
+        self::assertSame('Bar fridge', DB::table('routine_temperature_points')->where('id', $point->id)->value('name'));
+    }
 }
