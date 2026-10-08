@@ -46,6 +46,7 @@ use App\Modules\FrontOffice\Presentation\Http\Controllers\ReservationController;
 use App\Modules\FrontOffice\Presentation\Http\Controllers\RoomBoardController;
 use App\Modules\FrontOffice\Presentation\Http\Controllers\StayController;
 use App\Modules\FrontOffice\Presentation\Http\Controllers\StayFeePolicyController;
+use App\Modules\FrontOffice\Presentation\Http\Controllers\TapeChartController;
 use App\Modules\GuestExperience\Presentation\Http\Controllers\GuestEntryController;
 use App\Modules\GuestExperience\Presentation\Http\Controllers\GuestHelpController;
 use App\Modules\GuestExperience\Presentation\Http\Controllers\GuestMenuController;
@@ -360,6 +361,7 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
     $id = '[0-9A-Za-z]{26}';
     Route::get('/availability', AvailabilityController::class)->name('front-office.availability');
     Route::get('/guests', [GuestDirectoryController::class, 'index'])->name('front-office.guests');
+    Route::get('/room-calendar', [TapeChartController::class, 'index'])->name('front-office.tape');
     Route::get('/reservations/find', [ReservationController::class, 'find'])->middleware('throttle:60,1')->name('front-office.reservations.find');
     Route::get('/reservations', [ReservationController::class, 'index'])->name('front-office.reservations');
     Route::post('/reservations/quote', [ReservationController::class, 'quote'])->name('front-office.reservations.quote');

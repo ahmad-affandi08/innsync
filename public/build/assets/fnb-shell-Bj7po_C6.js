@@ -1,1 +1,0 @@
-import{E as e,v as t}from"./app-BF99YdGA.js";import{r as n,t as r}from"./app-frame-YaOLd7am.js";var i=e({FnbShell:()=>o}),a=t();function o({actions:e,children:t,description:i,printClass:o,title:s,wide:c}){return(0,a.jsx)(r,{actions:e,description:i,links:n,printClass:o,title:s,wide:c,children:t})}export{i as n,o as t};

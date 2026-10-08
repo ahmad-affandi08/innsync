@@ -295,6 +295,13 @@
             "reason"
         ]
     },
+    "GET /front-office/room-calendar": {
+        "required": [],
+        "declared": [
+            "days",
+            "from"
+        ]
+    },
     "GET /front-office/stays/{id}/extension-quote": {
         "required": [
             "departure"

@@ -12,6 +12,7 @@ use App\Modules\Property\Application\Rates\RatePlanService;
 use App\Modules\Property\Application\Settings\PropertySettingsService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia as Assert;
 use LogicException;
 use Tests\Support\SignsInToProperty;
@@ -117,6 +118,24 @@ final class ReservationHttpTest extends TestCase
         self::assertStringNotContainsString('budi@example.com', (string) $page->getContent());
         self::assertStringNotContainsString('3456', (string) $page->getContent());
         $this->get('/front-office/guests?query=zzz')->assertInertia(fn (Assert $p) => $p->has('guests', 0));
+    }
+
+    public function test_the_room_calendar_lays_reservations_and_blocks_on_the_rooms_and_lists_bookings_without_a_room(): void
+    {
+        $this->staff();
+        $this->postJson('/front-office/reservations', $this->body(), ['Idempotency-Key' => 'http-key-0000000040'])->assertCreated();
+        $room = (string) DB::table('rooms')->value('id');
+        DB::table('room_blocks')->insert(['id' => strtolower((string) Str::ulid()), 'property_id' => self::A, 'room_id' => $room, 'kind' => 'out_of_order', 'start_date' => '2026-10-14', 'end_date' => '2026-10-15', 'reason' => 'Leaking tap', 'created_by' => DB::table('users')->value('id'), 'created_at' => now()]);
+
+        $this->get('/front-office/room-calendar?from=2026-10-09&days=14')->assertOk()->assertInertia(fn (Assert $p) => $p
+            ->component('front-office/pages/tape-chart')
+            ->where('chart.from', '2026-10-09')->where('chart.days', 14)->has('chart.dates', 14)->has('chart.rooms', 1)
+            ->where('chart.rooms.0.number', '101')->where('chart.rooms.0.bars.0.kind', 'block')->where('chart.rooms.0.bars.0.end', '2026-10-16')
+            ->where('chart.unassigned.0.bars.0.label', 'Budi Santoso')->where('chart.unassigned.0.bars.0.start', '2026-10-10')->where('chart.unassigned.0.bars.0.end', '2026-10-12'));
+
+        // A window that holds none of it, a day count that is not offered and a date that is not a date fall back safely.
+        $this->get('/front-office/room-calendar?from=2027-03-01&days=5')->assertInertia(fn (Assert $p) => $p->where('chart.days', 14)->where('chart.unassigned', [])->where('chart.rooms.0.bars', []));
+        $this->get('/front-office/room-calendar?from=2026-13-45')->assertOk()->assertInertia(fn (Assert $p) => $p->where('chart.from', '2026-10-01'));
     }
 
     public function test_the_last_room_cannot_be_sold_twice_oversell_needs_the_allowance_and_a_reason_over_http(): void

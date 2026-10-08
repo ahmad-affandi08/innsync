@@ -7,6 +7,7 @@ export type NavLink = { href: string; label: string };
 export const FRONT_OFFICE_LINKS: readonly NavLink[] = [
     { href: '/front-office/room-board', label: 'fo.board.nav' },
     { href: '/front-office/availability', label: 'fo.nav.availability' },
+    { href: '/front-office/room-calendar', label: 'fo.nav.tape' },
     { href: '/front-office/reservations', label: 'fo.nav.reservations' },
     { href: '/front-office/guests', label: 'fo.nav.guests' },
     { href: '/front-office/stays', label: 'fo.nav.stays' },
