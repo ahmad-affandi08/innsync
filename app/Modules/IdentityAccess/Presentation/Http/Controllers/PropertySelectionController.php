@@ -19,15 +19,31 @@ use Inertia\Response;
 
 final class PropertySelectionController
 {
-    public function create(Request $request, UserAccessReader $accessReader): Response
+    /** A person with access to one property is taken straight in; the choice is only offered to someone who has more than one. */
+    public function create(Request $request, UserAccessReader $accessReader, SecurityLog $securityLog): Response|RedirectResponse
     {
+        $userId = (string) $request->user()->getAuthIdentifier();
+        $properties = $accessReader->authorizedProperties($userId);
+
+        if (count($properties) === 1) {
+            $securityLog->record(new SecurityEvent(
+                IdentityAccessSecurityEvent::PropertySelection->value,
+                SecurityEventOutcome::Success,
+                $userId,
+                metadata: ['selected_property_id' => strtolower($properties[0]->id), 'automatic' => true],
+            ));
+            $request->session()->put('auth.active_property_id', strtolower($properties[0]->id));
+
+            return redirect()->intended(route('home'));
+        }
+
         return Inertia::render('identity-access/pages/property-select', [
             'properties' => array_map(
                 static fn (AuthorizedProperty $property): array => [
                     'id' => $property->id,
                     'name' => $property->name,
                 ],
-                $accessReader->authorizedProperties((string) $request->user()->getAuthIdentifier()),
+                $properties,
             ),
         ]);
     }

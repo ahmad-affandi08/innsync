@@ -150,6 +150,18 @@ final class AuthenticationSecurityTest extends TestCase
         $this->get('/')->assertOk();
     }
 
+    public function test_a_person_with_one_property_goes_straight_in_without_choosing(): void
+    {
+        $this->createProperty(self::PROPERTY_A, 'Property A');
+        $user = UserRecord::factory()->create();
+        $this->grant($user, self::PROPERTY_A, false);
+
+        $this->post('/login', ['email' => $user->email, 'password' => 'password'])->assertRedirect();
+        $this->get('/properties/select')->assertRedirect('/');
+        $this->get('/')->assertOk();
+        self::assertSame(1, DB::table('security_events')->where('actor_id', $user->getKey())->where('event_type', 'identity.property.selection')->where('outcome', 'success')->count());
+    }
+
     public function test_permission_middleware_denies_missing_privilege_server_side(): void
     {
         $this->createProperty(self::PROPERTY_A, 'Property A');
