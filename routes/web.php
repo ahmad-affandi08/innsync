@@ -46,6 +46,7 @@ use App\Modules\FrontOffice\Presentation\Http\Controllers\RateChangeController;
 use App\Modules\FrontOffice\Presentation\Http\Controllers\RegistrationCardController;
 use App\Modules\FrontOffice\Presentation\Http\Controllers\ReminderController;
 use App\Modules\FrontOffice\Presentation\Http\Controllers\ReservationController;
+use App\Modules\FrontOffice\Presentation\Http\Controllers\ReservationImportController;
 use App\Modules\FrontOffice\Presentation\Http\Controllers\RoomBoardController;
 use App\Modules\FrontOffice\Presentation\Http\Controllers\RoomPlanController;
 use App\Modules\FrontOffice\Presentation\Http\Controllers\StayController;
@@ -395,6 +396,8 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
     Route::post('/reminders/{id}/reopen', [ReminderController::class, 'reopen'])->where('id', '[0-9a-z]{26}')->name('front-office.reminders.reopen');
     Route::put('/reservations/{id}/guest-note', [GuestNoteController::class, 'save'])->where('id', '[0-9a-z]{26}')->name('front-office.guest-note');
     Route::put('/reservations/{id}/room-plan', [RoomPlanController::class, 'plan'])->where('id', '[0-9a-z]{26}')->name('front-office.room-plan');
+    Route::post('/reservations/import', [ReservationImportController::class, 'run'])->middleware('throttle:access-admin')->name('front-office.reservations.import');
+    Route::get('/reservations/import/template', [ReservationImportController::class, 'template'])->name('front-office.reservations.import.template');
     Route::get('/reservations/find', [ReservationController::class, 'find'])->middleware('throttle:60,1')->name('front-office.reservations.find');
     Route::get('/reservations', [ReservationController::class, 'index'])->name('front-office.reservations');
     Route::post('/reservations/quote', [ReservationController::class, 'quote'])->name('front-office.reservations.quote');

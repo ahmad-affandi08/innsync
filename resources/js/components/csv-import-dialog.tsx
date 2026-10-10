@@ -15,6 +15,8 @@ type Report = {
     dry_run: boolean;
     count: number;
     errors: { line: number; code: string; message: string }[];
+    /** What the rows did, when a file does more than one thing (made, cancelled, left as they were). */
+    summary?: Record<string, number>;
 };
 
 type Props = {
@@ -90,6 +92,7 @@ export function CsvImportDialog({ endpoint, hint, onClose, open, title }: Props)
                     </Alert>
                 ) : null}
                 {checked ? <Alert title={t('import.ok', { count: report.count })} tone="success">{t('prop.import.okHint')}</Alert> : null}
+                {checked || applied ? <ul className="list-disc pl-5 text-sm text-muted-foreground" data-testid="import-summary">{Object.entries(report?.summary ?? {}).map(([key, n]) => <li key={key}>{t(`import.summary.${key}` as 'import.summary.created', { count: n })}</li>)}</ul> : null}
                 {applied ? <Alert title={t('import.done', { count: report.count })} tone="success" /> : null}
             </div>
         </Dialog>

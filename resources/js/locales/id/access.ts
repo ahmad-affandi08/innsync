@@ -584,4 +584,10 @@ export const access = {
     "sys.logins.reason.invalid_credentials": "email atau kata sandi salah",
     "sys.logins.reason.account_locked": "percobaan ini mengunci akun",
     "sys.logins.reason.account_unavailable": "akun terkunci atau nonaktif",
+    "fo.res.importChannel": "Impor booking kanal",
+    "import.res.title": "Impor booking dari kanal",
+    "import.res.hint": "Satu berkas CSV dari agen perjalanan daring atau alat pemesanan. Kolom: channel, external_ref (kode booking dari kanal), guest_name, arrival, departure, adults, room_type_code, rate_plan_code; opsional: status (confirmed, tentative atau cancelled), phone, email, children, channel_total, notes. Booking yang dikirim ulang tidak mengubah apa pun, dan baris berstatus cancelled membatalkan booking yang diimpor darinya. Harga memakai harga hotel untuk rencana tarif itu. Periksa berkas dulu: tidak ada yang dibuat sebelum Anda mengimpor.",
+    "import.summary.created": "{count} booking dibuat",
+    "import.summary.cancelled": "{count} booking dibatalkan",
+    "import.summary.skipped": "{count} baris dibiarkan (sudah pernah diimpor, atau tidak ada yang dibatalkan)",
 }

@@ -2736,6 +2736,16 @@
             "status"
         ]
     },
+    "POST /front-office/reservations/import": {
+        "required": [
+            "dry_run",
+            "file"
+        ],
+        "declared": [
+            "dry_run",
+            "file"
+        ]
+    },
     "POST /front-office/reservations/quote": {
         "required": [
             "arrival",

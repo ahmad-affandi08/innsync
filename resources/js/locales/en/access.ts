@@ -584,4 +584,10 @@ export const access = {
     "sys.logins.reason.invalid_credentials": "wrong email or password",
     "sys.logins.reason.account_locked": "this attempt locked the account",
     "sys.logins.reason.account_unavailable": "account locked or switched off",
+    "fo.res.importChannel": "Import channel bookings",
+    "import.res.title": "Import bookings from a channel",
+    "import.res.hint": "One CSV file from an online travel agent or booking tool. Columns: channel, external_ref (the channel's booking code), guest_name, arrival, departure, adults, room_type_code, rate_plan_code; optional: status (confirmed, tentative or cancelled), phone, email, children, channel_total, notes. A booking sent again changes nothing, and a row marked cancelled cancels the booking imported from it. The price is the hotel's own price for the rate plan. Check the file first: nothing is made until you import.",
+    "import.summary.created": "{count} bookings made",
+    "import.summary.cancelled": "{count} bookings cancelled",
+    "import.summary.skipped": "{count} rows left as they were (already imported, or nothing to cancel)",
 } as const

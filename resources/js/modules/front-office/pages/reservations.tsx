@@ -18,6 +18,7 @@ import { StayBlocks } from '@/modules/front-office/components/stay-blocks';
 import { newIdempotencyKey } from '@/shared/api/http';
 import { useServerAction } from '@/shared/api/use-server-action';
 import { useFormatters, useTranslation } from '@/shared/i18n/i18n';
+import { CsvImportDialog } from '@/components/csv-import-dialog';
 import { useErrorStateCopy } from '@/shared/i18n/use-ui-copy';
 import { ApiError } from '@/shared/lib/api-error';
 import { isIsoDate, nightsBetween } from '@/shared/time/time';
@@ -54,6 +55,7 @@ export default function ReservationsPage({ filters, lookups, reservations }: { f
     const action = useServerAction();
     const [filter, setFilter] = useState({ query: filters.query ?? '', status: filters.status ?? '', arrival_from: filters.arrival_from ?? '', arrival_to: filters.arrival_to ?? '' });
     const [form, setForm] = useState<ReturnType<typeof emptyForm> | null>(null);
+    const [importing, setImporting] = useState(false);
     const [quote, setQuote] = useState<Quote | null>(null);
     const [oversellOpen, setOversellOpen] = useState(false);
     const typeName = (id: string) => lookups.types.find((x) => x.id === id)?.code ?? '';
@@ -146,7 +148,7 @@ export default function ReservationsPage({ filters, lookups, reservations }: { f
                 </div>
             </form>
 
-            <div className="flex justify-end"><Button onClick={open} type="button">{t('fo.res.add')}</Button></div>
+            <div className="flex flex-wrap justify-end gap-2"><Button onClick={() => setImporting(true)} type="button" variant="outline">{t('fo.res.importChannel')}</Button><Button onClick={open} type="button">{t('fo.res.add')}</Button></div>
 
             <DataGrid
                 caption={t('fo.res.title')}
@@ -237,6 +239,7 @@ export default function ReservationsPage({ filters, lookups, reservations }: { f
                     <FormField field="oversell_reason" error={field('oversell_reason')} label={t('fo.oversell.reason')}><Input maxLength={500} onChange={(e) => set({ oversellReason: e.target.value })} value={form?.oversellReason ?? ''} /></FormField>
                 </div>
             </Dialog>
+        <CsvImportDialog endpoint="/front-office/reservations/import" hint={t('import.res.hint')} onClose={() => setImporting(false)} open={importing} title={t('import.res.title')} />
         </FrontOfficeShell>
     );
 }
