@@ -49,3 +49,12 @@ Health check `sync_backlog` reports **degraded** while a conflict or rejection i
 The device key is a non-extractable key held by the browser for this origin. It keeps the queue from being readable as plain text in storage, in backups, or in the browser's storage tools. It does **not** protect against script running in this origin or against a fully compromised device. A stronger scheme (a key delivered by the server per session, or unlocked by a PIN, with a rule for what happens to unsent entries at sign-out) is a separate security decision and is not made here. Card numbers, identity documents and secrets are refused at the queue and again on the server, and a test keeps the two lists identical (`NFR-07`, `NFR-09`).
 
 No service worker replays writes (`docs/DESIGN/08`): the queue is replayed only by the application code, entry by entry, with idempotency.
+
+## Installable app (PWA)
+
+The application can be added to the home screen of a phone or tablet (`public/manifest.webmanifest`, icons in `public/icons`, `<link rel="manifest">` in the page shell). The service worker `public/sw.js` is registered in production on a secure connection only (`resources/js/shared/pwa/register.ts`) and does two things:
+
+1. Files under `/build/assets/` and `/icons/` carry a hash of their content, so a copy on the device is always the right one; they are answered from the device after the first time (at most 400 are kept, the oldest go first).
+2. When a page cannot be reached at all, `public/offline.html` (a plain bilingual "no connection" page with a retry button) is shown instead of the browser's own error.
+
+It never keeps a page, an answer of the application or anything private, and it never replays a write. **Limit to know:** because pages are private they are not kept, so a device that has been switched off or whose browser was closed cannot open the till *cold* without a network; the page must have been opened online once in the session. Work done without a network is held by the application's own queue (above) and sent again with idempotency keys. When `sw.js` changes, change `VERSION` in it: copies of the older version are removed when the new one starts. Both `sw.js` and the manifest are sent with `no-cache` (`public/.htaccess`; on nginx add the same two rules) so an update is seen at the next visit.

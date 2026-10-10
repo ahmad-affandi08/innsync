@@ -9,6 +9,11 @@ declare module 'node:fs' {
     export function readFileSync(path: URL | string, encoding: 'utf8'): string
 }
 
+declare module 'node:vm' {
+    const vm: { runInNewContext(code: string, sandbox: object): unknown }
+    export default vm
+}
+
 declare module 'node:assert/strict' {
     interface Assert {
         (value: unknown, message?: string): void

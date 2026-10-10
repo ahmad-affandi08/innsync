@@ -10,12 +10,15 @@ import { PrintLetterhead } from '@/components/layout/print-letterhead';
 import { createAppQueryClient } from '@/shared/api/query-client';
 import { ensureMessages, localeFromProps } from '@/shared/i18n/i18n';
 import { OfflineProvider } from '@/shared/offline/offline-provider';
+import { registerServiceWorker } from '@/shared/pwa/register';
 
 const appName = import.meta.env.VITE_APP_NAME ?? 'InnSYnc';
 const pages = import.meta.glob<{ default: ComponentType }>(
     './modules/**/*.tsx',
 );
 const queryClient = createAppQueryClient();
+
+registerServiceWorker(navigator, window, import.meta.env.DEV);
 
 /** Wraps every page: the offline queue, and the property's logo at the top of what is printed. */
 function AppLayout({ children }: { children: ReactNode }) {

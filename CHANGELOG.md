@@ -7,6 +7,7 @@ Release notes for every release (NFR-14). Newest first. Each entry names the tas
 ### Added
 
 - Bookings from a channel's file (PRD 4.2, FR-FO-003): Reservations → Import channel bookings takes a CSV of an online travel agent's bookings, checks it first, makes the bookings through the same rules as the desk (source `ota`) and keeps the channel's booking code, so the same booking sent again changes nothing and a row marked cancelled cancels the booking imported from it. Migration 133.
+- Installable app (PWA): the application can be added to the home screen of a phone or tablet (manifest, icons, `Add to home screen` on Android and iOS). A small service worker keeps the content-hashed build files on the device so the next visit starts sooner, and shows a plain "no connection" page instead of the browser's error when a page cannot be reached. It never keeps pages, answers of the application or anything private, and never replays a write.
 
 ### Fixed
 

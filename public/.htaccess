@@ -34,4 +34,11 @@
     <If "%{REQUEST_URI} =~ m#^/build/assets/#">
         Header set Cache-Control "public, max-age=31536000, immutable"
     </If>
+    # The service worker and the manifest must be asked for again each time, or a new version would never reach a phone.
+    <If "%{REQUEST_URI} =~ m#^/(sw\.js|manifest\.webmanifest|offline\.html)$#">
+        Header set Cache-Control "no-cache"
+    </If>
+    <If "%{REQUEST_URI} =~ m#^/icons/#">
+        Header set Cache-Control "public, max-age=604800"
+    </If>
 </IfModule>
