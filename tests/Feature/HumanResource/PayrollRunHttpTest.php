@@ -135,6 +135,69 @@ final class PayrollRunHttpTest extends TestCase
         return (string) $this->postJson('/hr/payroll/runs', ['period' => $period])->assertCreated()->json('run.id');
     }
 
+    private function bank(string $who, string $number = '1234 567-890', ?int $lock = null, int $status = 200): void
+    {
+        $this->postJson('/hr/payroll/bank', ['employee_id' => $this->emp[$who], 'bank_name' => 'Bank Contoh', 'account_holder' => ucfirst($who), 'account_number' => $number, ...($lock === null ? [] : ['lock_version' => $lock])])->assertStatus($status);
+    }
+
+    public function test_bank_accounts_are_kept_sealed_and_shown_only_by_their_last_four_digits(): void
+    {
+        $this->actAs($this->clerk);
+        $this->bank('ani', status: 403);
+
+        $this->actAs($this->hr);
+        $this->bank('ani', '12ab', status: 422);
+        $this->bank('ani');
+        $this->bank('ani', status: 409);
+        $this->bank('ani', '9876543210', 5, 409);
+        $this->bank('ani', '9876543210', 0);
+
+        $stored = (array) DB::table('hr_bank_accounts')->first();
+        self::assertSame('3210', $stored['account_last4']);
+        self::assertStringNotContainsString('9876543210', (string) $stored['account_number_enc']);
+        self::assertSame(1, (int) $stored['lock_version']);
+        self::assertStringNotContainsString('9876543210', json_encode(DB::table('audit_entries')->where('action', 'pay_bank_account.saved')->get()->all(), JSON_THROW_ON_ERROR));
+        self::assertSame(2, DB::table('audit_entries')->where('action', 'pay_bank_account.saved')->count());
+
+        $banks = json_decode(json_encode($this->get('/hr/payroll')->assertOk()->viewData('page')['props']['banks'], JSON_THROW_ON_ERROR), true, flags: JSON_THROW_ON_ERROR);
+        self::assertSame(['bank_name' => 'Bank Contoh', 'account_holder' => 'Ani', 'account_last4' => '3210', 'lock_version' => 1], $banks[$this->emp['ani']]);
+        self::assertStringNotContainsString('9876543210', json_encode($banks, JSON_THROW_ON_ERROR));
+    }
+
+    public function test_the_bank_transfer_file_is_taken_of_an_approved_run_when_everyone_paid_has_an_account(): void
+    {
+        $this->policy();
+        $id = $this->newRun();
+        $this->get("/hr/payroll/runs/{$id}/transfer")->assertStatus(409);
+
+        foreach (['calculate', 'review', 'approve'] as $step) {
+            $this->step($id, $step);
+        }
+
+        $this->decide((string) DB::table('hr_payroll_runs')->value('approval_id'));
+        $this->step($id, 'approve');
+
+        $this->getJson("/hr/payroll/runs/{$id}/transfer")->assertStatus(409);
+        self::assertSame(['Ani', 'Budi'], array_column($this->get("/hr/payroll/runs?run={$id}")->assertOk()->viewData('page')['props']['withoutBank'], 'name'), 'the screen names who has no account');
+        $this->bank('ani');
+        $this->getJson("/hr/payroll/runs/{$id}/transfer")->assertStatus(409);
+        self::assertSame(['Budi'], array_column($this->get("/hr/payroll/runs?run={$id}")->assertOk()->viewData('page')['props']['withoutBank'], 'name'));
+        $this->bank('budi', '5550001112');
+
+        $this->actAs($this->clerk);
+        $this->get("/hr/payroll/runs/{$id}/transfer")->assertForbidden();
+
+        $this->actAs($this->hr);
+        $csv = $this->get("/hr/payroll/runs/{$id}/transfer")->assertOk()->assertHeader('Content-Type', 'text/csv; charset=UTF-8')->getContent();
+        self::assertStringContainsString('"employee_number","account_holder","bank","account_number","amount","remark"', $csv);
+        self::assertStringContainsString('"Ani","Bank Contoh","1234567890","5277641.67","Gaji 2026-09"', $csv);
+        self::assertStringContainsString('"Budi","Bank Contoh","5550001112","2880000.00","Gaji 2026-09"', $csv);
+        self::assertStringNotContainsString('Candra', $csv, 'a person with no pay is not in the file');
+        $entry = DB::table('audit_entries')->where('action', 'payroll_run.transfer_file')->first();
+        self::assertSame([2, 815_764_167], [json_decode($entry->after_state, true)['rows'], json_decode($entry->after_state, true)['total_minor']]);
+        self::assertStringNotContainsString('1234567890', (string) $entry->after_state);
+    }
+
     public function test_a_run_works_out_each_persons_pay_and_can_be_calculated_again(): void
     {
         $this->postJson('/hr/payroll/runs', ['period' => '2026-11'])->assertStatus(422);

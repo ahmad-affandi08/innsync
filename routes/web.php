@@ -1017,6 +1017,7 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
     Route::post('/payroll/adjustments', [PayrollRunController::class, 'adjust'])->name('hr.payroll.adjustments.create');
     Route::post('/payroll/adjustments/{id}/cancel', [PayrollRunController::class, 'cancelAdjustment'])->where('id', $id)->name('hr.payroll.adjustments.cancel');
     Route::post('/payroll/runs/{id}/lock', [PayrollRunController::class, 'lock'])->where('id', $id)->name('hr.payroll.runs.lock');
+    Route::get('/payroll/runs/{id}/transfer', [PayslipController::class, 'transfer'])->where('id', $id)->name('hr.payroll.runs.transfer');
     Route::get('/payroll/runs/{id}/export', [PayslipController::class, 'export'])->where('id', $id)->name('hr.payroll.runs.export');
     Route::get('/payroll/runs/{id}/payslips/{employee}', [PayslipController::class, 'of'])->where('id', $id)->where('employee', $id)->name('hr.payroll.payslip');
     Route::get('/payslips', [PayslipController::class, 'mine'])->name('hr.payslips');
@@ -1056,6 +1057,7 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
     Route::post('/appraisals/{id}/cancel', [AppraisalController::class, 'cancel'])->where('id', $id)->name('hr.appraisals.cancel');
     Route::post('/payroll/pay', [PayrollController::class, 'setPay'])->middleware(['idempotent'])->name('hr.payroll.pay');
     Route::post('/payroll/profile', [PayrollController::class, 'saveProfile'])->name('hr.payroll.profile');
+    Route::post('/payroll/bank', [PayrollController::class, 'saveBank'])->name('hr.payroll.bank');
     Route::post('/payroll/settings', [PayrollController::class, 'saveSettings'])->name('hr.payroll.settings');
     Route::post('/payroll/components', [PayrollController::class, 'createComponent'])->name('hr.payroll.components.create');
     Route::post('/payroll/components/baseline', [PayrollController::class, 'baseline'])->name('hr.payroll.components.baseline');

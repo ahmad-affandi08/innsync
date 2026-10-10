@@ -26,7 +26,7 @@ const ADJUSTMENT_TONE: Record<PayrollAdjustment['status'], StatusTone> = { open:
 const BLANK_ADJUSTMENT = { employeeId: '', amount: '', label: '', taxable: true, reason: '', sourceRunId: '' };
 
 /** The payroll of a month: the steps of a run from draft to approved (paid and locked follow in Finance), the pay of each person, and the adjustments for later periods. */
-export default function PayrollRunsPage({ overview }: { overview: PayrollRunOverview }) {
+export default function PayrollRunsPage({ overview, withoutBank }: { overview: PayrollRunOverview; withoutBank: { number: string; name: string }[] }) {
     const { t } = useTranslation();
     const format = useFormatters();
     const errorCopy = useErrorStateCopy();
@@ -128,9 +128,11 @@ export default function PayrollRunsPage({ overview }: { overview: PayrollRunOver
                                 {run.may.reopen ? <Button onClick={() => { action.clear(); setReopen(''); }} type="button" variant="outline">{t('hr.run.reopen')}</Button> : null}
                                 {run.may.lock ? <Button disabled={action.busy} onClick={() => void action.run(`/hr/payroll/runs/${run.id}/lock`, { body: { lock_version: run.lock_version }, reload })} type="button" variant="outline">{t('hr.run.lock')}</Button> : null}
                                 {['approved', 'paid', 'locked'].includes(run.status) ? <Button asChild variant="outline"><a href={`/hr/payroll/runs/${run.id}/export`}>{t('hr.run.export')}</a></Button> : null}
+                                {['approved', 'paid', 'locked'].includes(run.status) ? (withoutBank.length > 0 ? <Button disabled type="button" variant="outline">{t('hr.run.transfer')}</Button> : <Button asChild variant="outline"><a href={`/hr/payroll/runs/${run.id}/transfer`}>{t('hr.run.transfer')}</a></Button>) : null}
                                 {run.may.discard ? <Button disabled={action.busy} onClick={() => void action.run(`/hr/payroll/runs/${run.id}/discard`, { body: {}, reload })} type="button" variant="outline">{t('hr.run.discard')}</Button> : null}
                             </div>
                             {run.approval !== null && !run.approval.consumed ? <Alert title={label('hr.run.approvalState', run.approval.status)} tone="info" /> : null}
+                            {withoutBank.length > 0 ? <Alert title={t('hr.run.withoutBank', { names: withoutBank.map((p) => p.name).join(', ') })} tone="warning" /> : null}
                             {overview.without_pay.length > 0 ? <Alert title={t('hr.run.withoutPay', { names: overview.without_pay.map((p) => p.name).join(', ') })} tone="warning" /> : null}
                             <DataGrid caption={t('hr.run.runTab')} columns={lineColumns} empty={<EmptyState illustration="checklist" title={t('hr.run.noLines')} />} getRowId={(l) => l.id} id="hr.run.lines" rows={run.lines} testId="hr-run-lines" />
                         </>

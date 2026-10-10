@@ -3964,6 +3964,21 @@
             "lock_version"
         ]
     },
+    "POST /hr/payroll/bank": {
+        "required": [
+            "account_holder",
+            "account_number",
+            "bank_name",
+            "employee_id"
+        ],
+        "declared": [
+            "account_holder",
+            "account_number",
+            "bank_name",
+            "employee_id",
+            "lock_version"
+        ]
+    },
     "POST /hr/payroll/components": {
         "required": [
             "code",

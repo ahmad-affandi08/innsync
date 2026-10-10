@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\HumanResource\Presentation\Http\Controllers;
 
+use App\Modules\HumanResource\Application\PayrollBankService;
 use App\Modules\HumanResource\Application\PayslipService;
 use App\Shared\Application\Tenancy\PropertyContext;
 use Illuminate\Http\Request;
@@ -14,7 +15,7 @@ use Inertia\Response;
 /** Payslips and the payroll file. Every rule and permission lives in `PayslipService`. */
 final readonly class PayslipController
 {
-    public function __construct(private PayslipService $slips, private PropertyContext $property) {}
+    public function __construct(private PayslipService $slips, private PayrollBankService $banks, private PropertyContext $property) {}
 
     public function mine(Request $request): Response
     {
@@ -34,6 +35,13 @@ final readonly class PayslipController
     public function export(Request $request, string $id): HttpResponse
     {
         $file = $this->slips->export($this->property->current(), $this->actor($request), $id);
+
+        return response($file['contents'], 200, ['Content-Type' => 'text/csv; charset=UTF-8', 'Content-Disposition' => 'attachment; filename="'.$file['filename'].'"', 'Cache-Control' => 'no-store, private', 'X-Content-Type-Options' => 'nosniff']);
+    }
+
+    public function transfer(Request $request, string $id): HttpResponse
+    {
+        $file = $this->banks->transferFile($this->property->current(), $this->actor($request), $id);
 
         return response($file['contents'], 200, ['Content-Type' => 'text/csv; charset=UTF-8', 'Content-Disposition' => 'attachment; filename="'.$file['filename'].'"', 'Cache-Control' => 'no-store, private', 'X-Content-Type-Options' => 'nosniff']);
     }

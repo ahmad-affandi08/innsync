@@ -45,19 +45,22 @@ function formOf(s: PayrollSettings, currency: string): Form {
 }
 
 /** The payroll basis: what each person earns, their tax data, the kinds of earning, and the parameters of the tax and the social security. */
-export default function PayrollPage({ overview }: { overview: PayrollOverview }) {
+type Bank = { bank_name: string; account_holder: string; account_last4: string; lock_version: number };
+
+export default function PayrollPage({ overview, banks }: { overview: PayrollOverview; banks: Record<string, Bank> }) {
     const { t } = useTranslation();
     const format = useFormatters();
     const errorCopy = useErrorStateCopy();
     const action = useServerAction();
     const [pay, setPay] = useState<{ employeeId: string; componentId: string; amount: string; from: string; reason: string } | null>(null);
     const [tax, setTax] = useState<{ employeeId: string; ptkp: string; npwp: boolean; health: boolean; employment: boolean; lock: number | null } | null>(null);
+    const [bank, setBank] = useState<{ employeeId: string; name: string; bankName: string; holder: string; number: string; lock: number | null } | null>(null);
     const [kind, setKind] = useState<typeof BLANK_KIND | null>(null);
     const [settings, setSettings] = useState<Form | null>(null);
     const failure = action.error !== null ? <ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /> : null;
     const label = (prefix: string, key: string) => t(`${prefix}.${key}` as MessageKey);
     const money = (minor: number) => format.money(minor, overview.currency);
-    const reload = ['overview'];
+    const reload = ['overview', 'banks'];
     const active = overview.components.filter((c) => c.active);
     const named = (id: string) => overview.components.find((c) => c.id === id);
     const selected = overview.employees.find((e) => e.id === overview.selected) ?? null;
@@ -80,6 +83,13 @@ export default function PayrollPage({ overview }: { overview: PayrollOverview })
         const result = await action.run('/hr/payroll/profile', { body: { employee_id: tax.employeeId, ptkp_status: tax.ptkp, has_npwp: tax.npwp, in_health: tax.health, in_employment: tax.employment, lock_version: tax.lock }, reload });
 
         if (result !== null) setTax(null);
+    }
+
+    async function saveBank() {
+        if (bank === null) return;
+        const result = await action.run('/hr/payroll/bank', { body: { employee_id: bank.employeeId, bank_name: bank.bankName.trim(), account_holder: bank.holder.trim(), account_number: bank.number.trim(), lock_version: bank.lock }, reload });
+
+        if (result !== null) setBank(null);
     }
 
     async function saveKind() {
@@ -121,12 +131,14 @@ export default function PayrollPage({ overview }: { overview: PayrollOverview })
         { id: 'monthly', label: t('hr.pay.monthly'), align: 'right', value: (r) => r.monthly_minor, cell: (r) => (r.monthly_minor === 0 ? <span className="text-warning">{t('hr.pay.notSet')}</span> : money(r.monthly_minor)) },
         { id: 'perDay', label: t('hr.pay.perDay'), align: 'right', value: (r) => r.per_day_minor, cell: (r) => money(r.per_day_minor) },
         { id: 'tax', label: t('hr.pay.taxStatus'), value: (r) => r.profile?.ptkp_status ?? '', cell: (r) => (r.profile === null ? <span className="text-warning">{t('hr.pay.notSet')}</span> : <span>{r.profile.ptkp_status}<span className="block text-xs text-muted-foreground">{[r.profile.has_npwp ? t('hr.pay.npwp') : t('hr.pay.noNpwp'), r.profile.in_health ? t('hr.pay.inHealth') : null, r.profile.in_employment ? t('hr.pay.inEmployment') : null].filter((x) => x !== null).join(' · ')}</span></span>) },
+        { id: 'bank', label: t('hr.pay.bank'), value: (r) => banks[r.id]?.bank_name ?? '', cell: (r) => (banks[r.id] === undefined ? <span className="text-warning">{t('hr.pay.notSet')}</span> : <span>{banks[r.id].bank_name}<span className="block text-xs text-muted-foreground">{t('hr.pay.accountEnding', { last4: banks[r.id].account_last4 })}</span></span>) },
         {
             id: 'act', label: '', value: () => '', sortable: false,
             cell: (r) => (
                 <span className="flex flex-wrap gap-2">
                     <Button disabled={active.length === 0} onClick={() => openPay(r)} size="sm" type="button" variant="outline">{t('hr.pay.setPay')}</Button>
                     <Button onClick={() => { action.clear(); setTax({ employeeId: r.id, ptkp: r.profile?.ptkp_status ?? 'TK0', npwp: r.profile?.has_npwp ?? true, health: r.profile?.in_health ?? true, employment: r.profile?.in_employment ?? true, lock: r.profile?.lock_version ?? null }); }} size="sm" type="button" variant="outline">{t('hr.pay.setTax')}</Button>
+                    <Button onClick={() => { action.clear(); setBank({ employeeId: r.id, name: r.name, bankName: banks[r.id]?.bank_name ?? '', holder: banks[r.id]?.account_holder ?? r.name, number: '', lock: banks[r.id]?.lock_version ?? null }); }} size="sm" type="button" variant="outline">{t('hr.pay.setBank')}</Button>
                     <Button onClick={() => router.get('/hr/payroll', { employee: r.id }, { preserveScroll: true })} size="sm" type="button" variant="outline">{t('hr.pay.history')}</Button>
                 </span>
             ),
@@ -228,6 +240,22 @@ export default function PayrollPage({ overview }: { overview: PayrollOverview })
                         <label className="flex items-center gap-2 text-sm"><input checked={tax.npwp} onChange={(e) => setTax({ ...tax, npwp: e.target.checked })} type="checkbox" />{t('hr.pay.hasNpwp')}</label>
                         <label className="flex items-center gap-2 text-sm"><input checked={tax.health} onChange={(e) => setTax({ ...tax, health: e.target.checked })} type="checkbox" />{t('hr.pay.inHealthLong')}</label>
                         <label className="flex items-center gap-2 text-sm"><input checked={tax.employment} onChange={(e) => setTax({ ...tax, employment: e.target.checked })} type="checkbox" />{t('hr.pay.inEmploymentLong')}</label>
+                    </div>
+                )}
+            </Dialog>
+
+            <Dialog
+                footer={<><Button disabled={action.busy} onClick={() => setBank(null)} type="button" variant="outline">{t('ui.dialog.cancel')}</Button><Button loading={action.busy} onClick={() => void saveBank()} type="button">{t('hr.pay.saveBank')}</Button></>}
+                onClose={() => setBank(null)}
+                open={bank !== null}
+                title={bank === null ? t('hr.pay.setBank') : t('hr.pay.bankOf', { name: bank.name })}
+            >
+                {bank !== null && (
+                    <div className="grid gap-3">
+                        {failure !== null ? failure : null}
+                        <FormField error={action.fieldError('bank_name')} field="bank_name" label={t('hr.pay.bankName')}><Input maxLength={60} onChange={(e) => setBank({ ...bank, bankName: e.target.value })} value={bank.bankName} /></FormField>
+                        <FormField error={action.fieldError('account_holder')} field="account_holder" label={t('hr.pay.accountHolder')}><Input maxLength={120} onChange={(e) => setBank({ ...bank, holder: e.target.value })} value={bank.holder} /></FormField>
+                        <FormField error={action.fieldError('account_number')} field="account_number" hint={bank.lock === null ? t('hr.pay.accountNumberHint') : t('hr.pay.accountNumberChangeHint')} label={t('hr.pay.accountNumber')}><Input autoComplete="off" inputMode="numeric" maxLength={40} onChange={(e) => setBank({ ...bank, number: e.target.value })} value={bank.number} /></FormField>
                     </div>
                 )}
             </Dialog>

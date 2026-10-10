@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Modules\HumanResource\Presentation\Http\Controllers;
 
 use App\Modules\HumanResource\Application\PayComponentService;
+use App\Modules\HumanResource\Application\PayrollBankService;
 use App\Modules\HumanResource\Application\PayrollBasisService;
 use App\Modules\HumanResource\Application\PayrollSettingsService;
 use App\Shared\Application\Tenancy\PropertyContext;
@@ -16,13 +17,20 @@ use Inertia\Response;
 /** The payroll basis: kinds of earning, what each person earns, their tax data, and the parameters of the tax and the social security. Every rule and permission lives in the services. */
 final readonly class PayrollController
 {
-    public function __construct(private PayrollBasisService $basis, private PayComponentService $components, private PayrollSettingsService $settings, private PropertyContext $property) {}
+    public function __construct(private PayrollBasisService $basis, private PayComponentService $components, private PayrollSettingsService $settings, private PayrollBankService $banks, private PropertyContext $property) {}
 
     public function index(Request $request): Response
     {
         $data = $request->validate(['employee' => ['nullable', 'string', 'size:26']]);
 
-        return Inertia::render('hr/pages/payroll', ['overview' => $this->basis->overview($this->property->current(), $this->actor($request), $data['employee'] ?? null)]);
+        return Inertia::render('hr/pages/payroll', ['overview' => $this->basis->overview($this->property->current(), $this->actor($request), $data['employee'] ?? null), 'banks' => (object) $this->banks->summaries($this->property->current(), $this->actor($request))]);
+    }
+
+    public function saveBank(Request $request): JsonResponse
+    {
+        $data = $request->validate(['employee_id' => ['required', 'string', 'size:26'], 'bank_name' => ['required', 'string', 'max:60'], 'account_holder' => ['required', 'string', 'max:120'], 'account_number' => ['required', 'string', 'max:40'], 'lock_version' => ['nullable', 'integer', 'min:0']]);
+
+        return response()->json(['bank' => $this->banks->save($this->property->current(), $this->actor($request), $data['employee_id'], $data['bank_name'], $data['account_holder'], $data['account_number'], isset($data['lock_version']) ? (int) $data['lock_version'] : null)])->header('Cache-Control', 'no-store');
     }
 
     public function setPay(Request $request): JsonResponse

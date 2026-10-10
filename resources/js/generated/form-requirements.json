@@ -439,7 +439,10 @@
         "to_date"
     ],
     "hr/pages/payroll": [
+        "account_holder",
+        "account_number",
         "amount_minor",
+        "bank_name",
         "code",
         "component_id",
         "effective_from",

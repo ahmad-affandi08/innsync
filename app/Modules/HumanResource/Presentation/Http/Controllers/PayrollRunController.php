@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Modules\HumanResource\Presentation\Http\Controllers;
 
 use App\Modules\HumanResource\Application\PayrollAdjustmentService;
+use App\Modules\HumanResource\Application\PayrollBankService;
 use App\Modules\HumanResource\Application\PayrollRunService;
 use App\Shared\Application\Tenancy\PropertyContext;
 use Illuminate\Http\JsonResponse;
@@ -15,13 +16,15 @@ use Inertia\Response;
 /** The payroll of a month: the run and its steps, and the adjustments for later periods. Every rule and permission lives in the services. */
 final readonly class PayrollRunController
 {
-    public function __construct(private PayrollRunService $runs, private PayrollAdjustmentService $adjustments, private PropertyContext $property) {}
+    public function __construct(private PayrollRunService $runs, private PayrollAdjustmentService $adjustments, private PayrollBankService $banks, private PropertyContext $property) {}
 
     public function index(Request $request): Response
     {
         $data = $request->validate(['run' => ['nullable', 'string', 'size:26']]);
 
-        return Inertia::render('hr/pages/payroll-runs', ['overview' => $this->runs->overview($this->property->current(), $this->actor($request), $data['run'] ?? null)]);
+        $overview = $this->runs->overview($this->property->current(), $this->actor($request), $data['run'] ?? null);
+
+        return Inertia::render('hr/pages/payroll-runs', ['overview' => $overview, 'withoutBank' => $this->banks->withoutAccount($this->property->current(), $this->actor($request), $overview['run']['id'] ?? null)]);
     }
 
     public function create(Request $request): JsonResponse
