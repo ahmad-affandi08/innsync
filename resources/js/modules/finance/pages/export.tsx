@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { DateRangePicker } from '@/components/ui/date-picker';
 import { FormField } from '@/components/ui/form-field';
 import { FinanceShell } from '@/modules/finance/components/finance-shell';
+import { JournalAccountsPanel, type JournalAccounts } from '@/modules/finance/components/journal-accounts';
 import { REPORT_MAX_DAYS, spanDays } from '@/modules/finance/lib/finance';
 import { useFormatters, useTranslation } from '@/shared/i18n/i18n';
 import type { MessageKey } from '@/locales/en/index';
@@ -12,7 +13,7 @@ import type { MessageKey } from '@/locales/en/index';
 type Overview = { datasets: string[]; today: string; from: string; max_rows: number };
 
 /** Finance data as CSV files for a spreadsheet or the accounting software. The browser downloads each file straight from the server. */
-export default function ExportPage({ overview }: { overview: Overview }) {
+export default function ExportPage({ overview, journal }: { overview: Overview; journal: JournalAccounts }) {
     const { t } = useTranslation();
     const format = useFormatters();
     const [period, setPeriod] = useState({ from: overview.from, to: overview.today });
@@ -51,6 +52,8 @@ export default function ExportPage({ overview }: { overview: Overview }) {
                     </li>
                 ))}
             </ul>
+
+            <JournalAccountsPanel journal={journal} />
         </FinanceShell>
     );
 }

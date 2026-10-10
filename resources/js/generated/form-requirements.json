@@ -39,6 +39,10 @@
         "resolution",
         "status"
     ],
+    "finance/pages/export": [
+        "code",
+        "name"
+    ],
     "finance/pages/food-cost": [
         "reason",
         "target_bp"

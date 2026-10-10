@@ -16,17 +16,18 @@ use DateTimeZone;
 /**
  * Finance data for a spreadsheet or for the accounting software the property uses (FR-FIN-034). Each data set is a CSV with stable column names, one row
  * per booked record dated in the range, money in major units with two decimals and dates as year-month-day. Cells are made safe for spreadsheets, a range
- * is at most a year and a file at most 50,000 rows, and each export is written to the audit trail.
+ * is at most a year and a file at most 50,000 rows, and each export is written to the audit trail. The `journal` data set is the books as balanced general-journal entries with the account codes of the
+ * property's mapping (`JournalExport`), the form most accounting software imports.
  */
 final readonly class FinanceExportService
 {
-    public const DATASETS = ['revenue', 'payments_received', 'payables', 'supplier_payments', 'receivables', 'receipts', 'petty_vouchers', 'corrections', 'exceptions'];
+    public const DATASETS = ['journal', 'revenue', 'payments_received', 'payables', 'supplier_payments', 'receivables', 'receipts', 'petty_vouchers', 'corrections', 'exceptions'];
 
     public const MAX_ROWS = 50_000;
 
     public const MAX_RANGE_DAYS = 366;
 
-    public function __construct(private FinanceExportQueries $queries, private FinanceAccess $access, private BusinessDateProvider $businessDate, private AuditTrail $audit) {}
+    public function __construct(private FinanceExportQueries $queries, private JournalExport $journal, private FinanceAccess $access, private BusinessDateProvider $businessDate, private AuditTrail $audit) {}
 
     /** @return array<string, mixed> */
     public function overview(PropertyId $property, string $actorId): array
@@ -58,7 +59,7 @@ final readonly class FinanceExportService
             throw Refusal::invalid('Choose a range of at most a year.', ['to']);
         }
 
-        $data = $this->queries->dataset($property, $dataset, $from, $to, self::MAX_ROWS);
+        $data = $dataset === 'journal' ? $this->journal->dataset($property, $from, $to, self::MAX_ROWS) : $this->queries->dataset($property, $dataset, $from, $to, self::MAX_ROWS);
 
         if (count($data['rows']) > self::MAX_ROWS) {
             throw Refusal::invalid('This range has more than '.self::MAX_ROWS.' rows. Choose a shorter one.', ['to']);

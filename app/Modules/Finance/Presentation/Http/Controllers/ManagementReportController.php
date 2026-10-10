@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Modules\Finance\Presentation\Http\Controllers;
 
 use App\Modules\Finance\Application\FinanceExportService;
+use App\Modules\Finance\Application\JournalAccountService;
 use App\Modules\Finance\Application\ManagementReportService;
 use App\Modules\Finance\Application\StockReportService;
 use App\Shared\Application\Tenancy\PropertyContext;
@@ -17,7 +18,7 @@ use Inertia\Response;
 /** The management P&L, the cash flow summary, the stock value and food cost reports and the exports of finance data. Every rule and permission lives in the application services. */
 final readonly class ManagementReportController
 {
-    public function __construct(private ManagementReportService $reports, private FinanceExportService $exports, private StockReportService $stock, private PropertyContext $property) {}
+    public function __construct(private ManagementReportService $reports, private FinanceExportService $exports, private JournalAccountService $journalAccounts, private StockReportService $stock, private PropertyContext $property) {}
 
     public function pnl(Request $request): Response
     {
@@ -70,7 +71,21 @@ final readonly class ManagementReportController
 
     public function exportPage(Request $request): Response
     {
-        return Inertia::render('finance/pages/export', ['overview' => $this->exports->overview($this->property->current(), $this->actor($request))]);
+        return Inertia::render('finance/pages/export', ['overview' => $this->exports->overview($this->property->current(), $this->actor($request)), 'journal' => $this->journalAccounts->overview($this->property->current(), $this->actor($request))]);
+    }
+
+    public function saveJournalAccount(Request $request): JsonResponse
+    {
+        $data = $request->validate(['key' => ['required', 'string', 'max:40'], 'code' => ['required', 'string', 'max:30'], 'name' => ['required', 'string', 'max:80'], 'lock_version' => ['nullable', 'integer', 'min:0']]);
+
+        return $this->json(['journal' => $this->journalAccounts->save($this->property->current(), $this->actor($request), $data['key'], $data['code'], $data['name'], isset($data['lock_version']) ? (int) $data['lock_version'] : null)]);
+    }
+
+    public function resetJournalAccount(Request $request): JsonResponse
+    {
+        $data = $request->validate(['key' => ['required', 'string', 'max:40'], 'lock_version' => ['required', 'integer', 'min:0']]);
+
+        return $this->json(['journal' => $this->journalAccounts->reset($this->property->current(), $this->actor($request), $data['key'], (int) $data['lock_version'])]);
     }
 
     public function export(Request $request, string $dataset): HttpResponse

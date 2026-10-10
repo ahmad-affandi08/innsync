@@ -1226,6 +1226,29 @@
             "status"
         ]
     },
+    "POST /finance/export/accounts": {
+        "required": [
+            "code",
+            "key",
+            "name"
+        ],
+        "declared": [
+            "code",
+            "key",
+            "lock_version",
+            "name"
+        ]
+    },
+    "POST /finance/export/accounts/reset": {
+        "required": [
+            "key",
+            "lock_version"
+        ],
+        "declared": [
+            "key",
+            "lock_version"
+        ]
+    },
     "POST /finance/food-cost/target": {
         "required": [
             "reason",

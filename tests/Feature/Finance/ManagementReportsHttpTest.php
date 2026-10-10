@@ -273,7 +273,7 @@ final class ManagementReportsHttpTest extends TestCase
         $this->get('/finance/export/revenue')->assertForbidden();
 
         $this->actAs($this->exporter);
-        $this->get('/finance/export')->assertOk()->assertInertia(fn (Assert $page) => $page->component('finance/pages/export')->has('overview.datasets', 9));
+        $this->get('/finance/export')->assertOk()->assertInertia(fn (Assert $page) => $page->component('finance/pages/export')->has('overview.datasets', 10)->has('journal.accounts'));
         $csv = $this->get('/finance/export/revenue?from=2026-10-01&to=2026-10-01')->assertOk()->assertHeader('Content-Type', 'text/csv; charset=UTF-8');
         $text = $csv->getContent();
         self::assertStringStartsWith("\xEF\xBB\xBF\"Business date\",\"Source\",\"Outlet code\",\"Outlet\",\"Base\",\"Service charge\",\"Tax\",\"Total\"", $text);
@@ -299,6 +299,74 @@ final class ManagementReportsHttpTest extends TestCase
         $this->get('/finance/export/ledger')->assertNotFound();
         $this->get('/finance/export/revenue?from=2025-01-01&to=2026-10-01')->assertStatus(422);
         $this->get('/finance/export/revenue?from=2026-10-05&to=2026-10-01')->assertStatus(422);
+    }
+
+    /** @return list<array<string, string>> the rows of a CSV answer, by column name */
+    private function table(string $csv): array
+    {
+        $lines = array_values(array_filter(explode("\r\n", ltrim($csv, "\xEF\xBB\xBF")), static fn (string $l): bool => $l !== ''));
+        $header = str_getcsv((string) array_shift($lines));
+
+        return array_map(static fn (string $line): array => array_combine($header, str_getcsv($line)), $lines);
+    }
+
+    public function test_the_journal_export_balances_and_uses_the_accounts_of_the_property(): void
+    {
+        $this->actAs($this->exporter);
+        $rows = $this->table($this->get('/finance/export/journal?from=2026-10-01&to=2026-10-02')->assertOk()->getContent());
+
+        $debit = array_sum(array_map(static fn (array $r): float => (float) $r['Debit'], $rows));
+        $credit = array_sum(array_map(static fn (array $r): float => (float) $r['Credit'], $rows));
+        self::assertEqualsWithDelta($debit, $credit, 0.001, 'every entry, and so the whole file, balances');
+
+        $day = array_values(array_filter($rows, static fn (array $r): bool => $r['Journal'] === 'REV-2026-10-01'));
+        $by = static fn (string $code): array => array_values(array_filter($day, static fn (array $r): bool => $r['Account code'] === $code));
+        self::assertSame('100000.00', $by('4-1100')[0]['Credit'], 'room sales by the baseline revenue account');
+        self::assertSame('5000.00', $by('4-1300')[0]['Credit']);
+        self::assertSame('20000.00', $by('4-1900')[0]['Credit'], 'an outlet with no account of its own goes to other revenue');
+        self::assertSame('12500.00', $by('2-1400')[0]['Credit'], 'service charge apart');
+        self::assertSame('13750.00', $by('2-1500')[0]['Credit'], 'tax apart');
+        self::assertSame('85000.00', $by('1-1110')[0]['Debit'], 'cash received less paid back');
+        self::assertSame('50000.00', $by('1-1120')[0]['Debit'], 'card goes to the bank');
+        self::assertSame('16250.00', $by('2-1300')[0]['Debit'], 'what the day did not collect stays in the guest ledger');
+
+        $invoice = array_values(array_filter($rows, static fn (array $r): bool => $r['Journal'] === 'INV-SI-1'));
+        self::assertSame(['1-1500', 'ELEC', '2-1100'], array_column($invoice, 'Account code'), 'the invoice is booked to its own expense account, the tax apart, against payables');
+        self::assertSame(['3300.00', '30000.00', '0.00'], array_column($invoice, 'Debit'));
+        self::assertSame('INV-SI-1', $invoice[0]['Reference']);
+        self::assertContains('5-9000', array_column(array_filter($rows, static fn (array $r): bool => $r['Journal'] === 'INV-SI-3'), 'Account code'), 'no expense account: other expenses');
+        self::assertSame([], array_filter($rows, static fn (array $r): bool => $r['Journal'] === 'PTY-PCV-2'), 'a voided voucher is left out');
+        self::assertNotSame([], array_filter($rows, static fn (array $r): bool => $r['Journal'] === 'PAY-PAY-1'));
+        self::assertSame([], array_filter($rows, static fn (array $r): bool => $r['Journal'] === 'PAY-PAY-3'), 'a payment still waiting for approval is not booked');
+    }
+
+    public function test_the_accounts_of_the_journal_can_be_changed_and_put_back(): void
+    {
+        $this->actAs($this->exporter);
+        $this->postJson('/finance/export/accounts', ['key' => 'revenue.rooms', 'code' => '4000', 'name' => 'Room revenue'])->assertForbidden();
+
+        $this->actAs($this->manager);
+        $this->postJson('/finance/export/accounts', ['key' => 'revenue.rooms', 'code' => '4000', 'name' => 'Room revenue'])->assertOk()->assertJsonPath('journal.accounts.0.key', 'cash');
+        $this->postJson('/finance/export/accounts', ['key' => 'payment.card', 'code' => '1-1125', 'name' => 'EDC clearing'])->assertOk();
+        $this->postJson('/finance/export/accounts', ['key' => 'made-up', 'code' => '1', 'name' => 'x'])->assertStatus(422);
+        $this->postJson('/finance/export/accounts', ['key' => 'revenue.rooms', 'code' => '4000', 'name' => 'Again'])->assertStatus(409);
+        $this->postJson('/finance/export/accounts', ['key' => 'cash', 'code' => 'bad code!', 'name' => 'Cash'])->assertStatus(422);
+
+        $this->actAs($this->exporter);
+        $rows = $this->table($this->get('/finance/export/journal?from=2026-10-01&to=2026-10-01')->assertOk()->getContent());
+        $codes = array_column(array_filter($rows, static fn (array $r): bool => $r['Journal'] === 'REV-2026-10-01'), 'Account code');
+        self::assertContains('4000', $codes);
+        self::assertContains('1-1125', $codes, 'the method with an account of its own');
+        self::assertNotContains('4-1100', $codes);
+        self::assertNotContains('1-1120', $codes);
+        self::assertSame(2, DB::table('audit_entries')->where('action', 'journal_account.saved')->count());
+
+        $this->actAs($this->manager);
+        $lock = (int) DB::table('fin_journal_accounts')->where('account_key', 'revenue.rooms')->value('lock_version');
+        $this->postJson('/finance/export/accounts/reset', ['key' => 'revenue.rooms', 'lock_version' => $lock + 5])->assertStatus(409);
+        $this->postJson('/finance/export/accounts/reset', ['key' => 'revenue.rooms', 'lock_version' => $lock])->assertOk();
+        $this->postJson('/finance/export/accounts/reset', ['key' => 'revenue.rooms', 'lock_version' => $lock])->assertNotFound();
+        self::assertSame(1, DB::table('fin_journal_accounts')->count());
     }
 
     private function rowOf(string $csv, string $needle): string

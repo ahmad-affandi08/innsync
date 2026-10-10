@@ -888,6 +888,8 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
     Route::get('/food-cost', [ManagementReportController::class, 'foodCost'])->name('finance.food-cost');
     Route::post('/food-cost/target', [ManagementReportController::class, 'setFoodCostTarget'])->name('finance.food-cost.target');
     Route::get('/export', [ManagementReportController::class, 'exportPage'])->name('finance.export');
+    Route::post('/export/accounts', [ManagementReportController::class, 'saveJournalAccount'])->name('finance.export.accounts.save');
+    Route::post('/export/accounts/reset', [ManagementReportController::class, 'resetJournalAccount'])->name('finance.export.accounts.reset');
     Route::get('/export/{dataset}', [ManagementReportController::class, 'export'])->where('dataset', '[a-z_]{3,24}')->name('finance.export.download');
     Route::get('/recurring', [RecurringExpenseController::class, 'index'])->name('finance.recurring');
     Route::post('/recurring', [RecurringExpenseController::class, 'store'])->name('finance.recurring.store');
