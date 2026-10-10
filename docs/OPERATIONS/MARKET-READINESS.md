@@ -58,7 +58,7 @@ Added on 2026-10-10 after a pass over the PRD: installable app (home screen, off
 | Door lock makers' own interfaces (VingCard/Visionline, Onity, SALTO, dormakaba, Häfele) | The key jobs, the token and the bridge contract are built (`docs/OPERATIONS/DOOR-LOCKS.md`, `tools/door-lock-bridge-example.mjs`); the call into a maker's software is not, because it needs that maker's interface documentation and a lock to try it on |
 | Import into one named accounting package (Accurate, Zahir, Jurnal) | Each has its own format and a licence for its import tool. The general journal CSV with account codes is the common input; a package-specific column order is a small change once the hotel names the package |
 | Bank-specific bulk transfer layout (BCA KlikBisnis, Mandiri Cash Management) | The transfer file is generic CSV; each bank's upload tool maps the columns. A fixed layout is added when the hotel's bank is known |
-| Gift cards and vouchers, waiting list, loyalty points, spa and activities, travel-agent commissions, fixed-asset depreciation, bank statement matching, SMS and web push, payroll proration for joiners and leavers | Not in the PRD's required set (`Wajib`) or waiting for a decision on policy; none is hidden behind a flag |
+| Gift cards and vouchers, waiting list, loyalty points, spa and activities, travel-agent commissions, fixed-asset depreciation, bank statement matching, SMS and web push | Not in the PRD's required set (`Wajib`) or waiting for a decision on policy; none is hidden behind a flag |
 
 ## Property limit (licensing)
 

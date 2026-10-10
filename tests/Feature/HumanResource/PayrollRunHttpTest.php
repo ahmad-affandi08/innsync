@@ -240,6 +240,25 @@ final class PayrollRunHttpTest extends TestCase
         self::assertSame(1, DB::table('hr_payroll_runs')->count());
     }
 
+    public function test_a_person_who_joined_or_left_inside_the_month_is_paid_for_the_days_they_were_employed(): void
+    {
+        DB::table('hr_employees')->where('id', $this->emp['budi'])->update(['joined_on' => '2026-09-16']);
+        DB::table('hr_employees')->where('id', $this->emp['ani'])->update(['status' => 'offboarded', 'offboarded_on' => '2026-09-10', 'offboard_kind' => 'resigned', 'offboarded_by' => $this->owner->getKey()]);
+        $id = $this->newRun();
+        $this->step($id, 'calculate');
+        $lines = [];
+
+        foreach ($this->overview()['run']['lines'] as $l) {
+            $lines[$l['employee']['name']] = $l;
+        }
+
+        // Budi: 15 of 30 days of September, a basic pay of 3,000,000 rupiah is 1,500,000. Ani left on the 10th: 10 of 30 days of 5,500,000.
+        self::assertSame(150_000_000, $lines['Budi']['gross_minor']);
+        self::assertContains('prorated', $lines['Budi']['warnings']);
+        self::assertSame(166_666_666 + 16_666_666, $lines['Ani']['gross_minor'], 'Ani: 5,000,000 and 500,000 for 10 of 30 days; what is paid by days present follows the roster, which has nothing');
+        self::assertContains('prorated', $lines['Ani']['warnings']);
+    }
+
     public function test_the_run_is_reviewed_approved_by_the_chain_and_goes_to_finance_where_it_is_frozen(): void
     {
         $id = $this->newRun();

@@ -457,6 +457,7 @@ export const hr = {
     "hr.run.warnings": "Catatan",
     "hr.run.warning.no_tax_profile": "Belum ada data pajak: dipakai status lazim",
     "hr.run.warning.no_roster": "Tidak ada jadwal di roster",
+    "hr.run.warning.prorated": "Prorata: bekerja sebagian bulan",
     "hr.run.warning.negative_net": "Potongan melebihi gaji",
     "hr.run.details": "Rincian",
     "hr.run.detailsOf": "Gaji {name}",

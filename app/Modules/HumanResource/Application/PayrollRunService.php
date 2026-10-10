@@ -334,6 +334,19 @@ final readonly class PayrollRunService
      * @param  array<string, mixed>  $settings
      * @return list<array<string, mixed>>
      */
+    /**
+     * The calendar days of the period the person was employed (the day they joined and the day they left both count), and the days of the period.
+     *
+     * @return array{0: int, 1: int}
+     */
+    public static function employedDays(string $joinedOn, ?string $offboardedOn, string $start, string $end): array
+    {
+        $from = max(substr($joinedOn, 0, 10), $start);
+        $to = $offboardedOn === null ? $end : min($offboardedOn, $end);
+
+        return [max(0, DateMath::daysBetween($from, $to) + 1), DateMath::daysBetween($start, $end) + 1];
+    }
+
     private function lines(PropertyId $property, array $run, array $settings, string $start, string $end): array
     {
         $components = array_column($this->pay->components($property, true), null, 'id');
@@ -383,12 +396,13 @@ final readonly class PayrollRunService
             }
 
             $a = $attendance[$e['id']] ?? null;
-            $att = ['scheduled' => $a['scheduled'] ?? 0, 'present' => $a['present'] ?? 0, 'absent' => $a['absent'] ?? 0, 'late_minutes' => $a['late_minutes'] ?? 0, 'overtime_first' => $a['overtime_first_minutes'] ?? 0, 'overtime_next' => $a['overtime_next_minutes'] ?? 0, 'unpaid_days' => $unpaid[$e['id']] ?? 0];
+            [$employed, $periodDays] = self::employedDays((string) $e['joined_on'], $e['offboarded_on'] === null ? null : substr((string) $e['offboarded_on'], 0, 10), $start, $end);
+            $att = ['scheduled' => $a['scheduled'] ?? 0, 'present' => $a['present'] ?? 0, 'absent' => $a['absent'] ?? 0, 'late_minutes' => $a['late_minutes'] ?? 0, 'overtime_first' => $a['overtime_first_minutes'] ?? 0, 'overtime_next' => $a['overtime_next_minutes'] ?? 0, 'unpaid_days' => $unpaid[$e['id']] ?? 0, 'employed_days' => $employed, 'period_days' => $periodDays];
             $p = $profiles[$e['id']] ?? null;
             $profile = ['ptkp_status' => $p['ptkp_status'] ?? 'TK0', 'has_npwp' => $p === null || (bool) $p['has_npwp'], 'in_health' => $p === null || (bool) $p['in_health'], 'in_employment' => $p === null || (bool) $p['in_employment']];
             $mine = $adjustments[$e['id']] ?? [];
             $r = PayrollCalculator::line($settings, $earnings, $att, $profile, array_map(static fn (array $x): array => ['label' => (string) $x['label'], 'amount_minor' => (int) $x['amount_minor'], 'taxable' => (bool) $x['taxable']], $mine));
-            $warnings = array_values(array_filter([$p === null ? 'no_tax_profile' : null, $att['scheduled'] === 0 ? 'no_roster' : null, $r['net'] < 0 ? 'negative_net' : null]));
+            $warnings = array_values(array_filter([$p === null ? 'no_tax_profile' : null, $att['scheduled'] === 0 ? 'no_roster' : null, $employed < $periodDays ? 'prorated' : null, $r['net'] < 0 ? 'negative_net' : null]));
 
             $out[] = [
                 'id' => $this->ids->next(), 'employee_id' => $e['id'], 'number' => $e['number'], 'full_name' => $e['full_name'], 'department' => $e['department'], 'position' => $e['position'], 'ptkp_status' => $profile['ptkp_status'],

@@ -7,7 +7,8 @@ namespace App\Modules\HumanResource\Application;
 /**
  * The arithmetic of one person's pay for one month (FR-HR-031), with no access to anything: the same inputs give the same lines. Whole minor units (sen) throughout, shares rounded half up.
  *
- * Earnings follow the kinds (whole, by days present, or for each day present); overtime is priced from the wage of basic pay and fixed allowance; absence, unpaid leave and lateness are deducted. The social security
+ * Earnings follow the kinds (whole, by days present, or for each day present). A whole-month earning of a person who joined or left inside the month is paid for the calendar days of the month they were employed
+ * (`employed_days` of `period_days`), the usual baseline; the kinds paid by days present follow the roster already. overtime is priced from the wage of basic pay and fixed allowance; absence, unpaid leave and lateness are deducted. The social security
  * comes out of the wage the owner flagged, up to the ceilings. The income tax is worked out on the month as if it lasted the year (the monthly income less the cost of the job and the person's own pension contributions,
  * times twelve, less the untaxed threshold of the status, through the brackets, divided by twelve), with the surcharge when there is no tax number; what the employer pays toward health, accident and death insurance
  * counts as income. It is the standard annualised method, not the monthly category tables of the tax office, and it is not tax advice.
@@ -17,7 +18,7 @@ final class PayrollCalculator
     /**
      * @param  array<string, mixed>  $s  the parameters (see PayrollSettingsService::BASELINE)
      * @param  list<array{code: string, name: string, kind: string, taxable: bool, social_base: bool, amount_minor: int}>  $earnings
-     * @param  array{scheduled: int, present: int, absent: int, late_minutes: int, overtime_first: int, overtime_next: int, unpaid_days: int}  $att
+     * @param  array{scheduled: int, present: int, absent: int, late_minutes: int, overtime_first: int, overtime_next: int, unpaid_days: int, employed_days?: int, period_days?: int}  $att
      * @param  array{ptkp_status: string, has_npwp: bool, in_health: bool, in_employment: bool}  $profile
      * @param  list<array{label: string, amount_minor: int, taxable: bool}>  $adjustments
      * @return array{items: list<array{code: string, label: string, kind: string, amount_minor: int}>, gross: int, taxable: int, tax: int, employee_social: int, employer_social: int, other_deductions: int, net: int}
@@ -34,7 +35,7 @@ final class PayrollCalculator
             $amount = match (PayComponentService::basis($e['kind'])) {
                 'attendance' => $att['scheduled'] === 0 ? 0 : intdiv($e['amount_minor'] * min($att['present'], $att['scheduled']), $att['scheduled']),
                 'per_day' => $e['amount_minor'] * $att['present'],
-                default => $e['amount_minor'],
+                default => self::prorated($e['amount_minor'], $att['employed_days'] ?? null, $att['period_days'] ?? null),
             };
 
             if (in_array($e['kind'], ['basic', 'fixed_allowance'], true)) {
@@ -109,6 +110,16 @@ final class PayrollCalculator
         $employeeSocial = array_sum($employee);
 
         return ['items' => $items, 'gross' => $gross, 'taxable' => $taxable, 'tax' => $tax, 'employee_social' => $employeeSocial, 'employer_social' => array_sum($employer), 'other_deductions' => $other, 'net' => $gross - $other - $employeeSocial - $tax];
+    }
+
+    /** A whole-month amount for the days of the month the person was employed; unchanged for a full month or when the days are not given. */
+    private static function prorated(int $amount, ?int $employed, ?int $period): int
+    {
+        if ($employed === null || $period === null || $period < 1 || $employed >= $period) {
+            return $amount;
+        }
+
+        return intdiv($amount * max(0, $employed), $period);
     }
 
     /** @param array<string, mixed> $s */

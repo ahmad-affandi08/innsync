@@ -457,6 +457,7 @@ export const hr = {
     "hr.run.warnings": "Notes",
     "hr.run.warning.no_tax_profile": "No tax data: usual status assumed",
     "hr.run.warning.no_roster": "Nothing planned in the roster",
+    "hr.run.warning.prorated": "Prorated: employed part of the month",
     "hr.run.warning.negative_net": "Deductions exceed the pay",
     "hr.run.details": "Details",
     "hr.run.detailsOf": "Pay of {name}",

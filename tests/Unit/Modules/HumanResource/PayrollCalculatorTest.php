@@ -106,4 +106,20 @@ final class PayrollCalculatorTest extends TestCase
 
         self::assertSame([0, 288_000_000], [$line['tax'], $line['net']]);
     }
+
+    public function test_a_whole_month_earning_is_paid_for_the_days_of_the_month_the_person_was_employed(): void
+    {
+        // Joined on the 16th of a 30-day month: 15 of 30 days. The earning paid by days present follows the roster as before.
+        $line = PayrollCalculator::line(PayrollSettingsService::BASELINE, self::earnings(), [...self::ATT, 'scheduled' => 13, 'present' => 13, 'employed_days' => 15, 'period_days' => 30], self::K1, []);
+        $a = self::amounts($line);
+
+        self::assertSame([250_000_000, 25_000_000, 26_000_000, 32_500_000], [$a['GAJI'], $a['TETAP'], $a['TIDAK'], $a['MAKAN']], 'basic and fixed allowance halve; the variable allowance is 13/13; the meal allowance is 13 days');
+        self::assertSame(5_500_000, $a['BPJS-JHT'], 'the old-age savings are 2% of the 275,000,000 that was paid, not of the full month');
+
+        // A full month, or no days given, is unchanged.
+        $full = PayrollCalculator::line(PayrollSettingsService::BASELINE, self::earnings(), [...self::ATT, 'employed_days' => 30, 'period_days' => 30], self::K1, []);
+        $none = PayrollCalculator::line(PayrollSettingsService::BASELINE, self::earnings(), self::ATT, self::K1, []);
+        self::assertSame($none['net'], $full['net']);
+        self::assertSame(500_000_000, self::amounts($full)['GAJI']);
+    }
 }

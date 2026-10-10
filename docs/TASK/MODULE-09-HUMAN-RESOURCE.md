@@ -171,3 +171,8 @@
 - Emit audit evidence for sensitive/state-changing operations.
 - Add happy, negative, conflict/retry, and permission tests as applicable.
 - Update traceability/evidence before marking DONE.
+
+### Proration for joiners and leavers (2026-10-10)
+
+- A whole-month earning (basic pay, fixed allowance, anything not paid by days present or per day) of a person who joined or left inside the month is paid for the **calendar days of the month they were employed** (`PayrollRunService::employedDays`: the day they joined and the day they left both count), as `amount × employed / days in the month`, rounded down. This is the baseline; a property that prorates on 25 working days instead would change the divisor in one place. The social security and the tax follow what was paid; overtime and the absence deduction still use the full monthly wage as the rate. The line carries the note `prorated`. Not covered: a raise that starts inside the month is not split (the pay in force on the last day applies, as before). Evidence: `PayrollCalculatorTest` and `PayrollRunHttpTest::test_a_person_who_joined_or_left_inside_the_month...`.
+
