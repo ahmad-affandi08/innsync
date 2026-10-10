@@ -262,6 +262,9 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
     Route::post('/{id}/resolve', [SyncExceptionController::class, 'resolve'])->where('id', '[0-9a-fA-F]{26}|[0-9a-zA-Z]{26}')->name('sync.exceptions.resolve');
 });
 
+// The document the service worker shows for the screens that can start from nothing (docs/OPERATIONS/OFFLINE-OPERATIONS.md): no page, no person, no data; the device fills it from what it kept.
+Route::get('/offline-shell', fn () => response()->view('offline-shell')->header('Cache-Control', 'no-cache, private'))->name('offline.shell');
+
 // Field test for the offline queue (TASK-FND-017): staff and IT use it to prove a device can work offline.
 Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])
     ->get('/offline-check', fn () => Inertia::render('foundation/pages/offline-check'))

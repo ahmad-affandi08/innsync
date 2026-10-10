@@ -50,7 +50,7 @@ Not code, and not decided here. Each needs the owner, and legal items need a law
 
 ## Features a hotel may ask for that are not built (checked 2026-10-10)
 
-Added on 2026-10-10 after a pass over the PRD: installable app (home screen, offline page), bookings from an online travel agent's CSV file, accounting journal export with an account-code mapping, sealed staff bank accounts with a payroll transfer file, a do-not-rent flag, and e-mail notices for maintenance. What remains:
+Added on 2026-10-10 after a pass over the PRD: installable app (home screen, offline page), bookings from an online travel agent's CSV file, accounting journal export with an account-code mapping, sealed staff bank accounts with a payroll transfer file, a do-not-rent flag, e-mail notices for maintenance, and the register and the housekeeper's rooms opening from nothing with no network. What remains:
 
 | Missing | Why it is not built |
 | --- | --- |
@@ -58,7 +58,6 @@ Added on 2026-10-10 after a pass over the PRD: installable app (home screen, off
 | Door locks (key card issue at check-in, cancel at check-out) | No vendor chosen. The stay events `frontoffice.stay.checked_in`, `checked_out`, `room_moved` and `extended` already carry what an adapter needs; the adapter is written once the lock vendor is known |
 | Import into one named accounting package (Accurate, Zahir, Jurnal) | Each has its own format and a licence for its import tool. The general journal CSV with account codes is the common input; a package-specific column order is a small change once the hotel names the package |
 | Bank-specific bulk transfer layout (BCA KlikBisnis, Mandiri Cash Management) | The transfer file is generic CSV; each bank's upload tool maps the columns. A fixed layout is added when the hotel's bank is known |
-| Offline start of the till on a device that has never opened it online | Pages are private and are not kept by the service worker on purpose (`docs/DESIGN/08-RESPONSIVE-PWA.md`) |
 | Gift cards and vouchers, waiting list, loyalty points, spa and activities, travel-agent commissions, fixed-asset depreciation, bank statement matching, SMS and web push, payroll proration for joiners and leavers | Not in the PRD's required set (`Wajib`) or waiting for a decision on policy; none is hidden behind a flag |
 
 ## Property limit (licensing)

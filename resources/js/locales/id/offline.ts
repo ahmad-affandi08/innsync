@@ -44,4 +44,6 @@ export const offline: Record<keyof typeof english, string> = {
     'offline.check.queue': 'Simpan perubahan uji',
     'offline.check.hint': 'Pesan dienkripsi di perangkat ini dan dikirim saat koneksi tersedia.',
     'offline.check.notReady': 'Antrean luring belum siap.',
+    'offline.snapshot.title': "Bekerja dari perangkat ini",
+    'offline.snapshot.body': "Halaman ini dibuka dari salinan yang disimpan perangkat ini pada {at}, karena tidak ada jaringan. Harga, meja, dan kamar mungkin sudah berubah. Yang Anda kerjakan sekarang disimpan di perangkat ini dan dikirim saat jaringan kembali.",
 }

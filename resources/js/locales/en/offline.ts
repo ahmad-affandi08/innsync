@@ -41,4 +41,6 @@ export const offline = {
     'offline.check.queue': 'Save a test change',
     'offline.check.hint': 'The message is encrypted on this device and sent when a connection is available.',
     'offline.check.notReady': 'The offline queue is not ready yet.',
+    'offline.snapshot.title': "Working from this device",
+    'offline.snapshot.body': "This page was opened from the picture this device kept at {at}, because there is no network. Prices, tables and rooms may have changed since. What you do now is saved on this device and sent when the network returns.",
 } as const

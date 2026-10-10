@@ -6,10 +6,13 @@ import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import type { ComponentType, ReactNode } from 'react';
 
 import { PoweredBy } from '@/components/layout/powered-by';
+import { OfflineSnapshotNotice } from '@/components/layout/offline-snapshot-notice';
 import { PrintLetterhead } from '@/components/layout/print-letterhead';
 import { createAppQueryClient } from '@/shared/api/query-client';
 import { ensureMessages, localeFromProps } from '@/shared/i18n/i18n';
 import { OfflineProvider } from '@/shared/offline/offline-provider';
+import { fillOfflineShell, startPageMemory } from '@/shared/offline/page-memory';
+import type { InertiaPageLike } from '@/shared/offline/page-snapshot';
 import { registerServiceWorker } from '@/shared/pwa/register';
 
 const appName = import.meta.env.VITE_APP_NAME ?? 'InnSYnc';
@@ -25,35 +28,59 @@ function AppLayout({ children }: { children: ReactNode }) {
     return (
         <OfflineProvider>
             <PrintLetterhead />
+            <OfflineSnapshotNotice />
             {children}
             <PoweredBy print />
         </OfflineProvider>
     );
 }
 
-void createInertiaApp({
-    title: (title) => (title ? `${title} — ${appName}` : appName),
-    resolve: async (name, page) => {
-        // Dictionaries are loaded before the page renders so no raw keys flash.
-        const locale = localeFromProps(page?.props.locale);
+/** The page sent with this document, if any (the offline shell has none until the device fills it). */
+function firstPage(): InertiaPageLike | null {
+    try {
+        const text = document.querySelector('script[data-page="app"][type="application/json"]')?.textContent;
 
-        await ensureMessages(locale);
-        document.documentElement.lang = locale;
+        return text ? (JSON.parse(text) as InertiaPageLike) : null;
+    } catch {
+        return null;
+    }
+}
 
-        const component = (
-            await resolvePageComponent(`./modules/${name}.tsx`, pages)
-        ).default as ResolvedComponent;
+async function start(): Promise<void> {
+    const el = document.getElementById('app');
 
-        // The same layout component on every page keeps the offline queue mounted across navigation.
-        component.layout ??= AppLayout;
+    // Opened from nothing (service worker sent the shell because the network is down): show the page kept on this device, or say there is none.
+    if (el?.dataset.offlineShell !== undefined && !(await fillOfflineShell(el))) {
+        return;
+    }
 
-        return component;
-    },
-    strictMode: true,
-    withApp: (app) => (
-        <QueryClientProvider client={queryClient}>{app}</QueryClientProvider>
-    ),
-    progress: {
-        color: 'var(--primary)',
-    },
-});
+    await createInertiaApp({
+        title: (title) => (title ? `${title} — ${appName}` : appName),
+        resolve: async (name, page) => {
+            // Dictionaries are loaded before the page renders so no raw keys flash.
+            const locale = localeFromProps(page?.props.locale);
+
+            await ensureMessages(locale);
+            document.documentElement.lang = locale;
+
+            const component = (
+                await resolvePageComponent(`./modules/${name}.tsx`, pages)
+            ).default as ResolvedComponent;
+
+            // The same layout component on every page keeps the offline queue mounted across navigation.
+            component.layout ??= AppLayout;
+
+            return component;
+        },
+        strictMode: true,
+        withApp: (app) => (
+            <QueryClientProvider client={queryClient}>{app}</QueryClientProvider>
+        ),
+        progress: {
+            color: 'var(--primary)',
+        },
+    });
+    startPageMemory(firstPage());
+}
+
+void start();

@@ -29,7 +29,8 @@ function worker() {
     const sandbox = {
         self: { addEventListener: (type: string, listener: Listener) => { listeners[type] = listener }, location: new URL(ORIGIN), skipWaiting: () => Promise.resolve(), clients: { claim: () => Promise.resolve() } },
         caches: { open, keys: () => Promise.resolve([...stores.keys()]), delete: (name: string) => Promise.resolve(stores.delete(name)) },
-        fetch: (request: Request) => {
+        fetch: (input: Request | string) => {
+            const request = { url: keyOf(input) }
             network.requests.push(request.url)
             if (!network.up) return Promise.reject(new TypeError('offline'))
             // An answer from our own address, as the browser reports it ("basic").
@@ -41,7 +42,7 @@ function worker() {
 
     async function fire(request: Request): Promise<Response | null> {
         let answer: Promise<Response> | null = null
-        listeners.fetch({ request, respondWith: (p: Promise<Response>) => { answer = p } })
+        listeners.fetch({ request, respondWith: (p: Promise<Response>) => { answer = p }, waitUntil: () => undefined })
 
         return answer === null ? null : await answer
     }
@@ -58,12 +59,12 @@ describe('public/sw.js', () => {
         w.stores.set('other-site-cache', new Map())
 
         await new Promise<void>((resolve) => w.listeners.install({ waitUntil: (p: Promise<unknown>) => void p.then(() => resolve()) }))
-        assert.ok(w.stores.get('innsync-v1-shell')?.has(`${ORIGIN}/offline.html`))
+        assert.ok(w.stores.get('innsync-v2-shell')?.has(`${ORIGIN}/offline.html`))
 
         await new Promise<void>((resolve) => w.listeners.activate({ waitUntil: (p: Promise<unknown>) => void p.then(() => resolve()) }))
         assert.equal(w.stores.has('innsync-old-assets'), false)
         assert.equal(w.stores.has('other-site-cache'), true, 'what belongs to something else is left alone')
-        assert.equal(w.stores.has('innsync-v1-shell'), true)
+        assert.equal(w.stores.has('innsync-v2-shell'), true)
     })
 
     it('answers a built file from the phone after the first time, and never keeps anything else', async () => {
@@ -75,7 +76,7 @@ describe('public/sw.js', () => {
         const again = await w.fire(get('/build/assets/app-abc123.js'))
         assert.equal(await again?.text(), `network ${ORIGIN}/build/assets/app-abc123.js`, 'served from the phone with no network')
 
-        const keptUrls = [...(w.stores.get('innsync-v1-assets')?.keys() ?? [])]
+        const keptUrls = [...(w.stores.get('innsync-v2-assets')?.keys() ?? [])]
         assert.deepEqual(keptUrls, [`${ORIGIN}/build/assets/app-abc123.js`])
     })
 
@@ -100,12 +101,30 @@ describe('public/sw.js', () => {
         assert.equal(await page?.text(), 'kept /offline.html')
     })
 
+    it('opens the two offline screens from the shell when the network is down, and renews the shell when they are reached', async () => {
+        const w = worker()
+        await new Promise<void>((resolve) => w.listeners.install({ waitUntil: (p: Promise<unknown>) => void p.then(() => resolve()) }))
+        assert.ok(w.stores.get('innsync-v2-shell')?.has(`${ORIGIN}/offline-shell`))
+
+        let renewed: Promise<unknown> = Promise.resolve()
+        w.listeners.fetch({ request: get('/fnb/register', 'navigate'), respondWith: () => undefined, waitUntil: (p: Promise<unknown>) => { renewed = p } })
+        await renewed
+        assert.ok(w.network.requests.includes(`${ORIGIN}/offline-shell`), 'the shell is fetched again while the screen is reached online')
+        assert.equal(await (await w.fire(get('/fnb/register', 'navigate')))?.text(), `network ${ORIGIN}/fnb/register`, 'online: the screen itself')
+
+        w.network.up = false
+        const renewedShell = `network ${ORIGIN}/offline-shell`
+        assert.equal(await (await w.fire(get('/fnb/register', 'navigate')))?.text(), renewedShell)
+        assert.equal(await (await w.fire(get('/housekeeping/my-rooms', 'navigate')))?.text(), renewedShell)
+        assert.equal(await (await w.fire(get('/fnb/pos', 'navigate')))?.text(), 'kept /offline.html', 'any other screen gets the plain page')
+    })
+
     it('keeps at most a few hundred built files', async () => {
         const w = worker()
 
         for (let i = 0; i < 405; i++) await w.fire(get(`/build/assets/chunk-${i}.js`))
 
-        const kept = [...(w.stores.get('innsync-v1-assets')?.keys() ?? [])]
+        const kept = [...(w.stores.get('innsync-v2-assets')?.keys() ?? [])]
         assert.equal(kept.length, 400)
         assert.equal(kept.includes(`${ORIGIN}/build/assets/chunk-0.js`), false, 'the oldest go first')
         assert.equal(kept.includes(`${ORIGIN}/build/assets/chunk-404.js`), true)

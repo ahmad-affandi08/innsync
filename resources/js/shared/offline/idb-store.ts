@@ -1,4 +1,5 @@
 import { createAesGcmCipher, generateDeviceKey, type PayloadCipher } from './crypto.ts'
+import type { SnapshotRecord, SnapshotStore } from './page-snapshot.ts'
 import type { QueueStore } from './store.ts'
 import type { EnqueueDraft, StoredEntry } from './types.ts'
 import { ulid } from './ulid.ts'
@@ -6,6 +7,7 @@ import { ulid } from './ulid.ts'
 const DB_NAME = 'innsync-offline'
 const ENTRIES = 'entries'
 const META = 'meta'
+const SNAPSHOTS = 'snapshots'
 const CHANNEL = 'innsync-offline-queue'
 
 function request<T>(req: IDBRequest<T>): Promise<T> {
@@ -121,8 +123,30 @@ export class IdbQueueStore implements QueueStore {
     }
 }
 
+/** The pages kept for opening from nothing (page-snapshot.ts). Ciphertext only; the path and the ids are in the clear so a record can be found and bound. */
+export class IdbSnapshotStore implements SnapshotStore {
+    constructor(private readonly db: IDBDatabase) {}
+
+    async put(record: SnapshotRecord): Promise<void> {
+        const tx = this.db.transaction(SNAPSHOTS, 'readwrite')
+        tx.objectStore(SNAPSHOTS).put(record)
+        await done(tx)
+    }
+
+    async get(path: string): Promise<SnapshotRecord | null> {
+        return ((await request(this.db.transaction(SNAPSHOTS).objectStore(SNAPSHOTS).get(path))) as SnapshotRecord | undefined) ?? null
+    }
+
+    async clear(): Promise<void> {
+        const tx = this.db.transaction(SNAPSHOTS, 'readwrite')
+        tx.objectStore(SNAPSHOTS).clear()
+        await done(tx)
+    }
+}
+
 export interface OfflineRuntime {
     store: QueueStore
+    snapshots: SnapshotStore
     cipher: PayloadCipher
     deviceId: string
 }
@@ -162,11 +186,14 @@ export async function requestPersistentStorage(): Promise<boolean | null> {
 
 function openDatabase(): Promise<IDBDatabase> {
     return new Promise((resolve, reject) => {
-        const open = indexedDB.open(DB_NAME, 1)
+        const open = indexedDB.open(DB_NAME, 2)
 
         open.onupgradeneeded = () => {
-            open.result.createObjectStore(ENTRIES, { keyPath: 'operationId' })
-            open.result.createObjectStore(META, { keyPath: 'key' })
+            const names = open.result.objectStoreNames
+
+            if (!names.contains(ENTRIES)) open.result.createObjectStore(ENTRIES, { keyPath: 'operationId' })
+            if (!names.contains(META)) open.result.createObjectStore(META, { keyPath: 'key' })
+            if (!names.contains(SNAPSHOTS)) open.result.createObjectStore(SNAPSHOTS, { keyPath: 'path' })
         }
         open.onsuccess = () => resolve(open.result)
         open.onerror = () => reject(open.error)
@@ -198,5 +225,5 @@ export async function openOfflineRuntime(): Promise<OfflineRuntime> {
         await save('deviceKey', key)
     }
 
-    return { store: new IdbQueueStore(db), cipher: createAesGcmCipher(key), deviceId }
+    return { store: new IdbQueueStore(db), snapshots: new IdbSnapshotStore(db), cipher: createAesGcmCipher(key), deviceId }
 }

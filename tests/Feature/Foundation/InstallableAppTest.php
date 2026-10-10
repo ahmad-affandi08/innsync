@@ -48,4 +48,19 @@ final class InstallableAppTest extends TestCase
         // Only the files that carry a hash of their content are kept; nothing under an application path.
         $this->assertSame(2, substr_count($worker, 'url.pathname.startsWith('));
     }
+
+    public function test_the_offline_shell_is_open_to_everyone_and_holds_no_page_and_no_person(): void
+    {
+        $response = $this->get('/offline-shell')->assertOk();
+        $html = $response->getContent();
+
+        $this->assertStringContainsString('<div id="app" data-offline-shell></div>', $html);
+        $this->assertStringNotContainsString('data-page=', $html);
+        $this->assertStringContainsString('no-cache', (string) $response->headers->get('Cache-Control'));
+
+        // The worker lists exactly the screens the application keeps a copy of, and renews the shell when they are reached.
+        $worker = (string) file_get_contents(public_path('sw.js'));
+        $this->assertStringContainsString("OFFLINE_SHELL = '/offline-shell'", $worker);
+        $this->assertStringContainsString("OFFLINE_PAGES = ['/fnb/register', '/housekeeping/my-rooms']", $worker);
+    }
 }
