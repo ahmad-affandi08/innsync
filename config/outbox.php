@@ -7,6 +7,7 @@ use App\Modules\Finance\Application\FrontOfficeRevenueConsumer;
 use App\Modules\Finance\Application\PurchasingPayableConsumer;
 use App\Modules\FnbSales\Application\KitchenProgressConsumer;
 use App\Modules\FrontOffice\Application\Companies\CompanyReceiptConsumer;
+use App\Modules\FrontOffice\Application\DoorLocks\DoorLockJobConsumer;
 use App\Modules\HumanResource\Application\PayrollPaidConsumer;
 use App\Modules\HumanResource\Application\SopCompletionConsumer;
 use App\Modules\IdentityAccess\Application\Approval\ApprovalNoticeConsumer;
@@ -65,6 +66,7 @@ return [
         ScheduledReportNoticeConsumer::class,
         ApprovalNoticeConsumer::class,
         MaintenanceNoticeConsumer::class,
+        DoorLockJobConsumer::class,
         TicketIntakeConsumer::class,
     ],
 ];

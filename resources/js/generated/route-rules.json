@@ -15,6 +15,12 @@
             "reason"
         ]
     },
+    "GET /api/bridge/door-lock/jobs": {
+        "required": [],
+        "declared": [
+            "limit"
+        ]
+    },
     "GET /book/{property}/offers": {
         "required": [
             "adults",
@@ -976,6 +982,15 @@
         ],
         "declared": [
             "reason"
+        ]
+    },
+    "POST /api/bridge/door-lock/jobs/{id}/result": {
+        "required": [
+            "outcome"
+        ],
+        "declared": [
+            "message",
+            "outcome"
         ]
     },
     "POST /approvals/policies": {
@@ -2355,6 +2370,14 @@
             "route_extras",
             "route_rooms",
             "tax_id"
+        ]
+    },
+    "POST /front-office/door-locks/jobs/{id}/settle": {
+        "required": [
+            "reason"
+        ],
+        "declared": [
+            "reason"
         ]
     },
     "POST /front-office/feedback": {
@@ -6326,6 +6349,19 @@
             "current_password",
             "password",
             "password_confirmation"
+        ]
+    },
+    "PUT /front-office/door-locks": {
+        "required": [
+            "enabled",
+            "key_count",
+            "vendor"
+        ],
+        "declared": [
+            "enabled",
+            "key_count",
+            "lock_version",
+            "vendor"
         ]
     },
     "PUT /front-office/reservations/{id}/guest-note": {

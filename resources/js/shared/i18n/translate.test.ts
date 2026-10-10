@@ -91,6 +91,12 @@ describe('dictionaries', () => {
             'rpt.obl.col.service',
             'rpt.obl.col.status',
             'rpt.obl.reportedOn',
+            // Names of makes of lock.
+            'fo.lock.vendor.visionline',
+            'fo.lock.vendor.onity',
+            'fo.lock.vendor.salto',
+            'fo.lock.vendor.dormakaba',
+            'fo.lock.vendor.hafele',
             // Terms Indonesian hotels use unchanged.
             'rates.kind.ota',
             'fin.fc.target',

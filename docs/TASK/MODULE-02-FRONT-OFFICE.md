@@ -96,3 +96,7 @@
 - While it is set, `ReservationService::open` refuses a booking for the same guest (same name and phone as the note: `GuestKey`) with `BookingRefused::guestBlocked()` (409, reason `guest_blocked`) before anything is held or priced. This covers the desk, an imported channel file (the whole file is refused, the line is named) and the public booking page (which, like every refusal there, only says the room is unavailable). Bookings already made are not touched: the flag shows on the reservation and in the guest list so the desk decides at check-in. The match is by name and phone, so it is an aid for the desk, not a guarantee against someone who gives other details.
 - Evidence: `tests/Feature/FrontOffice/ReservationHttpTest.php` (`test_a_guest_marked_do_not_rent_...`).
 
+### Door locks (2026-10-10)
+
+- Key jobs that follow the stay (`DoorLockJobConsumer`, tables `door_lock_settings` and `door_lock_jobs`, migration 137), the token and the two calls of the bridge program (`DoorLockBridge`, `/api/bridge/door-lock/...`), and the page `/front-office/door-locks` (`front-office.door-lock.manage`). Contract, set-up and what is deliberately not built (the makers' own interfaces): `docs/OPERATIONS/DOOR-LOCKS.md`. Evidence: `tests/Feature/FrontOffice/DoorLockHttpTest.php` and a run of `tools/door-lock-bridge-example.mjs --dry-run` against a running copy (job fetched, reported done, audited).
+

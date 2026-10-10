@@ -67,6 +67,7 @@ use App\Modules\FrontOffice\Application\Charging\GuestCharging;
 use App\Modules\FrontOffice\Application\Charging\GuestChargingService;
 use App\Modules\FrontOffice\Application\Companies\CompanyRepository;
 use App\Modules\FrontOffice\Application\Companies\CompanyRouting;
+use App\Modules\FrontOffice\Application\DoorLocks\DoorLockStore;
 use App\Modules\FrontOffice\Application\Feedback\ComplaintWorkload;
 use App\Modules\FrontOffice\Application\Feedback\FeedbackRepository;
 use App\Modules\FrontOffice\Application\Folios\FolioPenaltyPoster;
@@ -110,6 +111,7 @@ use App\Modules\FrontOffice\Application\TapeChart\TapeChartReader;
 use App\Modules\FrontOffice\Infrastructure\Cashier\DatabaseCashierRepository;
 use App\Modules\FrontOffice\Infrastructure\Companies\DatabaseCompanyRepository;
 use App\Modules\FrontOffice\Infrastructure\DatabaseLaundryExceptionStore;
+use App\Modules\FrontOffice\Infrastructure\DoorLocks\DatabaseDoorLockStore;
 use App\Modules\FrontOffice\Infrastructure\Feedback\DatabaseComplaintWorkload;
 use App\Modules\FrontOffice\Infrastructure\Feedback\DatabaseFeedbackRepository;
 use App\Modules\FrontOffice\Infrastructure\Folios\DatabaseFolioRepository;
@@ -596,6 +598,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(ReservationExternalRefs::class, DatabaseReservationExternalRefs::class);
         $this->app->bind(GuestNoteStore::class, DatabaseGuestNoteStore::class);
         $this->app->bind(GuestBlockList::class, DatabaseGuestBlockList::class);
+        $this->app->bind(DoorLockStore::class, DatabaseDoorLockStore::class);
         $this->app->bind(ReminderStore::class, DatabaseReminderStore::class);
         $this->app->bind(AutoReminderSource::class, DatabaseAutoReminderSource::class);
         $this->app->bind(RoomPlanStore::class, DatabaseRoomPlanStore::class);
@@ -774,6 +777,8 @@ class AppServiceProvider extends ServiceProvider
 
         RateLimiter::for('webhooks', static fn (Request $request): Limit => Limit::perMinute(120)
             ->by((string) $request->route('provider').'|'.$request->ip()));
+
+        RateLimiter::for('door-lock-bridge', static fn (Request $request): Limit => Limit::perMinute(120)->by($request->ip()));
 
         RateLimiter::for('bookings', static fn (Request $request): Limit => Limit::perMinute(60)
             ->by((string) $request->user()?->getAuthIdentifier().'|'.$request->ip()));

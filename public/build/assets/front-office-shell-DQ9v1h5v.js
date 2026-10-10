@@ -1,0 +1,1 @@
+import{f as e}from"./i18n-B_DM335C.js";import{i as t,t as n}from"./app-frame-Dyv_rqdR.js";var r=e();function i({children:e,description:i,title:a,wide:o}){return(0,r.jsx)(n,{description:i,links:t,title:a,wide:o,children:e})}export{i as FrontOfficeShell};

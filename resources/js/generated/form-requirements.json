@@ -219,6 +219,11 @@
         "name",
         "reason"
     ],
+    "front-office/pages/door-locks": [
+        "key_count",
+        "reason",
+        "vendor"
+    ],
     "front-office/pages/feedback": [
         "channel",
         "kind",
