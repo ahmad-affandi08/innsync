@@ -24,6 +24,8 @@ use App\Shared\Application\Files\StoredFileNotFound;
 use App\Shared\Application\Files\StoredFileRepository;
 use App\Shared\Application\Files\StoreFile;
 use App\Shared\Application\Identifiers\IdentifierGenerator;
+use App\Shared\Application\Outbox\OutboxEvent;
+use App\Shared\Application\Outbox\OutboxPublisher;
 use App\Shared\Application\Retention\RetentionPolicies;
 use App\Shared\Application\Security\PermissionChecker;
 use App\Shared\Application\Security\StaffDirectory;
@@ -82,6 +84,7 @@ final readonly class WorkOrderService
         private AuditTrail $audit,
         private IdentifierGenerator $ids,
         private Clock $clock,
+        private OutboxPublisher $outbox,
     ) {}
 
     /** @return array<string, mixed> */
@@ -534,6 +537,12 @@ final readonly class WorkOrderService
 
             $this->event($property, $id, $kind, $note, $actor, $now);
             $this->audit->record(new AuditEntry($property->toString(), $actor, $auditAction, 'work_order', $id, ['status' => $w['status'], 'priority' => $w['priority'], 'assigned_to' => $w['assigned_to']], ['number' => $w['number'], ...array_map(static fn ($v) => $v instanceof DateTimeImmutable ? $v->format('Y-m-d\TH:i:s\Z') : $v, $fields)], $note));
+
+            if ($auditAction === 'work_order.assigned' && ($fields['assigned_to'] ?? null) !== null && $fields['assigned_to'] !== $actor) {
+                $this->outbox->publish(new OutboxEvent($property, MaintenanceNoticeConsumer::ASSIGNED, $this->ids->next(), 1, [
+                    'work_order_id' => $id, 'number' => $w['number'], 'priority' => $w['priority'], 'place' => ($w['room_number'] ?? null) !== null ? 'Room '.$w['room_number'] : ($w['area'] ?? null), 'technician_id' => $fields['assigned_to'],
+                ]));
+            }
         });
 
         return $this->show($property, $actorId, $id);

@@ -9,6 +9,8 @@ use App\Shared\Application\Audit\AuditEntry;
 use App\Shared\Application\Audit\AuditTrail;
 use App\Shared\Application\Errors\Refusal;
 use App\Shared\Application\Identifiers\IdentifierGenerator;
+use App\Shared\Application\Outbox\OutboxEvent;
+use App\Shared\Application\Outbox\OutboxPublisher;
 use App\Shared\Application\Security\StaffDirectory;
 use App\Shared\Application\Time\Clock;
 use App\Shared\Application\Transactions\TransactionRunner;
@@ -39,6 +41,7 @@ final readonly class EscalationService
         private AuditTrail $audit,
         private IdentifierGenerator $ids,
         private Clock $clock,
+        private OutboxPublisher $outbox,
     ) {}
 
     /** Raises the levels that are due. @return int how many were raised */
@@ -67,6 +70,9 @@ final readonly class EscalationService
                     if ($this->store->addEscalation($property, $row, $now)) {
                         $raised++;
                         $this->audit->record(new AuditEntry($property->toString(), null, 'work_order.escalated', 'work_order', $w['id'], null, ['number' => $w['number'], 'level' => $row['level'], 'target' => $row['target'], 'shift' => $row['shift'], 'priority' => $w['priority'], 'used_percent' => $used]));
+                        $this->outbox->publish(new OutboxEvent($property, MaintenanceNoticeConsumer::ESCALATED, $row['id'], 1, [
+                            'work_order_id' => $w['id'], 'number' => $w['number'], 'priority' => $w['priority'], 'place' => ($w['room_number'] ?? null) !== null ? 'Room '.$w['room_number'] : ($w['area'] ?? null), 'level' => $row['level'], 'target' => $row['target'],
+                        ]));
                     }
                 });
             }

@@ -16,6 +16,7 @@ use App\Modules\InventoryPurchasing\Application\MaintenancePartConsumer;
 use App\Modules\InventoryPurchasing\Application\RecipeConsumptionConsumer;
 use App\Modules\Kitchen\Application\SaleConsumptionConsumer;
 use App\Modules\Kitchen\Application\TicketIntakeConsumer;
+use App\Modules\Maintenance\Application\MaintenanceNoticeConsumer;
 use App\Modules\Reporting\Application\ScheduledReportNoticeConsumer;
 use App\Shared\Application\Outbox\OutboxConsumer;
 
@@ -63,6 +64,7 @@ return [
         SaleConsumptionConsumer::class,
         ScheduledReportNoticeConsumer::class,
         ApprovalNoticeConsumer::class,
+        MaintenanceNoticeConsumer::class,
         TicketIntakeConsumer::class,
     ],
 ];

@@ -113,3 +113,8 @@
 - Emit audit evidence for sensitive/state-changing operations.
 - Add happy, negative, conflict/retry, and permission tests as applicable.
 - Update traceability/evidence before marking DONE.
+
+### Notices by e-mail (2026-10-10)
+
+- `WorkOrderService::assign` and `EscalationService::run` now publish `maintenance.work_order.assigned` and `maintenance.work_order.escalated` to the outbox (in the same transaction as the change). `MaintenanceNoticeConsumer` e-mails the technician it was given to (not when they gave it to themselves), or the people who hold `maintenance.work.manage` (first level, day shift) or `maintenance.escalation.receive` (second level and the night shift) as the matrix says. It runs only when `MAINTENANCE_EMAIL_NOTICE=true` (`config/maintenance.php`, off by default), through the shared `EmailNotifier` and `StaffContacts`, names the number, priority and place and nothing else, and a missing address or a failing mailer never holds anything up. Evidence: `tests/Feature/Maintenance/EscalationReportHttpTest.php`.
+

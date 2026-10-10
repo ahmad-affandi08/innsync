@@ -8,6 +8,7 @@ use App\Modules\IdentityAccess\Infrastructure\Persistence\Eloquent\UserRecord;
 use App\Modules\Maintenance\Application\MaintenanceAccess;
 use App\Modules\Property\Application\Catalog\RoomCatalogService;
 use App\Modules\Property\Application\Settings\PropertySettingsService;
+use App\Shared\Application\Notifications\EmailNotifier;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Carbon;
@@ -124,6 +125,65 @@ final class EscalationReportHttpTest extends TestCase
         $this->get('/maintenance')->assertOk()->assertInertia(fn (Assert $p) => $p->has('overview.escalations', 1)->where('overview.escalations.0.level', 2));
         $this->actAs($this->tech);
         $this->get('/maintenance')->assertInertia(fn (Assert $p) => $p->has('overview.escalations', 0));
+    }
+
+    /** @return array{0: list<array{0: string, 1: string, 2: string}>, 1: callable(): void} what was sent, and the call that sends what the outbox holds */
+    private function mailbox(): array
+    {
+        $box = new class implements EmailNotifier
+        {
+            /** @var list<array{0: string, 1: string, 2: string}> */
+            public array $sent = [];
+
+            public function notify(string $address, string $subject, string $body): bool
+            {
+                $this->sent[] = [$address, $subject, $body];
+
+                return true;
+            }
+        };
+        $this->app->instance(EmailNotifier::class, $box);
+
+        return [$box, function (): void {
+            $this->artisan('outbox:drain')->assertSuccessful();
+            $this->artisan('queue:work', ['connection' => (string) config('outbox.queue_connection'), '--queue' => (string) config('outbox.queue_name'), '--stop-when-empty' => true, '--sleep' => 0])->run();
+        }];
+    }
+
+    public function test_nobody_is_written_to_about_work_orders_until_the_notice_is_switched_on(): void
+    {
+        [$box, $work] = $this->mailbox();
+        $id = $this->report('high');
+        $this->postJson("/maintenance/work-orders/{$id}/assign", ['technician_id' => (string) $this->tech->getKey(), 'lock_version' => 0])->assertOk();
+        $work();
+
+        self::assertSame([], $box->sent);
+    }
+
+    public function test_the_technician_and_the_people_an_escalation_is_for_are_told_by_email_and_the_message_names_no_title(): void
+    {
+        config(['maintenance.email_notice' => true]);
+        [$box, $work] = $this->mailbox();
+        $this->settings(3, 3);
+        $id = $this->report('high', 'Secret title of the guest complaint');
+        $this->postJson("/maintenance/work-orders/{$id}/assign", ['technician_id' => (string) $this->tech->getKey(), 'lock_version' => 0])->assertOk();
+        $this->used($id, 80);
+        $this->get('/maintenance')->assertOk();
+        $this->used($id, 120);
+        $this->get('/maintenance')->assertOk();
+        $work();
+
+        $to = array_column($box->sent, 0);
+        sort($to);
+        $expected = [$this->tech->email, $this->manager->email, $this->mod->email];
+        sort($expected);
+        self::assertSame($expected, $to, 'the technician it was given to, the supervisor for the first level, the manager on duty for the second');
+
+        foreach ($box->sent as [, , $body]) {
+            self::assertStringContainsString('/maintenance/work-orders', $body);
+            self::assertStringContainsString('Lobby', $body);
+            self::assertStringNotContainsString('Secret title', $body);
+        }
     }
 
     public function test_the_matrix_gives_normal_and_low_one_level_and_the_night_shift_sends_both_to_the_manager_on_duty(): void
