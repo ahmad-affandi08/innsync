@@ -81,6 +81,7 @@ use App\Modules\FrontOffice\Application\GuestDesk\OnlineBookingDeskService;
 use App\Modules\FrontOffice\Application\GuestDesk\SelfCheckInDesk;
 use App\Modules\FrontOffice\Application\GuestDesk\SelfCheckInDeskService;
 use App\Modules\FrontOffice\Application\GuestDirectory\GuestDirectoryReader;
+use App\Modules\FrontOffice\Application\GuestNotes\GuestBlockList;
 use App\Modules\FrontOffice\Application\GuestNotes\GuestNoteStore;
 use App\Modules\FrontOffice\Application\Inventory\InventoryHoldRepository;
 use App\Modules\FrontOffice\Application\Inventory\InventoryRepository;
@@ -116,6 +117,7 @@ use App\Modules\FrontOffice\Infrastructure\ForeignPayments\DatabaseForeignPaymen
 use App\Modules\FrontOffice\Infrastructure\Groups\DatabaseGroupRepository;
 use App\Modules\FrontOffice\Infrastructure\GuestDesk\DatabaseOnlineBookingCounts;
 use App\Modules\FrontOffice\Infrastructure\GuestDirectory\DatabaseGuestDirectoryReader;
+use App\Modules\FrontOffice\Infrastructure\GuestNotes\DatabaseGuestBlockList;
 use App\Modules\FrontOffice\Infrastructure\GuestNotes\DatabaseGuestNoteStore;
 use App\Modules\FrontOffice\Infrastructure\Inventory\DatabaseInventoryHoldRepository;
 use App\Modules\FrontOffice\Infrastructure\Inventory\DatabaseInventoryRepository;
@@ -593,6 +595,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(ReservationRepository::class, DatabaseReservationRepository::class);
         $this->app->bind(ReservationExternalRefs::class, DatabaseReservationExternalRefs::class);
         $this->app->bind(GuestNoteStore::class, DatabaseGuestNoteStore::class);
+        $this->app->bind(GuestBlockList::class, DatabaseGuestBlockList::class);
         $this->app->bind(ReminderStore::class, DatabaseReminderStore::class);
         $this->app->bind(AutoReminderSource::class, DatabaseAutoReminderSource::class);
         $this->app->bind(RoomPlanStore::class, DatabaseRoomPlanStore::class);

@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { FrontOfficeShell } from '@/modules/front-office/components/front-office-shell';
 import { useFormatters, useTranslation } from '@/shared/i18n/i18n';
 
-type Guest = { guest_name: string; stays: number; nights: number; last_arrival: string; last_departure: string; last_reservation_id: string; upcoming: number; flag: 'vip' | 'attention' | null; note: string | null };
+type Guest = { guest_name: string; stays: number; nights: number; last_arrival: string; last_departure: string; last_reservation_id: string; upcoming: number; flag: 'vip' | 'attention' | 'do_not_rent' | null; note: string | null };
 
 /** The guests the property has hosted, so a returning guest is recognised. Contact and identity details stay behind the reservation. */
 export default function GuestsPage({ guests, query }: { guests: Guest[]; query: string }) {

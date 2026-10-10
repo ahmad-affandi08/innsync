@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Modules\FrontOffice\Application\Reservations;
 
 use App\Modules\FrontOffice\Application\BookingRefused;
+use App\Modules\FrontOffice\Application\GuestNotes\GuestBlockList;
 use App\Modules\FrontOffice\Application\Inventory\AvailabilityService;
 use App\Modules\FrontOffice\Application\Inventory\InventoryRepository;
 use App\Modules\FrontOffice\Domain\Reservations\BookingSource;
@@ -83,6 +84,7 @@ final readonly class ReservationService
         private BookingPolicyReader $policies,
         private PenaltyPoster $penalties,
         private DepositLedger $deposits,
+        private GuestBlockList $blocked,
     ) {}
 
     public function create(PropertyId $property, string $actorId, ReservationRequest $request, IdempotencyKey $key): Reservation
@@ -295,6 +297,10 @@ final readonly class ReservationService
 
         $today = $this->businessDate->current($property);
         $horizon = $this->settings->get($property)->availabilityHorizonDays;
+
+        if ($this->blocked->blocks($property, $request->guestName, $request->guestPhone)) {
+            throw BookingRefused::guestBlocked();
+        }
 
         if ($stay->arrival->isBefore($today)) {
             throw BookingRefused::arrivalInThePast();

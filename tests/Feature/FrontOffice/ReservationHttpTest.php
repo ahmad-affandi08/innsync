@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\FrontOffice;
 
+use App\Modules\FrontOffice\Application\GuestNotes\GuestNoteService;
 use App\Modules\FrontOffice\Application\Inventory\InventoryAdminService;
 use App\Modules\FrontOffice\Application\Reservations\ReservationService;
 use App\Modules\Property\Application\Catalog\RoomCatalogService;
@@ -156,6 +157,33 @@ final class ReservationHttpTest extends TestCase
         $this->putJson("/front-office/reservations/{$first}/guest-note", ['flag' => '', 'note' => ''])->assertOk()->assertJsonPath('guest_note.note', null);
         self::assertStringNotContainsString('high floor', (string) json_encode(DB::table('audit_entries')->where('action', 'guest.note.saved')->get()));
         self::assertSame(2, DB::table('audit_entries')->where('action', 'guest.note.saved')->count());
+    }
+
+    public function test_a_guest_marked_do_not_rent_is_refused_a_new_booking_until_the_flag_is_lifted_by_someone_allowed_to(): void
+    {
+        $this->staff([GuestNoteService::BLOCK_PERMISSION]);
+        $this->postJson('/property/rooms', ['number' => '102', 'room_type_id' => $this->typeId, 'reason' => 'x'])->assertCreated();
+        $first = $this->postJson('/front-office/reservations', $this->body(), ['Idempotency-Key' => 'http-key-0000000060'])->assertCreated()->json('reservation.id');
+
+        $this->putJson("/front-office/reservations/{$first}/guest-note", ['flag' => 'do_not_rent', 'note' => ''])->assertStatus(422);
+        $this->putJson("/front-office/reservations/{$first}/guest-note", ['flag' => 'do_not_rent', 'note' => 'Damaged the room, unpaid'])->assertOk()->assertJsonPath('guest_note.flag', 'do_not_rent');
+
+        $this->postJson('/front-office/reservations', $this->body(['arrival' => '2026-11-10', 'departure' => '2026-11-12']), ['Idempotency-Key' => 'http-key-0000000061'])->assertStatus(409)->assertJsonPath('error.conflict.reason', 'guest_blocked');
+        $this->postJson('/front-office/reservations', $this->body(['guest_name' => 'Sari Wulandari', 'guest_phone' => '+62 899 111', 'arrival' => '2026-11-10', 'departure' => '2026-11-12']), ['Idempotency-Key' => 'http-key-0000000062'])->assertCreated();
+        self::assertSame(2, DB::table('reservations')->count(), 'the refused booking left nothing behind');
+
+        $this->post('/logout');
+        $this->flushSession();
+        $this->signIn(self::A, [ReservationService::MANAGE_PERMISSION]);
+        $this->putJson("/front-office/reservations/{$first}/guest-note", ['flag' => '', 'note' => 'Fine now'])->assertForbidden();
+        $this->putJson("/front-office/reservations/{$first}/guest-note", ['flag' => 'do_not_rent', 'note' => 'Updated text'])->assertOk();
+
+        $this->post('/logout');
+        $this->flushSession();
+        $this->signIn(self::A, [ReservationService::MANAGE_PERMISSION, GuestNoteService::BLOCK_PERMISSION]);
+        $this->putJson("/front-office/reservations/{$first}/guest-note", ['flag' => '', 'note' => 'Settled the bill'])->assertOk();
+        $this->postJson('/front-office/reservations', $this->body(['arrival' => '2026-11-10', 'departure' => '2026-11-12']), ['Idempotency-Key' => 'http-key-0000000063'])->assertCreated();
+        self::assertStringNotContainsString('Damaged', (string) json_encode(DB::table('audit_entries')->where('action', 'guest.note.saved')->get()));
     }
 
     public function test_a_person_who_only_views_reservations_reads_notes_but_cannot_write_them_or_reminders(): void

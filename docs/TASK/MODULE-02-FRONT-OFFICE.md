@@ -89,3 +89,10 @@
 
 - Status (2026-10-07). `TASK-FO-041` is `BLOCKED`: the report is issued with the registration columns, but the layout the authority requires is PRD `Q-09` and is still open; it must not be guessed. It returns to `IN_PROGRESS` when the Front Office Manager supplies the format.
 - Status (2026-10-07). `TASK-FO-020` is `REVIEW`: check-in opens a folio when the reservation has none (`StayService`), several windows are supported, and outlet and laundry charges and late charges reach the folio through the same ledger. Evidence: `tests/Integration/FrontOffice/StayTest.php::test_check_in_registers_the_guest_starts_the_stay_and_opens_the_folio`, `tests/Integration/FrontOffice/FolioTest.php`, `tests/Integration/FrontOffice/LateChargeTest.php`.
+
+### Do-not-rent flag (2026-10-10)
+
+- The guest note (`GuestNoteService`) has a third flag, `do_not_rent` (migration 136), beside VIP and needs attention. Marking a guest, or lifting it, needs `front-office.guest.block` and a note that says why (at least three characters); the audit holds the flag change, never the note text.
+- While it is set, `ReservationService::open` refuses a booking for the same guest (same name and phone as the note: `GuestKey`) with `BookingRefused::guestBlocked()` (409, reason `guest_blocked`) before anything is held or priced. This covers the desk, an imported channel file (the whole file is refused, the line is named) and the public booking page (which, like every refusal there, only says the room is unavailable). Bookings already made are not touched: the flag shows on the reservation and in the guest list so the desk decides at check-in. The match is by name and phone, so it is an aid for the desk, not a guarantee against someone who gives other details.
+- Evidence: `tests/Feature/FrontOffice/ReservationHttpTest.php` (`test_a_guest_marked_do_not_rent_...`).
+

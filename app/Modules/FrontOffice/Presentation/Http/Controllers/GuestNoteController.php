@@ -16,7 +16,7 @@ final readonly class GuestNoteController
 
     public function save(Request $request, string $id): JsonResponse
     {
-        $data = $request->validate(['flag' => ['nullable', 'string', 'max:10'], 'note' => ['nullable', 'string', 'max:500']]);
+        $data = $request->validate(['flag' => ['nullable', 'string', 'max:16'], 'note' => ['nullable', 'string', 'max:500']]);
         $actor = (string) $request->user()->getAuthIdentifier();
         $this->notes->save($this->property->current(), $actor, $id, $data['flag'] ?? null, $data['note'] ?? null);
 

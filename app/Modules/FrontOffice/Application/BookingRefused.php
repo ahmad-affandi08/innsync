@@ -9,7 +9,7 @@ use RuntimeException;
 
 /**
  * A booking could not be made, with a stable reason the screen can act on (`no_availability`, `oversell_warning`,
- * `not_bookable`, `arrival_in_the_past`, `beyond_horizon`, `occupancy_exceeded`). Rendered as a standard error.
+ * `not_bookable`, `arrival_in_the_past`, `beyond_horizon`, `occupancy_exceeded`, `guest_blocked`). Rendered as a standard error.
  */
 final class BookingRefused extends RuntimeException implements ExpectedFailure
 {
@@ -48,6 +48,12 @@ final class BookingRefused extends RuntimeException implements ExpectedFailure
     public static function occupancyExceeded(): self
     {
         return new self('occupancy_exceeded', 422, 'The guests exceed what this room type allows.');
+    }
+
+    /** The guest is marked do-not-rent. The reason is kept for the desk (the guest note); this refusal gives no more than that the booking cannot be made. */
+    public static function guestBlocked(): self
+    {
+        return new self('guest_blocked', 409, 'The property will not take a booking for this guest.');
     }
 
     public function status(): int

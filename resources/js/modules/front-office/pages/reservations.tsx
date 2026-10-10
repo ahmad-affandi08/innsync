@@ -175,6 +175,7 @@ export default function ReservationsPage({ filters, lookups, reservations }: { f
                         {action.error !== null && conflictReason !== 'oversell_warning' ? (
                             <ErrorState {...errorCopy} error={action.error} onRefresh={() => void check()}>
                                 {conflictReason === 'no_availability' && <p>{t('fo.error.noAvailability')}</p>}
+                                {conflictReason === 'guest_blocked' && <p>{t('fo.error.guestBlocked')}</p>}
                                 {action.failure?.kind === 'validation' && action.failure.fields !== undefined && Object.keys(action.failure.fields).length === 0 && <p>{t('fo.error.notBookable')}</p>}
                             </ErrorState>
                         ) : null}

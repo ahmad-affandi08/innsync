@@ -11,7 +11,7 @@ import { useServerAction } from '@/shared/api/use-server-action';
 import { useTranslation } from '@/shared/i18n/i18n';
 import { useErrorStateCopy } from '@/shared/i18n/use-ui-copy';
 
-export type GuestNote = { flag: 'vip' | 'attention' | null; note: string | null; updated_at: string | null; may_write: boolean };
+export type GuestNote = { flag: 'vip' | 'attention' | 'do_not_rent' | null; note: string | null; updated_at: string | null; may_write: boolean };
 
 /** What the desk should know about this guest every time they come: a flag and a short note that follow the guest from stay to stay. */
 export function GuestNotePanel({ note, reservationId }: { note: GuestNote; reservationId: string }) {
@@ -42,7 +42,7 @@ export function GuestNotePanel({ note, reservationId }: { note: GuestNote; reser
             {!editing ? (
                 empty ? <p className="text-sm text-muted-foreground">{t('fo.gnote.none')}</p> : (
                     <div className="flex flex-col gap-1 text-sm">
-                        {current.flag !== null ? <div><StatusBadge label={t(`fo.gnote.flag.${current.flag}` as 'fo.gnote.flag.vip')} tone={current.flag === 'vip' ? 'success' : 'warning'} /></div> : null}
+                        {current.flag !== null ? <div><StatusBadge label={t(`fo.gnote.flag.${current.flag}` as 'fo.gnote.flag.vip')} tone={current.flag === 'vip' ? 'success' : current.flag === 'do_not_rent' ? 'danger' : 'warning'} /></div> : null}
                         {current.note !== null ? <p className="break-words">{current.note}</p> : null}
                     </div>
                 )
@@ -54,8 +54,10 @@ export function GuestNotePanel({ note, reservationId }: { note: GuestNote; reser
                             <option value="">{t('fo.gnote.flag.none')}</option>
                             <option value="vip">{t('fo.gnote.flag.vip')}</option>
                             <option value="attention">{t('fo.gnote.flag.attention')}</option>
+                            <option value="do_not_rent">{t('fo.gnote.flag.do_not_rent')}</option>
                         </Select>
                     </FormField>
+                    {flag === 'do_not_rent' ? <Alert title={t('fo.gnote.dnrTitle')} tone="warning">{t('fo.gnote.dnr')}</Alert> : null}
                     <FormField error={action.fieldError('note')} label={t('fo.gnote.note')}>
                         <Textarea maxLength={500} onChange={(e) => setText(e.target.value)} rows={3} value={text} />
                     </FormField>
