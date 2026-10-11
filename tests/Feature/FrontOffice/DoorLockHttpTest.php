@@ -77,11 +77,16 @@ final class DoorLockHttpTest extends TestCase
     private function work(): void
     {
         // The drain compares `available_at` with the clock to the second: a message made in this very second is taken at the next tick.
-        sleep(1);
+        // Two rounds: a message that was not yet due in the first (the clock of the database and the application can differ by a moment under load) is taken in the second.
         // A queue worker forgets the scoped instances; the routes already used keep their controllers, so the context they hold is put back.
         $context = app(PropertyContext::class);
-        $this->artisan('outbox:drain')->assertSuccessful();
-        $this->artisan('queue:work', ['connection' => (string) config('outbox.queue_connection'), '--queue' => (string) config('outbox.queue_name'), '--stop-when-empty' => true, '--sleep' => 0])->run();
+
+        foreach ([1, 2] as $round) {
+            sleep(1);
+            $this->artisan('outbox:drain')->assertSuccessful();
+            $this->artisan('queue:work', ['connection' => (string) config('outbox.queue_connection'), '--queue' => (string) config('outbox.queue_name'), '--stop-when-empty' => true, '--sleep' => 0])->run();
+        }
+
         $this->app->instance(PropertyContext::class, $context);
         $this->post('/logout');
         $this->flushSession();

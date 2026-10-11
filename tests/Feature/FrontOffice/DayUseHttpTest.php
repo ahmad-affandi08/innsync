@@ -94,10 +94,15 @@ final class DayUseHttpTest extends TestCase
 
     private function work(): void
     {
-        sleep(1);
         $context = app(PropertyContext::class);
-        $this->artisan('outbox:drain')->assertSuccessful();
-        $this->artisan('queue:work', ['connection' => (string) config('outbox.queue_connection'), '--queue' => (string) config('outbox.queue_name'), '--stop-when-empty' => true, '--sleep' => 0])->run();
+
+        // Two rounds: a message that was not yet due in the first is taken in the second.
+        foreach ([1, 2] as $round) {
+            sleep(1);
+            $this->artisan('outbox:drain')->assertSuccessful();
+            $this->artisan('queue:work', ['connection' => (string) config('outbox.queue_connection'), '--queue' => (string) config('outbox.queue_name'), '--stop-when-empty' => true, '--sleep' => 0])->run();
+        }
+
         app()->instance(PropertyContext::class, $context);
     }
 

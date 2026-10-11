@@ -148,9 +148,12 @@ final class EscalationReportHttpTest extends TestCase
 
         return [$box, function (): void {
             // The drain compares `available_at` with the clock to the second: a message made in this very second is taken at the next tick.
-            sleep(1);
-            $this->artisan('outbox:drain')->assertSuccessful();
-            $this->artisan('queue:work', ['connection' => (string) config('outbox.queue_connection'), '--queue' => (string) config('outbox.queue_name'), '--stop-when-empty' => true, '--sleep' => 0])->run();
+            // Two rounds: a message that was not yet due in the first is taken in the second.
+            foreach ([1, 2] as $round) {
+                sleep(1);
+                $this->artisan('outbox:drain')->assertSuccessful();
+                $this->artisan('queue:work', ['connection' => (string) config('outbox.queue_connection'), '--queue' => (string) config('outbox.queue_name'), '--stop-when-empty' => true, '--sleep' => 0])->run();
+            }
         }];
     }
 
