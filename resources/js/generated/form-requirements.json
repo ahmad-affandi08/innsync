@@ -259,6 +259,19 @@
         "name",
         "reason"
     ],
+    "front-office/pages/day-use": [
+        "guest_name",
+        "guests",
+        "hours",
+        "max_hours",
+        "payment_method",
+        "price_minor",
+        "reason",
+        "room_id",
+        "room_type_id",
+        "starts_at",
+        "starts_on"
+    ],
     "front-office/pages/door-locks": [
         "key_count",
         "reason",

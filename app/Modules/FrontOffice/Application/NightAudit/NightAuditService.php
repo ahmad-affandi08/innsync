@@ -6,6 +6,7 @@ namespace App\Modules\FrontOffice\Application\NightAudit;
 
 use App\Modules\FrontOffice\Application\Cashier\CashierRepository;
 use App\Modules\FrontOffice\Application\Companies\CompanyRouting;
+use App\Modules\FrontOffice\Application\DayUse\DayUseStore;
 use App\Modules\FrontOffice\Application\Folios\FolioLedger;
 use App\Modules\FrontOffice\Application\Folios\FolioRepository;
 use App\Modules\FrontOffice\Application\Inventory\RoomBlockRepository;
@@ -60,13 +61,14 @@ final readonly class NightAuditService
 
     public const WAIVE_PERMISSION = 'front-office.night-audit.waive';
 
-    public const GATES = ['pending_arrivals', 'overdue_departures', 'in_house_without_open_folio', 'same_day_stays', 'open_cashier_shifts'];
+    public const GATES = ['pending_arrivals', 'overdue_departures', 'in_house_without_open_folio', 'same_day_stays', 'open_cashier_shifts', 'day_use_open'];
 
     private const LIST_LIMIT = 50;
 
     public function __construct(
         private NightAuditRepository $audits,
         private CashierRepository $shifts,
+        private DayUseStore $dayUse,
         private StayRepository $stays,
         private ReservationRepository $reservations,
         private FolioRepository $folios,
@@ -332,6 +334,7 @@ final readonly class NightAuditService
             self::gate('in_house_without_open_folio', $withoutFolio),
             self::gate('same_day_stays', $sameDay),
             self::gate('open_cashier_shifts', array_map(static fn (array $s): string => $s['number'], $this->shifts->openShifts($property, self::LIST_LIMIT))),
+            self::gate('day_use_open', $this->dayUse->inUseUpTo($property, $today->toString(), self::LIST_LIMIT)),
         ];
     }
 

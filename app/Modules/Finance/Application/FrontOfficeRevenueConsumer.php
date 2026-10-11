@@ -25,7 +25,7 @@ final readonly class FrontOfficeRevenueConsumer implements OutboxConsumer
     public const FNB_SHIFT_EVENT = 'fnb.cashier.shift.closed';
 
     /** Posting sources the front office owns, as the outlet each belongs to when no revenue outlet claims it. */
-    private const BUILT_IN = ['night_audit' => 'rooms', 'laundry' => 'laundry'];
+    private const BUILT_IN = ['night_audit' => 'rooms', 'laundry' => 'laundry', 'day_use' => 'day_use'];
 
     public function __construct(private RevenueStore $store, private IdentifierGenerator $ids, private Clock $clock) {}
 
@@ -88,7 +88,7 @@ final readonly class FrontOfficeRevenueConsumer implements OutboxConsumer
             }
 
             if ($at === null) {
-                $lines[] = ['id' => $this->ids->next(), 'day_id' => $day, 'business_date' => (string) $d['business_date'], 'source' => $source, 'outlet_code' => $outlet['code'] ?? 'other', 'outlet_name' => $outlet['name'] ?? null, 'base_minor' => 0, 'service_charge_minor' => 0, 'tax_minor' => 0, 'total_minor' => 0];
+                $lines[] = ['id' => $this->ids->next(), 'day_id' => $day, 'business_date' => (string) $d['business_date'], 'source' => $source, 'outlet_code' => $outlet['code'] ?? (self::BUILT_IN[$source] ?? 'other'), 'outlet_name' => $outlet['name'] ?? null, 'base_minor' => 0, 'service_charge_minor' => 0, 'tax_minor' => 0, 'total_minor' => 0];
                 $at = array_key_last($lines);
             }
 

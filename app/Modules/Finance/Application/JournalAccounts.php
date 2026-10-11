@@ -28,6 +28,7 @@ final class JournalAccounts
         'service_charge' => ['2-1400', 'Hutang service charge'],
         'tax_payable' => ['2-1500', 'Hutang pajak daerah dan PPN keluaran'],
         'revenue.rooms' => ['4-1100', 'Pendapatan kamar'],
+        'revenue.day_use' => ['4-1150', 'Pendapatan day use'],
         'revenue.laundry' => ['4-1300', 'Pendapatan laundry'],
         'revenue.other' => ['4-1900', 'Pendapatan lain-lain'],
         'expense.other' => ['5-9000', 'Beban lain-lain'],

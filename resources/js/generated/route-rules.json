@@ -2613,6 +2613,89 @@
             "tax_id"
         ]
     },
+    "POST /front-office/day-use/bookings": {
+        "required": [
+            "guest_name",
+            "guests",
+            "hours",
+            "room_id",
+            "starts_at",
+            "starts_on"
+        ],
+        "declared": [
+            "guest_name",
+            "guest_phone",
+            "guests",
+            "hours",
+            "note",
+            "room_id",
+            "starts_at",
+            "starts_on"
+        ]
+    },
+    "POST /front-office/day-use/bookings/{id}/cancel": {
+        "required": [
+            "lock_version",
+            "reason"
+        ],
+        "declared": [
+            "lock_version",
+            "reason"
+        ]
+    },
+    "POST /front-office/day-use/bookings/{id}/finish": {
+        "required": [
+            "lock_version"
+        ],
+        "declared": [
+            "lock_version"
+        ]
+    },
+    "POST /front-office/day-use/bookings/{id}/no-show": {
+        "required": [
+            "lock_version"
+        ],
+        "declared": [
+            "lock_version"
+        ]
+    },
+    "POST /front-office/day-use/bookings/{id}/start": {
+        "required": [
+            "lock_version",
+            "payment_method"
+        ],
+        "declared": [
+            "lock_version",
+            "payment_method",
+            "reference"
+        ]
+    },
+    "POST /front-office/day-use/rates": {
+        "required": [
+            "max_hours",
+            "price_minor",
+            "room_type_id"
+        ],
+        "declared": [
+            "max_hours",
+            "price_minor",
+            "room_type_id"
+        ]
+    },
+    "POST /front-office/day-use/rates/{id}": {
+        "required": [
+            "is_active",
+            "lock_version",
+            "max_hours",
+            "price_minor"
+        ],
+        "declared": [
+            "is_active",
+            "lock_version",
+            "max_hours",
+            "price_minor"
+        ]
+    },
     "POST /front-office/door-locks/jobs/{id}/settle": {
         "required": [
             "reason"

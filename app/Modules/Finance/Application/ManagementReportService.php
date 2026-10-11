@@ -35,7 +35,7 @@ final readonly class ManagementReportService
     public const MAX_RANGE_DAYS = 366;
 
     /** The department each built-in revenue outlet goes to until the owner maps it. */
-    public const BASELINE_OUTLETS = ['rooms' => 'front_office', 'laundry' => 'laundry', 'other' => 'general'];
+    public const BASELINE_OUTLETS = ['rooms' => 'front_office', 'day_use' => 'front_office', 'laundry' => 'laundry', 'other' => 'general'];
 
     public function __construct(
         private ManagementReportQueries $queries,

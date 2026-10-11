@@ -10,6 +10,18 @@ return [
         'run_at' => (string) env('FRONTDESK_AUTO_REMINDERS_AT', '06:30'),
     ],
     // How long a gift card is good for when the sale does not say (baseline; the hotel's terms decide). Months from the day of the sale.
+    // Day use: a room rented for some hours with no night in it (docs/OPERATIONS/DAY-USE.md). Times are on the property's clock, HH:MM.
+    'day_use' => [
+        // The first start and the last end of a day use, so the room is back before the evening.
+        'earliest_start' => (string) env('DAY_USE_EARLIEST_START', '06:00'),
+        'latest_end' => (string) env('DAY_USE_LATEST_END', '21:00'),
+        // When a guest of the house leaves on that day, a day use of the same room starts no earlier than this.
+        'after_checkout' => (string) env('DAY_USE_AFTER_CHECKOUT', '12:00'),
+        // How many days ahead one can be booked.
+        'max_advance_days' => (int) env('DAY_USE_MAX_ADVANCE_DAYS', 60),
+        // The service charge and tax scheme the price is charged with (rooms, laundry or fnb); the price is before them.
+        'charge_scope' => (string) env('DAY_USE_CHARGE_SCOPE', 'rooms'),
+    ],
     'activities' => [
         // The scheme (service charge and tax) a spa or activity is priced with when it is charged to a room: rooms, laundry or fnb. Prices are quoted before service charge and tax.
         'charge_scope' => (string) env('ACTIVITIES_CHARGE_SCOPE', 'rooms'),

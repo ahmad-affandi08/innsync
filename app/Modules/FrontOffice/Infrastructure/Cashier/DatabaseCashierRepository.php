@@ -143,6 +143,12 @@ final readonly class DatabaseCashierRepository implements CashierRepository
         // Gift cards sold for cash in this shift: the money is in the drawer, though no folio holds it.
         $sold = DB::table('gift_cards')->where('property_id', $property->toString())->where('issue_shift_id', $shiftId)->where('issue_method', 'cash');
         $cash = (int) (clone $sold)->sum('face_minor');
+        $count = (clone $sold)->count();
+
+        // A day use paid in cash at the desk in this shift is in the drawer as well.
+        $dayUse = DB::table('day_use_bookings')->where('property_id', $property->toString())->where('shift_id', $shiftId)->where('payment_method', 'cash');
+        $cash += (int) (clone $dayUse)->sum('total_minor');
+        $count += (clone $dayUse)->count();
 
         if ($cash > 0) {
             $found = false;
@@ -150,7 +156,7 @@ final readonly class DatabaseCashierRepository implements CashierRepository
             foreach ($result as &$line) {
                 if ($line['method'] === 'cash') {
                     $line['received_minor'] += $cash;
-                    $line['count'] += (clone $sold)->count();
+                    $line['count'] += $count;
                     $found = true;
                 }
             }
@@ -158,7 +164,7 @@ final readonly class DatabaseCashierRepository implements CashierRepository
             unset($line);
 
             if (! $found) {
-                $result[] = ['method' => 'cash', 'received_minor' => $cash, 'paid_back_minor' => 0, 'count' => (clone $sold)->count()];
+                $result[] = ['method' => 'cash', 'received_minor' => $cash, 'paid_back_minor' => 0, 'count' => $count];
             }
         }
 
