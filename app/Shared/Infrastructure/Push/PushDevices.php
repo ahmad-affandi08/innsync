@@ -80,6 +80,31 @@ final readonly class PushDevices
         DB::table('push_devices')->where('id', $id)->where('failures', '>=', 20)->delete();
     }
 
+    /** The people who turned this kind of notice off. @return list<string> */
+    public function mutedBy(string $kind): array
+    {
+        return DB::table('push_preferences')->where('kind', $kind)->pluck('user_id')->map(static fn ($id): string => (string) $id)->all();
+    }
+
+    /** @return list<string> the kinds this person turned off */
+    public function mutedKinds(string $userId): array
+    {
+        return DB::table('push_preferences')->where('user_id', strtolower($userId))->pluck('kind')->map(static fn ($k): string => (string) $k)->all();
+    }
+
+    public function setKind(string $userId, string $kind, bool $on): void
+    {
+        $userId = strtolower($userId);
+
+        if ($on) {
+            DB::table('push_preferences')->where('user_id', $userId)->where('kind', $kind)->delete();
+
+            return;
+        }
+
+        DB::table('push_preferences')->insertOrIgnore(['user_id' => $userId, 'kind' => $kind, 'created_at' => now()]);
+    }
+
     public function addNotice(string $propertyId, string $deviceId, string $title, string $body, string $url): void
     {
         DB::table('push_notices')->where('device_id', $deviceId)->where('created_at', '<', now()->subDays(max(1, (int) config('push.notice_days'))))->delete();

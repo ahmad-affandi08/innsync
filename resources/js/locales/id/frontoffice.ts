@@ -1159,4 +1159,9 @@ export const frontOffice = {
     'fo.bill.outlet.day_use': "Day use",
     'fo.audit.gate.day_use_open': "Day use masih di dalam kamar",
     'fo.audit.gate.day_use_open.help': "Minta tamu pergi dan tandai day use selesai, atau bebaskan dengan alasan.",
+    'fo.act.arrives': "tiba {date}",
+    'fo.ly.tiers': "Tingkat menurut poin yang didapat dari semua menginap, tiap tingkat mendapat lebih banyak pada menginap berikutnya: {list}.",
+    'fo.ly.expires': "Poin akun yang tidak menginap dan tidak menukar voucher selama {n} bulan hangus.",
+    'fo.ly.neverExpires': "Poin tidak hangus.",
+    'fo.ly.kind.expire': "Hangus",
 } as const;

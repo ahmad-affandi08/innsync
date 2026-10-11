@@ -7,6 +7,7 @@ namespace App\Modules\FrontOffice\Application\Activities;
 use App\Modules\FrontOffice\Application\Folios\FolioService;
 use App\Modules\FrontOffice\Application\Reservations\ReservationRepository;
 use App\Modules\FrontOffice\Application\Stays\StayRepository;
+use App\Modules\FrontOffice\Domain\Reservations\ReservationStatus;
 use App\Modules\Property\Application\Catalog\RoomCatalogReader;
 use App\Modules\Property\Application\Rates\PropertyCurrencyReader;
 use App\Modules\Property\Application\Settings\BusinessDateProvider;
@@ -78,7 +79,11 @@ final readonly class ActivityService
             $guests[] = ['reservation_id' => $stay->reservationId, 'guest_name' => $this->reservations->find($property, $stay->reservationId)?->guestName ?? '', 'room' => $room[$stay->roomId] ?? '', 'departure' => $stay->expectedDeparture->toString()];
         }
 
-        usort($guests, static fn (array $a, array $b): int => strnatcmp($a['room'], $b['room']));
+        foreach ($this->store->upcomingReservations($property, $today, DateMath::addDays($today, 30)) as $u) {
+            $guests[] = ['reservation_id' => $u['id'], 'guest_name' => $u['guest_name'], 'room' => '', 'departure' => $u['departure'], 'arrival' => $u['arrival']];
+        }
+
+        usort($guests, static fn (array $a, array $b): int => [isset($a['arrival']), strnatcmp($a['room'], $b['room'])] <=> [isset($b['arrival']), 0]);
 
         return [
             'currency' => $this->currency->currencyOf($property), 'today' => $today, 'categories' => self::CATEGORIES,
@@ -160,22 +165,15 @@ final readonly class ActivityService
                     throw Refusal::invalid('The service must end before midnight.', ['starts_at']);
                 }
 
-                $stay = null;
+                // A guest who is in the house, or who has a confirmed reservation and is still to arrive (the charge is made only once the guest is in the house).
+                $reservation = $this->reservations->find($property, strtolower($reservationId));
 
-                foreach ($this->stays->inHouse($property) as $candidate) {
-                    if ($candidate->reservationId === strtolower($reservationId)) {
-                        $stay = $candidate;
-                    }
+                if ($reservation === null || ! in_array($reservation->status, [ReservationStatus::Confirmed, ReservationStatus::Guaranteed, ReservationStatus::CheckedIn], true)) {
+                    throw Refusal::invalid('Choose a guest who is in the house or has a confirmed reservation.', ['reservation_id']);
                 }
 
-                $reservation = $stay === null ? null : $this->reservations->find($property, $stay->reservationId);
-
-                if ($stay === null || $reservation === null) {
-                    throw Refusal::invalid('Choose a guest who is in the house.', ['reservation_id']);
-                }
-
-                if ($day > $stay->expectedDeparture->toString()) {
-                    throw Refusal::invalid('The guest leaves before this day.', ['starts_on']);
+                if ($day < $reservation->stay->arrival->toString() || $day > $reservation->stay->departure->toString()) {
+                    throw Refusal::invalid('The day is outside the guest\'s stay.', ['starts_on']);
                 }
 
                 if (! ActivityCapacity::fits($this->store->holdingPlaces($property, $service['id'], $day), $start, $end, $guests, (int) $service['capacity'])) {

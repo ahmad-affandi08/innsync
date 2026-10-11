@@ -63,6 +63,12 @@ final readonly class DatabaseActivityStore implements ActivityStore
         return DB::table('activity_bookings')->where('property_id', $property->toString())->where('id', $id)->where('lock_version', $lock)->update([...$fields, 'lock_version' => $lock + 1, 'updated_at' => $at]) === 1;
     }
 
+    public function upcomingReservations(PropertyId $property, string $from, string $to): array
+    {
+        return DB::table('reservations')->where('property_id', $property->toString())->whereIn('status', ['confirmed', 'guaranteed'])->where('arrival_date', '>=', $from)->where('arrival_date', '<=', $to)->orderBy('arrival_date')->limit(200)
+            ->get(['id', 'guest_name', 'arrival_date', 'departure_date'])->map(static fn (object $r): array => ['id' => (string) $r->id, 'guest_name' => (string) $r->guest_name, 'arrival' => substr((string) $r->arrival_date, 0, 10), 'departure' => substr((string) $r->departure_date, 0, 10)])->all();
+    }
+
     public function holdingPlaces(PropertyId $property, string $serviceId, string $day): array
     {
         $out = [];

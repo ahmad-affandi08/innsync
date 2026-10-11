@@ -9,14 +9,19 @@ use App\Modules\FrontOffice\Application\Requests\GuestRequestService;
 use App\Modules\FrontOffice\Application\Reservations\ReservationService;
 use App\Modules\FrontOffice\Application\Stays\StayService;
 use App\Modules\Housekeeping\Application\HousekeepingService;
+use App\Modules\IdentityAccess\Infrastructure\Persistence\Eloquent\UserRecord;
 use App\Modules\Maintenance\Application\MaintenanceAccess;
 use App\Modules\Property\Application\Catalog\RoomCatalogService;
 use App\Modules\Property\Application\Rates\ChargeSchemeService;
 use App\Modules\Property\Application\Rates\RatePlanService;
 use App\Modules\Property\Application\Settings\PropertySettingsService;
+use App\Shared\Application\Tenancy\PropertyContext;
+use App\Shared\Infrastructure\Push\PushDevices;
+use App\Shared\Infrastructure\Push\Vapid;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use Inertia\Testing\AssertableInertia as Assert;
 use LogicException;
 use Tests\Support\SignsInToProperty;
@@ -130,5 +135,41 @@ final class GuestRequestHttpTest extends TestCase
         $this->flushSession();
         $this->signIn(self::A, ['housekeeping.view']);
         $this->get('/front-office/requests')->assertForbidden();
+    }
+
+    public function test_the_front_desk_is_told_on_a_device_about_a_guest_request_unless_they_turned_that_kind_off(): void
+    {
+        config(['push.vapid_private_key' => Vapid::generate()['private'], 'push.vapid_subject' => 'mailto:hotel@example.com']);
+        $desk = UserRecord::factory()->create();
+        $this->grant($desk, self::A, [GuestRequestService::MANAGE_PERMISSION]);
+        $endpoint = 'https://fcm.googleapis.com/fcm/send/desk-phone';
+        app(PushDevices::class)->add((string) $desk->getKey(), $endpoint, null);
+        Http::fake(['fcm.googleapis.com/*' => Http::response('', 201)]);
+
+        $drain = function (): void {
+            sleep(1);
+            $context = app(PropertyContext::class);
+            $this->artisan('outbox:drain')->assertSuccessful();
+            $this->artisan('queue:work', ['connection' => (string) config('outbox.queue_connection'), '--queue' => (string) config('outbox.queue_name'), '--stop-when-empty' => true, '--sleep' => 0])->run();
+            app()->instance(PropertyContext::class, $context);
+        };
+
+        $this->postJson('/front-office/requests', ['stay_id' => $this->stay, 'category' => 'housekeeping', 'title' => 'Secret words of the guest', 'urgent' => true], ['Idempotency-Key' => 'request-push-000001'])->assertCreated();
+        $drain();
+
+        // Only the other person with the right is told (the one who made the request knows), with the room and the kind, not the words.
+        Http::assertSentCount(1);
+        Http::assertSent(fn ($r) => $r->url() === $endpoint && $r->body() === '');
+        $notice = DB::table('push_notices')->first();
+        self::assertSame('/front-office/requests', $notice->url);
+        self::assertStringContainsString('101', $notice->body.$notice->title);
+        self::assertStringContainsString('housekeeping', $notice->body);
+        self::assertStringNotContainsString('Secret words', $notice->title.$notice->body);
+
+        // Turned off by the person: nothing more is sent for guest requests.
+        app(PushDevices::class)->setKind((string) $desk->getKey(), 'guest_request', false);
+        $this->postJson('/front-office/requests', ['stay_id' => $this->stay, 'category' => 'maintenance', 'title' => 'Noisy AC'], ['Idempotency-Key' => 'request-push-000002'])->assertCreated();
+        $drain();
+        Http::assertSentCount(1);
     }
 }

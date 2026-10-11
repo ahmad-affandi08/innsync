@@ -21,7 +21,7 @@ import { minorToMajorText, parseMajorToMinor } from '@/shared/money/money';
 
 type Service = { id: string; code: string; name: string; category: string; duration_minutes: number; price_minor: number; capacity: number; is_active: boolean; lock_version: number };
 type Booking = { id: string; number: string; service_id: string; service_name: string; starts_on: string; starts_at: string; duration_minutes: number; guests: number; guest_name: string; price_minor: number; status: string; note: string | null; reason: string | null; lock_version: number };
-type Guest = { reservation_id: string; guest_name: string; room: string; departure: string };
+type Guest = { reservation_id: string; guest_name: string; room: string; departure: string; arrival?: string };
 type Overview = { currency: string; today: string; categories: string[]; services: Service[]; bookings: Booking[]; in_house: Guest[]; may: { book: boolean; manage: boolean } };
 
 const TONE: Record<string, StatusTone> = { booked: 'info', done: 'success', cancelled: 'neutral', no_show: 'warning' };
@@ -115,7 +115,7 @@ export default function ActivitiesPage({ overview }: { overview: Overview }) {
                     <div className="grid gap-3 sm:grid-cols-2">
                         {action.error !== null ? <div className="sm:col-span-2"><ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /></div> : null}
                         <FormField error={action.fieldError('service_id')} field="service_id" label={t('fo.act.col.service')}><Select onChange={(e) => setBook({ ...book, service: e.target.value })} value={book.service}>{overview.services.filter((s) => s.is_active).map((s) => <option key={s.id} value={s.id}>{s.name} · {money(s.price_minor)}</option>)}</Select></FormField>
-                        <FormField error={action.fieldError('reservation_id')} field="reservation_id" label={t('fo.act.col.guest')}><Select onChange={(e) => setBook({ ...book, reservation: e.target.value })} value={book.reservation}>{overview.in_house.map((g) => <option key={g.reservation_id} value={g.reservation_id}>{g.room} · {g.guest_name}</option>)}</Select></FormField>
+                        <FormField error={action.fieldError('reservation_id')} field="reservation_id" label={t('fo.act.col.guest')}><Select onChange={(e) => setBook({ ...book, reservation: e.target.value })} value={book.reservation}>{overview.in_house.map((g) => <option key={g.reservation_id} value={g.reservation_id}>{g.arrival === undefined ? g.room : t('fo.act.arrives', { date: format.date(g.arrival) })} · {g.guest_name}</option>)}</Select></FormField>
                         <FormField error={action.fieldError('starts_on')} field="starts_on" label={t('fo.act.day')}><DatePicker min={overview.today} onChange={(e) => setBook({ ...book, day: e.target.value })} value={book.day} /></FormField>
                         <FormField error={action.fieldError('starts_at')} field="starts_at" hint={t('fo.act.timeHint')} label={t('fo.act.time')}><Input inputMode="numeric" maxLength={5} onChange={(e) => setBook({ ...book, time: e.target.value })} placeholder="14:30" value={book.time} /></FormField>
                         <FormField error={action.fieldError('guests')} field="guests" label={t('fo.act.guests')}><Input inputMode="numeric" maxLength={2} onChange={(e) => setBook({ ...book, guests: e.target.value.replace(/\D/g, '') })} value={book.guests} /></FormField>

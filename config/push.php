@@ -18,6 +18,9 @@ return [
     'ttl_seconds' => (int) env('PUSH_TTL_SECONDS', 3600),
     'notice_days' => (int) env('PUSH_NOTICE_DAYS', 3),
 
+    // The kinds of notice a person can turn off for themselves.
+    'kinds' => ['approval', 'work_order', 'guest_request'],
+
     // At most this many devices for one person.
     'max_devices' => (int) env('PUSH_MAX_DEVICES', 5),
 ];

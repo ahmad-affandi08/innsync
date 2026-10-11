@@ -9,15 +9,16 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
+import { StatusBadge } from '@/components/ui/status-badge';
 import { FrontOfficeShell } from '@/modules/front-office/components/front-office-shell';
 import { newIdempotencyKey } from '@/shared/api/http';
 import { useServerAction } from '@/shared/api/use-server-action';
 import { useFormatters, useTranslation } from '@/shared/i18n/i18n';
 import { useErrorStateCopy } from '@/shared/i18n/use-ui-copy';
 
-type Account = { id: string; name: string; phone_last4: string | null; balance_points: number; earned_points: number };
+type Account = { id: string; name: string; phone_last4: string | null; balance_points: number; earned_points: number; tier: string | null; bonus_percent: number };
 type Entry = { id: string; kind: string; points: number; balance_after: number; source_type: string; note: string | null; business_date: string };
-type Overview = { currency: string; enabled: boolean; earn_per_point_minor: number; point_value_minor: number; min_redeem_points: number; accounts: Account[]; open: { account: Account; entries: Entry[] } | null; may: { redeem: boolean; adjust: boolean } };
+type Overview = { currency: string; enabled: boolean; earn_per_point_minor: number; point_value_minor: number; min_redeem_points: number; expire_months: number; tiers: { key: string; from_points: number; bonus_percent: number }[]; accounts: Account[]; open: { account: Account; entries: Entry[] } | null; may: { redeem: boolean; adjust: boolean } };
 type Made = { card: { face_minor: number; expires_on: string | null }; code: string | null; replayed: boolean; balance_points: number };
 
 /** Loyalty points: who holds how many, what they came from, turning points into a voucher (the code is shown once), and a correction with a reason. */
@@ -49,7 +50,7 @@ export default function LoyaltyPage({ overview }: { overview: Overview }) {
     }
 
     const columns: DataGridColumn<Account>[] = [
-        { id: 'guest', label: t('fo.ly.col.guest'), value: (a) => a.name, rowHeader: true, cell: (a) => <span>{a.name}{a.phone_last4 !== null ? <span className="text-xs text-muted-foreground"> · …{a.phone_last4}</span> : null}</span> },
+        { id: 'guest', label: t('fo.ly.col.guest'), value: (a) => a.name, rowHeader: true, cell: (a) => <span>{a.name}{a.phone_last4 !== null ? <span className="text-xs text-muted-foreground"> · …{a.phone_last4}</span> : null}{a.tier !== null ? <span className="ml-2"><StatusBadge label={`${a.tier}${a.bonus_percent > 0 ? ` +${a.bonus_percent}%` : ''}`} tone="info" /></span> : null}</span> },
         { id: 'balance', label: t('fo.ly.col.balance'), align: 'right', value: (a) => a.balance_points, cell: (a) => <span>{format.number(a.balance_points)}<span className="block text-xs text-muted-foreground">{money(a.balance_points * overview.point_value_minor)}</span></span> },
         { id: 'earned', label: t('fo.ly.col.earned'), align: 'right', value: (a) => a.earned_points, cell: (a) => format.number(a.earned_points) },
         {
@@ -77,7 +78,7 @@ export default function LoyaltyPage({ overview }: { overview: Overview }) {
     return (
         <FrontOfficeShell description={t('fo.ly.description')} title={t('fo.ly.title')} wide>
             {action.error !== null && redeem === null && adjust === null ? <ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /> : null}
-            {!overview.enabled ? <Alert title={t('fo.ly.off')} tone="warning">{t('fo.ly.offBody')}</Alert> : <p className="text-sm text-muted-foreground">{t('fo.ly.rules', { earn: money(overview.earn_per_point_minor), value: money(overview.point_value_minor), min: overview.min_redeem_points })}</p>}
+            {!overview.enabled ? <Alert title={t('fo.ly.off')} tone="warning">{t('fo.ly.offBody')}</Alert> : <div className="grid gap-1 text-sm text-muted-foreground"><p>{t('fo.ly.rules', { earn: money(overview.earn_per_point_minor), value: money(overview.point_value_minor), min: overview.min_redeem_points })}</p>{overview.tiers.length > 0 ? <p>{t('fo.ly.tiers', { list: overview.tiers.map((x) => `${x.key} ${format.number(x.from_points)}+ (+${x.bonus_percent}%)`).join(', ') })}</p> : null}<p>{overview.expire_months > 0 ? t('fo.ly.expires', { n: overview.expire_months }) : t('fo.ly.neverExpires')}</p></div>}
             <DataGrid caption={t('fo.ly.title')} columns={columns} empty={<EmptyState title={t('fo.ly.none')} />} getRowId={(a) => a.id} id="fo.loyalty" rows={overview.accounts} testId="loyalty-accounts" />
 
             {overview.open !== null ? (

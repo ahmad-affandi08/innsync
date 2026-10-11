@@ -36,6 +36,12 @@ interface LoyaltyStore
     /** @return list<array<string, mixed>> newest first */
     public function entries(PropertyId $property, string $accountId, int $limit): array;
 
+    /** Accounts that hold points and have had no stay and no voucher since the moment. @return list<array<string, mixed>> */
+    public function idleAccounts(PropertyId $property, DateTimeImmutable $since, int $limit): array;
+
+    /** @return list<string> */
+    public function propertiesWithAccounts(): array;
+
     /** The room revenue (before service charge and tax) charged to the folios of a reservation. */
     public function roomBaseOf(PropertyId $property, string $reservationId): int;
 }

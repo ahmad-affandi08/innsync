@@ -246,6 +246,7 @@ Route::middleware(['auth', 'auth.session', 'active'])->group(function (): void {
         Route::get('/push/config', [PushController::class, 'config'])->name('push.config');
         Route::post('/push/devices', [PushController::class, 'subscribe'])->middleware('throttle:push-devices')->name('push.subscribe');
         Route::delete('/push/devices', [PushController::class, 'unsubscribe'])->name('push.unsubscribe');
+        Route::post('/push/preferences', [PushController::class, 'preference'])->middleware('throttle:push-devices')->name('push.preference');
         Route::get('/push/next', [PushController::class, 'next'])->middleware('throttle:60,1')->name('push.next');
         Route::put('/account/password', [PasswordController::class, 'update'])
             ->middleware(['password.confirm', 'throttle:sensitive'])

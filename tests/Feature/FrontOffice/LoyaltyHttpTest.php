@@ -7,6 +7,7 @@ namespace Tests\Feature\FrontOffice;
 use App\Modules\FrontOffice\Application\Folios\FolioLedger;
 use App\Modules\FrontOffice\Application\Folios\FolioService;
 use App\Modules\FrontOffice\Application\GiftCards\GiftCardService;
+use App\Modules\FrontOffice\Application\GuestNotes\GuestKey;
 use App\Modules\FrontOffice\Application\Loyalty\LoyaltyEarningConsumer;
 use App\Modules\FrontOffice\Application\Loyalty\LoyaltyService;
 use App\Modules\FrontOffice\Application\Reservations\ReservationService;
@@ -19,6 +20,7 @@ use App\Shared\Application\Identifiers\IdentifierGenerator;
 use App\Shared\Application\Outbox\OutboxEvent;
 use App\Shared\Application\Outbox\OutboxMessage;
 use App\Shared\Application\Tenancy\PropertyContext;
+use App\Shared\Application\Time\Clock;
 use App\Shared\Domain\Money\Money;
 use App\Shared\Domain\Tenancy\PropertyId;
 use App\Shared\Domain\Time\BusinessDate;
@@ -28,6 +30,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Inertia\Testing\AssertableInertia as Assert;
 use LogicException;
+use Tests\Support\AdjustableClock;
 use Tests\Support\SignsInToProperty;
 use Tests\TestCase;
 
@@ -168,5 +171,51 @@ final class LoyaltyHttpTest extends TestCase
         $this->post('/logout');
         $this->signIn(self::A, []);
         $this->get('/front-office/loyalty')->assertForbidden();
+    }
+
+    public function test_a_tier_earns_a_bonus_on_the_next_stay_and_shows_on_the_account(): void
+    {
+        config(['frontdesk.loyalty.enabled' => true, 'frontdesk.loyalty.tiers' => [['key' => 'silver', 'from_points' => 150, 'bonus_percent' => 10]]]);
+
+        // A guest who earned 200 points before is in the silver tier: the stay of 200 points gets 10 percent more.
+        DB::table('loyalty_accounts')->insert(['id' => '01ARZ3NDEKTSV4RRFFQ69G5ACC', 'property_id' => self::A, 'guest_key' => GuestKey::of('Budi', '0812-3456-7890'), 'guest_name' => 'Budi', 'phone_last4' => '7890', 'balance_points' => 200, 'earned_points' => 200, 'created_at' => now(), 'updated_at' => now()]);
+        $this->checkOut();
+
+        $account = (array) DB::table('loyalty_accounts')->first();
+        self::assertSame([420, 420], [(int) $account['balance_points'], (int) $account['earned_points']]);
+        $entry = (array) DB::table('loyalty_entries')->first();
+        self::assertSame(220, (int) $entry['points']);
+        self::assertStringContainsString('+20 tier bonus', (string) $entry['note']);
+        $this->get('/front-office/loyalty')->assertInertia(fn (Assert $p) => $p->where('overview.accounts.0.tier', 'silver')->where('overview.accounts.0.bonus_percent', 10)->where('overview.tiers.0.key', 'silver'));
+    }
+
+    public function test_points_of_an_idle_account_expire_once_and_an_active_one_keeps_them(): void
+    {
+        $clock = new AdjustableClock(now()->format('Y-m-d H:i:s'));
+        $this->app->instance(Clock::class, $clock);
+        config(['frontdesk.loyalty.enabled' => true, 'frontdesk.loyalty.expire_months' => 24]);
+        $this->checkOut();
+        $account = (string) DB::table('loyalty_accounts')->value('id');
+
+        // Active: the stay was just now.
+        $this->artisan('loyalty:expire')->assertSuccessful();
+        self::assertSame(200, (int) DB::table('loyalty_accounts')->value('balance_points'));
+
+        // Idle: two and a half years later, with no stay and no voucher in between.
+        $clock->advance('+30 months');
+        $this->artisan('loyalty:expire')->assertSuccessful();
+
+        self::assertSame(0, (int) DB::table('loyalty_accounts')->value('balance_points'));
+        $expiry = (array) DB::table('loyalty_entries')->where('kind', 'expire')->first();
+        self::assertSame([-200, 0, $account], [(int) $expiry['points'], (int) $expiry['balance_after'], $expiry['account_id']]);
+        self::assertSame(1, DB::table('audit_entries')->where('action', 'loyalty.expired')->count());
+
+        // Run again: nothing more to take. A programme with no expiry takes nothing.
+        $this->artisan('loyalty:expire')->assertSuccessful();
+        self::assertSame(1, DB::table('loyalty_entries')->where('kind', 'expire')->count());
+        DB::table('loyalty_accounts')->update(['balance_points' => 50]);
+        config(['frontdesk.loyalty.expire_months' => 0]);
+        $this->artisan('loyalty:expire')->assertSuccessful();
+        self::assertSame(50, (int) DB::table('loyalty_accounts')->value('balance_points'));
     }
 }

@@ -66,7 +66,7 @@ final readonly class MaintenanceNoticeConsumer implements OutboxConsumer
             return;
         }
 
-        $this->push->notify($event->propertyId, $ids, $subject, $this->short($d, $event->eventType === self::ASSIGNED, $what), '/maintenance/work-orders');
+        $this->push->notify($event->propertyId, $ids, $subject, $this->short($d, $event->eventType === self::ASSIGNED, $what), '/maintenance/work-orders', 'work_order');
 
         if (! $byEmail) {
             return;

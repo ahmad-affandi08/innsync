@@ -10,10 +10,12 @@ Page `/front-office/loyalty` (rights `front-office.loyalty.view`, `front-office.
 - **Spending.** Points are turned into a **voucher** (a complimentary gift card, `docs/OPERATIONS/GIFT-CARDS.md`) worth `LOYALTY_POINT_VALUE_MINOR` per point (default Rp 100, about one percent back), at least `LOYALTY_MIN_REDEEM_POINTS` (default 100) at a time. The code is shown once. The person needs both the loyalty right and the right to sell gift cards, because a voucher is money to spend. A request sent twice with the same key takes the points once and answers with the same voucher, without its code.
 - **Books.** Nothing is booked when points are earned (no liability is carried). The cost appears when points are spent: the voucher is a complimentary card, and the accounting journal books it as promotion expense against the gift card liability, then clears the liability when the card is spent.
 - **Corrections.** A person with the adjust right adds or takes points with a reason (never below zero); it is audited.
-- **Entries** (earn, redeem, adjust) are never changed or deleted (database triggers).
+- **Tiers.** By the points earned over all stays (`LOYALTY_TIERS`, a JSON list; baseline silver from 1,000 points with +5%, gold from 5,000 with +10%, platinum from 15,000 with +20%; `[]` for none). A guest earns the bonus of the tier held *before* the stay on the points of that stay, rounded down; the tier shows beside the name.
+- **Expiry.** The points of an account with no stay and no voucher for `LOYALTY_EXPIRE_MONTHS` months (baseline 24; 0 = never) expire, all at once, by the nightly `loyalty:expire` (02:30). The expiry is an entry (*Expired*) with the reason, so the history shows it. A stay or a voucher restarts the clock.
+- **Entries** (earn, redeem, adjust, expire) are never changed or deleted (database triggers).
 
 ## Not decided here
 
-- Points that expire, tiers (silver, gold), points for food and beverage or spa spend, bonus campaigns: none. One rate on room revenue only.
+- Points on food and beverage or spa spend, bonus campaigns, points that expire one lot at a time (the whole balance expires after the idle period), tiers that fall again after a year. One rate on room revenue only.
 - Taking points back when a stay is corrected after check-out: use a correction with the reason.
 - Spending points directly against a folio: they become a voucher first.

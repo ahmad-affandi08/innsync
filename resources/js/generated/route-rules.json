@@ -6594,6 +6594,16 @@
             "label"
         ]
     },
+    "POST /push/preferences": {
+        "required": [
+            "enabled",
+            "kind"
+        ],
+        "declared": [
+            "enabled",
+            "kind"
+        ]
+    },
     "POST /reports/exports": {
         "required": [
             "report"

@@ -136,6 +136,25 @@ final class WebPushTest extends TestCase
         $this->assertTrue(PushEndpoint::acceptable(self::LAPTOP));
     }
 
+    public function test_a_person_can_turn_a_kind_of_notice_off_and_is_then_not_told_of_it(): void
+    {
+        $this->switchOn();
+        $this->postJson('/push/devices', ['endpoint' => self::PHONE])->assertCreated();
+        Http::fake(['*' => Http::response('', 201)]);
+        $notifier = app(PushNotifier::class);
+
+        $this->getJson('/push/config')->assertJsonPath('kinds', ['approval', 'work_order', 'guest_request'])->assertJsonPath('muted', []);
+        $this->postJson('/push/preferences', ['kind' => 'nonsense', 'enabled' => false])->assertStatus(422);
+        $this->postJson('/push/preferences', ['kind' => 'approval', 'enabled' => false])->assertOk()->assertJsonPath('muted', ['approval']);
+
+        $this->assertSame(0, $notifier->notify(PropertyId::fromString(self::A), [$this->userId], 'T', 'B', '/approvals', 'approval'));
+        $this->assertSame(1, $notifier->notify(PropertyId::fromString(self::A), [$this->userId], 'T', 'B', '/maintenance/work-orders', 'work_order'));
+        $this->assertSame(1, $notifier->notify(PropertyId::fromString(self::A), [$this->userId], 'T', 'B', '/', 'general'));
+
+        $this->postJson('/push/preferences', ['kind' => 'approval', 'enabled' => true])->assertOk()->assertJsonPath('muted', []);
+        $this->assertSame(1, $notifier->notify(PropertyId::fromString(self::A), [$this->userId], 'T', 'B', '/approvals', 'approval'));
+    }
+
     public function test_the_routes_need_a_signed_in_person(): void
     {
         $this->post('/logout');

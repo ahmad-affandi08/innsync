@@ -58,9 +58,13 @@ final readonly class LoyaltyEarningConsumer implements OutboxConsumer
             }
 
             $now = $this->clock->nowUtc();
-            $accountId = $this->store->ensureAccount($property, $this->ids->next(), GuestKey::of($reservation->guestName, $reservation->guestPhone), $reservation->guestName, substr($digits, -4), $now);
+            $guestKey = GuestKey::of($reservation->guestName, $reservation->guestPhone);
+            $accountId = $this->store->ensureAccount($property, $this->ids->next(), $guestKey, $reservation->guestName, substr($digits, -4), $now);
+            // The tier the guest had before this stay earns a bonus on it.
+            $base = $points;
+            $points = LoyaltyTiers::withBonus($points, (int) ($this->store->accountOfGuest($property, $guestKey)['earned_points'] ?? 0), $rules['tiers']);
 
-            if (! $this->store->addEntry($property, ['id' => $this->ids->next(), 'account_id' => $accountId, 'kind' => 'earn', 'points' => $points, 'balance_after' => $this->store->balance($property, $accountId) + $points, 'source_type' => 'stay', 'source_ref' => $reservationId, 'note' => $reservation->number, 'business_date' => (string) $d['business_date'], 'actor_id' => null], $now)) {
+            if (! $this->store->addEntry($property, ['id' => $this->ids->next(), 'account_id' => $accountId, 'kind' => 'earn', 'points' => $points, 'balance_after' => $this->store->balance($property, $accountId) + $points, 'source_type' => 'stay', 'source_ref' => $reservationId, 'note' => $reservation->number.($points > $base ? ' (+'.($points - $base).' tier bonus)' : ''), 'business_date' => (string) $d['business_date'], 'actor_id' => null], $now)) {
                 return;
             }
 

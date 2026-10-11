@@ -2,11 +2,12 @@ import { useEffect, useState } from 'react';
 
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { apiRequest } from '@/shared/api/http';
 import { useTranslation } from '@/shared/i18n/i18n';
 import { deviceLabel, keyToBytes } from '@/shared/pwa/push';
 
-type Config = { enabled: boolean; public_key: string | null; subscribed: boolean };
+type Config = { enabled: boolean; public_key: string | null; subscribed: boolean; kinds: string[]; muted: string[] };
 type State = 'checking' | 'unsupported' | 'off-server' | 'blocked' | 'off' | 'on';
 
 /** Notices on this device (web push): shown only where the browser can and the server is set up. Turning it on asks the browser for permission; the push itself carries no words. */
@@ -16,6 +17,8 @@ export function PushToggle() {
     const [key, setKey] = useState<string | null>(null);
     const [busy, setBusy] = useState(false);
     const [failed, setFailed] = useState(false);
+    const [kinds, setKinds] = useState<string[]>([]);
+    const [muted, setMuted] = useState<string[]>([]);
 
     useEffect(() => {
         let alive = true;
@@ -30,6 +33,8 @@ export function PushToggle() {
                 const config = await apiRequest<Config>('/push/config', { query: { endpoint: existing?.endpoint ?? '' } });
                 if (!alive) return;
                 setKey(config.public_key);
+                setKinds(config.kinds);
+                setMuted(config.muted);
                 if (!config.enabled) return setState('off-server');
                 if (Notification.permission === 'denied') return setState('blocked');
                 setState(existing !== null && config.subscribed ? 'on' : 'off');
@@ -58,6 +63,17 @@ export function PushToggle() {
             setFailed(true);
         } finally {
             setBusy(false);
+        }
+    }
+
+    async function toggleKind(kind: string, on: boolean) {
+        setFailed(false);
+
+        try {
+            const answer = await apiRequest<{ muted: string[] }>('/push/preferences', { method: 'POST', body: { kind, enabled: on } });
+            setMuted(answer.muted);
+        } catch {
+            setFailed(true);
         }
     }
 
@@ -97,6 +113,14 @@ export function PushToggle() {
                     <span className="text-sm" data-testid="push-on">{t('acc.push.on')}</span>
                     <Button loading={busy} onClick={() => void turnOff()} type="button" variant="outline">{t('acc.push.turnOff')}</Button>
                 </div>
+            ) : null}
+            {state === 'on' && kinds.length > 0 ? (
+                <fieldset className="grid gap-2">
+                    <legend className="text-sm font-medium">{t('acc.push.kinds')}</legend>
+                    {kinds.map((kind) => (
+                        <label className="flex items-center gap-2 text-sm" key={kind}><Checkbox checked={!muted.includes(kind)} onCheckedChange={(v) => void toggleKind(kind, v === true)} />{t(`acc.push.kind.${kind}` as 'acc.push.kind.approval')}</label>
+                    ))}
+                </fieldset>
             ) : null}
         </section>
     );

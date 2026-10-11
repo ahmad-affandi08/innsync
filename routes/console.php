@@ -60,6 +60,10 @@ if (config('inventory.restock.enabled')) {
         ->withoutOverlapping(30);
 }
 
+Schedule::command('loyalty:expire')
+    ->dailyAt('02:30')
+    ->withoutOverlapping(30);
+
 Schedule::command('guestmessages:send')
     ->dailyAt((string) config('guest.messages_at'))
     ->withoutOverlapping(30);

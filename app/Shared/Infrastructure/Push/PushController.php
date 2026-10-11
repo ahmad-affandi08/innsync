@@ -18,7 +18,7 @@ final readonly class PushController
         $vapid = Vapid::fromConfig();
         $endpoint = (string) $request->query('endpoint', '');
 
-        return $this->json(['enabled' => $vapid->enabled(), 'public_key' => $vapid->enabled() ? $vapid->publicKey() : null, 'subscribed' => $endpoint !== '' && PushEndpoint::acceptable($endpoint) && $this->devices->has($this->user($request), $endpoint)]);
+        return $this->json(['enabled' => $vapid->enabled(), 'public_key' => $vapid->enabled() ? $vapid->publicKey() : null, 'subscribed' => $endpoint !== '' && PushEndpoint::acceptable($endpoint) && $this->devices->has($this->user($request), $endpoint), 'kinds' => array_values((array) config('push.kinds')), 'muted' => $this->devices->mutedKinds($this->user($request))]);
     }
 
     public function subscribe(Request $request): JsonResponse
@@ -38,6 +38,20 @@ final readonly class PushController
         }
 
         return $this->json(['ok' => true], 201);
+    }
+
+    /** Turns one kind of notice on or off for this person, on every device of theirs. */
+    public function preference(Request $request): JsonResponse
+    {
+        $data = $request->validate(['kind' => ['required', 'string', 'max:20'], 'enabled' => ['required', 'boolean']]);
+
+        if (! in_array($data['kind'], (array) config('push.kinds'), true)) {
+            throw Refusal::invalid('This is not a kind of notice.', ['kind']);
+        }
+
+        $this->devices->setKind($this->user($request), $data['kind'], (bool) $data['enabled']);
+
+        return $this->json(['muted' => $this->devices->mutedKinds($this->user($request))]);
     }
 
     public function unsubscribe(Request $request): JsonResponse

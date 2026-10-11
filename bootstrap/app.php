@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\HandleInertiaRequests;
+use App\Modules\FrontOffice\Infrastructure\Loyalty\ExpireLoyaltyPointsCommand;
 use App\Modules\FrontOffice\Infrastructure\Reminders\MakeAutoRemindersCommand;
 use App\Modules\GuestExperience\Infrastructure\SendGuestMessagesCommand;
 use App\Modules\GuestExperience\Presentation\Http\Middleware\ResolveCheckInLink;
@@ -72,6 +73,7 @@ return Application::configure(basePath: dirname(__DIR__))
         PreflightCommand::class,
         CreateAdminCommand::class,
         PushKeysCommand::class,
+        ExpireLoyaltyPointsCommand::class,
         UnlockAccountCommand::class,
         InstallDefaultRolesCommand::class,
         InstallDefaultApprovalsCommand::class,

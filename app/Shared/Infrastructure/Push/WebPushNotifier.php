@@ -22,7 +22,7 @@ final readonly class WebPushNotifier implements PushNotifier
         return Vapid::fromConfig()->enabled();
     }
 
-    public function notify(PropertyId $property, array $userIds, string $title, string $body, string $url): int
+    public function notify(PropertyId $property, array $userIds, string $title, string $body, string $url, string $kind = 'general'): int
     {
         if (! $this->enabled() || ! str_starts_with($url, '/') || str_starts_with($url, '//')) {
             return 0;
@@ -32,7 +32,7 @@ final readonly class WebPushNotifier implements PushNotifier
 
         try {
             $vapid = Vapid::fromConfig();
-            $userIds = array_values(array_unique(array_map('strtolower', $userIds)));
+            $userIds = array_values(array_diff(array_unique(array_map('strtolower', $userIds)), $this->devices->mutedBy($kind)));
 
             foreach ($this->devices->of($userIds) as $device) {
                 if (! PushEndpoint::acceptable($device['endpoint'])) {

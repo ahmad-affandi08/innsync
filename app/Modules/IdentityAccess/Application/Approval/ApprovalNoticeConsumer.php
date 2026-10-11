@@ -60,7 +60,7 @@ final readonly class ApprovalNoticeConsumer implements OutboxConsumer
         }
 
         // On the devices of those who allowed it: the same plain words, a path of this application as the place to open.
-        $this->push->notify($event->propertyId, $ids, 'Persetujuan menunggu / Approval waiting', 'Ada permintaan persetujuan yang menunggu keputusan Anda. / An approval request is waiting for your decision.', '/approvals');
+        $this->push->notify($event->propertyId, $ids, 'Persetujuan menunggu / Approval waiting', 'Ada permintaan persetujuan yang menunggu keputusan Anda. / An approval request is waiting for your decision.', '/approvals', 'approval');
 
         if (! $byEmail) {
             return;

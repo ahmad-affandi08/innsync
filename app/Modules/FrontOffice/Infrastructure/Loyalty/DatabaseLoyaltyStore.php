@@ -79,6 +79,18 @@ final readonly class DatabaseLoyaltyStore implements LoyaltyStore
         return DB::table('loyalty_entries')->where('property_id', $property->toString())->where('account_id', $accountId)->orderByDesc('created_at')->orderByDesc('id')->limit($limit)->get()->map(static fn (object $r): array => (array) $r)->all();
     }
 
+    public function idleAccounts(PropertyId $property, DateTimeImmutable $since, int $limit): array
+    {
+        $active = DB::table('loyalty_entries')->where('property_id', $property->toString())->whereIn('kind', ['earn', 'redeem'])->where('created_at', '>=', $since)->select('account_id');
+
+        return DB::table('loyalty_accounts')->where('property_id', $property->toString())->where('balance_points', '>', 0)->where('created_at', '<', $since)->whereNotIn('id', $active)->orderBy('id')->limit($limit)->get()->map(static fn (object $r): array => (array) $r)->all();
+    }
+
+    public function propertiesWithAccounts(): array
+    {
+        return DB::table('loyalty_accounts')->distinct()->pluck('property_id')->map(static fn ($id): string => (string) $id)->all();
+    }
+
     public function roomBaseOf(PropertyId $property, string $reservationId): int
     {
         return (int) DB::table('folio_postings as p')->join('folios as f', 'f.id', '=', 'p.folio_id')->where('p.property_id', $property->toString())->where('f.reservation_id', $reservationId)->where('p.source', 'night_audit')->sum('p.base_minor');

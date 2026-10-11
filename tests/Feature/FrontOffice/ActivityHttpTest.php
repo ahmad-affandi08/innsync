@@ -204,4 +204,24 @@ final class ActivityHttpTest extends TestCase
         $this->signIn(self::A, []);
         $this->get('/front-office/activities')->assertForbidden();
     }
+
+    public function test_a_guest_with_a_confirmed_reservation_can_be_booked_before_arriving_and_is_charged_once_in_the_house(): void
+    {
+        $service = $this->service();
+        $reservation = (string) $this->postJson('/front-office/reservations', ['source' => 'phone', 'guest_name' => 'Coming', 'arrival' => '2026-10-02', 'departure' => '2026-10-04', 'adults' => 1, 'children' => 0, 'room_type_id' => $this->type, 'rate_plan_id' => $this->plan, 'status' => 'confirmed'], ['Idempotency-Key' => 'activity-coming-res-1'])->assertCreated()->json('reservation.id');
+        $cancelled = (string) $this->postJson('/front-office/reservations', ['source' => 'phone', 'guest_name' => 'Tentative', 'arrival' => '2026-10-02', 'departure' => '2026-10-04', 'adults' => 1, 'children' => 0, 'room_type_id' => $this->type, 'rate_plan_id' => $this->plan, 'status' => 'tentative'], ['Idempotency-Key' => 'activity-coming-res-2'])->assertCreated()->json('reservation.id');
+
+        $this->get('/front-office/activities')->assertInertia(fn (Assert $p) => $p->where('overview.in_house.0.reservation_id', $reservation)->where('overview.in_house.0.arrival', '2026-10-02'));
+
+        // Not before the stay, not after it, and not for a reservation that is only tentative.
+        $send = fn (string $res, string $day, string $key, int $status) => $this->postJson('/front-office/activities/bookings', ['service_id' => $service, 'reservation_id' => $res, 'starts_on' => $day, 'starts_at' => '10:00', 'guests' => 1], ['Idempotency-Key' => $key])->assertStatus($status);
+        $send($reservation, '2026-10-01', 'activity-pre-000000001', 422);
+        $send($reservation, '2026-10-05', 'activity-pre-000000002', 422);
+        $send($cancelled, '2026-10-02', 'activity-pre-000000003', 422);
+        $made = $send($reservation, '2026-10-02', 'activity-pre-000000004', 201)->json('booking');
+
+        // The charge waits for the guest to be in the house: on the day, with no stay, there is no folio to charge.
+        $this->postJson("/front-office/activities/bookings/{$made['id']}/complete", ['lock_version' => 0])->assertStatus(409);
+        self::assertSame(0, DB::table('folio_postings')->where('source', 'activity')->count());
+    }
 }

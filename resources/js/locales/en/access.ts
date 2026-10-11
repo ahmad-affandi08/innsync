@@ -620,4 +620,8 @@ export const access = {
     'acc.push.blockedTitle': "Notices are blocked",
     'acc.push.blocked': "The browser blocks notices for this site. Allow them in the site settings of the browser, then come back here.",
     'acc.push.failed': "Notices could not be changed. Try again.",
+    'acc.push.kinds': "Tell me about",
+    'acc.push.kind.approval': "Approvals waiting for me",
+    'acc.push.kind.work_order': "Work orders given to me, and ones near their deadline",
+    'acc.push.kind.guest_request': "Requests from guests",
 } as const

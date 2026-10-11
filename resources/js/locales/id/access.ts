@@ -620,4 +620,8 @@ export const access = {
     'acc.push.blockedTitle': "Notifikasi diblokir",
     'acc.push.blocked': "Peramban memblokir notifikasi untuk situs ini. Izinkan di pengaturan situs peramban, lalu kembali ke sini.",
     'acc.push.failed': "Notifikasi tidak bisa diubah. Coba lagi.",
+    'acc.push.kinds': "Beri tahu saya tentang",
+    'acc.push.kind.approval': "Persetujuan yang menunggu saya",
+    'acc.push.kind.work_order': "Pekerjaan perbaikan untuk saya, dan yang mendekati batas waktu",
+    'acc.push.kind.guest_request': "Permintaan dari tamu",
 }

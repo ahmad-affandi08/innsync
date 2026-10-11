@@ -1,1 +1,0 @@
-import{f as e}from"./i18n-c2s6YcbL.js";import{t}from"./fnb-shell-B90zPDQ3.js";import{t as n}from"./kitchen-shell-DwR8oc9P.js";var r=e();function i({children:e,department:i,description:a,title:o}){return i===`kitchen`?(0,r.jsx)(n,{description:a,title:o,children:e}):(0,r.jsx)(t,{description:a,title:o,wide:!0,children:e})}export{i as RoutineShell};

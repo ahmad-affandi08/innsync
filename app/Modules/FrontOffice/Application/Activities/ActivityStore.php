@@ -33,6 +33,9 @@ interface ActivityStore
     /** @param array<string, mixed> $fields */
     public function updateBooking(PropertyId $property, string $id, int $lock, array $fields, DateTimeImmutable $at): bool;
 
+    /** Reservations that are confirmed and not yet arrived, arriving up to the day. @return list<array{id: string, guest_name: string, arrival: string, departure: string}> */
+    public function upcomingReservations(PropertyId $property, string $from, string $to): array;
+
     /** The bookings of the service on the day that still hold a place (booked or done). @return list<array{start: int, end: int, guests: int}> */
     public function holdingPlaces(PropertyId $property, string $serviceId, string $day): array;
 

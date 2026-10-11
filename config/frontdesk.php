@@ -35,6 +35,10 @@ return [
         'point_value_minor' => (int) env('LOYALTY_POINT_VALUE_MINOR', 10_000),
         // The fewest points that can be turned into a voucher at a time.
         'min_redeem_points' => (int) env('LOYALTY_MIN_REDEEM_POINTS', 100),
+        // Points of an account with no stay and no voucher for this many months expire (0 = never expire).
+        'expire_months' => (int) env('LOYALTY_EXPIRE_MONTHS', 24),
+        // Tiers by the points earned over all stays; each earns this percent more points on later stays. Set LOYALTY_TIERS to a JSON list of {"key", "from_points", "bonus_percent"} to change them, or to [] for none.
+        'tiers' => json_decode((string) env('LOYALTY_TIERS', '[{"key":"silver","from_points":1000,"bonus_percent":5},{"key":"gold","from_points":5000,"bonus_percent":10},{"key":"platinum","from_points":15000,"bonus_percent":20}]'), true) ?? [],
     ],
     'gift_card_valid_months' => (int) env('GIFT_CARD_VALID_MONTHS', 12),
 ];

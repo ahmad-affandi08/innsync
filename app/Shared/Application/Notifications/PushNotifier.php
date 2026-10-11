@@ -12,8 +12,12 @@ use App\Shared\Domain\Tenancy\PropertyId;
  */
 interface PushNotifier
 {
-    /** @param list<string> $userIds @param string $url a path of this application, for example "/approvals" */
-    public function notify(PropertyId $property, array $userIds, string $title, string $body, string $url): int;
+    /**
+     * @param  list<string>  $userIds
+     * @param  string  $url  a path of this application, for example "/approvals"
+     * @param  string  $kind  what the notice is about (`config/push.php`, `kinds`); a person who turned that kind off is not told
+     */
+    public function notify(PropertyId $property, array $userIds, string $title, string $body, string $url, string $kind = 'general'): int;
 
     public function enabled(): bool;
 }

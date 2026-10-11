@@ -1159,4 +1159,9 @@ export const frontOffice = {
     'fo.bill.outlet.day_use': "Day use",
     'fo.audit.gate.day_use_open': "Day use still in the room",
     'fo.audit.gate.day_use_open.help': "Ask the guest to leave and mark the day use as finished, or waive with the reason.",
+    'fo.act.arrives': "arrives {date}",
+    'fo.ly.tiers': "Tiers by the points earned over all stays, each earning more on later stays: {list}.",
+    'fo.ly.expires': "Points of an account with no stay and no voucher for {n} months expire.",
+    'fo.ly.neverExpires': "Points do not expire.",
+    'fo.ly.kind.expire': "Expired",
 } as const;

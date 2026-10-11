@@ -52,9 +52,9 @@ final readonly class LoyaltyService
         $open = $accountId === null ? null : $this->store->account($property, strtolower($accountId));
 
         return [
-            'currency' => $this->currency->currencyOf($property), 'enabled' => $rules['enabled'], 'earn_per_point_minor' => $rules['earn_per_point_minor'], 'point_value_minor' => $rules['point_value_minor'], 'min_redeem_points' => $rules['min_redeem_points'],
-            'accounts' => array_map(self::shape(...), $this->store->accounts($property, 300)),
-            'open' => $open === null ? null : ['account' => self::shape($open), 'entries' => array_map(static fn (array $e): array => ['id' => $e['id'], 'kind' => $e['kind'], 'points' => (int) $e['points'], 'balance_after' => (int) $e['balance_after'], 'source_type' => $e['source_type'], 'note' => $e['note'], 'business_date' => substr((string) $e['business_date'], 0, 10)], $this->store->entries($property, $open['id'], 60))],
+            'currency' => $this->currency->currencyOf($property), 'enabled' => $rules['enabled'], 'earn_per_point_minor' => $rules['earn_per_point_minor'], 'point_value_minor' => $rules['point_value_minor'], 'min_redeem_points' => $rules['min_redeem_points'], 'expire_months' => $rules['expire_months'], 'tiers' => $rules['tiers'],
+            'accounts' => array_map(static fn (array $a): array => self::shape($a, $rules['tiers']), $this->store->accounts($property, 300)),
+            'open' => $open === null ? null : ['account' => self::shape($open, $rules['tiers']), 'entries' => array_map(static fn (array $e): array => ['id' => $e['id'], 'kind' => $e['kind'], 'points' => (int) $e['points'], 'balance_after' => (int) $e['balance_after'], 'source_type' => $e['source_type'], 'note' => $e['note'], 'business_date' => substr((string) $e['business_date'], 0, 10)], $this->store->entries($property, $open['id'], 60))],
             'may' => ['redeem' => $this->may($property, $actorId, self::REDEEM_PERMISSION) && $this->may($property, $actorId, GiftCardService::ISSUE_PERMISSION), 'adjust' => $this->may($property, $actorId, self::ADJUST_PERMISSION)],
         ];
     }
@@ -137,19 +137,66 @@ final readonly class LoyaltyService
         });
     }
 
-    /** @return array{enabled: bool, earn_per_point_minor: int, point_value_minor: int, min_redeem_points: int} */
+    /**
+     * Takes the points of every account that has had no stay and no voucher for the months the rules say. Each is an entry of its own, so the history says what happened; a run twice finds nothing the second time.
+     *
+     * @return int how many accounts lost points
+     */
+    public function expireIdle(PropertyId $property): int
+    {
+        $months = self::rules()['expire_months'];
+
+        if ($months < 1) {
+            return 0;
+        }
+
+        $since = $this->clock->nowUtc()->modify("-{$months} months");
+        $expired = 0;
+
+        foreach ($this->store->idleAccounts($property, $since, 500) as $account) {
+            $this->transactions->run(function () use ($property, $account, $months, &$expired): void {
+                $points = (int) $account['balance_points'];
+                $now = $this->clock->nowUtc();
+
+                if ($points < 1 || ! $this->store->move($property, $account['id'], -$points, $now)) {
+                    return;
+                }
+
+                $this->store->addEntry($property, ['id' => $this->ids->next(), 'account_id' => $account['id'], 'kind' => 'expire', 'points' => -$points, 'balance_after' => 0, 'source_type' => 'expire', 'source_ref' => $this->ids->next(), 'note' => "No stay or voucher for {$months} months", 'business_date' => $this->businessDate->current($property)->toString(), 'actor_id' => null], $now);
+                $this->audit->record(new AuditEntry($property->toString(), null, 'loyalty.expired', 'loyalty_account', $account['id'], ['points' => $points], ['points' => 0], "No stay or voucher for {$months} months"));
+                $expired++;
+            });
+        }
+
+        return $expired;
+    }
+
+    /** @return list<string> */
+    public function propertiesWithAccounts(): array
+    {
+        return $this->store->propertiesWithAccounts();
+    }
+
+    /** @return array{enabled: bool, earn_per_point_minor: int, point_value_minor: int, min_redeem_points: int, expire_months: int, tiers: list<array{key: string, from_points: int, bonus_percent: int}>} */
     public static function rules(): array
     {
         return [
             'enabled' => (bool) config('frontdesk.loyalty.enabled'), 'earn_per_point_minor' => max(1, (int) config('frontdesk.loyalty.earn_per_point_minor')),
             'point_value_minor' => max(1, (int) config('frontdesk.loyalty.point_value_minor')), 'min_redeem_points' => max(1, (int) config('frontdesk.loyalty.min_redeem_points')),
+            'expire_months' => max(0, min(120, (int) config('frontdesk.loyalty.expire_months'))), 'tiers' => LoyaltyTiers::clean(config('frontdesk.loyalty.tiers')),
         ];
     }
 
-    /** @param array<string, mixed> $a @return array<string, mixed> */
-    private static function shape(array $a): array
+    /**
+     * @param  array<string, mixed>  $a
+     * @param  list<array{key: string, from_points: int, bonus_percent: int}>  $tiers
+     * @return array<string, mixed>
+     */
+    private static function shape(array $a, array $tiers = []): array
     {
-        return ['id' => $a['id'], 'name' => $a['guest_name'], 'phone_last4' => $a['phone_last4'], 'balance_points' => (int) $a['balance_points'], 'earned_points' => (int) $a['earned_points']];
+        $tier = LoyaltyTiers::of((int) $a['earned_points'], $tiers);
+
+        return ['id' => $a['id'], 'name' => $a['guest_name'], 'phone_last4' => $a['phone_last4'], 'balance_points' => (int) $a['balance_points'], 'earned_points' => (int) $a['earned_points'], 'tier' => $tier['key'] ?? null, 'bonus_percent' => $tier['bonus_percent'] ?? 0];
     }
 
     private function may(PropertyId $property, string $actorId, string $permission): bool
