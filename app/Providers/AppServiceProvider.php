@@ -383,6 +383,7 @@ use App\Shared\Application\Localization\LocaleNegotiator;
 use App\Shared\Application\Messaging\MessageTransport;
 use App\Shared\Application\Messaging\MessagingSettings;
 use App\Shared\Application\Notifications\EmailNotifier;
+use App\Shared\Application\Notifications\PushNotifier;
 use App\Shared\Application\Notifications\SmsNotifier;
 use App\Shared\Application\Notifications\WhatsAppNotifier;
 use App\Shared\Application\Observability\CorrelationId;
@@ -454,6 +455,7 @@ use App\Shared\Infrastructure\Persistence\CompatibleMySqlConnector;
 use App\Shared\Infrastructure\Privacy\DatabaseConsentRepository;
 use App\Shared\Infrastructure\Privacy\DatabaseDataSubjectRequestRepository;
 use App\Shared\Infrastructure\Privacy\LaravelFieldCipher;
+use App\Shared\Infrastructure\Push\WebPushNotifier;
 use App\Shared\Infrastructure\Retention\ConfiguredRetentionCatalog;
 use App\Shared\Infrastructure\Retention\DatabaseErasableFileRepository;
 use App\Shared\Infrastructure\Retention\DatabaseLegalHoldRepository;
@@ -743,6 +745,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(EmailNotifier::class, ConfiguredEmailNotifier::class);
         $this->app->bind(WhatsAppNotifier::class, ConfiguredWhatsAppNotifier::class);
         $this->app->bind(SmsNotifier::class, ConfiguredSmsNotifier::class);
+        $this->app->bind(PushNotifier::class, WebPushNotifier::class);
         $this->app->bind(MessagingSettings::class, DatabaseMessagingSettings::class);
         $this->app->bind(RoomPhotoStore::class, DatabaseRoomPhotoStore::class);
         $this->app->bind(RoomPhotoReader::class, DatabaseRoomPhotoStore::class);
@@ -806,6 +809,7 @@ class AppServiceProvider extends ServiceProvider
             ->by((string) $request->route('provider').'|'.$request->ip()));
 
         RateLimiter::for('gift-card-lookup', static fn (Request $request): Limit => Limit::perMinute(20)->by((string) $request->user()?->getAuthIdentifier().'|'.$request->ip()));
+        RateLimiter::for('push-devices', static fn (Request $request): Limit => Limit::perMinute(20)->by((string) $request->user()?->getAuthIdentifier().'|'.$request->ip()));
 
         RateLimiter::for('door-lock-bridge', static fn (Request $request): Limit => Limit::perMinute(120)->by($request->ip()));
 

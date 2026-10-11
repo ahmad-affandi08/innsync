@@ -158,6 +158,7 @@ use App\Shared\Infrastructure\Messaging\MessagingSettingsController;
 use App\Shared\Infrastructure\Observability\SystemStatusController;
 use App\Shared\Infrastructure\Offline\SyncController;
 use App\Shared\Infrastructure\Offline\SyncExceptionController;
+use App\Shared\Infrastructure\Push\PushController;
 use App\Shared\Infrastructure\Setup\HomeController;
 use App\Shared\Infrastructure\Setup\SetupChecklistController;
 use Illuminate\Http\Request;
@@ -240,6 +241,11 @@ Route::middleware(['auth', 'auth.session', 'active'])->group(function (): void {
 
         Route::get('/account/sessions', [UserSessionController::class, 'index'])
             ->name('security.sessions');
+        // Notices on this device (web push): whether it is set up, keeping or dropping this device, and what the device fetches after an empty push.
+        Route::get('/push/config', [PushController::class, 'config'])->name('push.config');
+        Route::post('/push/devices', [PushController::class, 'subscribe'])->middleware('throttle:push-devices')->name('push.subscribe');
+        Route::delete('/push/devices', [PushController::class, 'unsubscribe'])->name('push.unsubscribe');
+        Route::get('/push/next', [PushController::class, 'next'])->middleware('throttle:60,1')->name('push.next');
         Route::put('/account/password', [PasswordController::class, 'update'])
             ->middleware(['password.confirm', 'throttle:sensitive'])
             ->name('security.password.update');

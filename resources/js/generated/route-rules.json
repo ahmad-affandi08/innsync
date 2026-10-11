@@ -15,6 +15,14 @@
             "reason"
         ]
     },
+    "DELETE /push/devices": {
+        "required": [
+            "endpoint"
+        ],
+        "declared": [
+            "endpoint"
+        ]
+    },
     "GET /api/bridge/door-lock/jobs": {
         "required": [],
         "declared": [
@@ -6491,6 +6499,15 @@
             "service_charge_rate",
             "tax_on_service_charge",
             "tax_rate"
+        ]
+    },
+    "POST /push/devices": {
+        "required": [
+            "endpoint"
+        ],
+        "declared": [
+            "endpoint",
+            "label"
         ]
     },
     "POST /reports/exports": {

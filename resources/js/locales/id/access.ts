@@ -611,4 +611,13 @@ export const access = {
     'msg.provider.vonage.hint': "Dari dasbor Vonage: API key, API secret, dan nama atau nomor pengirim.",
     'msg.provider.sms_webhook': "Gateway SMS sendiri (HTTP)",
     'msg.provider.sms_webhook.hint': "Gateway SMS apa pun yang Anda jalankan sendiri. Sistem mengirim POST dengan JSON phone dan message, dan token Bearer bila diberikan.",
+    'acc.push.heading': "Notifikasi di perangkat ini",
+    'acc.push.description': "Dapatkan notifikasi di ponsel atau komputer ini saat ada persetujuan yang menunggu Anda atau pekerjaan perbaikan diberikan kepada Anda. Isinya diambil dari sistem ini setelah Anda masuk; pembuat ponsel hanya diberi tahu bahwa ada sesuatu yang menunggu.",
+    'acc.push.turnOn': "Nyalakan notifikasi di sini",
+    'acc.push.turnOff': "Matikan notifikasi di sini",
+    'acc.push.on': "Notifikasi menyala untuk perangkat ini.",
+    'acc.push.unsupported': "Peramban ini tidak bisa menampilkan notifikasi. Di iPhone, tambahkan aplikasi ke layar utama dulu.",
+    'acc.push.blockedTitle': "Notifikasi diblokir",
+    'acc.push.blocked': "Peramban memblokir notifikasi untuk situs ini. Izinkan di pengaturan situs peramban, lalu kembali ke sini.",
+    'acc.push.failed': "Notifikasi tidak bisa diubah. Coba lagi.",
 }

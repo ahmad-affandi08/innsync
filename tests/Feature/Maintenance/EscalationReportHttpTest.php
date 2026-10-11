@@ -9,11 +9,13 @@ use App\Modules\Maintenance\Application\MaintenanceAccess;
 use App\Modules\Property\Application\Catalog\RoomCatalogService;
 use App\Modules\Property\Application\Settings\PropertySettingsService;
 use App\Shared\Application\Notifications\EmailNotifier;
+use App\Shared\Infrastructure\Push\Vapid;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use Inertia\Testing\AssertableInertia as Assert;
 use LogicException;
 use Tests\Support\SignsInToProperty;
@@ -186,6 +188,28 @@ final class EscalationReportHttpTest extends TestCase
             self::assertStringContainsString('Lobby', $body);
             self::assertStringNotContainsString('Secret title', $body);
         }
+    }
+
+    public function test_the_technician_is_told_on_a_device_that_allowed_notices_even_when_the_email_notice_is_off(): void
+    {
+        config(['push.vapid_private_key' => Vapid::generate()['private'], 'push.vapid_subject' => 'mailto:hotel@example.com']);
+        [$box, $work] = $this->mailbox();
+        $this->actAs($this->tech);
+        $this->postJson('/push/devices', ['endpoint' => 'https://fcm.googleapis.com/fcm/send/tech-phone'])->assertCreated();
+        $this->actAs($this->manager);
+        Http::fake(['fcm.googleapis.com/*' => Http::response('', 201)]);
+        $id = $this->report('high', 'Secret title of the guest complaint');
+        $this->postJson("/maintenance/work-orders/{$id}/assign", ['technician_id' => (string) $this->tech->getKey(), 'lock_version' => 0])->assertOk();
+        $work();
+
+        self::assertSame([], $box->sent, 'the e-mail notice is off');
+        Http::assertSentCount(1);
+        Http::assertSent(fn ($r) => $r->url() === 'https://fcm.googleapis.com/fcm/send/tech-phone' && $r->body() === '');
+        $this->actAs($this->tech);
+        $notice = $this->getJson('/push/next', ['X-Push-Endpoint' => 'https://fcm.googleapis.com/fcm/send/tech-phone'])->assertOk()->json('notice');
+        self::assertSame('/maintenance/work-orders', $notice['url']);
+        self::assertStringContainsString('Lobby', $notice['body']);
+        self::assertStringNotContainsString('Secret title', $notice['title'].$notice['body']);
     }
 
     public function test_the_matrix_gives_normal_and_low_one_level_and_the_night_shift_sends_both_to_the_manager_on_duty(): void

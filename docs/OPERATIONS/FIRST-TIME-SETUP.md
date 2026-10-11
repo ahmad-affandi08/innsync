@@ -77,6 +77,7 @@ Each morning the scheduler (the same one that runs backups) does three things. N
 - **Guest emails**: off until the owner switches them on in Online booking. Needs email set up under Email, WhatsApp and SMS (and SMS or WhatsApp there with `GUEST_MESSAGE_CHANNELS=email,sms` to reach the phone number too). The owner should have the privacy notice wording reviewed before switching on: the notice shown at booking says the contact details are used to handle the booking and to contact the guest.
 
 - **Approval emails**: off until `APPROVAL_EMAIL_NOTICE=true`. Needs email set up under Email and WhatsApp. The message names nothing and only says that an approval waits.
+- **Notices on devices**: off until the push key is made (`php artisan innsync:push-keys`) and put in the environment; then each person turns them on for their own devices under Account. See `docs/OPERATIONS/WEB-PUSH.md`.
 - **Maintenance emails**: off until `MAINTENANCE_EMAIL_NOTICE=true`. Needs email set up under Email and WhatsApp. The technician is written to when a work order is given to them, and the supervisor (first level) or the manager on duty (second level) when a work order nears or passes its deadline; the message has the work order number, priority and place, never the title or a guest.
 - **Back up now**: on the System status screen, for people who manage the property.
 - **A locked account**: wait 15 minutes, or use People → Unlock, or at the server `php artisan innsync:unlock-account admin@your-hotel.example`.

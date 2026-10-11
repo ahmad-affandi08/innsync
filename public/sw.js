@@ -4,10 +4,12 @@
  *     which makes the next visit start sooner and lets an installed app open on a bad signal.
  *  2. When a page cannot be reached at all, a plain "no connection" page is shown instead of the browser's own error; for the two screens that can start from nothing (OFFLINE_PAGES) it is the shell, which
  *     holds no page and no data: the application fills it from the encrypted copy the device kept.
+ * A third thing since v3: notices on the device (web push). The push service sends an empty push; the worker asks this server, behind the person's own sign-in, what the notice is, and shows it. If the server
+ * cannot be reached it shows a plain bilingual line, so nothing private is ever put in the push itself (docs/OPERATIONS/WEB-PUSH.md).
  * It never keeps a page, an answer of the application or anything private, and it never replays a write: sales and housekeeping steps made without a network wait in the application's own encrypted queue
  * (docs/OPERATIONS/OFFLINE-OPERATIONS.md), which sends them again entry by entry with an idempotency key. Change VERSION when this file changes; an older version's copies are removed when the new one starts.
  */
-const VERSION = 'innsync-v2';
+const VERSION = 'innsync-v3';
 const ASSETS = `${VERSION}-assets`;
 const SHELL = `${VERSION}-shell`;
 const OFFLINE_PAGE = '/offline.html';
@@ -87,4 +89,42 @@ self.addEventListener('fetch', (event) => {
 
         event.respondWith(fetch(request).catch(() => caches.open(SHELL).then((cache) => cache.match(startable ? OFFLINE_SHELL : OFFLINE_PAGE)).then((page) => page || Response.error())));
     }
+});
+
+// A push carries no words. The notice waits on the server for this device, and is fetched with the person's own session; the device is named by its address at the push service, in a header.
+self.addEventListener('push', (event) => {
+    event.waitUntil((async () => {
+        let notice = null;
+
+        try {
+            const subscription = await self.registration.pushManager.getSubscription();
+            const answer = subscription === null ? null : await fetch('/push/next', { credentials: 'same-origin', headers: { Accept: 'application/json', 'X-Push-Endpoint': subscription.endpoint } });
+            notice = answer !== null && answer.ok ? (await answer.json()).notice : null;
+        } catch (error) {
+            notice = null;
+        }
+
+        await self.registration.showNotification(notice !== null ? notice.title : 'InnSYnc', {
+            body: notice !== null ? notice.body : 'Ada yang perlu perhatian. Buka InnSYnc. / Something needs your attention. Open InnSYnc.',
+            icon: '/icons/icon-192.png',
+            tag: 'innsync-notice',
+            renotify: true,
+            data: { url: notice !== null && typeof notice.url === 'string' && notice.url.startsWith('/') && !notice.url.startsWith('//') ? notice.url : '/' },
+        });
+    })());
+});
+
+self.addEventListener('notificationclick', (event) => {
+    event.notification.close();
+    const target = new URL((event.notification.data && event.notification.data.url) || '/', self.location.origin).href;
+
+    event.waitUntil(self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((windows) => {
+        for (const client of windows) {
+            if ('focus' in client && 'navigate' in client) {
+                return client.navigate(target).then((moved) => (moved || client).focus());
+            }
+        }
+
+        return self.clients.openWindow(target);
+    }));
 });

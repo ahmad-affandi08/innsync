@@ -35,7 +35,7 @@ final class DefaultRoles
                 'front-office.night-audit.view', 'front-office.registration.terms', 'front-office.request.manage', 'front-office.request.view', 'front-office.reservation.manage',
                 'front-office.reservation.view', 'front-office.sop.perform', 'front-office.sop.view', 'front-office.stay-fee.apply', 'front-office.stay.manage', 'front-office.stay.view',
                 'guest.checkin.manage', 'guest.qr.manage', 'property.catalog.view', 'property.policies.view', 'property.rates.view', 'housekeeping.view', 'laundry.view',
-                'laundry.order.intake', 'fnb.minibar.operate',
+                'laundry.order.intake', 'fnb.minibar.operate', 'front-office.activity.view', 'front-office.activity.book', 'front-office.loyalty.view', 'front-office.gift-card.view',
             ],
             'Night Auditor' => [
                 'front-office.night-audit.run', 'front-office.night-audit.view', 'front-office.cashier.view', 'front-office.cashier.operate', 'front-office.folio.view',

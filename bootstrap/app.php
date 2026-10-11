@@ -41,6 +41,7 @@ use App\Shared\Infrastructure\Observability\Health\HealthCheckCommand;
 use App\Shared\Infrastructure\Observability\Health\HeartbeatCommand;
 use App\Shared\Infrastructure\Outbox\DrainOutboxCommand;
 use App\Shared\Infrastructure\Outbox\RetryDeadLetterCommand;
+use App\Shared\Infrastructure\Push\PushKeysCommand;
 use App\Shared\Infrastructure\Retention\RetentionPurgeCommand;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -70,6 +71,7 @@ return Application::configure(basePath: dirname(__DIR__))
         BackupDecryptCommand::class,
         PreflightCommand::class,
         CreateAdminCommand::class,
+        PushKeysCommand::class,
         UnlockAccountCommand::class,
         InstallDefaultRolesCommand::class,
         InstallDefaultApprovalsCommand::class,

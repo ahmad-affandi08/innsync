@@ -611,4 +611,13 @@ export const access = {
     'msg.provider.vonage.hint': "From the Vonage dashboard: API key, API secret and the sender name or number.",
     'msg.provider.sms_webhook': "Your own SMS gateway (HTTP)",
     'msg.provider.sms_webhook.hint': "Any SMS gateway you run yourself. The system sends POST with JSON phone and message, and a Bearer token if you give one.",
+    'acc.push.heading': "Notices on this device",
+    'acc.push.description': "Get a notice on this phone or computer when an approval waits for you or a work order is given to you. The notice is fetched from this system behind your own sign-in; the phone's maker is only told that something waits.",
+    'acc.push.turnOn': "Turn on notices here",
+    'acc.push.turnOff': "Turn off notices here",
+    'acc.push.on': "Notices are on for this device.",
+    'acc.push.unsupported': "This browser cannot show notices. On an iPhone, add the app to the home screen first.",
+    'acc.push.blockedTitle': "Notices are blocked",
+    'acc.push.blocked': "The browser blocks notices for this site. Allow them in the site settings of the browser, then come back here.",
+    'acc.push.failed': "Notices could not be changed. Try again.",
 } as const

@@ -2,6 +2,7 @@ import { router, useForm } from '@inertiajs/react';
 import type { FormEvent } from 'react';
 
 import { AppFrame } from '@/components/layout/app-frame';
+import { PushToggle } from '@/components/layout/push-toggle';
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { FormField } from '@/components/ui/form-field';
@@ -53,6 +54,8 @@ export default function SessionsPage({ sessions, mustChangePassword = false }: {
                         ))}
                     </ul>
                     <Button className="mt-6" onClick={() => router.delete('/account/sessions/others')} type="button" variant="outline">{t('identity.sessions.revokeOthers')}</Button>
+
+                    <PushToggle />
 
                     <form className="mt-10 max-w-md space-y-4 border-t border-border pt-6" onSubmit={updatePassword}>
                         <div>

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Modules\Maintenance\Application;
 
 use App\Shared\Application\Notifications\EmailNotifier;
+use App\Shared\Application\Notifications\PushNotifier;
 use App\Shared\Application\Outbox\OutboxConsumer;
 use App\Shared\Application\Outbox\OutboxMessage;
 use App\Shared\Application\Security\StaffContacts;
@@ -13,7 +14,7 @@ use Throwable;
 
 /**
  * Tells people by e-mail that a work order was given to them (the technician) or that one passed its warning or its deadline (the supervisor or the manager on duty, as the escalation matrix says).
- * It goes only when `MAINTENANCE_EMAIL_NOTICE` is on, names the work order number, its priority and the place, and nothing about a guest. A person with no e-mail address or a mailer that fails never holds
+ * It goes by e-mail only when `MAINTENANCE_EMAIL_NOTICE` is on and, to devices that allowed notices, whenever web push is set up (docs/OPERATIONS/WEB-PUSH.md), names the work order number, its priority and the place, and nothing about a guest. A person with no e-mail address or a mailer that fails never holds
  * anything up: the work order and the escalation are on the screens either way.
  */
 final readonly class MaintenanceNoticeConsumer implements OutboxConsumer
@@ -22,7 +23,7 @@ final readonly class MaintenanceNoticeConsumer implements OutboxConsumer
 
     public const ESCALATED = 'maintenance.work_order.escalated';
 
-    public function __construct(private StaffDirectory $staff, private StaffContacts $contacts, private EmailNotifier $mail) {}
+    public function __construct(private StaffDirectory $staff, private StaffContacts $contacts, private EmailNotifier $mail, private PushNotifier $push) {}
 
     public function name(): string
     {
@@ -36,7 +37,9 @@ final readonly class MaintenanceNoticeConsumer implements OutboxConsumer
 
     public function consume(OutboxMessage $message): void
     {
-        if (! (bool) config('maintenance.email_notice')) {
+        $byEmail = (bool) config('maintenance.email_notice');
+
+        if (! $byEmail && ! $this->push->enabled()) {
             return;
         }
 
@@ -63,6 +66,12 @@ final readonly class MaintenanceNoticeConsumer implements OutboxConsumer
             return;
         }
 
+        $this->push->notify($event->propertyId, $ids, $subject, $this->short($d, $event->eventType === self::ASSIGNED, $what), '/maintenance/work-orders');
+
+        if (! $byEmail) {
+            return;
+        }
+
         foreach ($this->contacts->emailsOf($event->propertyId, $ids) as $address) {
             try {
                 $this->mail->notify($address, $subject, $body);
@@ -70,5 +79,15 @@ final readonly class MaintenanceNoticeConsumer implements OutboxConsumer
                 report($e);
             }
         }
+    }
+
+    /** One short line for the device: what happened and the work order, in both languages. @param array<string, mixed> $d */
+    private function short(array $d, bool $assigned, string $what): string
+    {
+        if ($assigned) {
+            return "Diberikan kepada Anda: {$what} / Given to you: {$what}";
+        }
+
+        return (int) ($d['level'] ?? 1) >= 2 ? "Melewati batas waktu: {$what} / Past its deadline: {$what}" : "Hampir melewati batas waktu: {$what} / Near its deadline: {$what}";
     }
 }
