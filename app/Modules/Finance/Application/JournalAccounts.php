@@ -16,6 +16,8 @@ final class JournalAccounts
         'input_tax' => ['1-1500', 'PPN masukan'],
         'accounts_payable' => ['2-1100', 'Hutang usaha'],
         'guest_ledger' => ['2-1300', 'Guest ledger dan uang muka tamu'],
+        'commission_payable' => ['2-1700', 'Hutang komisi agen dan OTA'],
+        'commission_expense' => ['5-3000', 'Beban komisi agen dan OTA'],
         'gift_card_liability' => ['2-1600', 'Kewajiban gift card dan voucher'],
         'promotion_expense' => ['5-8000', 'Beban promosi'],
         'service_charge' => ['2-1400', 'Hutang service charge'],

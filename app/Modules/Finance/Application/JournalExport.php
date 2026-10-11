@@ -9,7 +9,7 @@ use LogicException;
 
 /**
  * The books as a general journal for the accounting software (FR-FIN-034): one balanced entry for each revenue day, approved correction, supplier invoice, supplier credit, supplier payment, petty cash voucher,
- * receivable, receipt, gift card sold and gift card voided in the range. Every line carries the account code and name of the property's mapping (`JournalAccounts`). The day's sales are credited to the revenue accounts of their outlets, with the
+ * receivable, receipt, gift card sold, gift card voided, commission accrued and commission paid in the range. Every line carries the account code and name of the property's mapping (`JournalAccounts`). The day's sales are credited to the revenue accounts of their outlets, with the
  * service charge and the tax apart; the day's payments are debited to cash or bank by method; what is left is the guest ledger, which the receivables and the receipts then move on to the receivable account.
  *
  * Not in the journal: petty cash top-ups and settlements, payroll, depreciation, and anything the property books outside the system.
@@ -93,6 +93,14 @@ final readonly class JournalExport
             // What is left is paid back by the way it was bought, or written off as other revenue.
             $credit = $g['disposition'] === 'refunded' ? ($g['method'] === 'complimentary' ? $acc('promotion_expense') : $method($g['method'])) : $acc('revenue.other', 'revenue.other');
             $entries[] = $this->entry($g['date'], 'GCV-'.$g['number'], 'Gift card voided, ending '.$g['number'].($g['disposition'] === 'refunded' ? ', paid back' : ', written off'), '', [[$acc('gift_card_liability'), $g['amount']], [$credit, -$g['amount']]]);
+        }
+
+        foreach ($this->sources->commissionAccruals($property, $from, $to, $limit) as $c) {
+            $entries[] = $this->entry($c['date'], 'KOA-'.$c['number'], 'Commission '.$c['partner'], $c['number'], [[$acc('commission_expense'), $c['amount']], [$acc('commission_payable'), -$c['amount']]]);
+        }
+
+        foreach ($this->sources->commissionStatements($property, $from, $to, $limit) as $c) {
+            $entries[] = $this->entry($c['date'], 'KOP-'.$c['number'], 'Commission paid to '.$c['partner'], $c['number'], [[$acc('commission_payable'), $c['amount']], [$method($c['method']), -$c['amount']]]);
         }
 
         usort($entries, static fn (array $a, array $b): int => [$a['date'], $a['journal']] <=> [$b['date'], $b['journal']]);

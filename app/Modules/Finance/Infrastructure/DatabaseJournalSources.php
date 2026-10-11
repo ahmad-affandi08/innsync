@@ -110,6 +110,20 @@ final readonly class DatabaseJournalSources implements JournalSources
             ->map(static fn (object $r): array => ['date' => substr((string) $r->business_date, 0, 10), 'number' => (string) $r->code_last4, 'amount' => -(int) $r->delta_minor, 'method' => (string) $r->issue_method, 'disposition' => (string) $r->disposition])->all();
     }
 
+    public function commissionAccruals(PropertyId $property, string $from, string $to, int $limit): array
+    {
+        return DB::table('commission_accruals as a')->join('commission_partners as p', 'p.id', '=', 'a.partner_id')->where('a.property_id', $property->toString())->where('a.status', '<>', 'void')->where('a.commission_minor', '>', 0)->whereBetween('a.stay_out_on', [$from, $to])
+            ->orderBy('a.stay_out_on')->orderBy('a.id')->limit($limit + 1)->get(['a.stay_out_on', 'a.reservation_number', 'p.name', 'a.commission_minor'])
+            ->map(static fn (object $r): array => ['date' => substr((string) $r->stay_out_on, 0, 10), 'number' => (string) $r->reservation_number, 'partner' => (string) $r->name, 'amount' => (int) $r->commission_minor])->all();
+    }
+
+    public function commissionStatements(PropertyId $property, string $from, string $to, int $limit): array
+    {
+        return DB::table('commission_statements as s')->join('commission_partners as p', 'p.id', '=', 's.partner_id')->where('s.property_id', $property->toString())->whereBetween('s.paid_on', [$from, $to])
+            ->orderBy('s.paid_on')->orderBy('s.number')->limit($limit + 1)->get(['s.paid_on', 's.number', 'p.name', 's.total_minor', 's.method'])
+            ->map(static fn (object $r): array => ['date' => substr((string) $r->paid_on, 0, 10), 'number' => (string) $r->number, 'partner' => (string) $r->name, 'amount' => (int) $r->total_minor, 'method' => (string) $r->method])->all();
+    }
+
     /** An outlet code or source as a mapping key (letters, digits, dash and underscore, lower case). */
     private function key(mixed $value): string
     {

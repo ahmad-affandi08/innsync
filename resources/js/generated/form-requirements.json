@@ -214,6 +214,13 @@
         "items",
         "name"
     ],
+    "front-office/pages/commissions": [
+        "key",
+        "kind",
+        "method",
+        "rate_bp",
+        "reason"
+    ],
     "front-office/pages/companies": [
         "kind",
         "name",

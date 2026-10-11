@@ -22,6 +22,7 @@ export const FRONT_OFFICE_LINKS: readonly NavLink[] = [
     { href: '/front-office/cashier', label: 'fo.cash.nav' },
     { href: '/front-office/groups', label: 'fo.group.nav' },
     { href: '/front-office/companies', label: 'fo.company.nav' },
+    { href: '/front-office/commissions', label: 'fo.com.nav' },
     { href: '/front-office/foreign-currency', label: 'fo.foreign.nav' },
     { href: '/front-office/gift-cards', label: 'fo.gc.nav' },
     { href: '/front-office/door-locks', label: 'fo.lock.nav' },

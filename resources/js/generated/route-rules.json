@@ -255,6 +255,20 @@
             "to"
         ]
     },
+    "GET /front-office/commissions": {
+        "required": [],
+        "declared": [
+            "partner",
+            "status"
+        ]
+    },
+    "GET /front-office/commissions/export": {
+        "required": [],
+        "declared": [
+            "partner",
+            "status"
+        ]
+    },
     "GET /front-office/feedback": {
         "required": [],
         "declared": [
@@ -2326,6 +2340,50 @@
         "required": [],
         "declared": [
             "note"
+        ]
+    },
+    "POST /front-office/commissions/accruals/{id}/void": {
+        "required": [
+            "reason"
+        ],
+        "declared": [
+            "reason"
+        ]
+    },
+    "POST /front-office/commissions/partners": {
+        "required": [
+            "key",
+            "kind",
+            "rate_bp"
+        ],
+        "declared": [
+            "key",
+            "kind",
+            "rate_bp"
+        ]
+    },
+    "POST /front-office/commissions/partners/{id}": {
+        "required": [
+            "is_active",
+            "lock_version",
+            "rate_bp"
+        ],
+        "declared": [
+            "is_active",
+            "lock_version",
+            "rate_bp"
+        ]
+    },
+    "POST /front-office/commissions/partners/{id}/pay": {
+        "required": [
+            "method"
+        ],
+        "declared": [
+            "accrual_ids",
+            "accrual_ids.*",
+            "method",
+            "paid_on",
+            "reference"
         ]
     },
     "POST /front-office/companies": {

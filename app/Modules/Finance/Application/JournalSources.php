@@ -41,4 +41,10 @@ interface JournalSources
 
     /** @return list<array{date: string, number: string, amount: int, method: string, disposition: string}> what was left on voided cards, paid back (by the method the card was bought with) or written off */
     public function giftCardVoids(PropertyId $property, string $from, string $to, int $limit): array;
+
+    /** @return list<array{date: string, number: string, partner: string, amount: int}> commissions accrued at check-out (voided ones are left out) */
+    public function commissionAccruals(PropertyId $property, string $from, string $to, int $limit): array;
+
+    /** @return list<array{date: string, number: string, partner: string, amount: int, method: string}> */
+    public function commissionStatements(PropertyId $property, string $from, string $to, int $limit): array;
 }

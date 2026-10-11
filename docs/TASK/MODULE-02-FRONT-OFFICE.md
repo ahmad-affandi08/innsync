@@ -108,3 +108,7 @@
 
 - `WaitlistService`, table `waitlist_entries` (migration 139, entries are never deleted), page `/front-office/waitlist` (reservation rights). An entry holds the guest (a phone number or an e-mail address is required), a room type, the dates and the guests; it is **sellable now** when every night of the stay has a physical room again (an advisory read of the availability, no overbooking allowance counted). The desk marks the guest as called, **books** with the rate plan the guest takes (through `ReservationService::create`, so the ordinary rules, prices, do-not-rent flag and idempotency apply; the entry becomes `booked` and names the reservation in the same transaction), or cancels it with a reason. An entry whose arrival day has passed shows as lapsed. Nothing is booked, offered or messaged automatically: the list shows the count of sellable entries and the desk calls. Evidence: `tests/Feature/FrontOffice/WaitlistHttpTest.php`.
 
+### Commissions (2026-10-10)
+
+- `CommissionService`, `CommissionAccrualConsumer`, tables `commission_partners`, `commission_accruals`, `commission_statements` (migration 140), page `/front-office/commissions`, journal entries `KOA-` (accrued) and `KOP-` (paid). Rules and what is not decided: `docs/OPERATIONS/COMMISSIONS.md`. Evidence: `tests/Feature/FrontOffice/CommissionHttpTest.php`.
+
