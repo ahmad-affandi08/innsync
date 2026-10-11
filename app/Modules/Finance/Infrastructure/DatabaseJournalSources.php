@@ -124,6 +124,22 @@ final readonly class DatabaseJournalSources implements JournalSources
             ->map(static fn (object $r): array => ['date' => substr((string) $r->paid_on, 0, 10), 'number' => (string) $r->number, 'partner' => (string) $r->name, 'amount' => (int) $r->total_minor, 'method' => (string) $r->method])->all();
     }
 
+    public function depreciation(PropertyId $property, string $from, string $to, int $limit): array
+    {
+        return DB::table('fin_depreciation_entries as e')->join('fin_fixed_assets as a', 'a.id', '=', 'e.asset_id')->where('e.property_id', $property->toString())->whereRaw("LAST_DAY(CONCAT(e.period, '-01')) BETWEEN ? AND ?", [$from, $to])
+            ->orderBy('e.period')->orderBy('a.code')->limit($limit + 1)->selectRaw("LAST_DAY(CONCAT(e.period, '-01')) as day, e.period, a.code, a.name, e.amount_minor")->get()
+            ->map(static fn (object $r): array => ['date' => substr((string) $r->day, 0, 10), 'number' => (string) $r->period.'-'.(string) $r->code, 'name' => (string) $r->name, 'amount' => (int) $r->amount_minor])->all();
+    }
+
+    public function disposals(PropertyId $property, string $from, string $to, int $limit): array
+    {
+        $accumulated = DB::table('fin_depreciation_entries')->where('property_id', $property->toString())->groupBy('asset_id')->selectRaw('asset_id, SUM(amount_minor) as accumulated');
+
+        return DB::table('fin_fixed_assets as a')->leftJoinSub($accumulated, 'x', 'x.asset_id', '=', 'a.id')->where('a.property_id', $property->toString())->where('a.status', 'disposed')->whereBetween('a.disposed_on', [$from, $to])
+            ->orderBy('a.disposed_on')->orderBy('a.code')->limit($limit + 1)->get(['a.disposed_on', 'a.code', 'a.name', 'a.cost_minor', 'a.disposal_proceeds_minor', 'a.disposal_method', DB::raw('COALESCE(x.accumulated, 0) as accumulated')])
+            ->map(static fn (object $r): array => ['date' => substr((string) $r->disposed_on, 0, 10), 'number' => (string) $r->code, 'name' => (string) $r->name, 'cost' => (int) $r->cost_minor, 'accumulated' => (int) $r->accumulated, 'proceeds' => (int) $r->disposal_proceeds_minor, 'method' => $r->disposal_method === null ? null : (string) $r->disposal_method])->all();
+    }
+
     /** An outlet code or source as a mapping key (letters, digits, dash and underscore, lower case). */
     private function key(mixed $value): string
     {

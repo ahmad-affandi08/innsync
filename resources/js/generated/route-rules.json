@@ -1110,6 +1110,52 @@
             "name"
         ]
     },
+    "POST /finance/assets": {
+        "required": [
+            "acquired_on",
+            "category",
+            "code",
+            "cost_minor",
+            "life_months",
+            "name",
+            "salvage_minor"
+        ],
+        "declared": [
+            "acquired_on",
+            "category",
+            "code",
+            "cost_minor",
+            "life_months",
+            "name",
+            "notes",
+            "salvage_minor"
+        ]
+    },
+    "POST /finance/assets/depreciation": {
+        "required": [
+            "through"
+        ],
+        "declared": [
+            "through"
+        ]
+    },
+    "POST /finance/assets/{id}/dispose": {
+        "required": [
+            "disposed_on",
+            "kind",
+            "lock_version",
+            "proceeds_minor",
+            "reason"
+        ],
+        "declared": [
+            "disposed_on",
+            "kind",
+            "lock_version",
+            "method",
+            "proceeds_minor",
+            "reason"
+        ]
+    },
     "POST /finance/budget": {
         "required": [
             "department",

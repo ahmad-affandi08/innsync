@@ -154,6 +154,7 @@ export const FINANCE_LINKS: readonly NavLink[] = [
     { href: '/finance/budget/report', label: 'fin.nav.budgetReport' },
     { href: '/finance/payroll', label: 'fin.nav.payroll' },
     { href: '/finance/tax', label: 'fin.nav.tax' },
+    { href: '/finance/assets', label: 'fin.nav.assets' },
     { href: '/finance/export', label: 'fin.nav.export' },
     { href: '/finance/accounts', label: 'fin.nav.accounts' },
 ];

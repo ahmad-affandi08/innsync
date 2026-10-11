@@ -5,6 +5,19 @@
         "department",
         "name"
     ],
+    "finance/pages/assets": [
+        "acquired_on",
+        "category",
+        "code",
+        "cost_minor",
+        "disposed_on",
+        "kind",
+        "life_months",
+        "name",
+        "proceeds_minor",
+        "reason",
+        "salvage_minor"
+    ],
     "finance/pages/budget": [
         "reason"
     ],

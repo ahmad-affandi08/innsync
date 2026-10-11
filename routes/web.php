@@ -8,6 +8,7 @@ use App\Modules\Finance\Presentation\Http\Controllers\CorrectionController;
 use App\Modules\Finance\Presentation\Http\Controllers\ExceptionController;
 use App\Modules\Finance\Presentation\Http\Controllers\ExpenseAccountController;
 use App\Modules\Finance\Presentation\Http\Controllers\FinanceAuditController;
+use App\Modules\Finance\Presentation\Http\Controllers\FixedAssetController;
 use App\Modules\Finance\Presentation\Http\Controllers\ManagementReportController;
 use App\Modules\Finance\Presentation\Http\Controllers\PayableController;
 use App\Modules\Finance\Presentation\Http\Controllers\PayrollDisbursementController;
@@ -914,6 +915,10 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
     Route::get('/stock-value', [ManagementReportController::class, 'stockValue'])->name('finance.stock-value');
     Route::get('/food-cost', [ManagementReportController::class, 'foodCost'])->name('finance.food-cost');
     Route::post('/food-cost/target', [ManagementReportController::class, 'setFoodCostTarget'])->name('finance.food-cost.target');
+    Route::get('/assets', [FixedAssetController::class, 'index'])->name('finance.assets');
+    Route::post('/assets', [FixedAssetController::class, 'store'])->name('finance.assets.store');
+    Route::post('/assets/depreciation', [FixedAssetController::class, 'run'])->name('finance.assets.depreciation');
+    Route::post('/assets/{id}/dispose', [FixedAssetController::class, 'dispose'])->where('id', '[0-9a-z]{26}')->name('finance.assets.dispose');
     Route::get('/export', [ManagementReportController::class, 'exportPage'])->name('finance.export');
     Route::post('/export/accounts', [ManagementReportController::class, 'saveJournalAccount'])->name('finance.export.accounts.save');
     Route::post('/export/accounts/reset', [ManagementReportController::class, 'resetJournalAccount'])->name('finance.export.accounts.reset');

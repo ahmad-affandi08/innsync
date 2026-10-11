@@ -69,6 +69,12 @@ final readonly class FinanceAccess
     /** Sets the day the tax is reported by, records that a month was reported and deposited. */
     public const TAX_MANAGE = 'finance.tax.manage';
 
+    /** Sees the register of fixed assets and their depreciation. */
+    public const ASSET_VIEW = 'finance.asset.view';
+
+    /** Records fixed assets, runs the monthly depreciation and records a disposal. */
+    public const ASSET_MANAGE = 'finance.asset.manage';
+
     private const VIEWERS = [self::PAYABLE_VIEW, self::PAYABLE_MANAGE, self::PAYMENT_RECORD, self::ACCOUNT_MANAGE];
 
     public function __construct(private PermissionChecker $permissions, private PropertyContext $property) {}

@@ -9,7 +9,7 @@ use LogicException;
 
 /**
  * The books as a general journal for the accounting software (FR-FIN-034): one balanced entry for each revenue day, approved correction, supplier invoice, supplier credit, supplier payment, petty cash voucher,
- * receivable, receipt, gift card sold, gift card voided, commission accrued and commission paid in the range. Every line carries the account code and name of the property's mapping (`JournalAccounts`). The day's sales are credited to the revenue accounts of their outlets, with the
+ * receivable, receipt, gift card sold, gift card voided, commission accrued, commission paid, depreciation of each closed month and asset that left in the range. Every line carries the account code and name of the property's mapping (`JournalAccounts`). The day's sales are credited to the revenue accounts of their outlets, with the
  * service charge and the tax apart; the day's payments are debited to cash or bank by method; what is left is the guest ledger, which the receivables and the receipts then move on to the receivable account.
  *
  * Not in the journal: petty cash top-ups and settlements, payroll, depreciation, and anything the property books outside the system.
@@ -101,6 +101,19 @@ final readonly class JournalExport
 
         foreach ($this->sources->commissionStatements($property, $from, $to, $limit) as $c) {
             $entries[] = $this->entry($c['date'], 'KOP-'.$c['number'], 'Commission paid to '.$c['partner'], $c['number'], [[$acc('commission_payable'), $c['amount']], [$method($c['method']), -$c['amount']]]);
+        }
+
+        foreach ($this->sources->depreciation($property, $from, $to, $limit) as $d) {
+            $entries[] = $this->entry($d['date'], 'DEP-'.$d['number'], 'Depreciation '.$d['name'], $d['number'], [[$acc('depreciation_expense'), $d['amount']], [$acc('accumulated_depreciation'), -$d['amount']]]);
+        }
+
+        foreach ($this->sources->disposals($property, $from, $to, $limit) as $d) {
+            // The asset leaves the books at its cost; its depreciation goes with it; what the buyer paid is the money in; the difference to the book value is the gain or the loss.
+            $book = $d['cost'] - $d['accumulated'];
+            $result = $d['proceeds'] - $book;
+            $entries[] = $this->entry($d['date'], 'DSP-'.$d['number'], 'Asset left: '.$d['name'], $d['number'], [
+                [$acc('accumulated_depreciation'), $d['accumulated']], [$d['proceeds'] > 0 ? $method((string) $d['method']) : $acc('bank'), $d['proceeds']], [$result < 0 ? $acc('disposal_loss') : $acc('disposal_gain'), -$result], [$acc('fixed_assets'), -$d['cost']],
+            ]);
         }
 
         usort($entries, static fn (array $a, array $b): int => [$a['date'], $a['journal']] <=> [$b['date'], $b['journal']]);

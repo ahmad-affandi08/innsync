@@ -47,4 +47,10 @@ interface JournalSources
 
     /** @return list<array{date: string, number: string, partner: string, amount: int, method: string}> */
     public function commissionStatements(PropertyId $property, string $from, string $to, int $limit): array;
+
+    /** @return list<array{date: string, number: string, name: string, amount: int}> the depreciation of each closed month, dated its last day */
+    public function depreciation(PropertyId $property, string $from, string $to, int $limit): array;
+
+    /** @return list<array{date: string, number: string, name: string, cost: int, accumulated: int, proceeds: int, method: string|null}> assets that left */
+    public function disposals(PropertyId $property, string $from, string $to, int $limit): array;
 }
