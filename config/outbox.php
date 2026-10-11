@@ -9,6 +9,7 @@ use App\Modules\FnbSales\Application\KitchenProgressConsumer;
 use App\Modules\FrontOffice\Application\Commissions\CommissionAccrualConsumer;
 use App\Modules\FrontOffice\Application\Companies\CompanyReceiptConsumer;
 use App\Modules\FrontOffice\Application\DoorLocks\DoorLockJobConsumer;
+use App\Modules\FrontOffice\Application\Loyalty\LoyaltyEarningConsumer;
 use App\Modules\HumanResource\Application\PayrollPaidConsumer;
 use App\Modules\HumanResource\Application\SopCompletionConsumer;
 use App\Modules\IdentityAccess\Application\Approval\ApprovalNoticeConsumer;
@@ -69,6 +70,7 @@ return [
         MaintenanceNoticeConsumer::class,
         DoorLockJobConsumer::class,
         CommissionAccrualConsumer::class,
+        LoyaltyEarningConsumer::class,
         TicketIntakeConsumer::class,
     ],
 ];

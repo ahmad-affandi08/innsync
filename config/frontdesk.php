@@ -10,5 +10,15 @@ return [
         'run_at' => (string) env('FRONTDESK_AUTO_REMINDERS_AT', '06:30'),
     ],
     // How long a gift card is good for when the sale does not say (baseline; the hotel's terms decide). Months from the day of the sale.
+    'loyalty' => [
+        // Points for the stays of returning guests (docs/OPERATIONS/LOYALTY.md). Off until the hotel decides to run a programme. Money is in the smallest unit (Rp 10.000 = 1000000).
+        'enabled' => (bool) env('LOYALTY_ENABLED', false),
+        // One point for every this much room revenue (before service charge and tax) charged to a stay.
+        'earn_per_point_minor' => (int) env('LOYALTY_EARN_PER_POINT_MINOR', 1_000_000),
+        // What one point is worth when turned into a voucher (Rp 100 by default, about one percent back).
+        'point_value_minor' => (int) env('LOYALTY_POINT_VALUE_MINOR', 10_000),
+        // The fewest points that can be turned into a voucher at a time.
+        'min_redeem_points' => (int) env('LOYALTY_MIN_REDEEM_POINTS', 100),
+    ],
     'gift_card_valid_months' => (int) env('GIFT_CARD_VALID_MONTHS', 12),
 ];

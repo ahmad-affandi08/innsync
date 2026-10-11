@@ -318,6 +318,10 @@
         "body",
         "shift"
     ],
+    "front-office/pages/loyalty": [
+        "points",
+        "reason"
+    ],
     "front-office/pages/night-audit": [
         "waivers.*.reason"
     ],

@@ -296,6 +296,12 @@
             "query"
         ]
     },
+    "GET /front-office/loyalty": {
+        "required": [],
+        "declared": [
+            "account"
+        ]
+    },
     "GET /front-office/requests": {
         "required": [],
         "declared": [
@@ -2817,6 +2823,24 @@
         "declared": [
             "entries",
             "entries.*"
+        ]
+    },
+    "POST /front-office/loyalty/{id}/adjust": {
+        "required": [
+            "points",
+            "reason"
+        ],
+        "declared": [
+            "points",
+            "reason"
+        ]
+    },
+    "POST /front-office/loyalty/{id}/redeem": {
+        "required": [
+            "points"
+        ],
+        "declared": [
+            "points"
         ]
     },
     "POST /front-office/night-audit": {

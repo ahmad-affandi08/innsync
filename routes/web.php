@@ -46,6 +46,7 @@ use App\Modules\FrontOffice\Presentation\Http\Controllers\GuestNoteController;
 use App\Modules\FrontOffice\Presentation\Http\Controllers\GuestRequestController;
 use App\Modules\FrontOffice\Presentation\Http\Controllers\InventoryController;
 use App\Modules\FrontOffice\Presentation\Http\Controllers\LogbookController;
+use App\Modules\FrontOffice\Presentation\Http\Controllers\LoyaltyController;
 use App\Modules\FrontOffice\Presentation\Http\Controllers\NightAuditController;
 use App\Modules\FrontOffice\Presentation\Http\Controllers\RateChangeController;
 use App\Modules\FrontOffice\Presentation\Http\Controllers\RegistrationCardController;
@@ -478,6 +479,9 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
     Route::get('/gift-cards', [GiftCardController::class, 'index'])->name('front-office.gift-cards');
     Route::post('/gift-cards', [GiftCardController::class, 'issue'])->middleware(['idempotent', 'throttle:bookings'])->name('front-office.gift-cards.issue');
     Route::post('/gift-cards/lookup', [GiftCardController::class, 'lookup'])->middleware('throttle:gift-card-lookup')->name('front-office.gift-cards.lookup');
+    Route::get('/loyalty', [LoyaltyController::class, 'index'])->name('front-office.loyalty');
+    Route::post('/loyalty/{id}/redeem', [LoyaltyController::class, 'redeem'])->where('id', '[0-9a-z]{26}')->middleware(['idempotent', 'throttle:bookings'])->name('front-office.loyalty.redeem');
+    Route::post('/loyalty/{id}/adjust', [LoyaltyController::class, 'adjust'])->where('id', '[0-9a-z]{26}')->name('front-office.loyalty.adjust');
     Route::post('/gift-cards/{id}/void', [GiftCardController::class, 'void'])->where('id', '[0-9a-z]{26}')->name('front-office.gift-cards.void');
     Route::get('/door-locks', [DoorLockController::class, 'index'])->name('front-office.door-locks');
     Route::put('/door-locks', [DoorLockController::class, 'save'])->middleware('throttle:access-admin')->name('front-office.door-locks.save');
