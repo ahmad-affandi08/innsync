@@ -27,6 +27,7 @@ Release notes for every release (NFR-14). Newest first. Each entry names the tas
 
 ### Fixed
 
+- Starting roles a property already has (General Manager, Front Office Manager, Finance Manager, Finance Staff, Owner (read only), Receptionist) now receive the permissions of the newer features by themselves, as a new property gets them, so nobody has to tick them on the roles screen. Roles that are not starting roles get nothing, and nothing is taken away. Migration 147.
 - The permissions of the features added lately (door locks, gift cards, commissions, fixed assets, bank statements, loyalty points, spa and activities, the do-not-rent flag) were missing from the permission catalog, so a new installation's starting roles and its `innsync:create-admin` administrator could not hold them. They are in the catalog now, a migration creates them in a running property and gives them to its Administrator roles, receptionists can book spa and activities and see loyalty points and gift cards, and a test fails whenever the code names a permission that the catalog lacks. Migration 146.
 - Review pass over the whole code:
   - `innsync:create-admin` no longer falls back to a password that is known in advance (`Admin12345!`, which was also shorter than the 12-character policy). A password that is given must meet the policy; without one a random password is made, shown once, and must be changed at the first sign-in.
