@@ -110,6 +110,13 @@ final readonly class DatabaseJournalSources implements JournalSources
             ->map(static fn (object $r): array => ['date' => substr((string) $r->business_date, 0, 10), 'number' => (string) $r->code_last4, 'amount' => -(int) $r->delta_minor, 'method' => (string) $r->issue_method, 'disposition' => (string) $r->disposition])->all();
     }
 
+    public function bankLines(PropertyId $property, string $from, string $to, int $limit): array
+    {
+        return DB::table('fin_bank_lines')->where('property_id', $property->toString())->where('status', 'ignored')->whereNotNull('category')->whereBetween('line_date', [$from, $to])
+            ->orderBy('line_date')->orderBy('id')->limit($limit + 1)->get(['line_date', 'id', 'account_label', 'description', 'direction', 'category', 'amount_minor'])
+            ->map(static fn (object $r): array => ['date' => substr((string) $r->line_date, 0, 10), 'number' => strtoupper(substr((string) $r->id, -8)), 'account' => (string) $r->account_label, 'description' => (string) $r->description, 'direction' => (string) $r->direction, 'category' => (string) $r->category, 'amount' => (int) $r->amount_minor])->all();
+    }
+
     public function commissionAccruals(PropertyId $property, string $from, string $to, int $limit): array
     {
         return DB::table('commission_accruals as a')->join('commission_partners as p', 'p.id', '=', 'a.partner_id')->where('a.property_id', $property->toString())->where('a.status', '<>', 'void')->where('a.commission_minor', '>', 0)->whereBetween('a.stay_out_on', [$from, $to])

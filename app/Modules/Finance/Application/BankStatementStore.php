@@ -33,7 +33,7 @@ interface BankStatementStore
     /** False when the line is not open or the record is matched already. */
     public function match(PropertyId $property, string $id, string $type, string $targetId, string $by, DateTimeImmutable $at): bool;
 
-    public function ignore(PropertyId $property, string $id, string $note, string $by, DateTimeImmutable $at): bool;
+    public function ignore(PropertyId $property, string $id, string $note, ?string $category, string $by, DateTimeImmutable $at): bool;
 
     public function reopen(PropertyId $property, string $id, DateTimeImmutable $at): bool;
 

@@ -9,6 +9,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
+import { Select } from '@/components/ui/select';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { FinanceShell } from '@/modules/finance/components/finance-shell';
 import { useServerAction } from '@/shared/api/use-server-action';
@@ -16,8 +17,8 @@ import { useFormatters, useTranslation } from '@/shared/i18n/i18n';
 import { useErrorStateCopy } from '@/shared/i18n/use-ui-copy';
 
 type Suggestion = { type: string; id: string; label: string; days: number };
-type Line = { id: string; account_label: string; date: string; description: string; reference: string | null; direction: 'in' | 'out'; amount_minor: number; status: string; match_type: string | null; note: string | null; suggestions: Suggestion[] };
-type Overview = { currency: string; status: string; counts: { open: number; matched: number; ignored: number }; lines: Line[]; imports: { id: string; account_label: string; filename: string; rows_new: number; rows_duplicate: number; created_at: string }[]; may_manage: boolean };
+type Line = { id: string; account_label: string; date: string; description: string; reference: string | null; direction: 'in' | 'out'; amount_minor: number; status: string; match_type: string | null; note: string | null; category: string | null; suggestions: Suggestion[] };
+type Overview = { currency: string; status: string; counts: { open: number; matched: number; ignored: number }; lines: Line[]; categories: Record<'in' | 'out', string[]>; imports: { id: string; account_label: string; filename: string; rows_new: number; rows_duplicate: number; created_at: string }[]; may_manage: boolean };
 type Report = { status: 'rejected' | 'validated' | 'applied'; dry_run: boolean; count: number; duplicates: number; errors: { line: number; code: string; message: string }[] };
 
 const STATUSES = ['open', 'matched', 'ignored'] as const;
@@ -32,7 +33,7 @@ export default function BankPage({ overview }: { overview: Overview }) {
     const money = (minor: number) => format.money(minor, overview.currency);
     const [importing, setImporting] = useState<{ label: string; file: File | null; report: Report | null } | null>(null);
     const [pickerKey, setPickerKey] = useState(0);
-    const [aside, setAside] = useState<{ line: Line; note: string } | null>(null);
+    const [aside, setAside] = useState<{ line: Line; note: string; category: string } | null>(null);
     const [reopen, setReopen] = useState<{ line: Line; reason: string } | null>(null);
 
     function show(status: string) {
@@ -61,7 +62,7 @@ export default function BankPage({ overview }: { overview: Overview }) {
 
     async function setAsideNow() {
         if (aside === null) return;
-        const done = await action.run(`/finance/bank/lines/${aside.line.id}/ignore`, { body: { note: aside.note.trim() }, reload });
+        const done = await action.run(`/finance/bank/lines/${aside.line.id}/ignore`, { body: { note: aside.note.trim(), category: aside.category === '' ? null : aside.category }, reload });
         if (done !== null) setAside(null);
     }
 
@@ -83,7 +84,7 @@ export default function BankPage({ overview }: { overview: Overview }) {
             sortable: false,
             cell: (l) => {
                 if (l.status === 'matched') return <StatusBadge label={t(`fin.bk.type.${l.match_type}` as 'fin.bk.type.receipt')} tone="success" />;
-                if (l.status === 'ignored') return <span className="text-sm text-muted-foreground">{t('fin.bk.setAside')}{l.note !== null ? ` · ${l.note}` : ''}</span>;
+                if (l.status === 'ignored') return <span className="text-sm text-muted-foreground">{t('fin.bk.setAside')}{l.category !== null ? ` · ${t(`fin.bk.cat.${l.category}` as 'fin.bk.cat.bank_fee')}` : ''}{l.note !== null ? ` · ${l.note}` : ''}</span>;
                 if (l.suggestions.length === 0) return <span className="text-sm text-muted-foreground">{t('fin.bk.noSuggestion')}</span>;
 
                 return (
@@ -105,7 +106,7 @@ export default function BankPage({ overview }: { overview: Overview }) {
             sortable: false,
             cell: (l) => {
                 if (!overview.may_manage) return null;
-                if (l.status === 'open') return <Button onClick={() => { action.clear(); setAside({ line: l, note: '' }); }} size="sm" type="button" variant="ghost">{t('fin.bk.aside')}</Button>;
+                if (l.status === 'open') return <Button onClick={() => { action.clear(); setAside({ line: l, note: '', category: '' }); }} size="sm" type="button" variant="ghost">{t('fin.bk.aside')}</Button>;
 
                 return <Button onClick={() => { action.clear(); setReopen({ line: l, reason: '' }); }} size="sm" type="button" variant="ghost">{t('fin.bk.reopen')}</Button>;
             },
@@ -165,6 +166,7 @@ export default function BankPage({ overview }: { overview: Overview }) {
                     <div className="grid gap-3">
                         {action.error !== null ? <ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /> : null}
                         <p className="text-sm">{aside.line.description} · {money(aside.line.amount_minor)}</p>
+                        <FormField error={action.fieldError('category')} field="category" hint={t('fin.bk.categoryHint')} label={t('fin.bk.category')}><Select onChange={(e) => setAside({ ...aside, category: e.target.value })} value={aside.category}><option value="">{t('fin.bk.cat.none')}</option>{overview.categories[aside.line.direction].map((c) => <option key={c} value={c}>{t(`fin.bk.cat.${c}` as 'fin.bk.cat.bank_fee')}</option>)}</Select></FormField>
                         <FormField error={action.fieldError('note')} field="note" hint={t('fin.bk.asideHint')} label={t('fin.bk.note')}><Input maxLength={200} onChange={(e) => setAside({ ...aside, note: e.target.value })} value={aside.note} /></FormField>
                     </div>
                 )}

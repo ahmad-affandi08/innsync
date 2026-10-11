@@ -42,8 +42,8 @@ final readonly class BankStatementController
 
     public function ignore(Request $request, string $id): JsonResponse
     {
-        $data = $request->validate(['note' => ['required', 'string', 'max:200']]);
-        $this->bank->ignore($this->property->current(), $this->actor($request), $id, $data['note']);
+        $data = $request->validate(['note' => ['required', 'string', 'max:200'], 'category' => ['nullable', 'string', 'max:16']]);
+        $this->bank->ignore($this->property->current(), $this->actor($request), $id, $data['note'], $data['category'] ?? null);
 
         return $this->json(['ok' => true]);
     }

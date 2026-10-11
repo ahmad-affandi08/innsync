@@ -48,6 +48,9 @@ interface JournalSources
     /** @return list<array{date: string, number: string, partner: string, amount: int, method: string}> */
     public function commissionStatements(PropertyId $property, string $from, string $to, int $limit): array;
 
+    /** @return list<array{date: string, number: string, account: string, description: string, direction: string, category: string, amount: int}> bank statement lines set aside with a category (a fee, interest), dated the day of the line */
+    public function bankLines(PropertyId $property, string $from, string $to, int $limit): array;
+
     /** @return list<array{date: string, number: string, name: string, amount: int}> the depreciation of each closed month, dated its last day */
     public function depreciation(PropertyId $property, string $from, string $to, int $limit): array;
 

@@ -1387,4 +1387,12 @@ export const finance = {
     "fin.bk.setAside": "Set aside",
     "fin.bk.reopen": "Reopen",
     "fin.bk.reopenTitle": "Reopen this line",
+    "fin.bk.category": "Book it as",
+    "fin.bk.categoryHint": "Choose what it is and the accounting journal books it (a fee as an expense, interest as income). Leave it as not booked to only set it aside.",
+    "fin.bk.cat.none": "Not booked, only set aside",
+    "fin.bk.cat.bank_fee": "Bank fee",
+    "fin.bk.cat.interest_tax": "Tax on interest",
+    "fin.bk.cat.other_expense": "Other expense",
+    "fin.bk.cat.interest": "Bank interest",
+    "fin.bk.cat.other_income": "Other income",
 } as const

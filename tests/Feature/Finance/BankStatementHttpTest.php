@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Finance;
 
 use App\Modules\Finance\Application\FinanceAccess;
+use App\Modules\Property\Application\Settings\PropertySettingsService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
@@ -143,6 +144,50 @@ final class BankStatementHttpTest extends TestCase
         $this->assertCount(1, $aside);
         $this->assertSame('Bank fee', $aside[0]['note']);
         $this->postJson("/finance/bank/lines/{$fee['id']}/ignore", ['note' => 'Again'])->assertStatus(409);
+    }
+
+    public function test_a_line_set_aside_with_a_category_is_booked_in_the_journal_and_leaves_it_when_reopened(): void
+    {
+        $this->signIn(self::A, [FinanceAccess::BANK_MANAGE, FinanceAccess::EXPORT, PropertySettingsService::MANAGE_PERMISSION]);
+        $this->postJson('/property/settings/business-date', ['business_date' => '2026-10-20', 'lock_version' => 0, 'reason' => 'Go-live'])->assertOk();
+        $this->import();
+        $fee = collect($this->lines())->firstWhere('direction', 'out');
+        $in = collect($this->lines())->firstWhere('direction', 'in');
+
+        // The category must fit the way the money went.
+        $this->postJson("/finance/bank/lines/{$fee['id']}/ignore", ['note' => 'Monthly fee', 'category' => 'interest'])->assertStatus(422);
+        $this->postJson("/finance/bank/lines/{$in['id']}/ignore", ['note' => 'Fee?', 'category' => 'bank_fee'])->assertStatus(422);
+        $this->postJson("/finance/bank/lines/{$fee['id']}/ignore", ['note' => 'Monthly fee', 'category' => 'bank_fee'])->assertOk();
+
+        $journal = function (): array {
+            $rows = [];
+
+            foreach (explode("\r\n", ltrim($this->get('/finance/export/journal?from=2026-10-01&to=2026-10-31')->getContent(), "\xEF\xBB\xBF")) as $line) {
+                if ($line !== '') {
+                    $rows[] = str_getcsv($line);
+                }
+            }
+
+            $header = array_shift($rows);
+
+            return array_values(array_filter(array_map(fn (array $r): array => array_combine($header, $r), $rows), fn (array $r): bool => str_starts_with($r['journal'] ?? $r[array_key_first($r)], 'BNK-') || str_contains(implode('|', $r), 'BNK-')));
+        };
+
+        $rows = $journal();
+        $this->assertCount(2, $rows);
+        $codes = array_map(fn (array $r): string => implode('|', $r), $rows);
+        $this->assertStringContainsString('5-7000', implode("\n", $codes));
+        $this->assertStringContainsString('1-1120', implode("\n", $codes));
+        $this->assertStringContainsString('15000.00', implode("\n", $codes));
+
+        // Interest in, with no category given: set aside only, so not in the journal.
+        $this->postJson("/finance/bank/lines/{$in['id']}/ignore", ['note' => 'Unknown credit'])->assertOk();
+        $this->assertCount(2, $journal());
+
+        // Reopened: it leaves the journal.
+        $this->postJson("/finance/bank/lines/{$fee['id']}/reopen", ['reason' => 'Wrong'])->assertOk();
+        $this->assertCount(0, $journal());
+        $this->assertNull(DB::table('fin_bank_lines')->where('id', $fee['id'])->value('category'));
     }
 
     public function test_viewing_needs_the_view_permission_and_changing_needs_the_manage_permission(): void

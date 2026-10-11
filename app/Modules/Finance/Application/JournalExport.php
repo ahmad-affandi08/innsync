@@ -95,6 +95,20 @@ final readonly class JournalExport
             $entries[] = $this->entry($g['date'], 'GCV-'.$g['number'], 'Gift card voided, ending '.$g['number'].($g['disposition'] === 'refunded' ? ', paid back' : ', written off'), '', [[$acc('gift_card_liability'), $g['amount']], [$credit, -$g['amount']]]);
         }
 
+        foreach ($this->sources->bankLines($property, $from, $to, $limit) as $b) {
+            // A bank fee, the tax on interest or another cost is an expense paid from the bank; interest or other money in is income received into it.
+            $other = $b['direction'] === 'out' ? $acc('expense.other') : $acc('revenue.other', 'revenue.other');
+            $account = match ($b['category']) {
+                'bank_fee' => $acc('bank_fee'),
+                'interest_tax' => $acc('interest_tax'),
+                'interest' => $acc('interest_income', 'revenue.other'),
+                default => $other,
+            };
+            $entries[] = $b['direction'] === 'out'
+                ? $this->entry($b['date'], 'BNK-'.$b['number'], 'Bank: '.$b['description'], $b['account'], [[$account, $b['amount']], [$acc('bank'), -$b['amount']]])
+                : $this->entry($b['date'], 'BNK-'.$b['number'], 'Bank: '.$b['description'], $b['account'], [[$acc('bank'), $b['amount']], [$account, -$b['amount']]]);
+        }
+
         foreach ($this->sources->commissionAccruals($property, $from, $to, $limit) as $c) {
             $entries[] = $this->entry($c['date'], 'KOA-'.$c['number'], 'Commission '.$c['partner'], $c['number'], [[$acc('commission_expense'), $c['amount']], [$acc('commission_payable'), -$c['amount']]]);
         }

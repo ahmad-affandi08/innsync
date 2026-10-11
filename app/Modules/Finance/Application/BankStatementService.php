@@ -26,6 +26,9 @@ final readonly class BankStatementService
 
     public const MAX_BYTES = 2_000_000;
 
+    /** What a line that belongs to no record can be booked as, by the way the money went; the accounting journal books it (docs/OPERATIONS/BANK-RECONCILIATION.md). */
+    public const CATEGORIES = ['out' => ['bank_fee', 'interest_tax', 'other_expense'], 'in' => ['interest', 'other_income']];
+
     public function __construct(
         private BankStatementStore $store,
         private FinanceAccess $access,
@@ -50,10 +53,10 @@ final readonly class BankStatementService
             'currency' => $this->currency->currencyOf($property), 'status' => $status, 'counts' => ['open' => $counts['open'] ?? 0, 'matched' => $counts['matched'] ?? 0, 'ignored' => $counts['ignored'] ?? 0],
             'lines' => array_map(fn (array $l): array => [
                 'id' => $l['id'], 'account_label' => $l['account_label'], 'date' => substr((string) $l['line_date'], 0, 10), 'description' => $l['description'], 'reference' => $l['reference'], 'direction' => $l['direction'], 'amount_minor' => (int) $l['amount_minor'],
-                'status' => $l['status'], 'match_type' => $l['match_type'], 'note' => $l['note'], 'suggestions' => $suggest[$l['id']] ?? [],
+                'status' => $l['status'], 'match_type' => $l['match_type'], 'note' => $l['note'], 'category' => $l['category'] ?? null, 'suggestions' => $suggest[$l['id']] ?? [],
             ], $lines),
             'imports' => array_map(static fn (array $i): array => ['id' => $i['id'], 'account_label' => $i['account_label'], 'filename' => $i['filename'], 'rows_new' => (int) $i['rows_new'], 'rows_duplicate' => (int) $i['rows_duplicate'], 'created_at' => (string) $i['created_at']], $this->store->imports($property, 8)),
-            'may_manage' => $this->access->may($property, $actorId, FinanceAccess::BANK_MANAGE),
+            'categories' => self::CATEGORIES, 'may_manage' => $this->access->may($property, $actorId, FinanceAccess::BANK_MANAGE),
         ];
     }
 
@@ -130,7 +133,7 @@ final readonly class BankStatementService
         });
     }
 
-    public function ignore(PropertyId $property, string $actorId, string $lineId, string $note): void
+    public function ignore(PropertyId $property, string $actorId, string $lineId, string $note, ?string $category = null): void
     {
         $this->manage($property, $actorId);
         $note = trim($note);
@@ -140,13 +143,18 @@ final readonly class BankStatementService
         }
 
         $line = $this->store->line($property, strtolower($lineId)) ?? throw Refusal::notFound('Line not found.');
+        $category = $category === null || $category === '' ? null : $category;
 
-        $this->transactions->run(function () use ($property, $actorId, $line, $note): void {
-            if (! $this->store->ignore($property, $line['id'], $note, strtolower($actorId), $this->clock->nowUtc())) {
+        if ($category !== null && ! in_array($category, self::CATEGORIES[$line['direction']] ?? [], true)) {
+            throw Refusal::invalid('This category does not fit money '.($line['direction'] === 'in' ? 'coming in' : 'going out').'.', ['category']);
+        }
+
+        $this->transactions->run(function () use ($property, $actorId, $line, $note, $category): void {
+            if (! $this->store->ignore($property, $line['id'], $note, $category, strtolower($actorId), $this->clock->nowUtc())) {
                 throw Refusal::stateConflict('This line was settled already.');
             }
 
-            $this->audit->record(new AuditEntry($property->toString(), strtolower($actorId), 'bank_line.set_aside', 'bank_line', $line['id'], ['status' => 'open'], ['status' => 'ignored', 'amount_minor' => (int) $line['amount_minor']], $note));
+            $this->audit->record(new AuditEntry($property->toString(), strtolower($actorId), 'bank_line.set_aside', 'bank_line', $line['id'], ['status' => 'open'], ['status' => 'ignored', 'amount_minor' => (int) $line['amount_minor'], 'category' => $category], $note));
         });
     }
 

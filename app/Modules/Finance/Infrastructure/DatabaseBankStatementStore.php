@@ -76,14 +76,14 @@ final readonly class DatabaseBankStatementStore implements BankStatementStore
         }
     }
 
-    public function ignore(PropertyId $property, string $id, string $note, string $by, DateTimeImmutable $at): bool
+    public function ignore(PropertyId $property, string $id, string $note, ?string $category, string $by, DateTimeImmutable $at): bool
     {
-        return DB::table('fin_bank_lines')->where('property_id', $property->toString())->where('id', $id)->where('status', 'open')->update(['status' => 'ignored', 'note' => $note, 'settled_by' => $by, 'settled_at' => $at, 'updated_at' => $at]) === 1;
+        return DB::table('fin_bank_lines')->where('property_id', $property->toString())->where('id', $id)->where('status', 'open')->update(['status' => 'ignored', 'note' => $note, 'category' => $category, 'settled_by' => $by, 'settled_at' => $at, 'updated_at' => $at]) === 1;
     }
 
     public function reopen(PropertyId $property, string $id, DateTimeImmutable $at): bool
     {
-        return DB::table('fin_bank_lines')->where('property_id', $property->toString())->where('id', $id)->whereIn('status', ['matched', 'ignored'])->update(['status' => 'open', 'match_type' => null, 'match_id' => null, 'note' => null, 'settled_by' => null, 'settled_at' => null, 'updated_at' => $at]) === 1;
+        return DB::table('fin_bank_lines')->where('property_id', $property->toString())->where('id', $id)->whereIn('status', ['matched', 'ignored'])->update(['status' => 'open', 'match_type' => null, 'match_id' => null, 'note' => null, 'category' => null, 'settled_by' => null, 'settled_at' => null, 'updated_at' => $at]) === 1;
     }
 
     public function candidates(PropertyId $property, string $direction, array $amounts, string $from, string $to): array

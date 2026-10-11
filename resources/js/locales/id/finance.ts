@@ -1387,4 +1387,12 @@ export const finance = {
     "fin.bk.setAside": "Disisihkan",
     "fin.bk.reopen": "Buka kembali",
     "fin.bk.reopenTitle": "Buka kembali baris ini",
+    "fin.bk.category": "Catat sebagai",
+    "fin.bk.categoryHint": "Pilih apa ini dan jurnal akuntansi mencatatnya (biaya sebagai beban, bunga sebagai pendapatan). Biarkan 'tidak dicatat' bila hanya ingin disisihkan.",
+    "fin.bk.cat.none": "Tidak dicatat, hanya disisihkan",
+    "fin.bk.cat.bank_fee": "Biaya bank",
+    "fin.bk.cat.interest_tax": "Pajak bunga",
+    "fin.bk.cat.other_expense": "Beban lain",
+    "fin.bk.cat.interest": "Bunga bank",
+    "fin.bk.cat.other_income": "Pendapatan lain",
 } as const
