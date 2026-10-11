@@ -2375,6 +2375,85 @@
             "email"
         ]
     },
+    "POST /front-office/activities/bookings": {
+        "required": [
+            "guests",
+            "reservation_id",
+            "service_id",
+            "starts_at",
+            "starts_on"
+        ],
+        "declared": [
+            "guests",
+            "note",
+            "reservation_id",
+            "service_id",
+            "starts_at",
+            "starts_on"
+        ]
+    },
+    "POST /front-office/activities/bookings/{id}/cancel": {
+        "required": [
+            "lock_version",
+            "reason"
+        ],
+        "declared": [
+            "lock_version",
+            "reason"
+        ]
+    },
+    "POST /front-office/activities/bookings/{id}/complete": {
+        "required": [
+            "lock_version"
+        ],
+        "declared": [
+            "lock_version"
+        ]
+    },
+    "POST /front-office/activities/bookings/{id}/no-show": {
+        "required": [
+            "lock_version"
+        ],
+        "declared": [
+            "lock_version"
+        ]
+    },
+    "POST /front-office/activities/services": {
+        "required": [
+            "capacity",
+            "category",
+            "code",
+            "duration_minutes",
+            "name",
+            "price_minor"
+        ],
+        "declared": [
+            "capacity",
+            "category",
+            "code",
+            "duration_minutes",
+            "name",
+            "price_minor"
+        ]
+    },
+    "POST /front-office/activities/services/{id}": {
+        "required": [
+            "capacity",
+            "duration_minutes",
+            "is_active",
+            "lock_version",
+            "name",
+            "price_minor"
+        ],
+        "declared": [
+            "capacity",
+            "duration_minutes",
+            "is_active",
+            "lock_version",
+            "name",
+            "price_minor"
+        ]
+    },
     "POST /front-office/cashier/settings": {
         "required": [
             "lock_version",

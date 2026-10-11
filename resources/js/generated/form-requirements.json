@@ -206,6 +206,20 @@
     "foundation/pages/setup": [
         "reason"
     ],
+    "front-office/pages/activities": [
+        "capacity",
+        "category",
+        "code",
+        "duration_minutes",
+        "guests",
+        "name",
+        "price_minor",
+        "reason",
+        "reservation_id",
+        "service_id",
+        "starts_at",
+        "starts_on"
+    ],
     "front-office/pages/cashier": [
         "amount_minor",
         "counted_cash_minor",

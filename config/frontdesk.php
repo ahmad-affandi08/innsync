@@ -10,6 +10,10 @@ return [
         'run_at' => (string) env('FRONTDESK_AUTO_REMINDERS_AT', '06:30'),
     ],
     // How long a gift card is good for when the sale does not say (baseline; the hotel's terms decide). Months from the day of the sale.
+    'activities' => [
+        // The scheme (service charge and tax) a spa or activity is priced with when it is charged to a room: rooms, laundry or fnb. Prices are quoted before service charge and tax.
+        'charge_scope' => (string) env('ACTIVITIES_CHARGE_SCOPE', 'rooms'),
+    ],
     'loyalty' => [
         // Points for the stays of returning guests (docs/OPERATIONS/LOYALTY.md). Off until the hotel decides to run a programme. Money is in the smallest unit (Rp 10.000 = 1000000).
         'enabled' => (bool) env('LOYALTY_ENABLED', false),
