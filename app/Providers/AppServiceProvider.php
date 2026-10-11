@@ -110,6 +110,7 @@ use App\Modules\FrontOffice\Application\Stays\StayOccupancyReader;
 use App\Modules\FrontOffice\Application\Stays\StayRepository;
 use App\Modules\FrontOffice\Application\Stays\StayTimeFeeRepository;
 use App\Modules\FrontOffice\Application\TapeChart\TapeChartReader;
+use App\Modules\FrontOffice\Application\Waitlist\WaitlistStore;
 use App\Modules\FrontOffice\Infrastructure\Cashier\DatabaseCashierRepository;
 use App\Modules\FrontOffice\Infrastructure\Companies\DatabaseCompanyRepository;
 use App\Modules\FrontOffice\Infrastructure\DatabaseLaundryExceptionStore;
@@ -140,6 +141,7 @@ use App\Modules\FrontOffice\Infrastructure\Stays\DatabaseRegistrationCardReposit
 use App\Modules\FrontOffice\Infrastructure\Stays\DatabaseStayRepository;
 use App\Modules\FrontOffice\Infrastructure\Stays\DatabaseStayTimeFeeRepository;
 use App\Modules\FrontOffice\Infrastructure\TapeChart\DatabaseTapeChartReader;
+use App\Modules\FrontOffice\Infrastructure\Waitlist\DatabaseWaitlistStore;
 use App\Modules\GuestExperience\Application\GuestHelpStore;
 use App\Modules\GuestExperience\Application\GuestOrderStore;
 use App\Modules\GuestExperience\Application\GuestRoomCharges;
@@ -604,6 +606,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(GuestBlockList::class, DatabaseGuestBlockList::class);
         $this->app->bind(DoorLockStore::class, DatabaseDoorLockStore::class);
         $this->app->bind(GiftCardStore::class, DatabaseGiftCardStore::class);
+        $this->app->bind(WaitlistStore::class, DatabaseWaitlistStore::class);
         $this->app->bind(GiftCardRedemption::class, GiftCardService::class);
         $this->app->bind(ReminderStore::class, DatabaseReminderStore::class);
         $this->app->bind(AutoReminderSource::class, DatabaseAutoReminderSource::class);

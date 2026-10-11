@@ -3114,6 +3114,57 @@
             "reason"
         ]
     },
+    "POST /front-office/waitlist": {
+        "required": [
+            "adults",
+            "arrival",
+            "children",
+            "departure",
+            "guest_name",
+            "room_type_id"
+        ],
+        "declared": [
+            "adults",
+            "arrival",
+            "children",
+            "departure",
+            "email",
+            "guest_name",
+            "note",
+            "phone",
+            "room_type_id"
+        ]
+    },
+    "POST /front-office/waitlist/{id}/book": {
+        "required": [
+            "lock_version",
+            "rate_plan_id",
+            "status"
+        ],
+        "declared": [
+            "lock_version",
+            "rate_plan_id",
+            "status"
+        ]
+    },
+    "POST /front-office/waitlist/{id}/cancel": {
+        "required": [
+            "lock_version",
+            "reason"
+        ],
+        "declared": [
+            "lock_version",
+            "reason"
+        ]
+    },
+    "POST /front-office/waitlist/{id}/offer": {
+        "required": [
+            "lock_version"
+        ],
+        "declared": [
+            "lock_version"
+        ]
+    },
     "POST /g/c/{token}": {
         "required": [
             "notice_version"

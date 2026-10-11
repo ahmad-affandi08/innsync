@@ -350,6 +350,17 @@
         "kind",
         "reason"
     ],
+    "front-office/pages/waitlist": [
+        "adults",
+        "arrival",
+        "children",
+        "departure",
+        "guest_name",
+        "rate_plan_id",
+        "reason",
+        "room_type_id",
+        "status"
+    ],
     "housekeeping/pages/board": [
         "kind",
         "reason"
