@@ -24,6 +24,7 @@ use App\Shared\Application\Audit\AuditEntry;
 use App\Shared\Application\Audit\AuditTrail;
 use App\Shared\Application\Documents\DocumentNumbers;
 use App\Shared\Application\Errors\Refusal;
+use App\Shared\Application\GiftCards\GiftCardRedemption;
 use App\Shared\Application\Idempotency\IdempotencyKey;
 use App\Shared\Application\Outbox\OutboxEvent;
 use App\Shared\Application\Outbox\OutboxPublisher;
@@ -76,6 +77,7 @@ final readonly class FolioService
         private PropertyProfileReader $profile,
         private ShiftAttribution $shifts,
         private CompanyRouting $routing,
+        private GiftCardRedemption $giftCards,
     ) {}
 
     // ---- reads ----
@@ -281,10 +283,18 @@ final readonly class FolioService
         $folio = $this->folios->find($property, strtolower($folioId)) ?? throw Refusal::notFound('Folio not found.');
         $this->shifts->assertMayHandleMoney($property, $actorId);
 
-        return $this->postAndRecord($property, $actorId, $folio->id, 'folio.payment.posted', fn ($date, $now): Posting => Posting::payment(
-            $this->ledger->newId(), strtoupper($method), 'Payment by '.str_replace('_', ' ', $method), Money::ofMinor($amountMinor, $folio->currency), $paymentMethod, $reference, $purpose,
+        $postingId = $this->ledger->newId();
+        $post = fn (?string $reference): array => $this->postAndRecord($property, $actorId, $folio->id, 'folio.payment.posted', fn ($date, $now): Posting => Posting::payment(
+            $postingId, strtoupper($method), 'Payment by '.str_replace('_', ' ', $method), Money::ofMinor($amountMinor, $folio->currency), $paymentMethod, $reference, $purpose,
             $date, $now, strtolower($actorId), 'front_office', $sourceRef,
         ), null);
+
+        if ($paymentMethod !== PaymentMethod::GiftCard) {
+            return $post($reference);
+        }
+
+        // The card is charged in the same transaction as the payment, once per posting; the folio keeps only a masked reference to the card.
+        return $this->transactions->run(fn (): array => $post($this->giftCards->redeem($property, $actorId, (string) $reference, $amountMinor, $folio->currency, 'folio_posting', $postingId)));
     }
 
     /**
@@ -376,7 +386,13 @@ final readonly class FolioService
                 throw Refusal::stateConflict('This posting was already reversed.');
             }
 
-            return $this->postAndRecord($property, $actorId, $folio->id, 'folio.posting.reversed', fn ($date, $now): Posting => Posting::reversalOf($original, $this->ledger->newId(), $reason, $date, $now, strtolower($actorId), $approval === '' ? null : $approval), $approval, $original);
+            $reversed = $this->postAndRecord($property, $actorId, $folio->id, 'folio.posting.reversed', fn ($date, $now): Posting => Posting::reversalOf($original, $this->ledger->newId(), $reason, $date, $now, strtolower($actorId), $approval === '' ? null : $approval), $approval, $original);
+
+            if ($original->method === PaymentMethod::GiftCard) {
+                $this->giftCards->restore($property, $actorId, 'folio_posting', $original->id);
+            }
+
+            return $reversed;
         });
     }
 
@@ -485,6 +501,11 @@ final readonly class FolioService
     {
         $this->authorize($property, $actorId, self::REFUND_PERMISSION);
         $paymentMethod = PaymentMethod::tryFrom($method) ?? throw Refusal::invalid('Choose a payment method.', ['payment_method']);
+
+        if ($paymentMethod === PaymentMethod::GiftCard) {
+            throw Refusal::invalid('Money is not paid back onto a gift card. Reverse the payment instead, or pay back in cash or by transfer.', ['payment_method']);
+        }
+
         $folio = $this->folios->find($property, strtolower($folioId)) ?? throw Refusal::notFound('Folio not found.');
         $this->shifts->assertMayHandleMoney($property, $actorId);
 

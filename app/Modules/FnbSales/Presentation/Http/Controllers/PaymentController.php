@@ -39,7 +39,7 @@ final readonly class PaymentController
     public function pay(Request $request, string $id): JsonResponse
     {
         $data = $request->validate([
-            'lock_version' => ['required', 'integer', 'min:0'], 'method' => ['required', 'string', 'max:8'], 'amount_minor' => ['required', 'integer', 'min:1', 'max:9000000000000'], 'tendered_minor' => ['nullable', 'integer', 'min:0', 'max:9000000000000'],
+            'lock_version' => ['required', 'integer', 'min:0'], 'method' => ['required', 'string', 'max:12'], 'amount_minor' => ['required', 'integer', 'min:1', 'max:9000000000000'], 'tendered_minor' => ['nullable', 'integer', 'min:0', 'max:9000000000000'],
             'reference' => ['nullable', 'string', 'max:60'], 'room_id' => ['nullable', 'string', 'size:26'], 'guest_name' => ['nullable', 'string', 'max:80'],
         ]);
 

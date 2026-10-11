@@ -140,6 +140,28 @@ final readonly class DatabaseCashierRepository implements CashierRepository
             $result[] = ['method' => (string) ($row->payment_method ?? 'other'), 'received_minor' => (int) $row->received, 'paid_back_minor' => (int) $row->paid_back, 'count' => (int) $row->n];
         }
 
+        // Gift cards sold for cash in this shift: the money is in the drawer, though no folio holds it.
+        $sold = DB::table('gift_cards')->where('property_id', $property->toString())->where('issue_shift_id', $shiftId)->where('issue_method', 'cash');
+        $cash = (int) (clone $sold)->sum('face_minor');
+
+        if ($cash > 0) {
+            $found = false;
+
+            foreach ($result as &$line) {
+                if ($line['method'] === 'cash') {
+                    $line['received_minor'] += $cash;
+                    $line['count'] += (clone $sold)->count();
+                    $found = true;
+                }
+            }
+
+            unset($line);
+
+            if (! $found) {
+                $result[] = ['method' => 'cash', 'received_minor' => $cash, 'paid_back_minor' => 0, 'count' => (clone $sold)->count()];
+            }
+        }
+
         usort($result, static fn (array $a, array $b): int => strcmp($a['method'], $b['method']));
 
         return $result;

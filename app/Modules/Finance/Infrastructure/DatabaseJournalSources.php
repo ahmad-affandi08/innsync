@@ -96,6 +96,20 @@ final readonly class DatabaseJournalSources implements JournalSources
             ->map(static fn (object $r): array => ['date' => substr((string) $r->received_on, 0, 10), 'number' => (string) $r->number, 'customer' => (string) $r->name, 'method' => (string) $r->method, 'amount' => $r->kind === 'reversal' ? -(int) $r->amount_minor : (int) $r->amount_minor])->all();
     }
 
+    public function giftCardIssues(PropertyId $property, string $from, string $to, int $limit): array
+    {
+        return DB::table('gift_card_entries as e')->join('gift_cards as c', 'c.id', '=', 'e.card_id')->where('e.property_id', $property->toString())->where('e.kind', 'issue')->whereBetween('e.business_date', [$from, $to])
+            ->orderBy('e.business_date')->orderBy('e.id')->limit($limit + 1)->get(['e.business_date', 'e.id', 'e.delta_minor', 'c.issue_method', 'c.kind', 'c.code_last4'])
+            ->map(static fn (object $r): array => ['date' => substr((string) $r->business_date, 0, 10), 'number' => (string) $r->code_last4, 'amount' => (int) $r->delta_minor, 'method' => (string) $r->issue_method, 'kind' => (string) $r->kind])->all();
+    }
+
+    public function giftCardVoids(PropertyId $property, string $from, string $to, int $limit): array
+    {
+        return DB::table('gift_card_entries as e')->join('gift_cards as c', 'c.id', '=', 'e.card_id')->where('e.property_id', $property->toString())->where('e.kind', 'void')->whereBetween('e.business_date', [$from, $to])
+            ->orderBy('e.business_date')->orderBy('e.id')->limit($limit + 1)->get(['e.business_date', 'e.delta_minor', 'e.disposition', 'c.issue_method', 'c.code_last4'])
+            ->map(static fn (object $r): array => ['date' => substr((string) $r->business_date, 0, 10), 'number' => (string) $r->code_last4, 'amount' => -(int) $r->delta_minor, 'method' => (string) $r->issue_method, 'disposition' => (string) $r->disposition])->all();
+    }
+
     /** An outlet code or source as a mapping key (letters, digits, dash and underscore, lower case). */
     private function key(mixed $value): string
     {

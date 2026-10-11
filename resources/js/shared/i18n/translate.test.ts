@@ -98,6 +98,9 @@ describe('dictionaries', () => {
             'fo.lock.vendor.dormakaba',
             'fo.lock.vendor.hafele',
             // Terms Indonesian hotels use unchanged.
+            'fo.gc.kind.gift_card',
+            'fo.gc.kind.voucher',
+            'fo.gc.method.qris',
             'rates.kind.ota',
             'fin.fc.target',
             'kitchen.station.bar',

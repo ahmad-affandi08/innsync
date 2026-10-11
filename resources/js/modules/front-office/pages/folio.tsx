@@ -34,6 +34,8 @@ type Targets = { same: { folio_id: string; number: string; window: number; label
 type Foreign = { enabled: boolean; home_currency: string; rates: { currency: string; version: number; rate_e4: number }[] };
 
 const METHODS = ['cash', 'qris', 'card', 'bank_transfer', 'online'] as const;
+/** A gift card or voucher pays a bill but is never paid back: it is only in the payment list. */
+const PAY_METHODS = [...METHODS, 'gift_card'] as const;
 const statusTone: Record<string, StatusTone> = { open: 'info', partially_settled: 'warning', settled: 'success', closed: 'neutral' };
 
 export default function FolioPage({ approvals, folio, foreign, may_late_charge: mayLateCharge, reservation }: { approvals: Approval[]; folio: Folio; foreign: Foreign; may_late_charge: boolean; reservation: Reservation }) {
@@ -168,7 +170,7 @@ export default function FolioPage({ approvals, folio, foreign, may_late_charge: 
     // A reversed posting stays on the list, struck through, so the record reads as it happened.
     const struck = (p: Posting, node: ReactNode) => (p.is_reversed ? <span className="text-muted-foreground line-through">{node}</span> : node);
     const amountCell = (p: Posting, v: number) => struck(p, v === 0 ? '' : money(v));
-    const methodLabel = (m: string) => ((METHODS as readonly string[]).includes(m) ? t(`fo.folio.method.${m}` as 'fo.folio.method.cash') : m);
+    const methodLabel = (m: string) => ((PAY_METHODS as readonly string[]).includes(m) ? t(`fo.folio.method.${m}` as 'fo.folio.method.cash') : m);
     const columns: DataGridColumn<Posting>[] = [
         { id: 'seq', label: t('fo.folio.col.seq'), value: (p) => p.seq, rowHeader: true, cell: (p) => struck(p, p.seq) },
         { id: 'date', label: t('fo.folio.col.date'), value: (p) => p.business_date, searchText: (p) => `${p.business_date} ${format.date(p.business_date)}`, cell: (p) => struck(p, format.date(p.business_date)) },
@@ -273,13 +275,13 @@ export default function FolioPage({ approvals, folio, foreign, may_late_charge: 
                 {payment !== null && (
                     <div className="flex flex-col gap-3">
                         {error}
-                        <FormField field="payment_method" error={action.fieldError('payment_method')} label={t('fo.folio.method')}><Select onChange={(e) => setPayment({ ...payment, method: e.target.value })} value={payment.method}>{METHODS.map((m) => <option key={m} value={m}>{t(`fo.folio.method.${m}`)}</option>)}</Select></FormField>
+                        <FormField field="payment_method" error={action.fieldError('payment_method')} label={t('fo.folio.method')}><Select onChange={(e) => setPayment({ ...payment, method: e.target.value })} value={payment.method}>{PAY_METHODS.map((m) => <option key={m} value={m}>{t(`fo.folio.method.${m}`)}</option>)}</Select></FormField>
                         {foreign.enabled && foreign.rates.length > 0 ? (
                             <FormField field="currency" error={action.fieldError('currency')} label={t('fo.foreign.currency')}><Select onChange={(e) => setPayment({ ...payment, currency: e.target.value })} value={payment.currency}><option value={folio.currency}>{folio.currency}</option>{foreign.rates.map((r) => <option key={r.currency} value={r.currency}>{r.currency}</option>)}</Select></FormField>
                         ) : null}
                         <FormField field="amount_minor" error={amountError ? t('fo.folio.invalidAmount') : (action.fieldError('amount_minor') ?? action.fieldError('amount')) ?? action.fieldError('foreign_minor')} hint={foreignRate !== undefined ? t('fo.foreign.rateNote', { rate: format.number(foreignRate.rate_e4 / 10000), currency: folio.currency }) : undefined} label={t('fo.folio.amount')}><MoneyInput onChange={(e) => setPayment({ ...payment, amount: e.target.value })} value={payment.amount} /></FormField>
                         {payment.currency !== folio.currency ? <p className="text-sm font-medium" data-testid="foreign-booked">{booked === null ? '—' : t('fo.foreign.booked', { amount: format.money(booked, folio.currency) })}</p> : null}
-                        <FormField field="reference" error={action.fieldError('payment_reference')} hint={t('fo.folio.referenceHint')} label={t('fo.folio.reference')}><Input maxLength={80} onChange={(e) => setPayment({ ...payment, reference: e.target.value })} value={payment.reference} /></FormField>
+                        <FormField field="reference" error={action.fieldError('payment_reference')} hint={payment.method === 'gift_card' ? t('fo.folio.giftCardHint') : t('fo.folio.referenceHint')} label={payment.method === 'gift_card' ? t('fo.folio.giftCardCode') : t('fo.folio.reference')}><Input maxLength={80} onChange={(e) => setPayment({ ...payment, reference: e.target.value })} value={payment.reference} /></FormField>
                         <FormField field="purpose" error={action.fieldError('purpose')} label={t('fo.folio.purpose')}><Select onChange={(e) => setPayment({ ...payment, purpose: e.target.value })} value={payment.purpose}><option value="settlement">{t('fo.folio.purpose.settlement')}</option><option value="deposit">{t('fo.folio.purpose.deposit')}</option></Select></FormField>
                     </div>
                 )}

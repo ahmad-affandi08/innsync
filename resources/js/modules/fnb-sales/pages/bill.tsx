@@ -24,7 +24,7 @@ import { Select } from '@/components/ui/select';
 import type { MessageKey } from '@/locales/en/index';
 
 type Pick = { item: OrderItem; variant: string; modifiers: string[]; quantity: number; note: string };
-type PayForm = { method: 'cash' | 'card' | 'qris' | 'room'; amount: string; tendered: string; reference: string; room: string; guest: string };
+type PayForm = { method: 'cash' | 'card' | 'qris' | 'room' | 'gift_card'; amount: string; tendered: string; reference: string; room: string; guest: string };
 type QrisForm = { payment: BillPayment; status: string; reference: string; reason: string };
 type Confirm = { kind: 'void'; line: BillLine } | { kind: 'cancel' } | { kind: 'discount'; line: BillLine } | { kind: 'undiscount'; line: BillLine } | { kind: 'refund' } | { kind: 'reprint' };
 type DiscountForm = { kind: 'percent' | 'amount' | 'comp'; value: string };
@@ -544,7 +544,7 @@ export default function BillPage({ targets, view }: { targets: RearrangeTargets;
                         <div className="sm:col-span-2">
                             <FormField error={action.fieldError('method')} field="method" label={t('fnb.pay.method')}>
                                 <Select onChange={(e) => setPay({ ...pay, method: e.target.value as PayForm['method'], amount: e.target.value === 'room' ? minorToMajorText(totals.total_minor, view.currency) : pay.amount })} value={pay.method}>
-                                    {(['cash', 'card', 'qris', 'room'] as const).map((m) => <option key={m} value={m}>{t(`fnb.pay.method.${m}` as MessageKey)}</option>)}
+                                    {(['cash', 'card', 'qris', 'gift_card', 'room'] as const).map((m) => <option key={m} value={m}>{t(`fnb.pay.method.${m}` as MessageKey)}</option>)}
                                 </Select>
                             </FormField>
                         </div>
@@ -559,6 +559,11 @@ export default function BillPage({ targets, view }: { targets: RearrangeTargets;
                         {pay.method === 'card' ? (
                             <FormField error={action.fieldError('reference')} field="reference" label={t('fnb.pay.cardCode')}>
                                 <Input maxLength={60} onChange={(e) => setPay({ ...pay, reference: e.target.value })} value={pay.reference} />
+                            </FormField>
+                        ) : null}
+                        {pay.method === 'gift_card' ? (
+                            <FormField error={action.fieldError('reference')} field="reference" hint={t('fnb.pay.giftCardHint')} label={t('fnb.pay.giftCardCode')}>
+                                <Input autoComplete="off" maxLength={40} onChange={(e) => setPay({ ...pay, reference: e.target.value })} value={pay.reference} />
                             </FormField>
                         ) : null}
                         {pay.method === 'qris' ? <p className="text-sm text-muted-foreground sm:col-span-2">{t('fnb.pay.qrisNote')}</p> : null}

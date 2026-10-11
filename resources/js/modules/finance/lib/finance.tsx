@@ -48,7 +48,7 @@ export type OutletRevenue = RevenueAmounts & { code: string; name: string | null
 export type MethodTotals = { method: string; received_minor: number; paid_back_minor: number; net_minor: number; entries: number };
 
 const KNOWN_OUTLETS = ['rooms', 'laundry', 'fees', 'other'];
-const KNOWN_METHODS = ['cash', 'qris', 'card', 'bank_transfer', 'online'];
+const KNOWN_METHODS = ['cash', 'qris', 'card', 'bank_transfer', 'online', 'gift_card'];
 
 /** An outlet by the name the property gave it, or by its translated built-in code. */
 export function useOutletLabel() {

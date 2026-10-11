@@ -9,7 +9,7 @@ use LogicException;
 
 /**
  * The books as a general journal for the accounting software (FR-FIN-034): one balanced entry for each revenue day, approved correction, supplier invoice, supplier credit, supplier payment, petty cash voucher,
- * receivable and receipt in the range. Every line carries the account code and name of the property's mapping (`JournalAccounts`). The day's sales are credited to the revenue accounts of their outlets, with the
+ * receivable, receipt, gift card sold and gift card voided in the range. Every line carries the account code and name of the property's mapping (`JournalAccounts`). The day's sales are credited to the revenue accounts of their outlets, with the
  * service charge and the tax apart; the day's payments are debited to cash or bank by method; what is left is the guest ledger, which the receivables and the receipts then move on to the receivable account.
  *
  * Not in the journal: petty cash top-ups and settlements, payroll, depreciation, and anything the property books outside the system.
@@ -80,6 +80,19 @@ final readonly class JournalExport
 
         foreach ($this->sources->receipts($property, $from, $to, $limit) as $r) {
             $entries[] = $this->entry($r['date'], 'RCT-'.$r['number'], ($r['amount'] < 0 ? 'Reversal of receipt from ' : 'Receipt from ').$r['customer'], '', [[$method($r['method']), $r['amount']], [$acc('accounts_receivable'), -$r['amount']]]);
+        }
+
+        foreach ($this->sources->giftCardIssues($property, $from, $to, $limit) as $g) {
+            $what = $g['kind'] === 'voucher' ? 'Voucher' : 'Gift card';
+            // A voucher the hotel gives away brings in no money: it is a cost of promotion until it is spent.
+            $debit = $g['method'] === 'complimentary' ? $acc('promotion_expense') : $method($g['method']);
+            $entries[] = $this->entry($g['date'], 'GCS-'.$g['number'], $what.' sold, ending '.$g['number'], '', [[$debit, $g['amount']], [$acc('gift_card_liability'), -$g['amount']]]);
+        }
+
+        foreach ($this->sources->giftCardVoids($property, $from, $to, $limit) as $g) {
+            // What is left is paid back by the way it was bought, or written off as other revenue.
+            $credit = $g['disposition'] === 'refunded' ? ($g['method'] === 'complimentary' ? $acc('promotion_expense') : $method($g['method'])) : $acc('revenue.other', 'revenue.other');
+            $entries[] = $this->entry($g['date'], 'GCV-'.$g['number'], 'Gift card voided, ending '.$g['number'].($g['disposition'] === 'refunded' ? ', paid back' : ', written off'), '', [[$acc('gift_card_liability'), $g['amount']], [$credit, -$g['amount']]]);
         }
 
         usort($entries, static fn (array $a, array $b): int => [$a['date'], $a['journal']] <=> [$b['date'], $b['journal']]);

@@ -15,6 +15,8 @@ enum PaymentMethod: string
     case Card = 'card';
     case BankTransfer = 'bank_transfer';
     case Online = 'online';
+    /** Paid from a gift card or voucher: the reference is its code, and the folio keeps only a masked form of it. */
+    case GiftCard = 'gift_card';
 
     public function needsReference(): bool
     {

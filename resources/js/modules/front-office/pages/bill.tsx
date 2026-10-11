@@ -22,7 +22,7 @@ export default function BillPage({ bill, folio_id: folioId }: { bill: Bill; foli
     const { t } = useTranslation();
     const format = useFormatters();
     const money = (v: number) => format.money(v, bill.currency);
-    const method = (m: string) => (['cash', 'qris', 'card', 'bank_transfer', 'online'].includes(m) ? t(`fo.folio.method.${m}` as 'fo.folio.method.cash') : m);
+    const method = (m: string) => (['cash', 'qris', 'card', 'bank_transfer', 'online', 'gift_card'].includes(m) ? t(`fo.folio.method.${m}` as 'fo.folio.method.cash') : m);
 
     return (
         <>

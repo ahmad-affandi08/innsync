@@ -16,6 +16,8 @@ final class JournalAccounts
         'input_tax' => ['1-1500', 'PPN masukan'],
         'accounts_payable' => ['2-1100', 'Hutang usaha'],
         'guest_ledger' => ['2-1300', 'Guest ledger dan uang muka tamu'],
+        'gift_card_liability' => ['2-1600', 'Kewajiban gift card dan voucher'],
+        'promotion_expense' => ['5-8000', 'Beban promosi'],
         'service_charge' => ['2-1400', 'Hutang service charge'],
         'tax_payable' => ['2-1500', 'Hutang pajak daerah dan PPN keluaran'],
         'revenue.rooms' => ['4-1100', 'Pendapatan kamar'],
@@ -59,7 +61,11 @@ final class JournalAccounts
         $method = strtolower($method);
         $method = preg_match('/^[a-z0-9_-]{1,20}$/', $method) === 1 ? $method : 'other';
 
-        return ['key' => 'payment.'.$method, 'fallback' => $method === 'cash' ? 'cash' : 'bank'];
+        return ['key' => 'payment.'.$method, 'fallback' => match ($method) {
+            'cash' => 'cash',
+            'gift_card' => 'gift_card_liability',
+            default => 'bank',
+        }];
     }
 
     /**

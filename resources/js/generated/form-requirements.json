@@ -253,6 +253,13 @@
         "rate_e4",
         "reason"
     ],
+    "front-office/pages/gift-cards": [
+        "amount_minor",
+        "disposition",
+        "kind",
+        "payment_method",
+        "reason"
+    ],
     "front-office/pages/group": [
         "adults",
         "arrival",

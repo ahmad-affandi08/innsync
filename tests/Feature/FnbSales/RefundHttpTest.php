@@ -8,11 +8,13 @@ use App\Modules\Finance\Application\FnbRefundConsumer;
 use App\Modules\Finance\Application\FrontOfficeRevenueConsumer;
 use App\Modules\Finance\Application\RevenueStore;
 use App\Modules\FnbSales\Application\FnbAccess;
+use App\Modules\FrontOffice\Application\GiftCards\GiftCardService;
 use App\Modules\IdentityAccess\Application\Approval\ApprovalPolicyAdmin;
 use App\Modules\IdentityAccess\Application\Approval\ApprovalService;
 use App\Modules\IdentityAccess\Infrastructure\Persistence\Eloquent\UserRecord;
 use App\Modules\Property\Application\Rates\ChargeSchemeService;
 use App\Modules\Property\Application\Settings\PropertySettingsService;
+use App\Shared\Application\Idempotency\IdempotencyKey;
 use App\Shared\Application\Identifiers\IdentifierGenerator;
 use App\Shared\Application\Outbox\OutboxEvent;
 use App\Shared\Application\Outbox\OutboxMessage;
@@ -125,6 +127,30 @@ final class RefundHttpTest extends TestCase
     private function lock(string $bill): int
     {
         return (int) DB::table('fnb_bills')->where('id', $bill)->value('lock_version');
+    }
+
+    public function test_a_bill_paid_with_a_gift_card_gives_the_money_back_to_the_card_and_not_to_the_drawer(): void
+    {
+        $seller = UserRecord::factory()->create();
+        $this->grant($seller, self::A, [GiftCardService::ISSUE_PERMISSION, GiftCardService::VIEW_PERMISSION]);
+        app(PropertyContext::class)->activate($this->property());
+        $card = app(GiftCardService::class)->issue($this->property(), (string) $seller->getKey(), IdempotencyKey::fromString('gift-card-fnb-0000001'), 20_000_000, 'gift_card', 'complimentary', null, null, 'Opening promotion');
+        $this->actAs($this->cashier);
+        $this->postJson('/fnb/shift', ['outlet_id' => $this->id['rest'], 'opening_float_minor' => 5_000_000], $this->key())->assertCreated();
+        $bill = $this->sentBill();
+
+        $this->postJson("/fnb/bills/{$bill}/payments", ['lock_version' => 2, 'method' => 'gift_card', 'amount_minor' => 10_890_000, 'reference' => 'GC-AAAA-BBBB-CCCC'], $this->key())->assertStatus(422);
+        $this->postJson("/fnb/bills/{$bill}/payments", ['lock_version' => 2, 'method' => 'gift_card', 'amount_minor' => 10_890_000], $this->key())->assertStatus(422);
+        $this->postJson("/fnb/bills/{$bill}/payments", ['lock_version' => 2, 'method' => 'gift_card', 'amount_minor' => 10_890_000, 'reference' => strtolower($card['code'])], $this->key())->assertOk()->assertJsonPath('bill.status', 'settled');
+        self::assertSame(20_000_000 - 10_890_000, (int) DB::table('gift_cards')->value('balance_minor'));
+        self::assertSame('GC-...'.substr($card['code'], -4), DB::table('fnb_payments')->where('bill_id', $bill)->value('reference'), 'the bill keeps only a masked reference');
+
+        $this->policy();
+        $approval = $this->approved($bill);
+        $this->postJson("/fnb/bills/{$bill}/refund", ['reason' => 'Wrong table', 'lock_version' => $this->lock($bill), 'approval_id' => $approval], $this->key())->assertOk()->assertJsonPath('bill.refund.payments.0.method', 'gift_card');
+        self::assertSame(20_000_000, (int) DB::table('gift_cards')->value('balance_minor'), 'the card has its money back');
+        self::assertSame(['issue', 'redeem', 'restore'], DB::table('gift_card_entries')->orderBy('created_at')->orderBy('id')->pluck('kind')->all());
+        $this->get('/fnb/shift')->assertOk()->assertInertia(fn ($page) => $page->where('overview.shift.cash_taken_minor', 0)->where('overview.shift.expected_now_minor', 5_000_000));
     }
 
     public function test_a_paid_bill_is_given_back_with_an_approval_from_the_cashiers_shift_and_the_drawer_counts_it(): void

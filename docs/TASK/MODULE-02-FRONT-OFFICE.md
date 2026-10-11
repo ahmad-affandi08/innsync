@@ -100,3 +100,7 @@
 
 - Key jobs that follow the stay (`DoorLockJobConsumer`, tables `door_lock_settings` and `door_lock_jobs`, migration 137), the token and the two calls of the bridge program (`DoorLockBridge`, `/api/bridge/door-lock/...`), and the page `/front-office/door-locks` (`front-office.door-lock.manage`). Contract, set-up and what is deliberately not built (the makers' own interfaces): `docs/OPERATIONS/DOOR-LOCKS.md`. Evidence: `tests/Feature/FrontOffice/DoorLockHttpTest.php` and a run of `tools/door-lock-bridge-example.mjs --dry-run` against a running copy (job fetched, reported done, audited).
 
+### Gift cards and vouchers (2026-10-10)
+
+- Tables `gift_cards` and `gift_card_entries` (migration 138, which also lets the restaurant bill's `method` be `gift_card`), `GiftCardService` (sale, lookup, void, and the shared port `GiftCardRedemption` used by `FolioService::pay`/`reverse` and the restaurant's `PaymentService`/`RefundService`), the page `/front-office/gift-cards`, the cashier shift's receipts, and the journal (`gift_card_liability`, `promotion_expense`). Rules and what is not decided: `docs/OPERATIONS/GIFT-CARDS.md`. Evidence: `tests/Feature/FrontOffice/GiftCardHttpTest.php` and `tests/Feature/FnbSales/RefundHttpTest.php` (paid with a card, refunded back onto it).
+

@@ -12,6 +12,7 @@ use App\Modules\Property\Application\Settings\BusinessDateProvider;
 use App\Shared\Application\Audit\AuditEntry;
 use App\Shared\Application\Audit\AuditTrail;
 use App\Shared\Application\Errors\Refusal;
+use App\Shared\Application\GiftCards\GiftCardRedemption;
 use App\Shared\Application\Identifiers\IdentifierGenerator;
 use App\Shared\Application\Outbox\OutboxEvent;
 use App\Shared\Application\Outbox\OutboxPublisher;
@@ -31,7 +32,7 @@ use App\Shared\Domain\Tenancy\PropertyId;
  */
 final readonly class PaymentService
 {
-    public const METHODS = ['cash', 'card', 'qris', 'room'];
+    public const METHODS = ['cash', 'card', 'qris', 'room', 'gift_card'];
 
     /** Where a QRIS payment may go from each state. */
     private const QRIS_NEXT = [
@@ -58,6 +59,7 @@ final readonly class PaymentService
         private OutboxPublisher $outbox,
         private IdentifierGenerator $ids,
         private Clock $clock,
+        private GiftCardRedemption $giftCards,
     ) {}
 
     /** @return array<string, mixed> the bill as it stands */
@@ -66,7 +68,7 @@ final readonly class PaymentService
         $this->access->require($property, $actorId, FnbAccess::CASHIER_OPERATE, 'This person may not take payments.');
 
         if (! in_array($method, self::METHODS, true)) {
-            throw Refusal::invalid('Choose how it is paid: cash, card, QRIS or a room.', ['method']);
+            throw Refusal::invalid('Choose how it is paid: cash, card, QRIS, a gift card or a room.', ['method']);
         }
 
         if ($amountMinor < 1 || $amountMinor > 9_000_000_000_000) {
@@ -106,6 +108,13 @@ final readonly class PaymentService
             } elseif ($method === 'qris') {
                 $row['status'] = 'initiated';
                 $row['status_changed_at'] = null;
+            } elseif ($method === 'gift_card') {
+                if ($reference === null) {
+                    throw Refusal::invalid('Give the code of the gift card.', ['reference']);
+                }
+
+                // Taken from the card in the same transaction as the payment, once per payment; the bill keeps only a masked reference to the card.
+                $row['reference'] = $reference = $this->giftCards->redeem($property, $actor, $reference, $amountMinor, $this->currencies->currencyOf($property), 'fnb_payment', $row['id']);
             } else {
                 if ($paid > 0 || $reserved > 0 || $amountMinor !== $totals['total_minor']) {
                     throw Refusal::invalid('A bill is charged to a room in full.', ['amount_minor']);

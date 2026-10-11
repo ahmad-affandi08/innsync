@@ -36,6 +36,7 @@ use App\Modules\FrontOffice\Presentation\Http\Controllers\DoorLockController;
 use App\Modules\FrontOffice\Presentation\Http\Controllers\FeedbackController;
 use App\Modules\FrontOffice\Presentation\Http\Controllers\FolioController;
 use App\Modules\FrontOffice\Presentation\Http\Controllers\ForeignPaymentController;
+use App\Modules\FrontOffice\Presentation\Http\Controllers\GiftCardController;
 use App\Modules\FrontOffice\Presentation\Http\Controllers\GroupController;
 use App\Modules\FrontOffice\Presentation\Http\Controllers\GuestDirectoryController;
 use App\Modules\FrontOffice\Presentation\Http\Controllers\GuestNoteController;
@@ -459,6 +460,10 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
     Route::post('/companies', [CompanyController::class, 'store'])->name('front-office.companies.store');
     Route::post('/companies/{id}', [CompanyController::class, 'update'])->where('id', $id)->name('front-office.companies.update');
     Route::post('/reservations/{id}/company', [ReservationController::class, 'linkCompany'])->where('id', $id)->name('front-office.reservations.company');
+    Route::get('/gift-cards', [GiftCardController::class, 'index'])->name('front-office.gift-cards');
+    Route::post('/gift-cards', [GiftCardController::class, 'issue'])->middleware(['idempotent', 'throttle:bookings'])->name('front-office.gift-cards.issue');
+    Route::post('/gift-cards/lookup', [GiftCardController::class, 'lookup'])->middleware('throttle:gift-card-lookup')->name('front-office.gift-cards.lookup');
+    Route::post('/gift-cards/{id}/void', [GiftCardController::class, 'void'])->where('id', '[0-9a-z]{26}')->name('front-office.gift-cards.void');
     Route::get('/door-locks', [DoorLockController::class, 'index'])->name('front-office.door-locks');
     Route::put('/door-locks', [DoorLockController::class, 'save'])->middleware('throttle:access-admin')->name('front-office.door-locks.save');
     Route::post('/door-locks/token', [DoorLockController::class, 'token'])->middleware('throttle:access-admin')->name('front-office.door-locks.token');

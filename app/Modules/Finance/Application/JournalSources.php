@@ -35,4 +35,10 @@ interface JournalSources
 
     /** @return list<array{date: string, number: string, customer: string, method: string, amount: int}> a reversal has a negative amount */
     public function receipts(PropertyId $property, string $from, string $to, int $limit): array;
+
+    /** @return list<array{date: string, number: string, amount: int, method: string, kind: string}> gift cards and vouchers sold; `number` is the last four characters of the code */
+    public function giftCardIssues(PropertyId $property, string $from, string $to, int $limit): array;
+
+    /** @return list<array{date: string, number: string, amount: int, method: string, disposition: string}> what was left on voided cards, paid back (by the method the card was bought with) or written off */
+    public function giftCardVoids(PropertyId $property, string $from, string $to, int $limit): array;
 }

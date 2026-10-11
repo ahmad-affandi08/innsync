@@ -2568,6 +2568,39 @@
             "reason"
         ]
     },
+    "POST /front-office/gift-cards": {
+        "required": [
+            "amount_minor",
+            "kind",
+            "payment_method"
+        ],
+        "declared": [
+            "amount_minor",
+            "expires_on",
+            "holder_note",
+            "kind",
+            "payment_method",
+            "reference"
+        ]
+    },
+    "POST /front-office/gift-cards/lookup": {
+        "required": [
+            "code"
+        ],
+        "declared": [
+            "code"
+        ]
+    },
+    "POST /front-office/gift-cards/{id}/void": {
+        "required": [
+            "disposition",
+            "reason"
+        ],
+        "declared": [
+            "disposition",
+            "reason"
+        ]
+    },
     "POST /front-office/groups": {
         "required": [
             "arrival",

@@ -73,6 +73,8 @@ use App\Modules\FrontOffice\Application\Feedback\FeedbackRepository;
 use App\Modules\FrontOffice\Application\Folios\FolioPenaltyPoster;
 use App\Modules\FrontOffice\Application\Folios\FolioRepository;
 use App\Modules\FrontOffice\Application\ForeignPayments\ForeignPaymentRepository;
+use App\Modules\FrontOffice\Application\GiftCards\GiftCardService;
+use App\Modules\FrontOffice\Application\GiftCards\GiftCardStore;
 use App\Modules\FrontOffice\Application\Groups\GroupRepository;
 use App\Modules\FrontOffice\Application\GuestDesk\GuestStayDesk;
 use App\Modules\FrontOffice\Application\GuestDesk\GuestStayDeskService;
@@ -116,6 +118,7 @@ use App\Modules\FrontOffice\Infrastructure\Feedback\DatabaseComplaintWorkload;
 use App\Modules\FrontOffice\Infrastructure\Feedback\DatabaseFeedbackRepository;
 use App\Modules\FrontOffice\Infrastructure\Folios\DatabaseFolioRepository;
 use App\Modules\FrontOffice\Infrastructure\ForeignPayments\DatabaseForeignPaymentRepository;
+use App\Modules\FrontOffice\Infrastructure\GiftCards\DatabaseGiftCardStore;
 use App\Modules\FrontOffice\Infrastructure\Groups\DatabaseGroupRepository;
 use App\Modules\FrontOffice\Infrastructure\GuestDesk\DatabaseOnlineBookingCounts;
 use App\Modules\FrontOffice\Infrastructure\GuestDirectory\DatabaseGuestDirectoryReader;
@@ -352,6 +355,7 @@ use App\Shared\Application\Documents\DocumentNumbers;
 use App\Shared\Application\Files\ContentInspector;
 use App\Shared\Application\Files\PrivateFileStorage;
 use App\Shared\Application\Files\StoredFileRepository;
+use App\Shared\Application\GiftCards\GiftCardRedemption;
 use App\Shared\Application\Idempotency\IdempotencyContext;
 use App\Shared\Application\Idempotency\IdempotencyStore;
 use App\Shared\Application\Idempotency\IdempotentExecutor;
@@ -599,6 +603,8 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(GuestNoteStore::class, DatabaseGuestNoteStore::class);
         $this->app->bind(GuestBlockList::class, DatabaseGuestBlockList::class);
         $this->app->bind(DoorLockStore::class, DatabaseDoorLockStore::class);
+        $this->app->bind(GiftCardStore::class, DatabaseGiftCardStore::class);
+        $this->app->bind(GiftCardRedemption::class, GiftCardService::class);
         $this->app->bind(ReminderStore::class, DatabaseReminderStore::class);
         $this->app->bind(AutoReminderSource::class, DatabaseAutoReminderSource::class);
         $this->app->bind(RoomPlanStore::class, DatabaseRoomPlanStore::class);
@@ -777,6 +783,8 @@ class AppServiceProvider extends ServiceProvider
 
         RateLimiter::for('webhooks', static fn (Request $request): Limit => Limit::perMinute(120)
             ->by((string) $request->route('provider').'|'.$request->ip()));
+
+        RateLimiter::for('gift-card-lookup', static fn (Request $request): Limit => Limit::perMinute(20)->by((string) $request->user()?->getAuthIdentifier().'|'.$request->ip()));
 
         RateLimiter::for('door-lock-bridge', static fn (Request $request): Limit => Limit::perMinute(120)->by($request->ip()));
 

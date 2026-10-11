@@ -9,7 +9,7 @@ export type Shift = {
     expected_cash_minor: number | null; counted_cash_minor: number | null; variance_minor: number | null; variance_reason: string | null; lock_version: number;
 };
 
-const METHODS = ['cash', 'qris', 'card', 'bank_transfer', 'online'];
+const METHODS = ['cash', 'qris', 'card', 'bank_transfer', 'online', 'gift_card'];
 
 /** What went through a shift and how the cash adds up. Shown on the cashier's own page and on the review page. */
 export function ShiftSummary({ currency, shift: s }: { currency: string; shift: Shift }) {

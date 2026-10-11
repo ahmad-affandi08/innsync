@@ -13,6 +13,7 @@ use App\Shared\Application\Audit\AuditEntry;
 use App\Shared\Application\Audit\AuditTrail;
 use App\Shared\Application\Documents\DocumentNumbers;
 use App\Shared\Application\Errors\Refusal;
+use App\Shared\Application\GiftCards\GiftCardRedemption;
 use App\Shared\Application\Idempotency\IdempotencyKey;
 use App\Shared\Application\Identifiers\IdentifierGenerator;
 use App\Shared\Application\Outbox\OutboxEvent;
@@ -48,6 +49,7 @@ final readonly class RefundService
         private OutboxPublisher $outbox,
         private IdentifierGenerator $ids,
         private Clock $clock,
+        private GiftCardRedemption $giftCards,
     ) {}
 
     /** Opens the approval a refund needs. @return array<string, mixed> */
@@ -96,6 +98,11 @@ final readonly class RefundService
             $by = [];
 
             foreach ($paid as $p) {
+                // What a gift card paid goes back onto the card, not out of the drawer.
+                if ($p['method'] === 'gift_card') {
+                    $this->giftCards->restore($property, $actor, 'fnb_payment', $p['id']);
+                }
+
                 $rows[] = ['id' => $this->ids->next(), 'payment_id' => $p['id'], 'method' => $p['method'], 'amount_minor' => (int) $p['amount_minor'], 'reference' => $p['reference']];
                 $by[$p['method']] = ($by[$p['method']] ?? 0) + (int) $p['amount_minor'];
             }
