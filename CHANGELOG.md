@@ -6,6 +6,7 @@ Release notes for every release (NFR-14). Newest first. Each entry names the tas
 
 ### Added
 
+- Bank statement import: lines above the table (the account number, the period) and totals under it with no date are skipped, so a statement as the bank's internet banking gives it can be loaded without trimming it by hand.
 - Notices on devices (web push) now also tell the front desk about a request from a guest (the room, the kind and whether it is urgent, never the words), and a person can turn each kind of notice (approvals, work orders, guest requests) off for themselves under Account. Migration 151.
 - Loyalty tiers and expiry: a guest's tier (by the points earned over all stays; baseline silver, gold, platinum with a 5, 10 and 20 percent bonus on later stays, changed with `LOYALTY_TIERS`) shows beside the name, and the points of an account with no stay and no voucher for 24 months (`LOYALTY_EXPIRE_MONTHS`) expire by a nightly job, as an entry in the history. Spa and activities can be booked for a guest with a confirmed reservation before the guest arrives; the charge is made once the guest is in the house. Migration 150.
 - Bank statement lines that belong to no record (a bank fee, the tax on interest, interest received) can be set aside with a category, and the accounting journal then books them against the bank (`BNK-…` entries; new baseline accounts 5-7000, 5-7100, 4-3000, which the hotel can change). A line reopened leaves the journal. Migration 149.

@@ -61,4 +61,25 @@ final class BankStatementParserTest extends TestCase
         self::assertSame([[3, 'bad_date'], [4, 'bad_amount']], array_map(fn (array $e): array => [$e['line'], $e['code']], $bad['errors']));
         self::assertSame([], $bad['lines'], 'one bad line refuses the whole file');
     }
+
+    public function test_lines_above_the_table_and_totals_under_it_are_skipped(): void
+    {
+        $csv = "Rekening: 1234567890\nPeriode: 01/10/2026 - 31/10/2026\n\nTanggal;Keterangan;Debit;Kredit;Saldo\n05/10/2026;TRF MASUK;;1.500.000,00;1.500.000,00\n06/10/2026;BIAYA ADM;15.000,00;;1.485.000,00\n;Total;15.000,00;1.500.000,00;\n";
+        $read = BankStatementParser::parse($csv);
+
+        self::assertSame([], $read['errors']);
+        self::assertSame(['2026-10-05', 'in', 150_000_000], [$read['lines'][0]['date'], $read['lines'][0]['direction'], $read['lines'][0]['amount_minor']]);
+        self::assertSame(['2026-10-06', 'out', 1_500_000], [$read['lines'][1]['date'], $read['lines'][1]['direction'], $read['lines'][1]['amount_minor']]);
+        self::assertCount(2, $read['lines']);
+        self::assertSame(5, $read['lines'][0]['line'], 'a line is named by its place in the file');
+    }
+
+    public function test_a_file_without_any_header_is_still_refused_by_its_first_line(): void
+    {
+        $read = BankStatementParser::parse("Hello\nWorld\n");
+
+        self::assertSame([], $read['lines']);
+        self::assertSame('missing_column', $read['errors'][0]['code']);
+        self::assertSame(1, $read['errors'][0]['line']);
+    }
 }

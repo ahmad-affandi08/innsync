@@ -8,7 +8,7 @@ use App\Shared\Domain\Time\DateMath;
 
 /**
  * Reads the CSV a bank gives (internet banking download) into lines, with no access to anything. Banks name their columns differently, so a column is known by any of its usual names (English or Indonesian), the
- * separator may be a comma, a semicolon or a tab, a date may be year-month-day or day/month/year, and an amount may be written 1,234,567.89 or 1.234.567,89, with or without CR/DB after it. A line that cannot be
+ * separator may be a comma, a semicolon or a tab, a date may be year-month-day or day/month/year, and an amount may be written 1,234,567.89 or 1.234.567,89, with or without CR/DB after it. Lines above the table (the account, the period) and lines under it with no date (totals) are skipped. A line that cannot be
  * read is named with its line number and nothing is imported. Nothing is guessed about which column is which beyond those names.
  */
 final class BankStatementParser
@@ -32,13 +32,31 @@ final class BankStatementParser
         $rows = preg_split('/\r\n|\n|\r/', $csv) ?: [];
         $headerAt = null;
 
+        $firstText = null;
+        $seen = 0;
+
+        // Banks put the name of the account and the period above the table: the header is the first of the first twenty lines that names a date and a description; failing that, the first line with text.
         foreach ($rows as $i => $text) {
-            if (trim($text) !== '') {
+            if (trim($text) === '') {
+                continue;
+            }
+
+            $firstText ??= $i;
+
+            if (++$seen > 20) {
+                break;
+            }
+
+            $names = array_map(static fn (?string $h): string => strtolower(trim((string) $h)), str_getcsv($text, self::delimiter($text), '"', ''));
+
+            if (array_intersect($names, self::NAMES['date']) !== [] && array_intersect($names, self::NAMES['description']) !== []) {
                 $headerAt = $i;
 
                 break;
             }
         }
+
+        $headerAt ??= $firstText;
 
         if ($headerAt === null) {
             return ['lines' => [], 'errors' => [['line' => 0, 'code' => 'empty_file', 'message' => 'The file is empty.']]];
@@ -81,6 +99,11 @@ final class BankStatementParser
 
             $cells = str_getcsv($text, $delimiter, '"', '');
             $cell = static fn (string $field): string => isset($column[$field]) ? trim((string) ($cells[$column[$field]] ?? '')) : '';
+            // A line with no date is a total or a note under the table, not a movement.
+            if ($cell('date') === '') {
+                continue;
+            }
+
             $date = self::date($cell('date'));
 
             if ($date === null) {
