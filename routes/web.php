@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Modules\Finance\Presentation\Http\Controllers\BankStatementController;
 use App\Modules\Finance\Presentation\Http\Controllers\BudgetController;
 use App\Modules\Finance\Presentation\Http\Controllers\CashReconciliationController;
 use App\Modules\Finance\Presentation\Http\Controllers\CorrectionController;
@@ -915,6 +916,11 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
     Route::get('/stock-value', [ManagementReportController::class, 'stockValue'])->name('finance.stock-value');
     Route::get('/food-cost', [ManagementReportController::class, 'foodCost'])->name('finance.food-cost');
     Route::post('/food-cost/target', [ManagementReportController::class, 'setFoodCostTarget'])->name('finance.food-cost.target');
+    Route::get('/bank', [BankStatementController::class, 'index'])->name('finance.bank');
+    Route::post('/bank/import', [BankStatementController::class, 'import'])->middleware('throttle:access-admin')->name('finance.bank.import');
+    Route::post('/bank/lines/{id}/match', [BankStatementController::class, 'match'])->where('id', '[0-9a-z]{26}')->name('finance.bank.match');
+    Route::post('/bank/lines/{id}/ignore', [BankStatementController::class, 'ignore'])->where('id', '[0-9a-z]{26}')->name('finance.bank.ignore');
+    Route::post('/bank/lines/{id}/reopen', [BankStatementController::class, 'reopen'])->where('id', '[0-9a-z]{26}')->name('finance.bank.reopen');
     Route::get('/assets', [FixedAssetController::class, 'index'])->name('finance.assets');
     Route::post('/assets', [FixedAssetController::class, 'store'])->name('finance.assets.store');
     Route::post('/assets/depreciation', [FixedAssetController::class, 'run'])->name('finance.assets.depreciation');

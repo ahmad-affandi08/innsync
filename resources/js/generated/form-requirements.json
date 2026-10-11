@@ -18,6 +18,12 @@
         "reason",
         "salvage_minor"
     ],
+    "finance/pages/bank": [
+        "account_label",
+        "file",
+        "note",
+        "reason"
+    ],
     "finance/pages/budget": [
         "reason"
     ],

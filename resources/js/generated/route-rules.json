@@ -69,6 +69,12 @@
             "user"
         ]
     },
+    "GET /finance/bank": {
+        "required": [],
+        "declared": [
+            "status"
+        ]
+    },
     "GET /finance/budget": {
         "required": [],
         "declared": [
@@ -1153,6 +1159,44 @@
             "lock_version",
             "method",
             "proceeds_minor",
+            "reason"
+        ]
+    },
+    "POST /finance/bank/import": {
+        "required": [
+            "account_label",
+            "dry_run",
+            "file"
+        ],
+        "declared": [
+            "account_label",
+            "dry_run",
+            "file"
+        ]
+    },
+    "POST /finance/bank/lines/{id}/ignore": {
+        "required": [
+            "note"
+        ],
+        "declared": [
+            "note"
+        ]
+    },
+    "POST /finance/bank/lines/{id}/match": {
+        "required": [
+            "target_id",
+            "type"
+        ],
+        "declared": [
+            "target_id",
+            "type"
+        ]
+    },
+    "POST /finance/bank/lines/{id}/reopen": {
+        "required": [
+            "reason"
+        ],
+        "declared": [
             "reason"
         ]
     },

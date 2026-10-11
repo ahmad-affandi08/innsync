@@ -75,6 +75,12 @@ final readonly class FinanceAccess
     /** Records fixed assets, runs the monthly depreciation and records a disposal. */
     public const ASSET_MANAGE = 'finance.asset.manage';
 
+    /** Sees the bank statement lines and what they were matched to. */
+    public const BANK_VIEW = 'finance.bank.view';
+
+    /** Brings in bank statements and matches or sets aside their lines. */
+    public const BANK_MANAGE = 'finance.bank.manage';
+
     private const VIEWERS = [self::PAYABLE_VIEW, self::PAYABLE_MANAGE, self::PAYMENT_RECORD, self::ACCOUNT_MANAGE];
 
     public function __construct(private PermissionChecker $permissions, private PropertyContext $property) {}

@@ -207,4 +207,4 @@
 ### Fixed assets and depreciation (2026-10-10)
 
 - `FixedAssetService`, `Depreciation` (pure, unit-tested), tables `fin_fixed_assets` and `fin_depreciation_entries` (migration 141), page `/finance/assets`, journal entries `DEP-` and `DSP-`. Rules and what is not decided: `docs/OPERATIONS/FIXED-ASSETS.md`. Evidence: `tests/Unit/Modules/Finance/DepreciationTest.php` and `tests/Feature/Finance/FixedAssetHttpTest.php`.
-
+- `BankStatementService`, `BankStatementParser` (pure, unit-tested), tables `fin_bank_imports` and `fin_bank_lines` (migration 142), page `/finance/bank`. Rules and what is not decided: `docs/OPERATIONS/BANK-RECONCILIATION.md`. Evidence: `tests/Unit/Modules/Finance/BankStatementParserTest.php` and `tests/Feature/Finance/BankStatementHttpTest.php`.

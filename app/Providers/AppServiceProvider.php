@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Modules\Finance\Application\BankStatementStore;
 use App\Modules\Finance\Application\BudgetStore;
 use App\Modules\Finance\Application\CorrectionStore;
 use App\Modules\Finance\Application\ExceptionStore;
@@ -26,6 +27,7 @@ use App\Modules\Finance\Application\SettlementStore;
 use App\Modules\Finance\Application\StockReportQueries;
 use App\Modules\Finance\Application\TaxQueries;
 use App\Modules\Finance\Application\TaxStore;
+use App\Modules\Finance\Infrastructure\DatabaseBankStatementStore;
 use App\Modules\Finance\Infrastructure\DatabaseBudgetStore;
 use App\Modules\Finance\Infrastructure\DatabaseCorrectionStore;
 use App\Modules\Finance\Infrastructure\DatabaseExceptionStore;
@@ -700,6 +702,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(FinanceExportQueries::class, DatabaseFinanceExportQueries::class);
         $this->app->bind(JournalSources::class, DatabaseJournalSources::class);
         $this->app->bind(FixedAssetStore::class, DatabaseFixedAssetStore::class);
+        $this->app->bind(BankStatementStore::class, DatabaseBankStatementStore::class);
         $this->app->bind(JournalAccountStore::class, DatabaseJournalAccountStore::class);
         $this->app->bind(RecurringExpenseStore::class, DatabaseRecurringExpenseStore::class);
         $this->app->bind(BudgetStore::class, DatabaseBudgetStore::class);
