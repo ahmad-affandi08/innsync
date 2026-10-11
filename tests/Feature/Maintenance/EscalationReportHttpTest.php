@@ -152,7 +152,7 @@ final class EscalationReportHttpTest extends TestCase
             foreach ([1, 2] as $round) {
                 sleep(1);
                 $this->artisan('outbox:drain')->assertSuccessful();
-                $this->artisan('queue:work', ['connection' => (string) config('outbox.queue_connection'), '--queue' => (string) config('outbox.queue_name'), '--stop-when-empty' => true, '--sleep' => 0])->run();
+                $this->artisan('queue:work', ['connection' => (string) config('outbox.queue_connection'), '--queue' => (string) config('outbox.queue_name'), '--stop-when-empty' => true, '--sleep' => 0, '--memory' => 4096])->run();
             }
         }];
     }

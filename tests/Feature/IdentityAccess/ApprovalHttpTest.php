@@ -219,7 +219,7 @@ final class ApprovalHttpTest extends TestCase
         });
         $work = function (): void {
             $this->artisan('outbox:drain')->assertSuccessful();
-            $this->artisan('queue:work', ['connection' => (string) config('outbox.queue_connection'), '--queue' => (string) config('outbox.queue_name'), '--stop-when-empty' => true, '--sleep' => 0])->run();
+            $this->artisan('queue:work', ['connection' => (string) config('outbox.queue_connection'), '--queue' => (string) config('outbox.queue_name'), '--stop-when-empty' => true, '--sleep' => 0, '--memory' => 4096])->run();
         };
 
         $work();
