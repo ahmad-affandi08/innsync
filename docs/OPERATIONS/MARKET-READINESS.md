@@ -1,4 +1,4 @@
-# Market readiness (state on 2026-10-07)
+# Market readiness (state on 2026-10-07, feature list updated 2026-10-11)
 
 An honest list of what stands between the code and a first paying hotel. It separates what the repository proves, what only a person can decide, and what only a real hotel can prove. Nothing here is a promise; `docs/OPERATIONS/NFR-EVIDENCE.md` holds the measurements.
 
@@ -31,7 +31,7 @@ The software is feature-complete for the scope of the PRD except two tasks that 
 
 1. **Staff acceptance test** on real phones: `STAFF-ACCEPTANCE-TEST.md` (10 scenarios) and `CEKLIST-UJI-FITUR.xlsx` (91 items). Nobody has run them.
 2. **iPhone Safari**: only a phone-sized Chromium has been tested.
-3. **MariaDB on the real plan**: all 131 migrations and the whole automated suite (1,441 tests) pass on MariaDB 10.11.10 (2026-10-08), after the open-bills query and a few MySQL-only test assumptions were fixed. Still to rehearse: a full install on the actual hosting plan, whose MariaDB version may differ. Set `DB_COLLATION=utf8mb4_unicode_ci` before the first migrate (see the deployment runbook).
+3. **MariaDB on the real plan**: all 131 migrations and the whole automated suite (1,441 tests) pass on MariaDB 10.11.10 (2026-10-08), after the open-bills query and a few MySQL-only test assumptions were fixed. Migrations 132 to 146 were added after that run and have **not** been run on MariaDB (some drop and add CHECK constraints and widen a column, which the two databases word differently): run the suite on MariaDB again before the pilot. Still to rehearse: a full install on the actual hosting plan, whose MariaDB version may differ. Set `DB_COLLATION=utf8mb4_unicode_ci` before the first migrate (see the deployment runbook).
 4. **Bad signal in the field**: the offline queue is tested in code, not in a basement kitchen.
 5. **Real load on real data** after a month of use (the 50-user run was against an almost empty database).
 6. **Email and WhatsApp with live accounts**: each provider's request shape is tested against faked answers; no live account was used.
@@ -48,17 +48,20 @@ Not code, and not decided here. Each needs the owner, and legal items need a law
 - Who holds the hotel's `APP_KEY` and backups, and what happens to the data when a hotel leaves (export exists; the promise does not).
 - Trademark check for the name and logo.
 
-## Features a hotel may ask for that are not built (checked 2026-10-10)
+## Features a hotel may ask for that are not built (checked 2026-10-11)
 
-Added on 2026-10-10 after a pass over the PRD: installable app (home screen, offline page), bookings from an online travel agent's CSV file, accounting journal export with an account-code mapping, sealed staff bank accounts with a payroll transfer file, a do-not-rent flag, e-mail notices for maintenance, key jobs for door locks, and the register and the housekeeper's rooms opening from nothing with no network. What remains:
+Added since the pass over the PRD of 2026-10-10: installable app (home screen, offline page), bookings from an online travel agent's CSV file, accounting journal export with an account-code mapping, sealed staff bank accounts with a payroll transfer file, payroll for people who joined or left in the month, a do-not-rent flag, e-mail notices for maintenance, key jobs for door locks (generic bridge), the register and the housekeeper's rooms opening from nothing with no network, gift cards and vouchers, a waiting list, travel-agent and channel commissions, fixed assets with depreciation, bank statement matching, loyalty points, spa and activities, SMS, and notices on phones (web push). Each has its own page under `docs/OPERATIONS/` and **none of them has been tried by a real hotel or on real devices**. What remains:
 
 | Missing | Why it is not built |
 | --- | --- |
-| Two-way channel manager (rates and availability pushed to Booking.com, Agoda, Traveloka; bookings pulled) | Needs a provider's contract and certification; the file import covers one-way bookings. Overbooking control stays with the allowance in `BR-007` |
-| Door lock makers' own interfaces (VingCard/Visionline, Onity, SALTO, dormakaba, Häfele) | The key jobs, the token and the bridge contract are built (`docs/OPERATIONS/DOOR-LOCKS.md`, `tools/door-lock-bridge-example.mjs`); the call into a maker's software is not, because it needs that maker's interface documentation and a lock to try it on |
+| Two-way channel manager (rates and availability pushed to Booking.com, Agoda, Traveloka; bookings pulled) | Owner decision 2026-10-11: later. Needs a provider's contract and certification; the file import covers one-way bookings. Overbooking control stays with the allowance in `BR-007` |
+| Day-use rooms (a room rented for a few hours in the daytime, no overnight) | Not requested yet; it changes the booking, rate and night audit model (a stay shorter than a night), so it needs a policy decision first: hours, price rule, and when the room is released to housekeeping |
+| Door lock makers' own interfaces (VingCard/Visionline, Onity, SALTO, dormakaba, Häfele; for Indonesia the common ones are VingCard, Onity and Häfele) | The key jobs, the token and the bridge contract are built (`docs/OPERATIONS/DOOR-LOCKS.md`, `tools/door-lock-bridge-example.mjs`); the call into a maker's software is not, because it needs that maker's interface documentation and a lock to try it on. The hotel names the make and the small program beside its lock system is written against it |
 | Import into one named accounting package (Accurate, Zahir, Jurnal) | Each has its own format and a licence for its import tool. The general journal CSV with account codes is the common input; a package-specific column order is a small change once the hotel names the package |
-| Bank-specific bulk transfer layout (BCA KlikBisnis, Mandiri Cash Management) | The transfer file is generic CSV; each bank's upload tool maps the columns. A fixed layout is added when the hotel's bank is known |
-| Gift cards and vouchers, waiting list, loyalty points, spa and activities, travel-agent commissions, fixed-asset depreciation, bank statement matching, SMS and web push | Not in the PRD's required set (`Wajib`) or waiting for a decision on policy; none is hidden behind a flag |
+| Bank-specific layouts: the bulk transfer file (BCA KlikBisnis, Mandiri Cash Management) and the statement to import | Both are generic CSV; each bank's tool maps the columns. A fixed layout (or MT940) is added when the hotel's bank is known |
+| Loyalty tiers and expiry of points, points on food and spa, spa therapists and rooms as resources, spa for guests who are not staying, bank fees booked as journal entries from the statement | The first versions are deliberately small (see the "Not decided here" part of each page); each needs a policy from the hotel |
+| Words inside a web push, more kinds of push notice, SMS or WhatsApp notices to staff | Push carries no words on purpose (privacy, no library); only approvals and work orders notify so far; staff have no phone number on the account yet |
+| Live accounts of SMS providers (Zenziva, Twilio, Vonage) and real push services | Request shapes follow the providers' public documentation and are tested against faked answers; use **Send test** with a live account before relying on them |
 
 ## Property limit (licensing)
 
