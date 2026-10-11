@@ -33,7 +33,11 @@ The owner decided that email and WhatsApp are chosen and filled in on screen (**
 
 Providers: email by SMTP, Resend, Brevo, Mailgun, Postmark, SendGrid; WhatsApp by the official Meta WhatsApp Cloud API and Twilio, and by the non-official gateways Fonnte, Wablas and an own HTTP gateway. All use Laravel's own HTTP client and mailer; no package was added. The non-official gateways link an ordinary phone number, which breaks WhatsApp's terms and can get the number blocked; the screen says so. Gateway addresses a person types must be https and resolve to a public address. A failed test shows only the provider's HTTP status, never its answer.
 
-Not done: the calls are made directly, not yet through `ExternalCallExecutor` with the circuit breaker, and nothing in the system sends WhatsApp on its own yet. Email is used by password reset and the scheduled-report notice. What to send to guests by WhatsApp needs a decision on consent (PDP law) first.
+SMS is a third channel on the same screen (**Property settings → Email, WhatsApp and SMS**): Zenziva, Twilio, Vonage and an own HTTP gateway. The request shapes follow each provider's public documentation and are tested against faked answers only; no live account was used, so check each with the **Send test** button before relying on it. A phone number is read as Indonesian when it starts with 0 or 8 (`PhoneNumber`).
+
+The reminder before arrival and the thank-you after the stay (online booking) can go by SMS or WhatsApp as well as email: set `GUEST_MESSAGE_CHANNELS` (default `email`; for example `email,sms`). They go to the phone number the guest gave when booking, only for bookings with a consent record, once per booking and kind, and count as sent when one channel accepted them.
+
+Not done: the calls are made directly, not yet through `ExternalCallExecutor` with the circuit breaker, and nothing else in the system sends WhatsApp or SMS on its own yet (staff notices go by email). Email is used by password reset and the scheduled-report notice. What to send to guests by WhatsApp needs a decision on consent (PDP law) first.
 
 ## Contract versioning and compatibility (`NFR-28`) — baseline policy
 

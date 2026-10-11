@@ -60,7 +60,14 @@ final class DatabaseOnlineBookingStore implements OnlineBookingStore
 
     public function messageCandidates(PropertyId $property, string $kind, string $day): array
     {
-        $query = DB::table('reservations as r')->where('r.property_id', $property->toString())->whereNotNull('r.guest_email')->where('r.guest_email', '<>', '')
+        $byPhone = array_intersect((array) config('guest.message_channels', ['email']), ['sms', 'whatsapp']) !== [];
+        $query = DB::table('reservations as r')->where('r.property_id', $property->toString())->where(static function ($q) use ($byPhone): void {
+            $q->where(static fn ($e) => $e->whereNotNull('r.guest_email')->where('r.guest_email', '<>', ''));
+
+            if ($byPhone) {
+                $q->orWhere(static fn ($t) => $t->whereNotNull('r.guest_phone')->where('r.guest_phone', '<>', ''));
+            }
+        })
             ->whereNotExists(static fn ($q) => $q->from('guest_message_log as g')->whereColumn('g.reservation_id', 'r.id')->where('g.kind', $kind));
 
         if ($kind === 'pre_arrival') {
@@ -69,8 +76,8 @@ final class DatabaseOnlineBookingStore implements OnlineBookingStore
             $query->where('r.status', 'completed')->where('r.departure_date', '<=', $day)->where('r.departure_date', '>=', DateMath::addDays($day, -1));
         }
 
-        return $query->orderBy('r.arrival_date')->limit(200)->get(['r.id', 'r.number', 'r.guest_name', 'r.guest_email', 'r.arrival_date', 'r.departure_date'])
-            ->map(static fn (object $r): array => ['id' => (string) $r->id, 'number' => (string) $r->number, 'guest_name' => (string) $r->guest_name, 'guest_email' => (string) $r->guest_email, 'arrival' => (string) $r->arrival_date, 'departure' => (string) $r->departure_date])->all();
+        return $query->orderBy('r.arrival_date')->limit(200)->get(['r.id', 'r.number', 'r.guest_name', 'r.guest_email', 'r.guest_phone', 'r.arrival_date', 'r.departure_date'])
+            ->map(static fn (object $r): array => ['id' => (string) $r->id, 'number' => (string) $r->number, 'guest_name' => (string) $r->guest_name, 'guest_email' => (string) $r->guest_email, 'guest_phone' => (string) $r->guest_phone, 'arrival' => (string) $r->arrival_date, 'departure' => (string) $r->departure_date])->all();
     }
 
     public function logSent(PropertyId $property, string $reservationId, string $kind): bool

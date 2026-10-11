@@ -23,7 +23,11 @@ final class HttpMessageTransport implements MessageTransport
     public function deliver(ChannelConfig $config, string $to, string $subject, string $message): ?string
     {
         try {
-            return $config->channel === 'email' ? $this->email($config, $to, $subject, $message) : $this->whatsapp($config, $to, $message);
+            return match ($config->channel) {
+                'email' => $this->email($config, $to, $subject, $message),
+                'sms' => $this->sms($config, $to, $message),
+                default => $this->whatsapp($config, $to, $message),
+            };
         } catch (Throwable $e) {
             report($e);
 
@@ -122,6 +126,52 @@ final class HttpMessageTransport implements MessageTransport
         }
 
         return $this->verdict($response);
+    }
+
+    private function sms(ChannelConfig $config, string $phone, string $text): ?string
+    {
+        $v = $config->values;
+        $to = PhoneNumber::international($phone);
+
+        if ($to === null) {
+            return 'bad_number';
+        }
+
+        $text = mb_substr($text, 0, 480);
+
+        switch ($config->provider) {
+            case 'zenziva':
+                $response = $this->http()->asForm()->post('https://console.zenziva.net/reguler/api/sendsms/', ['userkey' => $v['userkey'], 'passkey' => $v['passkey'], 'to' => $to, 'message' => $text]);
+
+                return $this->verdict($response) ?? ((string) $response->json('status') === '1' ? null : 'rejected');
+            case 'twilio_sms':
+                $response = $this->http()->withBasicAuth($v['account_sid'], $v['auth_token'])->asForm()->post('https://api.twilio.com/2010-04-01/Accounts/'.rawurlencode($v['account_sid']).'/Messages.json', ['From' => $this->sender($v['sms_from']), 'To' => "+{$to}", 'Body' => $text]);
+                break;
+            case 'vonage':
+                $response = $this->http()->asForm()->post('https://rest.nexmo.com/sms/json', ['api_key' => $v['api_key'], 'api_secret' => $v['api_secret'], 'to' => $to, 'from' => $v['sender_id'], 'text' => $text]);
+
+                return $this->verdict($response) ?? ((string) $response->json('messages.0.status') === '0' ? null : 'rejected');
+            case 'sms_webhook':
+                if (! PublicUrl::acceptable($v['url'])) {
+                    return 'bad_address';
+                }
+
+                $request = $this->http();
+                $response = ($v['token'] ?? '') !== '' ? $request->withToken($v['token'])->post($v['url'], ['phone' => $to, 'message' => $text]) : $request->post($v['url'], ['phone' => $to, 'message' => $text]);
+                break;
+            default:
+                return 'unknown_provider';
+        }
+
+        return $this->verdict($response);
+    }
+
+    /** A sender made of digits is a number (and gets its plus sign); a sender with letters is a sender name and is kept as typed. */
+    private function sender(string $from): string
+    {
+        $digits = preg_replace('/\D/', '', $from) ?? '';
+
+        return $digits !== '' && preg_match('/^[+\d\s().-]+$/', $from) === 1 ? '+'.$digits : $from;
     }
 
     private function http(): PendingRequest

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Shared\Application\Messaging;
 
 /**
- * The providers an installation can send email and WhatsApp through, and the fields each one needs. The screen and the check of what was typed both read this
+ * The providers an installation can send email, WhatsApp and SMS through, and the fields each one needs. The screen and the check of what was typed both read this
  * one list. A provider marked `official` is run by the messaging platform itself (Meta, Twilio); the others are gateways that are not WhatsApp's own service and can lose the number.
  */
 final class MessagingCatalog
@@ -13,6 +13,8 @@ final class MessagingCatalog
     public const EMAIL = 'email';
 
     public const WHATSAPP = 'whatsapp';
+
+    public const SMS = 'sms';
 
     /** @return array<string, array<string, array{official: bool, fields: list<array{name: string, kind: string, secret: bool, required: bool, options?: list<string>, default?: string}>}>> */
     public static function all(): array
@@ -61,6 +63,26 @@ final class MessagingCatalog
                     ['name' => 'token', 'kind' => 'text', 'secret' => true, 'required' => true],
                 ]],
                 'webhook' => ['official' => false, 'fields' => [
+                    ['name' => 'url', 'kind' => 'url', 'secret' => false, 'required' => true],
+                    ['name' => 'token', 'kind' => 'text', 'secret' => true, 'required' => false],
+                ]],
+            ],
+            self::SMS => [
+                'zenziva' => ['official' => true, 'fields' => [
+                    ['name' => 'userkey', 'kind' => 'text', 'secret' => false, 'required' => true],
+                    ['name' => 'passkey', 'kind' => 'text', 'secret' => true, 'required' => true],
+                ]],
+                'twilio_sms' => ['official' => true, 'fields' => [
+                    ['name' => 'account_sid', 'kind' => 'text', 'secret' => false, 'required' => true],
+                    ['name' => 'auth_token', 'kind' => 'text', 'secret' => true, 'required' => true],
+                    ['name' => 'sms_from', 'kind' => 'text', 'secret' => false, 'required' => true],
+                ]],
+                'vonage' => ['official' => true, 'fields' => [
+                    ['name' => 'api_key', 'kind' => 'text', 'secret' => false, 'required' => true],
+                    ['name' => 'api_secret', 'kind' => 'text', 'secret' => true, 'required' => true],
+                    ['name' => 'sender_id', 'kind' => 'text', 'secret' => false, 'required' => true],
+                ]],
+                'sms_webhook' => ['official' => true, 'fields' => [
                     ['name' => 'url', 'kind' => 'url', 'secret' => false, 'required' => true],
                     ['name' => 'token', 'kind' => 'text', 'secret' => true, 'required' => false],
                 ]],

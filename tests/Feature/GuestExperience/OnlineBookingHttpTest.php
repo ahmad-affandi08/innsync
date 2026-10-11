@@ -11,6 +11,7 @@ use App\Modules\Property\Application\Rates\ChargeSchemeService;
 use App\Modules\Property\Application\Rates\RatePlanService;
 use App\Modules\Property\Application\Settings\PropertySettingsService;
 use App\Shared\Application\Notifications\EmailNotifier;
+use App\Shared\Application\Notifications\SmsNotifier;
 use App\Shared\Application\Time\Clock;
 use App\Shared\Domain\Tenancy\PropertyId;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -326,5 +327,41 @@ final class OnlineBookingHttpTest extends TestCase
         $this->assertCount(1, $this->sent, 'the same reminder is never sent twice');
 
         $this->putJson('/property/online-booking', ['enabled' => true, 'rate_plan_id' => $this->planId, 'max_nights' => 10, 'notify_email' => 'front@hotel.test', 'notice' => 'x'])->assertOk()->assertJsonPath('remind_before_arrival', true);
+    }
+
+    public function test_the_guest_messages_also_go_by_sms_when_the_hotel_chose_it_and_only_to_the_number_given(): void
+    {
+        $texts = [];
+        $this->app->instance(SmsNotifier::class, new class($texts) implements SmsNotifier
+        {
+            /** @param list<array{0: string, 1: string}> $texts */
+            public function __construct(public array &$texts) {}
+
+            public function notify(string $phone, string $message): bool
+            {
+                $this->texts[] = [$phone, $message];
+
+                return true;
+            }
+        });
+        $this->enable();
+        $this->postJson('/book/'.self::A, $this->body(['arrival' => '2026-10-02', 'departure' => '2026-10-03', 'key' => 'msg-key-fixed-000002']))->assertCreated();
+        $this->putJson('/property/online-booking', ['enabled' => true, 'rate_plan_id' => $this->planId, 'max_nights' => 10, 'notify_email' => 'front@hotel.test', 'notice' => 'x', 'remind_before_arrival' => true])->assertOk();
+        $this->sent = [];
+
+        // Email only, as before, until the hotel chooses more.
+        config(['guest.message_channels' => ['email']]);
+        $this->artisan('guestmessages:send')->assertSuccessful();
+        $this->assertCount(1, $this->sent);
+        $this->assertSame([], $texts);
+
+        DB::table('guest_message_log')->delete();
+        $this->sent = [];
+        config(['guest.message_channels' => ['email', 'sms']]);
+        $this->artisan('guestmessages:send')->assertSuccessful();
+        $this->assertCount(1, $this->sent);
+        $this->assertCount(1, $texts);
+        $this->assertStringContainsString('tomorrow', $texts[0][1]);
+        $this->assertSame((string) DB::table('reservations')->where('guest_name', 'Budi Santoso')->value('guest_phone'), $texts[0][0]);
     }
 }

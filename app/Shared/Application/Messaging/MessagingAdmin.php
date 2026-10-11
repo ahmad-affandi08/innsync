@@ -9,7 +9,7 @@ use App\Shared\Application\Audit\AuditTrail;
 use App\Shared\Application\Errors\Refusal;
 
 /**
- * Sets up how the installation sends email and WhatsApp, on screen instead of in a server file. The keys are stored encrypted and are never sent back to the
+ * Sets up how the installation sends email, WhatsApp and SMS, on screen instead of in a server file. The keys are stored encrypted and are never sent back to the
  * browser: a saved secret shows only as "saved", and leaving it empty on a later save keeps it. Every change is audited by what changed, never by the secret.
  */
 final readonly class MessagingAdmin

@@ -25,19 +25,20 @@ type Channel = {
     providers: Record<string, { official: boolean; fields: Field[] }>;
 };
 
-/** How the installation sends email and WhatsApp, chosen and filled in on screen. A saved key is shown only as "saved". */
-export default function MessagingPage({ channels }: { channels: { email: Channel; whatsapp: Channel } }) {
+/** How the installation sends email, WhatsApp and SMS, chosen and filled in on screen. A saved key is shown only as "saved". */
+export default function MessagingPage({ channels }: { channels: { email: Channel; whatsapp: Channel; sms: Channel } }) {
     const { t } = useTranslation();
 
     return (
         <PropertyShell description={t('msg.description')} title={t('msg.title')}>
             <ChannelCard channel="email" initial={channels.email} />
             <ChannelCard channel="whatsapp" initial={channels.whatsapp} />
+            <ChannelCard channel="sms" initial={channels.sms} />
         </PropertyShell>
     );
 }
 
-function ChannelCard({ channel, initial }: { channel: 'email' | 'whatsapp'; initial: Channel }) {
+function ChannelCard({ channel, initial }: { channel: 'email' | 'whatsapp' | 'sms'; initial: Channel }) {
     const { t } = useTranslation();
     const format = useFormatters();
     const errorCopy = useErrorStateCopy();

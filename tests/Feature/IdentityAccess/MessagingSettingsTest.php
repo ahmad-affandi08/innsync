@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\IdentityAccess;
 
 use App\Shared\Application\Notifications\EmailNotifier;
+use App\Shared\Application\Notifications\SmsNotifier;
 use App\Shared\Application\Notifications\WhatsAppNotifier;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\Request;
@@ -128,7 +129,7 @@ final class MessagingSettingsTest extends TestCase
     public function test_missing_fields_and_other_channels_are_refused_and_turning_off_falls_back(): void
     {
         $this->save('email', 'smtp', ['host' => 'smtp.example.com'])->assertStatus(422);
-        $this->save('sms', 'resend', [])->assertNotFound();
+        $this->save('telegram', 'resend', [])->assertNotFound();
         $this->save('email', 'resend', ['api_key' => 'k', 'from_address' => 'hotel@example.com'])->assertOk();
         $this->postJson('/property/messaging/email/off')->assertOk()->assertJsonPath('enabled', false);
 
@@ -144,5 +145,37 @@ final class MessagingSettingsTest extends TestCase
 
         $this->get('/property/messaging')->assertForbidden();
         $this->save('email', 'resend', ['api_key' => 'k', 'from_address' => 'a@example.com'])->assertForbidden();
+    }
+
+    public function test_sms_goes_through_the_provider_chosen_with_the_request_its_api_expects(): void
+    {
+        $this->assertFalse(app(SmsNotifier::class)->notify('081234567890', 'Hello'), 'nothing is sent while no provider is set up');
+
+        Http::fake(['console.zenziva.net/*' => Http::response(['status' => '1', 'text' => 'Success'], 200), 'api.twilio.com/*' => Http::response(['sid' => 'SM1'], 201), 'rest.nexmo.com/*' => Http::sequence()->push(['messages' => [['status' => '0']]])->push(['messages' => [['status' => '2', 'error-text' => 'Missing from']]]), '93.184.216.34/*' => Http::response([], 200)]);
+
+        $this->save('sms', 'zenziva', ['userkey' => 'uk', 'passkey' => 'PASS_SECRET'])->assertOk()->assertJsonMissingPath('values.passkey');
+        $this->assertStringNotContainsString('PASS_SECRET', (string) DB::table('messaging_channels')->where('channel', 'sms')->value('settings'));
+        $this->assertTrue(app(SmsNotifier::class)->notify('0812-3456-7890', 'Hello'));
+        Http::assertSent(fn (Request $r) => $r->url() === 'https://console.zenziva.net/reguler/api/sendsms/' && $r['to'] === '6281234567890' && $r['userkey'] === 'uk' && $r['passkey'] === 'PASS_SECRET' && $r['message'] === 'Hello');
+
+        $this->save('sms', 'twilio_sms', ['account_sid' => 'AC1', 'auth_token' => 't', 'sms_from' => '+1 415 523 8886'])->assertOk();
+        $this->assertTrue(app(SmsNotifier::class)->notify('81234567890', 'Hello'));
+        Http::assertSent(fn (Request $r) => str_contains($r->url(), 'api.twilio.com') && str_contains((string) $r->body(), 'To=%2B6281234567890') && str_contains((string) $r->body(), 'From=%2B14155238886') && ! str_contains((string) $r->body(), 'whatsapp'));
+
+        $this->save('sms', 'vonage', ['api_key' => 'vk', 'api_secret' => 'vs', 'sender_id' => 'MyHotel'])->assertOk();
+        $this->assertTrue(app(SmsNotifier::class)->notify('081234567890', 'Hello'));
+        Http::assertSent(fn (Request $r) => $r->url() === 'https://rest.nexmo.com/sms/json' && $r['from'] === 'MyHotel' && $r['to'] === '6281234567890' && $r['text'] === 'Hello');
+
+        $this->save('sms', 'sms_webhook', ['url' => 'https://93.184.216.34/send', 'token' => 'tk'])->assertOk();
+        $this->assertTrue(app(SmsNotifier::class)->notify('081234567890', 'Hello'));
+        Http::assertSent(fn (Request $r) => $r->url() === 'https://93.184.216.34/send' && $r->hasHeader('Authorization', 'Bearer tk') && $r['phone'] === '6281234567890');
+        $this->save('sms', 'sms_webhook', ['url' => 'http://93.184.216.34/send'])->assertStatus(422);
+
+        // A number that is not a mobile number is refused before anything is sent, and a gateway that says "not sent" is reported as such.
+        $this->assertFalse(app(SmsNotifier::class)->notify('12', 'Hello'));
+        $this->save('sms', 'vonage', ['api_key' => 'vk', 'api_secret' => 'vs', 'sender_id' => 'MyHotel'])->assertOk();
+        $answer = $this->postJson('/property/messaging/sms/test', ['destination' => '081234567890'])->assertOk()->assertJsonPath('ok', false);
+        $this->assertSame('rejected', $answer->json('error'));
+        $this->assertStringNotContainsString('Missing from', (string) $answer->getContent());
     }
 }

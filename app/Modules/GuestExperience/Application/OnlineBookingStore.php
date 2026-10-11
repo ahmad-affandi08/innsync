@@ -22,9 +22,9 @@ interface OnlineBookingStore
     public function propertiesWithMessages(): array;
 
     /**
-     * Web bookings that a message may be sent about on a day: `pre_arrival` (arriving that day, not cancelled) or `thank_you` (left that day or the day before), that have an email address and no message of this kind yet.
+     * Web bookings that a message may be sent about on a day: `pre_arrival` (arriving that day, not cancelled) or `thank_you` (left that day or the day before), that have an email address or a phone number and no message of this kind yet.
      *
-     * @return list<array{id: string, number: string, guest_name: string, guest_email: string, arrival: string, departure: string}>
+     * @return list<array{id: string, number: string, guest_name: string, guest_email: string, guest_phone: string, arrival: string, departure: string}>
      */
     public function messageCandidates(PropertyId $property, string $kind, string $day): array;
 

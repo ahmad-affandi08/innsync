@@ -66,4 +66,8 @@ return [
 
     // When the reminder before arrival and the thank-you after the stay go out (property clock is not used; this is the server's time). Only for hotels that switched them on.
     'messages_at' => (string) env('GUEST_MESSAGES_AT', '09:00'),
+
+    // Where those two messages go: any of email, sms and whatsapp, comma-separated, each through the provider set up on screen (Property → Messaging). A message needs the address or the number it goes to;
+    // it counts as sent when one of the channels accepted it. Email only until the hotel chooses more.
+    'message_channels' => array_values(array_intersect(['email', 'sms', 'whatsapp'], array_map('trim', explode(',', (string) env('GUEST_MESSAGE_CHANNELS', 'email'))))),
 ];
