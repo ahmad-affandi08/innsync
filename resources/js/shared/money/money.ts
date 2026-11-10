@@ -8,12 +8,19 @@ export class MoneyFormatError extends Error {}
 
 const CURRENCY_PATTERN = /^[A-Z]{3}$/
 
+/** Currencies whose minor units the server defines and the browser's own data must not change. */
+const FIXED_EXPONENTS: Readonly<Record<string, number>> = { IDR: 2 }
+
 export function currencyExponent(currency: string): number {
     if (!CURRENCY_PATTERN.test(currency)) {
         throw new MoneyFormatError(`Invalid currency code: ${currency}`)
     }
 
-    return new Intl.NumberFormat('en', { style: 'currency', currency }).resolvedOptions().maximumFractionDigits ?? 2
+    // Rupiah is fixed: the server keeps it in sen (ISO 4217: two digits), whatever the browser's currency data says. Newer currency data (CLDR 48, in the newest browsers and Node) lists IDR with no decimals,
+    // which would show every amount a hundred times too big and read every typed amount a hundred times too small.
+    const fixed = FIXED_EXPONENTS[currency]
+
+    return fixed ?? new Intl.NumberFormat('en', { style: 'currency', currency }).resolvedOptions().maximumFractionDigits ?? 2
 }
 
 /** Rupiah has no coins in practice: amounts are whole rupiah and shown without decimals (docs/OPERATIONS/INDONESIA-COMPLIANCE-BASELINE.md). */
@@ -35,7 +42,9 @@ export function formatMinorUnits(amountMinor: number, currency: string, locale: 
     const formatter = new Intl.NumberFormat(locale, {
         style: 'currency',
         currency,
-        ...(trimmed ? { minimumFractionDigits: 0, maximumFractionDigits: 0 } : {}),
+        // The digits are named, not left to the browser's data, so a stray sen is shown and never rounded away.
+        minimumFractionDigits: trimmed ? 0 : exponent,
+        maximumFractionDigits: trimmed ? 0 : exponent,
     })
     const decimal = exponent === 0 ? '' : `.${String(fraction).padStart(exponent, '0')}`
 
