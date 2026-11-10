@@ -269,6 +269,7 @@ export const frontOffice = {
     'fo.audit.description': 'Closes the business date: posts one room charge per guest in the house, records the day report and moves the date forward. Only this moves the business date.',
     'fo.audit.date': 'Business date to close',
     'fo.audit.earliest': 'Earliest start (property time)',
+    'fo.audit.arrival': 'arrival',
     'fo.audit.tooEarly': 'Too early to run. The clock never starts night audit; a person does, once the time has come.',
     'fo.audit.ready': 'The time has come. Resolve the checks below, then run it.',
     'fo.audit.toCharge': 'Room charges to post',

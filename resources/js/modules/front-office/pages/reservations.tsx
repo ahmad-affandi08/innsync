@@ -143,7 +143,7 @@ export default function ReservationsPage({ filters, lookups, reservations }: { f
                 <FormField label={t('fo.res.arrivalFrom')}><DatePicker onChange={(e) => setFilter({ ...filter, arrival_from: e.target.value })} value={filter.arrival_from} /></FormField>
                 <FormField label={t('fo.res.arrivalTo')}><DatePicker onChange={(e) => setFilter({ ...filter, arrival_to: e.target.value })} value={filter.arrival_to} /></FormField>
                 <div className="flex items-end gap-2">
-                    <Button type="submit">{t('fo.res.apply')}</Button>
+                    <Button type="submit" variant="outline">{t('fo.res.apply')}</Button>
                     <Button onClick={() => { const cleared = { query: '', status: '', arrival_from: '', arrival_to: '' }; setFilter(cleared); search(cleared); }} type="button" variant="outline">{t('fo.res.clear')}</Button>
                 </div>
             </form>

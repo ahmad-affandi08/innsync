@@ -48,7 +48,7 @@ export default function AvailabilityPage({ calendar, plans, selected_plan }: { c
                         {plans.map((p) => <option key={p.id} value={p.id}>{p.code} · {p.name}</option>)}
                     </Select>
                 </FormField>
-                <div className="flex items-end"><Button type="submit">{t('fo.availability.show')}</Button></div>
+                <div className="flex items-end"><Button type="submit" variant="outline">{t('fo.availability.show')}</Button></div>
             </form>
 
             <p className="flex flex-wrap gap-3 text-xs text-muted-foreground" role="note">

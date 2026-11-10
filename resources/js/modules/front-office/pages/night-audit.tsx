@@ -22,6 +22,9 @@ type Preview = {
 export default function NightAuditPage({ preview: p }: { preview: Preview }) {
     const { t } = useTranslation();
     const format = useFormatters();
+    // The server names dates as 2026-11-10 and times as 23:00 Asia/Jakarta; the screen writes them as it writes every other date.
+    const earliest = (text: string) => text.replace(/^(\d{4}-\d{2}-\d{2}) (\d{2}:\d{2}) (.+)$/, (_m, d: string, h: string, zone: string) => `${format.date(d, 'long')}, ${h} ${zone}`);
+    const readable = (text: string) => text.replace(/\(arrival (\d{4}-\d{2}-\d{2})\)/, (_m, d: string) => `(${t('fo.audit.arrival')} ${format.date(d, 'long')})`);
     const errorCopy = useErrorStateCopy();
     const action = useServerAction();
     const [intent, setIntent] = useState(() => newIdempotencyKey());
@@ -52,7 +55,7 @@ export default function NightAuditPage({ preview: p }: { preview: Preview }) {
 
             <dl className="grid gap-x-6 gap-y-2 text-sm sm:grid-cols-[max-content_1fr]">
                 <dt className="text-muted-foreground">{t('fo.audit.date')}</dt><dd className="font-medium" data-testid="audit-date">{format.date(p.business_date, 'long')}</dd>
-                <dt className="text-muted-foreground">{t('fo.audit.earliest')}</dt><dd>{p.earliest_local}</dd>
+                <dt className="text-muted-foreground">{t('fo.audit.earliest')}</dt><dd>{earliest(p.earliest_local)}</dd>
                 <dt className="text-muted-foreground">{t('fo.audit.toCharge')}</dt><dd>{p.rooms_to_charge}</dd>
             </dl>
             <Alert title={p.can_start ? t('fo.audit.ready') : t('fo.audit.tooEarly')} tone={p.can_start ? 'info' : 'warning'} />
@@ -67,7 +70,7 @@ export default function NightAuditPage({ preview: p }: { preview: Preview }) {
                                 <li className="flex flex-col gap-2 border border-border p-3" key={g.code}>
                                     <p className="font-medium">{t(`fo.audit.gate.${g.code}` as 'fo.audit.gate.pending_arrivals')} ({g.count})</p>
                                     <p className="text-xs text-muted-foreground">{t(`fo.audit.gate.${g.code}.help` as 'fo.audit.gate.pending_arrivals.help')}</p>
-                                    <ul className="list-disc pl-5 text-sm">{g.items.map((item) => <li key={item}>{item}</li>)}</ul>
+                                    <ul className="list-disc pl-5 text-sm">{g.items.map((item) => <li key={item}>{readable(item)}</li>)}</ul>
                                     {p.may_waive ? (
                                         <FormField field="waivers.*.reason" label={t('fo.audit.waiveReason', { gate: t(`fo.audit.gate.${g.code}` as 'fo.audit.gate.pending_arrivals') })}>
                                             <Input maxLength={300} onChange={(e) => setWaive({ ...waive, [g.code]: e.target.value })} placeholder={t('fo.audit.waive')} value={waive[g.code] ?? ''} />

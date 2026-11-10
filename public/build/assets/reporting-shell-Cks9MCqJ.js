@@ -1,0 +1,1 @@
+import{f as e}from"./i18n-CJdw2_6S.js";import{p as t,t as n}from"./app-frame-CR6iLDm3.js";var r=e();function i({children:e,description:i,title:a,wide:o}){return(0,r.jsx)(n,{description:i,links:t,title:a,wide:o,children:e})}export{i as ReportingShell};

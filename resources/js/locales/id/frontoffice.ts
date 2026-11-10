@@ -269,6 +269,7 @@ export const frontOffice = {
     'fo.audit.description': 'Menutup business date: membukukan satu room charge per tamu yang menginap, mencatat laporan harian dan memajukan tanggal. Hanya proses ini yang memajukan business date.',
     'fo.audit.date': 'Business date yang akan ditutup',
     'fo.audit.earliest': 'Mulai paling awal (waktu properti)',
+    'fo.audit.arrival': 'kedatangan',
     'fo.audit.tooEarly': 'Belum waktunya. Jam tidak pernah memulai night audit; petugas yang menjalankannya setelah waktunya tiba.',
     'fo.audit.ready': 'Waktunya sudah tiba. Selesaikan pemeriksaan di bawah, lalu jalankan.',
     'fo.audit.toCharge': 'Room charge yang akan dibukukan',
