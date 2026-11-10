@@ -8,14 +8,14 @@ function Tabs({ className, ...props }: ComponentProps<typeof TabsPrimitive.Root>
 }
 
 function TabsList({ className, ...props }: ComponentProps<typeof TabsPrimitive.List>) {
-    return <TabsPrimitive.List className={cn('flex w-full flex-wrap items-stretch gap-1 overflow-x-auto print:hidden', className)} data-slot="tabs-list" {...props} />;
+    return <TabsPrimitive.List className={cn('flex w-full flex-wrap items-stretch gap-1 overflow-x-auto border-b border-border print:hidden', className)} data-slot="tabs-list" {...props} />;
 }
 
 function TabsTrigger({ className, ...props }: ComponentProps<typeof TabsPrimitive.Trigger>) {
     return (
         <TabsPrimitive.Trigger
             className={cn(
-                'inline-flex min-h-9 items-center justify-center gap-2 whitespace-nowrap bg-primary px-4 text-sm text-primary-foreground transition-colors hover:bg-primary/85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-brand data-[state=active]:font-semibold data-[state=active]:text-primary',
+                '-mb-px inline-flex min-h-10 items-center justify-center gap-2 whitespace-nowrap border-b-2 border-transparent px-4 text-sm text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 data-[state=active]:border-brand data-[state=active]:font-semibold data-[state=active]:text-foreground',
                 className,
             )}
             data-slot="tabs-trigger"

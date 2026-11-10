@@ -56,6 +56,8 @@ type DataGridProps<T> = {
     empty?: ReactNode;
     /** Extra controls placed in the toolbar, after the built-in ones. */
     toolbarExtra?: ReactNode;
+    /** Leave the search box out when the screen has its own search above (one box, not two). Default true. */
+    searchable?: boolean;
     className?: string;
 };
 
@@ -91,7 +93,7 @@ function writeSaved(id: string, saved: Saved) {
  * sortable headers and full pagination (10/25/50/100, 10 by default).
  * Works on the rows a screen already holds; unbounded lists page on the server.
  */
-function DataGrid<T>({ caption, className, columns, empty, footerLabel, getRowId, id, rowTestId, rows, testId, toolbarExtra }: DataGridProps<T>) {
+function DataGrid<T>({ caption, className, columns, empty, footerLabel, getRowId, id, rowTestId, rows, searchable = true, testId, toolbarExtra }: DataGridProps<T>) {
     const { t } = useTranslation();
     const searchId = useId();
     const defaultHidden = useMemo(() => columns.filter((c) => c.hidden).map((c) => c.id), [columns]);
@@ -142,7 +144,7 @@ function DataGrid<T>({ caption, className, columns, empty, footerLabel, getRowId
     return (
         <div className={cn('flex flex-col gap-3', className)} data-grid={id}>
             <div className="flex flex-wrap items-center gap-2">
-                <div className="relative w-full sm:w-72">
+                {searchable ? <div className="relative w-full sm:w-72">
                     <Search aria-hidden="true" className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
                     <label className="sr-only" htmlFor={searchId}>{t('ui.grid.search')}</label>
                     <Input
@@ -158,7 +160,7 @@ function DataGrid<T>({ caption, className, columns, empty, footerLabel, getRowId
                             <X aria-hidden="true" className="size-4" />
                         </button>
                     ) : null}
-                </div>
+                </div> : null}
 
                 {filterable.length > 0 ? (
                     <Popover>

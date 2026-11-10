@@ -29,6 +29,7 @@ export default function NightAuditPage({ preview: p }: { preview: Preview }) {
     const action = useServerAction();
     const [intent, setIntent] = useState(() => newIdempotencyKey());
     const [waive, setWaive] = useState<Record<string, string>>({});
+    const [shared, setShared] = useState('');
     const [confirming, setConfirming] = useState(false);
     const [done, setDone] = useState<string | null>(null);
     const pending = p.gates.filter((g) => g.count > 0);
@@ -42,6 +43,7 @@ export default function NightAuditPage({ preview: p }: { preview: Preview }) {
         if (result !== null) {
             setIntent(newIdempotencyKey());
             setWaive({});
+            setShared('');
             setDone(result.audit.business_date);
         }
     }
@@ -65,6 +67,14 @@ export default function NightAuditPage({ preview: p }: { preview: Preview }) {
                 {pending.length === 0 ? <p className="text-sm text-muted-foreground">{t('fo.audit.clear')}</p> : (
                     <>
                         {p.may_waive ? <p className="text-xs text-muted-foreground">{t('fo.audit.waiveHint')}</p> : null}
+                        {p.may_waive && pending.length > 1 ? (
+                            <div className="flex flex-wrap items-end gap-2" data-testid="waive-all">
+                                <FormField label={t('fo.audit.waiveAll')}>
+                                    <Input maxLength={300} onChange={(e) => setShared(e.target.value)} placeholder={t('fo.audit.waive')} value={shared} />
+                                </FormField>
+                                <Button disabled={shared.trim() === '' || unresolved.length === 0} onClick={() => setWaive(Object.fromEntries(pending.map((g) => [g.code, (waive[g.code] ?? '').trim() === '' ? shared.trim() : (waive[g.code] ?? '')])))} type="button" variant="outline">{t('fo.audit.waiveAllApply')}</Button>
+                            </div>
+                        ) : null}
                         <ul className="flex flex-col gap-4">
                             {pending.map((g) => (
                                 <li className="flex flex-col gap-2 border border-border bg-surface p-3" key={g.code}>

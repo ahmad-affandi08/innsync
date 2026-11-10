@@ -38,6 +38,7 @@ export default function CheckInPage({ preselect, reservation: r, rooms, stay }: 
     const [done, setDone] = useState<Done | null>(null);
     const set = (patch: Partial<typeof form>) => setForm((f) => ({ ...f, ...patch }));
     const ready = r.status === 'confirmed' || r.status === 'guaranteed';
+    const foreign = form.nationality.trim() !== '' && form.nationality.trim().toUpperCase() !== 'ID';
 
     async function find() {
         setMatches(null);
@@ -115,7 +116,8 @@ export default function CheckInPage({ preselect, reservation: r, rooms, stay }: 
                     </div>
                     <FormField field="id_valid_until" error={action.fieldError('id_valid_until')} label={t('fo.checkin.idValidUntil')}><DatePicker onChange={(e) => set({ idValidUntil: e.target.value })} value={form.idValidUntil} /></FormField>
                     <FormField field="nationality" error={action.fieldError('nationality')} label={t('fo.checkin.nationality')}><Input maxLength={2} onChange={(e) => set({ nationality: e.target.value })} required value={form.nationality} /></FormField>
-                    <FormField field="visa_number" error={action.fieldError('visa_number')} label={t('fo.checkin.visa')}><Input autoComplete="off" maxLength={40} onChange={(e) => set({ visa: e.target.value })} value={form.visa} /></FormField>
+                    {/* A visa is for a guest from abroad: it is asked for only when the nationality is not Indonesian (or one is already filled in). */}
+                    {foreign || form.visa !== '' ? <FormField field="visa_number" error={action.fieldError('visa_number')} label={t('fo.checkin.visa')}><Input autoComplete="off" maxLength={40} onChange={(e) => set({ visa: e.target.value })} value={form.visa} /></FormField> : null}
                     <div className="grid grid-cols-2 gap-4">
                         <FormField field="adults" error={action.fieldError('adults')} label={t('fo.checkin.adults')}><Input min={1} onChange={(e) => set({ adults: e.target.value })} type="number" value={form.adults} /></FormField>
                         <FormField field="children" error={action.fieldError('children')} label={t('fo.checkin.children')}><Input min={0} onChange={(e) => set({ children: e.target.value })} type="number" value={form.children} /></FormField>

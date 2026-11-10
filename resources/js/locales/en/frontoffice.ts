@@ -273,6 +273,8 @@ export const frontOffice = {
     'fo.audit.date': 'Business date to close',
     'fo.audit.earliest': 'Earliest start (property time)',
     'fo.audit.arrival': 'arrival',
+    'fo.audit.waiveAll': 'One reason for every check below',
+    'fo.audit.waiveAllApply': 'Use for the empty ones',
     'fo.audit.tooEarly': 'Too early to run. The clock never starts night audit; a person does, once the time has come.',
     'fo.audit.ready': 'The time has come. Resolve the checks below, then run it.',
     'fo.audit.toCharge': 'Room charges to post',

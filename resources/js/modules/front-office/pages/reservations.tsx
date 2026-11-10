@@ -123,7 +123,7 @@ export default function ReservationsPage({ filters, lookups, reservations }: { f
         { id: 'stay', label: t('fo.res.stay'), value: (r) => r.arrival, searchText: (r) => `${r.arrival} ${r.departure}`, cell: (r) => <>{format.date(r.arrival)} – {format.date(r.departure)} <span className="text-xs text-muted-foreground">({t('fo.res.nights', { n: r.nights })})</span></> },
         { id: 'roomType', label: t('fo.res.roomType'), value: (r) => typeName(r.room_type_id), filter: 'select' },
         { id: 'source', label: t('fo.res.source'), value: (r) => r.source, filter: 'select', filterLabel: (v) => t(`fo.source.${v}` as 'fo.source.direct'), cell: (r) => t(`fo.source.${r.source}` as 'fo.source.direct'), hidden: true },
-        { id: 'status', label: t('fo.res.status'), value: (r) => r.status, filter: 'select', filterLabel: (v) => t(`fo.status.${v}` as 'fo.status.tentative'), cell: (r) => <StatusBadge label={t(`fo.status.${r.status}` as 'fo.status.tentative')} tone={statusTone[r.status] ?? 'neutral'} /> },
+        { id: 'status', label: t('fo.res.status'), value: (r) => r.status, cell: (r) => <StatusBadge label={t(`fo.status.${r.status}` as 'fo.status.tentative')} tone={statusTone[r.status] ?? 'neutral'} /> },
         { id: 'total', label: t('fo.res.total'), align: 'right', value: (r) => r.total_minor, cell: (r) => format.money(r.total_minor, r.currency) },
     ];
 
@@ -157,6 +157,7 @@ export default function ReservationsPage({ filters, lookups, reservations }: { f
                 getRowId={(r) => r.id}
                 id="fo.reservations"
                 rows={reservations}
+                searchable={false}
             />
 
             <Dialog

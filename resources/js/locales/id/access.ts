@@ -80,7 +80,7 @@ export const access = {
     'setup.open': 'Buka',
     'setup.fix': 'Siapkan',
     'setup.step.settings.title': 'Jam check-in dan check-out',
-    'setup.step.settings.why': 'Dipakai untuk setiap pemesanan, check-out terlambat dan audit malam.',
+    'setup.step.settings.why': 'Dipakai untuk setiap pemesanan, check-out terlambat dan night audit.',
     'setup.step.business_date.title': 'Mulai tanggal bisnis (go live)',
     'setup.step.business_date.why': 'Sebelum dimulai, tidak ada yang bisa dipesan, ditagih atau dibayar. Lakukan pada hari hotel mulai memakai sistem.',
     'setup.step.rooms.title': 'Tipe kamar dan kamar',
