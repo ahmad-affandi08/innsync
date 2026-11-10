@@ -4,7 +4,7 @@ import { useState, type FormEvent } from 'react';
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { DataGrid, type DataGridColumn } from '@/components/ui/data-grid';
-import { ConfirmDialog } from '@/components/ui/dialog';
+import { ConfirmDialog, Dialog } from '@/components/ui/dialog';
 import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
@@ -38,6 +38,7 @@ export default function LaundryClaimsPage({ order, overview, status }: { order: 
     const [form, setForm] = useState({ orderId: order ?? '', lineId: '', pieces: '1', kind: 'damage', description: '', claimed: '' });
     const [file, setFile] = useState<File | null>(null);
     const [pickerKey, setPickerKey] = useState(0);
+    const [open, setOpen] = useState(order !== null && overview.may.record);
     const [invalid, setInvalid] = useState(false);
     const [deciding, setDeciding] = useState<{ claim: Claim; mode: 'approve' | 'reject'; amount: string; note: string } | null>(null);
     const [cap, setCap] = useState({ multiple: String(overview.cap_multiple), reason: '' });
@@ -58,7 +59,7 @@ export default function LaundryClaimsPage({ order, overview, status }: { order: 
         body.set('claimed_minor', String(minor));
         if (file !== null) body.set('photo', file);
         const done = await action.run('/laundry/claims', { body, reload: ['overview'] });
-        if (done !== null) { setForm({ ...form, lineId: '', pieces: '1', description: '', claimed: '' }); setFile(null); setPickerKey((k) => k + 1); }
+        if (done !== null) { setForm({ ...form, lineId: '', pieces: '1', description: '', claimed: '' }); setFile(null); setPickerKey((k) => k + 1); setOpen(false); }
     }
 
     async function decide() {
@@ -113,15 +114,18 @@ export default function LaundryClaimsPage({ order, overview, status }: { order: 
 
     return (
         <LaundryShell description={t('ldy.claim.description')} title={t('ldy.claim.title')} wide>
-            {action.error !== null && deciding === null ? <ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /> : null}
+            {action.error !== null && deciding === null && !open ? <ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /> : null}
             <Alert title={t('ldy.claim.note')} tone="info" />
 
-            <form className="flex flex-wrap items-end gap-2" onSubmit={(e) => { e.preventDefault(); router.get('/laundry/claims', (e.currentTarget.elements.namedItem('status') as HTMLSelectElement).value === '' ? {} : { status: (e.currentTarget.elements.namedItem('status') as HTMLSelectElement).value }); }}>
-                <FormField label={t('ldy.claim.status')}>
-                    <Select defaultValue={status} name="status"><option value="">{t('ldy.claim.all')}</option>{(['open', 'approved', 'rejected'] as const).map((s) => <option key={s} value={s}>{t(`ldy.claim.status.${s}` as 'ldy.claim.status.open')}</option>)}</Select>
-                </FormField>
-                <Button type="submit" variant="outline">{t('ldy.claim.filter')}</Button>
-            </form>
+            <div className="flex flex-wrap items-end justify-between gap-2">
+                <form className="flex flex-wrap items-end gap-2" onSubmit={(e) => { e.preventDefault(); router.get('/laundry/claims', (e.currentTarget.elements.namedItem('status') as HTMLSelectElement).value === '' ? {} : { status: (e.currentTarget.elements.namedItem('status') as HTMLSelectElement).value }); }}>
+                    <FormField label={t('ldy.claim.status')}>
+                        <Select defaultValue={status} name="status"><option value="">{t('ldy.claim.all')}</option>{(['open', 'approved', 'rejected'] as const).map((s) => <option key={s} value={s}>{t(`ldy.claim.status.${s}` as 'ldy.claim.status.open')}</option>)}</Select>
+                    </FormField>
+                    <Button type="submit" variant="outline">{t('ldy.claim.filter')}</Button>
+                </form>
+                {overview.may.record ? <Button onClick={() => { action.clear(); setInvalid(false); setOpen(true); }} size="sm" type="button">{t('ldy.claim.new')}</Button> : null}
+            </div>
 
             <DataGrid
                 caption={t('ldy.claim.title')}
@@ -134,27 +138,28 @@ export default function LaundryClaimsPage({ order, overview, status }: { order: 
             />
 
             {overview.may.record && (
-                <section aria-labelledby="claim-new-h" className="flex max-w-3xl flex-col gap-3 border-t border-border pt-4">
-                    <h2 className="text-lg font-semibold" id="claim-new-h">{t('ldy.claim.new')}</h2>
-                    <form className="grid gap-3 sm:grid-cols-2" onSubmit={(e) => void submit(e)}>
-                        <FormField field="order_id" error={action.fieldError('order_id')} label={t('ldy.claim.order')}>
-                            <Select onChange={(e) => setForm({ ...form, orderId: e.target.value, lineId: '', pieces: '1' })} required value={form.orderId}>
-                                <option value="">—</option>{overview.orders.map((o) => <option key={o.id} value={o.id}>{o.number} · {o.room}</option>)}
-                            </Select>
-                        </FormField>
-                        <FormField field="line_id" error={action.fieldError('line_id')} label={t('ldy.claim.item')}>
-                            <Select onChange={(e) => setForm({ ...form, lineId: e.target.value, pieces: '1' })} value={form.lineId}>
-                                <option value="">{t('ldy.claim.wholeBag')}</option>{(chosen?.lines ?? []).map((l) => <option key={l.id} value={l.id}>{l.item_name} (×{l.quantity})</option>)}
-                            </Select>
-                        </FormField>
-                        {form.lineId !== '' ? <FormField field="pieces" error={action.fieldError('pieces')} label={t('ldy.claim.pieces')}><Input inputMode="numeric" onChange={(e) => setForm({ ...form, pieces: e.target.value })} value={form.pieces} /></FormField> : null}
-                        <FormField field="kind" error={action.fieldError('kind')} label={t('ldy.claim.kind')}><Select onChange={(e) => setForm({ ...form, kind: e.target.value })} value={form.kind}><option value="damage">{t('ldy.claim.kind.damage')}</option><option value="loss">{t('ldy.claim.kind.loss')}</option></Select></FormField>
-                        <FormField field="claimed_minor" error={invalid ? t('ldy.claim.invalidAmount') : action.fieldError('claimed_minor')} label={t('ldy.claim.claimed')}><MoneyInput onChange={(e) => setForm({ ...form, claimed: e.target.value })} required value={form.claimed} /></FormField>
-                        <div className="sm:col-span-2"><FormField field="description" error={action.fieldError('description')} label={t('ldy.claim.what')}><Textarea maxLength={300} onChange={(e) => setForm({ ...form, description: e.target.value })} required rows={2} value={form.description} /></FormField></div>
-                        <div className="sm:col-span-2"><FormField field="photo" error={action.fieldError('photo')} label={t('ldy.claim.photoLabel')}><Input accept="image/jpeg,image/png" capture="environment" key={pickerKey} onChange={(e) => setFile(e.target.files?.[0] ?? null)} type="file" /></FormField></div>
-                        <div className="sm:col-span-2"><Button loading={action.busy} type="submit">{t('ldy.claim.record')}</Button></div>
-                    </form>
-                </section>
+                <Dialog className="w-[min(42rem,calc(100vw-2rem))]" footer={<><Button disabled={action.busy} onClick={() => setOpen(false)} type="button" variant="outline">{t('ui.dialog.cancel')}</Button><Button form="claim-form" loading={action.busy} type="submit">{t('ldy.claim.record')}</Button></>} onClose={() => setOpen(false)} open={open} title={t('ldy.claim.new')}>
+                    <div className="flex flex-col gap-3" data-testid="claim-form">
+                        {action.error !== null ? <ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /> : null}
+                        <form className="grid gap-3 sm:grid-cols-2" id="claim-form" onSubmit={(e) => void submit(e)}>
+                            <FormField field="order_id" error={action.fieldError('order_id')} label={t('ldy.claim.order')}>
+                                <Select onChange={(e) => setForm({ ...form, orderId: e.target.value, lineId: '', pieces: '1' })} required value={form.orderId}>
+                                    <option value="">—</option>{overview.orders.map((o) => <option key={o.id} value={o.id}>{o.number} · {o.room}</option>)}
+                                </Select>
+                            </FormField>
+                            <FormField field="line_id" error={action.fieldError('line_id')} label={t('ldy.claim.item')}>
+                                <Select onChange={(e) => setForm({ ...form, lineId: e.target.value, pieces: '1' })} value={form.lineId}>
+                                    <option value="">{t('ldy.claim.wholeBag')}</option>{(chosen?.lines ?? []).map((l) => <option key={l.id} value={l.id}>{l.item_name} (×{l.quantity})</option>)}
+                                </Select>
+                            </FormField>
+                            {form.lineId !== '' ? <FormField field="pieces" error={action.fieldError('pieces')} label={t('ldy.claim.pieces')}><Input inputMode="numeric" onChange={(e) => setForm({ ...form, pieces: e.target.value })} value={form.pieces} /></FormField> : null}
+                            <FormField field="kind" error={action.fieldError('kind')} label={t('ldy.claim.kind')}><Select onChange={(e) => setForm({ ...form, kind: e.target.value })} value={form.kind}><option value="damage">{t('ldy.claim.kind.damage')}</option><option value="loss">{t('ldy.claim.kind.loss')}</option></Select></FormField>
+                            <FormField field="claimed_minor" error={invalid ? t('ldy.claim.invalidAmount') : action.fieldError('claimed_minor')} label={t('ldy.claim.claimed')}><MoneyInput onChange={(e) => setForm({ ...form, claimed: e.target.value })} required value={form.claimed} /></FormField>
+                            <div className="sm:col-span-2"><FormField field="description" error={action.fieldError('description')} label={t('ldy.claim.what')}><Textarea maxLength={300} onChange={(e) => setForm({ ...form, description: e.target.value })} required rows={2} value={form.description} /></FormField></div>
+                            <div className="sm:col-span-2"><FormField field="photo" error={action.fieldError('photo')} label={t('ldy.claim.photoLabel')}><Input accept="image/jpeg,image/png" capture="environment" key={pickerKey} onChange={(e) => setFile(e.target.files?.[0] ?? null)} type="file" /></FormField></div>
+                        </form>
+                    </div>
+                </Dialog>
             )}
 
             {overview.may.settings && (

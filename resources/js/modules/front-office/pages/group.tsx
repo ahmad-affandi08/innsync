@@ -3,6 +3,7 @@ import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { DataGrid, type DataGridColumn } from '@/components/ui/data-grid';
+import { Dialog } from '@/components/ui/dialog';
 import { ErrorState } from '@/components/ui/error-state';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { blankLine, GroupRoomLines, roomBody, type GroupLookups, type RoomLine } from '@/modules/front-office/components/group-room-lines';
@@ -97,12 +98,12 @@ export default function GroupPage({ group: view, lookups }: Props) {
             </section>
 
             {adding && lookups !== null && (
-                <section aria-labelledby="grp-add-h" className="flex max-w-4xl flex-col gap-3 border border-border p-4" data-testid="add-rooms">
-                    <h2 className="text-lg font-semibold" id="grp-add-h">{t('fo.group.addRooms')}</h2>
-                    {action.error !== null ? <ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /> : null}
-                    <GroupRoomLines error={invalid ? t('fo.group.invalidRooms') : action.fieldError('rooms')} lines={lines} lookups={lookups} onChange={setLines} />
-                    <div className="flex gap-2"><Button loading={action.busy} onClick={() => void add()} type="button">{t('fo.group.addRooms')}</Button><Button disabled={action.busy} onClick={() => setAdding(false)} type="button" variant="outline">{t('ui.dialog.cancel')}</Button></div>
-                </section>
+                <Dialog className="w-[min(56rem,calc(100vw-2rem))]" footer={<><Button disabled={action.busy} onClick={() => setAdding(false)} type="button" variant="outline">{t('ui.dialog.cancel')}</Button><Button loading={action.busy} onClick={() => void add()} type="button">{t('fo.group.addRooms')}</Button></>} onClose={() => setAdding(false)} open title={t('fo.group.addRooms')}>
+                    <div className="flex flex-col gap-3" data-testid="add-rooms">
+                        {action.error !== null ? <ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /> : null}
+                        <GroupRoomLines error={invalid ? t('fo.group.invalidRooms') : action.fieldError('rooms')} lines={lines} lookups={lookups} onChange={setLines} />
+                    </div>
+                </Dialog>
             )}
         </FrontOfficeShell>
     );

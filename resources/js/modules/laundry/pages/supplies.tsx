@@ -3,6 +3,7 @@ import { useState, type FormEvent } from 'react';
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { DataGrid, type DataGridColumn } from '@/components/ui/data-grid';
+import { Dialog } from '@/components/ui/dialog';
 import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
@@ -24,6 +25,7 @@ export default function SuppliesPage({ overview }: { overview: Overview }) {
     const errorCopy = useErrorStateCopy();
     const action = useServerAction();
     const [form, setForm] = useState({ itemId: overview.items[0]?.id ?? '', locationId: overview.locations[0]?.id ?? '', quantity: '', note: '' });
+    const [open, setOpen] = useState(false);
     const [left, setLeft] = useState<number | null>(null);
     const item = overview.items.find((i) => i.id === form.itemId);
     const qty = (n: number) => (n / 1000).toLocaleString(locale, { maximumFractionDigits: 3 });
@@ -35,6 +37,7 @@ export default function SuppliesPage({ overview }: { overview: Overview }) {
         if (done !== null) {
             setLeft(done.use.balance_milli);
             setForm({ ...form, quantity: '', note: '' });
+            setOpen(false);
         }
     }
 
@@ -49,22 +52,29 @@ export default function SuppliesPage({ overview }: { overview: Overview }) {
 
     return (
         <LaundryShell description={t('ldy.sup.description')} title={t('ldy.sup.title')} wide>
-            {action.error !== null ? <ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /> : null}
+            {action.error !== null && !open ? <ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /> : null}
             {overview.may.use ? (
                 overview.items.length === 0 ? <Alert title={t('ldy.sup.noItems')} tone="warning" /> : (
-                    <form className="grid gap-3 border border-border bg-surface p-4 sm:grid-cols-2" data-testid="supply-form" onSubmit={(e) => void submit(e)}>
-                        <FormField error={action.fieldError('item_id')} field="item_id" label={t('ldy.sup.item')}><Select onChange={(e) => setForm({ ...form, itemId: e.target.value })} value={form.itemId}>{overview.items.map((i) => <option key={i.id} value={i.id}>{i.code} · {i.name} ({i.base_unit})</option>)}</Select></FormField>
-                        <FormField error={action.fieldError('location_id')} field="location_id" label={t('ldy.sup.location')}><Select onChange={(e) => setForm({ ...form, locationId: e.target.value })} value={form.locationId}>{overview.locations.map((l) => <option key={l.id} value={l.id}>{l.code} · {l.name}</option>)}</Select></FormField>
-                        <FormField error={action.fieldError('quantity')} field="quantity" label={`${t('ldy.sup.quantity')} (${item?.base_unit ?? ''})`}><Input inputMode="decimal" onChange={(e) => setForm({ ...form, quantity: e.target.value })} value={form.quantity} /></FormField>
-                        <FormField error={action.fieldError('note')} field="note" label={t('ldy.sup.note')}><Input maxLength={200} onChange={(e) => setForm({ ...form, note: e.target.value })} value={form.note} /></FormField>
-                        <div className="flex items-center gap-3 sm:col-span-2">
-                            <Button disabled={form.quantity.trim() === ''} loading={action.busy} type="submit">{t('ldy.sup.record')}</Button>
-                            {left !== null ? <p aria-live="polite" className="text-sm text-success" data-testid="supply-left">{t('ldy.sup.left', { qty: qty(left), unit: item?.base_unit ?? '' })}</p> : null}
-                        </div>
-                    </form>
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                        <div>{left !== null ? <p aria-live="polite" className="text-sm text-success" data-testid="supply-left">{t('ldy.sup.left', { qty: qty(left), unit: item?.base_unit ?? '' })}</p> : null}</div>
+                        <Button onClick={() => { action.clear(); setOpen(true); }} size="sm" type="button">{t('ldy.sup.record')}</Button>
+                    </div>
                 )
             ) : null}
             <DataGrid caption={t('ldy.sup.recent')} columns={columns} empty={<EmptyState illustration="checklist" title={t('ldy.sup.none')} />} getRowId={(u) => u.id} id="ldy.supplies" rows={overview.recent} testId="laundry-supplies" />
+            {overview.may.use && overview.items.length > 0 && (
+                <Dialog className="w-[min(42rem,calc(100vw-2rem))]" footer={<><Button disabled={action.busy} onClick={() => setOpen(false)} type="button" variant="outline">{t('ui.dialog.cancel')}</Button><Button disabled={form.quantity.trim() === ''} form="supply-form" loading={action.busy} type="submit">{t('ldy.sup.record')}</Button></>} onClose={() => setOpen(false)} open={open} title={t('ldy.sup.record')}>
+                    <div className="flex flex-col gap-3" data-testid="supply-form">
+                        {action.error !== null ? <ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /> : null}
+                        <form className="grid gap-3 sm:grid-cols-2" id="supply-form" onSubmit={(e) => void submit(e)}>
+                            <FormField error={action.fieldError('item_id')} field="item_id" label={t('ldy.sup.item')}><Select onChange={(e) => setForm({ ...form, itemId: e.target.value })} value={form.itemId}>{overview.items.map((i) => <option key={i.id} value={i.id}>{i.code} · {i.name} ({i.base_unit})</option>)}</Select></FormField>
+                            <FormField error={action.fieldError('location_id')} field="location_id" label={t('ldy.sup.location')}><Select onChange={(e) => setForm({ ...form, locationId: e.target.value })} value={form.locationId}>{overview.locations.map((l) => <option key={l.id} value={l.id}>{l.code} · {l.name}</option>)}</Select></FormField>
+                            <FormField error={action.fieldError('quantity')} field="quantity" label={`${t('ldy.sup.quantity')} (${item?.base_unit ?? ''})`}><Input inputMode="decimal" onChange={(e) => setForm({ ...form, quantity: e.target.value })} value={form.quantity} /></FormField>
+                            <FormField error={action.fieldError('note')} field="note" label={t('ldy.sup.note')}><Input maxLength={200} onChange={(e) => setForm({ ...form, note: e.target.value })} value={form.note} /></FormField>
+                        </form>
+                    </div>
+                </Dialog>
+            )}
         </LaundryShell>
     );
 }

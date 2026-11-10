@@ -356,6 +356,10 @@
         "body",
         "reason"
     ],
+    "front-office/pages/reminders": [
+        "due_on",
+        "text"
+    ],
     "front-office/pages/requests": [
         "category",
         "reason",

@@ -3,6 +3,7 @@ import { useState } from 'react';
 
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
+import { Dialog } from '@/components/ui/dialog';
 import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
@@ -35,7 +36,7 @@ export default function ForeignCurrencyPage({ overview }: { overview: Overview }
     const errorCopy = useErrorStateCopy();
     const action = useServerAction();
     const [switchReason, setSwitchReason] = useState('');
-    const [rate, setRate] = useState({ currency: overview.currencies[0] ?? 'USD', value: '', reason: '' });
+    const [rate, setRate] = useState<{ currency: string; value: string; reason: string } | null>(null);
     const [invalid, setInvalid] = useState(false);
     const rateText = (e4: number) => format.number(e4 / 10000);
 
@@ -45,16 +46,17 @@ export default function ForeignCurrencyPage({ overview }: { overview: Overview }
     }
 
     async function saveRate() {
+        if (rate === null) return;
         const e4 = parseRate(rate.value);
         setInvalid(e4 === null);
         if (e4 === null) return;
         const done = await action.run('/front-office/foreign-currency/rates', { body: { currency: rate.currency, rate_e4: e4, reason: rate.reason.trim() }, reload: ['overview'] });
-        if (done !== null) setRate({ ...rate, value: '', reason: '' });
+        if (done !== null) setRate(null);
     }
 
     return (
         <FrontOfficeShell description={t('fo.foreign.description')} title={t('fo.foreign.title')} wide>
-            {action.error !== null ? <ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /> : null}
+            {action.error !== null && rate === null ? <ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /> : null}
             <Alert title={t('fo.foreign.counsel')} tone="warning" />
 
             <section aria-labelledby="fx-switch-h" className="flex flex-col gap-2" data-testid="fx-switch">
@@ -67,7 +69,10 @@ export default function ForeignCurrencyPage({ overview }: { overview: Overview }
             </section>
 
             <section aria-labelledby="fx-rates-h" className="flex flex-col gap-2">
-                <h2 className="text-lg font-semibold" id="fx-rates-h">{t('fo.foreign.rates')}</h2>
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                    <h2 className="text-lg font-semibold" id="fx-rates-h">{t('fo.foreign.rates')}</h2>
+                    <Button onClick={() => { action.clear(); setInvalid(false); setRate({ currency: overview.currencies[0] ?? 'USD', value: '', reason: '' }); }} size="sm" type="button">{t('fo.foreign.setRate')}</Button>
+                </div>
                 {overview.rates.length === 0 ? <EmptyState title={t('fo.foreign.noRates')} /> : (
                     <Table data-testid="rates">
                         <TableHeader>
@@ -88,12 +93,6 @@ export default function ForeignCurrencyPage({ overview }: { overview: Overview }
                         ))}</TableBody>
                     </Table>
                 )}
-                <form className="grid gap-3 sm:grid-cols-4" onSubmit={(e) => { e.preventDefault(); void saveRate(); }}>
-                    <FormField field="currency" error={action.fieldError('currency')} label={t('fo.foreign.currency')}><Select onChange={(e) => setRate({ ...rate, currency: e.target.value })} value={rate.currency}>{overview.currencies.map((c) => <option key={c} value={c}>{c}</option>)}</Select></FormField>
-                    <FormField field="rate_e4" error={invalid ? t('fo.foreign.invalidRate') : action.fieldError('rate_e4')} hint={t('fo.foreign.rateHint', { currency: overview.home_currency })} label={t('fo.foreign.rate', { currency: overview.home_currency })}><Input inputMode="decimal" onChange={(e) => setRate({ ...rate, value: e.target.value })} required value={rate.value} /></FormField>
-                    <FormField field="reason" error={action.fieldError('reason')} label={t('fo.folio.reason')}><Input maxLength={300} onChange={(e) => setRate({ ...rate, reason: e.target.value })} required value={rate.reason} /></FormField>
-                    <div className="flex items-end"><Button loading={action.busy} type="submit">{t('fo.foreign.setRate')}</Button></div>
-                </form>
             </section>
 
             <section aria-labelledby="fx-today-h" className="flex flex-col gap-2">
@@ -114,6 +113,17 @@ export default function ForeignCurrencyPage({ overview }: { overview: Overview }
                     ))}</ul>
                 )}
             </section>
+
+            {rate !== null && (
+                <Dialog footer={<><Button disabled={action.busy} onClick={() => setRate(null)} type="button" variant="outline">{t('ui.dialog.cancel')}</Button><Button disabled={rate.value.trim() === '' || rate.reason.trim() === ''} loading={action.busy} onClick={() => void saveRate()} type="button">{t('fo.foreign.setRate')}</Button></>} onClose={() => setRate(null)} open title={t('fo.foreign.setRate')}>
+                    <div className="flex flex-col gap-3" data-testid="rate-form">
+                        {action.error !== null ? <ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /> : null}
+                        <FormField field="currency" error={action.fieldError('currency')} label={t('fo.foreign.currency')}><Select onChange={(e) => setRate({ ...rate, currency: e.target.value })} value={rate.currency}>{overview.currencies.map((c) => <option key={c} value={c}>{c}</option>)}</Select></FormField>
+                        <FormField field="rate_e4" error={invalid ? t('fo.foreign.invalidRate') : action.fieldError('rate_e4')} hint={t('fo.foreign.rateHint', { currency: overview.home_currency })} label={t('fo.foreign.rate', { currency: overview.home_currency })}><Input inputMode="decimal" onChange={(e) => setRate({ ...rate, value: e.target.value })} value={rate.value} /></FormField>
+                        <FormField field="reason" error={action.fieldError('reason')} label={t('fo.folio.reason')}><Input maxLength={300} onChange={(e) => setRate({ ...rate, reason: e.target.value })} value={rate.reason} /></FormField>
+                    </div>
+                </Dialog>
+            )}
         </FrontOfficeShell>
     );
 }

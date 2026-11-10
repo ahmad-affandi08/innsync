@@ -3,6 +3,7 @@ import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { DatePicker } from '@/components/ui/date-picker';
+import { Dialog } from '@/components/ui/dialog';
 import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
@@ -23,11 +24,12 @@ export default function RemindersPage({ reminders }: Props) {
     const format = useFormatters();
     const errorCopy = useErrorStateCopy();
     const action = useServerAction();
-    const [form, setForm] = useState({ due_on: reminders.today, due_time: '', text: '' });
+    const [form, setForm] = useState<{ due_on: string; due_time: string; text: string } | null>(null);
 
     async function add() {
+        if (form === null) return;
         const done = await action.run('/front-office/reminders', { body: { ...form, due_time: form.due_time === '' ? null : form.due_time }, reload: ['reminders', 'shell'] });
-        if (done !== null) setForm({ ...form, due_time: '', text: '' });
+        if (done !== null) setForm(null);
     }
 
     const run = (path: string) => action.run(path, { reload: ['reminders', 'shell'] });
@@ -53,19 +55,13 @@ export default function RemindersPage({ reminders }: Props) {
 
     return (
         <FrontOfficeShell description={t('fo.rem.description')} title={t('fo.rem.title')} wide>
-            {action.error !== null ? <ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /> : null}
-
-            {reminders.may_write ? (
-                <form className="grid gap-3 border border-border bg-surface p-4 sm:grid-cols-[minmax(0,1fr)_10rem_8rem_auto] sm:items-end" onSubmit={(e) => { e.preventDefault(); void add(); }}>
-                    <FormField error={action.fieldError('text')} label={t('fo.rem.text')}><Input maxLength={300} onChange={(e) => setForm({ ...form, text: e.target.value })} placeholder={t('fo.rem.placeholder')} value={form.text} /></FormField>
-                    <FormField error={action.fieldError('due_on')} label={t('fo.rem.day')}><DatePicker min={reminders.today} onChange={(e) => setForm({ ...form, due_on: e.target.value })} value={form.due_on} /></FormField>
-                    <FormField error={action.fieldError('due_time')} label={t('fo.rem.time')}><TimeInput onChange={(e) => setForm({ ...form, due_time: e.target.value })} value={form.due_time} /></FormField>
-                    <Button disabled={form.text.trim() === ''} loading={action.busy} type="submit">{t('fo.rem.add')}</Button>
-                </form>
-            ) : null}
+            {action.error !== null && form === null ? <ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /> : null}
 
             <section aria-labelledby="rem-open" className="flex flex-col gap-2">
-                <h2 className="text-lg font-semibold" id="rem-open">{t('fo.rem.open', { count: reminders.open.length })}</h2>
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                    <h2 className="text-lg font-semibold" id="rem-open">{t('fo.rem.open', { count: reminders.open.length })}</h2>
+                    {reminders.may_write ? <Button onClick={() => { action.clear(); setForm({ due_on: reminders.today, due_time: '', text: '' }); }} size="sm" type="button">{t('fo.rem.add')}</Button> : null}
+                </div>
                 {reminders.open.length === 0 ? <EmptyState title={t('fo.rem.empty')} /> : <ul className="divide-y divide-border border-y border-border">{reminders.open.map((r) => item(r, false))}</ul>}
             </section>
 
@@ -75,6 +71,19 @@ export default function RemindersPage({ reminders }: Props) {
                     <ul className="divide-y divide-border border-y border-border">{reminders.done.map((r) => item(r, true))}</ul>
                 </section>
             ) : null}
+
+            {form !== null && (
+                <Dialog footer={<><Button disabled={action.busy} onClick={() => setForm(null)} type="button" variant="outline">{t('ui.dialog.cancel')}</Button><Button disabled={form.text.trim() === ''} loading={action.busy} onClick={() => void add()} type="button">{t('fo.rem.add')}</Button></>} onClose={() => setForm(null)} open title={t('fo.rem.add')}>
+                    <div className="flex flex-col gap-3" data-testid="reminder-form">
+                        {action.error !== null ? <ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /> : null}
+                        <FormField field="text" error={action.fieldError('text')} label={t('fo.rem.text')}><Input maxLength={300} onChange={(e) => setForm({ ...form, text: e.target.value })} placeholder={t('fo.rem.placeholder')} value={form.text} /></FormField>
+                        <div className="grid gap-3 sm:grid-cols-2">
+                            <FormField field="due_on" error={action.fieldError('due_on')} label={t('fo.rem.day')}><DatePicker min={reminders.today} onChange={(e) => setForm({ ...form, due_on: e.target.value })} value={form.due_on} /></FormField>
+                            <FormField field="due_time" error={action.fieldError('due_time')} label={t('fo.rem.time')}><TimeInput onChange={(e) => setForm({ ...form, due_time: e.target.value })} value={form.due_time} /></FormField>
+                        </div>
+                    </div>
+                </Dialog>
+            )}
         </FrontOfficeShell>
     );
 }

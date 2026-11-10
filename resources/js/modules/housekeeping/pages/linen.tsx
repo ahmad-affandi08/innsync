@@ -3,6 +3,7 @@ import { useState, type FormEvent } from 'react';
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { DataGrid, type DataGridColumn } from '@/components/ui/data-grid';
+import { Dialog } from '@/components/ui/dialog';
 import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
@@ -46,6 +47,7 @@ export default function LinenPage({ linen }: { linen: Linen }) {
     const [use, setUse] = useState({ roomId: '', itemId: '', quantity: '', note: '' });
     const [count, setCount] = useState<Record<string, { received: string; kind: string; note: string }>>({});
     const [usage, setUsage] = useState<UsageRow[] | null>(null);
+    const [dialog, setDialog] = useState<'item' | 'send' | 'usage' | null>(null);
     const [recorded, setRecorded] = useState(false);
     const active = linen.items.filter((i) => i.is_active);
     const canSend = linen.may.manage || linen.may.laundry;
@@ -57,7 +59,7 @@ export default function LinenPage({ linen }: { linen: Linen }) {
         const done = await action.run('/housekeeping/linen/transfers', {
             idempotencyKey: intent, body: { item_id: send.itemId, from: send.from, to: send.to, quantity: Number(send.quantity), note: send.note.trim() || null }, reload: RELOAD,
         });
-        if (done !== null) { setSend({ ...send, quantity: '', note: '' }); setIntent(newIdempotencyKey()); }
+        if (done !== null) { setSend({ ...send, quantity: '', note: '' }); setIntent(newIdempotencyKey()); setDialog(null); }
     }
 
     async function receive(transfer: Transfer) {
@@ -75,7 +77,12 @@ export default function LinenPage({ linen }: { linen: Linen }) {
     async function addItem(event: FormEvent) {
         event.preventDefault();
         const done = await action.run('/housekeeping/linen/items', { body: { code: item.code.trim(), name: item.name.trim(), kind: item.kind, unit: item.unit.trim() }, reload: RELOAD });
-        if (done !== null) setItem({ ...item, code: '', name: '' });
+        if (done !== null) { setItem({ ...item, code: '', name: '' }); setDialog(null); }
+    }
+
+    function openDialog(kind: 'item' | 'send' | 'usage') {
+        action.clear();
+        setDialog(kind);
     }
 
     async function toggle(row: Item) {
@@ -86,7 +93,7 @@ export default function LinenPage({ linen }: { linen: Linen }) {
         event.preventDefault();
         setRecorded(false);
         const done = await action.run('/housekeeping/linen/usage', { body: { room_id: use.roomId, item_id: use.itemId, quantity: Number(use.quantity), note: use.note.trim() || null } });
-        if (done !== null) { setRecorded(true); setUse({ ...use, quantity: '', note: '' }); await loadUsage(); }
+        if (done !== null) { setRecorded(true); setUse({ ...use, quantity: '', note: '' }); setDialog(null); await loadUsage(); }
     }
 
     async function loadUsage() {
@@ -118,7 +125,7 @@ export default function LinenPage({ linen }: { linen: Linen }) {
 
     return (
         <HousekeepingShell description={t('hk.linen.description')} title={t('hk.linen.title')} wide>
-            {action.error !== null ? <ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /> : null}
+            {action.error !== null && dialog === null ? <ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /> : null}
 
             <Tabs defaultValue="position">
                 <TabsList>
@@ -129,7 +136,10 @@ export default function LinenPage({ linen }: { linen: Linen }) {
 
                 <TabsContent className="flex flex-col gap-6" value="position">
                 <section aria-labelledby="linen-position" className="flex flex-col gap-2">
-                    <h2 className="text-lg font-semibold" id="linen-position">{t('hk.linen.position')}</h2>
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                        <h2 className="text-lg font-semibold" id="linen-position">{t('hk.linen.position')}</h2>
+                        {linen.may.manage ? <Button onClick={() => openDialog('item')} size="sm" type="button">{t('hk.linen.newItem')}</Button> : null}
+                    </div>
                     <DataGrid
                         caption={t('hk.linen.position')}
                         columns={positionColumns}
@@ -141,24 +151,14 @@ export default function LinenPage({ linen }: { linen: Linen }) {
                     />
                 </section>
 
-                {linen.may.manage && (
-                    <section aria-labelledby="linen-new" className="flex flex-col gap-2">
-                        <h2 className="text-lg font-semibold" id="linen-new">{t('hk.linen.newItem')}</h2>
-                        <form className="grid gap-3 sm:grid-cols-5" onSubmit={(e) => void addItem(e)}>
-                            <FormField field="code" error={action.fieldError('code')} hint={t('hk.linen.codeHint')} label={t('hk.linen.code')}><Input maxLength={20} onChange={(e) => setItem({ ...item, code: e.target.value.toUpperCase() })} required value={item.code} /></FormField>
-                            <FormField field="name" error={action.fieldError('name')} label={t('hk.linen.name')}><Input maxLength={80} onChange={(e) => setItem({ ...item, name: e.target.value })} required value={item.name} /></FormField>
-                            <FormField field="kind" error={action.fieldError('kind')} label={t('hk.linen.kind')}><Select onChange={(e) => setItem({ ...item, kind: e.target.value })} value={item.kind}>{linen.kinds.map((k) => <option key={k} value={k}>{t(`hk.linen.kind.${k}` as 'hk.linen.kind.linen')}</option>)}</Select></FormField>
-                            <FormField field="unit" error={action.fieldError('unit')} label={t('hk.linen.unit')}><Input maxLength={12} onChange={(e) => setItem({ ...item, unit: e.target.value })} required value={item.unit} /></FormField>
-                            <div className="flex items-end"><Button loading={action.busy} type="submit">{t('hk.linen.addItem')}</Button></div>
-                        </form>
-                    </section>
-                )}
-
                 </TabsContent>
 
                 <TabsContent className="flex flex-col gap-6" value="transfers">
                 <section aria-labelledby="linen-pending" className="flex flex-col gap-2">
-                    <h2 className="text-lg font-semibold" id="linen-pending">{t('hk.linen.pending')}</h2>
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                        <h2 className="text-lg font-semibold" id="linen-pending">{t('hk.linen.pending')}</h2>
+                        {canSend ? <Button onClick={() => openDialog('send')} size="sm" type="button">{t('hk.linen.send')}</Button> : null}
+                    </div>
                     {linen.pending.length === 0 ? <p className="text-sm text-muted-foreground">{t('hk.linen.noPending')}</p> : (
                         <ul className="flex flex-col gap-3" data-testid="linen-pending">
                             {linen.pending.map((tr) => {
@@ -187,20 +187,6 @@ export default function LinenPage({ linen }: { linen: Linen }) {
                     )}
                 </section>
 
-                {canSend && (
-                    <section aria-labelledby="linen-send" className="flex flex-col gap-2">
-                        <h2 className="text-lg font-semibold" id="linen-send">{t('hk.linen.send')}</h2>
-                        <form className="grid gap-3 sm:grid-cols-5" onSubmit={(e) => void sendTransfer(e)}>
-                            <FormField field="item_id" error={action.fieldError('item_id')} label={t('hk.linen.item')}><Select onChange={(e) => setSend({ ...send, itemId: e.target.value })} required value={send.itemId}><option value="">{t('hk.linen.choose')}</option>{active.map((i) => <option key={i.id} value={i.id}>{i.name}</option>)}</Select></FormField>
-                            <FormField field="from" error={action.fieldError('from')} label={t('hk.linen.from')}><Select onChange={(e) => setSend({ ...send, from: e.target.value, to: e.target.value === 'external' ? 'store' : send.to })} value={send.from}>{sources.map((p) => <option key={p} value={p}>{p === 'external' ? t('hk.linen.place.external') : place(p)}</option>)}</Select></FormField>
-                            <FormField field="to" error={action.fieldError('to')} label={t('hk.linen.to')}><Select onChange={(e) => setSend({ ...send, to: e.target.value })} value={send.to}>{linen.locations.filter((p) => send.from !== 'external' || p === 'store').map((p) => <option key={p} value={p}>{place(p)}</option>)}</Select></FormField>
-                            <FormField field="quantity" error={action.fieldError('quantity')} label={t('hk.linen.quantity')}><Input inputMode="numeric" min={1} onChange={(e) => setSend({ ...send, quantity: e.target.value })} required type="number" value={send.quantity} /></FormField>
-                            <FormField field="note" error={action.fieldError('note')} label={t('hk.linen.note')}><Input maxLength={200} onChange={(e) => setSend({ ...send, note: e.target.value })} value={send.note} /></FormField>
-                            <div className="sm:col-span-5"><Button loading={action.busy} type="submit">{t('hk.linen.sendAction')}</Button></div>
-                        </form>
-                    </section>
-                )}
-
                 <section aria-labelledby="linen-recent" className="flex flex-col gap-2">
                     <h2 className="text-lg font-semibold" id="linen-recent">{t('hk.linen.recent')}</h2>
                     {linen.recent.length === 0 ? <p className="text-sm text-muted-foreground">{t('hk.linen.noRecent')}</p> : (
@@ -219,14 +205,13 @@ export default function LinenPage({ linen }: { linen: Linen }) {
 
                 <TabsContent className="flex flex-col gap-6" value="usage">
                 <section aria-labelledby="linen-usage" className="flex flex-col gap-2">
-                    <h2 className="text-lg font-semibold" id="linen-usage">{t('hk.linen.usage')}</h2>
-                    <form className="grid gap-3 sm:grid-cols-5" onSubmit={(e) => void recordUsage(e)}>
-                        <FormField field="room_id" error={action.fieldError('room_id')} label={t('hk.linen.room')}><Select onChange={(e) => setUse({ ...use, roomId: e.target.value })} required value={use.roomId}><option value="">{t('hk.linen.choose')}</option>{linen.rooms.map((r) => <option key={r.id} value={r.id}>{r.number}</option>)}</Select></FormField>
-                        <FormField field="item_id" error={action.fieldError('item_id')} label={t('hk.linen.item')}><Select onChange={(e) => setUse({ ...use, itemId: e.target.value })} required value={use.itemId}><option value="">{t('hk.linen.choose')}</option>{active.map((i) => <option key={i.id} value={i.id}>{i.name}</option>)}</Select></FormField>
-                        <FormField field="quantity" error={action.fieldError('quantity')} label={t('hk.linen.quantity')}><Input inputMode="numeric" min={1} onChange={(e) => setUse({ ...use, quantity: e.target.value })} required type="number" value={use.quantity} /></FormField>
-                        <FormField field="note" error={action.fieldError('note')} label={t('hk.linen.note')}><Input maxLength={200} onChange={(e) => setUse({ ...use, note: e.target.value })} value={use.note} /></FormField>
-                        <div className="flex flex-wrap items-end gap-2"><Button loading={action.busy} type="submit">{t('hk.linen.record')}</Button><Button disabled={action.busy} onClick={() => void loadUsage()} type="button" variant="outline">{t('hk.linen.showUsage')}</Button></div>
-                    </form>
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                        <h2 className="text-lg font-semibold" id="linen-usage">{t('hk.linen.usage')}</h2>
+                        <div className="flex flex-wrap items-center gap-2">
+                            <Button onClick={() => openDialog('usage')} size="sm" type="button">{t('hk.linen.record')}</Button>
+                            <Button disabled={action.busy} onClick={() => void loadUsage()} size="sm" type="button" variant="outline">{t('hk.linen.showUsage')}</Button>
+                        </div>
+                    </div>
                     {recorded ? <Alert title={t('hk.linen.recorded')} tone="success" /> : null}
                     {usage !== null && (
                         <DataGrid
@@ -242,6 +227,47 @@ export default function LinenPage({ linen }: { linen: Linen }) {
                 </section>
                 </TabsContent>
             </Tabs>
+
+            {linen.may.manage && (
+                <Dialog className="w-[min(42rem,calc(100vw-2rem))]" footer={<><Button disabled={action.busy} onClick={() => setDialog(null)} type="button" variant="outline">{t('ui.dialog.cancel')}</Button><Button form="linen-item-form" loading={action.busy} type="submit">{t('hk.linen.addItem')}</Button></>} onClose={() => setDialog(null)} open={dialog === 'item'} title={t('hk.linen.newItem')}>
+                    <div className="flex flex-col gap-3">
+                        {action.error !== null ? <ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /> : null}
+                        <form className="grid gap-3 sm:grid-cols-2" id="linen-item-form" onSubmit={(e) => void addItem(e)}>
+                            <FormField field="code" error={action.fieldError('code')} hint={t('hk.linen.codeHint')} label={t('hk.linen.code')}><Input maxLength={20} onChange={(e) => setItem({ ...item, code: e.target.value.toUpperCase() })} required value={item.code} /></FormField>
+                            <FormField field="name" error={action.fieldError('name')} label={t('hk.linen.name')}><Input maxLength={80} onChange={(e) => setItem({ ...item, name: e.target.value })} required value={item.name} /></FormField>
+                            <FormField field="kind" error={action.fieldError('kind')} label={t('hk.linen.kind')}><Select onChange={(e) => setItem({ ...item, kind: e.target.value })} value={item.kind}>{linen.kinds.map((k) => <option key={k} value={k}>{t(`hk.linen.kind.${k}` as 'hk.linen.kind.linen')}</option>)}</Select></FormField>
+                            <FormField field="unit" error={action.fieldError('unit')} label={t('hk.linen.unit')}><Input maxLength={12} onChange={(e) => setItem({ ...item, unit: e.target.value })} required value={item.unit} /></FormField>
+                        </form>
+                    </div>
+                </Dialog>
+            )}
+
+            {canSend && (
+                <Dialog className="w-[min(42rem,calc(100vw-2rem))]" footer={<><Button disabled={action.busy} onClick={() => setDialog(null)} type="button" variant="outline">{t('ui.dialog.cancel')}</Button><Button form="linen-send-form" loading={action.busy} type="submit">{t('hk.linen.sendAction')}</Button></>} onClose={() => setDialog(null)} open={dialog === 'send'} title={t('hk.linen.send')}>
+                    <div className="flex flex-col gap-3">
+                        {action.error !== null ? <ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /> : null}
+                        <form className="grid gap-3 sm:grid-cols-2" id="linen-send-form" onSubmit={(e) => void sendTransfer(e)}>
+                            <FormField field="item_id" error={action.fieldError('item_id')} label={t('hk.linen.item')}><Select onChange={(e) => setSend({ ...send, itemId: e.target.value })} required value={send.itemId}><option value="">{t('hk.linen.choose')}</option>{active.map((i) => <option key={i.id} value={i.id}>{i.name}</option>)}</Select></FormField>
+                            <FormField field="from" error={action.fieldError('from')} label={t('hk.linen.from')}><Select onChange={(e) => setSend({ ...send, from: e.target.value, to: e.target.value === 'external' ? 'store' : send.to })} value={send.from}>{sources.map((p) => <option key={p} value={p}>{p === 'external' ? t('hk.linen.place.external') : place(p)}</option>)}</Select></FormField>
+                            <FormField field="to" error={action.fieldError('to')} label={t('hk.linen.to')}><Select onChange={(e) => setSend({ ...send, to: e.target.value })} value={send.to}>{linen.locations.filter((p) => send.from !== 'external' || p === 'store').map((p) => <option key={p} value={p}>{place(p)}</option>)}</Select></FormField>
+                            <FormField field="quantity" error={action.fieldError('quantity')} label={t('hk.linen.quantity')}><Input inputMode="numeric" min={1} onChange={(e) => setSend({ ...send, quantity: e.target.value })} required type="number" value={send.quantity} /></FormField>
+                            <div className="sm:col-span-2"><FormField field="note" error={action.fieldError('note')} label={t('hk.linen.note')}><Input maxLength={200} onChange={(e) => setSend({ ...send, note: e.target.value })} value={send.note} /></FormField></div>
+                        </form>
+                    </div>
+                </Dialog>
+            )}
+
+            <Dialog className="w-[min(42rem,calc(100vw-2rem))]" footer={<><Button disabled={action.busy} onClick={() => setDialog(null)} type="button" variant="outline">{t('ui.dialog.cancel')}</Button><Button form="linen-usage-form" loading={action.busy} type="submit">{t('hk.linen.record')}</Button></>} onClose={() => setDialog(null)} open={dialog === 'usage'} title={t('hk.linen.usage')}>
+                <div className="flex flex-col gap-3">
+                    {action.error !== null ? <ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /> : null}
+                    <form className="grid gap-3 sm:grid-cols-2" id="linen-usage-form" onSubmit={(e) => void recordUsage(e)}>
+                        <FormField field="room_id" error={action.fieldError('room_id')} label={t('hk.linen.room')}><Select onChange={(e) => setUse({ ...use, roomId: e.target.value })} required value={use.roomId}><option value="">{t('hk.linen.choose')}</option>{linen.rooms.map((r) => <option key={r.id} value={r.id}>{r.number}</option>)}</Select></FormField>
+                        <FormField field="item_id" error={action.fieldError('item_id')} label={t('hk.linen.item')}><Select onChange={(e) => setUse({ ...use, itemId: e.target.value })} required value={use.itemId}><option value="">{t('hk.linen.choose')}</option>{active.map((i) => <option key={i.id} value={i.id}>{i.name}</option>)}</Select></FormField>
+                        <FormField field="quantity" error={action.fieldError('quantity')} label={t('hk.linen.quantity')}><Input inputMode="numeric" min={1} onChange={(e) => setUse({ ...use, quantity: e.target.value })} required type="number" value={use.quantity} /></FormField>
+                        <FormField field="note" error={action.fieldError('note')} label={t('hk.linen.note')}><Input maxLength={200} onChange={(e) => setUse({ ...use, note: e.target.value })} value={use.note} /></FormField>
+                    </form>
+                </div>
+            </Dialog>
         </HousekeepingShell>
     );
 }

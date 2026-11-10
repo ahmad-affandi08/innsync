@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { DataGrid, type DataGridColumn } from '@/components/ui/data-grid';
 import { DatePicker } from '@/components/ui/date-picker';
+import { Dialog } from '@/components/ui/dialog';
 import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
@@ -80,30 +81,30 @@ export default function GroupsPage({ lookups, overview, query }: Props) {
             />
 
             {open && lookups !== null && (
-                <section aria-labelledby="grp-new-h" className="flex max-w-4xl flex-col gap-3 border border-border p-4" data-testid="group-form">
-                    <h2 className="text-lg font-semibold" id="grp-new-h">{t('fo.group.new')}</h2>
-                    {action.error !== null ? <ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /> : null}
-                    <div className="grid gap-3 sm:grid-cols-3">
-                        <FormField field="name" error={action.fieldError('name')} label={t('fo.group.name')}><Input maxLength={120} onChange={(e) => setForm({ ...form, name: e.target.value })} value={form.name} /></FormField>
-                        <FormField field="booker_name" error={action.fieldError('booker_name')} label={t('fo.group.booker')}><Input maxLength={150} onChange={(e) => setForm({ ...form, booker_name: e.target.value })} value={form.booker_name} /></FormField>
-                        <FormField field="source" error={action.fieldError('source')} label={t('fo.res.source')}><Select onChange={(e) => setForm({ ...form, source: e.target.value })} value={form.source}>{SOURCES.map((s) => <option key={s} value={s}>{t(`fo.source.${s}` as 'fo.source.direct')}</option>)}</Select></FormField>
-                        <FormField field="booker_phone" error={action.fieldError('booker_phone')} label={t('fo.res.phone')}><Input maxLength={30} onChange={(e) => setForm({ ...form, booker_phone: e.target.value })} value={form.booker_phone} /></FormField>
-                        <FormField field="booker_email" error={action.fieldError('booker_email')} label={t('fo.res.email')}><Input maxLength={190} onChange={(e) => setForm({ ...form, booker_email: e.target.value })} value={form.booker_email} /></FormField>
-                        <FormField field="status" error={action.fieldError('status')} label={t('fo.res.status')}><Select onChange={(e) => setForm({ ...form, status: e.target.value })} value={form.status}><option value="confirmed">{t('fo.status.confirmed')}</option><option value="tentative">{t('fo.status.tentative')}</option></Select></FormField>
-                        <FormField field="arrival" error={action.fieldError('arrival')} label={t('fo.res.arrival')}><DatePicker onChange={(e) => setForm({ ...form, arrival: e.target.value })} value={form.arrival} /></FormField>
-                        <FormField field="departure" error={action.fieldError('departure')} label={t('fo.res.departure')}><DatePicker onChange={(e) => setForm({ ...form, departure: e.target.value })} value={form.departure} /></FormField>
+                <Dialog className="w-[min(56rem,calc(100vw-2rem))]" footer={<><Button disabled={action.busy} onClick={() => setOpen(false)} type="button" variant="outline">{t('ui.dialog.cancel')}</Button><Button loading={action.busy} onClick={() => void create()} type="button">{t('fo.group.create')}</Button></>} onClose={() => setOpen(false)} open title={t('fo.group.new')}>
+                    <div className="flex flex-col gap-3" data-testid="group-form">
+                        {action.error !== null ? <ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /> : null}
+                        <div className="grid gap-3 sm:grid-cols-3">
+                            <FormField field="name" error={action.fieldError('name')} label={t('fo.group.name')}><Input maxLength={120} onChange={(e) => setForm({ ...form, name: e.target.value })} value={form.name} /></FormField>
+                            <FormField field="booker_name" error={action.fieldError('booker_name')} label={t('fo.group.booker')}><Input maxLength={150} onChange={(e) => setForm({ ...form, booker_name: e.target.value })} value={form.booker_name} /></FormField>
+                            <FormField field="source" error={action.fieldError('source')} label={t('fo.res.source')}><Select onChange={(e) => setForm({ ...form, source: e.target.value })} value={form.source}>{SOURCES.map((s) => <option key={s} value={s}>{t(`fo.source.${s}` as 'fo.source.direct')}</option>)}</Select></FormField>
+                            <FormField field="booker_phone" error={action.fieldError('booker_phone')} label={t('fo.res.phone')}><Input maxLength={30} onChange={(e) => setForm({ ...form, booker_phone: e.target.value })} value={form.booker_phone} /></FormField>
+                            <FormField field="booker_email" error={action.fieldError('booker_email')} label={t('fo.res.email')}><Input maxLength={190} onChange={(e) => setForm({ ...form, booker_email: e.target.value })} value={form.booker_email} /></FormField>
+                            <FormField field="status" error={action.fieldError('status')} label={t('fo.res.status')}><Select onChange={(e) => setForm({ ...form, status: e.target.value })} value={form.status}><option value="confirmed">{t('fo.status.confirmed')}</option><option value="tentative">{t('fo.status.tentative')}</option></Select></FormField>
+                            <FormField field="arrival" error={action.fieldError('arrival')} label={t('fo.res.arrival')}><DatePicker onChange={(e) => setForm({ ...form, arrival: e.target.value })} value={form.arrival} /></FormField>
+                            <FormField field="departure" error={action.fieldError('departure')} label={t('fo.res.departure')}><DatePicker onChange={(e) => setForm({ ...form, departure: e.target.value })} value={form.departure} /></FormField>
+                        </div>
+                        <fieldset className="flex flex-col gap-1 text-sm">
+                            <legend className="font-medium">{t('fo.group.billing')}</legend>
+                            <label className="flex items-center gap-2"><input checked={form.billing_mode === 'master'} name="billing" onChange={() => setForm({ ...form, billing_mode: 'master' })} type="radio" />{t('fo.group.mode.master')}</label>
+                            <label className="flex items-center gap-2"><input checked={form.billing_mode === 'per_room'} name="billing" onChange={() => setForm({ ...form, billing_mode: 'per_room' })} type="radio" />{t('fo.group.mode.per_room')}</label>
+                            {form.billing_mode === 'master' ? <label className="flex items-center gap-2"><input checked={form.route_extras} onChange={(e) => setForm({ ...form, route_extras: e.target.checked })} type="checkbox" />{t('fo.group.routeExtras')}</label> : null}
+                            <p className="text-muted-foreground">{t('fo.group.billingNote')}</p>
+                        </fieldset>
+                        <GroupRoomLines error={invalid ? t('fo.group.invalidRooms') : action.fieldError('rooms')} lines={lines} lookups={lookups} onChange={setLines} />
+                        <FormField field="notes" error={action.fieldError('notes')} label={t('fo.res.notes')}><Textarea maxLength={500} onChange={(e) => setForm({ ...form, notes: e.target.value })} rows={2} value={form.notes} /></FormField>
                     </div>
-                    <fieldset className="flex flex-col gap-1 text-sm">
-                        <legend className="font-medium">{t('fo.group.billing')}</legend>
-                        <label className="flex items-center gap-2"><input checked={form.billing_mode === 'master'} name="billing" onChange={() => setForm({ ...form, billing_mode: 'master' })} type="radio" />{t('fo.group.mode.master')}</label>
-                        <label className="flex items-center gap-2"><input checked={form.billing_mode === 'per_room'} name="billing" onChange={() => setForm({ ...form, billing_mode: 'per_room' })} type="radio" />{t('fo.group.mode.per_room')}</label>
-                        {form.billing_mode === 'master' ? <label className="flex items-center gap-2"><input checked={form.route_extras} onChange={(e) => setForm({ ...form, route_extras: e.target.checked })} type="checkbox" />{t('fo.group.routeExtras')}</label> : null}
-                        <p className="text-muted-foreground">{t('fo.group.billingNote')}</p>
-                    </fieldset>
-                    <GroupRoomLines error={invalid ? t('fo.group.invalidRooms') : action.fieldError('rooms')} lines={lines} lookups={lookups} onChange={setLines} />
-                    <FormField field="notes" error={action.fieldError('notes')} label={t('fo.res.notes')}><Textarea maxLength={500} onChange={(e) => setForm({ ...form, notes: e.target.value })} rows={2} value={form.notes} /></FormField>
-                    <div className="flex gap-2"><Button loading={action.busy} onClick={() => void create()} type="button">{t('fo.group.create')}</Button><Button disabled={action.busy} onClick={() => setOpen(false)} type="button" variant="outline">{t('ui.dialog.cancel')}</Button></div>
-                </section>
+                </Dialog>
             )}
         </FrontOfficeShell>
     );

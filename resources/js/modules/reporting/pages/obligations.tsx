@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { DataGrid, type DataGridColumn } from '@/components/ui/data-grid';
+import { Dialog } from '@/components/ui/dialog';
 import { DatePicker } from '@/components/ui/date-picker';
 import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
@@ -100,12 +101,13 @@ export default function ObligationsPage({ context, timeline: tl }: { context: { 
             <ul className="list-disc pl-5 text-xs text-muted-foreground">{[t('rpt.obl.note.definition'), t('rpt.obl.note.outlets'), t('rpt.obl.note.baseline')].map((n) => <li key={n}>{n}</li>)}</ul>
 
             {filing !== null && (
-                <section aria-labelledby="obl-file-h" className="flex max-w-xl flex-col gap-3 border border-border p-4">
-                    <h2 className="text-lg font-semibold" id="obl-file-h">{t('rpt.obl.filingTitle', { month: filing.month })}</h2>
-                    <FormField field="reported_on" error={action.fieldError('reported_on')} label={t('rpt.obl.reportedDate')}><DatePicker onChange={(e) => setFiling({ ...filing, date: e.target.value })} value={filing.date} /></FormField>
-                    <FormField field="reference" error={action.fieldError('reference')} hint={t('rpt.obl.referenceHint')} label={t('rpt.obl.reference')}><Input maxLength={60} onChange={(e) => setFiling({ ...filing, reference: e.target.value })} value={filing.reference} /></FormField>
-                    <div className="flex gap-2"><Button loading={action.busy} onClick={() => void report()} type="button">{t('rpt.obl.confirmReported')}</Button><Button disabled={action.busy} onClick={() => setFiling(null)} type="button" variant="outline">{t('ui.dialog.cancel')}</Button></div>
-                </section>
+                <Dialog className="w-[min(32rem,calc(100vw-2rem))]" footer={<><Button disabled={action.busy} onClick={() => setFiling(null)} type="button" variant="outline">{t('ui.dialog.cancel')}</Button><Button loading={action.busy} onClick={() => void report()} type="button">{t('rpt.obl.confirmReported')}</Button></>} onClose={() => setFiling(null)} open title={t('rpt.obl.filingTitle', { month: filing.month })}>
+                    <div className="flex flex-col gap-3">
+                        {action.error !== null ? <ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /> : null}
+                        <FormField field="reported_on" error={action.fieldError('reported_on')} label={t('rpt.obl.reportedDate')}><DatePicker onChange={(e) => setFiling({ ...filing, date: e.target.value })} value={filing.date} /></FormField>
+                        <FormField field="reference" error={action.fieldError('reference')} hint={t('rpt.obl.referenceHint')} label={t('rpt.obl.reference')}><Input maxLength={60} onChange={(e) => setFiling({ ...filing, reference: e.target.value })} value={filing.reference} /></FormField>
+                    </div>
+                </Dialog>
             )}
 
             {tl.may_manage && (

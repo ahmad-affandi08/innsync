@@ -2,6 +2,7 @@ import { useState } from 'react';
 
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
+import { Dialog } from '@/components/ui/dialog';
 import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
@@ -20,20 +21,26 @@ export default function OutletsPage({ overview }: { overview: Overview }) {
     const errorCopy = useErrorStateCopy();
     const action = useServerAction();
     const [form, setForm] = useState({ code: '', name: '', reason: '' });
+    const [adding, setAdding] = useState(false);
     const [source, setSource] = useState<Record<string, { value: string; reason: string }>>({});
     const [rename, setRename] = useState<Record<string, { name: string; reason: string }>>({});
     const reload = ['overview'];
 
     async function create() {
         const done = await action.run('/reports/outlets', { body: { code: form.code, name: form.name, reason: form.reason.trim() }, reload });
-        if (done !== null) setForm({ code: '', name: '', reason: '' });
+        if (done === null) return;
+        setForm({ code: '', name: '', reason: '' });
+        setAdding(false);
     }
 
     return (
         <ReportingShell description={t('rpt.outlets.description')} title={t('rpt.outlets.title')} wide>
-            {action.error !== null ? <ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /> : null}
+            {action.error !== null && !adding ? <ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /> : null}
             <Alert title={t('rpt.outlets.note')} tone="info" />
-            <p className="text-sm text-muted-foreground">{t('rpt.outlets.builtInNote')}</p>
+            <div className="flex flex-wrap items-center justify-between gap-2">
+                <p className="text-sm text-muted-foreground">{t('rpt.outlets.builtInNote')}</p>
+                <Button onClick={() => { action.clear(); setAdding(true); }} size="sm" type="button">{t('rpt.outlets.add')}</Button>
+            </div>
 
             {overview.outlets.length === 0 ? <EmptyState title={t('rpt.outlets.empty')} /> : (
                 <ul className="flex flex-col gap-4" data-testid="outlets">{overview.outlets.map((o) => {
@@ -70,15 +77,14 @@ export default function OutletsPage({ overview }: { overview: Overview }) {
                 {overview.unmapped.length === 0 ? <p className="text-sm text-muted-foreground">{t('rpt.outlets.noneUnmapped')}</p> : <ul className="flex flex-wrap gap-2 text-sm" data-testid="unmapped">{overview.unmapped.map((x) => <li key={x}><code>{x}</code></li>)}</ul>}
             </section>
 
-            <section aria-labelledby="outlet-add-h" className="flex flex-col gap-3 border-t border-border pt-4">
-                <h2 className="text-lg font-semibold" id="outlet-add-h">{t('rpt.outlets.add')}</h2>
-                <form className="grid gap-3 sm:grid-cols-4" onSubmit={(e) => { e.preventDefault(); void create(); }}>
+            <Dialog className="w-[min(34rem,calc(100vw-2rem))]" footer={<><Button disabled={action.busy} onClick={() => setAdding(false)} type="button" variant="outline">{t('ui.dialog.cancel')}</Button><Button form="outlet-add-form" loading={action.busy} type="submit">{t('rpt.outlets.add')}</Button></>} onClose={() => setAdding(false)} open={adding} title={t('rpt.outlets.add')}>
+                <form className="flex flex-col gap-3" id="outlet-add-form" onSubmit={(e) => { e.preventDefault(); void create(); }}>
+                    {action.error !== null ? <ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /> : null}
                     <FormField field="code" error={action.fieldError('code')} label={t('rpt.outlets.code')}><Input maxLength={20} onChange={(e) => setForm({ ...form, code: e.target.value })} required value={form.code} /></FormField>
                     <FormField field="name" error={action.fieldError('name')} label={t('rpt.outlets.name')}><Input maxLength={60} onChange={(e) => setForm({ ...form, name: e.target.value })} required value={form.name} /></FormField>
                     <FormField field="reason" error={action.fieldError('reason')} label={t('rpt.outlets.reason')}><Input maxLength={300} onChange={(e) => setForm({ ...form, reason: e.target.value })} required value={form.reason} /></FormField>
-                    <div className="flex items-end"><Button loading={action.busy} type="submit">{t('rpt.outlets.add')}</Button></div>
                 </form>
-            </section>
+            </Dialog>
         </ReportingShell>
     );
 }

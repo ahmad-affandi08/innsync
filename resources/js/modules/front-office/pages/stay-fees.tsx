@@ -2,6 +2,7 @@ import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { DatePicker } from '@/components/ui/date-picker';
+import { Dialog } from '@/components/ui/dialog';
 import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
@@ -22,11 +23,14 @@ export default function StayFeesPage({ catalogue }: Props) {
     const format = useFormatters();
     const errorCopy = useErrorStateCopy();
     const action = useServerAction();
-    const [form, setForm] = useState({ kind: 'late_checkout', from: catalogue.business_date, grace: '60', beyond: '100', reason: '' });
-    const [bands, setBands] = useState<Band[]>([{ minutes: '180', percent: '25' }, { minutes: '360', percent: '50' }]);
+    const blank = () => ({ kind: 'late_checkout', from: catalogue.business_date, grace: '60', beyond: '100', reason: '' });
+    const blankBands = (): Band[] => [{ minutes: '180', percent: '25' }, { minutes: '360', percent: '50' }];
+    const [form, setForm] = useState<ReturnType<typeof blank> | null>(null);
+    const [bands, setBands] = useState<Band[]>(blankBands);
     const pct = (bp: number) => `${bp / 100}%`;
 
     async function save() {
+        if (form === null) return;
         const done = await action.run('/front-office/stay-fees', {
             body: {
                 kind: form.kind, effective_from: form.from, grace_minutes: Number(form.grace), beyond_bp: Math.round(Number(form.beyond) * 100), reason: form.reason.trim(),
@@ -34,12 +38,13 @@ export default function StayFeesPage({ catalogue }: Props) {
             },
             reload: ['catalogue'],
         });
-        if (done !== null) setForm({ ...form, reason: '' });
+        if (done !== null) setForm(null);
     }
 
     return (
         <FrontOfficeShell description={t('fo.stayfee.description', { checkIn: catalogue.standard.check_in, checkOut: catalogue.standard.check_out })} title={t('fo.stayfee.title')} wide>
-            {action.error !== null ? <ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /> : null}
+            {action.error !== null && form === null ? <ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /> : null}
+            <div><Button onClick={() => { action.clear(); setBands(blankBands()); setForm(blank()); }} size="sm" type="button">{t('fo.stayfee.new')}</Button></div>
             {catalogue.policies.length === 0 ? <EmptyState title={t('fo.stayfee.empty')} /> : (
                 <ul className="flex flex-col gap-2 text-sm" data-testid="stay-fee-policies">
                     {catalogue.policies.map((p) => (
@@ -52,28 +57,31 @@ export default function StayFeesPage({ catalogue }: Props) {
                 </ul>
             )}
 
-            <section aria-labelledby="sf-new-h" className="flex max-w-xl flex-col gap-3 border-t border-border pt-4">
-                <h2 className="text-lg font-semibold" id="sf-new-h">{t('fo.stayfee.new')}</h2>
-                <p className="text-xs text-muted-foreground">{t('fo.stayfee.note')}</p>
-                <FormField field="kind" error={action.fieldError('kind')} label={t('fo.stayfee.kind')}><Select onChange={(e) => setForm({ ...form, kind: e.target.value })} value={form.kind}>{catalogue.kinds.map((k) => <option key={k} value={k}>{t(`fo.stayfee.kind.${k}` as 'fo.stayfee.kind.late_checkout')}</option>)}</Select></FormField>
-                <FormField field="effective_from" error={action.fieldError('effective_from')} label={t('fo.stayfee.effective')}><DatePicker min={catalogue.business_date} onChange={(e) => setForm({ ...form, from: e.target.value })} value={form.from} /></FormField>
-                <FormField field="grace_minutes" error={action.fieldError('grace_minutes')} hint={t('fo.stayfee.graceHint')} label={t('fo.stayfee.grace')}><Input inputMode="numeric" onChange={(e) => setForm({ ...form, grace: e.target.value })} value={form.grace} /></FormField>
-                <fieldset className="flex flex-col gap-2">
-                    <legend className="text-sm font-medium">{t('fo.stayfee.bands')}</legend>
-                    {bands.map((b, i) => (
-                        <div className="flex flex-wrap items-end gap-2" key={i}>
-                            <FormField field="bands.*.up_to_minutes" label={t('fo.stayfee.upTo')}><Input aria-label={`${t('fo.stayfee.upTo')} ${i + 1}`} className="w-28" inputMode="numeric" onChange={(e) => setBands(bands.map((x, j) => (j === i ? { ...x, minutes: e.target.value } : x)))} value={b.minutes} /></FormField>
-                            <FormField field="bands.*.percent_bp" label={t('fo.stayfee.share')}><Input aria-label={`${t('fo.stayfee.share')} ${i + 1}`} className="w-28" inputMode="decimal" onChange={(e) => setBands(bands.map((x, j) => (j === i ? { ...x, percent: e.target.value } : x)))} value={b.percent} /></FormField>
-                            <Button onClick={() => setBands(bands.filter((_, j) => j !== i))} size="sm" type="button" variant="outline">{t('fo.stayfee.removeBand')}</Button>
-                        </div>
-                    ))}
-                    {action.fieldError('bands') ? <p className="text-sm text-danger">{action.fieldError('bands')}</p> : null}
-                    {bands.length < 6 ? <div><Button onClick={() => setBands([...bands, { minutes: '', percent: '' }])} size="sm" type="button" variant="outline">{t('fo.stayfee.addBand')}</Button></div> : null}
-                </fieldset>
-                <FormField field="beyond_bp" error={action.fieldError('beyond_bp')} hint={t('fo.stayfee.beyondHint')} label={t('fo.stayfee.beyondLabel')}><Input inputMode="decimal" onChange={(e) => setForm({ ...form, beyond: e.target.value })} value={form.beyond} /></FormField>
-                <FormField field="reason" error={action.fieldError('reason')} label={t('fo.stayfee.reason')}><Input maxLength={300} onChange={(e) => setForm({ ...form, reason: e.target.value })} value={form.reason} /></FormField>
-                <div><Button disabled={form.reason.trim() === ''} loading={action.busy} onClick={() => void save()} type="button">{t('fo.stayfee.save')}</Button></div>
-            </section>
+            {form !== null && (
+                <Dialog className="w-[min(42rem,calc(100vw-2rem))]" footer={<><Button disabled={action.busy} onClick={() => setForm(null)} type="button" variant="outline">{t('ui.dialog.cancel')}</Button><Button disabled={form.reason.trim() === ''} loading={action.busy} onClick={() => void save()} type="button">{t('fo.stayfee.save')}</Button></>} onClose={() => setForm(null)} open title={t('fo.stayfee.new')}>
+                    <div className="flex flex-col gap-3" data-testid="stay-fee-form">
+                        {action.error !== null ? <ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /> : null}
+                        <p className="text-xs text-muted-foreground">{t('fo.stayfee.note')}</p>
+                        <FormField field="kind" error={action.fieldError('kind')} label={t('fo.stayfee.kind')}><Select onChange={(e) => setForm({ ...form, kind: e.target.value })} value={form.kind}>{catalogue.kinds.map((k) => <option key={k} value={k}>{t(`fo.stayfee.kind.${k}` as 'fo.stayfee.kind.late_checkout')}</option>)}</Select></FormField>
+                        <FormField field="effective_from" error={action.fieldError('effective_from')} label={t('fo.stayfee.effective')}><DatePicker min={catalogue.business_date} onChange={(e) => setForm({ ...form, from: e.target.value })} value={form.from} /></FormField>
+                        <FormField field="grace_minutes" error={action.fieldError('grace_minutes')} hint={t('fo.stayfee.graceHint')} label={t('fo.stayfee.grace')}><Input inputMode="numeric" onChange={(e) => setForm({ ...form, grace: e.target.value })} value={form.grace} /></FormField>
+                        <fieldset className="flex flex-col gap-2">
+                            <legend className="text-sm font-medium">{t('fo.stayfee.bands')}</legend>
+                            {bands.map((b, i) => (
+                                <div className="flex flex-wrap items-end gap-2" key={i}>
+                                    <FormField field="bands.*.up_to_minutes" label={t('fo.stayfee.upTo')}><Input aria-label={`${t('fo.stayfee.upTo')} ${i + 1}`} className="w-28" inputMode="numeric" onChange={(e) => setBands(bands.map((x, j) => (j === i ? { ...x, minutes: e.target.value } : x)))} value={b.minutes} /></FormField>
+                                    <FormField field="bands.*.percent_bp" label={t('fo.stayfee.share')}><Input aria-label={`${t('fo.stayfee.share')} ${i + 1}`} className="w-28" inputMode="decimal" onChange={(e) => setBands(bands.map((x, j) => (j === i ? { ...x, percent: e.target.value } : x)))} value={b.percent} /></FormField>
+                                    <Button onClick={() => setBands(bands.filter((_, j) => j !== i))} size="sm" type="button" variant="outline">{t('fo.stayfee.removeBand')}</Button>
+                                </div>
+                            ))}
+                            {action.fieldError('bands') ? <p className="text-sm text-danger">{action.fieldError('bands')}</p> : null}
+                            {bands.length < 6 ? <div><Button onClick={() => setBands([...bands, { minutes: '', percent: '' }])} size="sm" type="button" variant="outline">{t('fo.stayfee.addBand')}</Button></div> : null}
+                        </fieldset>
+                        <FormField field="beyond_bp" error={action.fieldError('beyond_bp')} hint={t('fo.stayfee.beyondHint')} label={t('fo.stayfee.beyondLabel')}><Input inputMode="decimal" onChange={(e) => setForm({ ...form, beyond: e.target.value })} value={form.beyond} /></FormField>
+                        <FormField field="reason" error={action.fieldError('reason')} label={t('fo.stayfee.reason')}><Input maxLength={300} onChange={(e) => setForm({ ...form, reason: e.target.value })} value={form.reason} /></FormField>
+                    </div>
+                </Dialog>
+            )}
         </FrontOfficeShell>
     );
 }

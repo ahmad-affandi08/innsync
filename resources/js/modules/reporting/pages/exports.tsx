@@ -4,6 +4,7 @@ import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { DataGrid, type DataGridColumn } from '@/components/ui/data-grid';
 import { DatePicker } from '@/components/ui/date-picker';
+import { Dialog } from '@/components/ui/dialog';
 import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
@@ -29,6 +30,7 @@ export default function ExportsPage({ overview }: { overview: Overview }) {
     const errorCopy = useErrorStateCopy();
     const action = useServerAction();
     const [form, setForm] = useState({ report: overview.reports[0] ?? '', preset: 'today', from: '', to: '', date: '', purpose: '' });
+    const [adding, setAdding] = useState(false);
     const waiting = overview.jobs.some((j) => j.status === 'queued' || j.status === 'running');
     const personal = PERSONAL.includes(form.report);
 
@@ -47,7 +49,9 @@ export default function ExportsPage({ overview }: { overview: Overview }) {
         if (form.report === 'movements') { if (form.date !== '') params.date = form.date; }
         else if (form.report !== 'comparison') { if (form.from !== '' && form.to !== '') { params.from = form.from; params.to = form.to; } else params.preset = form.preset; }
         const done = await action.run('/reports/exports', { body: { report: form.report, params, purpose: form.purpose.trim() || null }, reload: ['overview'] });
-        if (done !== null) setForm({ ...form, purpose: '' });
+        if (done === null) return;
+        setForm({ ...form, purpose: '' });
+        setAdding(false);
     }
 
     const reportName = (j: Job) => t(`rpt.report.${j.report}` as 'rpt.report.flash');
@@ -67,8 +71,11 @@ export default function ExportsPage({ overview }: { overview: Overview }) {
 
     return (
         <ReportingShell description={t('rpt.exports.description')} title={t('rpt.exports.title')} wide>
-            {action.error !== null ? <ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /> : null}
-            <Alert title={t('rpt.exports.note')} tone="info" />
+            {action.error !== null && !adding ? <ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /> : null}
+            <div className="flex flex-wrap items-start justify-between gap-2">
+                <Alert title={t('rpt.exports.note')} tone="info" />
+                {overview.reports.length > 0 ? <Button onClick={() => { action.clear(); setAdding(true); }} size="sm" type="button">{t('rpt.exports.new')}</Button> : null}
+            </div>
 
             <DataGrid
                 caption={t('rpt.exports.title')}
@@ -81,22 +88,21 @@ export default function ExportsPage({ overview }: { overview: Overview }) {
             />
 
             {overview.reports.length > 0 && (
-                <section aria-labelledby="exp-new-h" className="flex max-w-3xl flex-col gap-3 border-t border-border pt-4">
-                    <h2 className="text-lg font-semibold" id="exp-new-h">{t('rpt.exports.new')}</h2>
-                    <form className="grid gap-3 sm:grid-cols-2" onSubmit={(e) => { e.preventDefault(); void submit(); }}>
-                        <FormField field="report" error={action.fieldError('report')} label={t('rpt.exports.report')}><Select onChange={(e) => setForm({ ...form, report: e.target.value })} value={form.report}>{overview.reports.map((r) => <option key={r} value={r}>{t(`rpt.report.${r}` as 'rpt.report.flash')}</option>)}</Select></FormField>
-                        {form.report === 'movements' ? <FormField label={t('rpt.exports.date')}><DatePicker onChange={(e) => setForm({ ...form, date: e.target.value })} value={form.date} /></FormField> : null}
-                        {form.report !== 'movements' && form.report !== 'comparison' ? (
-                            <>
-                                <FormField label={t('rpt.period.label')}><Select onChange={(e) => setForm({ ...form, preset: e.target.value })} value={form.preset}>{PRESETS.map((p) => <option key={p} value={p}>{t(`rpt.period.${p}` as 'rpt.period.today')}</option>)}</Select></FormField>
-                                <FormField label={t('rpt.period.from')}><DatePicker onChange={(e) => setForm({ ...form, from: e.target.value })} value={form.from} /></FormField>
-                                <FormField label={t('rpt.period.to')}><DatePicker onChange={(e) => setForm({ ...form, to: e.target.value })} value={form.to} /></FormField>
-                            </>
-                        ) : null}
-                        {personal ? <div className="sm:col-span-2"><FormField field="purpose" error={action.fieldError('purpose')} hint={t('rpt.exports.purposeHint')} label={t('rpt.exports.purpose')}><Input maxLength={300} onChange={(e) => setForm({ ...form, purpose: e.target.value })} required value={form.purpose} /></FormField></div> : null}
-                        <div className="sm:col-span-2"><Button loading={action.busy} type="submit">{t('rpt.exports.ask')}</Button></div>
-                    </form>
-                </section>
+                <Dialog className="w-[min(42rem,calc(100vw-2rem))]" footer={<><Button disabled={action.busy} onClick={() => setAdding(false)} type="button" variant="outline">{t('ui.dialog.cancel')}</Button><Button form="export-new-form" loading={action.busy} type="submit">{t('rpt.exports.ask')}</Button></>} onClose={() => setAdding(false)} open={adding} title={t('rpt.exports.new')}>
+                        <form className="grid gap-3 sm:grid-cols-2" id="export-new-form" onSubmit={(e) => { e.preventDefault(); void submit(); }}>
+                        {action.error !== null ? <div className="sm:col-span-2"><ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /></div> : null}
+                            <FormField field="report" error={action.fieldError('report')} label={t('rpt.exports.report')}><Select onChange={(e) => setForm({ ...form, report: e.target.value })} value={form.report}>{overview.reports.map((r) => <option key={r} value={r}>{t(`rpt.report.${r}` as 'rpt.report.flash')}</option>)}</Select></FormField>
+                            {form.report === 'movements' ? <FormField label={t('rpt.exports.date')}><DatePicker onChange={(e) => setForm({ ...form, date: e.target.value })} value={form.date} /></FormField> : null}
+                            {form.report !== 'movements' && form.report !== 'comparison' ? (
+                                <>
+                                    <FormField label={t('rpt.period.label')}><Select onChange={(e) => setForm({ ...form, preset: e.target.value })} value={form.preset}>{PRESETS.map((p) => <option key={p} value={p}>{t(`rpt.period.${p}` as 'rpt.period.today')}</option>)}</Select></FormField>
+                                    <FormField label={t('rpt.period.from')}><DatePicker onChange={(e) => setForm({ ...form, from: e.target.value })} value={form.from} /></FormField>
+                                    <FormField label={t('rpt.period.to')}><DatePicker onChange={(e) => setForm({ ...form, to: e.target.value })} value={form.to} /></FormField>
+                                </>
+                            ) : null}
+                            {personal ? <div className="sm:col-span-2"><FormField field="purpose" error={action.fieldError('purpose')} hint={t('rpt.exports.purposeHint')} label={t('rpt.exports.purpose')}><Input maxLength={300} onChange={(e) => setForm({ ...form, purpose: e.target.value })} required value={form.purpose} /></FormField></div> : null}
+                        </form>
+                </Dialog>
             )}
         </ReportingShell>
     );

@@ -4,6 +4,7 @@ import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { DataGrid, type DataGridColumn } from '@/components/ui/data-grid';
 import { DatePicker } from '@/components/ui/date-picker';
+import { Dialog } from '@/components/ui/dialog';
 import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
@@ -31,6 +32,7 @@ export default function ParLevelsPage({ overview }: { overview: Overview }) {
     const errorCopy = useErrorStateCopy();
     const action = useServerAction();
     const [form, setForm] = useState({ itemId: overview.items[0]?.id ?? '', kind: 'room_type', ref: overview.room_types[0]?.id ?? '', par: '', use: '0', reason: '' });
+    const [open, setOpen] = useState(false);
     const [when, setWhen] = useState({ date: overview.business_date, shift: 'morning' });
     const [shown, setShown] = useState<Consumption | null>(null);
     const typeCode = (id: string | null) => overview.room_types.find((x) => x.id === id)?.code ?? '';
@@ -41,7 +43,7 @@ export default function ParLevelsPage({ overview }: { overview: Overview }) {
             body: { item_id: form.itemId, scope_kind: form.kind, scope_ref: form.ref.trim(), par_quantity: Number(form.par), use_quantity: form.kind === 'area' ? 0 : Number(form.use), lock_version: existing === undefined ? null : existing.lock_version, reason: form.reason.trim() },
             reload: ['overview'],
         });
-        if (done !== null) setForm({ ...form, par: '', reason: '' });
+        if (done !== null) { setForm({ ...form, par: '', reason: '' }); setOpen(false); }
     }
 
     async function show() {
@@ -50,8 +52,14 @@ export default function ParLevelsPage({ overview }: { overview: Overview }) {
         if (result !== null) setShown(result.consumption);
     }
 
+    function add() {
+        action.clear();
+        setOpen(true);
+    }
+
     function edit(l: Level) {
         action.clear();
+        setOpen(true);
         setForm({ itemId: l.item_id, kind: l.scope_kind, ref: l.scope_kind === 'area' ? (l.area ?? '') : (l.room_type_id ?? ''), par: String(l.par_quantity), use: String(l.use_quantity), reason: '' });
     }
 
@@ -87,7 +95,7 @@ export default function ParLevelsPage({ overview }: { overview: Overview }) {
 
     return (
         <HousekeepingShell description={t('hk.par.description')} title={t('hk.par.title')} wide>
-            {action.error !== null ? <ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /> : null}
+            {action.error !== null && !open ? <ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /> : null}
 
             <Tabs defaultValue="par-need-h">
                 <TabsList>
@@ -131,7 +139,10 @@ export default function ParLevelsPage({ overview }: { overview: Overview }) {
             </TabsContent>
 
             <TabsContent className="flex flex-col gap-3" value="par-set-h">
-                <h2 className="sr-only" id="par-set-h">{t('hk.par.levels')}</h2>
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                    <h2 className="text-lg font-semibold" id="par-set-h">{t('hk.par.levels')}</h2>
+                    {overview.may.manage ? <Button onClick={add} size="sm" type="button">{t('hk.par.set')}</Button> : null}
+                </div>
                 <DataGrid
                     caption={t('hk.par.levels')}
                     columns={levelColumns}
@@ -145,25 +156,26 @@ export default function ParLevelsPage({ overview }: { overview: Overview }) {
             </Tabs>
 
             {overview.may.manage && (
-                <section aria-labelledby="par-form-h" className="flex max-w-3xl flex-col gap-3 border-t border-border pt-4">
-                    <h2 className="text-lg font-semibold" id="par-form-h">{t('hk.par.set')}</h2>
-                    <Alert title={t('hk.par.setNote')} tone="info" />
-                    <form className="grid gap-3 sm:grid-cols-3" onSubmit={(e) => { e.preventDefault(); void save(); }}>
-                        <FormField field="item_id" error={action.fieldError('item_id')} label={t('hk.par.item')}><Select onChange={(e) => setForm({ ...form, itemId: e.target.value })} value={form.itemId}>{overview.items.map((i) => <option key={i.id} value={i.id}>{i.code} · {i.name}</option>)}</Select></FormField>
-                        <FormField field="scope_kind" error={action.fieldError('scope_kind')} label={t('hk.par.scope')}>
-                            <Select onChange={(e) => setForm({ ...form, kind: e.target.value, ref: e.target.value === 'area' ? '' : (overview.room_types[0]?.id ?? ''), use: e.target.value === 'area' ? '0' : form.use })} value={form.kind}><option value="room_type">{t('hk.par.roomType')}</option><option value="area">{t('hk.par.area')}</option></Select>
-                        </FormField>
-                        {form.kind === 'room_type' ? (
-                            <FormField field="scope_ref" error={action.fieldError('scope_ref')} label={t('hk.par.roomType')}><Select onChange={(e) => setForm({ ...form, ref: e.target.value })} value={form.ref}>{overview.room_types.map((r) => <option key={r.id} value={r.id}>{r.code} · {r.name} ({r.rooms})</option>)}</Select></FormField>
-                        ) : (
-                            <FormField field="scope_ref" error={action.fieldError('scope_ref')} hint={overview.areas.length === 0 ? undefined : overview.areas.join(', ')} label={t('hk.par.area')}><Input maxLength={40} onChange={(e) => setForm({ ...form, ref: e.target.value })} value={form.ref} /></FormField>
-                        )}
-                        <FormField field="par_quantity" error={action.fieldError('par_quantity')} hint={form.kind === 'room_type' ? t('hk.par.parHint') : t('hk.par.parAreaHint')} label={t('hk.par.par')}><Input inputMode="numeric" onChange={(e) => setForm({ ...form, par: e.target.value })} required value={form.par} /></FormField>
-                        {form.kind === 'room_type' ? <FormField field="use_quantity" error={action.fieldError('use_quantity')} hint={t('hk.par.useHint')} label={t('hk.par.standard')}><Input inputMode="numeric" onChange={(e) => setForm({ ...form, use: e.target.value })} required value={form.use} /></FormField> : <div />}
-                        <FormField field="reason" error={action.fieldError('reason')} label={t('fo.folio.reason')}><Input maxLength={300} onChange={(e) => setForm({ ...form, reason: e.target.value })} required value={form.reason} /></FormField>
-                        <div className="sm:col-span-3"><Button loading={action.busy} type="submit">{t('hk.par.save')}</Button></div>
-                    </form>
-                </section>
+                <Dialog className="w-[min(56rem,calc(100vw-2rem))]" footer={<><Button disabled={action.busy} onClick={() => setOpen(false)} type="button" variant="outline">{t('ui.dialog.cancel')}</Button><Button form="par-form" loading={action.busy} type="submit">{t('hk.par.save')}</Button></>} onClose={() => setOpen(false)} open={open} title={t('hk.par.set')}>
+                    <div className="flex flex-col gap-3" data-testid="par-form">
+                        {action.error !== null ? <ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /> : null}
+                        <Alert title={t('hk.par.setNote')} tone="info" />
+                        <form className="grid gap-3 sm:grid-cols-3" id="par-form" onSubmit={(e) => { e.preventDefault(); void save(); }}>
+                            <FormField field="item_id" error={action.fieldError('item_id')} label={t('hk.par.item')}><Select onChange={(e) => setForm({ ...form, itemId: e.target.value })} value={form.itemId}>{overview.items.map((i) => <option key={i.id} value={i.id}>{i.code} · {i.name}</option>)}</Select></FormField>
+                            <FormField field="scope_kind" error={action.fieldError('scope_kind')} label={t('hk.par.scope')}>
+                                <Select onChange={(e) => setForm({ ...form, kind: e.target.value, ref: e.target.value === 'area' ? '' : (overview.room_types[0]?.id ?? ''), use: e.target.value === 'area' ? '0' : form.use })} value={form.kind}><option value="room_type">{t('hk.par.roomType')}</option><option value="area">{t('hk.par.area')}</option></Select>
+                            </FormField>
+                            {form.kind === 'room_type' ? (
+                                <FormField field="scope_ref" error={action.fieldError('scope_ref')} label={t('hk.par.roomType')}><Select onChange={(e) => setForm({ ...form, ref: e.target.value })} value={form.ref}>{overview.room_types.map((r) => <option key={r.id} value={r.id}>{r.code} · {r.name} ({r.rooms})</option>)}</Select></FormField>
+                            ) : (
+                                <FormField field="scope_ref" error={action.fieldError('scope_ref')} hint={overview.areas.length === 0 ? undefined : overview.areas.join(', ')} label={t('hk.par.area')}><Input maxLength={40} onChange={(e) => setForm({ ...form, ref: e.target.value })} value={form.ref} /></FormField>
+                            )}
+                            <FormField field="par_quantity" error={action.fieldError('par_quantity')} hint={form.kind === 'room_type' ? t('hk.par.parHint') : t('hk.par.parAreaHint')} label={t('hk.par.par')}><Input inputMode="numeric" onChange={(e) => setForm({ ...form, par: e.target.value })} required value={form.par} /></FormField>
+                            {form.kind === 'room_type' ? <FormField field="use_quantity" error={action.fieldError('use_quantity')} hint={t('hk.par.useHint')} label={t('hk.par.standard')}><Input inputMode="numeric" onChange={(e) => setForm({ ...form, use: e.target.value })} required value={form.use} /></FormField> : <div />}
+                            <FormField field="reason" error={action.fieldError('reason')} label={t('fo.folio.reason')}><Input maxLength={300} onChange={(e) => setForm({ ...form, reason: e.target.value })} required value={form.reason} /></FormField>
+                        </form>
+                    </div>
+                </Dialog>
             )}
         </HousekeepingShell>
     );

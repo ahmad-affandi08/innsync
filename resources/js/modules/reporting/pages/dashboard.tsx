@@ -4,6 +4,7 @@ import { Fragment, useEffect, useState } from 'react';
 
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
+import { Dialog } from '@/components/ui/dialog';
 import type { MessageKey } from '@/locales/en/index';
 import { PeriodPicker } from '@/modules/reporting/components/period-picker';
 import { ReportingShell } from '@/modules/reporting/components/reporting-shell';
@@ -113,24 +114,21 @@ export default function DashboardPage({ currency, preferences, snapshot: s, tv }
             </div>
 
             {editing && (
-                <section aria-labelledby="dash-edit-h" className="flex max-w-xl flex-col gap-2 border border-border p-4" data-testid="dash-customize">
-                    <h2 className="text-lg font-semibold" id="dash-edit-h">{t('rpt.dash.customize')}</h2>
-                    <p className="text-xs text-muted-foreground">{t('rpt.dash.customizeNote')}</p>
-                    <ul className="flex flex-col gap-1">
-                        {editable.map((c, i) => (
-                            <li className="flex items-center gap-2 text-sm" key={c.key}>
-                                <label className="flex flex-1 items-center gap-2"><input checked={!draft.hidden.includes(c.key)} onChange={(e) => setDraft({ ...draft, hidden: e.target.checked ? draft.hidden.filter((k) => k !== c.key) : [...draft.hidden, c.key] })} type="checkbox" />{labelOf(c.key)}</label>
-                                <Button aria-label={`${t('rpt.dash.up')} ${labelOf(c.key)}`} disabled={i === 0} onClick={() => move(c.key, -1)} size="sm" type="button" variant="outline">↑</Button>
-                                <Button aria-label={`${t('rpt.dash.down')} ${labelOf(c.key)}`} disabled={i === editable.length - 1} onClick={() => move(c.key, 1)} size="sm" type="button" variant="outline">↓</Button>
-                            </li>
-                        ))}
-                    </ul>
-                    {action.fieldError('hidden') ? <p className="text-sm text-danger">{action.fieldError('hidden')}</p> : null}
-                    <div className="flex gap-2">
-                        <Button loading={action.busy} onClick={() => void save()} size="sm" type="button">{t('rpt.dash.saveLayout')}</Button>
-                        <Button disabled={action.busy} onClick={() => void reset()} size="sm" type="button" variant="outline">{t('rpt.dash.resetLayout')}</Button>
+                <Dialog className="w-[min(34rem,calc(100vw-2rem))]" footer={<><Button loading={action.busy} onClick={() => void save()} size="sm" type="button">{t('rpt.dash.saveLayout')}</Button><Button disabled={action.busy} onClick={() => void reset()} size="sm" type="button" variant="outline">{t('rpt.dash.resetLayout')}</Button></>} onClose={() => setEditing(false)} open title={t('rpt.dash.customize')}>
+                    <div className="flex flex-col gap-2" data-testid="dash-customize">
+                        <p className="text-xs text-muted-foreground">{t('rpt.dash.customizeNote')}</p>
+                        <ul className="flex flex-col gap-1">
+                            {editable.map((c, i) => (
+                                <li className="flex items-center gap-2 text-sm" key={c.key}>
+                                    <label className="flex flex-1 items-center gap-2"><input checked={!draft.hidden.includes(c.key)} onChange={(e) => setDraft({ ...draft, hidden: e.target.checked ? draft.hidden.filter((k) => k !== c.key) : [...draft.hidden, c.key] })} type="checkbox" />{labelOf(c.key)}</label>
+                                    <Button aria-label={`${t('rpt.dash.up')} ${labelOf(c.key)}`} disabled={i === 0} onClick={() => move(c.key, -1)} size="sm" type="button" variant="outline">↑</Button>
+                                    <Button aria-label={`${t('rpt.dash.down')} ${labelOf(c.key)}`} disabled={i === editable.length - 1} onClick={() => move(c.key, 1)} size="sm" type="button" variant="outline">↓</Button>
+                                </li>
+                            ))}
+                        </ul>
+                        {action.fieldError('hidden') ? <p className="text-sm text-danger">{action.fieldError('hidden')}</p> : null}
                     </div>
-                </section>
+                </Dialog>
             )}
 
             <div className="grid gap-4 md:grid-cols-2">

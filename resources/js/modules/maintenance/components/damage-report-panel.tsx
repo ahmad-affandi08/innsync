@@ -2,6 +2,7 @@ import { useState, type FormEvent, type ReactNode } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { DataGrid, type DataGridColumn } from '@/components/ui/data-grid';
+import { Dialog } from '@/components/ui/dialog';
 import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
@@ -33,6 +34,7 @@ export function DamageReportPanel({ action, onSend, overview, roomField }: { act
     const [form, setForm] = useState({ roomId: '', area: '', category: 'other', title: '', detail: '', urgent: false });
     const [file, setFile] = useState<File | null>(null);
     const [pickerKey, setPickerKey] = useState(0);
+    const [open, setOpen] = useState(false);
     const [done, setDone] = useState<string | null>(null);
     const withRooms = roomField !== undefined;
 
@@ -45,6 +47,7 @@ export function DamageReportPanel({ action, onSend, overview, roomField }: { act
             setForm({ ...form, title: '', detail: '', urgent: false });
             setFile(null);
             setPickerKey((k) => k + 1);
+            setOpen(false);
         }
     }
 
@@ -58,22 +61,27 @@ export function DamageReportPanel({ action, onSend, overview, roomField }: { act
 
     return (
         <div className="flex flex-col gap-4">
-            {action.error !== null ? <ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /> : null}
-            <form className="grid gap-3 border border-border bg-surface p-4 sm:grid-cols-2" data-testid="damage-form" onSubmit={(e) => void submit(e)}>
-                <h2 className="font-semibold sm:col-span-2">{t('mtc.damage.new')}</h2>
-                {roomField !== undefined ? roomField(form.roomId, (roomId) => setForm({ ...form, roomId })) : null}
-                <FormField error={action.fieldError('area')} field="area" hint={withRooms ? t('mtc.damage.areaHint') : undefined} label={t('mtc.damage.areaField')}><Input maxLength={80} onChange={(e) => setForm({ ...form, area: e.target.value })} value={form.area} /></FormField>
-                <FormField error={action.fieldError('category')} field="category" label={t('mtc.damage.category')}><Select onChange={(e) => setForm({ ...form, category: e.target.value })} value={form.category}>{overview.categories.map((c) => <option key={c} value={c}>{t(`mtc.category.${c}` as MessageKey)}</option>)}</Select></FormField>
-                <FormField error={action.fieldError('title')} field="title" label={t('mtc.damage.what')}><Input maxLength={80} onChange={(e) => setForm({ ...form, title: e.target.value })} value={form.title} /></FormField>
-                <div className="sm:col-span-2"><FormField error={action.fieldError('detail')} field="detail" label={t('mtc.damage.detail')}><Input maxLength={500} onChange={(e) => setForm({ ...form, detail: e.target.value })} value={form.detail} /></FormField></div>
-                <FormField error={action.fieldError('photo')} field="photo" label={t('mtc.damage.photo')}><Input accept="image/jpeg,image/png" capture="environment" key={pickerKey} onChange={(e) => setFile(e.target.files?.[0] ?? null)} type="file" /></FormField>
-                <label className="flex items-center gap-2 self-end text-sm"><input checked={form.urgent} onChange={(e) => setForm({ ...form, urgent: e.target.checked })} type="checkbox" />{t('mtc.damage.urgent')}</label>
-                <div className="flex items-center gap-3 sm:col-span-2">
-                    <Button disabled={form.title.trim() === '' || (form.area.trim() === '' && form.roomId === '')} loading={action.busy} type="submit">{t('mtc.damage.send')}</Button>
-                    {done !== null ? <p aria-live="polite" className="text-sm text-success" data-testid="damage-done">{t('mtc.damage.sent', { number: done })}</p> : null}
-                </div>
-            </form>
+            {action.error !== null && !open ? <ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /> : null}
+            <div className="flex flex-wrap items-center justify-between gap-2">
+                <h2 className="font-semibold">{t('mtc.damage.mine')}</h2>
+                <Button onClick={() => { action.clear(); setDone(null); setOpen(true); }} size="sm" type="button">{t('mtc.damage.new')}</Button>
+            </div>
+            {done !== null ? <p aria-live="polite" className="text-sm text-success" data-testid="damage-done">{t('mtc.damage.sent', { number: done })}</p> : null}
             <DataGrid caption={t('mtc.damage.mine')} columns={columns} empty={<EmptyState illustration="checklist" title={t('mtc.damage.none')} />} getRowId={(r) => r.id} id="mtc.damage" rows={overview.reports} testId="damage-reports" />
+            <Dialog className="w-[min(42rem,calc(100vw-2rem))]" footer={<><Button disabled={action.busy} onClick={() => setOpen(false)} type="button" variant="outline">{t('ui.dialog.cancel')}</Button><Button disabled={form.title.trim() === '' || (form.area.trim() === '' && form.roomId === '')} form="damage-form" loading={action.busy} type="submit">{t('mtc.damage.send')}</Button></>} onClose={() => setOpen(false)} open={open} title={t('mtc.damage.new')}>
+                <div className="flex flex-col gap-3" data-testid="damage-form">
+                    {action.error !== null ? <ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /> : null}
+                    <form className="grid gap-3 sm:grid-cols-2" id="damage-form" onSubmit={(e) => void submit(e)}>
+                        {roomField !== undefined ? roomField(form.roomId, (roomId) => setForm({ ...form, roomId })) : null}
+                        <FormField error={action.fieldError('area')} field="area" hint={withRooms ? t('mtc.damage.areaHint') : undefined} label={t('mtc.damage.areaField')}><Input maxLength={80} onChange={(e) => setForm({ ...form, area: e.target.value })} value={form.area} /></FormField>
+                        <FormField error={action.fieldError('category')} field="category" label={t('mtc.damage.category')}><Select onChange={(e) => setForm({ ...form, category: e.target.value })} value={form.category}>{overview.categories.map((c) => <option key={c} value={c}>{t(`mtc.category.${c}` as MessageKey)}</option>)}</Select></FormField>
+                        <FormField error={action.fieldError('title')} field="title" label={t('mtc.damage.what')}><Input maxLength={80} onChange={(e) => setForm({ ...form, title: e.target.value })} value={form.title} /></FormField>
+                        <div className="sm:col-span-2"><FormField error={action.fieldError('detail')} field="detail" label={t('mtc.damage.detail')}><Input maxLength={500} onChange={(e) => setForm({ ...form, detail: e.target.value })} value={form.detail} /></FormField></div>
+                        <FormField error={action.fieldError('photo')} field="photo" label={t('mtc.damage.photo')}><Input accept="image/jpeg,image/png" capture="environment" key={pickerKey} onChange={(e) => setFile(e.target.files?.[0] ?? null)} type="file" /></FormField>
+                        <label className="flex items-center gap-2 self-end text-sm"><input checked={form.urgent} onChange={(e) => setForm({ ...form, urgent: e.target.checked })} type="checkbox" />{t('mtc.damage.urgent')}</label>
+                    </form>
+                </div>
+            </Dialog>
         </div>
     );
 }

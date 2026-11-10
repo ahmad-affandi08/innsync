@@ -2,6 +2,7 @@ import { useState } from 'react';
 
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
+import { Dialog } from '@/components/ui/dialog';
 import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
@@ -22,11 +23,12 @@ export default function LogbookPage({ log }: Props) {
     const format = useFormatters();
     const errorCopy = useErrorStateCopy();
     const action = useServerAction();
-    const [form, setForm] = useState({ shift: 'night', body: '', important: false });
+    const [form, setForm] = useState<{ shift: string; body: string; important: boolean } | null>(null);
 
     async function save() {
+        if (form === null) return;
         const done = await action.run('/front-office/logbook', { body: form, reload: ['log'] });
-        if (done !== null) setForm({ ...form, body: '', important: false });
+        if (done !== null) setForm(null);
     }
 
     async function markAll() {
@@ -36,20 +38,12 @@ export default function LogbookPage({ log }: Props) {
 
     return (
         <FrontOfficeShell description={t('fo.log.description')} title={t('fo.log.title')} wide>
-            {action.error !== null ? <ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /> : null}
+            {action.error !== null && form === null ? <ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /> : null}
             {log.unread > 0
                 ? <Alert actions={<Button disabled={action.busy} onClick={() => void markAll()} size="sm" type="button" variant="outline">{t('fo.log.markAll')}</Button>} title={t('fo.log.unread', { n: log.unread })} tone="warning" />
                 : <p className="text-sm text-muted-foreground" data-testid="all-read">{t('fo.log.allRead')}</p>}
 
-            {log.may_write ? (
-                <section aria-labelledby="write-h" className="flex max-w-xl flex-col gap-3">
-                    <h2 className="text-lg font-semibold" id="write-h">{t('fo.log.write')}</h2>
-                    <FormField field="shift" error={action.fieldError('shift')} label={t('fo.log.shift')}><Select onChange={(e) => setForm({ ...form, shift: e.target.value })} value={form.shift}>{log.shifts.map((s) => <option key={s} value={s}>{t(`fo.log.shift.${s}` as 'fo.log.shift.night')}</option>)}</Select></FormField>
-                    <FormField field="body" error={action.fieldError('body')} label={t('fo.log.body')}><Textarea maxLength={2000} onChange={(e) => setForm({ ...form, body: e.target.value })} rows={5} value={form.body} /></FormField>
-                    <label className="flex items-center gap-2 text-sm"><input checked={form.important} onChange={(e) => setForm({ ...form, important: e.target.checked })} type="checkbox" />{t('fo.log.important')}</label>
-                    <div><Button loading={action.busy} onClick={() => void save()} type="button">{t('fo.log.save')}</Button></div>
-                </section>
-            ) : null}
+            {log.may_write ? <div><Button onClick={() => { action.clear(); setForm({ shift: 'night', body: '', important: false }); }} size="sm" type="button">{t('fo.log.write')}</Button></div> : null}
 
             {log.entries.length === 0 ? <EmptyState title={t('fo.log.empty')} /> : (
                 <ul className="flex flex-col gap-3" data-testid="log-entries">
@@ -66,6 +60,17 @@ export default function LogbookPage({ log }: Props) {
                         </li>
                     ))}
                 </ul>
+            )}
+
+            {form !== null && (
+                <Dialog footer={<><Button disabled={action.busy} onClick={() => setForm(null)} type="button" variant="outline">{t('ui.dialog.cancel')}</Button><Button loading={action.busy} onClick={() => void save()} type="button">{t('fo.log.save')}</Button></>} onClose={() => setForm(null)} open title={t('fo.log.write')}>
+                    <div className="flex flex-col gap-3" data-testid="log-form">
+                        {action.error !== null ? <ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /> : null}
+                        <FormField field="shift" error={action.fieldError('shift')} label={t('fo.log.shift')}><Select onChange={(e) => setForm({ ...form, shift: e.target.value })} value={form.shift}>{log.shifts.map((s) => <option key={s} value={s}>{t(`fo.log.shift.${s}` as 'fo.log.shift.night')}</option>)}</Select></FormField>
+                        <FormField field="body" error={action.fieldError('body')} label={t('fo.log.body')}><Textarea maxLength={2000} onChange={(e) => setForm({ ...form, body: e.target.value })} rows={5} value={form.body} /></FormField>
+                        <label className="flex items-center gap-2 text-sm"><input checked={form.important} onChange={(e) => setForm({ ...form, important: e.target.checked })} type="checkbox" />{t('fo.log.important')}</label>
+                    </div>
+                </Dialog>
             )}
         </FrontOfficeShell>
     );

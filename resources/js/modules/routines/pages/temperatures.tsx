@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { DataGrid, type DataGridColumn } from '@/components/ui/data-grid';
 import { DatePicker } from '@/components/ui/date-picker';
+import { Dialog } from '@/components/ui/dialog';
 import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
@@ -96,13 +97,15 @@ export default function TemperaturesPage({ department, overview }: { department:
             </ul>
 
             {point !== null ? (
-                <section className="grid max-w-xl gap-3 border border-border p-4" data-testid="point-form">
-                    <FormField error={action.fieldError('name')} field="name" label={t('rtn.temp.point')}><Input maxLength={60} onChange={(e) => setPoint({ ...point, name: e.target.value })} value={point.name} /></FormField>
-                    <FormField error={action.fieldError('min_tenth')} field="min_tenth" label={t('rtn.temp.min')}><Input inputMode="decimal" onChange={(e) => setPoint({ ...point, min: e.target.value })} value={point.min} /></FormField>
-                    <FormField error={action.fieldError('max_tenth')} field="max_tenth" label={t('rtn.temp.max')}><Input inputMode="decimal" onChange={(e) => setPoint({ ...point, max: e.target.value })} value={point.max} /></FormField>
-                    {point.id !== '' ? <label className="flex items-center gap-2 text-sm"><input checked={point.active} onChange={(e) => setPoint({ ...point, active: e.target.checked })} type="checkbox" />{t('rtn.temp.activePoint')}</label> : null}
-                    <div className="flex gap-2"><Button loading={action.busy} onClick={() => void savePoint()} type="button">{t('rtn.temp.savePoint')}</Button><Button onClick={() => setPoint(null)} type="button" variant="outline">{t('ui.dialog.cancel')}</Button></div>
-                </section>
+                <Dialog className="w-[min(32rem,calc(100vw-2rem))]" footer={<><Button onClick={() => setPoint(null)} type="button" variant="outline">{t('ui.dialog.cancel')}</Button><Button loading={action.busy} onClick={() => void savePoint()} type="button">{t('rtn.temp.savePoint')}</Button></>} onClose={() => setPoint(null)} open title={point.id === '' ? t('rtn.temp.addPoint') : t('rtn.temp.point')}>
+                    <div className="grid gap-3" data-testid="point-form">
+                        {action.error !== null ? <ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /> : null}
+                        <FormField error={action.fieldError('name')} field="name" label={t('rtn.temp.point')}><Input maxLength={60} onChange={(e) => setPoint({ ...point, name: e.target.value })} value={point.name} /></FormField>
+                        <FormField error={action.fieldError('min_tenth')} field="min_tenth" label={t('rtn.temp.min')}><Input inputMode="decimal" onChange={(e) => setPoint({ ...point, min: e.target.value })} value={point.min} /></FormField>
+                        <FormField error={action.fieldError('max_tenth')} field="max_tenth" label={t('rtn.temp.max')}><Input inputMode="decimal" onChange={(e) => setPoint({ ...point, max: e.target.value })} value={point.max} /></FormField>
+                        {point.id !== '' ? <label className="flex items-center gap-2 text-sm"><input checked={point.active} onChange={(e) => setPoint({ ...point, active: e.target.checked })} type="checkbox" />{t('rtn.temp.activePoint')}</label> : null}
+                    </div>
+                </Dialog>
             ) : null}
 
             <form className="flex flex-wrap items-end gap-3" onSubmit={(e) => { e.preventDefault(); router.get(`/${department}/temperatures`, range); }}>
