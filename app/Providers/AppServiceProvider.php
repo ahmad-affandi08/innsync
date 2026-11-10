@@ -4,6 +4,18 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Modules\FrontOffice\Application\Desk\FrontOfficeTodayTasks;
+use App\Modules\GuestExperience\Application\GuestExperienceTodayTasks;
+use App\Modules\Housekeeping\Application\HousekeepingTodayTasks;
+use App\Modules\Laundry\Application\LaundryTodayTasks;
+use App\Modules\Kitchen\Application\KitchenTodayTasks;
+use App\Modules\FnbSales\Application\FnbTodayTasks;
+use App\Modules\Maintenance\Application\MaintenanceTodayTasks;
+use App\Modules\InventoryPurchasing\Application\InventoryTodayTasks;
+use App\Modules\Finance\Application\FinanceTodayTasks;
+use App\Modules\HumanResource\Application\HumanResourceTodayTasks;
+use App\Modules\IdentityAccess\Application\Approval\ApprovalTodayTasks;
+use App\Shared\Infrastructure\Setup\HomeController;
 use App\Modules\Finance\Application\FinanceStarterData;
 use App\Modules\HumanResource\Application\HumanResourceStarterData;
 use App\Shared\Infrastructure\Deployment\InstallStarterDataCommand;
@@ -643,6 +655,8 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(HousekeepingRepository::class, DatabaseHousekeepingRepository::class);
         $this->app->bind(OccupancyReader::class, StayOccupancyReader::class);
         $this->app->tag([FinanceStarterData::class, HumanResourceStarterData::class], 'starter-data');
+        $this->app->tag([FrontOfficeTodayTasks::class, GuestExperienceTodayTasks::class, HousekeepingTodayTasks::class, LaundryTodayTasks::class, KitchenTodayTasks::class, FnbTodayTasks::class, MaintenanceTodayTasks::class, InventoryTodayTasks::class, FinanceTodayTasks::class, HumanResourceTodayTasks::class, ApprovalTodayTasks::class], 'today-tasks');
+        $this->app->when(HomeController::class)->needs('$sources')->giveTagged('today-tasks');
         $this->app->when(InstallStarterDataCommand::class)->needs('$sources')->giveTagged('starter-data');
         $this->app->bind(RoomStayReader::class, StayRoomReader::class);
         $this->app->bind(RoomReadiness::class, HousekeepingService::class);

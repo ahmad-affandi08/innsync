@@ -43,7 +43,7 @@ Rules every item follows (`AGENTS.md`, `docs/RULES/13-AI-AGENT-GUARDRAILS.md`): 
 | 6 | Starter checklists, duty plans, temperature points per profile | FR-HK-005, FR-MTC-011, FR-KIT-008 | D-6 |
 | 6 | CSV import for assets and temperature points; rates and tax in setup | FR-FIN-034 area; Q-01, Q-05 | None |
 | 6 | Account created from an HR employee record | NFR-06, BR-009 | CR-0002 |
-| 6 | Role-aware "Today" page | FR-DSH-001 to FR-DSH-022 | D-1 |
+| 6 | Role-aware "Today" page | FR-DSH-001 to FR-DSH-022 | Done 2026-11-10: 11 `TodayTasks` classes (front office, web bookings, housekeeping, laundry, kitchen, F&B, maintenance, inventory, finance, HR, approvals), see `DESIGN/03-LAYOUT-NAVIGATION.md`. Counts are not yet checked against real data |
 | — | Not now: auto-assign a technician; auto take a room off sale | FR-MTC-003, FR-MTC-006, BR-008 | Not proposed. Both change who does the work or whether a room can be sold, which is a hotel policy |
 
 ## Decisions

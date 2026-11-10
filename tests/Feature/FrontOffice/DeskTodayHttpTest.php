@@ -67,6 +67,6 @@ final class DeskTodayHttpTest extends TestCase
     {
         $this->signIn(self::A, ['front-office.stay.view', 'finance.payables.view']);
 
-        $this->get('/')->assertOk()->assertInertia(fn (Assert $page) => $page->component('foundation/pages/welcome'));
+        $this->get('/')->assertOk()->assertInertia(fn (Assert $page) => $page->component('foundation/pages/welcome')->has('tasks'));
     }
 }
