@@ -1,3 +1,4 @@
+import { usePage } from '@inertiajs/react';
 import { useLayoutEffect, useRef, type InputHTMLAttributes } from 'react';
 
 import { Input } from '@/components/ui/input';
@@ -13,14 +14,24 @@ type MoneyInputProps = Omit<InputHTMLAttributes<HTMLInputElement>, 'type' | 'val
     decimals?: number;
     /** Allow a leading minus (an adjustment that takes money away). */
     negative?: boolean;
+    /** The currency shown before the amount; the property's own when omitted, none when `null` (a cell in a table) or when the page has no property. */
+    currency?: string | null;
 };
+
+/** What stands before an amount: the rupiah as `Rp`, any other currency by its code. */
+export function currencyMark(code: string): string {
+    return code === 'IDR' ? 'Rp' : code;
+}
 
 /**
  * An amount of money that is written with its thousands grouped as it is typed (1.500.000), in the language's own marks, on a phone with a number pad. The value handed back is the plain
  * amount, so every page keeps reading it exactly as before; only what the person sees changes.
  */
-function MoneyInput({ decimals = 2, negative = false, onBlur, onChange, value, ...props }: MoneyInputProps) {
+function MoneyInput({ currency, decimals = 2, negative = false, onBlur, onChange, value, ...props }: MoneyInputProps) {
     const { locale } = useTranslation();
+    const own = (usePage().props as { shell?: { currency?: string | null } | null }).shell?.currency ?? null;
+    const code = currency === undefined ? own : currency;
+    const mark = code === null ? null : currencyMark(code);
     const ref = useRef<HTMLInputElement>(null);
     const caret = useRef<number | null>(null);
     const options = { decimals, negative };
@@ -37,10 +48,11 @@ function MoneyInput({ decimals = 2, negative = false, onBlur, onChange, value, .
         caret.current = null;
     });
 
-    return (
+    const field = (
         <Input
             autoComplete="off"
             className="tabular-nums"
+            style={mark === null ? undefined : { paddingLeft: `${1.25 + mark.length * 0.6}rem` }}
             inputMode={negative ? 'text' : decimals > 0 ? 'decimal' : 'numeric'}
             {...props}
             onBlur={(event) => {
@@ -63,6 +75,14 @@ function MoneyInput({ decimals = 2, negative = false, onBlur, onChange, value, .
             type="text"
             value={shown}
         />
+    );
+
+    // The mark is outside the typed text (never part of the value) and read out with the label by the field's own description.
+    return mark === null ? field : (
+        <div className="relative">
+            {field}
+            <span aria-hidden="true" className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-sm text-muted-foreground">{mark}</span>
+        </div>
     );
 }
 

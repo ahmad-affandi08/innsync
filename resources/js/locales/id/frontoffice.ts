@@ -132,7 +132,7 @@ export const frontOffice = {
     'fo.folio.postings': 'Posting',
     'fo.folio.empty': 'Belum ada posting.',
     'fo.folio.col.seq': '#',
-    'fo.folio.col.date': 'Business date',
+    'fo.folio.col.date': 'Tanggal bisnis',
     'fo.folio.col.description': 'Keterangan',
     'fo.folio.col.base': 'Dasar',
     'fo.folio.col.service': 'Service',

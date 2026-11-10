@@ -22,3 +22,10 @@ Do not create one-off variants inside feature pages when a semantic shared varia
 - **Radix ScrollArea**: `<ScrollArea>` in `resources/js/components/ui/scroll-area.tsx` supports `orientation="vertical" | "horizontal" | "both"`. Its thumb is styled as `rounded-full bg-border hover:bg-muted-foreground/50 transition-colors`. Used in `sidebar`, `rail`, `sheet`, and scrollable panels.
 - **Horizontal navigation bars**: Elements with horizontal scrolling in headers (such as topbar tabs) use the `.no-scrollbar` utility to hide scrollbars while preserving touch/wheel/trackpad scrolling.
 
+
+## Money and shift on screen (2026-11-10)
+
+- `MoneyInput` shows the currency before the typed amount (`Rp` for the rupiah, otherwise the code), taken from the property (`shell.currency`); pass `currency="USD"` for another one, or `currency={null}` for an amount inside a table cell. The mark is outside the value: what the page reads and sends is unchanged.
+- The top bar shows the cashier shift the signed-in person has open (`shell.shift`) on every page, linking to the cashier screen; a shift opened on an earlier business date is marked with `!` and a warning colour, because it should be closed.
+- Plain `<input type="checkbox">` and `type="radio"` are styled once in `app.css` (16px, brand colour); use the shared `Checkbox`/`RadioGroup` when a control needs more than a native one gives.
+- One primary (filled) button for each task context: on a folio it is *Record payment*.

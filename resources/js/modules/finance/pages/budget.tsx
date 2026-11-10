@@ -193,10 +193,10 @@ export default function BudgetPage({ budget }: { budget: BudgetOverview }) {
                                     {manage ? (
                                         <>
                                             <TableCell className="text-right">
-                                                <MoneyInput aria-invalid={row?.revenue === null ? true : undefined} aria-label={t('fin.bud.cellRevenue', { month })} className="min-h-9 text-right tabular-nums" onChange={(e) => setCell(i, 'revenue', e.target.value)} value={cell.revenue} />
+                                                <MoneyInput currency={null} aria-invalid={row?.revenue === null ? true : undefined} aria-label={t('fin.bud.cellRevenue', { month })} className="min-h-9 text-right tabular-nums" onChange={(e) => setCell(i, 'revenue', e.target.value)} value={cell.revenue} />
                                             </TableCell>
                                             <TableCell className="text-right">
-                                                <MoneyInput aria-invalid={row?.cost === null ? true : undefined} aria-label={t('fin.bud.cellCost', { month })} className="min-h-9 text-right tabular-nums" onChange={(e) => setCell(i, 'cost', e.target.value)} value={cell.cost} />
+                                                <MoneyInput currency={null} aria-invalid={row?.cost === null ? true : undefined} aria-label={t('fin.bud.cellCost', { month })} className="min-h-9 text-right tabular-nums" onChange={(e) => setCell(i, 'cost', e.target.value)} value={cell.cost} />
                                             </TableCell>
                                         </>
                                     ) : (

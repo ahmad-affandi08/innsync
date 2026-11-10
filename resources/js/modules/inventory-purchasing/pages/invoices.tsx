@@ -178,7 +178,7 @@ export default function InvoicesPage({ overview, status }: { overview: Overview;
                                                             </TableCell>
                                                             <TableCell>
                                                                 <FormField className={CELL} field="lines.*.unit_price_minor" label={<span className="sr-only">{t('inv.inv.invoicePrice')} {l.item_code}</span>}>
-                                                                    <MoneyInput className="w-32" onChange={(ev) => setLine(l.id, { price: ev.target.value })} value={e.price} />
+                                                                    <MoneyInput currency={null} className="w-32" onChange={(ev) => setLine(l.id, { price: ev.target.value })} value={e.price} />
                                                                 </FormField>
                                                             </TableCell>
                                                         </TableRow>

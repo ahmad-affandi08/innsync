@@ -229,7 +229,7 @@ export default function FolioPage({ approvals, folio, foreign, may_late_charge: 
 
             {open && (
                 <div className="flex flex-wrap gap-2">
-                    <Button onClick={() => { action.clear(); setCharge({ code: '', description: '', amount: '', nett: false }); }} size="sm" type="button">{t('fo.folio.addCharge')}</Button>
+                    <Button onClick={() => { action.clear(); setCharge({ code: '', description: '', amount: '', nett: false }); }} size="sm" type="button" variant="outline">{t('fo.folio.addCharge')}</Button>
                     <Button onClick={() => { action.clear(); setPayment({ method: 'cash', amount: '', reference: '', purpose: 'settlement', currency: folio.currency }); }} size="sm" type="button">{t('fo.folio.addPayment')}</Button>
                     <Button onClick={() => { action.clear(); setRefund({ method: 'bank_transfer', amount: '', reference: '', reason: '' }); }} size="sm" type="button" variant="outline">{t('fo.folio.refund')}</Button>
                     <Button disabled={folio.balance_minor !== 0} onClick={() => { action.clear(); setClosing(true); }} size="sm" type="button" variant="outline">{t('fo.folio.close')}</Button>

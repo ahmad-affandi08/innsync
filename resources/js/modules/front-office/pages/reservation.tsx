@@ -7,6 +7,7 @@ import { ConfirmDialog } from '@/components/ui/dialog';
 import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
+import { Select } from '@/components/ui/select';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { GuestNotePanel, type GuestNote } from '@/modules/front-office/components/guest-note';
@@ -186,10 +187,10 @@ export default function ReservationPage({ billing, folios, group, guest_note: gu
                     ) : (
                         <div className="flex flex-wrap items-end gap-2">
                             <FormField field="company_id" error={action.fieldError('company_id')} hint={t('fo.company.linkNote')} label={t('fo.company.choose')}>
-                                <select className="min-h-11 border border-border bg-background px-3 text-sm" onChange={(e) => setCompanyId(e.target.value)} value={companyId}>
+                                <Select onChange={(e) => setCompanyId(e.target.value)} value={companyId}>
                                     <option value="">—</option>
                                     {billing.options.map((o) => <option key={o.id} value={o.id}>{o.code} · {o.name}</option>)}
-                                </select>
+                                </Select>
                             </FormField>
                             <Button disabled={action.busy || companyId === ''} onClick={() => void linkCompany()} type="button" variant="outline">{t('fo.company.link')}</Button>
                         </div>

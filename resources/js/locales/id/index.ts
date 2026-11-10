@@ -219,6 +219,8 @@ export const id: Record<MessageKey, string> = {
     'shell.skip': 'Lompat ke isi halaman',
     'shell.openMenu': 'Buka menu',
     'shell.businessDate': 'Tanggal bisnis',
+    'shell.shiftOpen': 'Shift kasir Anda {number} sedang terbuka',
+    'shell.shiftStale': 'Shift kasir Anda {number} dibuka pada hari sebelumnya: tutup shift ini',
     'shell.sessions': 'Sesi dan perangkat',
     'home.description': "Apa yang menunggu Anda hari ini, dan yang Anda kerjakan setiap hari.",
     'home.quick': "Setiap hari",

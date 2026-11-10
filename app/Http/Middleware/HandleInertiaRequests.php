@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Middleware;
 
+use App\Modules\FrontOffice\Application\Cashier\CashierRepository;
 use App\Modules\FrontOffice\Application\Reminders\ReminderService;
 use App\Modules\GuestExperience\Application\OnlineBookingAdminService;
 use App\Modules\HumanResource\Application\AttendanceReviewService;
@@ -11,6 +12,7 @@ use App\Modules\IdentityAccess\Application\Approval\ApprovalService;
 use App\Modules\Property\Application\Branding\PropertyBranding;
 use App\Modules\Property\Application\Ports\PropertyProfileReader;
 use App\Modules\Property\Application\Ports\PropertyTimeZoneReader;
+use App\Modules\Property\Application\Rates\PropertyCurrencyReader;
 use App\Modules\Property\Application\Settings\BusinessDateProvider;
 use App\Shared\Application\Setup\ModuleAccess;
 use App\Shared\Application\Setup\ModuleSettings;
@@ -138,6 +140,20 @@ final class HandleInertiaRequests extends Middleware
             $areas = null; // unreadable: every page of a department is offered, as for the departments above
         }
 
+        try {
+            $currency = app(PropertyCurrencyReader::class)->currencyOf($property);
+        } catch (Throwable) {
+            $currency = null;
+        }
+
+        // The cashier shift this person has open, so the frame shows it on every page (the desk takes money from many screens).
+        try {
+            $open = app(CashierRepository::class)->openOf($property, strtolower((string) $request->user()->getAuthIdentifier()));
+            $shift = $open === null ? null : ['number' => (string) $open['number'], 'opened_business_date' => (string) $open['opened_business_date']];
+        } catch (Throwable) {
+            $shift = null;
+        }
+
         // Features a property has switched off, so the menu does not offer their pages. The loyalty programme is a switch of the installation (LOYALTY_ENABLED).
         $features = ['loyalty' => (bool) config('frontdesk.loyalty.enabled')];
 
@@ -170,7 +186,7 @@ final class HandleInertiaRequests extends Middleware
             }
         }
 
-        return ['propertyName' => $name, 'businessDate' => $date, 'userName' => (string) $request->user()->name, 'disabledModules' => $disabled, 'accessibleModules' => $accessible, 'permissionAreas' => $areas, 'features' => $features, 'attention' => $attention];
+        return ['propertyName' => $name, 'businessDate' => $date, 'userName' => (string) $request->user()->name, 'disabledModules' => $disabled, 'accessibleModules' => $accessible, 'permissionAreas' => $areas, 'features' => $features, 'attention' => $attention, 'currency' => $currency, 'shift' => $shift];
     }
 
     /**

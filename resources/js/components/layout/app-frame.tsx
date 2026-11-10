@@ -20,6 +20,7 @@ import {
     PanelTop,
     Settings2,
     ShieldCheck,
+    Wallet,
     Shirt,
     UsersRound,
     UtensilsCrossed,
@@ -121,7 +122,7 @@ function isHere(links: readonly NavLink[], href: string, path: string): boolean 
     return match(href) && best?.href === href;
 }
 
-type Shell = { propertyName: string | null; businessDate: string | null; userName: string; disabledModules?: string[]; accessibleModules?: string[] | null; permissionAreas?: string[] | null; features?: { loyalty: boolean }; attention?: { key: 'approvals' | 'attendance' | 'reminders' | 'online'; count: number }[] } | null;
+type Shell = { propertyName: string | null; businessDate: string | null; userName: string; disabledModules?: string[]; accessibleModules?: string[] | null; permissionAreas?: string[] | null; features?: { loyalty: boolean }; currency?: string | null; shift?: { number: string; opened_business_date: string } | null; attention?: { key: 'approvals' | 'attendance' | 'reminders' | 'online'; count: number }[] } | null;
 
 type FrameProps = {
     title: string;
@@ -382,6 +383,16 @@ export function AppFrame({ actions, children, description, links: allLinks = [],
         </span>
     ) : null;
 
+    // The cashier shift this person has open, on every page, since money is taken from many screens. A shift opened on an earlier business date is marked: it should be closed.
+    const staleShift = shell?.shift != null && shell.businessDate != null && shell.shift.opened_business_date.slice(0, 10) !== shell.businessDate.slice(0, 10);
+    const shiftChip = shell?.shift != null ? (
+        <Link className={cn('inline-flex items-center gap-1.5 whitespace-nowrap border px-2 py-1 text-xs font-medium hover:bg-surface-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring', staleShift ? 'border-warning text-warning' : 'border-border text-muted-foreground')} href="/front-office/cashier" title={t(staleShift ? 'shell.shiftStale' : 'shell.shiftOpen', { number: shell.shift.number })}>
+            <Wallet aria-hidden="true" className="size-4" strokeWidth={1.75} />
+            <span className="sr-only">{t(staleShift ? 'shell.shiftStale' : 'shell.shiftOpen', { number: shell.shift.number })}</span>
+            <span aria-hidden="true" className="hidden sm:inline">{shell.shift.number}</span>{staleShift ? <span aria-hidden="true" className="font-bold">!</span> : null}
+        </Link>
+    ) : null;
+
     const userMenu = shell !== null ? (
         <DropdownMenu>
             <DropdownMenuTrigger className="flex items-center gap-2 p-1 hover:bg-surface-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" type="button">
@@ -591,6 +602,7 @@ export function AppFrame({ actions, children, description, links: allLinks = [],
                 ) : null}
                 {shell?.propertyName ? <span className="max-w-[14rem] truncate text-sm font-medium">{shell.propertyName}</span> : null}
                 {dateChip}
+                {shiftChip}
             </div>
         </header>
     );
@@ -629,6 +641,7 @@ export function AppFrame({ actions, children, description, links: allLinks = [],
                             {own !== null && layout === 'rail' ? <Link className="hidden shrink-0 lg:block" href="/"><img alt={shell?.propertyName ?? ''} className="max-h-8 max-w-[10rem] w-auto object-contain" src={own} /></Link> : null}
                             <span className="flex-1" />
                             {dateChip}
+                            {shiftChip}
                             {canFind ? <QuickFind /> : null}
                             {bell}
                             <LanguageSwitcher />

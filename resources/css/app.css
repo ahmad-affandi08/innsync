@@ -130,6 +130,20 @@
         -webkit-font-smoothing: antialiased;
     }
 
+    /* The plain checkbox and radio of a form: one size, the brand colour and a pointer, so they match the shared Checkbox and RadioGroup. */
+    input[type='checkbox'],
+    input[type='radio'] {
+        width: 1rem;
+        height: 1rem;
+        flex-shrink: 0;
+        accent-color: var(--primary);
+    }
+
+    input[type='checkbox']:not(:disabled),
+    input[type='radio']:not(:disabled) {
+        cursor: pointer;
+    }
+
     button:not(:disabled),
     [role="button"]:not([aria-disabled="true"]),
     [type="button"]:not(:disabled),

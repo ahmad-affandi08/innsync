@@ -14,6 +14,8 @@ export const common = {
     'shell.skip': "Skip to the content",
     'shell.openMenu': "Open the menu",
     'shell.businessDate': "Business date",
+    'shell.shiftOpen': "Your cashier shift {number} is open",
+    'shell.shiftStale': "Your cashier shift {number} was opened on an earlier day: close it",
     'shell.sessions': "Sessions and devices",
     'home.description': "What is waiting for you today, and what you do every day.",
     'home.quick': "Every day",
