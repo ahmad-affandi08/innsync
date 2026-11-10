@@ -79,6 +79,7 @@ describe('dictionaries', () => {
         const allowedSame = new Set([
             'common.language.id',
             'shell.short.fnb',
+            'shell.area.backoffice',
             'fo.du.nav',
             'fo.du.title',
             'fo.bill.outlet.day_use',

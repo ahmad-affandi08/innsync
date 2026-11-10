@@ -73,6 +73,21 @@ const MODULES: ModuleEntry[] = [
 
 const GROUPS = ['start', 'operations', 'insight', 'control'] as const;
 
+type Area = { key: string; icon: LucideIcon; label: MessageKey; modules: string[]; /** A thin line above it in the rail. */ line?: boolean };
+
+/**
+ * What the icon rail shows: six entries, each gathering the departments that work together. A department is still a module with its own pages, permissions and on/off switch;
+ * an area only decides which rail entry it sits under (the other departments of the area are chosen at the top of the page list). Approvals and the property's settings are in the account menu.
+ */
+const AREAS: Area[] = [
+    { key: 'home', icon: Hotel, label: 'shell.home', modules: ['home'] },
+    { key: 'rooms', icon: ConciergeBell, label: 'shell.area.rooms', modules: ['front-office', 'housekeeping', 'laundry'], line: true },
+    { key: 'fnb', icon: UtensilsCrossed, label: 'shell.short.fnb', modules: ['fnb', 'kitchen'] },
+    { key: 'engineering', icon: Wrench, label: 'shell.area.engineering', modules: ['maintenance'] },
+    { key: 'backoffice', icon: Landmark, label: 'shell.area.backoffice', modules: ['finance', 'hr', 'inventory'] },
+    { key: 'insight', icon: ChartNoAxesCombined, label: 'rpt.nav.reports', modules: ['reports'], line: true },
+];
+
 function activeModule(path: string): ModuleEntry {
     return MODULES.find((m) => m.prefixes.some((p) => path === p || path.startsWith(`${p}/`))) ?? MODULES[0]!;
 }
@@ -145,6 +160,8 @@ export function AppFrame({ actions, children, description, links: allLinks = [],
         </Popover>
     ) : null;
     const modules = MODULES.filter((m) => m.key === current.key || (!(shell?.disabledModules ?? []).includes(m.key) && (shell?.accessibleModules == null || shell.accessibleModules.includes(m.key))));
+    const railAreas = AREAS.map((a) => ({ ...a, mods: a.modules.map((k) => modules.find((m) => m.key === k)).filter((m): m is ModuleEntry => m !== undefined) })).filter((a) => a.mods.length > 0);
+    const area = railAreas.find((a) => a.modules.includes(current.key));
     const [open, setOpen] = useState(false);
     // On a phone the menu is a list of modules: touching one opens its pages and does not leave the page. The module the person is in starts open.
     const [expanded, setExpanded] = useState<ReadonlySet<string>>(() => new Set([current.key]));
@@ -332,6 +349,15 @@ export function AppFrame({ actions, children, description, links: allLinks = [],
                 <DropdownMenuLabel className="truncate">{shell.userName}</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
+                    <Link href="/approvals"><ShieldCheck aria-hidden="true" />{t('identity.approvals.title')}</Link>
+                </DropdownMenuItem>
+                {modules.some((m) => m.key === 'property') ? (
+                    <DropdownMenuItem asChild>
+                        <Link href="/property/settings"><Settings2 aria-hidden="true" />{t('property.nav.label')}</Link>
+                    </DropdownMenuItem>
+                ) : null}
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
                     <Link href="/help"><BookOpen aria-hidden="true" />{t('shell.help')}</Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
@@ -401,22 +427,22 @@ export function AppFrame({ actions, children, description, links: allLinks = [],
                 </Link>
                 <ScrollArea className="w-full flex-1" keep="rail">
                     <nav aria-label={t('shell.menu')} className="flex flex-col gap-1 py-3">
-                        {modules.map((m, i) => {
-                            const Icon = m.icon;
-                            const isActive = m.key === current.key;
+                        {railAreas.map((a) => {
+                            const Icon = a.icon;
+                            const isActive = a.key === area?.key;
 
                             return (
-                                <Fragment key={m.key}>
-                                {i > 0 && modules[i - 1]?.group !== m.group ? <div aria-hidden="true" className="mx-3 my-1 border-t border-border" /> : null}
+                                <Fragment key={a.key}>
+                                {a.line ? <div aria-hidden="true" className="mx-3 my-1 border-t border-border" /> : null}
                                 <Link
                                     aria-current={isActive && !hasLinks ? 'page' : undefined}
-                                    aria-label={t(m.label)}
+                                    aria-label={t(a.label)}
                                     className={cn('flex flex-col items-center gap-1 border-l-2 px-1 py-2 text-[0.625rem] leading-tight tracking-tight transition-colors', isActive ? 'border-brand bg-surface-muted font-medium text-foreground' : 'border-transparent text-muted-foreground hover:bg-surface-muted hover:text-foreground')}
-                                    href={m.href}
-                                    title={t(m.label)}
+                                    href={a.mods[0]?.href ?? '/'}
+                                    title={t(a.label)}
                                 >
                                     <Icon aria-hidden="true" className={cn('size-5', isActive ? 'text-brand' : '')} strokeWidth={1.75} />
-                                    <span className="line-clamp-2 w-full break-words text-center">{t(m.short ?? m.label)}</span>
+                                    <span className="line-clamp-2 w-full break-words text-center">{t(a.label)}</span>
                                 </Link>
                                 </Fragment>
                             );
@@ -426,7 +452,24 @@ export function AppFrame({ actions, children, description, links: allLinks = [],
             </aside>
             {hasLinks ? (
                 <aside aria-label={t(current.label)} className="fixed inset-y-0 left-20 z-20 hidden w-56 flex-col border-r border-border bg-surface lg:flex print:hidden">
-                    <p className="flex h-14 items-center border-b border-border px-5 text-sm font-semibold">{t(current.label)}</p>
+                    <p className="flex h-14 items-center border-b border-border px-5 text-sm font-semibold">{t(area !== undefined && area.mods.length > 1 ? area.label : current.label)}</p>
+                    {area !== undefined && area.mods.length > 1 ? (
+                        <nav aria-label={t(area.label)} className="border-b border-border p-3">
+                            <ul className="flex flex-wrap gap-1">
+                                {area.mods.map((m) => (
+                                    <li key={m.key}>
+                                        <Link
+                                            aria-current={m.key === current.key ? 'page' : undefined}
+                                            className={cn('block rounded-md px-2.5 py-1 text-xs font-medium transition-colors', m.key === current.key ? 'bg-brand/10 text-brand' : 'text-muted-foreground hover:bg-surface-muted hover:text-foreground')}
+                                            href={m.href}
+                                        >
+                                            {t(m.short ?? m.label)}
+                                        </Link>
+                                    </li>
+                                ))}
+                            </ul>
+                        </nav>
+                    ) : null}
                     <ScrollArea className="flex-1" keep={`panel:${current.key}`}>
                         <ul className="flex flex-col gap-0.5 p-3">
                             <NavSections
