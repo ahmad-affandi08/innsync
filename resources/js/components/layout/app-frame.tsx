@@ -397,7 +397,7 @@ export function AppFrame({ actions, children, description, links: allLinks = [],
                 <Link aria-label="InnSYnc" className="grid h-14 w-full place-items-center border-b border-border" href="/">
                     <img alt="" className="size-8" height={32} src={favicon} width={32} />
                 </Link>
-                <ScrollArea className="w-full flex-1">
+                <ScrollArea className="w-full flex-1" keep="rail">
                     <nav aria-label={t('shell.menu')} className="flex flex-col gap-1 py-3">
                         {modules.map((m) => {
                             const Icon = m.icon;
@@ -423,7 +423,7 @@ export function AppFrame({ actions, children, description, links: allLinks = [],
             {hasLinks ? (
                 <aside aria-label={t(current.label)} className="fixed inset-y-0 left-20 z-20 hidden w-56 flex-col border-r border-border bg-surface lg:flex print:hidden">
                     <p className="flex h-14 items-center border-b border-border px-5 text-sm font-semibold">{t(current.label)}</p>
-                    <ScrollArea className="flex-1">
+                    <ScrollArea className="flex-1" keep={`panel:${current.key}`}>
                         <ul className="flex flex-col gap-0.5 p-3">
                             {links.map((l, i) => (
                                 <Fragment key={l.href}>
@@ -526,7 +526,7 @@ export function AppFrame({ actions, children, description, links: allLinks = [],
                     <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 flex-col border-r border-border bg-sidebar lg:flex print:hidden">
                         {brand}
                         <Separator />
-                        <ScrollArea className="flex-1">{menu}</ScrollArea>
+                        <ScrollArea className="flex-1" keep="sidebar">{menu}</ScrollArea>
                     </aside>
                 ) : null}
                 {layout === 'rail' ? rail : null}
@@ -537,7 +537,7 @@ export function AppFrame({ actions, children, description, links: allLinks = [],
                         <SheetDescription className="sr-only">{t('shell.menu')}</SheetDescription>
                         {brand}
                         <Separator />
-                        <ScrollArea className="flex-1">{drawerMenu}</ScrollArea>
+                        <ScrollArea className="flex-1" keep="drawer">{drawerMenu}</ScrollArea>
                     </SheetContent>
                 </Sheet>
 
