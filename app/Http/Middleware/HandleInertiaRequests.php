@@ -16,6 +16,8 @@ use App\Modules\Property\Application\Rates\PropertyCurrencyReader;
 use App\Modules\Property\Application\Settings\BusinessDateProvider;
 use App\Shared\Application\Setup\ModuleAccess;
 use App\Shared\Application\Setup\ModuleSettings;
+use App\Shared\Application\Setup\OptionalFeatures;
+use App\Shared\Application\Setup\PropertyFeatures;
 use App\Shared\Application\Tenancy\PropertyContext;
 use App\Shared\Domain\Tenancy\PropertyId;
 use Illuminate\Http\Request;
@@ -156,6 +158,16 @@ final class HandleInertiaRequests extends Middleware
 
         // Features a property has switched off, so the menu does not offer their pages. The loyalty programme is a switch of the installation (LOYALTY_ENABLED).
         $features = ['loyalty' => (bool) config('frontdesk.loyalty.enabled')];
+
+        try {
+            $on = app(PropertyFeatures::class)->enabled($property);
+        } catch (Throwable) {
+            $on = null; // unreadable: the optional pages are offered rather than hidden
+        }
+
+        foreach (OptionalFeatures::ALL as $feature) {
+            $features[$feature] = $on === null || in_array($feature, $on, true);
+        }
 
         try {
             $logo = app(PropertyBranding::class)->url($property);

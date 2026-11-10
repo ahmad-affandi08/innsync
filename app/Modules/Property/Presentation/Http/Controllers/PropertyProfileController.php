@@ -20,10 +20,12 @@ final readonly class PropertyProfileController
             'profile' => ['required', 'string', 'in:hotel,small_resort,villa'],
             'disabled' => ['present', 'array', 'max:20'],
             'disabled.*' => ['string', 'max:32'],
+            'features' => ['sometimes', 'array', 'max:20'],
+            'features.*' => ['string', 'max:32'],
             'reason' => ['required', 'string', 'max:500'],
         ]);
 
-        $roles = $this->profiles->apply($this->property->current(), strtolower((string) $request->user()->getAuthIdentifier()), $data['profile'], $data['disabled'], $data['reason']);
+        $roles = $this->profiles->apply($this->property->current(), strtolower((string) $request->user()->getAuthIdentifier()), $data['profile'], $data['disabled'], $data['reason'], $data['features'] ?? null);
 
         return response()->json(['roles' => $roles])->header('Cache-Control', 'no-store');
     }

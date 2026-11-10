@@ -74,3 +74,9 @@ The home page ("Hari Ini") no longer lists every department. It shows the work w
 - Each department answers for itself through `Shared\Application\Setup\TodayTasks` (tag `today-tasks`; one class per module, e.g. `FrontOfficeTodayTasks`): a list of `{key, count, href, urgent}`, only for a person who holds the permission for that work. `key` is `<prefix>.<what>`; the wording is `today.task.<key>` in both languages. `Setup\TodayList::arrange` leaves out zero counts and the work of a department the property switched off, puts late work first and then the larger counts, and keeps twelve.
 - A department that fails is reported and skipped; it never takes the page down.
 - A person who works in one department only still lands on that department's own screen (`DepartmentEntries`); the home page is for people who work across departments, and is always one click away (the Home entry of the rail).
+
+## Optional pages and the quick menu (2026-11-10)
+
+- A page that most hotels never use is an optional feature (`App\Shared\Application\Setup\OptionalFeatures`, `property_features`): off for a new property, switched on in Set-up → How the property works. Give its menu entry `feature: '<key>'` in `module-links.ts`. It changes the menu only; the route, the permission and the data are untouched, and the page a person is on stays in the menu.
+- What a person asks for from any department (a fault to report, something to buy) is not repeated in each department's menu. The top bar's *Report or request* menu lists it for the departments the person works in (`QUICK_ACTIONS` in `module-links.ts`).
+

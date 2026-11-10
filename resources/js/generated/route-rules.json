@@ -6880,6 +6880,8 @@
         "declared": [
             "disabled",
             "disabled.*",
+            "features",
+            "features.*",
             "profile",
             "reason"
         ]

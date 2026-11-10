@@ -8,6 +8,7 @@ use App\Shared\Application\Audit\AuditEntry;
 use App\Shared\Application\Audit\AuditTrail;
 use App\Shared\Application\Errors\Refusal;
 use App\Shared\Application\Security\PermissionChecker;
+use App\Shared\Application\Setup\OptionalFeatures;
 use App\Shared\Application\Setup\ProfileRoles;
 use App\Shared\Application\Setup\PropertyProfiles;
 use App\Shared\Application\Tenancy\PropertyContext;
@@ -32,8 +33,11 @@ final readonly class PropertyProfileService
         private PropertyContext $property,
     ) {}
 
-    /** @param list<string> $disabled */
-    public function apply(PropertyId $property, string $actorId, string $profile, array $disabled, string $reason): array
+    /**
+     * @param  list<string>  $disabled
+     * @param  list<string>|null  $features  the optional pages to switch on (every other one is switched off); null leaves them as they are
+     */
+    public function apply(PropertyId $property, string $actorId, string $profile, array $disabled, string $reason, ?array $features = null): array
     {
         $current = $this->property->current();
 
@@ -55,28 +59,38 @@ final readonly class PropertyProfileService
             throw Refusal::invalid('Only the optional departments can be switched off.', ['disabled']);
         }
 
+        $features = $features === null ? null : array_values(array_unique($features));
+
+        if ($features !== null && array_filter($features, static fn (string $f): bool => ! OptionalFeatures::isFeature($f)) !== []) {
+            throw Refusal::invalid('Only the optional pages can be switched on.', ['features']);
+        }
+
         if (trim($reason) === '' || mb_strlen($reason) > 500) {
             throw Refusal::invalid('A reason of at most 500 characters is required.', ['reason']);
         }
 
-        return $this->transactions->run(function () use ($property, $actorId, $profile, $disabled, $reason): array {
+        return $this->transactions->run(function () use ($property, $actorId, $profile, $disabled, $reason, $features): array {
             $before = $this->profiles->get($property);
             $this->profiles->save($property, $profile, $disabled, $actorId);
+
+            if ($features !== null) {
+                $this->profiles->saveFeatures($property, $features, $actorId);
+            }
             $roles = $this->roles->apply($property, $profile);
             $this->audit->record(new AuditEntry($property->toString(), strtolower($actorId), 'property.profile.changed', 'property_settings', $property->toString(),
-                ['profile' => $before['profile'], 'disabled_modules' => $before['disabled']], ['profile' => $profile, 'disabled_modules' => $disabled, 'roles_created' => $roles['created'], 'roles_deactivated' => $roles['deactivated']], trim($reason)));
+                ['profile' => $before['profile'], 'disabled_modules' => $before['disabled'], 'features' => $before['features']], ['profile' => $profile, 'disabled_modules' => $disabled, 'features' => $features ?? $before['features'], 'roles_created' => $roles['created'], 'roles_deactivated' => $roles['deactivated']], trim($reason)));
 
             return $roles;
         });
     }
 
-    /** @return array{profile: ?string, disabled: list<string>, presets: array<string, list<string>>, modules: list<string>} */
+    /** @return array{profile: ?string, disabled: list<string>, features: list<string>, presets: array<string, list<string>>, modules: list<string>, optional_features: list<string>} */
     public function show(PropertyId $property, string $actorId): array
     {
         if (! $this->permissions->allowsInProperty($actorId, self::MANAGE_PERMISSION, $property)) {
             throw Refusal::forbidden('This person may not see how the property works.');
         }
 
-        return $this->profiles->get($property) + ['presets' => PropertyProfiles::presets(), 'modules' => PropertyProfiles::OPTIONAL_MODULES];
+        return $this->profiles->get($property) + ['presets' => PropertyProfiles::presets(), 'modules' => PropertyProfiles::OPTIONAL_MODULES, 'optional_features' => OptionalFeatures::ALL];
     }
 }

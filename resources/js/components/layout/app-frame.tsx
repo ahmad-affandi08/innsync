@@ -2,6 +2,7 @@ import { Head, Link, router, usePage } from '@inertiajs/react';
 import {
     BedDouble,
     Bell,
+    ClipboardPlus,
     BookOpen,
     CalendarDays,
     ChartNoAxesCombined,
@@ -42,7 +43,7 @@ import { QuickFind } from '@/components/layout/quick-find';
 import { useBrand } from '@/shared/lib/brand';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
-import { MODULE_LINKS, visibleLinks, type NavLink } from '@/components/layout/module-links';
+import { MODULE_LINKS, quickActions, visibleLinks, type NavFeatures, type NavLink } from '@/components/layout/module-links';
 import { NavSections } from '@/components/layout/nav-sections';
 import { Sheet, SheetContent, SheetDescription, SheetTitle } from '@/components/ui/sheet';
 import { useFormatters, useTranslation } from '@/shared/i18n/i18n';
@@ -122,7 +123,7 @@ function isHere(links: readonly NavLink[], href: string, path: string): boolean 
     return match(href) && best?.href === href;
 }
 
-type Shell = { propertyName: string | null; businessDate: string | null; userName: string; disabledModules?: string[]; accessibleModules?: string[] | null; permissionAreas?: string[] | null; features?: { loyalty: boolean }; currency?: string | null; shift?: { number: string; opened_business_date: string } | null; attention?: { key: 'approvals' | 'attendance' | 'reminders' | 'online'; count: number }[] } | null;
+type Shell = { propertyName: string | null; businessDate: string | null; userName: string; disabledModules?: string[]; accessibleModules?: string[] | null; permissionAreas?: string[] | null; features?: NavFeatures; currency?: string | null; shift?: { number: string; opened_business_date: string } | null; attention?: { key: 'approvals' | 'attendance' | 'reminders' | 'online'; count: number }[] } | null;
 
 type FrameProps = {
     title: string;
@@ -393,6 +394,31 @@ export function AppFrame({ actions, children, description, links: allLinks = [],
         </Link>
     ) : null;
 
+    // One door for what people ask for from any department: a fault to report, something to buy. Each leads to the page of the department they work in.
+    const quick = quickActions(shell);
+    const quickMenu = quick.length > 0 ? (
+        <DropdownMenu>
+            <DropdownMenuTrigger className="inline-flex h-9 items-center gap-1.5 border border-border bg-surface px-2.5 text-sm font-medium hover:bg-surface-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" data-testid="quick-menu" type="button">
+                <ClipboardPlus aria-hidden="true" className="size-4" />
+                <span className="hidden xl:inline">{t('quick.title')}</span>
+                <span className="sr-only xl:hidden">{t('quick.title')}</span>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-64">
+                {quick.map(({ action, targets }, i) => (
+                    <Fragment key={action.key}>
+                        {i > 0 ? <DropdownMenuSeparator /> : null}
+                        <DropdownMenuLabel>{t(action.label as MessageKey)}</DropdownMenuLabel>
+                        {targets.map((target) => (
+                            <DropdownMenuItem asChild key={target.href}>
+                                <Link href={target.href}>{t(target.label as MessageKey)}</Link>
+                            </DropdownMenuItem>
+                        ))}
+                    </Fragment>
+                ))}
+            </DropdownMenuContent>
+        </DropdownMenu>
+    ) : null;
+
     const userMenu = shell !== null ? (
         <DropdownMenu>
             <DropdownMenuTrigger className="flex items-center gap-2 p-1 hover:bg-surface-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" type="button">
@@ -565,6 +591,7 @@ export function AppFrame({ actions, children, description, links: allLinks = [],
                 </nav>
                 <div className="ml-auto flex items-center gap-2 lg:ml-0">
                     {canFind ? <QuickFind /> : null}
+                    {quickMenu}
                     {bell}
                     <LanguageSwitcher />
                     {layoutSwitcher}
@@ -643,6 +670,7 @@ export function AppFrame({ actions, children, description, links: allLinks = [],
                             {dateChip}
                             {shiftChip}
                             {canFind ? <QuickFind /> : null}
+                            {quickMenu}
                             {bell}
                             <LanguageSwitcher />
                             {layoutSwitcher}

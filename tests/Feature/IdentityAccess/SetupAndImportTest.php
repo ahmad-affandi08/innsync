@@ -8,6 +8,7 @@ use App\Modules\IdentityAccess\Application\Access\DefaultApprovalPolicies;
 use App\Modules\IdentityAccess\Infrastructure\Approval\DatabaseDefaultApprovalInstaller;
 use App\Modules\IdentityAccess\Infrastructure\Authorization\DatabaseDefaultRoleInstaller;
 use App\Modules\IdentityAccess\Infrastructure\Persistence\Eloquent\UserRecord;
+use App\Shared\Application\Setup\OptionalFeatures;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
@@ -214,5 +215,36 @@ final class SetupAndImportTest extends TestCase
         $this->putJson('/property/profile', ['profile' => 'villa', 'disabled' => ['front-office'], 'reason' => 'x'])->assertStatus(422);
         $this->putJson('/property/profile', ['profile' => 'villa', 'disabled' => [], 'reason' => ''])->assertStatus(422);
         self::assertSame(0, DB::table('property_profiles')->count());
+    }
+
+    public function test_the_optional_pages_are_off_until_the_property_switches_them_on(): void
+    {
+        $this->signIn(self::A, ['property.settings.manage']);
+
+        // Nothing is switched on in a new property: the menu leaves the optional pages out, and the screen lists them to choose from.
+        $this->get('/setup')->assertOk()->assertInertia(fn (Assert $page) => $page
+            ->where('profile.features', [])
+            ->where('profile.optional_features', OptionalFeatures::ALL)
+            ->where('shell.features.day-use', false)->where('shell.features.gift-cards', false)->where('shell.features.waitlist', false));
+
+        $this->putJson('/property/profile', ['profile' => 'hotel', 'disabled' => [], 'features' => ['day-use', 'gift-cards', 'day-use'], 'reason' => 'We rent rooms by the hour'])->assertOk();
+
+        $this->get('/setup')->assertInertia(fn (Assert $page) => $page
+            ->where('profile.features', ['day-use', 'gift-cards'])
+            ->where('shell.features.day-use', true)->where('shell.features.gift-cards', true)->where('shell.features.groups', false));
+        self::assertSame(['day-use', 'gift-cards'], DB::table('property_features')->where('property_id', self::A)->where('enabled', true)->orderBy('feature')->pluck('feature')->all());
+
+        $entry = DB::table('audit_entries')->where('action', 'property.profile.changed')->latest('occurred_at')->first();
+        self::assertSame([], json_decode((string) $entry->before_state, true)['features']);
+        self::assertSame(['day-use', 'gift-cards'], json_decode((string) $entry->after_state, true)['features']);
+
+        // A request that says nothing about the pages leaves them as they are; one that lists fewer switches the others off.
+        $this->putJson('/property/profile', ['profile' => 'hotel', 'disabled' => [], 'reason' => 'Only the profile'])->assertOk();
+        self::assertSame(2, DB::table('property_features')->where('enabled', true)->count());
+        $this->putJson('/property/profile', ['profile' => 'hotel', 'disabled' => [], 'features' => ['waitlist'], 'reason' => 'Waiting list only'])->assertOk();
+        self::assertSame(['waitlist'], DB::table('property_features')->where('enabled', true)->pluck('feature')->all());
+
+        // Only the optional pages can be named.
+        $this->putJson('/property/profile', ['profile' => 'hotel', 'disabled' => [], 'features' => ['front-desk'], 'reason' => 'x'])->assertStatus(422);
     }
 }

@@ -192,6 +192,7 @@ describe('dictionaries', () => {
             'fo.source.ota',
             'fo.source.walk_in',
             'fo.res.total',
+            'setup.feature.day-use',
             'fo.res.status',
             'fo.folio.col.seq',
             'fo.folio.col.date',

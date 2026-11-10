@@ -1,8 +1,13 @@
 /** `needs`: areas of permission (see `ModuleAccessMap::areas`); the page is offered when the person holds any permission in one of them. Without it the page is offered to the whole department. */
-export type NavLink = { href: string; label: string; needs?: readonly string[]; group?: string; feature?: 'loyalty' };
+/** Pages that are left out of the menu until the property switches them on (`App\\Shared\\Application\\Setup\\OptionalFeatures`), and the loyalty programme, which is a switch of the installation. */
+export type FeatureKey = 'loyalty' | 'waitlist' | 'groups' | 'day-use' | 'activities' | 'gift-cards' | 'commissions' | 'door-locks' | 'foreign-currency';
+
+export type NavFeatures = Partial<Record<FeatureKey, boolean>>;
+
+export type NavLink = { href: string; label: string; needs?: readonly string[]; group?: string; feature?: FeatureKey };
 
 /** The pages of a list that the person has work in. `areas` is null when it could not be read, and then every page is offered. This only decides what is shown: each page checks the permission on the server. */
-export function visibleLinks(links: readonly NavLink[], areas: readonly string[] | null | undefined, features?: { loyalty: boolean } | null): readonly NavLink[] {
+export function visibleLinks(links: readonly NavLink[], areas: readonly string[] | null | undefined, features?: NavFeatures | null): readonly NavLink[] {
     return links.filter((l) => (l.feature === undefined || features?.[l.feature] !== false) && (areas == null || l.needs === undefined || l.needs.some((n) => areas.includes(n))));
 }
 
@@ -17,24 +22,24 @@ export const FRONT_OFFICE_LINKS: readonly NavLink[] = [
     { href: '/front-office/room-calendar', label: 'fo.nav.tape', group: 'nav.group.frontDesk' },
     { href: '/front-office/inventory', label: 'fo.nav.inventory', group: 'nav.group.frontDesk' },
     { href: '/front-office/reservations', label: 'fo.nav.reservations', needs: ['front-office.reservation'], group: 'nav.group.bookings' },
-    { href: '/front-office/waitlist', label: 'fo.wl.nav', needs: ['front-office.reservation'], group: 'nav.group.bookings' },
-    { href: '/front-office/groups', label: 'fo.group.nav', needs: ['front-office.group'], group: 'nav.group.bookings' },
-    { href: '/front-office/day-use', label: 'fo.du.nav', needs: ['front-office.day-use'], group: 'nav.group.bookings' },
+    { href: '/front-office/waitlist', label: 'fo.wl.nav', needs: ['front-office.reservation'], feature: 'waitlist', group: 'nav.group.bookings' },
+    { href: '/front-office/groups', label: 'fo.group.nav', needs: ['front-office.group'], feature: 'groups', group: 'nav.group.bookings' },
+    { href: '/front-office/day-use', label: 'fo.du.nav', needs: ['front-office.day-use'], feature: 'day-use', group: 'nav.group.bookings' },
     { href: '/front-office/guests', label: 'fo.nav.guests', needs: ['front-office.guest'], group: 'nav.group.guestsStays' },
     { href: '/front-office/stays', label: 'fo.nav.stays', group: 'nav.group.guestsStays' },
     { href: '/front-office/requests', label: 'fo.req.nav', needs: ['front-office.request'], group: 'nav.group.guestsStays' },
     { href: '/front-office/feedback', label: 'fo.fb.nav', needs: ['front-office.feedback'], group: 'nav.group.guestsStays' },
     { href: '/front-office/reminders', label: 'fo.rem.nav', group: 'nav.group.guestsStays' },
     { href: '/front-office/cashier', label: 'fo.cash.nav', needs: ['front-office.cashier'], group: 'nav.group.cashierAccounts' },
-    { href: '/front-office/foreign-currency', label: 'fo.foreign.nav', needs: ['front-office.foreign-payment'], group: 'nav.group.cashierAccounts' },
-    { href: '/front-office/gift-cards', label: 'fo.gc.nav', needs: ['front-office.gift-card'], group: 'nav.group.cashierAccounts' },
+    { href: '/front-office/foreign-currency', label: 'fo.foreign.nav', needs: ['front-office.foreign-payment'], feature: 'foreign-currency', group: 'nav.group.cashierAccounts' },
+    { href: '/front-office/gift-cards', label: 'fo.gc.nav', needs: ['front-office.gift-card'], feature: 'gift-cards', group: 'nav.group.cashierAccounts' },
     { href: '/front-office/companies', label: 'fo.company.nav', needs: ['front-office.company'], group: 'nav.group.cashierAccounts' },
-    { href: '/front-office/commissions', label: 'fo.com.nav', needs: ['front-office.commission'], group: 'nav.group.cashierAccounts' },
+    { href: '/front-office/commissions', label: 'fo.com.nav', needs: ['front-office.commission'], feature: 'commissions', group: 'nav.group.cashierAccounts' },
     { href: '/front-office/loyalty', label: 'fo.ly.nav', needs: ['front-office.loyalty'], feature: 'loyalty', group: 'nav.group.cashierAccounts' },
     { href: '/front-office/checklists', label: 'fo.sop.nav', needs: ['front-office.sop'], group: 'nav.group.deskRoutine' },
     { href: '/front-office/logbook', label: 'fo.log.nav', needs: ['front-office.logbook'], group: 'nav.group.deskRoutine' },
-    { href: '/front-office/activities', label: 'fo.act.nav', needs: ['front-office.activity'], group: 'nav.group.deskRoutine' },
-    { href: '/front-office/door-locks', label: 'fo.lock.nav', needs: ['front-office.door-lock'], group: 'nav.group.deskRoutine' },
+    { href: '/front-office/activities', label: 'fo.act.nav', needs: ['front-office.activity'], feature: 'activities', group: 'nav.group.deskRoutine' },
+    { href: '/front-office/door-locks', label: 'fo.lock.nav', needs: ['front-office.door-lock'], feature: 'door-locks', group: 'nav.group.deskRoutine' },
     { href: '/front-office/night-audit', label: 'fo.nav.audit', needs: ['front-office.night-audit'], group: 'nav.group.deskRoutine' },
 ];
 
@@ -46,8 +51,6 @@ export const HOUSEKEEPING_LINKS: readonly NavLink[] = [
     { href: '/housekeeping/par-levels', label: 'hk.nav.par', needs: ['housekeeping.par'] },
     { href: '/housekeeping/supplies', label: 'hk.nav.supplies', needs: ['housekeeping.supplies'] },
     { href: '/housekeeping/lost-found', label: 'hk.nav.lostfound', needs: ['housekeeping.lostfound'] },
-    { href: '/housekeeping/damage-reports', label: 'hk.nav.damage' },
-    { href: '/inventory/requests?department=housekeeping', label: 'hk.nav.purchasing', needs: ['purchasing.request'] },
     { href: '/laundry/new', label: 'hk.nav.laundry' },
 ];
 
@@ -57,7 +60,6 @@ export const LAUNDRY_LINKS: readonly NavLink[] = [
     { href: '/laundry/claims', label: 'ldy.nav.claims', needs: ['laundry.claim'] },
     { href: '/laundry/prices', label: 'ldy.nav.prices', needs: ['laundry.prices'] },
     { href: '/laundry/supplies', label: 'ldy.nav.supplies', needs: ['laundry.supplies'] },
-    { href: '/inventory/requests?department=laundry', label: 'ldy.nav.purchasing', needs: ['purchasing.request'] },
 ];
 
 export const FNB_LINKS: readonly NavLink[] = [
@@ -73,8 +75,6 @@ export const FNB_LINKS: readonly NavLink[] = [
     { href: '/inventory/requisitions', label: 'inv.nav.requisitions', needs: ['inventory.requisition'] },
     { href: '/inventory/counts?location_kind=bar', label: 'fnb.nav.counts', needs: ['inventory.count'] },
     { href: '/fnb/routines', label: 'fnb.nav.routines' },
-    { href: '/fnb/damage-reports', label: 'fnb.nav.damage' },
-    { href: '/inventory/requests?department=fnb', label: 'fnb.nav.purchasing', needs: ['purchasing.request'] },
 ];
 
 export const KITCHEN_LINKS: readonly NavLink[] = [
@@ -88,8 +88,6 @@ export const KITCHEN_LINKS: readonly NavLink[] = [
     { href: '/inventory/lots?department=kitchen', label: 'kitchen.nav.lots', needs: ['inventory.stock'] },
     { href: '/inventory/requisitions', label: 'inv.nav.requisitions', needs: ['inventory.requisition'] },
     { href: '/inventory/counts?location_kind=kitchen', label: 'kitchen.nav.counts', needs: ['inventory.count'] },
-    { href: '/kitchen/damage-reports', label: 'kitchen.nav.damage' },
-    { href: '/inventory/requests?department=kitchen', label: 'kitchen.nav.purchasing', needs: ['purchasing.request'] },
 ];
 
 export const MAINTENANCE_LINKS: readonly NavLink[] = [
@@ -218,4 +216,43 @@ export const MODULE_LINKS: Readonly<Record<string, readonly NavLink[]>> = {
     property: PROPERTY_LINKS,
 };
 
+/** Where a quick action leads in each department: the same page the department's menu used to list, so a person asks from one place and the page of their own department opens. */
+export type QuickTarget = { module: string; href: string; label: string; needs?: readonly string[] };
+export type QuickAction = { key: 'damage' | 'purchase'; label: string; targets: readonly QuickTarget[] };
 
+export const QUICK_ACTIONS: readonly QuickAction[] = [
+    {
+        key: 'damage',
+        label: 'quick.damage',
+        targets: [
+            { module: 'housekeeping', href: '/housekeeping/damage-reports', label: 'hk.nav.label' },
+            { module: 'fnb', href: '/fnb/damage-reports', label: 'fnb.nav.label' },
+            { module: 'kitchen', href: '/kitchen/damage-reports', label: 'kitchen.nav.label' },
+        ],
+    },
+    {
+        key: 'purchase',
+        label: 'quick.purchase',
+        targets: [
+            { module: 'housekeeping', href: '/inventory/requests?department=housekeeping', label: 'hk.nav.label', needs: ['purchasing.request'] },
+            { module: 'laundry', href: '/inventory/requests?department=laundry', label: 'ldy.nav.label', needs: ['purchasing.request'] },
+            { module: 'fnb', href: '/inventory/requests?department=fnb', label: 'fnb.nav.label', needs: ['purchasing.request'] },
+            { module: 'kitchen', href: '/inventory/requests?department=kitchen', label: 'kitchen.nav.label', needs: ['purchasing.request'] },
+        ],
+    },
+];
+
+type QuickWho = { accessibleModules?: readonly string[] | null; disabledModules?: readonly string[]; permissionAreas?: readonly string[] | null };
+
+/** The quick actions a person can use, with only the departments they work in. An action with no department left is left out. This only decides what is shown: each page checks the permission on the server. */
+export function quickActions(who: QuickWho | null | undefined): { action: QuickAction; targets: readonly QuickTarget[] }[] {
+    if (who === null || who === undefined) return [];
+
+    return QUICK_ACTIONS.map((action) => ({
+        action,
+        targets: action.targets.filter((t) =>
+            (who.accessibleModules == null || who.accessibleModules.includes(t.module))
+            && !(who.disabledModules ?? []).includes(t.module)
+            && (who.permissionAreas == null || t.needs === undefined || t.needs.some((n) => who.permissionAreas?.includes(n)))),
+    })).filter((entry) => entry.targets.length > 0);
+}

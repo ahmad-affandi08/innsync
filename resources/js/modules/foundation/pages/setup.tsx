@@ -18,7 +18,7 @@ import { useTranslation } from '@/shared/i18n/i18n';
 import { useErrorStateCopy } from '@/shared/i18n/use-ui-copy';
 
 type Step = { key: string; group: 'property' | 'people' | 'operations'; required: boolean; href: string; done: boolean; counts: Record<string, number> };
-type Profile = { profile: string | null; disabled: string[]; presets: Record<string, string[]>; modules: string[] };
+type Profile = { profile: string | null; disabled: string[]; presets: Record<string, string[]>; modules: string[]; features: string[]; optional_features: string[] };
 
 const GROUPS: Step['group'][] = ['property', 'people', 'operations'];
 const PROFILES = ['hotel', 'small_resort', 'villa'] as const;
@@ -28,7 +28,7 @@ export default function SetupPage({ steps, progress, profile }: { steps: Step[];
     const { t } = useTranslation();
     const errorCopy = useErrorStateCopy();
     const action = useServerAction();
-    const [form, setForm] = useState<{ profile: string; disabled: string[]; reason: string } | null>(null);
+    const [form, setForm] = useState<{ profile: string; disabled: string[]; features: string[]; reason: string } | null>(null);
     const [outcome, setOutcome] = useState<{ created: string[]; deactivated: string[] } | null>(null);
     const key = (step: Step, part: 'title' | 'why' | 'counts') => `setup.step.${step.key}.${part}` as MessageKey;
     const percent = progress.total === 0 ? 100 : Math.round((progress.done / progress.total) * 100);
@@ -36,7 +36,7 @@ export default function SetupPage({ steps, progress, profile }: { steps: Step[];
 
     function openProfile() {
         action.clear();
-        setForm({ profile: profile.profile ?? 'hotel', disabled: profile.profile === null ? profile.presets.hotel ?? [] : profile.disabled, reason: '' });
+        setForm({ profile: profile.profile ?? 'hotel', disabled: profile.profile === null ? profile.presets.hotel ?? [] : profile.disabled, features: profile.features, reason: '' });
     }
 
     function choose(value: string) {
@@ -48,11 +48,16 @@ export default function SetupPage({ steps, progress, profile }: { steps: Step[];
         setForm({ ...form, disabled: used ? form.disabled.filter((m) => m !== module) : [...new Set([...form.disabled, module])] });
     }
 
+    function toggleFeature(feature: string, on: boolean) {
+        if (form === null) return;
+        setForm({ ...form, features: on ? [...new Set([...form.features, feature])] : form.features.filter((f) => f !== feature) });
+    }
+
     async function save() {
         if (form === null) return;
         const result = await action.run<{ roles: { created: string[]; deactivated: string[] } }>('/property/profile', {
             method: 'PUT',
-            body: { profile: form.profile, disabled: form.disabled, reason: form.reason },
+            body: { profile: form.profile, disabled: form.disabled, features: form.features, reason: form.reason },
         });
         if (result !== null) {
             setOutcome(result.roles);
@@ -128,6 +133,19 @@ export default function SetupPage({ steps, progress, profile }: { steps: Step[];
                                 <div className="flex items-center gap-2" key={m}>
                                     <Checkbox checked={!form.disabled.includes(m)} id={`module-${m}`} onCheckedChange={(v) => toggleModule(m, v === true)} />
                                     <Label className="text-sm font-normal" htmlFor={`module-${m}`}>{t(`setup.module.${m}` as MessageKey)}</Label>
+                                </div>
+                            ))}
+                        </fieldset>
+                        <fieldset className="flex flex-col gap-2" data-testid="setup-features">
+                            <legend className="text-sm font-medium">{t('setup.profile.features')}</legend>
+                            <p className="text-xs text-muted-foreground">{t('setup.profile.featuresHint')}</p>
+                            {profile.optional_features.map((f) => (
+                                <div className="flex items-start gap-2" key={f}>
+                                    <Checkbox checked={form.features.includes(f)} className="mt-0.5" id={`feature-${f}`} onCheckedChange={(v) => toggleFeature(f, v === true)} />
+                                    <Label className="flex flex-col gap-0.5 font-normal" htmlFor={`feature-${f}`}>
+                                        <span className="text-sm">{t(`setup.feature.${f}` as MessageKey)}</span>
+                                        <span className="text-xs text-muted-foreground">{t(`setup.feature.${f}.hint` as MessageKey)}</span>
+                                    </Label>
                                 </div>
                             ))}
                         </fieldset>
