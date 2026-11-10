@@ -117,7 +117,7 @@ final readonly class FixedAssetService
             $months = 0;
             $total = 0;
 
-            foreach ($this->store->all($property) as $a) {
+            foreach ($this->store->all($property, true) as $a) {
                 $due = Depreciation::due((int) $a['cost_minor'], (int) $a['salvage_minor'], (int) $a['life_months'], substr((string) $a['acquired_on'], 0, 10), $a['disposed_on'] === null ? null : substr((string) $a['disposed_on'], 0, 10), (int) $a['entries'], (int) $a['accumulated_minor'], $through);
 
                 if ($due === []) {
@@ -165,7 +165,7 @@ final readonly class FixedAssetService
         }
 
         $this->transactions->run(function () use ($property, $actorId, $a, $kind, $on, $proceedsMinor, $method, $reason, $lock): void {
-            $row = collect($this->store->all($property))->firstWhere('id', $a['id']);
+            $row = collect($this->store->all($property, true))->firstWhere('id', $a['id']);
             $owed = Depreciation::due((int) $a['cost_minor'], (int) $a['salvage_minor'], (int) $a['life_months'], substr((string) $a['acquired_on'], 0, 10), $on, (int) $row['entries'], (int) $row['accumulated_minor'], Depreciation::plus(Depreciation::period($on), -1));
 
             if ($owed !== []) {

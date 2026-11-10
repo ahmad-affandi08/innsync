@@ -15,6 +15,9 @@ interface LoyaltyStore
     /** @return array<string, mixed>|null */
     public function account(PropertyId $property, string $id): ?array;
 
+    /** The account, held until the transaction ends so that nothing else moves its points meanwhile. @return array<string, mixed>|null */
+    public function lockAccount(PropertyId $property, string $id): ?array;
+
     /** @return array<string, mixed>|null */
     public function accountOfGuest(PropertyId $property, string $guestKey): ?array;
 
@@ -38,6 +41,9 @@ interface LoyaltyStore
 
     /** Accounts that hold points and have had no stay and no voucher since the moment. @return list<array<string, mixed>> */
     public function idleAccounts(PropertyId $property, DateTimeImmutable $since, int $limit): array;
+
+    /** Whether the account earned or spent points since the moment. */
+    public function activeSince(PropertyId $property, string $accountId, DateTimeImmutable $since): bool;
 
     /** @return list<string> */
     public function propertiesWithAccounts(): array;

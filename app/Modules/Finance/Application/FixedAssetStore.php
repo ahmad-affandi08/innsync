@@ -16,7 +16,8 @@ interface FixedAssetStore
     public function find(PropertyId $property, string $id): ?array;
 
     /** @return list<array<string, mixed>> with `accumulated_minor` and `last_period` of what was depreciated */
-    public function all(PropertyId $property): array;
+    /** Every asset with what has been depreciated; `$lock` holds the assets until the transaction ends, so that two runs or a run and a disposal at once wait for each other. */
+    public function all(PropertyId $property, bool $lock = false): array;
 
     /** @param list<array{period: string, amount_minor: int, accumulated_after_minor: int}> $entries */
     public function addEntries(PropertyId $property, string $assetId, array $entries, string $by, DateTimeImmutable $at): void;

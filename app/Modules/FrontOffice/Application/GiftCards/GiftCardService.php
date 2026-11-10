@@ -211,54 +211,85 @@ final readonly class GiftCardService implements GiftCardRedemption
 
     public function redeem(PropertyId $property, string $actorId, string $code, int $amountMinor, string $currency, string $sourceType, string $sourceRef): string
     {
-        $card = $this->store->byHash($property, $this->hash($code));
+        $found = $this->store->byHash($property, $this->hash($code));
         $refusal = Refusal::invalid('This gift card cannot pay this.', ['reference']);
 
-        if ($card === null) {
+        if ($found === null) {
             throw $refusal;
         }
 
-        $masked = 'GC-...'.$card['code_last4'];
-        $done = $this->store->entryBySource($property, 'redeem', $sourceType, strtolower($sourceRef));
+        return $this->transactions->run(function () use ($property, $actorId, $amountMinor, $currency, $sourceType, $sourceRef, $found, $refusal): string {
+            // The card is held from here to the end: two payments at once cannot both read the same balance, and a source that was taken already is seen however many times it comes.
+            $card = $this->store->lockCard($property, $found['id']) ?? throw $refusal;
+            $masked = 'GC-...'.$card['code_last4'];
 
-        if ($done !== null) {
+            if ($this->store->entryBySource($property, 'redeem', $sourceType, strtolower($sourceRef)) !== null) {
+                return $masked;
+            }
+
+            $today = $this->businessDate->current($property)->toString();
+
+            if ($card['status'] !== 'active' || ($card['expires_on'] !== null && substr((string) $card['expires_on'], 0, 10) < $today) || $card['currency'] !== $currency || $amountMinor < 1 || (int) $card['balance_minor'] < $amountMinor) {
+                throw $refusal;
+            }
+
+            $now = $this->clock->nowUtc();
+
+            if (! $this->store->debit($property, $card['id'], $amountMinor, $now)) {
+                throw $refusal;
+            }
+
+            $left = (int) $card['balance_minor'] - $amountMinor;
+
+            if (! $this->store->addEntry($property, ['id' => $this->ids->next(), 'card_id' => $card['id'], 'kind' => 'redeem', 'delta_minor' => -$amountMinor, 'balance_after_minor' => $left, 'source_type' => $sourceType, 'source_ref' => strtolower($sourceRef), 'disposition' => null, 'note' => null, 'business_date' => $today, 'actor_id' => strtolower($actorId)], $now)) {
+                // Never take money from a card without the entry that says why.
+                throw Refusal::stateConflict('This payment was taken from the card already. Try again.');
+            }
+
+            $this->audit->record(new AuditEntry($property->toString(), strtolower($actorId), 'gift_card.redeemed', 'gift_card', $card['id'], ['balance_minor' => (int) $card['balance_minor']], ['balance_minor' => $left, 'amount_minor' => $amountMinor, 'source' => $sourceType]));
+
             return $masked;
-        }
-
-        $today = $this->businessDate->current($property)->toString();
-
-        if ($card['status'] !== 'active' || ($card['expires_on'] !== null && substr((string) $card['expires_on'], 0, 10) < $today) || $card['currency'] !== $currency || $amountMinor < 1 || (int) $card['balance_minor'] < $amountMinor) {
-            throw $refusal;
-        }
-
-        $now = $this->clock->nowUtc();
-
-        if (! $this->store->debit($property, $card['id'], $amountMinor, $now)) {
-            throw $refusal;
-        }
-
-        $left = (int) $card['balance_minor'] - $amountMinor;
-        $this->store->addEntry($property, ['id' => $this->ids->next(), 'card_id' => $card['id'], 'kind' => 'redeem', 'delta_minor' => -$amountMinor, 'balance_after_minor' => $left, 'source_type' => $sourceType, 'source_ref' => strtolower($sourceRef), 'disposition' => null, 'note' => null, 'business_date' => $today, 'actor_id' => strtolower($actorId)], $now);
-        $this->audit->record(new AuditEntry($property->toString(), strtolower($actorId), 'gift_card.redeemed', 'gift_card', $card['id'], ['balance_minor' => (int) $card['balance_minor']], ['balance_minor' => $left, 'amount_minor' => $amountMinor, 'source' => $sourceType]));
-
-        return $masked;
+        });
     }
 
     public function restore(PropertyId $property, string $actorId, string $sourceType, string $sourceRef): void
     {
         $sourceRef = strtolower($sourceRef);
-        $taken = $this->store->entryBySource($property, 'redeem', $sourceType, $sourceRef);
 
-        if ($taken === null || $this->store->entryBySource($property, 'restore', $sourceType, $sourceRef) !== null) {
-            return;
-        }
+        $this->transactions->run(function () use ($property, $actorId, $sourceType, $sourceRef): void {
+            $taken = $this->store->entryBySource($property, 'redeem', $sourceType, $sourceRef);
 
-        $amount = -(int) $taken['delta_minor'];
-        $card = $this->store->card($property, $taken['card_id']) ?? throw Refusal::notFound('Gift card not found.');
-        $now = $this->clock->nowUtc();
-        $this->store->credit($property, $card['id'], $amount, $now);
-        $this->store->addEntry($property, ['id' => $this->ids->next(), 'card_id' => $card['id'], 'kind' => 'restore', 'delta_minor' => $amount, 'balance_after_minor' => (int) $card['balance_minor'] + $amount, 'source_type' => $sourceType, 'source_ref' => $sourceRef, 'disposition' => null, 'note' => null, 'business_date' => $this->businessDate->current($property)->toString(), 'actor_id' => strtolower($actorId)], $now);
-        $this->audit->record(new AuditEntry($property->toString(), strtolower($actorId), 'gift_card.restored', 'gift_card', $card['id'], ['balance_minor' => (int) $card['balance_minor']], ['balance_minor' => (int) $card['balance_minor'] + $amount, 'amount_minor' => $amount, 'source' => $sourceType]));
+            if ($taken === null) {
+                return;
+            }
+
+            $card = $this->store->lockCard($property, $taken['card_id']) ?? throw Refusal::notFound('Gift card not found.');
+
+            if ($this->store->entryBySource($property, 'restore', $sourceType, $sourceRef) !== null) {
+                return;
+            }
+
+            $now = $this->clock->nowUtc();
+            $balance = (int) $card['balance_minor'];
+
+            // A card that was voided since holds nothing and takes nothing back: what was paid with it is paid back to the guest another way, and the audit says so.
+            if ($card['status'] !== 'active') {
+                $this->audit->record(new AuditEntry($property->toString(), strtolower($actorId), 'gift_card.restore_skipped', 'gift_card', $card['id'], ['status' => $card['status']], ['amount_minor' => -(int) $taken['delta_minor'], 'source' => $sourceType], 'The card is void: give the money back to the guest another way.'));
+
+                return;
+            }
+
+            // Never more than the card was sold for.
+            $amount = min(-(int) $taken['delta_minor'], (int) $card['face_minor'] - $balance);
+
+            if ($amount < 1) {
+                return;
+            }
+
+            $this->store->credit($property, $card['id'], $amount, $now);
+            $this->store->addEntry($property, ['id' => $this->ids->next(), 'card_id' => $card['id'], 'kind' => 'restore', 'delta_minor' => $amount, 'balance_after_minor' => $balance + $amount, 'source_type' => $sourceType, 'source_ref' => $sourceRef, 'disposition' => null, 'note' => null, 'business_date' => $this->businessDate->current($property)->toString(), 'actor_id' => strtolower($actorId)], $now);
+            $this->audit->record(new AuditEntry($property->toString(), strtolower($actorId), 'gift_card.restored', 'gift_card', $card['id'], ['balance_minor' => $balance], ['balance_minor' => $balance + $amount, 'amount_minor' => $amount, 'source' => $sourceType]));
+        });
     }
 
     /** The code as people type it: letters and digits, upper case, the look-alikes read the way the code is written. */

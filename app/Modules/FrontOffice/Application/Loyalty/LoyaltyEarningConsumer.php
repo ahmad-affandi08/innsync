@@ -62,9 +62,11 @@ final readonly class LoyaltyEarningConsumer implements OutboxConsumer
             $accountId = $this->store->ensureAccount($property, $this->ids->next(), $guestKey, $reservation->guestName, substr($digits, -4), $now);
             // The tier the guest had before this stay earns a bonus on it.
             $base = $points;
-            $points = LoyaltyTiers::withBonus($points, (int) ($this->store->accountOfGuest($property, $guestKey)['earned_points'] ?? 0), $rules['tiers']);
+            // Held while the points are added, so that a voucher or another stay at the same moment cannot make the balance in the entry wrong.
+            $locked = $this->store->lockAccount($property, $accountId) ?? throw new \RuntimeException('The loyalty account vanished.');
+            $points = LoyaltyTiers::withBonus($points, (int) $locked['earned_points'], $rules['tiers']);
 
-            if (! $this->store->addEntry($property, ['id' => $this->ids->next(), 'account_id' => $accountId, 'kind' => 'earn', 'points' => $points, 'balance_after' => $this->store->balance($property, $accountId) + $points, 'source_type' => 'stay', 'source_ref' => $reservationId, 'note' => $reservation->number.($points > $base ? ' (+'.($points - $base).' tier bonus)' : ''), 'business_date' => (string) $d['business_date'], 'actor_id' => null], $now)) {
+            if (! $this->store->addEntry($property, ['id' => $this->ids->next(), 'account_id' => $accountId, 'kind' => 'earn', 'points' => $points, 'balance_after' => (int) $locked['balance_points'] + $points, 'source_type' => 'stay', 'source_ref' => $reservationId, 'note' => $reservation->number.($points > $base ? ' (+'.($points - $base).' tier bonus)' : ''), 'business_date' => (string) $d['business_date'], 'actor_id' => null], $now)) {
                 return;
             }
 

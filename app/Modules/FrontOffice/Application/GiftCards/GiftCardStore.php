@@ -15,6 +15,9 @@ interface GiftCardStore
     /** @return array<string, mixed>|null */
     public function card(PropertyId $property, string $id): ?array;
 
+    /** The card, held until the transaction ends so that no other payment moves its balance meanwhile. @return array<string, mixed>|null */
+    public function lockCard(PropertyId $property, string $id): ?array;
+
     /** False when the code is taken. @param array<string, mixed> $row */
     public function addCard(PropertyId $property, array $row, DateTimeImmutable $at): bool;
 

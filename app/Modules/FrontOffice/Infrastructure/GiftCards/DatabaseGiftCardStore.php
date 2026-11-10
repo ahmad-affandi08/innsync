@@ -35,6 +35,13 @@ final readonly class DatabaseGiftCardStore implements GiftCardStore
         }
     }
 
+    public function lockCard(PropertyId $property, string $id): ?array
+    {
+        $r = DB::table('gift_cards')->where('property_id', $property->toString())->where('id', $id)->lockForUpdate()->first();
+
+        return $r === null ? null : (array) $r;
+    }
+
     public function debit(PropertyId $property, string $id, int $amount, DateTimeImmutable $at): bool
     {
         return DB::table('gift_cards')->where('property_id', $property->toString())->where('id', $id)->where('status', 'active')->where('balance_minor', '>=', $amount)
@@ -87,7 +94,7 @@ final readonly class DatabaseGiftCardStore implements GiftCardStore
 
     public function openShiftOf(PropertyId $property, string $cashierId): ?string
     {
-        $id = DB::table('cashier_shifts')->where('property_id', $property->toString())->where('cashier_id', $cashierId)->where('status', 'open')->value('id');
+        $id = DB::table('cashier_shifts')->where('property_id', $property->toString())->where('cashier_id', $cashierId)->where('status', 'open')->sharedLock()->value('id');
 
         return is_string($id) ? $id : null;
     }

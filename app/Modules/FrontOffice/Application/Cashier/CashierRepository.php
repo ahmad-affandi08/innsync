@@ -18,10 +18,12 @@ interface CashierRepository
     public function open(PropertyId $property, string $id, string $number, string $cashierId, string $currency, DateTimeImmutable $at, string $businessDate, int $floatMinor): bool;
 
     /** @return array<string, mixed>|null */
-    public function find(PropertyId $property, string $id): ?array;
+    /** @param bool $lock take the row's lock for the rest of the transaction (close takes it exclusively) */
+    public function find(PropertyId $property, string $id, bool $lock = false): ?array;
 
     /** @return array<string, mixed>|null */
-    public function openOf(PropertyId $property, string $cashierId): ?array;
+    /** @param bool $lock hold the shift open for the rest of the transaction: a close waits for whoever is posting into it */
+    public function openOf(PropertyId $property, string $cashierId, bool $lock = false): ?array;
 
     /** @return list<array<string, mixed>> newest first */
     public function search(PropertyId $property, ?string $status, ?string $cashierId, int $limit): array;

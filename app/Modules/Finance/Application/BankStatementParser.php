@@ -212,10 +212,24 @@ final class BankStatementParser
         } else {
             $at = strrpos($text, $decimal);
             $whole = (string) preg_replace('/[.,]/', '', substr($text, 0, (int) $at));
-            $fraction = substr(substr($text, (int) $at + 1).'00', 0, 2);
+            $given = substr($text, (int) $at + 1);
+
+            // More than two decimals is not rupiah and cents: it is refused, not cut.
+            if (strlen($given) > 2) {
+                return null;
+            }
+
+            $fraction = substr($given.'00', 0, 2);
         }
 
         if ($whole === '' || strlen($whole) > 15) {
+            return null;
+        }
+
+        // Separators inside the whole part are thousands separators: groups of three after the first group of one to three digits (12.34.56 is not an amount), one kind only.
+        $wholeText = $decimal === null ? $text : substr($text, 0, (int) strrpos($text, $decimal));
+
+        if (preg_match('/[.,]/', $wholeText) === 1 && preg_match('/^\d{1,3}(?:([.,])\d{3})(?:\1\d{3})*$/', $wholeText) !== 1) {
             return null;
         }
 

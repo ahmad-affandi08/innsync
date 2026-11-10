@@ -87,6 +87,8 @@ final readonly class LoyaltyService
         $outcome = [];
 
         $this->transactions->run(function () use ($property, $actor, $account, $points, $rules, $ref, $hash, &$outcome): void {
+            // The account is held from here: the same request twice at once finds the first one's entry (and takes no more points), and the points left are the points left.
+            $account = $this->store->lockAccount($property, $account['id']) ?? throw Refusal::notFound('Loyalty account not found.');
             $again = $this->store->entryBySource($property, 'redeem', 'redeem', $ref);
 
             if ($again === null) {
@@ -128,6 +130,8 @@ final readonly class LoyaltyService
         $actor = strtolower($actorId);
 
         $this->transactions->run(function () use ($property, $actor, $account, $points, $reason): void {
+            $account = $this->store->lockAccount($property, $account['id']) ?? throw Refusal::notFound('Loyalty account not found.');
+
             if (! $this->store->move($property, $account['id'], $points, $this->clock->nowUtc())) {
                 throw Refusal::invalid('The account holds fewer points than that.', ['points']);
             }
@@ -154,11 +158,13 @@ final readonly class LoyaltyService
         $expired = 0;
 
         foreach ($this->store->idleAccounts($property, $since, 500) as $account) {
-            $this->transactions->run(function () use ($property, $account, $months, &$expired): void {
+            $this->transactions->run(function () use ($property, $account, $months, $since, &$expired): void {
+                // Held and looked at again: a stay or a voucher since the list was made keeps the points, and points spent meanwhile are not taken a second time.
+                $account = $this->store->lockAccount($property, $account['id']) ?? $account;
                 $points = (int) $account['balance_points'];
                 $now = $this->clock->nowUtc();
 
-                if ($points < 1 || ! $this->store->move($property, $account['id'], -$points, $now)) {
+                if ($points < 1 || $this->store->activeSince($property, $account['id'], $since) || ! $this->store->move($property, $account['id'], -$points, $now)) {
                     return;
                 }
 

@@ -6,6 +6,7 @@ namespace App\Shared\Infrastructure\Push;
 
 use App\Shared\Application\Identifiers\IdentifierGenerator;
 use App\Shared\Application\Privacy\FieldCipher;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\DB;
 use Throwable;
 
@@ -28,10 +29,16 @@ final readonly class PushDevices
         $now = now();
 
         if ($known === null) {
-            DB::table('push_devices')->insert(['id' => $this->ids->next(), 'user_id' => $userId, 'endpoint_hash' => $hash, 'endpoint_sealed' => $this->cipher->seal($endpoint), 'label' => $label === null ? null : mb_substr($label, 0, 80), 'created_at' => $now, 'updated_at' => $now]);
-        } else {
-            DB::table('push_devices')->where('endpoint_hash', $hash)->update(['user_id' => $userId, 'failures' => 0, 'updated_at' => $now]);
+            try {
+                DB::table('push_devices')->insert(['id' => $this->ids->next(), 'user_id' => $userId, 'endpoint_hash' => $hash, 'endpoint_sealed' => $this->cipher->seal($endpoint), 'label' => $label === null ? null : mb_substr($label, 0, 80), 'created_at' => $now, 'updated_at' => $now]);
+
+                return true;
+            } catch (UniqueConstraintViolationException) {
+                // The same device was added a moment ago (a double tap): it is there, which is what was asked.
+            }
         }
+
+        DB::table('push_devices')->where('endpoint_hash', $hash)->update(['user_id' => $userId, 'failures' => 0, 'updated_at' => $now]);
 
         return true;
     }

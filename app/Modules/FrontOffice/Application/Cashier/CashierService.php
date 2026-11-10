@@ -62,7 +62,7 @@ final readonly class CashierService implements ShiftAttribution
     {
         $this->assertProperty($property);
 
-        if ($this->shifts->settings($property)['require_open_shift'] && $this->shifts->openOf($property, strtolower($actorId)) === null) {
+        if ($this->shifts->settings($property)['require_open_shift'] && $this->shifts->openOf($property, strtolower($actorId), true) === null) {
             throw CashierRefused::shiftRequired();
         }
     }
@@ -70,7 +70,8 @@ final readonly class CashierService implements ShiftAttribution
     public function attribute(PropertyId $property, string $actorId, string $postingId): void
     {
         $this->assertProperty($property);
-        $open = $this->shifts->openOf($property, strtolower($actorId));
+        // Held for the rest of the transaction, so a close cannot count the drawer between this payment and its attribution.
+        $open = $this->shifts->openOf($property, strtolower($actorId), true);
 
         if ($open !== null) {
             $this->shifts->attribute($property, $open['id'], $postingId, $this->clock->nowUtc());
@@ -192,7 +193,7 @@ final readonly class CashierService implements ShiftAttribution
         }
 
         $this->transactions->run(function () use ($property, $actor, $shiftId, $amountMinor, $reference, $note): void {
-            $shift = $this->shifts->find($property, strtolower($shiftId)) ?? throw Refusal::notFound('Shift not found.');
+            $shift = $this->shifts->find($property, strtolower($shiftId), true) ?? throw Refusal::notFound('Shift not found.');
 
             if ($shift['cashier_id'] !== $actor) {
                 throw Refusal::forbidden('Only the person who opened the shift can drop cash from it.');
@@ -249,7 +250,8 @@ final readonly class CashierService implements ShiftAttribution
         }
 
         $closed = $this->transactions->run(function () use ($property, $actor, $actorId, $shiftId, $countedMinor, $reason, $expectedLockVersion): array {
-            $shift = $this->shifts->find($property, strtolower($shiftId)) ?? throw Refusal::notFound('Shift not found.');
+            // Locked first: a payment being posted into this shift finishes before the drawer is counted, and the next one finds it closed.
+            $shift = $this->shifts->find($property, strtolower($shiftId), true) ?? throw Refusal::notFound('Shift not found.');
 
             if ($shift['cashier_id'] !== $actor && ! $this->permissions->allowsInProperty($actorId, self::MANAGE_PERMISSION, $property)) {
                 throw Refusal::forbidden('Only the person who opened the shift, or a supervisor, can close it.');

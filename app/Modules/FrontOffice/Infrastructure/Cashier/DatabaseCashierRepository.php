@@ -60,16 +60,18 @@ final readonly class DatabaseCashierRepository implements CashierRepository
         return true;
     }
 
-    public function find(PropertyId $property, string $id): ?array
+    public function find(PropertyId $property, string $id, bool $lock = false): ?array
     {
-        $row = DB::table('cashier_shifts')->where('property_id', $property->toString())->where('id', $id)->first();
+        $query = DB::table('cashier_shifts')->where('property_id', $property->toString())->where('id', $id);
+        $row = ($lock ? $query->lockForUpdate() : $query)->first();
 
         return $row === null ? null : self::shape($row);
     }
 
-    public function openOf(PropertyId $property, string $cashierId): ?array
+    public function openOf(PropertyId $property, string $cashierId, bool $lock = false): ?array
     {
-        $row = DB::table('cashier_shifts')->where('property_id', $property->toString())->where('cashier_id', $cashierId)->where('status', 'open')->first();
+        $query = DB::table('cashier_shifts')->where('property_id', $property->toString())->where('cashier_id', $cashierId)->where('status', 'open');
+        $row = ($lock ? $query->sharedLock() : $query)->first();
 
         return $row === null ? null : self::shape($row);
     }

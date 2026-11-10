@@ -29,11 +29,14 @@ final readonly class DatabaseFixedAssetStore implements FixedAssetStore
         return $r === null ? null : (array) $r;
     }
 
-    public function all(PropertyId $property): array
+    public function all(PropertyId $property, bool $lock = false): array
     {
+        // The assets are read (and held) before the sums: a run that waited sees the entries of the run it waited for.
+        $query = DB::table('fin_fixed_assets')->where('property_id', $property->toString())->orderBy('code');
+        $assets = ($lock ? $query->lockForUpdate() : $query)->get();
         $sums = DB::table('fin_depreciation_entries')->where('property_id', $property->toString())->groupBy('asset_id')->selectRaw('asset_id, SUM(amount_minor) as accumulated, MAX(period) as last_period, COUNT(*) as entries')->get()->keyBy('asset_id');
 
-        return DB::table('fin_fixed_assets')->where('property_id', $property->toString())->orderBy('code')->get()->map(static function (object $r) use ($sums): array {
+        return $assets->map(static function (object $r) use ($sums): array {
             $s = $sums->get($r->id);
 
             return [...(array) $r, 'accumulated_minor' => $s === null ? 0 : (int) $s->accumulated, 'entries' => $s === null ? 0 : (int) $s->entries, 'last_period' => $s === null ? null : (string) $s->last_period];

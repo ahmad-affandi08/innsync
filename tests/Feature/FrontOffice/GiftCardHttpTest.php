@@ -16,6 +16,7 @@ use App\Modules\Property\Application\Catalog\RoomCatalogService;
 use App\Modules\Property\Application\Rates\ChargeSchemeService;
 use App\Modules\Property\Application\Rates\RatePlanService;
 use App\Modules\Property\Application\Settings\PropertySettingsService;
+use App\Shared\Application\GiftCards\GiftCardRedemption;
 use App\Shared\Application\Tenancy\PropertyContext;
 use App\Shared\Domain\Tenancy\PropertyId;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -192,5 +193,43 @@ final class GiftCardHttpTest extends TestCase
         $this->get('/front-office/gift-cards')->assertOk()->assertInertia(fn (Assert $p) => $p->where('overview.may.issue', false)->where('overview.may.void', false));
         $this->postJson('/front-office/gift-cards', ['amount_minor' => 1_000_000, 'kind' => 'gift_card', 'payment_method' => 'cash'], ['Idempotency-Key' => 'gift-card-sale-00020'])->assertForbidden();
         $this->postJson("/front-office/gift-cards/{$id}/void", ['disposition' => 'refunded', 'reason' => 'x'])->assertForbidden();
+    }
+
+    public function test_a_source_takes_money_from_a_card_once_the_balance_in_each_entry_is_true_and_a_void_card_takes_nothing_back(): void
+    {
+        $made = $this->sell();
+        $card = $made['card']['id'];
+        $propertyId = PropertyId::fromString(self::A);
+        app(PropertyContext::class)->activate($propertyId);
+        $redemption = app(GiftCardRedemption::class);
+        $actor = (string) DB::table('users')->value('id');
+
+        DB::transaction(function () use ($redemption, $propertyId, $actor, $made): void {
+            $first = $redemption->redeem($propertyId, $actor, $made['code'], 10_000_000, 'IDR', 'folio_posting', '01arz3ndektsv4rrffq69g5aaa');
+            // The same source again, however it comes: the same answer and nothing more is taken.
+            self::assertSame($first, $redemption->redeem($propertyId, $actor, $made['code'], 10_000_000, 'IDR', 'folio_posting', '01ARZ3NDEKTSV4RRFFQ69G5AAA'));
+            $redemption->redeem($propertyId, $actor, $made['code'], 5_000_000, 'IDR', 'folio_posting', '01arz3ndektsv4rrffq69g5aab');
+        });
+
+        self::assertSame(35_000_000, (int) DB::table('gift_cards')->where('id', $card)->value('balance_minor'));
+        self::assertSame([40_000_000, 35_000_000], DB::table('gift_card_entries')->where('card_id', $card)->where('kind', 'redeem')->orderBy('created_at')->orderBy('id')->pluck('balance_after_minor')->map(fn ($n): int => (int) $n)->all());
+
+        // Giving it back twice gives it back once, and never more than the card was sold for.
+        DB::transaction(function () use ($redemption, $propertyId, $actor): void {
+            $redemption->restore($propertyId, $actor, 'folio_posting', '01arz3ndektsv4rrffq69g5aaa');
+            $redemption->restore($propertyId, $actor, 'folio_posting', '01arz3ndektsv4rrffq69g5aaa');
+        });
+        self::assertSame(45_000_000, (int) DB::table('gift_cards')->where('id', $card)->value('balance_minor'));
+        self::assertSame(1, DB::table('gift_card_entries')->where('card_id', $card)->where('kind', 'restore')->count());
+
+        // A card voided in the meantime takes nothing back: it stays at nothing, and the audit says the guest is to be paid another way.
+        $this->postJson("/front-office/gift-cards/{$card}/void", ['disposition' => 'refunded', 'reason' => 'Lost'])->assertOk();
+        app(PropertyContext::class)->activate($propertyId);
+        DB::transaction(function () use ($redemption, $propertyId, $actor): void {
+            $redemption->restore($propertyId, $actor, 'folio_posting', '01arz3ndektsv4rrffq69g5aab');
+        });
+        self::assertSame(0, (int) DB::table('gift_cards')->where('id', $card)->value('balance_minor'));
+        self::assertSame(1, DB::table('audit_entries')->where('action', 'gift_card.restore_skipped')->count());
+        self::assertSame(1, DB::table('gift_card_entries')->where('card_id', $card)->where('kind', 'restore')->count());
     }
 }

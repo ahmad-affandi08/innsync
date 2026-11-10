@@ -24,6 +24,13 @@ final readonly class DatabaseLoyaltyStore implements LoyaltyStore
         return $row === null ? null : (array) $row;
     }
 
+    public function lockAccount(PropertyId $property, string $id): ?array
+    {
+        $row = DB::table('loyalty_accounts')->where('property_id', $property->toString())->where('id', $id)->lockForUpdate()->first();
+
+        return $row === null ? null : (array) $row;
+    }
+
     public function accountOfGuest(PropertyId $property, string $guestKey): ?array
     {
         $row = DB::table('loyalty_accounts')->where('property_id', $property->toString())->where('guest_key', $guestKey)->first();
@@ -84,6 +91,11 @@ final readonly class DatabaseLoyaltyStore implements LoyaltyStore
         $active = DB::table('loyalty_entries')->where('property_id', $property->toString())->whereIn('kind', ['earn', 'redeem'])->where('created_at', '>=', $since)->select('account_id');
 
         return DB::table('loyalty_accounts')->where('property_id', $property->toString())->where('balance_points', '>', 0)->where('created_at', '<', $since)->whereNotIn('id', $active)->orderBy('id')->limit($limit)->get()->map(static fn (object $r): array => (array) $r)->all();
+    }
+
+    public function activeSince(PropertyId $property, string $accountId, DateTimeImmutable $since): bool
+    {
+        return DB::table('loyalty_entries')->where('property_id', $property->toString())->where('account_id', $accountId)->whereIn('kind', ['earn', 'redeem'])->where('created_at', '>=', $since)->exists();
     }
 
     public function propertiesWithAccounts(): array

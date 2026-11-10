@@ -82,4 +82,15 @@ final class BankStatementParserTest extends TestCase
         self::assertSame('missing_column', $read['errors'][0]['code']);
         self::assertSame(1, $read['errors'][0]['line']);
     }
+
+    public function test_an_amount_with_odd_grouping_or_more_than_two_decimals_is_refused_not_guessed(): void
+    {
+        foreach (['12.34.56', '1.234.56', '1.234,567.89', '1.2345', '15,555.5555'] as $odd) {
+            self::assertNull(BankStatementParser::amount($odd), $odd);
+        }
+
+        self::assertSame(123_456_789, BankStatementParser::amount('1,234,567.89')['minor']);
+        self::assertSame(123_456_789, BankStatementParser::amount('1.234.567,89')['minor']);
+        self::assertSame(150_000, BankStatementParser::amount('1.500')['minor']);
+    }
 }
