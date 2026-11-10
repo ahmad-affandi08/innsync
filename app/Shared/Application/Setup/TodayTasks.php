@@ -14,7 +14,7 @@ interface TodayTasks
 {
     /**
      * @return list<array{key: string, count: int, href: string, urgent?: bool}> `key` is `<module>.<what>` (it picks the wording and the icon on the page), `href` the page that lists
-     *                                                                               the items, `urgent` marks work that is late or blocking
+     *                                                                           the items, `urgent` marks work that is late or blocking
      */
     public function tasks(PropertyId $property, string $actorId): array;
 }

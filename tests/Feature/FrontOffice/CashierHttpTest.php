@@ -58,7 +58,7 @@ final class CashierHttpTest extends TestCase
     public function test_a_shift_is_opened_used_dropped_and_closed_through_http(): void
     {
         $this->get('/front-office/cashier')->assertInertia(fn (Assert $p) => $p->component('front-office/pages/cashier')->where('cashier.shift', null)->where('cashier.currency', 'IDR')->where('cashier.last_float_minor', null)->where('cashier.may_view_all', true));
-        $shift =$this->postJson('/front-office/cashier/shifts', ['opening_float_minor' => 20_000_000])->assertCreated()->assertJsonPath('shift.number', 'SHF-000001')->json('shift');
+        $shift = $this->postJson('/front-office/cashier/shifts', ['opening_float_minor' => 20_000_000])->assertCreated()->assertJsonPath('shift.number', 'SHF-000001')->json('shift');
         $this->postJson('/front-office/cashier/shifts', ['opening_float_minor' => 1])->assertStatus(409)->assertJsonPath('error.conflict.reason', 'shift_open');
 
         $this->postJson("/front-office/folios/{$this->folio}/payments", ['payment_method' => 'cash', 'amount_minor' => 5_000_000, 'purpose' => 'deposit'], ['Idempotency-Key' => 'cashier-pay-00000001'])->assertOk();

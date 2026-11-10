@@ -45,7 +45,7 @@ final readonly class LaundryController
         $property = $this->property->current();
         $actor = $this->actor($request);
 
-        return Inertia::render('laundry/pages/prices', ['items' => $this->laundry->priceList($property, $actor), 'treatments' => $this->laundry->treatments($property, $actor), 'currency' => $this->laundry->currency($property), 'turnaround' => $this->laundry->turnaround($property, $actor), 'may' =>$this->laundry->abilities($property, $actor)]);
+        return Inertia::render('laundry/pages/prices', ['items' => $this->laundry->priceList($property, $actor), 'treatments' => $this->laundry->treatments($property, $actor), 'currency' => $this->laundry->currency($property), 'turnaround' => $this->laundry->turnaround($property, $actor), 'may' => $this->laundry->abilities($property, $actor)]);
     }
 
     public function store(Request $request): JsonResponse

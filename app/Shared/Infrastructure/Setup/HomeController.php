@@ -22,7 +22,6 @@ final readonly class HomeController
     /** @param iterable<TodayTasks> $sources the modules that report work waiting (tagged `today-tasks`) */
     public function __construct(private ModuleAccess $access, private ModuleSettings $modules, private iterable $sources) {}
 
-
     public function show(Request $request): Response|RedirectResponse
     {
         if (! $request->boolean('home')) {
