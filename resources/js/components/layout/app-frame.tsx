@@ -42,7 +42,8 @@ import { QuickFind } from '@/components/layout/quick-find';
 import { useBrand } from '@/shared/lib/brand';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
-import { groupHeading, MODULE_LINKS, visibleLinks, type NavLink } from '@/components/layout/module-links';
+import { MODULE_LINKS, visibleLinks, type NavLink } from '@/components/layout/module-links';
+import { NavSections } from '@/components/layout/nav-sections';
 import { Sheet, SheetContent, SheetDescription, SheetTitle } from '@/components/ui/sheet';
 import { useFormatters, useTranslation } from '@/shared/i18n/i18n';
 import { LAYOUT_MODES, useLayout, type LayoutMode } from '@/shared/lib/use-layout';
@@ -185,14 +186,15 @@ export function AppFrame({ actions, children, description, links: allLinks = [],
                                 </Link>
                                 <CollapsibleContent>
                                     <ul className="ml-[1.4rem] flex flex-col border-l border-border py-1">
-                                        {links.map((l, i) => {
-                                            const here = isHere(links, l.href, path);
-                                            const heading = groupHeading(links, i);
+                                        <NavSections
+                                            headingClass="flex items-center gap-1.5 px-4 pb-1 pt-3 text-[0.6875rem] font-semibold uppercase tracking-wider text-muted-foreground"
+                                            here={(href) => isHere(links, href, path)}
+                                            label={(g) => t(g as MessageKey)}
+                                            links={links}
+                                            renderLink={(l) => {
+                                                const here = isHere(links, l.href, path);
 
-                                            return (
-                                                <Fragment key={l.href}>
-                                                {heading !== undefined ? <li aria-hidden="true" className="px-4 pb-1 pt-3 text-[0.6875rem] font-semibold uppercase tracking-wider text-muted-foreground" key={`${l.href}-group`}>{t(heading as MessageKey)}</li> : null}
-                                                <li>
+                                                return (
                                                     <Link
                                                         aria-current={here ? 'page' : undefined}
                                                         className={cn('-ml-px block border-l-2 px-4 py-1.5 text-[0.8125rem] transition-colors', here ? 'border-brand font-semibold text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground')}
@@ -201,10 +203,9 @@ export function AppFrame({ actions, children, description, links: allLinks = [],
                                                     >
                                                         {t(l.label as MessageKey)}
                                                     </Link>
-                                                </li>
-                                                </Fragment>
-                                            );
-                                        })}
+                                                );
+                                            }}
+                                        />
                                     </ul>
                                 </CollapsibleContent>
                             </Collapsible>
@@ -254,14 +255,15 @@ export function AppFrame({ actions, children, description, links: allLinks = [],
                                 </CollapsibleTrigger>
                                 <CollapsibleContent>
                                     <ul className="ml-[1.4rem] flex flex-col border-l border-border py-1">
-                                        {pages.map((l, i) => {
-                                            const here = isActive && isHere(pages, l.href, path);
-                                            const heading = groupHeading(pages, i);
+                                        <NavSections
+                                            headingClass="flex min-h-10 items-center gap-1.5 px-4 text-[0.6875rem] font-semibold uppercase tracking-wider text-muted-foreground"
+                                            here={(href) => isActive && isHere(pages, href, path)}
+                                            label={(g) => t(g as MessageKey)}
+                                            links={pages}
+                                            renderLink={(l) => {
+                                                const here = isActive && isHere(pages, l.href, path);
 
-                                            return (
-                                                <Fragment key={l.href}>
-                                                {heading !== undefined ? <li aria-hidden="true" className="px-4 pb-1 pt-3 text-[0.6875rem] font-semibold uppercase tracking-wider text-muted-foreground" key={`${l.href}-group`}>{t(heading as MessageKey)}</li> : null}
-                                                <li>
+                                                return (
                                                     <Link
                                                         aria-current={here ? 'page' : undefined}
                                                         className={cn('-ml-px flex min-h-10 items-center border-l-2 px-4 py-2 text-[0.8125rem] transition-colors', here ? 'border-brand font-semibold text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground')}
@@ -270,10 +272,9 @@ export function AppFrame({ actions, children, description, links: allLinks = [],
                                                     >
                                                         {t(l.label as MessageKey)}
                                                     </Link>
-                                                </li>
-                                                </Fragment>
-                                            );
-                                        })}
+                                                );
+                                            }}
+                                        />
                                     </ul>
                                 </CollapsibleContent>
                             </Collapsible>
@@ -399,22 +400,24 @@ export function AppFrame({ actions, children, description, links: allLinks = [],
                 </Link>
                 <ScrollArea className="w-full flex-1" keep="rail">
                     <nav aria-label={t('shell.menu')} className="flex flex-col gap-1 py-3">
-                        {modules.map((m) => {
+                        {modules.map((m, i) => {
                             const Icon = m.icon;
                             const isActive = m.key === current.key;
 
                             return (
+                                <Fragment key={m.key}>
+                                {i > 0 && modules[i - 1]?.group !== m.group ? <div aria-hidden="true" className="mx-3 my-1 border-t border-border" /> : null}
                                 <Link
                                     aria-current={isActive && !hasLinks ? 'page' : undefined}
                                     aria-label={t(m.label)}
                                     className={cn('flex flex-col items-center gap-1 border-l-2 px-1 py-2 text-[0.625rem] leading-tight tracking-tight transition-colors', isActive ? 'border-brand bg-surface-muted font-medium text-foreground' : 'border-transparent text-muted-foreground hover:bg-surface-muted hover:text-foreground')}
                                     href={m.href}
-                                    key={m.key}
                                     title={t(m.label)}
                                 >
                                     <Icon aria-hidden="true" className={cn('size-5', isActive ? 'text-brand' : '')} strokeWidth={1.75} />
                                     <span className="line-clamp-2 w-full break-words text-center">{t(m.label)}</span>
                                 </Link>
+                                </Fragment>
                             );
                         })}
                     </nav>
@@ -425,10 +428,12 @@ export function AppFrame({ actions, children, description, links: allLinks = [],
                     <p className="flex h-14 items-center border-b border-border px-5 text-sm font-semibold">{t(current.label)}</p>
                     <ScrollArea className="flex-1" keep={`panel:${current.key}`}>
                         <ul className="flex flex-col gap-0.5 p-3">
-                            {links.map((l, i) => (
-                                <Fragment key={l.href}>
-                                {groupHeading(links, i) !== undefined ? <li aria-hidden="true" className="px-3 pb-1 pt-3 text-[0.6875rem] font-semibold uppercase tracking-wider text-muted-foreground">{t(groupHeading(links, i) as MessageKey)}</li> : null}
-                                <li>
+                            <NavSections
+                                headingClass="flex items-center gap-1.5 px-3 pb-1 pt-3 text-[0.6875rem] font-semibold uppercase tracking-wider text-muted-foreground"
+                                here={here}
+                                label={(g) => t(g as MessageKey)}
+                                links={links}
+                                renderLink={(l) => (
                                     <Link
                                         aria-current={here(l.href) ? 'page' : undefined}
                                         className={cn('block border-l-2 px-3 py-2 text-sm transition-colors', here(l.href) ? 'border-brand bg-surface-muted font-semibold text-foreground' : 'border-transparent text-muted-foreground hover:bg-surface-muted hover:text-foreground')}
@@ -436,9 +441,8 @@ export function AppFrame({ actions, children, description, links: allLinks = [],
                                     >
                                         {t(l.label as MessageKey)}
                                     </Link>
-                                </li>
-                                </Fragment>
-                            ))}
+                                )}
+                            />
                         </ul>
                     </ScrollArea>
                 </aside>

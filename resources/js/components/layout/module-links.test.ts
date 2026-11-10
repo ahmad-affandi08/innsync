@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
 
-import { groupHeading, MODULE_LINKS, visibleLinks, type NavLink } from './module-links.ts'
+import { MODULE_LINKS, visibleLinks, type NavLink } from './module-links.ts'
 
 const links: NavLink[] = [
     { href: '/a', label: 'a' },
@@ -24,12 +24,6 @@ describe('menu pages by permission area', () => {
     it('leaves out the page of a feature that is switched off, whatever the person holds', () => {
         assert.deepEqual(visibleLinks(links, ['loyalty.x'], { loyalty: false }).map((l) => l.href), ['/a'])
         assert.deepEqual(visibleLinks(links, ['loyalty.x'], { loyalty: true }).map((l) => l.href), ['/a', '/d'])
-    })
-
-    it('shows a group heading only above the first page of the group in what is left', () => {
-        const left = visibleLinks(links, ['finance.tax', 'finance.payable', 'loyalty.x'])
-
-        assert.deepEqual(left.map((_, i) => groupHeading(left, i)), [undefined, 'g1', undefined, 'g2'])
     })
 
     it('gives every need of the real menus as an area of two parts', () => {

@@ -1,13 +1,6 @@
 /** `needs`: areas of permission (see `ModuleAccessMap::areas`); the page is offered when the person holds any permission in one of them. Without it the page is offered to the whole department. */
 export type NavLink = { href: string; label: string; needs?: readonly string[]; group?: string; feature?: 'loyalty' };
 
-/** The heading to show above link number `index` of a list: set when it starts a group. */
-export function groupHeading(links: readonly NavLink[], index: number): string | undefined {
-    const g = links[index]?.group;
-
-    return g !== undefined && links[index - 1]?.group !== g ? g : undefined;
-}
-
 /** The pages of a list that the person has work in. `areas` is null when it could not be read, and then every page is offered. This only decides what is shown: each page checks the permission on the server. */
 export function visibleLinks(links: readonly NavLink[], areas: readonly string[] | null | undefined, features?: { loyalty: boolean } | null): readonly NavLink[] {
     return links.filter((l) => (l.feature === undefined || features?.[l.feature] !== false) && (areas == null || l.needs === undefined || l.needs.some((n) => areas.includes(n))));
