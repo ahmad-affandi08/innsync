@@ -140,6 +140,7 @@ export const reporting = {
     'rpt.card.maintenance.open': 'Open',
     'rpt.card.maintenance.done': 'Done today',
     'rpt.card.maintenance.overdue': '{n} late',
+    'rpt.card.maintenance.overdueLabel': 'Late',
     'rpt.card.maintenance.noOoo': 'No room is out of order.',
     'rpt.card.maintenance.ooo': 'Out of order: {rooms}',
     'rpt.card.staff.line': '{present} clocked in of {expected} expected',

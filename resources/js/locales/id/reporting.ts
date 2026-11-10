@@ -140,6 +140,7 @@ export const reporting = {
     'rpt.card.maintenance.open': 'Berjalan',
     'rpt.card.maintenance.done': 'Selesai hari ini',
     'rpt.card.maintenance.overdue': '{n} terlambat',
+    'rpt.card.maintenance.overdueLabel': 'Terlambat',
     'rpt.card.maintenance.noOoo': 'Tidak ada kamar Out of Order.',
     'rpt.card.maintenance.ooo': 'Out of Order: {rooms}',
     'rpt.card.staff.line': '{present} sudah absen dari {expected} yang diharapkan',

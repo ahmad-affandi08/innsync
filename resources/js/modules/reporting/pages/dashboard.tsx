@@ -195,7 +195,7 @@ export default function DashboardPage({ currency, preferences, snapshot: s, tv }
                                     {([['open', c.values.open], ['done', c.values.done_today], ['overdue', c.values.overdue]] as const).map(([k, n]) => (
                                         <div key={k}>
                                             <dd className="text-3xl font-semibold tabular-nums tracking-tight">{String(n)}</dd>
-                                            <dt className="text-xs text-muted-foreground">{t(`rpt.card.maintenance.${k}` as 'rpt.card.maintenance.open')}</dt>
+                                            <dt className="text-xs text-muted-foreground">{t(`rpt.card.maintenance.${k === 'overdue' ? 'overdueLabel' : k}` as 'rpt.card.maintenance.open')}</dt>
                                         </div>
                                     ))}
                                 </dl>
