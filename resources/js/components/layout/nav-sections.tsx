@@ -37,7 +37,7 @@ type Props = {
 };
 
 /**
- * The pages of a module under group headings that fold: only the group of the current page is open at first, the rest show a heading and a count, and a click opens or closes one.
+ * The pages of a module under group headings that fold: only the group of the current page is open at first, the rest show only the heading, and a click opens or closes one.
  * Pages that have no group are listed as they are. Folding hides nothing from the menu's keyboard order: a closed group is a button, an open one lists its links.
  */
 export function NavSections({ links, here, label, renderLink, headingClass, listClass }: Props) {
@@ -56,22 +56,21 @@ export function NavSections({ links, here, label, renderLink, headingClass, list
                     <li key={group}>
                         {current ? (
                             <p className={cn(headingClass, 'cursor-default')}>
-                                <ChevronRight aria-hidden="true" className="size-3.5 shrink-0 rotate-90" />
+                                <ChevronRight aria-hidden="true" className="size-3.5 shrink-0 rotate-90 text-muted-foreground" />
                                 <span className="flex-1 truncate text-left">{label(group)}</span>
                             </p>
                         ) : (
                             <button
                                 aria-expanded={open}
-                                className={cn(headingClass, 'w-full hover:text-foreground')}
+                                className={cn(headingClass, 'w-full hover:bg-surface-muted')}
                                 onClick={() => { opened.set(group, !open); redraw((n) => n + 1); }}
                                 type="button"
                             >
-                                <ChevronRight aria-hidden="true" className={cn('size-3.5 shrink-0 transition-transform', open && 'rotate-90')} />
+                                <ChevronRight aria-hidden="true" className={cn('size-3.5 shrink-0 text-muted-foreground transition-transform', open && 'rotate-90')} />
                                 <span className="flex-1 truncate text-left">{label(group)}</span>
-                                <span className="font-normal tabular-nums opacity-70">{s.items.length}</span>
                             </button>
                         )}
-                        {open ? <ul className={cn('flex flex-col gap-0.5', listClass)}>{s.items.map((l) => <li key={l.href}>{renderLink(l)}</li>)}</ul> : null}
+                        {open ? <ul className={cn('mt-0.5 flex flex-col gap-0.5', listClass)}>{s.items.map((l) => <li key={l.href}>{renderLink(l)}</li>)}</ul> : null}
                     </li>
                 );
             })}

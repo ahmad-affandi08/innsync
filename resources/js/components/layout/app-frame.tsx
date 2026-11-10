@@ -187,7 +187,8 @@ export function AppFrame({ actions, children, description, links: allLinks = [],
                                 <CollapsibleContent>
                                     <ul className="ml-[1.4rem] flex flex-col border-l border-border py-1">
                                         <NavSections
-                                            headingClass="flex items-center gap-1.5 px-4 pb-1 pt-3 text-[0.6875rem] font-semibold uppercase tracking-wider text-muted-foreground"
+                                            headingClass="flex items-center gap-1.5 rounded-md px-2 py-1.5 text-[0.8125rem] font-semibold text-foreground"
+                                            listClass="ml-[0.9rem] border-l border-border pl-2"
                                             here={(href) => isHere(links, href, path)}
                                             label={(g) => t(g as MessageKey)}
                                             links={links}
@@ -197,7 +198,7 @@ export function AppFrame({ actions, children, description, links: allLinks = [],
                                                 return (
                                                     <Link
                                                         aria-current={here ? 'page' : undefined}
-                                                        className={cn('-ml-px block border-l-2 px-4 py-1.5 text-[0.8125rem] transition-colors', here ? 'border-brand font-semibold text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground')}
+                                                        className={cn('block rounded-md px-3 py-1.5 text-[0.8125rem] transition-colors', here ? 'bg-brand/10 font-medium text-brand' : 'text-muted-foreground hover:bg-surface-muted hover:text-foreground')}
                                                         href={l.href}
                                                         onClick={() => setOpen(false)}
                                                     >
@@ -256,7 +257,8 @@ export function AppFrame({ actions, children, description, links: allLinks = [],
                                 <CollapsibleContent>
                                     <ul className="ml-[1.4rem] flex flex-col border-l border-border py-1">
                                         <NavSections
-                                            headingClass="flex min-h-10 items-center gap-1.5 px-4 text-[0.6875rem] font-semibold uppercase tracking-wider text-muted-foreground"
+                                            headingClass="flex items-center gap-1.5 rounded-md px-2 py-1.5 text-[0.8125rem] font-semibold text-foreground min-h-10"
+                                            listClass="ml-[0.9rem] border-l border-border pl-2"
                                             here={(href) => isActive && isHere(pages, href, path)}
                                             label={(g) => t(g as MessageKey)}
                                             links={pages}
@@ -266,7 +268,7 @@ export function AppFrame({ actions, children, description, links: allLinks = [],
                                                 return (
                                                     <Link
                                                         aria-current={here ? 'page' : undefined}
-                                                        className={cn('-ml-px flex min-h-10 items-center border-l-2 px-4 py-2 text-[0.8125rem] transition-colors', here ? 'border-brand font-semibold text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground')}
+                                                        className={cn('flex min-h-10 items-center rounded-md px-3 py-2 text-[0.8125rem] transition-colors', here ? 'bg-brand/10 font-medium text-brand' : 'text-muted-foreground hover:bg-surface-muted hover:text-foreground')}
                                                         href={l.href}
                                                         onClick={() => setOpen(false)}
                                                     >
@@ -429,14 +431,15 @@ export function AppFrame({ actions, children, description, links: allLinks = [],
                     <ScrollArea className="flex-1" keep={`panel:${current.key}`}>
                         <ul className="flex flex-col gap-0.5 p-3">
                             <NavSections
-                                headingClass="flex items-center gap-1.5 px-3 pb-1 pt-3 text-[0.6875rem] font-semibold uppercase tracking-wider text-muted-foreground"
+                                headingClass="flex items-center gap-1.5 rounded-md px-2 py-1.5 text-[0.8125rem] font-semibold text-foreground"
+                                listClass="ml-[0.9rem] border-l border-border pl-2"
                                 here={here}
                                 label={(g) => t(g as MessageKey)}
                                 links={links}
                                 renderLink={(l) => (
                                     <Link
                                         aria-current={here(l.href) ? 'page' : undefined}
-                                        className={cn('block border-l-2 px-3 py-2 text-sm transition-colors', here(l.href) ? 'border-brand bg-surface-muted font-semibold text-foreground' : 'border-transparent text-muted-foreground hover:bg-surface-muted hover:text-foreground')}
+                                        className={cn('block rounded-md px-3 py-1.5 text-[0.8125rem] transition-colors', here(l.href) ? 'bg-brand/10 font-medium text-brand' : 'text-muted-foreground hover:bg-surface-muted hover:text-foreground')}
                                         href={l.href}
                                     >
                                         {t(l.label as MessageKey)}
