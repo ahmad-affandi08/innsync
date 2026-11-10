@@ -98,9 +98,12 @@ final readonly class PayableService
         $names = $this->staff->namesOf($property, array_values(array_unique(array_column($p['payments'], 'created_by'))));
         $utc = static fn (mixed $v): string => (new DateTimeImmutable((string) $v, new DateTimeZone('UTC')))->format('Y-m-d\TH:i:s\Z');
         $accounts = array_column($this->store->accounts($property), null, 'id');
+        // A suggestion for the screen, never saved by itself: the account this supplier's last classified payable went to, if it is still active.
+        $last = $p['expense_account_id'] === null ? $this->store->lastAccountOf($property, $p['supplier_id'], $p['id']) : null;
+        $suggested = $last !== null && (bool) ($accounts[$last]['is_active'] ?? false) ? $last : null;
 
         return [
-            ...$shape, 'issued_on' => substr((string) $p['issued_on'], 0, 10), 'business_date' => substr((string) $p['business_date'], 0, 10), 'tax_minor' => (int) $p['tax_minor'], 'source_type' => $p['source_type'], 'source_id' => $p['source_id'], 'order_number' => $p['order_number'],
+            ...$shape, 'suggested_account_id' => $suggested, 'issued_on' => substr((string) $p['issued_on'], 0, 10), 'business_date' => substr((string) $p['business_date'], 0, 10), 'tax_minor' => (int) $p['tax_minor'], 'source_type' => $p['source_type'], 'source_id' => $p['source_id'], 'order_number' => $p['order_number'],
             'occurred_at' => $utc($p['occurred_at']), 'correlation_id' => $p['correlation_id'], 'expense_account_id' => $p['expense_account_id'], 'expense_account' => $p['expense_account_id'] === null ? null : ($accounts[$p['expense_account_id']]['code'] ?? null),
             'accounts' => array_values(array_map(static fn (array $a): array => ['id' => $a['id'], 'code' => $a['code'], 'name' => $a['name']], array_filter($accounts, static fn (array $a): bool => (bool) $a['is_active']))),
             'payments' => array_map(static fn (array $pay): array => [

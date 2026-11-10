@@ -17,7 +17,8 @@ import { useFormatters, useTranslation } from '@/shared/i18n/i18n';
 import { useErrorStateCopy } from '@/shared/i18n/use-ui-copy';
 
 type Treatment = { id: string; name: string; kind: string; pricing: string; value: number };
-type Lookups = { rooms: { id: string; number: string }[]; items: { id: string; code: string; name: string; unit_price_minor: number }[]; treatments: Treatment[]; business_date: string; zone: string };
+type When = { date: string; time: string };
+type Lookups = { rooms: { id: string; number: string }[]; items: { id: string; code: string; name: string; unit_price_minor: number }[]; treatments: Treatment[]; business_date: string; zone: string; promised: { standard: When; express: When } };
 /** The extra for one piece, as the server works it out: a percentage is rounded half up. */
 const extra = (tr: Treatment | undefined, unit: number) => (tr === undefined ? 0 : tr.pricing === 'percent' ? Math.floor((unit * tr.value + 5000) / 10000) : tr.value);
 type Line = { itemId: string; quantity: string; brand: string; condition: string; treatmentId: string };
@@ -31,7 +32,9 @@ export default function LaundryIntakePage({ currency, lookups }: { currency: str
     const errorCopy = useErrorStateCopy();
     const action = useServerAction();
     const [intent, setIntent] = useState(() => newIdempotencyKey());
-    const [form, setForm] = useState({ roomId: lookups.rooms[0]?.id ?? '', barcode: '', express: false, date: '', time: '', notes: '' });
+    const [form, setForm] = useState({ roomId: lookups.rooms[0]?.id ?? '', barcode: '', express: false, date: lookups.promised.standard.date, time: lookups.promised.standard.time, notes: '' });
+    // The suggested time follows the express switch until the attendant types a time of their own.
+    const [typedTime, setTypedTime] = useState(false);
     const [lines, setLines] = useState<Line[]>([blank()]);
     const [done, setDone] = useState<{ id: string; number: string } | null>(null);
     const set = (patch: Partial<typeof form>) => setForm((f) => ({ ...f, ...patch }));
@@ -74,9 +77,9 @@ export default function LaundryIntakePage({ currency, lookups }: { currency: str
                     <Select onChange={(e) => set({ roomId: e.target.value })} value={form.roomId}>{lookups.rooms.map((r) => <option key={r.id} value={r.id}>{r.number}</option>)}</Select>
                 </FormField>
                 <FormField field="barcode" error={action.fieldError('barcode')} label={t('ldy.intake.barcode')}><Input autoComplete="off" maxLength={40} onChange={(e) => set({ barcode: e.target.value })} required value={form.barcode} /></FormField>
-                <FormField field="promised_date" error={action.fieldError('promised_date')} label={t('ldy.intake.promisedDate')}><DatePicker min={lookups.business_date} onChange={(e) => set({ date: e.target.value })} required value={form.date} /></FormField>
-                <FormField field="promised_time" error={action.fieldError('promised_time')} label={t('ldy.intake.promisedTime', { zone: lookups.zone })}><TimeInput onChange={(e) => set({ time: e.target.value })} required value={form.time} /></FormField>
-                <label className="flex items-center gap-2 text-sm sm:col-span-2"><input checked={form.express} onChange={(e) => set({ express: e.target.checked })} type="checkbox" />{t('ldy.intake.express')}{expressTreatment !== undefined ? ` (${expressTreatment.pricing === 'percent' ? `+${expressTreatment.value / 100}%` : `+${format.money(expressTreatment.value, currency)}`})` : ''}</label>
+                <FormField field="promised_date" error={action.fieldError('promised_date')} label={t('ldy.intake.promisedDate')}><DatePicker min={lookups.business_date} onChange={(e) => { setTypedTime(true); set({ date: e.target.value }); }} required value={form.date} /></FormField>
+                <FormField field="promised_time" error={action.fieldError('promised_time')} label={t('ldy.intake.promisedTime', { zone: lookups.zone })}><TimeInput onChange={(e) => { setTypedTime(true); set({ time: e.target.value }); }} required value={form.time} /></FormField>
+                <label className="flex items-center gap-2 text-sm sm:col-span-2"><input checked={form.express} onChange={(e) => set({ express: e.target.checked, ...(typedTime ? {} : lookups.promised[e.target.checked ? 'express' : 'standard']) })} type="checkbox" />{t('ldy.intake.express')}{expressTreatment !== undefined ? ` (${expressTreatment.pricing === 'percent' ? `+${expressTreatment.value / 100}%` : `+${format.money(expressTreatment.value, currency)}`})` : ''}</label>
 
                 <fieldset className="flex flex-col gap-3 sm:col-span-2">
                     <legend className="text-lg font-semibold">{t('ldy.intake.items')}</legend>

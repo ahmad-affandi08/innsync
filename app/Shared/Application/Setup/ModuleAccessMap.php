@@ -34,6 +34,21 @@ final class ModuleAccessMap
     }
 
     /**
+     * The areas of the permissions a person holds: the first two parts of each code (`finance.payable.view` gives `finance.payable`). This is what the menu uses to leave out
+     * a page the person has no work in; it is short enough to send with every page and, like the menu itself, decides only what is shown.
+     *
+     * @param  list<string>  $permissions
+     * @return list<string>
+     */
+    public static function areas(array $permissions): array
+    {
+        $areas = array_map(static fn (string $code): string => implode('.', array_slice(explode('.', $code), 0, 2)), $permissions);
+        sort($areas);
+
+        return array_values(array_unique($areas));
+    }
+
+    /**
      * @param  list<string>  $permissions  codes the person holds
      * @return list<string> menu keys to offer
      */

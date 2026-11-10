@@ -41,6 +41,12 @@ interface LaundryRepository
     /** @return 'saved'|'stale'|'express_exists' */
     public function updateTreatment(PropertyId $property, string $id, string $name, string $pricing, int $value, bool $active, int $expectedLockVersion, DateTimeImmutable $at): string;
 
+    /** @return array{standard_hours: int, express_hours: int, lock_version: int} what the property saved, or 24 and 6 hours with lock version 0 when it saved nothing */
+    public function turnaround(PropertyId $property): array;
+
+    /** @return bool false when the settings changed since `$expectedLockVersion` */
+    public function saveTurnaround(PropertyId $property, int $standardHours, int $expressHours, int $expectedLockVersion, string $actorId, DateTimeImmutable $at): bool;
+
     public function addOrder(PropertyId $property, LaundryOrder $order, string $createdBy, DateTimeImmutable $at): string;
 
     public function findOrder(PropertyId $property, string $id): ?LaundryOrder;

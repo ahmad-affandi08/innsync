@@ -11,4 +11,7 @@ interface ModuleAccess
 {
     /** @return list<string> menu keys (see `ModuleAccessMap`) */
     public function forUser(string $userId, PropertyId $property): array;
+
+    /** @return list<string> the areas of the permissions the person holds (see `ModuleAccessMap::areas`), for the pages of the menu */
+    public function areasOf(string $userId, PropertyId $property): array;
 }

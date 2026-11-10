@@ -93,6 +93,8 @@ final readonly class CashierService implements ShiftAttribution
             'shift' => $open === null ? null : $this->describe($property, $open),
             'currency' => $this->currencies->currencyOf($property),
             'require_open_shift' => $this->shifts->settings($property)['require_open_shift'],
+            // A suggestion only: the float of this person's last closed shift, which the hotel usually keeps fixed.
+            'last_float_minor' => $this->shifts->search($property, 'closed', $actorId, 1)[0]['opening_float_minor'] ?? null,
             'may_view_all' => $this->permissions->allowsInProperty($actorId, self::VIEW_PERMISSION, $property),
         ];
     }

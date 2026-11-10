@@ -773,10 +773,12 @@
     ],
     "laundry/pages/prices": [
         "code",
+        "express_hours",
         "kind",
         "name",
         "pricing",
         "reason",
+        "standard_hours",
         "unit_price_minor",
         "value"
     ],

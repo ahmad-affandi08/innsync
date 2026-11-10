@@ -10,6 +10,6 @@ final class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        $this->call(DevelopmentSeeder::class);
+        $this->call([DevelopmentSeeder::class, DevelopmentRoleAccountsSeeder::class]);
     }
 }

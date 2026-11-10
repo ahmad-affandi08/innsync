@@ -89,7 +89,7 @@ export default function CheckInPage({ preselect, reservation: r, rooms, stay }: 
                     <FormField field="id_type" error={action.fieldError('id_type')} label={t('fo.checkin.idType')}>
                         <Select onChange={(e) => set({ idType: e.target.value })} value={form.idType}>{ID_TYPES.map((x) => <option key={x} value={x}>{t(`fo.checkin.idType.${x}`)}</option>)}</Select>
                     </FormField>
-                    <FormField field="id_number" error={action.fieldError('id_number')} label={t('fo.checkin.idNumber')}><Input autoComplete="off" maxLength={40} onChange={(e) => { set({ idNumber: e.target.value }); setMatches(null); }} required value={form.idNumber} /></FormField>
+                    <FormField field="id_number" error={action.fieldError('id_number')} label={t('fo.checkin.idNumber')}><Input autoComplete="off" maxLength={40} onBlur={() => { if (form.idNumber.trim() !== '' && matches === null && !lookup.busy) void find(); }} onChange={(e) => { set({ idNumber: e.target.value }); setMatches(null); }} required value={form.idNumber} /></FormField>
                     <div className="flex flex-col gap-2 sm:col-span-2" aria-live="polite">
                         <div><Button disabled={lookup.busy || form.idNumber.trim() === ''} onClick={() => void find()} size="sm" type="button" variant="outline">{t('fo.checkin.lookup')}</Button></div>
                         {lookup.error !== null ? <ErrorState {...errorCopy} error={lookup.error} onRefresh={() => window.location.reload()} /> : null}

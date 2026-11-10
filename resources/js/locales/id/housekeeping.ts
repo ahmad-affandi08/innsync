@@ -227,6 +227,7 @@ export const housekeeping = {
     'hk.lf.empty': 'Belum ada yang dicatat.',
     'hk.lf.due': 'Disimpan {days} hari: perlu keputusan',
     'hk.lf.room': 'Kamar {room}',
+    'hk.lf.guest': 'Tamu yang menginap di kamar itu: {name}. Pastikan dulu ke tamunya sebelum barang diserahkan.',
     'hk.lf.found': 'Ditemukan di {where} pada {date} oleh {by}',
     'hk.lf.kept': 'disimpan di {place}',
     'hk.lf.returnedTo': 'Diberikan kepada {name} pada {date} oleh {by}',

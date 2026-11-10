@@ -68,6 +68,13 @@ export default function ReceiptsPage({ overview, order }: { overview: Overview; 
         setForm({ ...form, lines: { ...form.lines, [id]: { ...(form.lines[id] ?? blankEntry()), ...patch } } });
     }
 
+    /** One click for a delivery that matches the order; still an act of the receiver, never a default (stock is posted from what was counted). */
+    function fillAll() {
+        if (form === null || chosen === null) return;
+        setProblem(null);
+        setForm({ ...form, lines: Object.fromEntries(chosen.lines.map((l) => [l.id, { ...(form.lines[l.id] ?? blankEntry()), accepted: l.remaining_milli > 0 ? plainMilli(l.remaining_milli) : '' }])) });
+    }
+
     async function save() {
         if (form === null || chosen === null) return;
         const refusedLine = chosen.lines.find((l) => { const e = form.lines[l.id]; return e !== undefined && e.rejected.trim() !== '' && e.rejected.trim() !== '0' && e.reason === ''; });
@@ -143,6 +150,7 @@ export default function ReceiptsPage({ overview, order }: { overview: Overview; 
                             <div className="flex flex-col gap-2 sm:col-span-2">
                                 {problem !== null ? <p className="text-sm text-danger" role="alert">{problem}</p> : null}
                                 {action.fieldError('lines') !== undefined ? <p className="text-sm text-danger">{action.fieldError('lines')}</p> : null}
+                                <div><Button data-testid="receive-fill-all" onClick={fillAll} size="sm" type="button" variant="outline">{t('inv.rcv.fillAll')}</Button></div>
                                 <div className="overflow-x-auto border border-border bg-surface">
                                     <Table data-testid="receive-lines">
                                         <TableHeader>

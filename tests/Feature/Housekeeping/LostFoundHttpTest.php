@@ -6,6 +6,9 @@ namespace Tests\Feature\Housekeeping;
 
 use App\Modules\Housekeeping\Application\HousekeepingService;
 use App\Modules\Housekeeping\Application\LostFoundService;
+use App\Modules\Housekeeping\Application\RoomStayReader;
+use App\Shared\Domain\Tenancy\PropertyId;
+use Illuminate\Support\Facades\DB;
 use App\Modules\Property\Application\Catalog\RoomCatalogService;
 use App\Modules\Property\Application\Settings\PropertySettingsService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -57,6 +60,33 @@ final class LostFoundHttpTest extends TestCase
         $this->postJson("/housekeeping/lost-found/{$item['id']}/returned", ['returned_to' => 'Again', 'lock_version' => 1])->assertStatus(409);
         $this->get('/housekeeping/lost-found?status=returned')->assertInertia(fn (Assert $p) => $p->has('overview.items', 1)->where('status', 'returned'));
         $this->get('/housekeeping/lost-found?status=stored')->assertInertia(fn (Assert $p) => $p->has('overview.items', 0));
+    }
+
+    public function test_an_item_found_in_a_room_is_linked_to_the_stay_and_only_who_handles_lost_property_sees_the_name(): void
+    {
+        $this->app->instance(RoomStayReader::class, new class implements RoomStayReader
+        {
+            public function stayOfRoom(PropertyId $property, string $roomId): ?string
+            {
+                return '01arz3ndektsv4rrffq69g5fbz';
+            }
+
+            public function guestNames(PropertyId $property, array $stayIds): array
+            {
+                return ['01arz3ndektsv4rrffq69g5fbz' => 'Mr Budi'];
+            }
+        });
+
+        $this->postJson('/housekeeping/lost-found', ['description' => 'Black wallet', 'room_id' => $this->room, 'stored_at' => 'Office'])->assertCreated();
+        $this->postJson('/housekeeping/lost-found', ['description' => 'Umbrella', 'place' => 'Lobby', 'stored_at' => 'Office'])->assertCreated();
+        self::assertSame(['01arz3ndektsv4rrffq69g5fbz', null], DB::table('lost_found_items')->orderBy('number')->pluck('stay_id')->all());
+
+        $this->get('/housekeeping/lost-found')->assertInertia(fn (Assert $p) => $p->where('overview.items.1.guest_name', 'Mr Budi')->where('overview.items.0.guest_name', null)->missing('overview.items.1.stay_id'));
+
+        $this->post('/logout');
+        $this->flushSession();
+        $this->signIn(self::A, [LostFoundService::RECORD_PERMISSION]);
+        $this->get('/housekeeping/lost-found')->assertInertia(fn (Assert $p) => $p->where('overview.items.1.guest_name', null)->missing('overview.items.1.stay_id'));
     }
 
     public function test_viewing_housekeeping_alone_lists_items_but_changes_nothing(): void

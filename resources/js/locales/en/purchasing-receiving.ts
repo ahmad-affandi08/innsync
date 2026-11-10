@@ -36,6 +36,7 @@ export const purchasingReceiving = {
     "inv.rcv.otherNeedsNote": "Say what was wrong with {item} in the line note.",
     "inv.rcv.fill": "All",
     "inv.rcv.fillRemaining": "Accept the whole remaining quantity",
+    "inv.rcv.fillAll": "Accept the whole remaining quantity on every line",
     "inv.rcv.reason.damaged": "Damaged",
     "inv.rcv.reason.expired": "Expired",
     "inv.rcv.reason.wrong_item": "Wrong item",

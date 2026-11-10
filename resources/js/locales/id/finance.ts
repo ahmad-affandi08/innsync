@@ -84,6 +84,7 @@ export const finance = {
     "fin.pbl.accountNone": "Belum diklasifikasikan",
     "fin.pbl.accountHint": "Akun tempat biaya ini dibukukan, untuk laporan biaya.",
     "fin.pbl.accountSave": "Simpan akun",
+    "fin.pbl.accountSuggested": "Disarankan dari hutang terakhir supplier ini yang sudah diklasifikasi. Belum tersimpan sampai Anda menekan Simpan akun.",
     "fin.pbl.payments": "Pembayaran",
     "fin.pbl.noPayments": "Belum ada yang dibayar.",
     "fin.pbl.applications": "Kredit yang dipakai",

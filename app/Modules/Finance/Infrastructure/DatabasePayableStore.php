@@ -82,6 +82,14 @@ final readonly class DatabasePayableStore implements PayableStore
         DB::table('ap_payables')->where('property_id', $property->toString())->where('id', $id)->update(['expense_account_id' => $accountId]);
     }
 
+    public function lastAccountOf(PropertyId $property, string $supplierId, string $exceptId): ?string
+    {
+        $id = DB::table('ap_payables')->where('property_id', $property->toString())->where('supplier_id', $supplierId)->where('id', '<>', $exceptId)->whereNotNull('expense_account_id')
+            ->orderByDesc('issued_on')->orderByDesc('id')->value('expense_account_id');
+
+        return $id === null ? null : (string) $id;
+    }
+
     public function credits(PropertyId $property, ?string $supplierId): array
     {
         $applied = DB::table('ap_credit_applications')->groupBy('credit_id')->selectRaw('credit_id, SUM(amount_minor) as applied');

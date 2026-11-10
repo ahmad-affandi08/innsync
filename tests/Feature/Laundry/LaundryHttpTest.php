@@ -121,6 +121,21 @@ final class LaundryHttpTest extends TestCase
         $this->postJson('/laundry/orders', [...$body, 'barcode' => 'BAG-89'], ['Idempotency-Key' => 'laundry-http-treat-2'])->assertStatus(422);
     }
 
+    public function test_the_promised_time_is_suggested_from_the_usual_turnaround_which_is_set_with_a_reason(): void
+    {
+        // The clock is 2026-10-01 03:00 UTC, which is 10:00 in Jakarta: 24 hours and 6 hours are the defaults.
+        $this->get('/laundry/new')->assertInertia(fn (Assert $p) => $p->where('lookups.promised.standard.date', '2026-10-02')->where('lookups.promised.standard.time', '10:00')->where('lookups.promised.express.date', '2026-10-01')->where('lookups.promised.express.time', '16:00'));
+        $this->get('/laundry/prices')->assertInertia(fn (Assert $p) => $p->where('turnaround.standard_hours', 24)->where('turnaround.express_hours', 6)->where('turnaround.lock_version', 0));
+
+        $this->postJson('/laundry/turnaround', ['standard_hours' => 12, 'express_hours' => 3, 'lock_version' => 0])->assertStatus(422);
+        $this->postJson('/laundry/turnaround', ['standard_hours' => 4, 'express_hours' => 8, 'lock_version' => 0, 'reason' => 'x'])->assertStatus(422);
+        $this->postJson('/laundry/turnaround', ['standard_hours' => 12, 'express_hours' => 3, 'lock_version' => 0, 'reason' => 'Same-day service'])->assertOk()->assertJsonPath('turnaround.lock_version', 1);
+        $this->postJson('/laundry/turnaround', ['standard_hours' => 10, 'express_hours' => 2, 'lock_version' => 0, 'reason' => 'Stale'])->assertStatus(409);
+        $this->assertDatabaseHas('audit_entries', ['action' => 'laundry.turnaround.changed']);
+
+        $this->get('/laundry/new')->assertInertia(fn (Assert $p) => $p->where('lookups.promised.standard.time', '22:00')->where('lookups.promised.standard.date', '2026-10-01')->where('lookups.promised.express.time', '13:00'));
+    }
+
     public function test_someone_with_only_viewing_rights_sees_the_work_list_but_cannot_act(): void
     {
         $this->post('/logout');
@@ -130,6 +145,7 @@ final class LaundryHttpTest extends TestCase
         $this->get('/laundry')->assertInertia(fn (Assert $p) => $p->component('laundry/pages/queue')->where('may.process', false));
         $this->get('/laundry/new')->assertForbidden();
         $this->postJson('/laundry/prices', ['code' => 'X1', 'name' => 'X', 'unit_price_minor' => 1, 'reason' => 'x'])->assertForbidden();
+        $this->postJson('/laundry/turnaround', ['standard_hours' => 12, 'express_hours' => 3, 'lock_version' => 0, 'reason' => 'x'])->assertForbidden();
         $this->postJson('/laundry/orders/01arz3ndektsv4rrffq69g5fb1/advance', ['lock_version' => 0])->assertForbidden();
     }
 

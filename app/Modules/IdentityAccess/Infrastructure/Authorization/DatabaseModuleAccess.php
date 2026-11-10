@@ -21,6 +21,11 @@ final class DatabaseModuleAccess implements ModuleAccess
         return $this->memo[$key] ??= ModuleAccessMap::forPermissions($this->permissions(strtolower($userId), $property->toString()));
     }
 
+    public function areasOf(string $userId, PropertyId $property): array
+    {
+        return ModuleAccessMap::areas($this->permissions(strtolower($userId), $property->toString()));
+    }
+
     /** @return list<string> */
     private function permissions(string $userId, string $propertyId): array
     {

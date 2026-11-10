@@ -12,16 +12,16 @@ import { FrontOfficeShell } from '@/modules/front-office/components/front-office
 import { useServerAction } from '@/shared/api/use-server-action';
 import { useTranslation } from '@/shared/i18n/i18n';
 import { useErrorStateCopy } from '@/shared/i18n/use-ui-copy';
-import { parseMajorToMinor } from '@/shared/money/money';
+import { minorToMajorText, parseMajorToMinor } from '@/shared/money/money';
 
-type Props = { cashier: { shift: Shift | null; currency: string; require_open_shift: boolean; may_view_all: boolean } };
+type Props = { cashier: { shift: Shift | null; currency: string; require_open_shift: boolean; last_float_minor: number | null; may_view_all: boolean } };
 
 /** The person's own shift (FR-FO-036): open it with a float, see what went through, drop cash, and close it against the count. */
 export default function CashierPage({ cashier: c }: Props) {
     const { t } = useTranslation();
     const errorCopy = useErrorStateCopy();
     const action = useServerAction();
-    const [float, setFloat] = useState('');
+    const [float, setFloat] = useState(c.last_float_minor === null ? '' : minorToMajorText(c.last_float_minor, c.currency));
     const [floatError, setFloatError] = useState(false);
 
     async function open() {
@@ -40,7 +40,7 @@ export default function CashierPage({ cashier: c }: Props) {
                 <form className="flex max-w-md flex-col gap-3" onSubmit={(e) => { e.preventDefault(); void open(); }}>
                     <p className="text-sm text-muted-foreground">{t('fo.cash.none')}</p>
                     {action.error !== null ? <ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /> : null}
-                    <FormField field="opening_float_minor" error={floatError ? t('fo.cash.invalidAmount') : (action.fieldError('opening_float_minor') ?? action.fieldError('opening_float'))} hint={t('fo.cash.floatHint')} label={t('fo.cash.float')}><MoneyInput onChange={(e) => setFloat(e.target.value)} value={float} /></FormField>
+                    <FormField field="opening_float_minor" error={floatError ? t('fo.cash.invalidAmount') : (action.fieldError('opening_float_minor') ?? action.fieldError('opening_float'))} hint={t(c.last_float_minor === null ? 'fo.cash.floatHint' : 'fo.cash.floatHintLast')} label={t('fo.cash.float')}><MoneyInput onChange={(e) => setFloat(e.target.value)} value={float} /></FormField>
                     <div><Button loading={action.busy} type="submit">{t('fo.cash.open')}</Button></div>
                 </form>
             ) : (

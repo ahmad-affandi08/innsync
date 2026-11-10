@@ -10,6 +10,12 @@ use PHPUnit\Framework\TestCase;
 
 final class ModuleAccessMapTest extends TestCase
 {
+    public function test_the_areas_of_permissions_are_their_first_two_parts_once_each(): void
+    {
+        self::assertSame([], ModuleAccessMap::areas([]));
+        self::assertSame(['finance.export', 'finance.payable', 'property.settings'], ModuleAccessMap::areas(['finance.payable.view', 'finance.payable.manage', 'property.settings.manage', 'finance.export']));
+    }
+
     public function test_a_person_with_no_permissions_is_offered_only_home_and_the_approvals_inbox(): void
     {
         self::assertEqualsCanonicalizing(['home', 'approvals'], ModuleAccessMap::forPermissions([]));

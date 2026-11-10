@@ -227,6 +227,7 @@ export const housekeeping = {
     'hk.lf.empty': 'Nothing has been recorded yet.',
     'hk.lf.due': 'Stored for {days} days: decide',
     'hk.lf.room': 'Room {room}',
+    'hk.lf.guest': 'Guest of the stay in that room: {name}. Check it with the guest before handing it over.',
     'hk.lf.found': 'Found at {where} on {date} by {by}',
     'hk.lf.kept': 'kept at {place}',
     'hk.lf.returnedTo': 'Given to {name} on {date} by {by}',

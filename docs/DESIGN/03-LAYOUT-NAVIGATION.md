@@ -55,3 +55,13 @@ A page that holds several independent lists or reports (the menu's categories, i
 - Tabs split lists and reports. They do not split one document (a bill, an order, a reservation) whose parts are read together, and they are not for the pages of a module, which stay in the sidebar or the rail.
 - Every panel stays mounted, so what was typed in one is kept when another is shown. The tab bar is hidden when printing and a printout has all the panels.
 - A tab says what is in it and, where it helps, how many (`Items (12)`).
+
+## Pages of a module: only the ones the person has work in, in groups (2026-11-10)
+
+Traceability: owner instruction of 2026-11-10 (too many menus confuse people), `NFR-06`, `docs/OPERATIONS/AUTOMATION-PLAN.md` (Tahap 2).
+
+- Each page link in `components/layout/module-links.ts` may carry `needs`: areas of permission (the first two parts of a permission code, `finance.payable`). The page is listed when the person holds any permission in one of its areas; a link with no `needs` is listed to the whole department. The server sends the person's areas with every page (`shell.permissionAreas`, `ModuleAccessMap::areas`). If they cannot be read, every page is listed. The page the person is on always stays in the list.
+- This decides what is shown, nothing else: every page and every action still checks the permission on the server (the menu is not a security boundary).
+- Links may carry `group`: the pages are listed under small headings (daily close, payables, receivables ...) in the sidebar, the drawer and the rail panel. The top bar shows tabs without headings. Pages stay pages: each keeps its own address, and tabs are still not used for the pages of a module (the rule above is unchanged).
+- A link may carry `feature`: it is left out while the feature is switched off for the installation (today only the loyalty programme). The door-lock page stays listed because its settings are where it is switched on.
+- A page that two departments need is linked from the department that owns it. The housekeeping menu no longer repeats the front office room board, and the home page no longer repeats the point of sale and the guests' orders.

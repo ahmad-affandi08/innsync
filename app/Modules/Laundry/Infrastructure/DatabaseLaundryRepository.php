@@ -96,6 +96,36 @@ final readonly class DatabaseLaundryRepository implements LaundryRepository
         return $changed === 1 ? 'saved' : 'stale';
     }
 
+    public function turnaround(PropertyId $property): array
+    {
+        $row = DB::table('laundry_settings')->where('property_id', $property->toString())->first();
+
+        return $row === null ? ['standard_hours' => 24, 'express_hours' => 6, 'lock_version' => 0]
+            : ['standard_hours' => (int) $row->standard_hours, 'express_hours' => (int) $row->express_hours, 'lock_version' => (int) $row->lock_version];
+    }
+
+    public function saveTurnaround(PropertyId $property, int $standardHours, int $expressHours, int $expectedLockVersion, string $actorId, DateTimeImmutable $at): bool
+    {
+        $pid = $property->toString();
+
+        if (! DB::table('laundry_settings')->where('property_id', $pid)->exists()) {
+            if ($expectedLockVersion !== 0) {
+                return false;
+            }
+
+            try {
+                DB::table('laundry_settings')->insert(['property_id' => $pid, 'standard_hours' => $standardHours, 'express_hours' => $expressHours, 'lock_version' => 1, 'updated_by' => $actorId, 'created_at' => $at, 'updated_at' => $at]);
+            } catch (UniqueConstraintViolationException) {
+                return false;
+            }
+
+            return true;
+        }
+
+        return DB::table('laundry_settings')->where('property_id', $pid)->where('lock_version', $expectedLockVersion)
+            ->update(['standard_hours' => $standardHours, 'express_hours' => $expressHours, 'lock_version' => $expectedLockVersion + 1, 'updated_by' => $actorId, 'updated_at' => $at]) === 1;
+    }
+
     public function addOrder(PropertyId $property, LaundryOrder $order, string $createdBy, DateTimeImmutable $at): string
     {
         try {

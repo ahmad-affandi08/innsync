@@ -61,6 +61,7 @@ final readonly class LostFoundService
     public function __construct(
         private LostFoundRepository $items,
         private RoomCatalogReader $rooms,
+        private RoomStayReader $stays,
         private BusinessDateProvider $businessDate,
         private DocumentNumbers $numbers,
         private StoreFile $storeFile,
@@ -99,11 +100,15 @@ final readonly class LostFoundService
             }
         }
 
+        // The guest's name goes only to those who handle lost property (BR-009, minimum necessary); everyone else sees that an item is linked to a stay, not whose.
+        $mayManage = $this->may($property, $actorId, self::MANAGE_PERMISSION);
+        $guests = $mayManage ? $this->stays->guestNames($property, array_values(array_unique(array_filter(array_column($items, 'stay_id'))))) : [];
+
         return [
-            'items' => array_map(fn (array $i): array => [...$i, 'found_by_name' => $names[$i['found_by']] ?? null, 'closed_by_name' => $i['closed_by'] === null ? null : ($names[$i['closed_by']] ?? null),
+            'items' => array_map(fn (array $i): array => [...array_diff_key($i, ['stay_id' => true]), 'guest_name' => $guests[$i['stay_id']] ?? null, 'found_by_name' => $names[$i['found_by']] ?? null, 'closed_by_name' => $i['closed_by'] === null ? null : ($names[$i['closed_by']] ?? null),
                 'days_stored' => $i['status'] === 'stored' ? max(0, BusinessDate::fromString($i['found_date'])->daysUntil($today)) : null, 'has_photo' => $i['photo_file_id'] !== null], $items),
             'rooms' => $rooms,
-            'may' => ['record' => $this->may($property, $actorId, self::RECORD_PERMISSION), 'manage' => $this->may($property, $actorId, self::MANAGE_PERMISSION)],
+            'may' => ['record' => $this->may($property, $actorId, self::RECORD_PERMISSION), 'manage' => $mayManage],
             'business_date' => $today->toString(), 'flag_days' => self::STORED_DAYS_FLAG,
         ];
     }
@@ -140,6 +145,8 @@ final readonly class LostFoundService
 
         $id = $this->ids->next();
         $actor = strtolower($actorId);
+        // Found in a room: link the stay that has it now, or had it last, so the owner can be traced. A suggestion for the staff to check, not a finding.
+        $stayId = $roomId === null ? null : $this->stays->stayOfRoom($property, $roomId);
         $file = null;
 
         if ($photo !== null && $photo !== '') {
@@ -150,13 +157,13 @@ final readonly class LostFoundService
             }
         }
 
-        $this->transactions->run(function () use ($property, $actor, $id, $description, $roomId, $place, $storedAt, $file): void {
+        $this->transactions->run(function () use ($property, $actor, $id, $description, $roomId, $stayId, $place, $storedAt, $file): void {
             $number = $this->numbers->next($property, 'LF');
             $this->items->add($property, [
-                'id' => $id, 'number' => $number, 'description' => $description, 'room_id' => $roomId, 'place' => $place, 'found_business_date' => $this->businessDate->current($property)->toString(),
+                'id' => $id, 'number' => $number, 'description' => $description, 'room_id' => $roomId, 'stay_id' => $stayId, 'place' => $place, 'found_business_date' => $this->businessDate->current($property)->toString(),
                 'found_by' => $actor, 'photo_file_id' => $file?->id, 'stored_at' => $storedAt,
             ], $this->clock->nowUtc());
-            $this->audit->record(new AuditEntry($property->toString(), $actor, 'lost_found.recorded', 'lost_found_item', $id, null, ['number' => $number, 'room_id' => $roomId, 'place' => $place, 'stored_at' => $storedAt, 'has_photo' => $file !== null]));
+            $this->audit->record(new AuditEntry($property->toString(), $actor, 'lost_found.recorded', 'lost_found_item', $id, null, ['number' => $number, 'room_id' => $roomId, 'stay_id' => $stayId, 'place' => $place, 'stored_at' => $storedAt, 'has_photo' => $file !== null]));
             $this->outbox->publish(new OutboxEvent($property, 'housekeeping.lost_found.recorded', $id, 1, ['item_id' => $id, 'number' => $number, 'room_id' => $roomId, 'actor_id' => $actor]));
         });
 

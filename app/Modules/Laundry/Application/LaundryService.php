@@ -289,7 +289,7 @@ final readonly class LaundryService implements LaundryLiability
     /**
      * Rooms with a guest in them and the price list, for the intake screen.
      *
-     * @return array{rooms: list<array{id: string, number: string}>, items: list<array<string, mixed>>, treatments: list<array<string, mixed>>, business_date: string, zone: string}
+     * @return array{rooms: list<array{id: string, number: string}>, items: list<array<string, mixed>>, treatments: list<array<string, mixed>>, business_date: string, zone: string, promised: array{standard: array{date: string, time: string}, express: array{date: string, time: string}}}
      */
     public function intakeLookups(PropertyId $property, string $actorId): array
     {
@@ -303,14 +303,61 @@ final readonly class LaundryService implements LaundryLiability
         }
 
         usort($rooms, static fn (array $a, array $b): int => strnatcmp($a['number'], $b['number']));
+        $zone = $this->zones->forProperty($property) ?? throw Refusal::notFound('Property not found.');
+        $turnaround = $this->repository->turnaround($property);
+        // A suggestion for the screen only: now plus the usual turnaround, as the property's local date and time. The person can change it.
+        $suggest = function (int $hours) use ($zone): array {
+            $local = $zone->localize($this->clock->nowUtc()->modify("+{$hours} hours"));
+
+            return ['date' => $local->format('Y-m-d'), 'time' => $local->format('H:i')];
+        };
 
         return [
             'rooms' => $rooms,
             'items' => $this->repository->priceItems($property, true),
             'treatments' => $this->repository->treatments($property, true),
             'business_date' => $this->businessDate->current($property)->toString(),
-            'zone' => ($this->zones->forProperty($property) ?? throw Refusal::notFound('Property not found.'))->identifier(),
+            'zone' => $zone->identifier(),
+            'promised' => ['standard' => $suggest($turnaround['standard_hours']), 'express' => $suggest($turnaround['express_hours'])],
         ];
+    }
+
+    /** @return array{standard_hours: int, express_hours: int, lock_version: int} */
+    public function turnaround(PropertyId $property, string $actorId): array
+    {
+        $this->authorizeAny($property, $actorId, [self::VIEW_PERMISSION, self::INTAKE_PERMISSION, self::PROCESS_PERMISSION, self::PRICES_PERMISSION]);
+
+        return $this->repository->turnaround($property);
+    }
+
+    /**
+     * How many hours guest laundry normally takes, and how many when it is express. Only the suggestion on the intake screen follows it; an order keeps the time it was promised.
+     *
+     * @return array{standard_hours: int, express_hours: int, lock_version: int}
+     */
+    public function saveTurnaround(PropertyId $property, string $actorId, int $standardHours, int $expressHours, int $expectedLockVersion, string $reason): array
+    {
+        $this->authorize($property, $actorId, self::PRICES_PERMISSION);
+        $this->assertReason($reason);
+
+        if ($standardHours < 1 || $standardHours > 168 || $expressHours < 1 || $expressHours > $standardHours) {
+            throw Refusal::invalid('Give the usual hours (1 to 168) and an express time that is not longer than it.', ['standard_hours', 'express_hours']);
+        }
+
+        return $this->transactions->run(function () use ($property, $actorId, $standardHours, $expressHours, $expectedLockVersion, $reason): array {
+            $before = $this->repository->turnaround($property);
+
+            if (! $this->repository->saveTurnaround($property, $standardHours, $expressHours, $expectedLockVersion, strtolower($actorId), $this->clock->nowUtc())) {
+                throw Refusal::stateConflict('These settings changed after you opened them.');
+            }
+
+            $this->audit->record(new AuditEntry(
+                $property->toString(), strtolower($actorId), 'laundry.turnaround.changed', 'laundry_settings', $property->toString(),
+                ['standard_hours' => $before['standard_hours'], 'express_hours' => $before['express_hours']], ['standard_hours' => $standardHours, 'express_hours' => $expressHours], trim($reason),
+            ));
+
+            return $this->repository->turnaround($property);
+        });
     }
 
     /** @return array<string, mixed> */

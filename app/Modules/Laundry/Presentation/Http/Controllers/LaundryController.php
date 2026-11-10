@@ -45,7 +45,7 @@ final readonly class LaundryController
         $property = $this->property->current();
         $actor = $this->actor($request);
 
-        return Inertia::render('laundry/pages/prices', ['items' => $this->laundry->priceList($property, $actor), 'treatments' => $this->laundry->treatments($property, $actor), 'currency' => $this->laundry->currency($property), 'may' => $this->laundry->abilities($property, $actor)]);
+        return Inertia::render('laundry/pages/prices', ['items' => $this->laundry->priceList($property, $actor), 'treatments' => $this->laundry->treatments($property, $actor), 'currency' => $this->laundry->currency($property), 'turnaround' => $this->laundry->turnaround($property, $actor), 'may' =>$this->laundry->abilities($property, $actor)]);
     }
 
     public function store(Request $request): JsonResponse
@@ -107,6 +107,13 @@ final readonly class LaundryController
         $data = $request->validate(['code' => ['required', 'string', 'max:20'], 'name' => ['required', 'string', 'max:80'], 'unit_price_minor' => ['required', 'integer', 'min:0'], 'reason' => ['required', 'string', 'max:300']]);
 
         return $this->json(['item' => $this->laundry->addPriceItem($this->property->current(), $this->actor($request), $data['code'], $data['name'], (int) $data['unit_price_minor'], $data['reason'])], 201);
+    }
+
+    public function saveTurnaround(Request $request): JsonResponse
+    {
+        $data = $request->validate(['standard_hours' => ['required', 'integer', 'min:1', 'max:168'], 'express_hours' => ['required', 'integer', 'min:1', 'max:168'], 'lock_version' => ['required', 'integer', 'min:0'], 'reason' => ['required', 'string', 'max:300']]);
+
+        return $this->json(['turnaround' => $this->laundry->saveTurnaround($this->property->current(), $this->actor($request), (int) $data['standard_hours'], (int) $data['express_hours'], (int) $data['lock_version'], $data['reason'])]);
     }
 
     public function updatePrice(Request $request, string $id): JsonResponse

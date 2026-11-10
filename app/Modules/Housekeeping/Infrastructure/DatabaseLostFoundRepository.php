@@ -53,7 +53,7 @@ final readonly class DatabaseLostFoundRepository implements LostFoundRepository
         $utc = static fn (mixed $v): ?string => $v === null ? null : (new DateTimeImmutable((string) $v, new DateTimeZone('UTC')))->format('Y-m-d\TH:i:s\Z');
 
         return [
-            'id' => $r->id, 'number' => $r->number, 'description' => $r->description, 'room_id' => $r->room_id, 'room' => $r->room_number, 'place' => $r->place,
+            'id' => $r->id, 'number' => $r->number, 'description' => $r->description, 'room_id' => $r->room_id, 'stay_id' => $r->stay_id, 'room' => $r->room_number, 'place' => $r->place,
             'found_date' => substr((string) $r->found_business_date, 0, 10), 'found_by' => $r->found_by, 'found_at' => $utc($r->found_at), 'photo_file_id' => $r->photo_file_id,
             'stored_at' => $r->stored_at, 'status' => $r->status, 'returned_to' => $r->returned_to, 'closed_note' => $r->closed_note, 'closed_by' => $r->closed_by, 'closed_at' => $utc($r->closed_at), 'lock_version' => (int) $r->lock_version,
         ];

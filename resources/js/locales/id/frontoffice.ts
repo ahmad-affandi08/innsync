@@ -416,6 +416,7 @@ export const frontOffice = {
     'fo.cash.required': 'Properti ini mewajibkan shift terbuka untuk menerima atau mengembalikan uang.',
     'fo.cash.float': 'Modal awal',
     'fo.cash.floatHint': 'Uang tunai awal di laci. Ketik jumlahnya, misalnya 500000; otomatis diberi titik ribuan.',
+    'fo.cash.floatHintLast': 'Terisi dari modal kasir shift Anda yang terakhir. Hitung uang di laci, lalu ubah jumlahnya bila berbeda.',
     'fo.cash.open': 'Buka shift',
     'fo.cash.invalidAmount': 'Masukkan jumlah yang jelas, hanya angka.',
     'fo.cash.shift': 'Shift {number}',

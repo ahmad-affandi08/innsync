@@ -24,6 +24,9 @@ interface StayRepository
     /** The room has a guest in it now. */
     public function roomIsOccupied(PropertyId $property, string $roomId): bool;
 
+    /** The stay in the room now, or failing that the latest one that had it (by check-in); null when the room never had a guest. */
+    public function lastOfRoom(PropertyId $property, string $roomId): ?Stay;
+
     /** @return bool false when the stay was changed by someone else first */
     public function checkOut(PropertyId $property, Stay $stay, int $expectedLockVersion, BusinessDate $date, string $actorId, DateTimeImmutable $at): bool;
 

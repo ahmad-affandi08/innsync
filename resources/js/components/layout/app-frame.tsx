@@ -27,7 +27,7 @@ import {
     Wrench,
     type LucideIcon,
 } from 'lucide-react';
-import { useState, type ReactNode } from 'react';
+import { Fragment, useState, type ReactNode } from 'react';
 
 import favicon from '@/assets/brand/Favicon.svg';
 import logo from '@/assets/brand/LogoHorizontal.svg';
@@ -42,7 +42,7 @@ import { QuickFind } from '@/components/layout/quick-find';
 import { useBrand } from '@/shared/lib/brand';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
-import { MODULE_LINKS, type NavLink } from '@/components/layout/module-links';
+import { groupHeading, MODULE_LINKS, visibleLinks, type NavLink } from '@/components/layout/module-links';
 import { Sheet, SheetContent, SheetDescription, SheetTitle } from '@/components/ui/sheet';
 import { useFormatters, useTranslation } from '@/shared/i18n/i18n';
 import { LAYOUT_MODES, useLayout, type LayoutMode } from '@/shared/lib/use-layout';
@@ -85,7 +85,7 @@ function isHere(links: readonly NavLink[], href: string, path: string): boolean 
     return match(href) && best?.href === href;
 }
 
-type Shell = { propertyName: string | null; businessDate: string | null; userName: string; disabledModules?: string[]; accessibleModules?: string[] | null; attention?: { key: 'approvals' | 'attendance' | 'reminders' | 'online'; count: number }[] } | null;
+type Shell = { propertyName: string | null; businessDate: string | null; userName: string; disabledModules?: string[]; accessibleModules?: string[] | null; permissionAreas?: string[] | null; features?: { loyalty: boolean }; attention?: { key: 'approvals' | 'attendance' | 'reminders' | 'online'; count: number }[] } | null;
 
 type FrameProps = {
     title: string;
@@ -109,13 +109,16 @@ function initials(name: string): string {
 }
 
 /** Persistent sidebar, a header with the property, the business date and the person, and the page itself (docs/DESIGN/03-LAYOUT-NAVIGATION.md). */
-export function AppFrame({ actions, children, description, links = [], printClass, printHead = true, title, wide = true }: FrameProps) {
+export function AppFrame({ actions, children, description, links: allLinks = [], printClass, printHead = true, title, wide = true }: FrameProps) {
     const { t } = useTranslation();
     const format = useFormatters();
     const page = usePage();
     const path = new URL(page.url, 'http://x').pathname;
     const shell = (page.props as { shell?: Shell }).shell ?? null;
     const version = (page.props as { app?: { version?: string } }).app?.version ?? '';
+    // Only the pages of a department the person has work in (the page they are on always stays, so the menu never loses where they are).
+    const offered = visibleLinks(allLinks, shell?.permissionAreas, shell?.features);
+    const links = allLinks.filter((l) => offered.includes(l) || path === l.href || path.startsWith(`${l.href}/`));
     const current = activeModule(path);
     // A department the property does not use is left out of the menu (never the one the person is on, so a link still shows where they are).
     // The menu offers a person the departments their roles give them something to do in; the page the person is on always stays. This is what is shown, not what is allowed: every page checks the permission on the server.
@@ -182,11 +185,14 @@ export function AppFrame({ actions, children, description, links = [], printClas
                                 </Link>
                                 <CollapsibleContent>
                                     <ul className="ml-[1.4rem] flex flex-col border-l border-border py-1">
-                                        {links.map((l) => {
+                                        {links.map((l, i) => {
                                             const here = isHere(links, l.href, path);
+                                            const heading = groupHeading(links, i);
 
                                             return (
-                                                <li key={l.href}>
+                                                <Fragment key={l.href}>
+                                                {heading !== undefined ? <li aria-hidden="true" className="px-4 pb-1 pt-3 text-[0.6875rem] font-semibold uppercase tracking-wider text-muted-foreground" key={`${l.href}-group`}>{t(heading as MessageKey)}</li> : null}
+                                                <li>
                                                     <Link
                                                         aria-current={here ? 'page' : undefined}
                                                         className={cn('-ml-px block border-l-2 px-4 py-1.5 text-[0.8125rem] transition-colors', here ? 'border-brand font-semibold text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground')}
@@ -196,6 +202,7 @@ export function AppFrame({ actions, children, description, links = [], printClas
                                                         {t(l.label as MessageKey)}
                                                     </Link>
                                                 </li>
+                                                </Fragment>
                                             );
                                         })}
                                     </ul>
@@ -218,7 +225,7 @@ export function AppFrame({ actions, children, description, links = [], printClas
                         const Icon = m.icon;
                         const isActive = m.key === current.key;
                         // Beranda lists the guests' self-service pages only for people who work the front desk or the restaurant, so nobody is offered a page they cannot open.
-                        const pages = isActive && hasLinks ? links : m.key === 'home' && !modules.some((x) => x.key === 'front-office' || x.key === 'fnb') ? [] : (MODULE_LINKS[m.key] ?? []);
+                        const pages = isActive && hasLinks ? links : m.key === 'home' && !modules.some((x) => x.key === 'front-office' || x.key === 'fnb') ? [] : visibleLinks(MODULE_LINKS[m.key] ?? [], shell?.permissionAreas, shell?.features);
                         const row = cn(
                             'group flex min-h-11 w-full items-center gap-3 border-l-2 px-3 py-2 text-left text-sm transition-colors',
                             isActive ? 'border-brand bg-surface-muted font-semibold text-foreground' : 'border-transparent text-muted-foreground hover:bg-surface-muted hover:text-foreground',
@@ -247,11 +254,14 @@ export function AppFrame({ actions, children, description, links = [], printClas
                                 </CollapsibleTrigger>
                                 <CollapsibleContent>
                                     <ul className="ml-[1.4rem] flex flex-col border-l border-border py-1">
-                                        {pages.map((l) => {
+                                        {pages.map((l, i) => {
                                             const here = isActive && isHere(pages, l.href, path);
+                                            const heading = groupHeading(pages, i);
 
                                             return (
-                                                <li key={l.href}>
+                                                <Fragment key={l.href}>
+                                                {heading !== undefined ? <li aria-hidden="true" className="px-4 pb-1 pt-3 text-[0.6875rem] font-semibold uppercase tracking-wider text-muted-foreground" key={`${l.href}-group`}>{t(heading as MessageKey)}</li> : null}
+                                                <li>
                                                     <Link
                                                         aria-current={here ? 'page' : undefined}
                                                         className={cn('-ml-px flex min-h-10 items-center border-l-2 px-4 py-2 text-[0.8125rem] transition-colors', here ? 'border-brand font-semibold text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground')}
@@ -261,6 +271,7 @@ export function AppFrame({ actions, children, description, links = [], printClas
                                                         {t(l.label as MessageKey)}
                                                     </Link>
                                                 </li>
+                                                </Fragment>
                                             );
                                         })}
                                     </ul>
@@ -414,8 +425,10 @@ export function AppFrame({ actions, children, description, links = [], printClas
                     <p className="flex h-14 items-center border-b border-border px-5 text-sm font-semibold">{t(current.label)}</p>
                     <ScrollArea className="flex-1">
                         <ul className="flex flex-col gap-0.5 p-3">
-                            {links.map((l) => (
-                                <li key={l.href}>
+                            {links.map((l, i) => (
+                                <Fragment key={l.href}>
+                                {groupHeading(links, i) !== undefined ? <li aria-hidden="true" className="px-3 pb-1 pt-3 text-[0.6875rem] font-semibold uppercase tracking-wider text-muted-foreground">{t(groupHeading(links, i) as MessageKey)}</li> : null}
+                                <li>
                                     <Link
                                         aria-current={here(l.href) ? 'page' : undefined}
                                         className={cn('block border-l-2 px-3 py-2 text-sm transition-colors', here(l.href) ? 'border-brand bg-surface-muted font-semibold text-foreground' : 'border-transparent text-muted-foreground hover:bg-surface-muted hover:text-foreground')}
@@ -424,6 +437,7 @@ export function AppFrame({ actions, children, description, links = [], printClas
                                         {t(l.label as MessageKey)}
                                     </Link>
                                 </li>
+                                </Fragment>
                             ))}
                         </ul>
                     </ScrollArea>

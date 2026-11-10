@@ -387,6 +387,24 @@ final class AccountsPayableHttpTest extends TestCase
         $this->assertNull($alerts()->get('payables_overdue'), 'once paid it is no longer an alert');
     }
 
+    public function test_the_last_account_of_a_supplier_is_suggested_on_its_next_payable_but_never_saved(): void
+    {
+        $p = $this->payable();
+        $a = $this->postJson('/finance/accounts', ['code' => 'bev-cost', 'name' => 'Beverage cost', 'department' => 'fnb', 'category' => 'goods'])->assertCreated()->json('account');
+        $next = strtolower((string) Str::ulid());
+        DB::table('ap_payables')->insert(['id' => $next, 'property_id' => self::A, 'supplier_id' => $p['supplier_id'], 'supplier_code' => $p['supplier_code'], 'supplier_name' => $p['supplier_name'], 'source_type' => 'supplier_invoice', 'source_id' => strtolower((string) Str::ulid()), 'source_number' => 'NEXT-1', 'document_number' => 'INV-NEXT-1',
+            'issued_on' => '2026-10-20', 'due_date' => '2026-11-30', 'business_date' => '2026-10-20', 'amount_minor' => 1_000_000, 'tax_minor' => 0, 'currency' => 'IDR', 'expense_account_id' => null, 'event_id' => strtolower((string) Str::ulid()), 'actor_id' => $p['actor_id'], 'occurred_at' => now(), 'created_at' => now()]);
+
+        $this->get("/finance/payables/{$next}")->assertInertia(fn (Assert $page) => $page->where('payable.suggested_account_id', null));
+        $this->postJson("/finance/payables/{$p['id']}/classify", ['expense_account_id' => $a['id']])->assertOk();
+        $this->get("/finance/payables/{$next}")->assertInertia(fn (Assert $page) => $page->where('payable.suggested_account_id', $a['id'])->where('payable.expense_account_id', null));
+        $this->get("/finance/payables/{$p['id']}")->assertInertia(fn (Assert $page) => $page->where('payable.suggested_account_id', null));
+        self::assertNull(DB::table('ap_payables')->where('id', $next)->value('expense_account_id'), 'a suggestion is not a classification');
+
+        $this->postJson("/finance/accounts/{$a['id']}", ['name' => 'Beverage cost', 'department' => 'fnb', 'category' => 'goods', 'active' => false, 'lock_version' => $a['lock_version']])->assertOk();
+        $this->get("/finance/payables/{$next}")->assertInertia(fn (Assert $page) => $page->where('payable.suggested_account_id', null));
+    }
+
     public function test_a_payable_is_classified_under_an_active_expense_account(): void
     {
         $p = $this->payable();

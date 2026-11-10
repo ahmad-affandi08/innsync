@@ -28,7 +28,7 @@ type Application = { id: string; credit_note_number: string; source_number: stri
 type Credit = { id: string; supplier_name: string; credit_note_number: string; source_number: string; amount_minor: number; applied_minor: number; available_minor: number; business_date: string; currency: string };
 type Payable = PayableRow & {
     issued_on: string; business_date: string; tax_minor: number; source_type: string; source_id: string; order_number: string | null; occurred_at: string; correlation_id: string | null;
-    expense_account_id: string | null; expense_account: string | null; accounts: { id: string; code: string; name: string }[]; payments: Payment[]; applications: Application[]; credits: Credit[];
+    expense_account_id: string | null; suggested_account_id: string | null; expense_account: string | null; accounts: { id: string; code: string; name: string }[]; payments: Payment[]; applications: Application[]; credits: Credit[];
     may: { manage: boolean; pay: boolean };
 };
 type PayForm = { amount: string; method: string; paid_on: string; reference: string; note: string };
@@ -44,7 +44,8 @@ export default function PayablePage({ payable }: { payable: Payable }) {
     const classify = useServerAction();
     const credit = useServerAction();
     const pay = useServerAction();
-    const [account, setAccount] = useState(payable.expense_account_id ?? '');
+    const [account, setAccount] = useState(payable.expense_account_id ?? payable.suggested_account_id ?? '');
+    const suggested = payable.expense_account_id === null && payable.suggested_account_id !== null && account === payable.suggested_account_id;
     const [payForm, setPayForm] = useState<PayForm | null>(null);
     const [creditForm, setCreditForm] = useState<CreditForm | null>(null);
     const [badAmount, setBadAmount] = useState(false);
@@ -156,7 +157,7 @@ export default function PayablePage({ payable }: { payable: Payable }) {
                 {payable.may.manage ? (
                     <div className="flex max-w-xl flex-col gap-3 print:hidden">
                         {classify.error !== null ? <ErrorState {...errorCopy} error={classify.error} onRefresh={() => window.location.reload()} /> : null}
-                        <FormField error={classify.fieldError('expense_account_id')} field="expense_account_id" hint={payable.accounts.length === 0 ? t('fin.pbl.noAccounts') : t('fin.pbl.accountHint')} label={t('fin.pbl.accountField')}>
+                        <FormField error={classify.fieldError('expense_account_id')} field="expense_account_id" hint={payable.accounts.length === 0 ? t('fin.pbl.noAccounts') : t(suggested ? 'fin.pbl.accountSuggested' : 'fin.pbl.accountHint')} label={t('fin.pbl.accountField')}>
                             <Select onChange={(e) => setAccount(e.target.value)} value={account}>
                                 <option value="">{t('fin.pbl.accountNone')}</option>
                                 {payable.accounts.map((a) => <option key={a.id} value={a.id}>{a.code} · {a.name}</option>)}

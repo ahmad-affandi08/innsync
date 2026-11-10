@@ -43,6 +43,9 @@ interface PayableStore
 
     public function classify(PropertyId $property, string $id, ?string $accountId): void;
 
+    /** The expense account of the supplier's most recently issued payable that has one (other than $exceptId), or null. */
+    public function lastAccountOf(PropertyId $property, string $supplierId, string $exceptId): ?string;
+
     /** @return list<array<string, mixed>> credits with what is still unapplied, newest first */
     public function credits(PropertyId $property, ?string $supplierId): array;
 

@@ -732,6 +732,7 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
     Route::get('/prices', [LaundryController::class, 'prices'])->name('laundry.prices');
     Route::post('/prices', [LaundryController::class, 'addPrice'])->name('laundry.prices.store');
     Route::post('/prices/{id}', [LaundryController::class, 'updatePrice'])->where('id', $id)->name('laundry.prices.update');
+    Route::post('/turnaround', [LaundryController::class, 'saveTurnaround'])->name('laundry.turnaround.save');
     Route::post('/treatments', [LaundryController::class, 'addTreatment'])->name('laundry.treatments.store');
     Route::post('/treatments/{id}', [LaundryController::class, 'updateTreatment'])->where('id', $id)->name('laundry.treatments.update');
     Route::get('/supplies', [SupplyUseController::class, 'index'])->name('laundry.supplies');

@@ -84,6 +84,7 @@ export const finance = {
     "fin.pbl.accountNone": "Not classified",
     "fin.pbl.accountHint": "The account this cost is booked under, for cost reporting.",
     "fin.pbl.accountSave": "Save account",
+    "fin.pbl.accountSuggested": "Suggested from this supplier's last classified payable. Nothing is saved until you press Save account.",
     "fin.pbl.payments": "Payments",
     "fin.pbl.noPayments": "Nothing has been paid yet.",
     "fin.pbl.applications": "Credits applied",

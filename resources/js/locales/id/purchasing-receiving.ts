@@ -36,6 +36,7 @@ export const purchasingReceiving = {
     "inv.rcv.otherNeedsNote": "Isi catatan baris untuk {item}: apa yang salah.",
     "inv.rcv.fill": "Semua",
     "inv.rcv.fillRemaining": "Terima seluruh sisa jumlah",
+    "inv.rcv.fillAll": "Terima seluruh sisa semua baris",
     "inv.rcv.reason.damaged": "Rusak",
     "inv.rcv.reason.expired": "Kedaluwarsa",
     "inv.rcv.reason.wrong_item": "Barang salah",

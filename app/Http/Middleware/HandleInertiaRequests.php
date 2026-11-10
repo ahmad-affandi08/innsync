@@ -95,7 +95,7 @@ final class HandleInertiaRequests extends Middleware
      * What the frame around every page shows: the property, its business date and who is signed in. Shown only to the signed-in
      * person themselves; the business date is null before go-live.
      *
-     * @return array{propertyName: string|null, businessDate: string|null, userName: string, disabledModules?: list<string>, attention?: list<array{key: string, count: int}>, accessibleModules?: list<string>|null}|null
+     * @return array{propertyName: string|null, businessDate: string|null, userName: string, disabledModules?: list<string>, attention?: list<array{key: string, count: int}>, accessibleModules?: list<string>|null, permissionAreas?: list<string>|null, features?: array{loyalty: bool}}|null
      */
     private function shell(Request $request): ?array
     {
@@ -133,6 +133,15 @@ final class HandleInertiaRequests extends Middleware
         }
 
         try {
+            $areas = app(ModuleAccess::class)->areasOf((string) $request->user()->getAuthIdentifier(), $property);
+        } catch (Throwable) {
+            $areas = null; // unreadable: every page of a department is offered, as for the departments above
+        }
+
+        // Features a property has switched off, so the menu does not offer their pages. The loyalty programme is a switch of the installation (LOYALTY_ENABLED).
+        $features = ['loyalty' => (bool) config('frontdesk.loyalty.enabled')];
+
+        try {
             $logo = app(PropertyBranding::class)->url($property);
         } catch (Throwable) {
             $logo = null;
@@ -161,7 +170,7 @@ final class HandleInertiaRequests extends Middleware
             }
         }
 
-        return ['propertyName' => $name, 'businessDate' => $date, 'userName' => (string) $request->user()->name, 'disabledModules' => $disabled, 'accessibleModules' => $accessible, 'attention' => $attention];
+        return ['propertyName' => $name, 'businessDate' => $date, 'userName' => (string) $request->user()->name, 'disabledModules' => $disabled, 'accessibleModules' => $accessible, 'permissionAreas' => $areas, 'features' => $features, 'attention' => $attention];
     }
 
     /**

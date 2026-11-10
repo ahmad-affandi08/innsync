@@ -5906,6 +5906,20 @@
             "value"
         ]
     },
+    "POST /laundry/turnaround": {
+        "required": [
+            "express_hours",
+            "lock_version",
+            "reason",
+            "standard_hours"
+        ],
+        "declared": [
+            "express_hours",
+            "lock_version",
+            "reason",
+            "standard_hours"
+        ]
+    },
     "POST /locale": {
         "required": [
             "locale"

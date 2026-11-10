@@ -57,8 +57,8 @@ final class CashierHttpTest extends TestCase
 
     public function test_a_shift_is_opened_used_dropped_and_closed_through_http(): void
     {
-        $this->get('/front-office/cashier')->assertInertia(fn (Assert $p) => $p->component('front-office/pages/cashier')->where('cashier.shift', null)->where('cashier.currency', 'IDR')->where('cashier.may_view_all', true));
-        $shift = $this->postJson('/front-office/cashier/shifts', ['opening_float_minor' => 20_000_000])->assertCreated()->assertJsonPath('shift.number', 'SHF-000001')->json('shift');
+        $this->get('/front-office/cashier')->assertInertia(fn (Assert $p) => $p->component('front-office/pages/cashier')->where('cashier.shift', null)->where('cashier.currency', 'IDR')->where('cashier.last_float_minor', null)->where('cashier.may_view_all', true));
+        $shift =$this->postJson('/front-office/cashier/shifts', ['opening_float_minor' => 20_000_000])->assertCreated()->assertJsonPath('shift.number', 'SHF-000001')->json('shift');
         $this->postJson('/front-office/cashier/shifts', ['opening_float_minor' => 1])->assertStatus(409)->assertJsonPath('error.conflict.reason', 'shift_open');
 
         $this->postJson("/front-office/folios/{$this->folio}/payments", ['payment_method' => 'cash', 'amount_minor' => 5_000_000, 'purpose' => 'deposit'], ['Idempotency-Key' => 'cashier-pay-00000001'])->assertOk();
@@ -74,6 +74,8 @@ final class CashierHttpTest extends TestCase
         $this->postJson("/front-office/cashier/shifts/{$shift['id']}/close", ['counted_cash_minor' => 14_000_000, 'lock_version' => 0])->assertStatus(422)->assertJsonStructure(['error' => ['fields' => ['variance_reason']]]);
         $this->postJson("/front-office/cashier/shifts/{$shift['id']}/close", ['counted_cash_minor' => 14_000_000, 'variance_reason' => 'A coin tip given to the porter', 'lock_version' => 0])->assertOk()
             ->assertJsonPath('shift.status', 'closed')->assertJsonPath('shift.variance_minor', -1_000_000)->assertJsonPath('shift.expected_cash_minor', 15_000_000);
+
+        $this->get('/front-office/cashier')->assertInertia(fn (Assert $p) => $p->where('cashier.shift', null)->where('cashier.last_float_minor', 20_000_000));
 
         $this->get("/front-office/cashier/shifts/{$shift['id']}")->assertInertia(fn (Assert $p) => $p->component('front-office/pages/cashier-shift')->where('detail.shift.status', 'closed')->where('detail.may_close', false)->where('detail.may_drop', false));
         $this->get('/front-office/cashier/shifts')->assertInertia(fn (Assert $p) => $p->component('front-office/pages/cashier-shifts')->has('list.shifts', 1)->where('list.shifts.0.variance_minor', -1_000_000)->where('settings.require_open_shift', false));

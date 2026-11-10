@@ -57,6 +57,14 @@ final readonly class DatabaseStayRepository implements StayRepository
             ->map(static fn (stdClass $r): Stay => self::hydrate($r))->all();
     }
 
+    public function lastOfRoom(PropertyId $property, string $roomId): ?Stay
+    {
+        $row = DB::table('stays')->where('property_id', $property->toString())->where('room_id', $roomId)
+            ->orderByRaw("status = 'in_house' desc")->orderByDesc('checked_in_at')->orderByDesc('id')->first();
+
+        return $row === null ? null : self::hydrate($row);
+    }
+
     public function roomIsOccupied(PropertyId $property, string $roomId): bool
     {
         return DB::table('stays')->where('property_id', $property->toString())->where('room_id', $roomId)->where('status', 'in_house')->lockForUpdate()->exists();

@@ -416,6 +416,7 @@ export const frontOffice = {
     'fo.cash.required': 'This property requires an open shift to take or return money.',
     'fo.cash.float': 'Opening float',
     'fo.cash.floatHint': 'The cash you start with in the drawer. Type the amount, for example 500000; it is grouped as you type.',
+    'fo.cash.floatHintLast': 'Filled in from the float of your last shift. Count the drawer, then change the amount if it differs.',
     'fo.cash.open': 'Open the shift',
     'fo.cash.invalidAmount': 'Enter a clear amount using digits only.',
     'fo.cash.shift': 'Shift {number}',
