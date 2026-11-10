@@ -66,6 +66,61 @@ final readonly class ExpenseAccountService
         return $this->shape($this->store->account($property, $id) ?? throw Refusal::notFound('Account not found.'));
     }
 
+    /**
+     * The costs a hotel in Indonesia usually books: [code, name, department, category]. A starting list for cost reporting; the finance manager renames, adds and switches off as needed.
+     *
+     * @var list<array{0: string, 1: string, 2: string, 3: string}>
+     */
+    public const BASELINE = [
+        ['UTL-LISTRIK', 'Listrik', 'general', 'utilities'],
+        ['UTL-AIR', 'Air', 'general', 'utilities'],
+        ['UTL-GAS', 'Gas dan LPG', 'kitchen', 'utilities'],
+        ['UTL-INTERNET', 'Internet dan telepon', 'general', 'utilities'],
+        ['SAL-GAJI', 'Gaji dan upah', 'hr', 'salaries'],
+        ['SAL-BPJS', 'BPJS dan tunjangan', 'hr', 'salaries'],
+        ['FNB-MAKAN', 'Bahan makanan', 'kitchen', 'goods'],
+        ['FNB-MINUM', 'Bahan minuman', 'fnb', 'goods'],
+        ['FNB-SAJI', 'Kemasan dan perlengkapan saji', 'fnb', 'supplies'],
+        ['HK-AMENITY', 'Amenities kamar', 'housekeeping', 'supplies'],
+        ['HK-LINEN', 'Linen dan handuk', 'housekeeping', 'goods'],
+        ['HK-BERSIH', 'Bahan pembersih', 'housekeeping', 'supplies'],
+        ['LDY-KIMIA', 'Bahan kimia laundry', 'laundry', 'supplies'],
+        ['MTC-PERBAIKI', 'Perbaikan dan perawatan', 'maintenance', 'maintenance'],
+        ['MTC-PART', 'Suku cadang', 'maintenance', 'goods'],
+        ['MTC-VENDOR', 'Jasa vendor teknik', 'maintenance', 'services'],
+        ['OFC-ATK', 'Alat tulis dan percetakan', 'general', 'supplies'],
+        ['MKT-PROMOSI', 'Promosi dan pemasaran', 'front_office', 'services'],
+        ['MKT-KOMISI', 'Komisi agen dan OTA', 'front_office', 'services'],
+        ['FIN-BANK', 'Biaya bank dan EDC', 'finance', 'services'],
+        ['FIN-PAJAK', 'Pajak dan perizinan', 'finance', 'other'],
+        ['GEN-ASURANSI', 'Asuransi', 'general', 'services'],
+        ['GEN-ANGKUT', 'Transportasi', 'general', 'services'],
+        ['GEN-SEWA', 'Sewa', 'general', 'rent'],
+        ['GEN-LAIN', 'Lain-lain', 'general', 'other'],
+    ];
+
+    /** Writes the usual accounts when none was written yet; once the finance manager has any, nothing is added. @return list<array<string, mixed>> */
+    public function baseline(PropertyId $property, string $actorId): array
+    {
+        $this->access->require($property, $actorId, FinanceAccess::ACCOUNT_MANAGE, 'This person may not change expense accounts.');
+
+        if ($this->store->accounts($property) !== []) {
+            throw Refusal::stateConflict('Expense accounts were written already.');
+        }
+
+        $this->transactions->run(function () use ($property, $actorId): void {
+            $now = $this->clock->nowUtc();
+
+            foreach (self::BASELINE as [$code, $name, $department, $category]) {
+                $this->store->addAccount($property, ['id' => $this->ids->next(), 'code' => $code, 'name' => $name, 'department' => $department, 'category' => $category], $now);
+            }
+
+            $this->audit->record(new AuditEntry($property->toString(), strtolower($actorId), 'expense_account.baseline', 'expense_account', $property->toString(), null, ['codes' => array_column(self::BASELINE, 0)]));
+        });
+
+        return array_map($this->shape(...), $this->store->accounts($property));
+    }
+
     /** @return array<string, mixed> */
     public function update(PropertyId $property, string $actorId, string $id, string $name, string $department, string $category, bool $active, int $lock): array
     {

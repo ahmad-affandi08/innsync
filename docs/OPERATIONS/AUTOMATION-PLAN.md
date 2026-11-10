@@ -83,3 +83,7 @@ The original questions follow for the record.
 6. Starter data, import, accounts from HR, "Today" page.
 
 Before the first line of any phase: read the exact `TASK-*` row in `docs/TASK/MASTER-BACKLOG.md` and its module file, and write the guardrail list (requirement ids, context and aggregate owner, layers, scope/security, transaction and idempotency, test plan, open questions).
+
+## Starter data (done 2026-11-10, first part)
+
+`innsync:install-starter-data` writes, for a property that has none, the 25 usual expense accounts (`ExpenseAccountService::BASELINE`), and the shifts, kinds of leave, kinds of pay and appraisal form that HR already offered as buttons. Modules offer their parts through `Shared\Application\Setup\StarterData` (tag `starter-data`); the actor is the property's administrator; a department the property does not use is skipped; a part with anything in it is left alone. `innsync:create-admin` runs it. Check-in 14:00, check-out 12:00 and night audit from 23:00 already come from `PropertySettings::defaults()`, and `create-admin` already sets the business date, so those steps need no data. Not done yet: checklist templates and temperature points (D-6), the tax and BAR rate proposals (Q-05), adding rooms by range.

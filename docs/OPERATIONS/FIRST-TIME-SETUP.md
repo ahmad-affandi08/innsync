@@ -17,6 +17,7 @@ Listed but not required: deposit and cancellation rules; restaurant and bar (out
 | 19 starting roles | `innsync:install-default-roles`, migration 119, `innsync:create-admin` | Roles screen |
 | A starting approver for each of the 11 mandatory actions | `innsync:install-default-approvals`, migration 120, `innsync:create-admin` | Approval policies screen |
 | The administrator account | `innsync:create-admin` (once, on the server) | People & access |
+| Starter data (2026-11-10): 25 usual expense accounts, 5 shifts, 4 kinds of leave, 5 kinds of pay, the appraisal form | `innsync:install-starter-data` (run by `innsync:create-admin`; run it by hand on a property that existed before, it only writes what is missing) | Finance → Expense accounts; HR → Shifts, Leave types, Payroll components, Appraisals |
 
 ### Starting approvers
 

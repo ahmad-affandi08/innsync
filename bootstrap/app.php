@@ -9,6 +9,7 @@ use App\Modules\GuestExperience\Presentation\Http\Middleware\ResolveGuestSession
 use App\Modules\GuestExperience\Presentation\Http\Middleware\ResolveOnlineBookingProperty;
 use App\Modules\IdentityAccess\Infrastructure\Console\InstallDefaultApprovalsCommand;
 use App\Modules\IdentityAccess\Infrastructure\Console\InstallDefaultRolesCommand;
+use App\Shared\Infrastructure\Deployment\InstallStarterDataCommand;
 use App\Modules\IdentityAccess\Presentation\Http\Middleware\EnsureActiveUser;
 use App\Modules\IdentityAccess\Presentation\Http\Middleware\EnsureMfaVerified;
 use App\Modules\IdentityAccess\Presentation\Http\Middleware\MemoizeGrants;
@@ -77,6 +78,7 @@ return Application::configure(basePath: dirname(__DIR__))
         UnlockAccountCommand::class,
         InstallDefaultRolesCommand::class,
         InstallDefaultApprovalsCommand::class,
+        InstallStarterDataCommand::class,
         ImportRoomMasterCommand::class,
         SmokeCommand::class,
         RetentionPurgeCommand::class,

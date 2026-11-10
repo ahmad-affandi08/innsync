@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Modules\Finance\Application\FinanceStarterData;
+use App\Modules\HumanResource\Application\HumanResourceStarterData;
+use App\Shared\Infrastructure\Deployment\InstallStarterDataCommand;
 use App\Modules\Finance\Application\BankStatementStore;
 use App\Modules\Finance\Application\BudgetStore;
 use App\Modules\Finance\Application\CorrectionStore;
@@ -639,6 +642,8 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(GuestRepository::class, DatabaseGuestRepository::class);
         $this->app->bind(HousekeepingRepository::class, DatabaseHousekeepingRepository::class);
         $this->app->bind(OccupancyReader::class, StayOccupancyReader::class);
+        $this->app->tag([FinanceStarterData::class, HumanResourceStarterData::class], 'starter-data');
+        $this->app->when(InstallStarterDataCommand::class)->needs('$sources')->giveTagged('starter-data');
         $this->app->bind(RoomStayReader::class, StayRoomReader::class);
         $this->app->bind(RoomReadiness::class, HousekeepingService::class);
         $this->app->bind(RoomHandover::class, HousekeepingService::class);
