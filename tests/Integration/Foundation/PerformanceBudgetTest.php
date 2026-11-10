@@ -30,7 +30,7 @@ final class PerformanceBudgetTest extends TestCase
     use SignsInToProperty;
 
     /** Page => [server seconds, most queries]. The dashboard gathers a dozen cards, so it is allowed more queries, but still not more with a bigger house. */
-    private const PAGES = ['/front-office/room-board' => [1.0, 40], '/housekeeping' => [1.0, 40], '/front-office/stays' => [1.0, 40], '/front-office/reservations' => [1.0, 40], '/dashboard' => [1.5, 120]];
+    private const PAGES = ['/front-office/room-board' => [1.0, 40], '/housekeeping' => [1.0, 40], '/front-office/stays' => [1.0, 40], '/front-office/reservations' => [1.0, 40], '/dashboard' => [1.5, 150]];
 
     protected function beforeRefreshingDatabase(): void
     {

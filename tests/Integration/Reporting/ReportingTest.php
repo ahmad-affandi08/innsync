@@ -264,13 +264,13 @@ final class ReportingTest extends TestCase
         $audit->record(new AuditEntry($this->property()->toString(), $this->managerId, 'work_order.escalated', 'work_order', '01arz3ndektsv4rrffq69g5fac', null, ['level' => 1]));
         $audit->record(new AuditEntry($this->property()->toString(), $this->managerId, 'guest.registered', 'stay', '01arz3ndektsv4rrffq69g5fad', null, []));
 
-        $report = $this->reports()->flash($this->property(), $this->analystId, 'custom', '2026-09-01', '2026-10-31');
+        $report = $this->reports()->flash($this->property(), $this->analystId, 'custom', '2026-09-01', now()->addDay()->toDateString());
         self::assertSame([['action' => 'fnb_bill.cancelled', 'count' => 2], ['action' => 'work_order.escalated', 'count' => 1]], $report['events']);
         self::assertSame(['available' => false], $report['costs']);
 
         $accountant = UserRecord::factory()->create();
         $this->grant($accountant, '01arz3ndektsv4rrffq69g5fav', [ReportService::VIEW_PERMISSION, FinanceAccess::REPORT_VIEW]);
-        $withCosts = $this->reports()->flash($this->property(), (string) $accountant->getKey(), 'custom', '2026-09-01', '2026-10-31');
+        $withCosts = $this->reports()->flash($this->property(), (string) $accountant->getKey(), 'custom', '2026-09-01', now()->addDay()->toDateString());
         self::assertTrue($withCosts['costs']['available']);
         self::assertSame(0, $withCosts['costs']['totals']['cost_total_minor']);
         self::assertSame([], $withCosts['costs']['departments']);

@@ -29,6 +29,8 @@
         <env name="APP_NAME" value="InnSYnc"/>
         <env name="APP_VERSION" value="0.1.0-dev"/>
         <env name="APP_MAINTENANCE_DRIVER" value="file"/>
+        <env name="AUDIT_MINIMUM_RETENTION_DAYS" value="3650"/>
+        <env name="SECURITY_EVENT_MINIMUM_RETENTION_DAYS" value="1825"/>
         <env name="BCRYPT_ROUNDS" value="4"/>
         <env name="BROADCAST_CONNECTION" value="null"/>
         <env name="CACHE_STORE" value="array"/>

@@ -84,6 +84,14 @@ final readonly class AppraisalService
             throw Refusal::invalid('Give a name of at most 80 characters.', ['name']);
         }
 
+        $this->makeForm($property, $actorId, $name, $criteria);
+
+        return $this->overview($property, $actorId);
+    }
+
+    /** @param list<array{label: string, weight: int}> $criteria */
+    private function makeForm(PropertyId $property, string $actorId, string $name, array $criteria): void
+    {
         $clean = $this->cleanCriteria($criteria);
         $id = $this->ids->next();
         $actor = strtolower($actorId);
@@ -95,8 +103,20 @@ final readonly class AppraisalService
 
             $this->audit->record(new AuditEntry($property->toString(), $actor, 'appraisal_form.created', 'appraisal_form', $id, null, ['name' => $name, 'criteria' => count($clean)]));
         });
+    }
 
-        return $this->overview($property, $actorId);
+    /** The standard form for a new property, with no screen to answer (setup runs before the business date is set). @return int forms made */
+    public function installBaseline(PropertyId $property, string $actorId): int
+    {
+        $this->access->require($property, $actorId, HrAccess::APPRAISAL, 'This person may not make appraisal forms.');
+
+        if ($this->store->forms($property, false) !== []) {
+            throw Refusal::stateConflict('Forms were made already.');
+        }
+
+        $this->makeForm($property, $actorId, 'Standard appraisal', array_map(static fn (array $c): array => ['label' => $c[0], 'weight' => $c[1]], self::BASELINE));
+
+        return 1;
     }
 
     /** @return array<string, mixed> */

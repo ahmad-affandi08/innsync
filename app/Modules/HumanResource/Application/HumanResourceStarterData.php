@@ -18,7 +18,7 @@ final readonly class HumanResourceStarterData implements StarterData
             ['module' => 'hr', 'label' => 'shifts', 'install' => fn (PropertyId $p, string $a): int => count($this->roster->baseline($p, $a))],
             ['module' => 'hr', 'label' => 'kinds of leave', 'install' => fn (PropertyId $p, string $a): int => count($this->leave->baseline($p, $a))],
             ['module' => 'hr', 'label' => 'kinds of pay', 'install' => fn (PropertyId $p, string $a): int => count($this->pay->baseline($p, $a))],
-            ['module' => 'hr', 'label' => 'appraisal form', 'install' => fn (PropertyId $p, string $a): int => count($this->appraisals->baselineForm($p, $a))],
+            ['module' => 'hr', 'label' => 'appraisal form', 'install' => fn (PropertyId $p, string $a): int => $this->appraisals->installBaseline($p, $a)],
         ];
     }
 }

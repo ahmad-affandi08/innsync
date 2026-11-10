@@ -136,7 +136,7 @@ final class ReportFiltersTest extends TestCase
         $audit->record(new AuditEntry($p, $this->managerId, 'fnb_bill.cancelled', 'fnb_bill', '01arz3ndektsv4rrffq69g5faa', null, ['x' => 1]));
         $audit->record(new AuditEntry($p, $this->supervisorId, 'fnb_bill.cancelled', 'fnb_bill', '01arz3ndektsv4rrffq69g5fab', null, ['x' => 1]));
         $audit->record(new AuditEntry($p, $this->managerId, 'work_order.escalated', 'work_order', '01arz3ndektsv4rrffq69g5fac', null, ['x' => 1]));
-        $flash = fn (array $filters) => $this->reports()->flash($this->property(), $this->analystId, 'custom', '2026-09-01', '2026-10-31', $filters)['events'];
+        $flash = fn (array $filters) => $this->reports()->flash($this->property(), $this->analystId, 'custom', '2026-09-01', now()->addDay()->toDateString(), $filters)['events'];
 
         self::assertSame([['action' => 'fnb_bill.cancelled', 'count' => 2], ['action' => 'work_order.escalated', 'count' => 1]], $flash([]));
         self::assertSame([['action' => 'fnb_bill.cancelled', 'count' => 2]], $flash(['department' => 'fnb']));

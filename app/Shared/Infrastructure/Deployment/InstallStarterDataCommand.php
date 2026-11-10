@@ -6,7 +6,6 @@ namespace App\Shared\Infrastructure\Deployment;
 
 use App\Shared\Application\Errors\Refusal;
 use App\Shared\Application\Setup\ModuleSettings;
-use App\Shared\Application\Setup\StarterData;
 use App\Shared\Application\Tenancy\PropertyContext;
 use App\Shared\Domain\Tenancy\PropertyId;
 use Illuminate\Console\Command;
@@ -22,12 +21,6 @@ final class InstallStarterDataCommand extends Command
     protected $signature = 'innsync:install-starter-data {--property= : Property id; every property when omitted}';
 
     protected $description = 'Write the usual expense accounts, shifts, kinds of leave and pay, and the appraisal form where a property has none; what exists is not touched';
-
-    /** @param iterable<StarterData> $sources the modules that offer starter data (tagged `starter-data`) */
-    public function __construct(private iterable $sources)
-    {
-        parent::__construct();
-    }
 
     public function handle(ModuleSettings $modules, PropertyContext $context): int
     {
@@ -47,7 +40,8 @@ final class InstallStarterDataCommand extends Command
             $off = $modules->disabled($property);
             $parts = [];
 
-            foreach ($this->sources as $source) {
+            // Resolved here, not in the constructor: every artisan command is built whenever any command runs, and these services need the application key and the database.
+            foreach ($this->laravel->tagged('starter-data') as $source) {
                 array_push($parts, ...$source->parts());
             }
 

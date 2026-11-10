@@ -64,8 +64,9 @@ final class CreateAdminCommand extends Command
         $this->assignUserToRole($propertyId, $userId, $roleId);
         $this->call('innsync:install-default-roles', ['--property' => $propertyId]);
         $this->call('innsync:install-default-approvals', ['--property' => $propertyId]);
-        $this->call('innsync:install-starter-data', ['--property' => $propertyId]);
+        // The business date first: some starting data (like the appraisal form) is made through services that read it.
         $this->initializeBusinessDateIfNeeded($propertyId, $userId);
+        $this->call('innsync:install-starter-data', ['--property' => $propertyId]);
 
         $this->newLine();
         $this->info('✓ Administrator ready:');
