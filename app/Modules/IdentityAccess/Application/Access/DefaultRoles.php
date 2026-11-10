@@ -54,11 +54,11 @@ final class DefaultRoles
                 'laundry.view', 'laundry.order.intake', 'laundry.order.process', 'laundry.order.deliver', 'laundry.linen.handle', 'laundry.supplies.use',
                 'laundry.claim.record', 'laundry.claim.view', 'front-office.availability.view',
             ],
-            'F&B Cashier' => ['fnb.pos.operate', 'fnb.cashier.operate', 'fnb.receipt.reprint', 'kitchen.board.operate'],
+            'F&B Cashier' => ['fnb.pos.operate', 'fnb.cashier.operate', 'fnb.receipt.reprint', 'fnb.sop.perform', 'fnb.sop.view', 'kitchen.board.operate'],
             'F&B Supervisor' => ['fnb.*', 'kitchen.board.operate', 'kitchen.report.view', 'reporting.outlets.manage', 'inventory.stock.view', 'inventory.requisition.request'],
             'Kitchen Staff' => [
                 'kitchen.board.operate', 'kitchen.damage.report', 'kitchen.ingredients.use', 'kitchen.production.record', 'kitchen.waste.record',
-                'inventory.requisition.request', 'inventory.stock.view',
+                'kitchen.sop.perform', 'kitchen.sop.view', 'kitchen.temperature.record', 'inventory.requisition.request', 'inventory.stock.view',
             ],
             'Kitchen Head' => ['kitchen.*', 'inventory.catalog.view', 'inventory.stock.view', 'inventory.requisition.request', 'inventory.count.manage', 'fnb.setup.manage', 'fnb.prices.manage'],
             'Maintenance Technician' => ['maintenance.work.perform', 'maintenance.work.report', 'inventory.requisition.request', 'inventory.stock.view'],
@@ -98,7 +98,8 @@ final class DefaultRoles
             ],
             'Kitchen & Bar' => [
                 'kitchen.board.operate', 'kitchen.damage.report', 'kitchen.ingredients.use', 'kitchen.production.record', 'kitchen.waste.record', 'fnb.pos.operate',
-                'fnb.cashier.operate', 'fnb.minibar.operate', 'inventory.requisition.request', 'inventory.stock.view',
+                'fnb.cashier.operate', 'fnb.minibar.operate', 'fnb.sop.perform', 'fnb.sop.view', 'fnb.temperature.record', 'kitchen.sop.perform', 'kitchen.sop.view', 'kitchen.temperature.record',
+                'inventory.requisition.request', 'inventory.stock.view',
             ],
         ];
     }

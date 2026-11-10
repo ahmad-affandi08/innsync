@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Unit\Foundation;
 
 use App\Modules\IdentityAccess\Infrastructure\Authorization\DatabaseDefaultRoleInstaller;
+use App\Modules\Routines\Application\RoutineDepartment;
 use PHPUnit\Framework\TestCase;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
@@ -48,5 +49,17 @@ final class PermissionCatalogTest extends TestCase
         }
 
         self::assertSame([], $missing, 'Add these to DevelopmentSeeder::PERMISSIONS (and a migration that creates them for a running property).');
+    }
+
+    /** The privileges of the routine departments are written in an array, not in constants, so the scan above cannot see them. */
+    public function test_the_privileges_of_every_routine_department_are_in_the_catalog(): void
+    {
+        $catalog = array_flip(DatabaseDefaultRoleInstaller::catalog());
+
+        foreach (['kitchen', 'fnb'] as $department) {
+            foreach (RoutineDepartment::of($department)->permissions as $code) {
+                self::assertArrayHasKey($code, $catalog, "{$department} routines need {$code}");
+            }
+        }
     }
 }
