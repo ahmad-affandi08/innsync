@@ -78,6 +78,7 @@ describe('dictionaries', () => {
         // Brand-neutral labels may match; anything else identical to English is probably untranslated.
         const allowedSame = new Set([
             'common.language.id',
+            'shell.short.fnb',
             'fo.du.nav',
             'fo.du.title',
             'fo.bill.outlet.day_use',

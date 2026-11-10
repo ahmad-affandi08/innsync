@@ -12,7 +12,6 @@ import {
     Hotel,
     Landmark,
     Warehouse,
-    LayoutDashboard,
     LogOut,
     Menu,
     MonitorSmartphone,
@@ -52,7 +51,7 @@ import type { MessageKey } from '@/locales/en/index';
 
 export type { NavLink };
 
-type ModuleEntry = { key: string; href: string; icon: LucideIcon; label: MessageKey; prefixes: string[]; group: 'start' | 'operations' | 'insight' | 'control' };
+type ModuleEntry = { key: string; href: string; icon: LucideIcon; label: MessageKey; /** A shorter name for the narrow icon rail. */ short?: MessageKey; prefixes: string[]; group: 'start' | 'operations' | 'insight' | 'control' };
 
 /** The domains of the back office, as the design asks: one sidebar, grouped by what people do. */
 const MODULES: ModuleEntry[] = [
@@ -60,16 +59,16 @@ const MODULES: ModuleEntry[] = [
     { key: 'front-office', href: '/front-office/today', icon: ConciergeBell, label: 'fo.nav.label', prefixes: ['/front-office'], group: 'operations' },
     { key: 'housekeeping', href: '/housekeeping', icon: BedDouble, label: 'hk.nav.label', prefixes: ['/housekeeping'], group: 'operations' },
     { key: 'laundry', href: '/laundry', icon: Shirt, label: 'ldy.nav.label', prefixes: ['/laundry'], group: 'operations' },
-    { key: 'fnb', href: '/fnb/pos', icon: UtensilsCrossed, label: 'fnb.nav.label', prefixes: ['/fnb'], group: 'operations' },
-    { key: 'kitchen', href: '/kitchen', icon: ChefHat, label: 'kitchen.nav.label', prefixes: ['/kitchen'], group: 'operations' },
+    { key: 'fnb', href: '/fnb/pos', icon: UtensilsCrossed, label: 'fnb.nav.label', short: 'shell.short.fnb', prefixes: ['/fnb'], group: 'operations' },
+    { key: 'kitchen', href: '/kitchen', icon: ChefHat, label: 'kitchen.nav.label', short: 'shell.short.kitchen', prefixes: ['/kitchen'], group: 'operations' },
     { key: 'maintenance', href: '/maintenance', icon: Wrench, label: 'mtc.nav.label', prefixes: ['/maintenance'], group: 'operations' },
     { key: 'hr', href: '/hr/employees', icon: UsersRound, label: 'hr.nav.label', prefixes: ['/hr'], group: 'operations' },
     { key: 'inventory', href: '/inventory/stock', icon: Warehouse, label: 'inv.nav.label', prefixes: ['/inventory'], group: 'operations' },
     { key: 'finance', href: '/finance/payables', icon: Landmark, label: 'fin.nav.label', prefixes: ['/finance'], group: 'operations' },
-    { key: 'dashboard', href: '/dashboard', icon: LayoutDashboard, label: 'rpt.nav.dashboard', prefixes: ['/dashboard'], group: 'insight' },
-    { key: 'reports', href: '/reports', icon: ChartNoAxesCombined, label: 'rpt.nav.reports', prefixes: ['/reports'], group: 'insight' },
+    // The dashboard is the first page of the reports list, so one entry serves both.
+    { key: 'reports', href: '/dashboard', icon: ChartNoAxesCombined, label: 'rpt.nav.reports', prefixes: ['/dashboard', '/reports'], group: 'insight' },
     { key: 'approvals', href: '/approvals', icon: ShieldCheck, label: 'identity.approvals.title', prefixes: ['/approvals'], group: 'control' },
-    { key: 'property', href: '/property/settings', icon: Settings2, label: 'property.nav.label', prefixes: ['/property', '/sync', '/access', '/setup'], group: 'control' },
+    { key: 'property', href: '/property/settings', icon: Settings2, label: 'property.nav.label', short: 'shell.short.property', prefixes: ['/property', '/sync', '/access', '/setup'], group: 'control' },
 ];
 
 const GROUPS = ['start', 'operations', 'insight', 'control'] as const;
@@ -417,7 +416,7 @@ export function AppFrame({ actions, children, description, links: allLinks = [],
                                     title={t(m.label)}
                                 >
                                     <Icon aria-hidden="true" className={cn('size-5', isActive ? 'text-brand' : '')} strokeWidth={1.75} />
-                                    <span className="line-clamp-2 w-full break-words text-center">{t(m.label)}</span>
+                                    <span className="line-clamp-2 w-full break-words text-center">{t(m.short ?? m.label)}</span>
                                 </Link>
                                 </Fragment>
                             );

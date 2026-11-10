@@ -214,7 +214,7 @@ export const MODULE_LINKS: Readonly<Record<string, readonly NavLink[]>> = {
     hr: HR_LINKS,
     inventory: INVENTORY_LINKS,
     finance: FINANCE_LINKS,
-    reports: REPORT_LINKS,
+    reports: REPORTING_LINKS,
     property: PROPERTY_LINKS,
 };
 
