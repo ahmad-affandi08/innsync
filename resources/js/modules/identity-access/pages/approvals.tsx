@@ -185,7 +185,7 @@ export default function ApprovalsPage({ pending, mine }: { pending: Approval[]; 
                         {pending.length === 0 ? (
                             <EmptyState title={t('identity.approvals.pending.empty')} />
                         ) : (
-                            <ul className="mt-2 divide-y divide-border border-y border-border">{pending.map((a) => row(a, ['approve', 'reject']))}</ul>
+                            <ul className="mt-2 list-panel divide-y divide-border">{pending.map((a) => row(a, ['approve', 'reject']))}</ul>
                         )}
                     </div>
 
@@ -194,7 +194,7 @@ export default function ApprovalsPage({ pending, mine }: { pending: Approval[]; 
                         {mine.length === 0 ? (
                             <EmptyState title={t('identity.approvals.mine.empty')} />
                         ) : (
-                            <ul className="mt-2 divide-y divide-border border-y border-border">{mine.map((a) => row(a, ['cancel']))}</ul>
+                            <ul className="mt-2 list-panel divide-y divide-border">{mine.map((a) => row(a, ['cancel']))}</ul>
                         )}
                     </div>
             </AppFrame>

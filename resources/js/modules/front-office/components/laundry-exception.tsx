@@ -47,7 +47,7 @@ export function LaundryExceptionPanel({ choice, laundry, onChange, stayId }: { c
     if (laundry.orders === 0) return null;
 
     return (
-        <div className="flex flex-col gap-3 border border-border p-3" data-testid="laundry-exception">
+        <div className="flex flex-col gap-3 border border-border bg-surface p-3" data-testid="laundry-exception">
             <Alert title={t('fo.stay.laundry.hold', { count: laundry.orders })} tone="warning">{t('fo.stay.laundry.explain')}</Alert>
             {action.error !== null ? <ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /> : null}
             <fieldset className="grid gap-3 sm:grid-cols-2">

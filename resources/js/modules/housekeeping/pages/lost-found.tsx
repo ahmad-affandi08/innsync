@@ -72,7 +72,7 @@ export default function LostFoundPage({ overview, status }: { overview: Overview
             {overview.items.length === 0 ? <EmptyState title={t('hk.lf.empty')} /> : (
                 <ul className="flex flex-col gap-3" data-testid="lost-found">
                     {overview.items.map((i) => (
-                        <li className="flex flex-col gap-2 border border-border p-3 text-sm" data-testid={`item-${i.number}`} key={i.id}>
+                        <li className="flex flex-col gap-2 border border-border bg-surface p-3 text-sm" data-testid={`item-${i.number}`} key={i.id}>
                             <div className="flex flex-wrap items-center justify-between gap-2">
                                 <p><span className="font-medium">{i.number}</span> · {i.description}</p>
                                 <span className="flex items-center gap-2">

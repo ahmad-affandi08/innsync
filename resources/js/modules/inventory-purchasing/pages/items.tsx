@@ -147,7 +147,7 @@ export default function ItemsPage({ catalog }: { catalog: Catalog }) {
                         {unitsItem.units.length === 0 ? <p className="text-sm">{t('inv.units.none')}</p> : (
                             <ul className="flex flex-col gap-3 text-sm" data-testid="unit-versions">
                                 {unitsItem.units.map((u) => (
-                                    <li className="border border-border p-3" key={u.unit}>
+                                    <li className="border border-border bg-surface p-3" key={u.unit}>
                                         <p className="font-semibold">1 {u.unit} = {formatMilli(u.factor_milli, locale)} {unitsItem.base_unit}</p>
                                         <ul className="mt-1 text-xs text-muted-foreground">
                                             {[...u.history].reverse().map((v) => (

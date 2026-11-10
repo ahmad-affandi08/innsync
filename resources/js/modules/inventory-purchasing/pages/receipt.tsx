@@ -111,7 +111,7 @@ export default function ReceiptPage({ receipt }: { receipt: Receipt }) {
                 <h2 className="text-lg font-semibold" id="rcv-photos-h">{t('inv.rcv.photos')}</h2>
                 <ul className="flex flex-col gap-3">
                     {receipt.lines.map((l) => (
-                        <li className="flex flex-col gap-2 border border-border p-3 text-sm" data-testid={`receipt-photos-${l.item_code}`} key={l.id}>
+                        <li className="flex flex-col gap-2 border border-border bg-surface p-3 text-sm" data-testid={`receipt-photos-${l.item_code}`} key={l.id}>
                             <p><span className="font-medium">{l.item_code}</span> <span className="text-muted-foreground">{l.item_name}</span> · {t('inv.rcv.photoCount', { count: l.photos.length, max: receipt.max_photos })}</p>
                             {l.photos.length > 0 ? (
                                 <ul className="flex flex-wrap gap-3">

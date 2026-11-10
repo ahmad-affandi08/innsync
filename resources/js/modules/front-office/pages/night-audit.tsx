@@ -67,7 +67,7 @@ export default function NightAuditPage({ preview: p }: { preview: Preview }) {
                         {p.may_waive ? <p className="text-xs text-muted-foreground">{t('fo.audit.waiveHint')}</p> : null}
                         <ul className="flex flex-col gap-4">
                             {pending.map((g) => (
-                                <li className="flex flex-col gap-2 border border-border p-3" key={g.code}>
+                                <li className="flex flex-col gap-2 border border-border bg-surface p-3" key={g.code}>
                                     <p className="font-medium">{t(`fo.audit.gate.${g.code}` as 'fo.audit.gate.pending_arrivals')} ({g.count})</p>
                                     <p className="text-xs text-muted-foreground">{t(`fo.audit.gate.${g.code}.help` as 'fo.audit.gate.pending_arrivals.help')}</p>
                                     <ul className="list-disc pl-5 text-sm">{g.items.map((item) => <li key={item}>{readable(item)}</li>)}</ul>
@@ -88,7 +88,7 @@ export default function NightAuditPage({ preview: p }: { preview: Preview }) {
             <section aria-labelledby="hist-h" className="flex flex-col gap-2">
                 <h2 className="text-lg font-semibold" id="hist-h">{t('fo.audit.history')}</h2>
                 {p.history.length === 0 ? <p className="text-sm text-muted-foreground">{t('fo.audit.historyNone')}</p> : (
-                    <ul className="divide-y divide-border border-y border-border text-sm">
+                    <ul className="list-panel divide-y divide-border text-sm">
                         {p.history.map((h) => (
                             <li className="flex flex-wrap items-center justify-between gap-2 py-2" key={h.id}>
                                 <Link className="font-medium underline-offset-2 hover:underline" href={`/front-office/night-audit/${h.business_date}`}>{format.date(h.business_date, 'long')}</Link>

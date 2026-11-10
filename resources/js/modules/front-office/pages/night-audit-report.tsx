@@ -62,7 +62,7 @@ export default function NightAuditReportPage({ audit: a }: { audit: Audit }) {
             <section aria-labelledby="col-h" className="flex flex-col gap-2">
                 <h2 className="text-lg font-semibold" id="col-h">{t('fo.audit.report.collected')}</h2>
                 {methods.length === 0 ? <p className="text-sm text-muted-foreground">{t('fo.audit.report.collectedNone')}</p> : (
-                    <ul className="divide-y divide-border border-y border-border text-sm">{methods.map(([method, amount]) => (
+                    <ul className="list-panel divide-y divide-border text-sm">{methods.map(([method, amount]) => (
                         <li className="flex justify-between gap-2 py-2" key={method}><span>{t(`fo.folio.method.${method}` as 'fo.folio.method.cash')}</span><span>{format.money(amount, r.currency)}</span></li>
                     ))}</ul>
                 )}

@@ -83,7 +83,7 @@ export default function RegistrationCardPage({ card: c }: { card: Card }) {
             </div>
             {action.error !== null ? <ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /> : null}
 
-            <article className="flex flex-col gap-4 border border-border p-6 print:border-0 print:p-0" data-testid="registration-card">
+            <article className="flex flex-col gap-4 border border-border bg-surface p-6 print:border-0 print:p-0" data-testid="registration-card">
                 <header className="flex flex-wrap items-baseline justify-between gap-2">
                     <h2 className="text-2xl font-semibold">{c.hotel}</h2>
                     <p className="text-sm text-muted-foreground">{t('fo.regcard.number', { number: c.reservation_number })}</p>

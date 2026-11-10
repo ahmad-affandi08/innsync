@@ -74,7 +74,7 @@ export default function SetupPage({ steps, progress, profile }: { steps: Step[];
                 {GROUPS.map((group) => (
                     <section aria-labelledby={`setup-${group}`} className="flex flex-col gap-1" key={group}>
                         <h2 className="text-base font-semibold" id={`setup-${group}`}>{t(`setup.group.${group}` as MessageKey)}</h2>
-                        <ul className="divide-y divide-border border-y border-border">
+                        <ul className="list-panel divide-y divide-border">
                             {steps.filter((s) => s.group === group).map((s) => (
                                 <li className="flex flex-col gap-2 py-3 sm:flex-row sm:items-center sm:justify-between" data-testid={`setup-${s.key}`} key={s.key}>
                                     <div className="min-w-0">

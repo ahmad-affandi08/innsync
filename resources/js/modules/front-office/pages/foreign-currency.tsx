@@ -105,7 +105,7 @@ export default function ForeignCurrencyPage({ overview }: { overview: Overview }
             <section aria-labelledby="fx-recent-h" className="flex flex-col gap-2">
                 <h2 className="text-lg font-semibold" id="fx-recent-h">{t('fo.foreign.recent')}</h2>
                 {overview.recent.length === 0 ? <EmptyState title={t('fo.foreign.nonePaid')} /> : (
-                    <ul className="divide-y divide-border border-y border-border text-sm" data-testid="fx-recent">{overview.recent.map((p) => (
+                    <ul className="list-panel divide-y divide-border text-sm" data-testid="fx-recent">{overview.recent.map((p) => (
                         <li className="flex flex-wrap items-center justify-between gap-2 py-2" key={p.posting_id}>
                             <span>{format.date(p.business_date)} · {p.currency} {format.money(p.foreign_minor, p.currency)} @ {rateText(p.rate_e4)} → {format.money(p.booked_minor, p.booked_currency)}{p.reversed ? <StatusBadge label={t('fo.foreign.reversed')} tone="neutral" /> : null}</span>
                             <Link className="underline-offset-2 hover:underline" href={`/front-office/folios/${p.folio_id}`}>{p.folio_number}</Link>

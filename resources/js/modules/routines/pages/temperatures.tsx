@@ -89,7 +89,7 @@ export default function TemperaturesPage({ department, overview }: { department:
 
             <ul className="flex flex-wrap gap-2 text-sm" data-testid="points">
                 {overview.points.map((p) => (
-                    <li className="flex items-center gap-2 border border-border px-3 py-1" key={p.id}>
+                    <li className="flex items-center gap-2 border border-border bg-surface px-3 py-1" key={p.id}>
                         <span className={p.active ? undefined : 'text-muted-foreground line-through'}>{p.name} · {degrees(p.min_tenth)} – {degrees(p.max_tenth)} °C</span>
                         {overview.may.manage ? <Button onClick={() => { action.clear(); setPoint({ id: p.id, name: p.name, min: degrees(p.min_tenth), max: degrees(p.max_tenth), active: p.active, lock: p.lock_version }); }} size="sm" type="button" variant="outline">{t('rtn.tpl.edit')}</Button> : null}
                     </li>

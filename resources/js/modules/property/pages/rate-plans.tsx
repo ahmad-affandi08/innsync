@@ -155,7 +155,7 @@ export default function RatePlansPage({ plans, selected, types }: { plans: Plan[
                     <Button onClick={open(() => setPlanForm({ id: null, code: '', name: '', kind: 'public', inclusions: '', nett: false, lockVersion: 0, reason: '' }))} size="sm" type="button">{t('rates.plans.add')}</Button>
                 </div>
                 {plans.length === 0 ? <EmptyState title={t('rates.plans.empty')} /> : (
-                    <ul className="divide-y divide-border border-y border-border">
+                    <ul className="list-panel divide-y divide-border">
                         {plans.map((plan) => (
                             <li className="flex flex-wrap items-center justify-between gap-3 py-3" key={plan.id}>
                                 <div>
@@ -181,7 +181,7 @@ export default function RatePlansPage({ plans, selected, types }: { plans: Plan[
                             <Button disabled={types.length === 0} onClick={open(() => setPriceForm({ periodId: null, roomTypeId: '', from: '', to: '', mask: ALL_DAYS, amount: '', reason: '' }))} size="sm" type="button">{t('rates.prices.add')}</Button>
                         </div>
                         {selected.periods.length === 0 ? <EmptyState title={t('rates.prices.empty')} /> : (
-                            <ul className="divide-y divide-border border-y border-border">
+                            <ul className="list-panel divide-y divide-border">
                                 {selected.periods.map((p) => (
                                     <li className="flex flex-wrap items-center justify-between gap-3 py-3" key={p.id}>
                                         <div>
@@ -204,7 +204,7 @@ export default function RatePlansPage({ plans, selected, types }: { plans: Plan[
                             <Button onClick={open(() => setRestrictionForm({ roomTypeId: '', from: '', to: '', minStay: '', maxStay: '', cta: false, ctd: false, stop: false, reason: '' }))} size="sm" type="button">{t('rates.restrictions.add')}</Button>
                         </div>
                         {selected.restrictions.length === 0 ? <EmptyState title={t('rates.restrictions.empty')} /> : (
-                            <ul className="divide-y divide-border border-y border-border">
+                            <ul className="list-panel divide-y divide-border">
                                 {selected.restrictions.map((r) => (
                                     <li className="flex flex-wrap items-center justify-between gap-3 py-3" key={r.id}>
                                         <div>

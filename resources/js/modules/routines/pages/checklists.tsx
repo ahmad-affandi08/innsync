@@ -34,7 +34,7 @@ export default function RoutineChecklistsPage({ board, department }: Props) {
             {action.error !== null ? <ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /> : null}
 
             {board.checklists.length === 0 ? <EmptyState title={t('rtn.empty')} /> : board.checklists.map((c) => (
-                <section aria-label={c.name} className="flex flex-col gap-2 border border-border p-4" data-testid={`checklist-${c.name}`} key={c.template_id}>
+                <section aria-label={c.name} className="flex flex-col gap-2 border border-border bg-surface p-4" data-testid={`checklist-${c.name}`} key={c.template_id}>
                     <div className="flex flex-wrap items-center justify-between gap-2">
                         <h2 className="text-lg font-semibold">{t('rtn.period', { name: c.name, frequency: t(`rtn.frequency.${c.frequency}` as 'rtn.frequency.daily'), from: format.date(c.period_start), to: format.date(c.period_end) })}</h2>
                         <StatusBadge label={t('rtn.progress', { done: c.completed, total: c.total, percent: c.percent })} tone={c.percent === 100 ? 'success' : 'info'} />

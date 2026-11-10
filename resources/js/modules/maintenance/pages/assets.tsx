@@ -158,7 +158,7 @@ export default function AssetsPage({ overview }: { overview: AssetsOverview }) {
                                 </ul>
                             )}
                             {detail.may.manage && d.status === 'active' ? (
-                                <div className="grid gap-2 border border-border p-3 sm:grid-cols-2">
+                                <div className="grid gap-2 border border-border bg-surface p-3 sm:grid-cols-2">
                                     <div className="sm:col-span-2"><FormField error={action.fieldError('title')} field="title" label={t('mtc.plan.titleLabel')}><Input maxLength={80} onChange={(e) => setPlan({ ...plan, title: e.target.value })} value={plan.title} /></FormField></div>
                                     <FormField error={action.fieldError('trigger_kind')} field="trigger_kind" label={t('mtc.plan.trigger')}><Select onChange={(e) => setPlan({ ...plan, trigger: e.target.value })} value={plan.trigger}><option value="calendar">{t('mtc.plan.byCalendar')}</option>{d.meter_unit !== null ? <option value="meter">{t('mtc.plan.byMeter')}</option> : null}</Select></FormField>
                                     <FormField error={action.fieldError('interval_value')} field="interval_value" label={plan.trigger === 'calendar' ? t('mtc.plan.intervalDays') : t('mtc.plan.intervalUnits', { unit: label('mtc.asset.unit', d.meter_unit ?? 'hours') })}><Input inputMode="numeric" onChange={(e) => setPlan({ ...plan, interval: e.target.value })} value={plan.interval} /></FormField>

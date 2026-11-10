@@ -82,7 +82,7 @@ export default function FacePage({ overview, mode }: Props) {
             <div><Button asChild size="sm" variant="outline"><Link href="/hr/face/test">{t('hr.face.try')}</Link></Button></div>
 
             {overview.employees.length === 0 ? <EmptyState title={t('hr.face.none')} /> : (
-                <ul className="divide-y divide-border border-y border-border" data-testid="face-list">
+                <ul className="list-panel divide-y divide-border" data-testid="face-list">
                     {overview.employees.map((p) => (
                         <li className="flex flex-wrap items-center justify-between gap-3 py-3" key={p.id}>
                             <div className="min-w-0">

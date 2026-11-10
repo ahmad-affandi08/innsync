@@ -21,7 +21,7 @@ export default function RoomBoardPage({ board }: { board: Board }) {
 
             <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
                 {board.rooms.map((r) => (
-                    <li className="flex flex-col gap-1 border border-border p-3 text-sm" data-testid={`room-${r.number}`} key={r.room_id}>
+                    <li className="flex flex-col gap-1 border border-border bg-surface p-3 text-sm" data-testid={`room-${r.number}`} key={r.room_id}>
                         <div className="flex items-baseline justify-between gap-2">
                             {r.stay_id !== null
                                 ? <Link aria-label={t('fo.board.openStay', { room: r.number })} className="text-lg font-semibold underline-offset-2 hover:underline" href={`/front-office/stays/${r.stay_id}`}>{r.number}</Link>
@@ -40,7 +40,7 @@ export default function RoomBoardPage({ board }: { board: Board }) {
             <section aria-labelledby="arr-h" className="flex flex-col gap-2">
                 <h2 className="text-lg font-semibold" id="arr-h">{t('fo.board.arrivals')}</h2>
                 {board.arrivals.length === 0 ? <p className="text-sm text-muted-foreground">{t('fo.board.noArrivals')}</p> : (
-                    <ul className="divide-y divide-border border-y border-border text-sm">
+                    <ul className="list-panel divide-y divide-border text-sm">
                         {board.arrivals.map((a) => {
                             const ready = board.rooms.filter((r) => r.room_type_id === a.room_type_id && r.stay_id === null && !r.blocked && r.housekeeping === 'ready');
                             return (

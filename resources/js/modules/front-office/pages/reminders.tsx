@@ -62,13 +62,13 @@ export default function RemindersPage({ reminders }: Props) {
                     <h2 className="text-lg font-semibold" id="rem-open">{t('fo.rem.open', { count: reminders.open.length })}</h2>
                     {reminders.may_write ? <Button onClick={() => { action.clear(); setForm({ due_on: reminders.today, due_time: '', text: '' }); }} size="sm" type="button">{t('fo.rem.add')}</Button> : null}
                 </div>
-                {reminders.open.length === 0 ? <EmptyState title={t('fo.rem.empty')} /> : <ul className="divide-y divide-border border-y border-border">{reminders.open.map((r) => item(r, false))}</ul>}
+                {reminders.open.length === 0 ? <EmptyState title={t('fo.rem.empty')} /> : <ul className="list-panel divide-y divide-border">{reminders.open.map((r) => item(r, false))}</ul>}
             </section>
 
             {reminders.done.length > 0 ? (
                 <section aria-labelledby="rem-done" className="flex flex-col gap-2">
                     <h2 className="text-lg font-semibold" id="rem-done">{t('fo.rem.recentDone')}</h2>
-                    <ul className="divide-y divide-border border-y border-border">{reminders.done.map((r) => item(r, true))}</ul>
+                    <ul className="list-panel divide-y divide-border">{reminders.done.map((r) => item(r, true))}</ul>
                 </section>
             ) : null}
 

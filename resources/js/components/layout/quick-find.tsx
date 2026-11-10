@@ -74,7 +74,7 @@ export function QuickFind() {
                     {failed ? <p className="text-sm text-danger">{t('find.failed')}</p> : null}
                     {results !== null && results.length === 0 && !failed ? <p className="text-sm text-muted-foreground">{t('find.none')}</p> : null}
                     {results !== null && results.length > 0 ? (
-                        <ul className="max-h-80 divide-y divide-border overflow-y-auto border-y border-border" data-testid="find-results">
+                        <ul className="max-h-80 list-panel divide-y divide-border overflow-y-auto" data-testid="find-results">
                             {results.map((r) => (
                                 <li key={r.id}>
                                     <Link className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 px-1 py-2 hover:bg-surface-muted" href={`/front-office/reservations/${r.id}`} onClick={close}>

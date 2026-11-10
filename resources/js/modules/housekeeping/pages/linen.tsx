@@ -167,7 +167,7 @@ export default function LinenPage({ linen }: { linen: Linen }) {
                                 const set = (patch: Partial<typeof c>) => setCount({ ...count, [tr.id]: { ...c, ...patch } });
 
                                 return (
-                                    <li className="flex flex-col gap-2 border border-border p-3" key={tr.id}>
+                                    <li className="flex flex-col gap-2 border border-border bg-surface p-3" key={tr.id}>
                                         <p className="text-sm"><span className="font-medium">{tr.number}</span> · {tr.item_name}: {format.number(tr.quantity_sent)} · {place(tr.from)} → {place(tr.to)} · {t('hk.linen.sentBy', { name: tr.sent_by_name ?? '—', time: format.instant(tr.sent_at) })}</p>
                                         {tr.note !== null ? <p className="text-xs text-muted-foreground">{tr.note}</p> : null}
                                         {tr.may_receive === true && (

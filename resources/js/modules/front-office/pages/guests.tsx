@@ -25,7 +25,7 @@ export default function GuestsPage({ guests, query }: { guests: Guest[]; query: 
             cell: (g) => (
                 <span>
                     <span className="font-medium">{g.guest_name}</span>
-                    {g.stays > 1 ? <span className="ml-2 border border-border px-1.5 py-0.5 text-xs font-normal text-muted-foreground">{t('fo.guests.returning')}</span> : null}
+                    {g.stays > 1 ? <span className="ml-2 border border-border bg-surface px-1.5 py-0.5 text-xs font-normal text-muted-foreground">{t('fo.guests.returning')}</span> : null}
                     {g.upcoming > 0 ? <span className="ml-2 text-xs font-normal text-muted-foreground">{t('fo.guests.upcoming', { count: g.upcoming })}</span> : null}
                     {g.flag !== null ? <span className="ml-2 border border-foreground px-1.5 py-0.5 text-xs font-semibold">{t(`fo.gnote.flag.${g.flag}` as 'fo.gnote.flag.vip')}</span> : null}
                     {g.note !== null ? <span className="block max-w-md truncate text-xs font-normal text-muted-foreground" title={g.note}>{g.note}</span> : null}

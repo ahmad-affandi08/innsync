@@ -56,7 +56,7 @@ export default function ApprovalPoliciesPage({ subjects, permissions = [] }: { s
                             </div>
                             {s.mandatory ? <StatusBadge label={t('identity.approvalPolicies.mandatory')} tone="warning" /> : null}
                             {s.policies.length === 0 ? <p className="text-sm text-muted-foreground">{t('identity.approvalPolicies.none')}</p> : (
-                                <ul className="divide-y divide-border border-y border-border">
+                                <ul className="list-panel divide-y divide-border">
                                     {s.policies.map((p) => (
                                         <li className="py-3 text-sm" key={p.id}>
                                             <p className="font-medium">{p.band_min_amount_minor === 0 ? t('identity.approvalPolicies.rowAll', { version: p.version }) : t('identity.approvalPolicies.rowFrom', { amount: format.money(p.band_min_amount_minor, 'IDR'), version: p.version })}</p>

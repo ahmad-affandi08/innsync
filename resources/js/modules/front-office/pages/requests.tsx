@@ -87,7 +87,7 @@ export default function RequestsPage({ filters, in_house: inHouse, queue }: Prop
             {form === null && finish === null ? error : null}
 
             {queue.requests.length === 0 ? <EmptyState title={t('fo.req.empty')} /> : (
-                <ul className="divide-y divide-border border-y border-border" data-testid="request-list">
+                <ul className="list-panel divide-y divide-border" data-testid="request-list">
                     {queue.requests.map((r) => (
                         <li className="flex flex-col gap-1 py-3 text-sm" data-testid={`request-${r.number}`} key={r.id}>
                             <div className="flex flex-wrap items-center justify-between gap-2">

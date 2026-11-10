@@ -44,7 +44,7 @@ export default function ChecklistTemplatesPage({ catalogue }: Props) {
             </div>
             {action.error !== null && !open ? <ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /> : null}
             {catalogue.templates.length === 0 ? <EmptyState title={t('hk.cl.empty')} /> : (
-                <ul className="divide-y divide-border border-y border-border text-sm" data-testid="templates">
+                <ul className="list-panel divide-y divide-border text-sm" data-testid="templates">
                     {catalogue.templates.map((tp) => (
                         <li className="flex flex-col gap-1 py-2" key={tp.id}>
                             <div className="flex flex-wrap items-center justify-between gap-2">

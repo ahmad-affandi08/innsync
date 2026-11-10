@@ -119,6 +119,16 @@
     --radius: 0;
 }
 
+/* A list of rows on a page (arrivals, reminders, approvals): on the same white surface as a card or a table, never straight on the grey of the page. */
+@utility list-panel {
+    border: 1px solid var(--color-border);
+    background-color: var(--color-surface);
+
+    & > * {
+        padding-inline: 0.75rem;
+    }
+}
+
 @layer base {
     * {
         @apply border-border;

@@ -48,7 +48,7 @@ export default function StayFeesPage({ catalogue }: Props) {
             {catalogue.policies.length === 0 ? <EmptyState title={t('fo.stayfee.empty')} /> : (
                 <ul className="flex flex-col gap-2 text-sm" data-testid="stay-fee-policies">
                     {catalogue.policies.map((p) => (
-                        <li className="border border-border p-3" key={p.id}>
+                        <li className="border border-border bg-surface p-3" key={p.id}>
                             <p className="font-medium">{t(`fo.stayfee.kind.${p.kind}` as 'fo.stayfee.kind.late_checkout')} · {t('fo.stayfee.from', { date: format.date(p.effective_from) })}</p>
                             <p className="text-muted-foreground">{t('fo.stayfee.rule', { grace: p.grace_minutes })} {p.bands.map((b) => t('fo.stayfee.band', { minutes: b.up_to_minutes, percent: pct(b.percent_bp) })).join(' ')} {t('fo.stayfee.beyond', { percent: pct(p.beyond_bp) })}</p>
                             <p className="text-xs text-muted-foreground">{p.reason}</p>

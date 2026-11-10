@@ -81,7 +81,7 @@ export function GuestCorrections({ corrections, guest, stayId }: { corrections: 
                 {corrections.may_correct ? <Button onClick={() => { action.clear(); setForm(Object.fromEntries(FIELDS.map((f) => [f, current(f)]))); }} size="sm" type="button" variant="outline">{t('fo.corr.action')}</Button> : null}
             </div>
             {corrections.corrections.length === 0 ? <p className="text-sm text-muted-foreground">{t('fo.corr.none')}</p> : (
-                <ul className="divide-y divide-border border-y border-border text-sm" data-testid="corrections">{corrections.corrections.map((c, i) => (
+                <ul className="list-panel divide-y divide-border text-sm" data-testid="corrections">{corrections.corrections.map((c, i) => (
                     <li className="flex flex-col py-1" key={i}>
                         <span>{show(c)}{c.approved ? ` (${t('fo.corr.approvedTag')})` : ''}</span>
                         <span className="text-xs text-muted-foreground">{t('fo.corr.rowMeta', { time: format.instant(c.at), name: c.by ?? '—', reason: c.reason })}</span>

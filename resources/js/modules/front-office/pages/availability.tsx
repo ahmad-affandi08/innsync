@@ -66,7 +66,7 @@ export default function AvailabilityPage({ calendar, plans, selected_plan }: { c
                         <Table className="w-full min-w-max border-collapse text-center">
                             <TableHeader>
                                 <TableRow className="hover:bg-transparent">{type.nights.map((n) => (
-                                    <TableHead className="border border-border px-2 py-1 text-center" key={n.date} scope="col">{format.date(n.date, 'short')}</TableHead>
+                                    <TableHead className="border border-border bg-surface px-2 py-1 text-center" key={n.date} scope="col">{format.date(n.date, 'short')}</TableHead>
                                 ))}</TableRow>
                             </TableHeader>
                             <TableBody>

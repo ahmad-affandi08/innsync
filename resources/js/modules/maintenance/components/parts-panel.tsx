@@ -110,7 +110,7 @@ export function PartsPanel({ workOrderId, status, onChanged }: { workOrderId: st
                 )}
                 {panel.may.request && !asking ? <div><Button onClick={() => setAsking(true)} size="sm" type="button" variant="outline">{t('mtc.parts.ask')}</Button></div> : null}
                 {asking ? (
-                    <div className="flex flex-col gap-3 border border-border p-3">
+                    <div className="flex flex-col gap-3 border border-border bg-surface p-3">
                         <p className="text-xs text-muted-foreground">{t('mtc.parts.askHint')}</p>
                         {ask.lines.map((l, i) => (
                             <div className="grid gap-2 sm:grid-cols-[2fr_1fr_1fr_auto]" key={i}>

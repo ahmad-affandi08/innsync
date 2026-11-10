@@ -288,7 +288,7 @@ export default function WorkOrdersPage({ overview }: { overview: Overview }) {
                             </div>
                         ) : null}
                         {dm.complete ? (
-                            <div className="flex flex-col gap-2 border border-border p-3">
+                            <div className="flex flex-col gap-2 border border-border bg-surface p-3">
                                 <h3 className="font-semibold">{t('mtc.complete.title')}</h3>
                                 <p className="text-xs text-muted-foreground">{t('mtc.complete.hint')}</p>
                                 <FormField error={action.fieldError('note')} field="note" label={t('mtc.complete.note')}><Input maxLength={300} onChange={(e) => setDone({ note: e.target.value })} value={done.note} /></FormField>

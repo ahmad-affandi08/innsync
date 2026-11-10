@@ -79,7 +79,7 @@ export default function DashboardPage({ currency, preferences, snapshot: s, tv }
                     </header>
                     <div className="grid gap-6 md:grid-cols-2">
                         {cards.map((c) => (
-                            <article className="flex flex-col gap-3 border border-border p-6" data-testid={`card-${c.key}`} key={c.key}>
+                            <article className="flex flex-col gap-3 border border-border bg-surface p-6" data-testid={`card-${c.key}`} key={c.key}>
                                 <h2 className="text-2xl font-semibold">{labelOf(c.key)}</h2>
                                 {c.key === 'occupancy' && <p className="text-5xl font-semibold">{percent(c.values.occupancy_bp)} <span className="text-2xl font-normal">{c.values.occupied}/{c.values.sellable}</span></p>}
                                 {c.key === 'movements' && <><p>{t('rpt.card.movements.arrivals', { waiting: c.values.arrivals_expected, done: c.values.arrivals_checked_in })}</p><p>{t('rpt.card.movements.departures', { waiting: c.values.departures_expected, done: c.values.departures_done })}</p></>}

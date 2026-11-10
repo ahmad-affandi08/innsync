@@ -160,7 +160,7 @@ export default function ProductionPage({ overview }: { overview: ProductionOverv
                             <FormField error={action.fieldError('batches')} field="batches" label={t('kitchen.prod.batches')}><Input inputMode="numeric" onChange={(e) => setBatch({ ...batch, batches: e.target.value.replace(/\D/g, '') })} value={batch.batches} /></FormField>
                         </div>
                         {chosen !== undefined ? (
-                            <div className="border border-border p-3 text-sm" data-testid="production-plan">
+                            <div className="border border-border bg-surface p-3 text-sm" data-testid="production-plan">
                                 <p className="font-medium">{t('kitchen.prod.takes')}</p>
                                 <ul className="mt-1 text-muted-foreground">{chosen.lines.map((l) => <li key={l.item_id}>{l.name}: {formatMilli(l.quantity_milli * batchCount)} {l.unit}</li>)}</ul>
                                 <p className="mt-2">{t('kitchen.prod.shouldMake', { qty: `${formatMilli(chosen.standard_output_milli * batchCount)} ${chosen.output_unit}`, name: chosen.output_name })}</p>

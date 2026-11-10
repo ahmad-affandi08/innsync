@@ -165,7 +165,7 @@ export default function UsersPage({ people, roles, outlets }: { people: Person[]
                 {dialogue === null && action.error !== null ? <ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /> : null}
                 {activeRoles.length === 0 ? <Alert title={t('acc.users.noRolesAvailable')} tone="warning" /> : null}
                 {people.length === 0 ? <p className="text-sm text-muted-foreground">{t('acc.users.empty')}</p> : (
-                    <ul className="divide-y divide-border border-y border-border">
+                    <ul className="list-panel divide-y divide-border">
                         {people.map((p) => {
                             const live = p.assignments.filter((a) => a.is_active);
 
@@ -189,7 +189,7 @@ export default function UsersPage({ people, roles, outlets }: { people: Person[]
                                     {live.length === 0 ? <p className="text-sm text-muted-foreground">{t('acc.users.noRoles')}</p> : (
                                         <ul className="flex flex-wrap gap-2">
                                             {live.map((a) => (
-                                                <li className="flex items-center gap-2 border border-border px-2.5 py-1.5 text-sm" key={a.id}>
+                                                <li className="flex items-center gap-2 border border-border bg-surface px-2.5 py-1.5 text-sm" key={a.id}>
                                                     <span>{a.role_name} · {scopeLabel(a)}</span>
                                                     <Button onClick={() => open({ kind: 'revoke', person: p, assignment: a, reason: '' })} size="sm" type="button" variant="outline">{t('acc.users.revoke')}</Button>
                                                 </li>

@@ -39,7 +39,7 @@ export default function RoutineTemplatesPage({ department, overview }: Props) {
             </div>
             {action.error !== null && form === null ? <ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /> : null}
             {overview.templates.length === 0 ? <EmptyState title={t('rtn.empty')} /> : (
-                <ul className="divide-y divide-border border-y border-border text-sm" data-testid="templates">
+                <ul className="list-panel divide-y divide-border text-sm" data-testid="templates">
                     {overview.templates.map((tp) => (
                         <li className="flex flex-col gap-1 py-2" key={tp.id}>
                             <div className="flex flex-wrap items-center justify-between gap-2">

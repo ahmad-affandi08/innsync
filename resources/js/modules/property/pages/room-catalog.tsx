@@ -115,7 +115,7 @@ export default function RoomCatalogPage({ photos: initialPhotos, rooms, types }:
                 {types.length === 0 ? (
                     <EmptyState title={t('property.types.empty')} />
                 ) : (
-                    <ul className="divide-y divide-border border-y border-border">
+                    <ul className="list-panel divide-y divide-border">
                         {types.map((type) => (
                             <li className="flex flex-wrap items-center justify-between gap-3 py-3" key={type.id}>
                                 <div>
@@ -142,7 +142,7 @@ export default function RoomCatalogPage({ photos: initialPhotos, rooms, types }:
                 {rooms.length === 0 ? (
                     <EmptyState title={t('property.rooms.empty')} />
                 ) : (
-                    <ul className="divide-y divide-border border-y border-border">
+                    <ul className="list-panel divide-y divide-border">
                         {rooms.map((room) => (
                             <li className="flex flex-wrap items-center justify-between gap-3 py-3" key={room.id}>
                                 <div>

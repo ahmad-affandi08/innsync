@@ -213,7 +213,7 @@ export default function ReservationPage({ billing, folios, group, guest_note: gu
                     </form>
                 )}
                 {folios.length === 0 ? <p className="text-sm text-muted-foreground">{t('fo.folio.none')}</p> : (
-                    <ul className="divide-y divide-border border-y border-border text-sm">{folios.map((f) => (
+                    <ul className="list-panel divide-y divide-border text-sm">{folios.map((f) => (
                         <li className="flex flex-wrap items-center justify-between gap-2 py-2" key={f.id}>
                             <Link className="font-medium underline-offset-2 hover:underline" href={`/front-office/folios/${f.id}`}>{t('fo.folio.openLink', { number: f.number })}</Link>
                             <span className="text-xs text-muted-foreground">{t('fo.folio.windowLabel', { n: f.window, label: folioText.label(f.label) })} · {t(`fo.folio.status.${f.status}`as 'fo.folio.status.open')} · {format.money(f.balance_minor, f.currency)}</span>

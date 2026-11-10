@@ -46,7 +46,7 @@ export function AttendanceReview({ items }: { items: ReviewItem[] }) {
             <p className="text-sm text-muted-foreground">{t('hr.att.review.hint')}</p>
             {action.error !== null && ask === null ? <ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /> : null}
             {items.length === 0 ? <p className="text-sm">{t('hr.att.review.none')}</p> : (
-                <ul className="divide-y divide-border border-y border-border">
+                <ul className="list-panel divide-y divide-border">
                     {items.map((i) => (
                         <li className="flex flex-col gap-2 py-3" data-testid={`review-${i.attendance_id}-${i.side}`} key={`${i.attendance_id}-${i.side}`}>
                             <p className="text-sm font-semibold">{i.employee_name} <span className="font-normal text-muted-foreground">· {i.employee_number}</span></p>

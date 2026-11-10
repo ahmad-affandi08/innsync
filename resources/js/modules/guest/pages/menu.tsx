@@ -181,7 +181,7 @@ export default function MenuPage({ view: first }: { view: GuestMenu }) {
                             ))}
                         </fieldset>
                         {needsProof ? (
-                            <div className="flex flex-col gap-3 border border-border p-3" data-testid="guest-proof">
+                            <div className="flex flex-col gap-3 border border-border bg-surface p-3" data-testid="guest-proof">
                                 <p className="text-sm font-medium">{t('guest.proof.title')}</p>
                                 <p className="text-xs text-muted-foreground">{t('guest.proof.hint')}</p>
                                 {proofError ? <Alert title={view.locked ? t('guest.proof.locked') : t('guest.proof.failed')} tone="warning" /> : null}
@@ -212,7 +212,7 @@ export default function MenuPage({ view: first }: { view: GuestMenu }) {
                             <fieldset className="flex flex-col gap-2">
                                 <legend className="text-sm font-medium">{t('guest.menu.variant')}</legend>
                                 {pick.item.variants.map((v) => (
-                                    <label className="flex items-center justify-between gap-2 border border-border px-3 py-2 text-sm" key={v.id}>
+                                    <label className="flex items-center justify-between gap-2 border border-border bg-surface px-3 py-2 text-sm" key={v.id}>
                                         <span className="flex items-center gap-2"><input checked={pick.variant === v.id} name="variant" onChange={() => setPick({ ...pick, variant: v.id })} type="radio" />{v.name}</span>
                                         <span className="tabular-nums">{money(v.price_minor)}</span>
                                     </label>
@@ -227,7 +227,7 @@ export default function MenuPage({ view: first }: { view: GuestMenu }) {
                                     const single = g.max_select === 1;
 
                                     return (
-                                        <label className="flex items-center justify-between gap-2 border border-border px-3 py-2 text-sm" key={m.id}>
+                                        <label className="flex items-center justify-between gap-2 border border-border bg-surface px-3 py-2 text-sm" key={m.id}>
                                             <span className="flex items-center gap-2">
                                                 <input
                                                     checked={on}

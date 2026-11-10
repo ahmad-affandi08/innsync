@@ -76,7 +76,7 @@ export function ShiftSummary({ currency, shift: s }: { currency: string; shift: 
             <section aria-labelledby="drops-h" className="flex flex-col gap-1">
                 <h2 className="text-lg font-semibold" id="drops-h">{t('fo.cash.drops')}</h2>
                 {s.drops.length === 0 ? <p className="text-sm text-muted-foreground">{t('fo.cash.noDrops')}</p> : (
-                    <ul className="divide-y divide-border border-y border-border text-sm" data-testid="drops">{s.drops.map((d) => (
+                    <ul className="list-panel divide-y divide-border text-sm" data-testid="drops">{s.drops.map((d) => (
                         <li className="flex flex-wrap justify-between gap-2 py-1" key={d.id}><span>{format.instant(d.created_at)}{d.reference !== null ? ` · ${d.reference}` : ''}{d.note !== null ? ` · ${d.note}` : ''}</span><span>{money(d.amount_minor)}</span></li>
                     ))}</ul>
                 )}

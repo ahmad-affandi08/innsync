@@ -37,7 +37,7 @@ export default function SessionsPage({ sessions, mustChangePassword = false }: {
         <>
             <AppFrame description={t('identity.sessions.description')} title={t('identity.sessions.title')} wide={false}>
                 {mustChangePassword ? <Alert title={t('acc.sessions.mustChangeTitle')} tone="warning">{t('acc.sessions.mustChangeBody')}</Alert> : null}
-                    <ul className="mt-6 divide-y divide-border border-y border-border">
+                    <ul className="mt-6 list-panel divide-y divide-border">
                         {sessions.map((session) => (
                             <li className="flex flex-wrap items-center justify-between gap-4 py-4" key={session.id}>
                                 <div>

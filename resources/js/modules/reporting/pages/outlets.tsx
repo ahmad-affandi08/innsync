@@ -47,11 +47,11 @@ export default function OutletsPage({ overview }: { overview: Overview }) {
                     const s = source[o.id] ?? { value: '', reason: '' };
                     const r = rename[o.id] ?? { name: o.name, reason: '' };
                     return (
-                        <li className="flex flex-col gap-2 border border-border p-3" key={o.id}>
+                        <li className="flex flex-col gap-2 border border-border bg-surface p-3" key={o.id}>
                             <p className="font-medium">{o.name} <span className="text-xs text-muted-foreground">({o.code})</span></p>
                             {o.sources.length === 0 ? <p className="text-sm text-muted-foreground">{t('rpt.outlets.noSources')}</p> : (
                                 <ul className="flex flex-wrap gap-2 text-sm">{o.sources.map((x) => (
-                                    <li className="flex items-center gap-1 border border-border px-2 py-1" key={x}>
+                                    <li className="flex items-center gap-1 border border-border bg-surface px-2 py-1" key={x}>
                                         <code>{x}</code>
                                         <Button aria-label={`${t('rpt.outlets.removeSource')} ${x}`} disabled={action.busy || s.reason.trim() === ''} onClick={() => void action.run(`/reports/outlets/${o.id}/sources/remove`, { body: { source: x, reason: s.reason.trim() }, reload })} size="sm" type="button" variant="outline">{t('rpt.outlets.removeSource')}</Button>
                                     </li>

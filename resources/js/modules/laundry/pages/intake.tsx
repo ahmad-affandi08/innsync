@@ -84,7 +84,7 @@ export default function LaundryIntakePage({ currency, lookups }: { currency: str
                 <fieldset className="flex flex-col gap-3 sm:col-span-2">
                     <legend className="text-lg font-semibold">{t('ldy.intake.items')}</legend>
                     {lines.map((l, i) => (
-                        <div className="grid gap-3 border border-border p-3 sm:grid-cols-4" key={i}>
+                        <div className="grid gap-3 border border-border bg-surface p-3 sm:grid-cols-4" key={i}>
                             <FormField field="lines" error={i === 0 ? action.fieldError('lines') : undefined} label={t('ldy.intake.item')}>
                                 <Select onChange={(e) => setLine(i, { itemId: e.target.value })} value={l.itemId}><option value="">{t('ldy.intake.choose')}</option>{lookups.items.map((x) => <option key={x.id} value={x.id}>{x.name} · {format.money(x.unit_price_minor, currency)}</option>)}</Select>
                             </FormField>

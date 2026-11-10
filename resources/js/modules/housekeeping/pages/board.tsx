@@ -200,7 +200,7 @@ export default function HousekeepingBoardPage({ board }: { board: Board }) {
                         <div className="flex flex-col gap-2">
                             <p className="text-sm font-medium">{t('hk.inspect.openFindings')}</p>
                             {inspecting.open_findings.map((f) => (
-                                <div className="flex flex-col gap-1 border border-border p-2 text-sm" key={f.id}>
+                                <div className="flex flex-col gap-1 border border-border bg-surface p-2 text-sm" key={f.id}>
                                     <span>{f.description}{f.mandatory ? ` (${t('hk.inspect.mandatoryTag')})` : ''}</span>
                                     {board.may.waive ? (
                                         <div className="flex flex-wrap items-center gap-2">

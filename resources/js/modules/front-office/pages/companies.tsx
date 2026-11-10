@@ -66,7 +66,7 @@ export default function CompaniesPage({ accounts, currency, overview }: Props) {
                 {accounts.companies.length === 0 ? <p className="text-sm text-muted-foreground">{t('fo.company.nothingOwed')}</p> : (
                     <ul className="flex flex-col gap-3" data-testid="company-accounts">
                         {accounts.companies.map((c) => (
-                            <li className="flex flex-col gap-1 border border-border p-3 text-sm" data-testid={`account-${c.code}`} key={c.id}>
+                            <li className="flex flex-col gap-1 border border-border bg-surface p-3 text-sm" data-testid={`account-${c.code}`} key={c.id}>
                                 <p className="font-medium">{c.name} · {money(c.used_minor)}{c.credit_limit_minor !== null ? ` / ${money(c.credit_limit_minor)}` : ''} {c.over_limit ? <StatusBadge label={t('fo.company.overLimit')} tone="danger" /> : null}</p>
                                 <ul className="text-xs text-muted-foreground">{c.folios.map((f) => <li key={f.folio_id}><Link className="underline" href={`/front-office/folios/${f.folio_id}`}>{f.folio_number}</Link> · {f.guest} · {f.reservation_number} · {money(f.balance_minor)} · {t('fo.company.since', { date: format.date(f.since) })}</li>)}</ul>
                             </li>
@@ -81,7 +81,7 @@ export default function CompaniesPage({ accounts, currency, overview }: Props) {
                     {overview.may.manage ? <Button onClick={() => { action.clear(); setForm(blank()); }} size="sm" type="button">{t('fo.company.add')}</Button> : null}
                 </div>
                 {overview.companies.length === 0 ? <EmptyState title={t('fo.company.empty')} /> : (
-                    <ul className="divide-y divide-border border-y border-border text-sm" data-testid="companies">
+                    <ul className="list-panel divide-y divide-border text-sm" data-testid="companies">
                         {overview.companies.map((c) => (
                             <li className="flex flex-wrap items-center justify-between gap-2 py-2" key={c.id}>
                                 <span><span className="font-medium">{c.code}</span> · {c.name} · {t(`fo.company.kind.${c.kind}` as 'fo.company.kind.company')}{c.credit_limit_minor !== null ? ` · ${t('fo.company.limit', { amount: money(c.credit_limit_minor) })}` : ''}</span>

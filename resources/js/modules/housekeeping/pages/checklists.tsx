@@ -51,7 +51,7 @@ export default function ChecklistsPage({ board }: Props) {
             {action.error !== null ? <ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /> : null}
 
             {board.checklists.length === 0 ? <EmptyState title={t('hk.cl.empty')} /> : board.checklists.map((c) => (
-                <section aria-label={c.name} className="flex flex-col gap-2 border border-border p-4" data-testid={`checklist-${c.name}`} key={c.template_id}>
+                <section aria-label={c.name} className="flex flex-col gap-2 border border-border bg-surface p-4" data-testid={`checklist-${c.name}`} key={c.template_id}>
                     <h2 className="text-lg font-semibold">{t('hk.cl.period', { name: c.name, frequency: t(`hk.cl.frequency.${c.frequency}` as 'hk.cl.frequency.daily'), from: format.date(c.period_start), to: format.date(c.period_end) })}</h2>
                     <p className="text-xs text-muted-foreground">{t(`hk.cl.scope.${c.scope}` as 'hk.cl.scope.room')}</p>
                     <ul className="flex flex-wrap gap-2">

@@ -25,7 +25,7 @@ export default function QrPrintPage({ codes }: { codes: Code[] }) {
             {codes.length === 0 ? <EmptyState illustration="checklist" title={t('guest.qr.none')} /> : (
                 <ul className="grid grid-cols-2 gap-4 sm:grid-cols-3 print:grid-cols-3" data-testid="qr-sheet">
                     {codes.map((c, i) => (
-                        <li className="flex break-inside-avoid flex-col items-center gap-2 border border-border p-3 text-center" key={c.id}>
+                        <li className="flex break-inside-avoid flex-col items-center gap-2 border border-border bg-surface p-3 text-center" key={c.id}>
                             <div aria-label={qrLabel(c.label, t)} className="w-full max-w-[9rem]" dangerouslySetInnerHTML={{ __html: svgs[i] }} role="img" />
                             <p className="text-sm font-semibold">{qrLabel(c.label, t)}</p>
                             <p className="text-xs text-muted-foreground">{t('guest.qr.scan')}</p>

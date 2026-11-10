@@ -16,7 +16,7 @@ export default function LaundryQueuePage({ orders }: { orders: Order[] }) {
     return (
         <LaundryShell description={t('ldy.queue.description')} title={t('ldy.queue.title')} wide>
             {orders.length === 0 ? <EmptyState title={t('ldy.queue.empty')} /> : (
-                <ul className="divide-y divide-border border-y border-border text-sm">
+                <ul className="list-panel divide-y divide-border text-sm">
                     {orders.map((o) => (
                         <li className="flex flex-wrap items-center justify-between gap-2 py-3" key={o.id}>
                             <div className="flex flex-col gap-1">

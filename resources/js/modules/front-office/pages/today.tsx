@@ -53,7 +53,7 @@ export default function TodayPage({ desk }: { desk: Desk }) {
                 <section aria-labelledby="arr-h" className="flex flex-col gap-2">
                     <h2 className="text-lg font-semibold" id="arr-h">{t('fo.today.arrivalsTitle')}</h2>
                     {desk.arrivals.length === 0 ? <EmptyState title={t('fo.today.noArrivals')} /> : (
-                        <ul className="divide-y divide-border border-y border-border" data-testid="desk-arrivals">
+                        <ul className="list-panel divide-y divide-border" data-testid="desk-arrivals">
                             {desk.arrivals.map((a) => (
                                 <li className="flex flex-wrap items-center justify-between gap-2 py-2.5" key={a.reservation_id}>
                                     <div className="min-w-0">
@@ -73,7 +73,7 @@ export default function TodayPage({ desk }: { desk: Desk }) {
                 <section aria-labelledby="dep-h" className="flex flex-col gap-2">
                     <h2 className="text-lg font-semibold" id="dep-h">{t('fo.today.departuresTitle')}</h2>
                     {desk.departures.length === 0 ? <EmptyState title={t('fo.today.noDepartures')} /> : (
-                        <ul className="divide-y divide-border border-y border-border" data-testid="desk-departures">
+                        <ul className="list-panel divide-y divide-border" data-testid="desk-departures">
                             {desk.departures.map((d) => (
                                 <li className="flex flex-wrap items-center justify-between gap-2 py-2.5" key={d.stay_id}>
                                     <div className="min-w-0">

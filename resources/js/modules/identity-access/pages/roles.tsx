@@ -91,7 +91,7 @@ export default function RolesPage({ roles, permissions }: { roles: Role[]; permi
             >
                 {draft === null && toggle === null && action.error !== null ? <ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /> : null}
                 {roles.length === 0 ? <p className="text-sm text-muted-foreground">{t('acc.roles.empty')}</p> : (
-                    <ul className="divide-y divide-border border-y border-border">
+                    <ul className="list-panel divide-y divide-border">
                         {roles.map((r) => (
                             <li className="flex flex-wrap items-center justify-between gap-3 py-3" data-testid={`role-${r.id}`} key={r.id}>
                                 <div className="min-w-0">
@@ -142,7 +142,7 @@ export default function RolesPage({ roles, permissions }: { roles: Role[]; permi
                                 </div>
                             </div>
                             <Input aria-label={t('acc.roles.filter')} onChange={(e) => setFilter(e.target.value)} placeholder={t('acc.roles.filter')} value={filter} />
-                            <div className="max-h-72 overflow-y-auto border border-border p-2">
+                            <div className="max-h-72 overflow-y-auto border border-border bg-surface p-2">
                                 {groups.map(([group, codes]) => (
                                     <fieldset className="mb-3" key={group}>
                                         <legend className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{group}</legend>

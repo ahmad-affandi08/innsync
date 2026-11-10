@@ -46,7 +46,7 @@ export default function ChargeSchemesPage({ schemes, scope, scopes }: { schemes:
                     <Button onClick={() => { action.clear(); setForm({ from: '', sc: '', tax: '', onSc: true, reason: '' }); }} size="sm" type="button">{t('tax.add')}</Button>
                 </div>
                 {schemes.length === 0 ? <EmptyState title={t('tax.empty')} /> : (
-                    <ul className="divide-y divide-border border-y border-border">
+                    <ul className="list-panel divide-y divide-border">
                         {schemes.map((s) => (
                             <li className="py-3 text-sm" key={s.id}>
                                 {t('tax.row', { date: format.date(s.effective_from, 'long'), sc: percent(s.service_charge_bp), tax: percent(s.tax_bp), onSc: s.tax_on_service_charge ? t('tax.row.onSc') : '' })}

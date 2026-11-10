@@ -223,7 +223,7 @@ export default function FolioPage({ approvals, folio, foreign, may_late_charge: 
             {folio.late_folios.length > 0 ? (
                 <section aria-labelledby="late-h" className="flex flex-col gap-1 text-sm">
                     <h2 className="text-lg font-semibold" id="late-h">{t('fo.late.list')}</h2>
-                    <ul className="divide-y divide-border border-y border-border" data-testid="late-folios">{folio.late_folios.map((l) => (
+                    <ul className="list-panel divide-y divide-border" data-testid="late-folios">{folio.late_folios.map((l) => (
                         <li className="flex flex-wrap justify-between gap-2 py-1" key={l.id}><Link className="font-medium underline-offset-2 hover:underline" href={`/front-office/folios/${l.id}`}>{t('fo.late.row', { number: l.number, status: l.closed ? t('fo.late.closed') : t('fo.late.open') })}</Link><span>{money(l.balance_minor)}</span></li>
                     ))}</ul>
                 </section>

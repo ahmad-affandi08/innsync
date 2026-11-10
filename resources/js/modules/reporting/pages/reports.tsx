@@ -23,7 +23,7 @@ export default function ReportsPage({ exports_unseen: unseen, reports }: { expor
                 return (
                     <section aria-labelledby={`g-${group}`} className="flex flex-col gap-2" key={group}>
                         <h2 className="text-lg font-semibold" id={`g-${group}`}>{t(`rpt.group.${group}` as 'rpt.group.management')}</h2>
-                        <ul className="divide-y divide-border border-y border-border">
+                        <ul className="list-panel divide-y divide-border">
                             {items.map((r) => (
                                 <li className="flex flex-col gap-1 py-3" key={r.code}>
                                     <Link className="font-medium underline-offset-2 hover:underline" href={HREF[r.code] ?? '/reports'}>{t(`rpt.report.${r.code}` as 'rpt.report.flash')}</Link>

@@ -9,7 +9,7 @@ export function ReportMeta({ meta }: { meta: Meta }) {
     const filters = Object.entries(meta.filters).map(([k, v]) => `${k}: ${v}`).join(', ');
 
     return (
-        <dl className="grid gap-x-6 gap-y-1 border border-border p-3 text-xs sm:grid-cols-[max-content_1fr]" data-testid="report-meta">
+        <dl className="grid gap-x-6 gap-y-1 border border-border bg-surface p-3 text-xs sm:grid-cols-[max-content_1fr]" data-testid="report-meta">
             <dt className="text-muted-foreground">{t('rpt.meta.generated')}</dt><dd>{format.instant(meta.generated_at)}</dd>
             <dt className="text-muted-foreground">{t('rpt.meta.businessDate')}</dt><dd>{format.date(meta.business_date, 'long')}</dd>
             <dt className="text-muted-foreground">{t('rpt.meta.period')}</dt><dd>{t('rpt.period.shown', { from: format.date(meta.period.from), to: format.date(meta.period.to) })}</dd>

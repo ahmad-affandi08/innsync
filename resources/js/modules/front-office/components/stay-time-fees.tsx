@@ -41,7 +41,7 @@ export function StayTimeFeesPanel({ currency, fees }: { currency: string; fees: 
             {action.error !== null ? <ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /> : null}
             <ul className="flex flex-col gap-3">
                 {shown.map((i) => (
-                    <li className="flex flex-col gap-2 border border-border p-3 text-sm" data-testid={`time-fee-${i.kind}`} key={i.kind}>
+                    <li className="flex flex-col gap-2 border border-border bg-surface p-3 text-sm" data-testid={`time-fee-${i.kind}`} key={i.kind}>
                         <p>{t(`fo.timefee.${i.kind}` as 'fo.timefee.early_checkin', { minutes: i.minutes, time: i.standard_time ?? '', percent: pct(i.percent_bp), amount: format.money(i.decision?.fee_base_minor ?? i.fee_base_minor, currency) })}</p>
                         {i.decision !== null ? (
                             <p><StatusBadge label={t(`fo.timefee.status.${i.decision.status}` as 'fo.timefee.status.charged')} tone={i.decision.status === 'charged' ? 'success' : 'neutral'} />{i.decision.reason !== null ? ` ${i.decision.reason}` : ''}</p>

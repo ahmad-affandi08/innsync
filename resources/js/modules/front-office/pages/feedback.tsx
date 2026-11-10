@@ -82,7 +82,7 @@ export default function FeedbackPage({ filters, queue }: Props) {
             </div>
 
             {queue.items.length === 0 ? <EmptyState title={t('fo.fb.empty')} /> : (
-                <ul className="divide-y divide-border border-y border-border" data-testid="feedback-list">
+                <ul className="list-panel divide-y divide-border" data-testid="feedback-list">
                     {queue.items.map((i) => (
                         <li className="flex flex-col gap-1 py-3 text-sm" key={i.id}>
                             <div className="flex flex-wrap items-center justify-between gap-2">

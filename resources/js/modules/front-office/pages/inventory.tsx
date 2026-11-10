@@ -91,7 +91,7 @@ export default function InventoryPage({ blocks, holds, rooms, types }: { blocks:
                     <Button disabled={rooms.length === 0} onClick={() => { action.clear(); setOversold([]); setBlockForm({ roomId: '', kind: 'out_of_order', from: '', to: '', reason: '' }); }} size="sm" type="button">{t('fo.inv.block')}</Button>
                 </div>
                 {blocks.length === 0 ? <EmptyState title={t('fo.inv.blocksEmpty')} /> : (
-                    <ul className="divide-y divide-border border-y border-border">{blocks.map((b) => (
+                    <ul className="list-panel divide-y divide-border">{blocks.map((b) => (
                         <li className="flex flex-wrap items-center justify-between gap-3 py-3" key={b.id}>
                             <div><p className="text-sm font-medium">{roomNumber(b.room_id)} · {t(`fo.inv.kind.${b.kind}` as 'fo.inv.kind.out_of_order')}</p><p className="text-xs text-muted-foreground">{format.date(b.from)} – {format.date(b.to)} · {b.reason}</p></div>
                             <Button onClick={() => { action.clear(); setRelease({ kind: 'block', id: b.id }); }} size="sm" type="button" variant="outline">{t('fo.inv.release')}</Button>
@@ -106,7 +106,7 @@ export default function InventoryPage({ blocks, holds, rooms, types }: { blocks:
                     <Button disabled={types.length === 0} onClick={() => { action.clear(); setHoldForm({ typeId: '', from: '', to: '', rooms: '1', reason: '', expires: '' }); }} size="sm" type="button">{t('fo.inv.hold')}</Button>
                 </div>
                 {holds.length === 0 ? <EmptyState title={t('fo.inv.holdsEmpty')} /> : (
-                    <ul className="divide-y divide-border border-y border-border">{holds.map((h) => (
+                    <ul className="list-panel divide-y divide-border">{holds.map((h) => (
                         <li className="flex flex-wrap items-center justify-between gap-3 py-3" key={h.id}>
                             <div><p className="text-sm font-medium">{t('fo.inv.holdRow', { rooms: h.rooms, type: typeCode(h.room_type_id) })}</p><p className="text-xs text-muted-foreground">{format.date(h.from)} – {format.date(h.to)} · {h.reason}{h.expires_at ? ` · ${format.instant(h.expires_at)}` : ''}</p></div>
                             <Button onClick={() => { action.clear(); setRelease({ kind: 'hold', id: h.id }); }} size="sm" type="button" variant="outline">{t('fo.inv.release')}</Button>

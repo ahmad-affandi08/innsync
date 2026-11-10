@@ -35,7 +35,7 @@ export default function RoutinePerformancePage({ department, report: r }: Props)
             <DataGrid caption={t('rtn.perf.runs')} columns={columns} empty={<EmptyState title={t('rtn.perf.noRuns')} />} getRowId={(x) => x.run_id} id="rtn.runs" rows={r.runs} testId="runs" />
             <section aria-labelledby="people-h" className="flex flex-col gap-1">
                 <h2 className="text-lg font-semibold" id="people-h">{t('rtn.perf.people')}</h2>
-                <ul className="divide-y divide-border border-y border-border text-sm" data-testid="people">{r.people.map((p) => <li className="flex justify-between py-1" key={p.user_id}><span>{p.name ?? '—'}</span><span>{p.items}</span></li>)}</ul>
+                <ul className="list-panel divide-y divide-border text-sm" data-testid="people">{r.people.map((p) => <li className="flex justify-between py-1" key={p.user_id}><span>{p.name ?? '—'}</span><span>{p.items}</span></li>)}</ul>
             </section>
         </RoutineShell>
     );

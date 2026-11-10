@@ -76,7 +76,7 @@ export function RateChangePanel({ currency, reservationId, rates }: { currency: 
                 {rates.may_change ? <Button onClick={() => { action.clear(); setForm({ price: '', nett: false, from: rates.business_date, reason: '' }); }} size="sm" type="button" variant="outline">{t('fo.rate.change')}</Button> : null}
             </div>
             {rates.changes.length === 0 ? <p className="text-sm text-muted-foreground">{t('fo.rate.none')}</p> : (
-                <ul className="divide-y divide-border border-y border-border text-sm" data-testid="rate-changes">{rates.changes.map((c) => (
+                <ul className="list-panel divide-y divide-border text-sm" data-testid="rate-changes">{rates.changes.map((c) => (
                     <li className="flex flex-col gap-0.5 py-2" key={c.id}>
                         <span>{t('fo.rate.history', { date: format.date(c.business_date), from: format.date(c.effective_from), old: money(c.old_total_minor), new: money(c.new_total_minor) })}</span>
                         <span className="text-xs text-muted-foreground">{t('fo.rate.historyReason', { reason: c.reason })}{c.approval_id !== null ? ` · ${t('fo.rate.approvedBy')}` : ''}</span>

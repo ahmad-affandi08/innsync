@@ -122,7 +122,7 @@ export default function RecipesPage({ consumed, overview }: RecipesPageProps) {
         { id: 'qty', label: t('recipes.colTaken'), align: 'right', value: (c) => c.quantity_milli, cell: (c) => `${formatMilli(c.quantity_milli)} ${c.unit}` },
     ];
     const versionCard = (v: RecipeVersion) => (
-        <li className="flex flex-col gap-1 border border-border p-3 text-sm" key={v.id}>
+        <li className="flex flex-col gap-1 border border-border bg-surface p-3 text-sm" key={v.id}>
             <span className="flex flex-wrap items-center gap-2 font-medium">{t('recipes.versionTitle', { version: v.version, from: format.date(v.effective_from) })}{v.scheduled ? <StatusBadge label={t('recipes.notYet')} tone="pending" /> : null}</span>
             <span className="text-muted-foreground">{t('recipes.versionMeta', { yield: v.yield_portions, reason: v.reason })}</span>
             <ul className="list-disc pl-5">{v.lines.map((l) => <li key={l.item_id}>{l.name}: {formatMilli(l.quantity_milli)} {l.unit}{l.waste_bp > 0 ? ` (+${formatBp(l.waste_bp)}%)` : ''}</li>)}</ul>

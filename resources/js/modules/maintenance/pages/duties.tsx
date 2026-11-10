@@ -155,7 +155,7 @@ export default function DutiesPage({ overview, duties, choices }: { overview: Du
                         <div className="flex flex-wrap items-center gap-2"><StatusBadge label={label('mtc.duty.status', run.status)} tone={RUN_TONE[run.status]} /><span className="text-sm text-muted-foreground">{label('mtc.duty.shifts', run.shift)} · {placeOf(run)}</span></div>
                         <ol className="flex flex-col gap-3">
                             {run.steps.map((s) => (
-                                <li className="flex flex-col gap-2 border border-border p-3" key={s.id}>
+                                <li className="flex flex-col gap-2 border border-border bg-surface p-3" key={s.id}>
                                     <div className="flex flex-wrap items-center gap-2"><span className="font-medium">{s.position}. {s.text}</span><StatusBadge label={label('mtc.duty.result', s.result)} tone={RESULT_TONE[s.result]} />{s.work_order_id !== null ? <span className="text-xs text-muted-foreground">{t('mtc.duty.raised')}</span> : null}</div>
                                     {run.may.do ? (
                                         <div className="flex flex-wrap items-end gap-2">

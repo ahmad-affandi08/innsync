@@ -60,7 +60,7 @@ export default function SystemStatusPage({ status, checks, backup, environment, 
 
             <section aria-labelledby="sys-checks" className="flex flex-col gap-2">
                 <h2 className="text-lg font-semibold" id="sys-checks">{t('sys.checks.title')}</h2>
-                <ul className="divide-y divide-border border-y border-border">
+                <ul className="list-panel divide-y divide-border">
                     {checks.map((c) => (
                         <li className="flex flex-wrap items-start justify-between gap-3 py-3" data-testid={`check-${c.name}`} key={c.name}>
                             <div className="min-w-0">
@@ -77,7 +77,7 @@ export default function SystemStatusPage({ status, checks, backup, environment, 
                 <h2 className="text-lg font-semibold" id="sys-logins">{t('sys.logins.title')}</h2>
                 <p className="text-sm text-muted-foreground">{t('sys.logins.hint')}</p>
                 {logins.length === 0 ? <p className="text-sm text-muted-foreground">{t('sys.logins.none')}</p> : (
-                    <ul className="divide-y divide-border border-y border-border" data-testid="recent-logins">
+                    <ul className="list-panel divide-y divide-border" data-testid="recent-logins">
                         {logins.map((l, i) => (
                             <li className="flex flex-wrap items-center justify-between gap-2 py-2.5" key={`${l.at}-${i}`}>
                                 <div className="min-w-0">

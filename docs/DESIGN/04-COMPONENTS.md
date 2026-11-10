@@ -29,3 +29,9 @@ Do not create one-off variants inside feature pages when a semantic shared varia
 - The top bar shows the cashier shift the signed-in person has open (`shell.shift`) on every page, linking to the cashier screen; a shift opened on an earlier business date is marked with `!` and a warning colour, because it should be closed.
 - Plain `<input type="checkbox">` and `type="radio"` are styled once in `app.css` (16px, brand colour); use the shared `Checkbox`/`RadioGroup` when a control needs more than a native one gives.
 - One primary (filled) button for each task context: on a folio it is *Record payment*.
+
+## Surfaces (2026-11-10)
+
+- The page is grey; what a person reads or acts on stands on the white surface. A table or grid, a card, a bordered box (`border border-border` with padding) and a list of rows all have `bg-surface` behind them. Write a list of rows as `list-panel divide-y divide-border` (a border, the surface and a side padding for the rows), never as bare rows with only a line between them.
+- Headings, descriptions and definition lists may sit on the page itself; a row that has a button or a status does not.
+- `resources/js/shared/ui/surface-contract.test.ts` fails on a bare list or a bordered box with no background.

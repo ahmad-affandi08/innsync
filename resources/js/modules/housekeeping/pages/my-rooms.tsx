@@ -90,7 +90,7 @@ export default function MyRoomsPage({ tasks }: { tasks: Task[] }) {
             {shown.length === 0 ? <EmptyState title={t('hk.mine.empty')} /> : (
                 <ul className="flex flex-col gap-4">
                     {shown.map((task) => (
-                        <li className="flex flex-col gap-3 border border-border p-4" key={task.id}>
+                        <li className="flex flex-col gap-3 border border-border bg-surface p-4" key={task.id}>
                             <div className="flex flex-wrap items-center justify-between gap-2">
                                 <p className="text-2xl font-semibold" data-testid="room-number">{task.room_number}</p>
                                 <div className="flex items-center gap-2">

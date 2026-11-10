@@ -75,7 +75,7 @@ export default function BookingPoliciesPage({ business_date, currency, plans, po
             {form === null && action.error !== null ? <ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /> : null}
             <div className="flex justify-end"><Button onClick={() => { action.clear(); setInvalid(false); setForm(blank(business_date)); }} size="sm" type="button">{t('policy.add')}</Button></div>
             {policies.length === 0 ? <EmptyState title={t('policy.empty')} /> : (
-                <ul className="divide-y divide-border border-y border-border">
+                <ul className="list-panel divide-y divide-border">
                     {policies.map((p) => (
                         <li className="flex flex-col gap-1 py-3 text-sm" key={p.id}>
                             <span className="font-medium">{t('policy.row', { date: format.date(p.effective_from, 'long'), scope: `${p.plan_code ?? t('policy.scope.all')} · ${p.source === null ? t('policy.scope.all') : t(`fo.source.${p.source}` as 'fo.source.direct')}` })}</span>

@@ -88,7 +88,7 @@ export default function FeedbackItemPage({ detail: d }: Props) {
 
             <section aria-labelledby="hist-h" className="flex flex-col gap-1">
                 <h2 className="text-lg font-semibold" id="hist-h">{t('fo.fb.history')}</h2>
-                <ul className="divide-y divide-border border-y border-border text-sm" data-testid="feedback-events">
+                <ul className="list-panel divide-y divide-border text-sm" data-testid="feedback-events">
                     {d.events.map((e) => (
                         <li className="flex flex-col py-1" key={e.id}>
                             <span>{t(`fo.fb.event.${e.kind}` as 'fo.fb.event.opened', { text: e.text ?? '' })}</span>

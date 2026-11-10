@@ -28,7 +28,7 @@ export default function PropertySelectPage({ properties }: PropertySelectProps) 
                         <fieldset className="space-y-2">
                             <legend className="mb-2 text-sm font-medium">{t('identity.property.available')}</legend>
                             {properties.map((property) => (
-                                <label className="flex min-h-11 cursor-pointer items-center gap-3 border border-border px-3 py-2" key={property.id}>
+                                <label className="flex min-h-11 cursor-pointer items-center gap-3 border border-border bg-surface px-3 py-2" key={property.id}>
                                     <input checked={form.data.property_id === property.id} name="property_id" onChange={() => form.setData('property_id', property.id)} type="radio" />
                                     <span className="text-sm font-medium">{property.name}</span>
                                 </label>
