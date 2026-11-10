@@ -13,6 +13,7 @@ import { MoneyInput } from '@/components/ui/money-input';
 import { Select } from '@/components/ui/select';
 import { StatusBadge, type StatusTone } from '@/components/ui/status-badge';
 import { FrontOfficeShell } from '@/modules/front-office/components/front-office-shell';
+import { useFolioText } from '@/modules/front-office/components/use-folio-text';
 import { LateChargeButton } from '@/modules/front-office/components/late-charge';
 import { newIdempotencyKey } from '@/shared/api/http';
 import { useServerAction } from '@/shared/api/use-server-action';
@@ -41,6 +42,7 @@ const statusTone: Record<string, StatusTone> = { open: 'info', partially_settled
 export default function FolioPage({ approvals, folio, foreign, may_late_charge: mayLateCharge, reservation }: { approvals: Approval[]; folio: Folio; foreign: Foreign; may_late_charge: boolean; reservation: Reservation }) {
     const { t } = useTranslation();
     const format = useFormatters();
+    const folioText = useFolioText();
     const errorCopy = useErrorStateCopy();
     const action = useServerAction();
     const reload = ['folio', 'approvals'];
@@ -175,8 +177,8 @@ export default function FolioPage({ approvals, folio, foreign, may_late_charge: 
         { id: 'seq', label: t('fo.folio.col.seq'), value: (p) => p.seq, rowHeader: true, cell: (p) => struck(p, p.seq) },
         { id: 'date', label: t('fo.folio.col.date'), value: (p) => p.business_date, searchText: (p) => `${p.business_date} ${format.date(p.business_date)}`, cell: (p) => struck(p, format.date(p.business_date)) },
         {
-            id: 'description', label: t('fo.folio.col.description'), value: (p) => p.description, searchText: (p) => `${p.description} ${p.payment_reference ?? ''}`,
-            cell: (p) => struck(p, <><span className="mr-2 text-xs">[{t(`fo.folio.type.${p.type}` as 'fo.folio.type.charge')}]</span>{p.description}{p.payment_reference ? ` · ${p.payment_reference}` : ''}{p.is_reversed ? <em className="ml-2 text-xs">({t('fo.folio.reversed')})</em> : null}</>),
+            id: 'description', label: t('fo.folio.col.description'), value: (p) => folioText.posting(p.description), searchText: (p) => `${folioText.posting(p.description)} ${p.payment_reference ?? ''}`,
+            cell: (p) => struck(p, <><span className="mr-2 text-xs">[{t(`fo.folio.type.${p.type}` as 'fo.folio.type.charge')}]</span>{folioText.posting(p.description)}{p.payment_reference ? ` · ${p.payment_reference}` : ''}{p.is_reversed ? <em className="ml-2 text-xs">({t('fo.folio.reversed')})</em> : null}</>),
         },
         { id: 'type', label: t('fo.folio.col.type'), value: (p) => p.type, filter: 'select', filterLabel: (v) => t(`fo.folio.type.${v}` as 'fo.folio.type.charge'), cell: (p) => struck(p, t(`fo.folio.type.${p.type}` as 'fo.folio.type.charge')), hidden: true },
         { id: 'code', label: t('fo.folio.chargeCode'), value: (p) => p.code, cell: (p) => struck(p, p.code), hidden: true },
@@ -198,7 +200,7 @@ export default function FolioPage({ approvals, folio, foreign, may_late_charge: 
     ];
 
     return (
-        <FrontOfficeShell description={t('fo.folio.description', { label: folio.label, reservation: reservation.number, guest: reservation.guest_name })} title={t('fo.folio.title', { number: folio.number })} wide>
+        <FrontOfficeShell description={t('fo.folio.description', { label: folioText.label(folio.label), reservation: reservation.number, guest: reservation.guest_name })} title={t('fo.folio.title', { number: folio.number })} wide>
             <div className="flex flex-wrap items-center justify-between gap-2">
                 <Button asChild size="sm" variant="outline"><Link href={`/front-office/reservations/${reservation.id}`}>{t('fo.folio.back')}</Link></Button>
                 <StatusBadge label={t(`fo.folio.status.${folio.status}` as 'fo.folio.status.open')} tone={statusTone[folio.status] ?? 'neutral'} />
@@ -316,7 +318,7 @@ export default function FolioPage({ approvals, folio, foreign, may_late_charge: 
                         <FormField field="target_folio_id" error={action.fieldError('target_folio_id')} label={t('fo.folio.move.target')}>
                             <Select onChange={(e) => setMove({ ...move, target: e.target.value })} value={move.target}>
                                 <option value="">{move.targets === null ? '…' : t('fo.folio.move.choose')}</option>
-                                {(move.targets?.same ?? []).map((x) => <option key={x.folio_id} value={x.folio_id}>{t('fo.folio.move.same', { number: x.number, label: x.label })}</option>)}
+                                {(move.targets?.same ?? []).map((x) => <option key={x.folio_id} value={x.folio_id}>{t('fo.folio.move.same', { number: x.number, label: folioText.label(x.label) })}</option>)}
                                 {(move.targets?.others ?? []).map((x) => <option key={x.folio_id} value={x.folio_id}>{t('fo.folio.move.other', { room: x.room, guest: x.guest, number: x.number })}</option>)}
                             </Select>
                         </FormField>

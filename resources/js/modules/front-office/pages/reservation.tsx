@@ -12,6 +12,7 @@ import { StatusBadge } from '@/components/ui/status-badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { GuestNotePanel, type GuestNote } from '@/modules/front-office/components/guest-note';
 import { FrontOfficeShell } from '@/modules/front-office/components/front-office-shell';
+import { useFolioText } from '@/modules/front-office/components/use-folio-text';
 import { RateChangePanel, type Rates } from '@/modules/front-office/components/rate-change';
 import { statusTone } from '@/modules/front-office/pages/reservations';
 import { useServerAction } from '@/shared/api/use-server-action';
@@ -41,6 +42,7 @@ const PATH = { confirm: 'confirm', cancel: 'cancel', noShow: 'no-show' } as cons
 export default function ReservationPage({ billing, folios, group, guest_note: guestNote, lookups, policy, rates, reservation: r }: { billing: Billing; folios: FolioRow[]; group: Group; guest_note: GuestNote; lookups: Lookups; policy: Policy | null; rates: Rates; reservation: Reservation }) {
     const { t } = useTranslation();
     const format = useFormatters();
+    const folioText = useFolioText();
     const errorCopy = useErrorStateCopy();
     const action = useServerAction();
     const [kind, setKind] = useState<Kind | null>(null);
@@ -214,7 +216,7 @@ export default function ReservationPage({ billing, folios, group, guest_note: gu
                     <ul className="divide-y divide-border border-y border-border text-sm">{folios.map((f) => (
                         <li className="flex flex-wrap items-center justify-between gap-2 py-2" key={f.id}>
                             <Link className="font-medium underline-offset-2 hover:underline" href={`/front-office/folios/${f.id}`}>{t('fo.folio.openLink', { number: f.number })}</Link>
-                            <span className="text-xs text-muted-foreground">{t('fo.folio.windowLabel', { n: f.window, label: f.label })} · {t(`fo.folio.status.${f.status}`as 'fo.folio.status.open')} · {format.money(f.balance_minor, f.currency)}</span>
+                            <span className="text-xs text-muted-foreground">{t('fo.folio.windowLabel', { n: f.window, label: folioText.label(f.label) })} · {t(`fo.folio.status.${f.status}`as 'fo.folio.status.open')} · {format.money(f.balance_minor, f.currency)}</span>
                         </li>
                     ))}</ul>
                 )}

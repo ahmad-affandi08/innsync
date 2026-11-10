@@ -8,6 +8,9 @@ import { Input } from '@/components/ui/input';
 import { FrontOfficeShell } from '@/modules/front-office/components/front-office-shell';
 import { useFormatters, useTranslation } from '@/shared/i18n/i18n';
 
+/** What the server returns at most (GuestDirectoryService). */
+const LIST_LIMIT = 200;
+
 type Guest = { guest_name: string; stays: number; nights: number; last_arrival: string; last_departure: string; last_reservation_id: string; upcoming: number; flag: 'vip' | 'attention' | 'do_not_rent' | null; note: string | null };
 
 /** The guests the property has hosted, so a returning guest is recognised. Contact and identity details stay behind the reservation. */
@@ -37,10 +40,11 @@ export default function GuestsPage({ guests, query }: { guests: Guest[]; query: 
 
     return (
         <FrontOfficeShell description={t('fo.guests.description')} title={t('fo.guests.title')} wide>
-            <form className="flex flex-wrap items-end gap-2" onSubmit={(e) => { e.preventDefault(); router.get('/front-office/guests', text.trim() === '' ? {} : { query: text.trim() }, { preserveState: true }); }}>
+            {/* The list holds at most 200 guests. Below that the grid's own search finds anyone; the search at the server is for a house with more, or to leave one that is active. */}
+            {guests.length >= LIST_LIMIT || query !== '' ? <form className="flex flex-wrap items-end gap-2" onSubmit={(e) => { e.preventDefault(); router.get('/front-office/guests', text.trim() === '' ? {} : { query: text.trim() }, { preserveState: true }); }}>
                 <div className="min-w-0 flex-1 basis-64"><Input aria-label={t('fo.guests.search')} onChange={(e) => setText(e.target.value)} placeholder={t('fo.guests.search')} value={text} /></div>
                 <Button type="submit" variant="outline">{t('fo.guests.find')}</Button>
-            </form>
+            </form> : null}
             <DataGrid caption={t('fo.guests.title')} columns={columns} empty={<EmptyState title={t('fo.guests.empty')} />} getRowId={(g) => g.last_reservation_id} id="fo.guests" rows={guests} testId="guest-list" />
             <p className="text-xs text-muted-foreground">{t('fo.guests.privacy')}</p>
         </FrontOfficeShell>

@@ -268,7 +268,7 @@ function DataGrid<T>({ caption, className, columns, empty, footerLabel, getRowId
                                     const content = c.cell ? c.cell(row) : c.value ? String(c.value(row) ?? '') : null;
 
                                     return c.rowHeader
-                                        ? <TableHead className={cn('font-medium text-foreground', c.className)} key={c.id} scope="row">{content}</TableHead>
+                                        ? <TableHead className={cn('text-sm font-medium text-foreground', c.className)} key={c.id} scope="row">{content}</TableHead>
                                         : <TableCell className={cn(c.align === 'right' && 'text-right tabular-nums', c.className)} key={c.id}>{content}</TableCell>;
                                 })}
                             </TableRow>

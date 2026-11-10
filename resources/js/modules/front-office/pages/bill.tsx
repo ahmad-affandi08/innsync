@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/empty-state';
 import { LanguageSwitcher } from '@/components/ui/language-switcher';
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { useFolioText } from '@/modules/front-office/components/use-folio-text';
 import { useFormatters, useTranslation } from '@/shared/i18n/i18n';
 
 type Line = { date: string; description: string; reversal: boolean; base_minor: number; service_charge_minor: number; tax_minor: number; total_minor: number };
@@ -21,6 +22,7 @@ type Bill = {
 export default function BillPage({ bill, folio_id: folioId }: { bill: Bill; folio_id: string }) {
     const { t } = useTranslation();
     const format = useFormatters();
+    const folioText = useFolioText();
     const money = (v: number) => format.money(v, bill.currency);
     const method = (m: string) => (['cash', 'qris', 'card', 'bank_transfer', 'online', 'gift_card'].includes(m) ? t(`fo.folio.method.${m}` as 'fo.folio.method.cash') : m);
 
@@ -42,7 +44,7 @@ export default function BillPage({ bill, folio_id: folioId }: { bill: Bill; foli
                         <div className="flex gap-2"><dt className="text-muted-foreground">{t('fo.bill.guest')}</dt><dd className="font-medium">{bill.reservation.guest_name}</dd></div>
                         <div className="flex gap-2"><dt className="text-muted-foreground">{t('fo.bill.reservation')}</dt><dd>{bill.reservation.number}</dd></div>
                         <div className="flex gap-2"><dt className="text-muted-foreground">{t('fo.bill.room')}</dt><dd>{bill.reservation.room ?? '—'}</dd></div>
-                        <div className="flex gap-2"><dt className="text-muted-foreground">{t('fo.bill.folio')}</dt><dd>{bill.folio.number} · {bill.folio.label}</dd></div>
+                        <div className="flex gap-2"><dt className="text-muted-foreground">{t('fo.bill.folio')}</dt><dd>{bill.folio.number} · {folioText.label(bill.folio.label)}</dd></div>
                         <div className="flex gap-2"><dt className="text-muted-foreground">{t('fo.bill.stay')}</dt><dd>{format.date(bill.reservation.arrival)} – {format.date(bill.reservation.departure)}</dd></div>
                     </dl>
 
@@ -63,7 +65,7 @@ export default function BillPage({ bill, folio_id: folioId }: { bill: Bill; foli
                                 <TableBody>{o.lines.map((l, i) => (
                                     <TableRow key={i}>
                                         <TableCell className="py-1">{format.date(l.date)}</TableCell>
-                                        <TableCell className="py-1">{l.description}{l.reversal ? <span className="ml-1 text-xs text-muted-foreground">({t('fo.bill.reversal')})</span> : null}</TableCell>
+                                        <TableCell className="py-1">{folioText.posting(l.description)}{l.reversal ? <span className="ml-1 text-xs text-muted-foreground">({t('fo.bill.reversal')})</span> : null}</TableCell>
                                         <TableCell className="py-1 text-right tabular-nums">{money(l.base_minor)}</TableCell>
                                         <TableCell className="py-1 text-right tabular-nums">{money(l.service_charge_minor)}</TableCell>
                                         <TableCell className="py-1 text-right tabular-nums">{money(l.tax_minor)}</TableCell>

@@ -27,7 +27,7 @@ type Chart = {
 };
 
 const DAY = 86_400_000;
-const LABEL_W = '7.5rem';
+const LABEL_W = '9rem';
 const MOVABLE = ['tentative', 'confirmed', 'guaranteed'];
 const STATUS_CLASS: Record<string, string> = {
     checked_in: 'bg-foreground text-background',
@@ -77,7 +77,7 @@ export default function TapeChartPage({ chart }: { chart: Chart }) {
                 style={{ gridTemplateColumns: cols }}
             >
                 <div className="sticky left-0 z-10 flex min-w-0 flex-col justify-center border-r border-border bg-surface px-2 py-1" style={{ gridColumn: 1, gridRow: 1 }}>
-                    <span className="truncate text-sm font-medium">{label}</span>
+                    <span className="truncate text-sm font-medium" title={typeof label === 'string' ? label : undefined}>{label}</span>
                     {sub ? <span className="truncate text-xs text-muted-foreground">{sub}</span> : null}
                 </div>
                 {chart.dates.map((d, i) => <div aria-hidden="true" className={cn('min-h-10 border-r border-border/60', d === chart.today && 'bg-accent/10')} key={d} style={{ gridColumn: i + 2, gridRow: 1 }} />)}

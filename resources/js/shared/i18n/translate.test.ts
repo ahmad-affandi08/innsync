@@ -197,7 +197,6 @@ describe('dictionaries', () => {
             'fo.folio.col.date',
             'fo.folio.col.service',
             'fo.folio.method.qris',
-            'fo.folio.windowLabel',
             'fo.folio.title',
             'fo.folio.openLink',
             'fo.folio.approvalRow',
