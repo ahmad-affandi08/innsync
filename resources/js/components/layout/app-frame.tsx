@@ -71,7 +71,6 @@ const MODULES: ModuleEntry[] = [
     { key: 'property', href: '/property/settings', icon: Settings2, label: 'property.nav.label', short: 'shell.short.property', prefixes: ['/property', '/sync', '/access', '/setup'], group: 'control' },
 ];
 
-const GROUPS = ['start', 'operations', 'insight', 'control'] as const;
 
 type Area = { key: string; icon: LucideIcon; label: MessageKey; modules: string[]; /** A thin line above it in the rail. */ line?: boolean };
 
@@ -87,6 +86,28 @@ const AREAS: Area[] = [
     { key: 'backoffice', icon: Landmark, label: 'shell.area.backoffice', modules: ['finance', 'hr', 'inventory'] },
     { key: 'insight', icon: ChartNoAxesCombined, label: 'rpt.nav.reports', modules: ['reports'], line: true },
 ];
+
+type RailArea = Area & { mods: ModuleEntry[] };
+
+/** The departments of an area, to choose between: small tabs at the top of the page list, shared by the rail, the full sidebar and the top bar. */
+function ModuleTabs({ area, currentKey, name, onNavigate, className }: { area: RailArea; currentKey: string; name: (m: ModuleEntry) => string; onNavigate?: () => void; className?: string }) {
+    return (
+        <ul className={cn('flex flex-wrap items-center gap-1', className)}>
+            {area.mods.map((m) => (
+                <li key={m.key}>
+                    <Link
+                        aria-current={m.key === currentKey ? 'page' : undefined}
+                        className={cn('block whitespace-nowrap rounded-md px-2.5 py-1 text-xs font-medium transition-colors', m.key === currentKey ? 'bg-brand/10 text-brand' : 'text-muted-foreground hover:bg-surface-muted hover:text-foreground')}
+                        href={m.href}
+                        onClick={onNavigate}
+                    >
+                        {name(m)}
+                    </Link>
+                </li>
+            ))}
+        </ul>
+    );
+}
 
 function activeModule(path: string): ModuleEntry {
     return MODULES.find((m) => m.prefixes.some((p) => path === p || path.startsWith(`${p}/`))) ?? MODULES[0]!;
@@ -164,7 +185,7 @@ export function AppFrame({ actions, children, description, links: allLinks = [],
     const area = railAreas.find((a) => a.modules.includes(current.key));
     const [open, setOpen] = useState(false);
     // On a phone the menu is a list of modules: touching one opens its pages and does not leave the page. The module the person is in starts open.
-    const [expanded, setExpanded] = useState<ReadonlySet<string>>(() => new Set([current.key]));
+    const [expanded, setExpanded] = useState<ReadonlySet<string>>(() => new Set([current.key, ...(area ? [area.key] : [])]));
     const toggle = (key: string) => setExpanded((now) => {
         const next = new Set(now);
 
@@ -176,130 +197,152 @@ export function AppFrame({ actions, children, description, links: allLinks = [],
     const hasLinks = links.length > 0;
 
     const menu = (
-        <nav aria-label={t('shell.menu')} className="flex flex-col gap-5 px-3 py-4">
-            {GROUPS.map((group) => (
-                <div className="flex flex-col gap-0.5" key={group}>
-                    {group !== 'start' ? <p className="px-3 pb-1 text-[0.6875rem] font-semibold uppercase tracking-wider text-muted-foreground">{t(`shell.group.${group}`as MessageKey)}</p> : null}
-                    {modules.filter((m) => m.group === group).map((m) => {
-                        const Icon = m.icon;
-                        const isActive = m.key === current.key;
-                        const expandable = isActive && links.length > 0;
+        <nav aria-label={t('shell.menu')} className="flex flex-col gap-0.5 px-3 py-4">
+            {railAreas.map((a) => {
+                const Icon = a.icon;
+                const isActive = a.key === area?.key;
+                const expandable = isActive && (links.length > 0 || a.mods.length > 1);
 
-                        return (
-                            <Collapsible key={m.key} open={expandable}>
-                                <Link
-                                    aria-current={isActive && !expandable ? 'page' : undefined}
-                                    className={cn(
-                                        'group flex items-center gap-3 border-l-2 px-3 py-2 text-sm transition-colors',
-                                        isActive ? 'border-brand bg-surface-muted font-semibold text-foreground' : 'border-transparent text-muted-foreground hover:bg-surface-muted hover:text-foreground',
-                                    )}
-                                    href={m.href}
-                                    onClick={() => setOpen(false)}
-                                >
-                                    <Icon aria-hidden="true" className={cn('size-[1.125rem] shrink-0', isActive ? 'text-brand' : 'text-muted-foreground group-hover:text-foreground')} strokeWidth={1.75} />
-                                    <span className="flex-1 truncate">{t(m.label)}</span>
-                                    {expandable ? <ChevronRight aria-hidden="true" className="size-3.5 rotate-90 text-muted-foreground" /> : null}
-                                </Link>
-                                <CollapsibleContent>
-                                    <ul className="ml-[1.4rem] flex flex-col border-l border-border py-1">
-                                        <NavSections
-                                            headingClass="flex items-center gap-1.5 rounded-md px-2 py-1.5 text-[0.8125rem] font-semibold text-foreground"
-                                            listClass="ml-[0.9rem] border-l border-border pl-2"
-                                            here={(href) => isHere(links, href, path)}
-                                            label={(g) => t(g as MessageKey)}
-                                            links={links}
-                                            renderLink={(l) => {
-                                                const here = isHere(links, l.href, path);
+                return (
+                    <Fragment key={a.key}>
+                        {a.line ? <div aria-hidden="true" className="mx-3 my-2 border-t border-border" /> : null}
+                        <Collapsible open={expandable}>
+                            <Link
+                                aria-current={isActive && !expandable ? 'page' : undefined}
+                                className={cn(
+                                    'group flex items-center gap-3 border-l-2 px-3 py-2 text-sm transition-colors',
+                                    isActive ? 'border-brand bg-surface-muted font-semibold text-foreground' : 'border-transparent text-muted-foreground hover:bg-surface-muted hover:text-foreground',
+                                )}
+                                href={a.mods[0]?.href ?? '/'}
+                                onClick={() => setOpen(false)}
+                            >
+                                <Icon aria-hidden="true" className={cn('size-[1.125rem] shrink-0', isActive ? 'text-brand' : 'text-muted-foreground group-hover:text-foreground')} strokeWidth={1.75} />
+                                <span className="flex-1 truncate">{t(a.label)}</span>
+                                {expandable ? <ChevronRight aria-hidden="true" className="size-3.5 rotate-90 text-muted-foreground" /> : null}
+                            </Link>
+                            <CollapsibleContent>
+                                {a.mods.length > 1 ? <ModuleTabs area={a} className="ml-[1.4rem] border-l border-border px-3 pb-1 pt-2" currentKey={current.key} name={(m) => t(m.short ?? m.label)} onNavigate={() => setOpen(false)} /> : null}
+                                <ul className="ml-[1.4rem] flex flex-col border-l border-border py-1">
+                                    <NavSections
+                                        headingClass="flex items-center gap-1.5 rounded-md px-2 py-1.5 text-[0.8125rem] font-semibold text-foreground"
+                                        here={(href) => isHere(links, href, path)}
+                                        label={(g) => t(g as MessageKey)}
+                                        links={links}
+                                        listClass="ml-[0.9rem] border-l border-border pl-2"
+                                        renderLink={(l) => {
+                                            const here = isHere(links, l.href, path);
 
-                                                return (
-                                                    <Link
-                                                        aria-current={here ? 'page' : undefined}
-                                                        className={cn('block rounded-md px-3 py-1.5 text-[0.8125rem] transition-colors', here ? 'bg-brand/10 font-medium text-brand' : 'text-muted-foreground hover:bg-surface-muted hover:text-foreground')}
-                                                        href={l.href}
-                                                        onClick={() => setOpen(false)}
-                                                    >
-                                                        {t(l.label as MessageKey)}
-                                                    </Link>
-                                                );
-                                            }}
-                                        />
-                                    </ul>
-                                </CollapsibleContent>
-                            </Collapsible>
-                        );
-                    })}
-                </div>
-            ))}
+                                            return (
+                                                <Link
+                                                    aria-current={here ? 'page' : undefined}
+                                                    className={cn('block rounded-md px-3 py-1.5 text-[0.8125rem] transition-colors', here ? 'bg-brand/10 font-medium text-brand' : 'text-muted-foreground hover:bg-surface-muted hover:text-foreground')}
+                                                    href={l.href}
+                                                    onClick={() => setOpen(false)}
+                                                >
+                                                    {t(l.label as MessageKey)}
+                                                </Link>
+                                            );
+                                        }}
+                                    />
+                                </ul>
+                            </CollapsibleContent>
+                        </Collapsible>
+                    </Fragment>
+                );
+            })}
         </nav>
     );
 
     // The menu of a phone (and of the tablet): every module is a row that opens the list of its pages. A page is the only thing that takes the person away and closes the menu.
     const drawerMenu = (
-        <nav aria-label={t('shell.menu')} className="flex flex-col gap-5 px-3 py-4">
-            {GROUPS.map((group) => (
-                <div className="flex flex-col gap-0.5" key={group}>
-                    {group !== 'start' ? <p className="px-3 pb-1 text-[0.6875rem] font-semibold uppercase tracking-wider text-muted-foreground">{t(`shell.group.${group}` as MessageKey)}</p> : null}
-                    {modules.filter((m) => m.group === group).map((m) => {
-                        const Icon = m.icon;
-                        const isActive = m.key === current.key;
-                        // Beranda lists the guests' self-service pages only for people who work the front desk or the restaurant, so nobody is offered a page they cannot open.
-                        const pages = isActive && hasLinks ? links : m.key === 'home' && !modules.some((x) => x.key === 'front-office' || x.key === 'fnb') ? [] : visibleLinks(MODULE_LINKS[m.key] ?? [], shell?.permissionAreas, shell?.features);
-                        const row = cn(
-                            'group flex min-h-11 w-full items-center gap-3 border-l-2 px-3 py-2 text-left text-sm transition-colors',
-                            isActive ? 'border-brand bg-surface-muted font-semibold text-foreground' : 'border-transparent text-muted-foreground hover:bg-surface-muted hover:text-foreground',
-                        );
-                        const icon = <Icon aria-hidden="true" className={cn('size-[1.125rem] shrink-0', isActive ? 'text-brand' : 'text-muted-foreground group-hover:text-foreground')} strokeWidth={1.75} />;
+        <nav aria-label={t('shell.menu')} className="flex flex-col gap-0.5 px-3 py-4">
+            {railAreas.map((a) => {
+                const Icon = a.icon;
+                const isActive = a.key === area?.key;
+                // Beranda lists the guests' self-service pages only for people who work the front desk or the restaurant, so nobody is offered a page they cannot open.
+                const pagesOf = (m: ModuleEntry): readonly NavLink[] => (m.key === current.key && hasLinks ? links : m.key === 'home' && !modules.some((x) => x.key === 'front-office' || x.key === 'fnb') ? [] : visibleLinks(MODULE_LINKS[m.key] ?? [], shell?.permissionAreas, shell?.features));
+                const row = cn(
+                    'group flex min-h-11 w-full items-center gap-3 border-l-2 px-3 py-2 text-left text-sm transition-colors',
+                    isActive ? 'border-brand bg-surface-muted font-semibold text-foreground' : 'border-transparent text-muted-foreground hover:bg-surface-muted hover:text-foreground',
+                );
+                const icon = <Icon aria-hidden="true" className={cn('size-[1.125rem] shrink-0', isActive ? 'text-brand' : 'text-muted-foreground group-hover:text-foreground')} strokeWidth={1.75} />;
+                const sections = (m: ModuleEntry, pages: readonly NavLink[]) => (
+                    <ul className="ml-[1.4rem] flex flex-col border-l border-border py-1">
+                        <NavSections
+                            headingClass="flex min-h-10 items-center gap-1.5 rounded-md px-2 py-1.5 text-[0.8125rem] font-semibold text-foreground"
+                            here={(href) => m.key === current.key && isHere(pages, href, path)}
+                            label={(g) => t(g as MessageKey)}
+                            links={pages}
+                            listClass="ml-[0.9rem] border-l border-border pl-2"
+                            renderLink={(l) => {
+                                const here = m.key === current.key && isHere(pages, l.href, path);
 
-                        if (pages.length === 0) {
-                            return (
-                                <Link aria-current={isActive ? 'page' : undefined} className={row} href={m.href} key={m.key} onClick={() => setOpen(false)}>
+                                return (
+                                    <Link
+                                        aria-current={here ? 'page' : undefined}
+                                        className={cn('flex min-h-10 items-center rounded-md px-3 py-2 text-[0.8125rem] transition-colors', here ? 'bg-brand/10 font-medium text-brand' : 'text-muted-foreground hover:bg-surface-muted hover:text-foreground')}
+                                        href={l.href}
+                                        onClick={() => setOpen(false)}
+                                    >
+                                        {t(l.label as MessageKey)}
+                                    </Link>
+                                );
+                            }}
+                        />
+                    </ul>
+                );
+                const only = a.mods.length === 1 ? a.mods[0] : undefined;
+
+                if (only !== undefined && pagesOf(only).length === 0) {
+                    return (
+                        <Fragment key={a.key}>
+                            {a.line ? <div aria-hidden="true" className="mx-3 my-2 border-t border-border" /> : null}
+                            <Link aria-current={isActive ? 'page' : undefined} className={row} href={only.href} onClick={() => setOpen(false)}>
+                                {icon}
+                                <span className="flex-1 truncate">{t(a.label)}</span>
+                            </Link>
+                        </Fragment>
+                    );
+                }
+
+                const isOpen = expanded.has(a.key);
+
+                return (
+                    <Fragment key={a.key}>
+                        {a.line ? <div aria-hidden="true" className="mx-3 my-2 border-t border-border" /> : null}
+                        <Collapsible onOpenChange={() => toggle(a.key)} open={isOpen}>
+                            <CollapsibleTrigger asChild>
+                                <button className={row} data-testid={`menu-${only?.key ?? a.key}`} type="button">
                                     {icon}
-                                    <span className="flex-1 truncate">{t(m.label)}</span>
-                                </Link>
-                            );
-                        }
+                                    <span className="flex-1 truncate">{t(a.label)}</span>
+                                    <ChevronRight aria-hidden="true" className={cn('size-4 shrink-0 text-muted-foreground transition-transform', isOpen && 'rotate-90')} />
+                                </button>
+                            </CollapsibleTrigger>
+                            <CollapsibleContent>
+                                {only !== undefined ? sections(only, pagesOf(only)) : a.mods.map((m) => {
+                                    const pages = pagesOf(m);
+                                    const mOpen = expanded.has(m.key);
+                                    const mRow = cn('flex min-h-10 w-full items-center gap-2 py-2 pl-[2.1rem] pr-3 text-left text-[0.8125rem] font-medium transition-colors', m.key === current.key ? 'text-foreground' : 'text-muted-foreground hover:text-foreground');
 
-                        const isOpen = expanded.has(m.key);
-
-                        return (
-                            <Collapsible key={m.key} onOpenChange={() => toggle(m.key)} open={isOpen}>
-                                <CollapsibleTrigger asChild>
-                                    <button className={row} data-testid={`menu-${m.key}`} type="button">
-                                        {icon}
-                                        <span className="flex-1 truncate">{t(m.label)}</span>
-                                        <ChevronRight aria-hidden="true" className={cn('size-4 shrink-0 text-muted-foreground transition-transform', isOpen && 'rotate-90')} />
-                                    </button>
-                                </CollapsibleTrigger>
-                                <CollapsibleContent>
-                                    <ul className="ml-[1.4rem] flex flex-col border-l border-border py-1">
-                                        <NavSections
-                                            headingClass="flex items-center gap-1.5 rounded-md px-2 py-1.5 text-[0.8125rem] font-semibold text-foreground min-h-10"
-                                            listClass="ml-[0.9rem] border-l border-border pl-2"
-                                            here={(href) => isActive && isHere(pages, href, path)}
-                                            label={(g) => t(g as MessageKey)}
-                                            links={pages}
-                                            renderLink={(l) => {
-                                                const here = isActive && isHere(pages, l.href, path);
-
-                                                return (
-                                                    <Link
-                                                        aria-current={here ? 'page' : undefined}
-                                                        className={cn('flex min-h-10 items-center rounded-md px-3 py-2 text-[0.8125rem] transition-colors', here ? 'bg-brand/10 font-medium text-brand' : 'text-muted-foreground hover:bg-surface-muted hover:text-foreground')}
-                                                        href={l.href}
-                                                        onClick={() => setOpen(false)}
-                                                    >
-                                                        {t(l.label as MessageKey)}
-                                                    </Link>
-                                                );
-                                            }}
-                                        />
-                                    </ul>
-                                </CollapsibleContent>
-                            </Collapsible>
-                        );
-                    })}
-                </div>
-            ))}
+                                    return pages.length === 0 ? (
+                                        <Link aria-current={m.key === current.key ? 'page' : undefined} className={mRow} href={m.href} key={m.key} onClick={() => setOpen(false)}>{t(m.short ?? m.label)}</Link>
+                                    ) : (
+                                        <Collapsible key={m.key} onOpenChange={() => toggle(m.key)} open={mOpen}>
+                                            <CollapsibleTrigger asChild>
+                                                <button className={mRow} data-testid={`menu-${m.key}`} type="button">
+                                                    <span className="flex-1 truncate">{t(m.short ?? m.label)}</span>
+                                                    <ChevronRight aria-hidden="true" className={cn('size-3.5 shrink-0 text-muted-foreground transition-transform', mOpen && 'rotate-90')} />
+                                                </button>
+                                            </CollapsibleTrigger>
+                                            <CollapsibleContent>{sections(m, pages)}</CollapsibleContent>
+                                        </Collapsible>
+                                    );
+                                })}
+                            </CollapsibleContent>
+                        </Collapsible>
+                    </Fragment>
+                );
+            })}
         </nav>
     );
 
@@ -455,19 +498,7 @@ export function AppFrame({ actions, children, description, links: allLinks = [],
                     <p className="flex h-14 items-center border-b border-border px-5 text-sm font-semibold">{t(area !== undefined && area.mods.length > 1 ? area.label : current.label)}</p>
                     {area !== undefined && area.mods.length > 1 ? (
                         <nav aria-label={t(area.label)} className="border-b border-border p-3">
-                            <ul className="flex flex-wrap gap-1">
-                                {area.mods.map((m) => (
-                                    <li key={m.key}>
-                                        <Link
-                                            aria-current={m.key === current.key ? 'page' : undefined}
-                                            className={cn('block rounded-md px-2.5 py-1 text-xs font-medium transition-colors', m.key === current.key ? 'bg-brand/10 text-brand' : 'text-muted-foreground hover:bg-surface-muted hover:text-foreground')}
-                                            href={m.href}
-                                        >
-                                            {t(m.short ?? m.label)}
-                                        </Link>
-                                    </li>
-                                ))}
-                            </ul>
+                            <ModuleTabs area={area} currentKey={current.key} name={(m) => t(m.short ?? m.label)} />
                         </nav>
                     ) : null}
                     <ScrollArea className="flex-1" keep={`panel:${current.key}`}>
@@ -502,21 +533,21 @@ export function AppFrame({ actions, children, description, links: allLinks = [],
                 {menuButton}
                 <Link className="flex shrink-0 items-center" href="/">{own !== null ? <img alt={shell?.propertyName ?? ''} className="max-h-8 max-w-[9rem] w-auto object-contain" src={own} /> : <img alt="InnSYnc" className="h-8 w-auto" height={32} src={logo} width={116} />}</Link>
                 <nav aria-label={t('shell.menu')} className="ml-4 hidden min-w-0 flex-1 items-stretch gap-0.5 self-stretch overflow-x-auto no-scrollbar lg:flex">
-                    {modules.filter((m) => m.key !== 'home').map((m) => {
-                        const Icon = m.icon;
-                        const isActive = m.key === current.key;
+                    {railAreas.filter((a) => a.key !== 'home').map((a) => {
+                        const Icon = a.icon;
+                        const isActive = a.key === area?.key;
 
                         return (
                             <Link
                                 aria-current={isActive && !hasLinks ? 'page' : undefined}
                                 className={cn('flex items-center gap-2 whitespace-nowrap border-b-2 px-3 text-sm transition-colors', isActive ? 'border-brand font-semibold text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground')}
-                                href={m.href}
-                                key={m.key}
-                                title={t(m.label)}
+                                href={a.mods[0]?.href ?? '/'}
+                                key={a.key}
+                                title={t(a.label)}
                             >
                                 <Icon aria-hidden="true" className={cn('size-[1.125rem]', isActive ? 'text-brand' : '')} strokeWidth={1.75} />
-                                <span className="hidden xl:inline">{t(m.label)}</span>
-                                <span className="sr-only xl:hidden">{t(m.label)}</span>
+                                <span className="hidden xl:inline">{t(a.label)}</span>
+                                <span className="sr-only xl:hidden">{t(a.label)}</span>
                             </Link>
                         );
                     })}
@@ -530,6 +561,7 @@ export function AppFrame({ actions, children, description, links: allLinks = [],
                 </div>
             </div>
             <div className="hidden h-10 items-center gap-4 border-t border-border bg-surface-muted px-6 lg:flex">
+                {area !== undefined && area.mods.length > 1 ? <ModuleTabs area={area} className="shrink-0 border-r border-border pr-3" currentKey={current.key} name={(m) => t(m.short ?? m.label)} /> : null}
                 {hasLinks ? (
                     <ul className="flex min-w-0 flex-1 items-stretch gap-1 self-stretch overflow-x-auto no-scrollbar">
                         {links.map((l) => (
