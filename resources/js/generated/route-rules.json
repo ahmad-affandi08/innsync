@@ -3335,6 +3335,175 @@
             "reason"
         ]
     },
+    "POST /front-office/spa/bookings": {
+        "required": [
+            "date",
+            "guest_name",
+            "room_id",
+            "therapist_id",
+            "time",
+            "treatment_id"
+        ],
+        "declared": [
+            "date",
+            "guest_name",
+            "reservation_id",
+            "room_id",
+            "therapist_id",
+            "time",
+            "treatment_id",
+            "waive_service_charge",
+            "waive_tax"
+        ]
+    },
+    "POST /front-office/spa/bookings/{id}/accept": {
+        "required": [
+            "lock_version"
+        ],
+        "declared": [
+            "lock_version"
+        ]
+    },
+    "POST /front-office/spa/bookings/{id}/assign": {
+        "required": [
+            "lock_version",
+            "therapist_id"
+        ],
+        "declared": [
+            "lock_version",
+            "therapist_id"
+        ]
+    },
+    "POST /front-office/spa/bookings/{id}/cancel": {
+        "required": [
+            "lock_version",
+            "reason"
+        ],
+        "declared": [
+            "lock_version",
+            "reason"
+        ]
+    },
+    "POST /front-office/spa/bookings/{id}/decline": {
+        "required": [
+            "lock_version"
+        ],
+        "declared": [
+            "lock_version",
+            "reason"
+        ]
+    },
+    "POST /front-office/spa/bookings/{id}/finish": {
+        "required": [
+            "lock_version"
+        ],
+        "declared": [
+            "lock_version"
+        ]
+    },
+    "POST /front-office/spa/bookings/{id}/no-show": {
+        "required": [
+            "lock_version"
+        ],
+        "declared": [
+            "lock_version"
+        ]
+    },
+    "POST /front-office/spa/bookings/{id}/pay": {
+        "required": [
+            "lock_version",
+            "method"
+        ],
+        "declared": [
+            "lock_version",
+            "method",
+            "reference"
+        ]
+    },
+    "POST /front-office/spa/bookings/{id}/start": {
+        "required": [
+            "lock_version"
+        ],
+        "declared": [
+            "lock_version"
+        ]
+    },
+    "POST /front-office/spa/rooms": {
+        "required": [
+            "code",
+            "name"
+        ],
+        "declared": [
+            "code",
+            "name"
+        ]
+    },
+    "POST /front-office/spa/rooms/{id}": {
+        "required": [
+            "is_active",
+            "lock_version",
+            "name"
+        ],
+        "declared": [
+            "is_active",
+            "lock_version",
+            "name"
+        ]
+    },
+    "POST /front-office/spa/therapists": {
+        "required": [
+            "commission_bp",
+            "name"
+        ],
+        "declared": [
+            "commission_bp",
+            "name",
+            "user_id"
+        ]
+    },
+    "POST /front-office/spa/therapists/{id}": {
+        "required": [
+            "commission_bp",
+            "is_active",
+            "lock_version",
+            "name"
+        ],
+        "declared": [
+            "commission_bp",
+            "is_active",
+            "lock_version",
+            "name",
+            "user_id"
+        ]
+    },
+    "POST /front-office/spa/treatments": {
+        "required": [
+            "minutes",
+            "name",
+            "price_minor"
+        ],
+        "declared": [
+            "minutes",
+            "name",
+            "price_minor"
+        ]
+    },
+    "POST /front-office/spa/treatments/{id}": {
+        "required": [
+            "is_active",
+            "lock_version",
+            "minutes",
+            "name",
+            "price_minor"
+        ],
+        "declared": [
+            "is_active",
+            "lock_version",
+            "minutes",
+            "name",
+            "price_minor"
+        ]
+    },
     "POST /front-office/stay-fees": {
         "required": [
             "bands.*.percent_bp",

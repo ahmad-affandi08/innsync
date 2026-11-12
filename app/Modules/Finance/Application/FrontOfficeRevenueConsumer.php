@@ -25,7 +25,7 @@ final readonly class FrontOfficeRevenueConsumer implements OutboxConsumer
     public const FNB_SHIFT_EVENT = 'fnb.cashier.shift.closed';
 
     /** Posting sources the front office owns, as the outlet each belongs to when no revenue outlet claims it. */
-    private const BUILT_IN = ['night_audit' => 'rooms', 'laundry' => 'laundry', 'day_use' => 'day_use'];
+    private const BUILT_IN = ['night_audit' => 'rooms', 'laundry' => 'laundry', 'day_use' => 'day_use', 'spa' => 'spa'];
 
     public function __construct(private RevenueStore $store, private IdentifierGenerator $ids, private Clock $clock) {}
 

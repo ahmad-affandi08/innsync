@@ -11,7 +11,7 @@ namespace App\Shared\Application\Setup;
 final class OptionalFeatures
 {
     /** @var list<string> */
-    public const ALL = ['waitlist', 'groups', 'day-use', 'activities', 'gift-cards', 'commissions', 'door-locks', 'foreign-currency'];
+    public const ALL = ['waitlist', 'groups', 'day-use', 'activities', 'spa', 'gift-cards', 'commissions', 'door-locks', 'foreign-currency'];
 
     public static function isFeature(string $key): bool
     {

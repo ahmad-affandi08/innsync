@@ -394,6 +394,22 @@
         "kind",
         "reason"
     ],
+    "front-office/pages/spa": [
+        "date",
+        "guest_name",
+        "method",
+        "reason",
+        "therapist_id",
+        "time",
+        "treatment_id"
+    ],
+    "front-office/pages/spa-manage": [
+        "code",
+        "commission_bp",
+        "minutes",
+        "name",
+        "price_minor"
+    ],
     "front-office/pages/stay": [
         "changes",
         "departure",

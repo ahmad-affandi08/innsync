@@ -52,7 +52,7 @@ describe('optional pages in the menu', () => {
     })
 
     it('keeps the pages of daily work whatever the features are', () => {
-        const all = { waitlist: false, groups: false, 'day-use': false, activities: false, 'gift-cards': false, commissions: false, 'door-locks': false, 'foreign-currency': false, loyalty: false }
+        const all = { waitlist: false, groups: false, 'day-use': false, activities: false, spa: false, 'gift-cards': false, commissions: false, 'door-locks': false, 'foreign-currency': false, loyalty: false }
         const shown = hrefs(visibleLinks(FRONT_OFFICE_LINKS, null, all))
 
         for (const core of ['/front-office/today', '/front-office/reservations', '/front-office/cashier', '/front-office/night-audit']) assert.ok(shown.includes(core), core)

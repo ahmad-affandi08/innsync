@@ -32,6 +32,7 @@ final class JournalAccounts
         'interest_income' => ['4-3000', 'Pendapatan bunga bank'],
         'revenue.rooms' => ['4-1100', 'Pendapatan kamar'],
         'revenue.day_use' => ['4-1150', 'Pendapatan day use'],
+        'revenue.spa' => ['4-1160', 'Pendapatan spa'],
         'revenue.laundry' => ['4-1300', 'Pendapatan laundry'],
         'revenue.other' => ['4-1900', 'Pendapatan lain-lain'],
         'expense.other' => ['5-9000', 'Beban lain-lain'],

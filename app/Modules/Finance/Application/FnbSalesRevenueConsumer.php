@@ -24,6 +24,9 @@ final readonly class FnbSalesRevenueConsumer implements OutboxConsumer
     /** A day use of a room paid at the desk (docs/OPERATIONS/DAY-USE.md) is a bill of the same shape: paid in full by cash, card or QRIS, not charged to a room. */
     public const DAY_USE_EVENT = 'frontoffice.day_use.paid';
 
+    /** A spa treatment of a guest who is not staying, paid at the desk (docs/OPERATIONS/SPA.md): the same shape again. */
+    public const SPA_EVENT = 'frontoffice.spa.paid';
+
     public function __construct(private RevenueStore $store, private ExceptionStore $exceptions, private DocumentNumbers $numbers, private IdentifierGenerator $ids, private Clock $clock) {}
 
     public function name(): string
@@ -33,7 +36,7 @@ final readonly class FnbSalesRevenueConsumer implements OutboxConsumer
 
     public function supports(string $eventType): bool
     {
-        return $eventType === self::SETTLED_EVENT || $eventType === self::DAY_USE_EVENT;
+        return $eventType === self::SETTLED_EVENT || $eventType === self::DAY_USE_EVENT || $eventType === self::SPA_EVENT;
     }
 
     public function consume(OutboxMessage $message): void

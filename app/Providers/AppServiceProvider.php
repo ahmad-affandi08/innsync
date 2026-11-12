@@ -115,6 +115,7 @@ use App\Modules\FrontOffice\Application\Reservations\ReservationRepository;
 use App\Modules\FrontOffice\Application\RoomPlan\RoomPlanStore;
 use App\Modules\FrontOffice\Application\Routine\RoutineRepository;
 use App\Modules\FrontOffice\Application\Routing\ChargeRoutingChain;
+use App\Modules\FrontOffice\Application\Spa\SpaStore;
 use App\Modules\FrontOffice\Application\Stays\GuestRepository;
 use App\Modules\FrontOffice\Application\Stays\LaundryExceptionStore;
 use App\Modules\FrontOffice\Application\Stays\RegistrationCardRepository;
@@ -153,6 +154,7 @@ use App\Modules\FrontOffice\Infrastructure\Reservations\DatabaseReservationExter
 use App\Modules\FrontOffice\Infrastructure\Reservations\DatabaseReservationRepository;
 use App\Modules\FrontOffice\Infrastructure\RoomPlan\DatabaseRoomPlanStore;
 use App\Modules\FrontOffice\Infrastructure\Routine\DatabaseRoutineRepository;
+use App\Modules\FrontOffice\Infrastructure\Spa\DatabaseSpaStore;
 use App\Modules\FrontOffice\Infrastructure\Stays\DatabaseGuestRepository;
 use App\Modules\FrontOffice\Infrastructure\Stays\DatabaseRegistrationCardRepository;
 use App\Modules\FrontOffice\Infrastructure\Stays\DatabaseStayRepository;
@@ -646,6 +648,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(LoyaltyStore::class, DatabaseLoyaltyStore::class);
         $this->app->bind(ActivityStore::class, DatabaseActivityStore::class);
         $this->app->bind(DayUseStore::class, DatabaseDayUseStore::class);
+        $this->app->bind(SpaStore::class, DatabaseSpaStore::class);
         $this->app->bind(GiftCardRedemption::class, GiftCardService::class);
         $this->app->bind(ReminderStore::class, DatabaseReminderStore::class);
         $this->app->bind(AutoReminderSource::class, DatabaseAutoReminderSource::class);

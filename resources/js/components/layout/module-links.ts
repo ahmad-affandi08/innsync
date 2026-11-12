@@ -1,6 +1,6 @@
 /** `needs`: areas of permission (see `ModuleAccessMap::areas`); the page is offered when the person holds any permission in one of them. Without it the page is offered to the whole department. */
 /** Pages that are left out of the menu until the property switches them on (`App\\Shared\\Application\\Setup\\OptionalFeatures`), and the loyalty programme, which is a switch of the installation. */
-export type FeatureKey = 'loyalty' | 'waitlist' | 'groups' | 'day-use' | 'activities' | 'gift-cards' | 'commissions' | 'door-locks' | 'foreign-currency';
+export type FeatureKey = 'loyalty' | 'waitlist' | 'groups' | 'day-use' | 'activities' | 'spa' | 'gift-cards' | 'commissions' | 'door-locks' | 'foreign-currency';
 
 export type NavFeatures = Partial<Record<FeatureKey, boolean>>;
 
@@ -39,6 +39,8 @@ export const FRONT_OFFICE_LINKS: readonly NavLink[] = [
     { href: '/front-office/checklists', label: 'fo.sop.nav', needs: ['front-office.sop'], group: 'nav.group.deskRoutine' },
     { href: '/front-office/logbook', label: 'fo.log.nav', needs: ['front-office.logbook'], group: 'nav.group.deskRoutine' },
     { href: '/front-office/activities', label: 'fo.act.nav', needs: ['front-office.activity'], feature: 'activities', group: 'nav.group.deskRoutine' },
+    { href: '/front-office/spa', label: 'fo.spa.nav', needs: ['front-office.spa'], feature: 'spa', group: 'nav.group.deskRoutine' },
+    { href: '/front-office/spa/me', label: 'fo.spa.me.nav', needs: ['front-office.spa'], feature: 'spa', group: 'nav.group.deskRoutine' },
     { href: '/front-office/door-locks', label: 'fo.lock.nav', needs: ['front-office.door-lock'], feature: 'door-locks', group: 'nav.group.deskRoutine' },
     { href: '/front-office/night-audit', label: 'fo.nav.audit', needs: ['front-office.night-audit'], group: 'nav.group.deskRoutine' },
 ];

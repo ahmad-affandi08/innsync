@@ -168,6 +168,8 @@ export const access = {
     'setup.feature.day-use.hint': 'A room rented for some hours, with no night.',
     'setup.feature.activities': 'Spa and activities',
     'setup.feature.activities.hint': 'Services with a time and capacity, charged to the room.',
+    'setup.feature.spa': 'Spa (treatment rooms and therapists)',
+    'setup.feature.spa.hint': 'Treatment rooms with the time left, booking by room, the therapist\'s phone and their commission.',
     'setup.feature.gift-cards': 'Gift cards and vouchers',
     'setup.feature.gift-cards.hint': 'Sold at the desk, spent as a payment on a folio or bill.',
     'setup.feature.commissions': 'Commissions',

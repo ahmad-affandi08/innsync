@@ -42,7 +42,7 @@ final class NewFeaturePermissionsMigrationTest extends TestCase
         // As in a property that was set up before the features existed: they are not on its roles yet.
         $new = DB::table('permissions')->where(fn ($q) => $q->where('code', 'like', 'front-office.activity.%')->orWhere('code', 'like', 'front-office.loyalty.%')->orWhere('code', 'like', 'finance.bank.%')->orWhere('code', 'like', 'front-office.gift-card.%'))->pluck('id');
         DB::table('role_permissions')->whereIn('permission_id', $new)->delete();
-        DB::table('roles')->insert(['id' => strtolower((string) Str::ulid()), 'property_id' => self::A, 'name' => 'Spa Therapist', 'requires_mfa' => false, 'is_active' => true, 'lock_version' => 0, 'created_at' => now(), 'updated_at' => now()]);
+        DB::table('roles')->insert(['id' => strtolower((string) Str::ulid()), 'property_id' => self::A, 'name' => 'Pool Attendant', 'requires_mfa' => false, 'is_active' => true, 'lock_version' => 0, 'created_at' => now(), 'updated_at' => now()]);
         self::assertNotContains('front-office.activity.book', $this->codesOf('Receptionist'));
 
         (require base_path('database/migrations/0001_01_01_000147_grant_new_feature_permissions_to_starting_roles.php'))->up();
@@ -52,7 +52,7 @@ final class NewFeaturePermissionsMigrationTest extends TestCase
         self::assertContains('finance.bank.manage', $this->codesOf('Finance Staff'));
         self::assertContains('front-office.gift-card.view', $this->codesOf('Owner (read only)'));
         self::assertNotContains('front-office.gift-card.issue', $this->codesOf('Receptionist'));
-        self::assertSame([], $this->codesOf('Spa Therapist'));
+        self::assertSame([], $this->codesOf('Pool Attendant'));
 
         // Run again: nothing changes.
         $count = DB::table('role_permissions')->count();

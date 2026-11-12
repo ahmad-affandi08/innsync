@@ -152,6 +152,11 @@ final readonly class DatabaseCashierRepository implements CashierRepository
         $cash += (int) (clone $dayUse)->sum('total_minor');
         $count += (clone $dayUse)->count();
 
+        // So is a spa treatment paid in cash at the desk.
+        $spa = DB::table('spa_bookings')->where('property_id', $property->toString())->where('shift_id', $shiftId)->where('payment_method', 'cash');
+        $cash += (int) (clone $spa)->sum('total_minor');
+        $count += (clone $spa)->count();
+
         if ($cash > 0) {
             $found = false;
 

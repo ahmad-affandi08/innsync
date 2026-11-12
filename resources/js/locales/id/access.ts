@@ -168,6 +168,8 @@ export const access = {
     'setup.feature.day-use.hint': 'Kamar disewa beberapa jam tanpa menginap.',
     'setup.feature.activities': 'Spa dan aktivitas',
     'setup.feature.activities.hint': 'Layanan dengan jam dan kapasitas, dibebankan ke kamar.',
+    'setup.feature.spa': 'Spa (ruang treatment dan terapis)',
+    'setup.feature.spa.hint': 'Ruang treatment dengan sisa waktu, booking per ruang, HP terapis, dan komisinya.',
     'setup.feature.gift-cards': 'Gift card dan voucher',
     'setup.feature.gift-cards.hint': 'Dijual di meja depan, dipakai sebagai pembayaran folio atau bill.',
     'setup.feature.commissions': 'Komisi',
