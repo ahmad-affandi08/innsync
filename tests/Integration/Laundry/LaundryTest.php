@@ -265,7 +265,7 @@ final class LaundryTest extends TestCase
         self::assertSame(['sent', 'received', 'washing', 'drying', 'ironing', 'ready'], array_column($ready['history'], 'to'));
     }
 
-    public function test_ready_fails_closed_without_a_scheme_or_an_open_folio_and_the_order_stays_as_it_was(): void
+    public function test_ready_fails_closed_without_a_scheme_and_with_the_only_folio_closed_the_charge_opens_the_next_window(): void
     {
         $order = $this->toIroned($this->handOver());
 
@@ -276,8 +276,14 @@ final class LaundryTest extends TestCase
         $this->configureLaundryScheme();
         $folio = app(FolioRepository::class)->byReservation($this->property(), $this->reservationId)[0];
         app(FolioService::class)->close($this->property(), $this->managerId, $folio->id, $folio->lockVersion);
-        $this->assertRefused(409, fn () => $this->laundry()->markReady($this->property(), $this->laundererId, $order['id'], $order['lock_version']));
-        self::assertSame('ironing', DB::table('laundry_orders')->value('status'));
+
+        // The guest is still in the house: the charge opens the next folio by itself instead of leaving the order stuck.
+        $ready = $this->laundry()->markReady($this->property(), $this->laundererId, $order['id'], $order['lock_version']);
+
+        self::assertSame('ready', $ready['status']);
+        self::assertSame(1, DB::table('folio_postings')->where('source', 'laundry')->count());
+        self::assertSame([1, 2], DB::table('folios')->where('reservation_id', $this->reservationId)->orderBy('window_no')->pluck('window_no')->map(fn ($n): int => (int) $n)->all());
+        self::assertSame('open', DB::table('folios')->where('reservation_id', $this->reservationId)->where('window_no', 2)->value('status'));
     }
 
     public function test_delivery_needs_a_receipt_and_the_stay_cannot_be_closed_while_laundry_is_active(): void
