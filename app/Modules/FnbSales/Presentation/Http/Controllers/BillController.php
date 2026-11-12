@@ -121,6 +121,13 @@ final readonly class BillController
         return $this->json($this->bills->show($this->property->current(), $this->actor($request), $id));
     }
 
+    public function charges(Request $request, string $id): JsonResponse
+    {
+        $data = $request->validate(['lock_version' => ['required', 'integer', 'min:0'], 'waive_service_charge' => ['required', 'boolean'], 'waive_tax' => ['required', 'boolean'], 'reason' => ['required', 'string', 'max:200']]);
+
+        return $this->json($this->bills->setCharges($this->property->current(), $this->actor($request), $id, (int) $data['lock_version'], (bool) $data['waive_service_charge'], (bool) $data['waive_tax'], $data['reason']));
+    }
+
     public function removeDiscount(Request $request, string $id, string $line): JsonResponse
     {
         $data = $request->validate(['lock_version' => ['required', 'integer', 'min:0'], 'reason' => ['required', 'string', 'max:200']]);

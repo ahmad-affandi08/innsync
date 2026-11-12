@@ -142,6 +142,10 @@ final readonly class BillSplitService
                 throw Refusal::stateConflict('A bill with payments is not merged. Refund the payments first.');
             }
 
+            if (BillPricing::waivedOf($source) !== BillPricing::waivedOf($target)) {
+                throw Refusal::stateConflict('One of these bills was given without its service charge or tax and the other was not. Make them the same before merging.');
+            }
+
             if ($source['room_id'] !== null && $source['room_id'] !== $target['room_id']) {
                 throw Refusal::stateConflict('A bill of a room is merged only into a bill of the same room.');
             }
@@ -251,7 +255,7 @@ final readonly class BillSplitService
             $number = $this->numbers->next($property, 'BILL');
             $new = [
                 'id' => $newId, 'outlet_id' => $bill['outlet_id'], 'number' => $number, 'table_id' => $table['id'] ?? null, 'room_id' => $bill['room_id'], 'stay_id' => $bill['stay_id'], 'reservation_id' => $bill['reservation_id'],
-                'split_from_id' => $bill['id'], 'source' => $bill['source'] ?? 'staff', 'covers' => $covers, 'note' => $bill['note'], 'status' => 'open', 'business_date' => $bill['business_date'], 'opened_by' => $actor, 'opened_at' => $now,
+                'split_from_id' => $bill['id'], 'waive_service_charge' => (bool) ($bill['waive_service_charge'] ?? false), 'waive_tax' => (bool) ($bill['waive_tax'] ?? false), 'source' => $bill['source'] ?? 'staff', 'covers' => $covers, 'note' => $bill['note'], 'status' => 'open', 'business_date' => $bill['business_date'], 'opened_by' => $actor, 'opened_at' => $now,
             ];
 
             if (! $this->bills->addBill($property, $new, $now)) {

@@ -4,11 +4,13 @@ import { useState } from 'react';
 
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog } from '@/components/ui/dialog';
 import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { MoneyInput } from '@/components/ui/money-input';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -55,6 +57,13 @@ export default function BillPage({ targets, view }: { targets: RearrangeTargets;
     const operate = view.may.operate;
     const money = (minor: number) => format.money(minor, view.currency);
     const reload = ['view', 'targets'];
+    const [charges, setCharges] = useState<{ service: boolean; tax: boolean; reason: string } | null>(null);
+
+    async function saveCharges() {
+        if (charges === null) return;
+        const done = await action.run(`/fnb/bills/${bill.id}/charges`, { idempotencyKey: newIdempotencyKey(), body: { lock_version: bill.lock_version, waive_service_charge: charges.service, waive_tax: charges.tax, reason: charges.reason.trim() }, reload });
+        if (done !== null) setCharges(null);
+    }
     const pending = bill.lines.filter((l) => l.status === 'pending');
     const place = bill.table !== null ? t('fnb.pos.tableLabel', { code: bill.table }) : bill.room !== null ? t('fnb.pos.roomLabel', { number: bill.room }) : t('fnb.pos.counter');
     const approvalFor = (ref: string, type: string, status: string): BillApproval | undefined => view.approvals.find((a) => a.subject_ref === ref && a.subject_type === type && a.status === status && !a.consumed);
@@ -346,12 +355,15 @@ export default function BillPage({ targets, view }: { targets: RearrangeTargets;
                         {totals.discount_minor > 0 ? <div className="flex justify-between"><dt>{t('fnb.bill.discounts')}</dt><dd className="tabular-nums" data-testid="bill-discounts">−{money(totals.discount_minor)}</dd></div> : null}
                         {totals.scheme_missing ? null : (
                             <>
-                                <div className="flex justify-between"><dt>{t('fnb.bill.service')}</dt><dd className="tabular-nums">{money(totals.service_charge_minor)}</dd></div>
-                                <div className="flex justify-between"><dt>{t('fnb.bill.tax')}</dt><dd className="tabular-nums">{money(totals.tax_minor)}</dd></div>
+                                <div className="flex justify-between"><dt>{t('fnb.bill.service')}{bill.waive_service_charge ? <span className="ml-2 text-xs text-muted-foreground" data-testid="service-waived">{t('fnb.bill.waived')}</span> : null}</dt><dd className="tabular-nums">{money(totals.service_charge_minor)}</dd></div>
+                                <div className="flex justify-between"><dt>{t('fnb.bill.tax')}{bill.waive_tax ? <span className="ml-2 text-xs text-muted-foreground" data-testid="tax-waived">{t('fnb.bill.waived')}</span> : null}</dt><dd className="tabular-nums">{money(totals.tax_minor)}</dd></div>
                             </>
                         )}
                         <div className="flex justify-between border-t border-border pt-2 text-base font-semibold"><dt>{t('fnb.bill.total')}</dt><dd className="tabular-nums">{money(totals.total_minor)}</dd></div>
                     </dl>
+                    {open && view.may.discount && view.payments.length === 0 && !totals.scheme_missing && totals.subtotal_minor > 0 ? (
+                        <div><Button disabled={action.busy} onClick={() => { action.clear(); setCharges({ service: bill.waive_service_charge, tax: bill.waive_tax, reason: '' }); }} size="sm" type="button" variant="outline">{t('fnb.bill.chargesOpen')}</Button></div>
+                    ) : null}
                     {outlet.prices_include_charges && totals.subtotal_minor > 0 ? <p className="text-xs text-muted-foreground">{t('fnb.bill.included')}</p> : null}
                     {totals.scheme_missing ? <Alert title={t('fnb.bill.schemeMissing')} tone="warning"><p>{t('fnb.bill.schemeMissingHint')}</p></Alert> : null}
 
@@ -419,6 +431,26 @@ export default function BillPage({ targets, view }: { targets: RearrangeTargets;
                     ) : null}
                 </section>
             </div>
+
+            <Dialog
+                footer={<>
+                    <Button disabled={action.busy} onClick={() => setCharges(null)} type="button" variant="outline">{t('ui.dialog.cancel')}</Button>
+                    <Button disabled={charges === null || charges.reason.trim() === ''} loading={action.busy} onClick={() => void saveCharges()} type="button">{t('fnb.bill.chargesSave')}</Button>
+                </>}
+                onClose={() => setCharges(null)}
+                open={charges !== null}
+                title={t('fnb.bill.chargesTitle')}
+            >
+                {charges !== null && (
+                    <div className="flex flex-col gap-3">
+                        <p className="text-sm text-muted-foreground">{t('fnb.bill.chargesHint')}</p>
+                        {action.error !== null ? <ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /> : null}
+                        <div className="flex items-center gap-2"><Checkbox checked={charges.service} id="waive-service" onCheckedChange={(v) => setCharges({ ...charges, service: v === true })} /><Label className="text-sm font-normal" htmlFor="waive-service">{t('fnb.bill.waiveService')}</Label></div>
+                        <div className="flex items-center gap-2"><Checkbox checked={charges.tax} id="waive-tax" onCheckedChange={(v) => setCharges({ ...charges, tax: v === true })} /><Label className="text-sm font-normal" htmlFor="waive-tax">{t('fnb.bill.waiveTax')}</Label></div>
+                        <FormField error={action.fieldError('reason')} field="reason" label={t('fnb.bill.reason')}><Input maxLength={200} onChange={(e) => setCharges({ ...charges, reason: e.target.value })} value={charges.reason} /></FormField>
+                    </div>
+                )}
+            </Dialog>
 
             <Dialog
                 footer={<>

@@ -255,7 +255,7 @@ final readonly class BillService
 
         $totals = in_array($bill['status'], ['settled', 'refunded'], true)
             ? ['subtotal_minor' => (int) $bill['subtotal_minor'], 'base_minor' => (int) $bill['base_minor'], 'service_charge_minor' => (int) $bill['service_charge_minor'], 'tax_minor' => (int) $bill['tax_minor'], 'total_minor' => (int) $bill['total_minor'], 'scheme_missing' => false, 'scheme' => $bill['scheme'] === null ? null : json_decode((string) $bill['scheme'], true)]
-            : $this->pricing->totals($property, $outlet, (string) $bill['business_date'], $bill['lines']);
+            : $this->pricing->totals($property, $outlet, (string) $bill['business_date'], $bill['lines'], BillPricing::waivedOf($bill));
         $refund = $bill['status'] === 'refunded' ? $this->payments->refundOf($property, $bill['id']) : null;
         $discounts = 0;
 
@@ -272,7 +272,7 @@ final readonly class BillService
         return [
             'currency' => $this->currencies->currencyOf($property),
             'bill' => [
-                'id' => $bill['id'], 'number' => $bill['number'], 'status' => $bill['status'], 'source' => $bill['source'] ?? 'staff', 'covers' => (int) $bill['covers'], 'note' => $bill['note'], 'business_date' => $bill['business_date'], 'opened_at' => FnbTime::utc($bill['opened_at']), 'closed_at' => FnbTime::utc($bill['closed_at']),
+                'id' => $bill['id'], 'number' => $bill['number'], 'status' => $bill['status'], 'source' => $bill['source'] ?? 'staff', 'waive_service_charge' => (bool) ($bill['waive_service_charge'] ?? false), 'waive_tax' => (bool) ($bill['waive_tax'] ?? false), 'covers' => (int) $bill['covers'], 'note' => $bill['note'], 'business_date' => $bill['business_date'], 'opened_at' => FnbTime::utc($bill['opened_at']), 'closed_at' => FnbTime::utc($bill['closed_at']),
                 'table' => $table['code'] ?? null, 'room_id' => $bill['room_id'], 'room' => $room?->number, 'lock_version' => (int) $bill['lock_version'], 'cancel_reason' => $bill['cancel_reason'], 'reprint_count' => (int) $bill['reprint_count'],
                 'refund' => $refund === null ? null : ['number' => $refund['number'], 'reason' => $refund['reason'], 'total_minor' => (int) $refund['total_minor'], 'business_date' => $refund['business_date'], 'at' => FnbTime::utc($refund['created_at']), 'payments' => array_map(static fn (array $p): array => ['method' => $p['method'], 'amount_minor' => (int) $p['amount_minor'], 'reference' => $p['reference']], $refund['payments'])],
                 'lines' => array_map($this->shapeLine(...), $bill['lines']),
@@ -374,6 +374,45 @@ final readonly class BillService
 
             $this->bills->updateLine($property, $bill['id'], $line['id'], ['status' => 'removed'], $this->clock->nowUtc());
             $this->guard->touch($property, $bill['id'], $lock);
+        });
+
+        return $this->show($property, $actorId, $billId);
+    }
+
+    /**
+     * Gives the bill without its service charge, without its tax, or without both (or puts them back). It needs the right to apply discounts and a reason, is audited, and is allowed
+     * only while the bill is open and nothing was paid on it: what was charged to a room or taken as payment is never recalculated.
+     *
+     * @return array<string, mixed>
+     */
+    public function setCharges(PropertyId $property, string $actorId, string $billId, int $lock, bool $waiveServiceCharge, bool $waiveTax, string $reason): array
+    {
+        $this->access->require($property, $actorId, FnbAccess::DISCOUNT_APPLY, 'This person may not leave off the service charge or the tax.');
+        $reason = trim($reason);
+
+        if ($reason === '' || mb_strlen($reason) > 200) {
+            throw Refusal::invalid('Give the reason, at most 200 characters.', ['reason']);
+        }
+
+        $actor = strtolower($actorId);
+
+        $this->transactions->run(function () use ($property, $actor, $billId, $lock, $waiveServiceCharge, $waiveTax, $reason): void {
+            $bill = $this->guard->open($property, strtolower($billId), $lock);
+
+            if ($this->bills->paymentCount($property, $bill['id']) > 0) {
+                throw Refusal::stateConflict('Something was paid on this bill already, so what it comes to cannot change.');
+            }
+
+            $before = ['waive_service_charge' => (bool) $bill['waive_service_charge'], 'waive_tax' => (bool) $bill['waive_tax']];
+            $after = ['waive_service_charge' => $waiveServiceCharge, 'waive_tax' => $waiveTax];
+
+            if ($before === $after) {
+                return;
+            }
+
+            $this->bills->updateBill($property, $bill['id'], $after, $this->clock->nowUtc());
+            $this->guard->touch($property, $bill['id'], $lock);
+            $this->audit->record(new AuditEntry($property->toString(), $actor, 'fnb_bill.charges_changed', 'fnb_bill', $bill['id'], $before, $after + ['bill' => $bill['number']], $reason));
         });
 
         return $this->show($property, $actorId, $billId);

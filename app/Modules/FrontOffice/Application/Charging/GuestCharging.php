@@ -18,13 +18,14 @@ interface GuestCharging
 
     /**
      * Charges `$quotedMinor` (service charge and tax added on top, with the scheme of `$scope` in force today) to the guest's
-     * first open folio. The same `$source` and `$sourceRef` are posted once, however often they are sent.
+     * first open folio. The same `$source` and `$sourceRef` are posted once, however often they are sent. `$waive` (`service_charge`, `tax`) leaves those off this one charge.
      *
+     * @param  list<string>  $waive
      * @return array{posting_id: string, total_minor: int, currency: string, replayed: bool}
      *
      * @throws Refusal when the guest has no open folio or no scheme is configured for the scope
      */
-    public function charge(PropertyId $property, string $actorId, string $reservationId, string $scope, string $code, string $description, int $quotedMinor, string $source, string $sourceRef): array;
+    public function charge(PropertyId $property, string $actorId, string $reservationId, string $scope, string $code, string $description, int $quotedMinor, string $source, string $sourceRef, array $waive = []): array;
 
     /**
      * The same charge for a guest who has checked out leaving something in hand that was approved to be charged late (FR-LDY-012): it goes to the late folio of the

@@ -1771,6 +1771,20 @@
             "reason"
         ]
     },
+    "POST /fnb/bills/{id}/charges": {
+        "required": [
+            "lock_version",
+            "reason",
+            "waive_service_charge",
+            "waive_tax"
+        ],
+        "declared": [
+            "lock_version",
+            "reason",
+            "waive_service_charge",
+            "waive_tax"
+        ]
+    },
     "POST /fnb/bills/{id}/lines": {
         "required": [
             "item_id",

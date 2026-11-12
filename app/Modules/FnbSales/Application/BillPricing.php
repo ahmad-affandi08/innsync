@@ -21,9 +21,10 @@ final readonly class BillPricing
     /**
      * @param  array<string, mixed>  $outlet
      * @param  list<array<string, mixed>>  $lines
+     * @param  list<string>  $waive  `service_charge` and `tax` when the bill was given without them
      * @return array{subtotal_minor: int, base_minor: int, service_charge_minor: int, tax_minor: int, total_minor: int, scheme_missing: bool, scheme: array<string, mixed>|null}
      */
-    public function totals(PropertyId $property, array $outlet, string $businessDate, array $lines): array
+    public function totals(PropertyId $property, array $outlet, string $businessDate, array $lines, array $waive = []): array
     {
         $subtotal = 0;
 
@@ -38,11 +39,22 @@ final readonly class BillPricing
         }
 
         try {
-            $split = $this->charges->breakdown($property, (string) $outlet['charge_scope'], BusinessDate::fromString($businessDate), $subtotal, (bool) $outlet['prices_include_charges']);
+            $split = $this->charges->breakdown($property, (string) $outlet['charge_scope'], BusinessDate::fromString($businessDate), $subtotal, (bool) $outlet['prices_include_charges'], $waive);
         } catch (Refusal) {
             return ['subtotal_minor' => $subtotal, 'base_minor' => $subtotal, 'service_charge_minor' => 0, 'tax_minor' => 0, 'total_minor' => $subtotal, 'scheme_missing' => true, 'scheme' => null];
         }
 
         return ['subtotal_minor' => $subtotal, 'base_minor' => $split['base_minor'], 'service_charge_minor' => $split['service_charge_minor'], 'tax_minor' => $split['tax_minor'], 'total_minor' => $split['total_minor'], 'scheme_missing' => false, 'scheme' => $split['scheme']];
+    }
+
+    /**
+     * What a bill was given without, from its two switches.
+     *
+     * @param  array<string, mixed>  $bill
+     * @return list<string>
+     */
+    public static function waivedOf(array $bill): array
+    {
+        return [...((bool) ($bill['waive_service_charge'] ?? false) ? ['service_charge'] : []), ...((bool) ($bill['waive_tax'] ?? false) ? ['tax'] : [])];
     }
 }

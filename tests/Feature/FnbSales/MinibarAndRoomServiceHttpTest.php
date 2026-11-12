@@ -186,7 +186,7 @@ final class MinibarAndRoomServiceHttpTest extends TestCase
                 return null;
             }
 
-            public function charge(PropertyId $property, string $actorId, string $reservationId, string $scope, string $code, string $description, int $quotedMinor, string $source, string $sourceRef): array
+            public function charge(PropertyId $property, string $actorId, string $reservationId, string $scope, string $code, string $description, int $quotedMinor, string $source, string $sourceRef, array $waive = []): array
             {
                 throw new LogicException('a closed folio is never charged');
             }

@@ -333,9 +333,10 @@ final readonly class FolioService
      * with the service charge and tax of `$scope` in force today, posted once per source reference. It checks no permission:
      * the calling context authorizes its own use, as `FolioLedger` documents.
      *
+     * @param  list<string>  $waive  `service_charge` and `tax` to leave off this charge
      * @return array<string, mixed>
      */
-    public function postGuestCharge(PropertyId $property, string $actorId, string $reservationId, string $scope, string $code, string $description, int $quotedMinor, string $source, string $sourceRef): array
+    public function postGuestCharge(PropertyId $property, string $actorId, string $reservationId, string $scope, string $code, string $description, int $quotedMinor, string $source, string $sourceRef, array $waive = []): array
     {
         $current = $this->property->current();
 
@@ -363,7 +364,7 @@ final readonly class FolioService
             $folio = $this->openForGuestCharge($property, $actorId, strtolower($reservationId));
         }
 
-        $split = $this->charges->breakdown($property, $scope, $this->businessDate->current($property), $quotedMinor, false);
+        $split = $this->charges->breakdown($property, $scope, $this->businessDate->current($property), $quotedMinor, false, $waive);
 
         return $this->postAndRecord($property, $actorId, $folio->id, 'folio.charge.posted', fn ($date, $now): Posting => Posting::charge(
             $this->ledger->newId(), strtoupper($code), $description, Money::ofMinor($split['base_minor'], $folio->currency), Money::ofMinor($split['service_charge_minor'], $folio->currency), Money::ofMinor($split['tax_minor'], $folio->currency),

@@ -131,7 +131,7 @@ final readonly class PaymentService
                 }
 
                 $stay = $this->roomStay($property, $roomId ?? $bill['room_id'], $guestName);
-                $result = $this->guests->charge($property, $actor, $stay['reservation_id'], (string) $outlet['charge_scope'], 'FNB', "{$outlet['name']} {$bill['number']}", (bool) $outlet['prices_include_charges'] ? $totals['base_minor'] : $totals['subtotal_minor'], 'pos_'.strtolower((string) $outlet['code']), $bill['id']);
+                $result = $this->guests->charge($property, $actor, $stay['reservation_id'], (string) $outlet['charge_scope'], 'FNB', "{$outlet['name']} {$bill['number']}", (bool) $outlet['prices_include_charges'] ? $totals['base_minor'] : $totals['subtotal_minor'], 'pos_'.strtolower((string) $outlet['code']), $bill['id'], BillPricing::waivedOf($bill));
 
                 if ((int) $result['total_minor'] !== $totals['total_minor']) {
                     throw Refusal::stateConflict('The amount the folio takes is not the amount of the bill. Ask finance.');
@@ -216,7 +216,7 @@ final readonly class PaymentService
         }
 
         $outlet = $this->setup->outlet($property, $bill['outlet_id']) ?? throw Refusal::notFound('Outlet not found.');
-        $totals = $this->pricing->totals($property, $outlet, (string) $bill['business_date'], $bill['lines']);
+        $totals = $this->pricing->totals($property, $outlet, (string) $bill['business_date'], $bill['lines'], BillPricing::waivedOf($bill));
 
         if ($totals['total_minor'] < 1) {
             throw Refusal::stateConflict('Nothing is ordered on this bill.');

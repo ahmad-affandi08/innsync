@@ -11,7 +11,10 @@ use App\Shared\Domain\Time\BusinessDate;
 interface ChargeCalculator
 {
     /**
+     * `$waive` names what is left off for this one price: `service_charge`, `tax`, or both (the scheme itself is not changed). The scheme recorded with the result carries the rates that were applied.
+     *
+     * @param  list<string>  $waive
      * @return array{base_minor: int, service_charge_minor: int, tax_minor: int, total_minor: int, scheme: array<string, mixed>}
      */
-    public function breakdown(PropertyId $property, string $scope, BusinessDate $date, int $quotedMinor, bool $pricesIncludeCharges): array;
+    public function breakdown(PropertyId $property, string $scope, BusinessDate $date, int $quotedMinor, bool $pricesIncludeCharges, array $waive = []): array;
 }

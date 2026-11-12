@@ -852,6 +852,7 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
     Route::post('/bills/{id}/send', [BillController::class, 'send'])->where('id', $id)->middleware(['idempotent'])->name('fnb.bills.send');
     Route::post('/bills/{id}/lines/{line}/void-request', [BillController::class, 'requestVoid'])->where('id', $id)->where('line', $id)->middleware(['idempotent'])->name('fnb.bills.lines.void-request');
     Route::post('/bills/{id}/lines/{line}/void', [BillController::class, 'voidLine'])->where('id', $id)->where('line', $id)->middleware(['idempotent'])->name('fnb.bills.lines.void');
+    Route::post('/bills/{id}/charges', [BillController::class, 'charges'])->where('id', $id)->middleware(['idempotent'])->name('fnb.bills.charges');
     Route::post('/bills/{id}/lines/{line}/discount-request', [BillController::class, 'requestDiscount'])->where('id', $id)->where('line', $id)->middleware(['idempotent'])->name('fnb.bills.lines.discount-request');
     Route::post('/bills/{id}/lines/{line}/discount', [BillController::class, 'discount'])->where('id', $id)->where('line', $id)->middleware(['idempotent'])->name('fnb.bills.lines.discount');
     Route::post('/bills/{id}/lines/{line}/discount/remove', [BillController::class, 'removeDiscount'])->where('id', $id)->where('line', $id)->middleware(['idempotent'])->name('fnb.bills.lines.discount.remove');

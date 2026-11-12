@@ -166,7 +166,7 @@ final readonly class GuestOrderingService implements GuestOrdering
             return null;
         }
 
-        $totals = $this->pricing->totals($property, $outlet, (string) $bill['business_date'], $bill['lines']);
+        $totals = $this->pricing->totals($property, $outlet, (string) $bill['business_date'], $bill['lines'], BillPricing::waivedOf($bill));
 
         return ['total_minor' => $totals['total_minor'], 'subtotal_minor' => $totals['subtotal_minor'], 'service_charge_minor' => $totals['service_charge_minor'], 'tax_minor' => $totals['tax_minor'], 'currency' => $this->currencies->currencyOf($property)];
     }

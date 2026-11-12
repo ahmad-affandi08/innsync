@@ -28,9 +28,9 @@ final readonly class GuestChargingService implements GuestCharging
         return null;
     }
 
-    public function charge(PropertyId $property, string $actorId, string $reservationId, string $scope, string $code, string $description, int $quotedMinor, string $source, string $sourceRef): array
+    public function charge(PropertyId $property, string $actorId, string $reservationId, string $scope, string $code, string $description, int $quotedMinor, string $source, string $sourceRef, array $waive = []): array
     {
-        $result = $this->folios->postGuestCharge($property, $actorId, $reservationId, $scope, $code, $description, $quotedMinor, $source, $sourceRef);
+        $result = $this->folios->postGuestCharge($property, $actorId, $reservationId, $scope, $code, $description, $quotedMinor, $source, $sourceRef, $waive);
 
         return ['posting_id' => $result['posting']['id'], 'total_minor' => $result['posting']['total_minor'], 'currency' => $result['posting']['currency'], 'replayed' => $result['replayed']];
     }

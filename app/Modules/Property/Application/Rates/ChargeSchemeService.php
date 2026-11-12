@@ -63,13 +63,15 @@ final readonly class ChargeSchemeService implements ChargeCalculator
         return null;
     }
 
-    public function breakdown(PropertyId $property, string $scope, BusinessDate $date, int $quotedMinor, bool $pricesIncludeCharges): array
+    public function breakdown(PropertyId $property, string $scope, BusinessDate $date, int $quotedMinor, bool $pricesIncludeCharges, array $waive = []): array
     {
         $config = $this->schemeFor($property, $scope, $date) ?? throw Refusal::invalid('Service charge and tax are not configured for this date, so this cannot be priced.', ['amount']);
         $rounding = $this->settings->get($property)->rounding;
+        $serviceCharge = in_array('service_charge', $waive, true) ? Percentage::ofBasisPoints(0) : $config->serviceCharge;
+        $tax = in_array('tax', $waive, true) ? Percentage::ofBasisPoints(0) : $config->tax;
 
         try {
-            $parts = (new ChargeScheme($config->serviceCharge, $config->tax, $config->taxOnServiceCharge, $pricesIncludeCharges, $rounding))->calculate(Money::ofMinor($quotedMinor, $this->currency->currencyOf($property)));
+            $parts = (new ChargeScheme($serviceCharge, $tax, $config->taxOnServiceCharge, $pricesIncludeCharges, $rounding))->calculate(Money::ofMinor($quotedMinor, $this->currency->currencyOf($property)));
         } catch (MoneyError $e) {
             throw Refusal::invalid($e->getMessage(), ['amount']);
         }
@@ -80,7 +82,7 @@ final readonly class ChargeSchemeService implements ChargeCalculator
             'tax_minor' => $parts->tax->amountMinor,
             'total_minor' => $parts->total->amountMinor,
             'scheme' => [
-                'scope' => $scope, 'service_charge_bp' => $config->serviceCharge->basisPoints, 'tax_bp' => $config->tax->basisPoints, 'tax_on_service_charge' => $config->taxOnServiceCharge,
+                'scope' => $scope, 'service_charge_bp' => $serviceCharge->basisPoints, 'tax_bp' => $tax->basisPoints, 'tax_on_service_charge' => $config->taxOnServiceCharge,
                 'prices_include_charges' => $pricesIncludeCharges, 'rounding_increment_minor' => $rounding->incrementMinor, 'rounding_mode' => $rounding->mode->value,
             ],
         ];

@@ -84,7 +84,7 @@ final class BillHttpTest extends TestCase
                 return $roomId === '01arz3ndektsv4rrffq69g5fc1' ? ['stay_id' => '01arz3ndektsv4rrffq69g5fc2', 'reservation_id' => '01arz3ndektsv4rrffq69g5fc3'] : null;
             }
 
-            public function charge(PropertyId $property, string $actorId, string $reservationId, string $scope, string $code, string $description, int $quotedMinor, string $source, string $sourceRef): array
+            public function charge(PropertyId $property, string $actorId, string $reservationId, string $scope, string $code, string $description, int $quotedMinor, string $source, string $sourceRef, array $waive = []): array
             {
                 return ['posting_id' => '01arz3ndektsv4rrffq69g5fc4', 'total_minor' => $quotedMinor, 'currency' => 'IDR', 'replayed' => false];
             }
@@ -242,6 +242,44 @@ final class BillHttpTest extends TestCase
         // A price changed later does not change what was ordered.
         DB::table('fnb_menu_items')->where('id', $this->id['nasi'])->update(['price_minor' => 9_999_999]);
         $this->get("/fnb/bills/{$bill}")->assertOk()->assertInertia(fn (Assert $page) => $page->component('fnb-sales/pages/bill')->where('view.bill.lines.0.unit_price_minor', 4_500_000)->where('view.bill.table', 'T1')->where('view.may.operate', true)->has('view.menu', 2));
+    }
+
+    public function test_a_bill_can_be_given_without_its_service_charge_or_tax_by_someone_who_may_discount_with_a_reason_and_only_before_anything_is_paid(): void
+    {
+        $bill = $this->open();
+        $v = $this->add($bill, 0, 'nasi', ['quantity' => 2]);
+        self::assertSame([9_000_000, 900_000, 990_000, 10_890_000], [$v['totals']['subtotal_minor'], $v['totals']['service_charge_minor'], $v['totals']['tax_minor'], $v['totals']['total_minor']]);
+        $body = ['lock_version' => 1, 'waive_service_charge' => true, 'waive_tax' => false, 'reason' => 'Staff meal'];
+
+        // Taking orders is not enough: the right to discount is.
+        $this->actAs($this->waiter);
+        $this->postJson("/fnb/bills/{$bill}/charges", $body, $this->key())->assertForbidden();
+
+        $owner = UserRecord::factory()->create();
+        $this->grant($owner, self::A, [FnbAccess::POS_OPERATE, FnbAccess::DISCOUNT_APPLY]);
+        $this->actAs($owner);
+        $this->postJson("/fnb/bills/{$bill}/charges", [...$body, 'reason' => ' '], $this->key())->assertStatus(422);
+
+        $v = $this->postJson("/fnb/bills/{$bill}/charges", $body, $this->key())->assertOk()->json();
+        self::assertSame([9_000_000, 0, 990_000, 9_990_000, true, false], [$v['totals']['subtotal_minor'], $v['totals']['service_charge_minor'], $v['totals']['tax_minor'], $v['totals']['total_minor'], $v['bill']['waive_service_charge'], $v['bill']['waive_tax']]);
+
+        $v = $this->postJson("/fnb/bills/{$bill}/charges", ['lock_version' => 2, 'waive_service_charge' => true, 'waive_tax' => true, 'reason' => 'Complimentary'], $this->key())->assertOk()->json();
+        self::assertSame([9_000_000, 0, 0, 9_000_000], [$v['totals']['subtotal_minor'], $v['totals']['service_charge_minor'], $v['totals']['tax_minor'], $v['totals']['total_minor']]);
+        self::assertSame(['Staff meal', 'Complimentary'], DB::table('audit_entries')->where('action', 'fnb_bill.charges_changed')->orderBy('occurred_at')->orderBy('id')->pluck('reason')->all());
+
+        // A line added later is priced the same way, and a bill split from it keeps the same switches.
+        $v = $this->add($bill, 3, 'nasi', []);
+        self::assertSame([13_500_000, 13_500_000], [$v['totals']['subtotal_minor'], $v['totals']['total_minor']]);
+
+        // Once something was paid, what the bill comes to cannot change: a payment on it blocks the switches.
+        $cashier = UserRecord::factory()->create();
+        $this->grant($cashier, self::A, [FnbAccess::POS_OPERATE, FnbAccess::CASHIER_OPERATE]);
+        $this->actAs($cashier);
+        $this->postJson('/fnb/shift', ['outlet_id' => $this->id['rest'], 'opening_float_minor' => 0], $this->key())->assertCreated();
+        $sent = $this->postJson("/fnb/bills/{$bill}/send", ['lock_version' => 4], $this->key())->assertOk()->json();
+        $this->postJson("/fnb/bills/{$bill}/payments", ['lock_version' => $sent['bill']['lock_version'], 'method' => 'cash', 'amount_minor' => 1_000_000, 'tendered_minor' => 1_000_000], $this->key())->assertSuccessful();
+        $this->actAs($owner);
+        $this->postJson("/fnb/bills/{$bill}/charges", ['lock_version' => $sent['bill']['lock_version'] + 1, 'waive_service_charge' => false, 'waive_tax' => false, 'reason' => 'Changed my mind'], $this->key())->assertStatus(409);
     }
 
     public function test_a_line_that_was_not_sent_is_taken_off_and_sending_gives_the_stations_one_batch(): void
