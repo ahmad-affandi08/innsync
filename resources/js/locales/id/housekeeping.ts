@@ -79,6 +79,7 @@ export const housekeeping = {
     'fo.board.vacant': 'Kosong',
     'fo.board.blocked': 'Rusak atau tidak dipakai',
     'fo.board.openStay': 'Buka data menginap kamar {room}',
+    'fo.board.bill': 'Tagihan {total} · sisa {balance}',
     'fo.board.arrivals': 'Kedatangan yang menunggu check-in',
     'fo.board.noArrivals': 'Tidak ada kedatangan yang menunggu.',
     'fo.board.checkInTo': 'Check-in ke kamar yang siap',

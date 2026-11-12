@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Modules\FrontOffice\Application\Board;
 
+use App\Modules\FrontOffice\Application\Folios\FolioRepository;
+use App\Modules\FrontOffice\Application\Folios\FolioService;
 use App\Modules\FrontOffice\Application\Inventory\RoomBlockRepository;
 use App\Modules\FrontOffice\Application\Requests\GuestRequestRepository;
 use App\Modules\FrontOffice\Application\Reservations\ReservationRepository;
@@ -11,6 +13,7 @@ use App\Modules\FrontOffice\Application\Stays\StayRepository;
 use App\Modules\FrontOffice\Application\Stays\StayService;
 use App\Modules\Housekeeping\Application\RoomReadiness;
 use App\Modules\Property\Application\Catalog\RoomCatalogReader;
+use App\Modules\Property\Application\Rates\PropertyCurrencyReader;
 use App\Modules\Property\Application\Settings\BusinessDateProvider;
 use App\Shared\Application\Errors\Refusal;
 use App\Shared\Application\Security\PermissionChecker;
@@ -30,15 +33,17 @@ final readonly class RoomBoardService
         private StayRepository $stays,
         private ReservationRepository $reservations,
         private RoomBlockRepository $blocks,
+        private FolioRepository $folios,
         private RoomReadiness $readiness,
         private GuestRequestRepository $requests,
+        private PropertyCurrencyReader $currency,
         private BusinessDateProvider $businessDate,
         private PermissionChecker $permissions,
         private PropertyContext $property,
     ) {}
 
     /**
-     * @return array{business_date: string, rooms: list<array<string, mixed>>, arrivals: list<array<string, mixed>>, counts: array<string, int>}
+     * @return array{business_date: string, currency: string, rooms: list<array<string, mixed>>, arrivals: list<array<string, mixed>>, counts: array<string, int>}
      */
     public function board(PropertyId $property, string $actorId): array
     {
@@ -58,6 +63,9 @@ final readonly class RoomBoardService
             $occupied[$stay->roomId] = $stay;
         }
 
+        // The guest's name and bill are shown to the people who may see folios; for the others the board is as it was.
+        $mayBill = $this->permissions->allowsInProperty($actorId, FolioService::VIEW_PERMISSION, $property) || $this->permissions->allowsInProperty($actorId, FolioService::MANAGE_PERMISSION, $property);
+        $bills = $mayBill ? $this->folios->billsOfInHouse($property) : [];
         $openRequests = $this->requests->openCountsByRoom($property);
         $blockedRooms = $this->blocks->blockedRooms($property, $today->toString(), $today->toString());
         $rows = [];
@@ -85,6 +93,9 @@ final readonly class RoomBoardService
                 'sellability' => $blockedRooms[$room->id] ?? 'sellable',
                 'stay_id' => $stay?->id,
                 'expected_departure' => $stay?->expectedDeparture->toString(),
+                'guest_name' => $bills[$stay?->reservationId ?? '']['guest_name'] ?? null,
+                'charges_minor' => $bills[$stay?->reservationId ?? '']['charges_minor'] ?? null,
+                'balance_minor' => $bills[$stay?->reservationId ?? '']['balance_minor'] ?? null,
                 'open_requests' => $openRequests[$room->id] ?? 0,
                 'service_flags' => $flags[$room->id] ?? [],
             ];
@@ -110,7 +121,7 @@ final readonly class RoomBoardService
 
         usort($arrivals, static fn (array $a, array $b): int => [$a['arrival'], $a['number']] <=> [$b['arrival'], $b['number']]);
 
-        return ['business_date' => $today->toString(), 'rooms' => $rows, 'arrivals' => $arrivals, 'counts' => $counts];
+        return ['business_date' => $today->toString(), 'currency' => $this->currency->currencyOf($property), 'rooms' => $rows, 'arrivals' => $arrivals, 'counts' => $counts];
     }
 
     private function authorize(PropertyId $property, string $actorId): void

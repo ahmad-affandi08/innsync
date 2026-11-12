@@ -57,6 +57,28 @@ final readonly class DatabaseFolioRepository implements FolioRepository
             ->map(static fn (stdClass $r): array => ['folio_id' => $r->folio_id, 'number' => $r->number, 'window' => (int) $r->window_no, 'label' => $r->label, 'reservation_id' => $r->reservation_id, 'room' => $r->room, 'guest' => (string) $r->guest_name])->all();
     }
 
+    public function billsOfInHouse(PropertyId $property): array
+    {
+        $pid = $property->toString();
+        $out = [];
+
+        foreach (DB::table('folios as f')->join('stays as s', 's.reservation_id', '=', 'f.reservation_id')->join('reservations as r', 'r.id', '=', 'f.reservation_id')
+            ->where('f.property_id', $pid)->where('s.status', 'in_house')->groupBy('f.reservation_id', 'r.guest_name')
+            ->get(['f.reservation_id', 'r.guest_name', DB::raw('SUM(f.balance_minor) as balance')]) as $row) {
+            $out[(string) $row->reservation_id] = ['guest_name' => (string) $row->guest_name, 'charges_minor' => 0, 'balance_minor' => (int) $row->balance];
+        }
+
+        foreach (DB::table('folio_postings as p')->join('folios as f', 'f.id', '=', 'p.folio_id')->join('stays as s', 's.reservation_id', '=', 'f.reservation_id')
+            ->where('f.property_id', $pid)->where('s.status', 'in_house')->whereIn('p.entry_type', ['charge', 'reversal'])->groupBy('f.reservation_id')
+            ->get(['f.reservation_id', DB::raw('SUM(p.total_minor) as charges')]) as $row) {
+            if (isset($out[(string) $row->reservation_id])) {
+                $out[(string) $row->reservation_id]['charges_minor'] = (int) $row->charges;
+            }
+        }
+
+        return $out;
+    }
+
     public function lock(PropertyId $property, string $id): ?Folio
     {
         $row = DB::table('folios')->where('property_id', $property->toString())->where('id', $id)->lockForUpdate()->first();

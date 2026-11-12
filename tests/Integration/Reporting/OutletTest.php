@@ -141,6 +141,9 @@ final class OutletTest extends TestCase
         self::assertSame([], $before['outlets']);
         $dinner = $before['other']['total'];
         self::assertSame(55_000_000 + 5_500_000, $dinner);
+        // What no outlet names is still told apart by where it came from, and the parts add up to the line.
+        self::assertSame(['fnb'], array_column($before['others'], 'source'));
+        self::assertSame($dinner, array_sum(array_column($before['others'], 'total')));
 
         $restaurant = $this->outlets()->create($this->property(), $this->outletManagerId, 'restaurant', 'Restaurant', 'Opened');
         $spa = $this->outlets()->create($this->property(), $this->outletManagerId, 'spa', 'Spa', 'Opened');
@@ -149,6 +152,7 @@ final class OutletTest extends TestCase
         $after = $this->revenue();
         self::assertSame(['restaurant', 'Restaurant', $dinner], [$after['outlets'][0]['code'], $after['outlets'][0]['name'], $after['outlets'][0]['total']]);
         self::assertSame([0, 0], [$after['other']['total'], $after['outlets'][1]['total']]);
+        self::assertSame([], $after['others']);
         self::assertSame('spa', $after['outlets'][1]['code']);
         // Only where the money is counted changed: the total did not.
         self::assertSame($before['net']['total'], $after['net']['total']);

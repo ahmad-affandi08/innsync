@@ -28,6 +28,9 @@ type Preferences = { order: string[]; hidden: string[]; saved: boolean };
 
 export default function DashboardPage({ currency, preferences, snapshot: s, tv }: { currency: string; preferences: Preferences; snapshot: Snapshot; tv: boolean }) {
     const { t } = useTranslation();
+    // What no outlet of the owner names is told apart by where it came from; a source this screen does not know is shown as it is.
+    const SOURCES = ['fnb', 'room_service', 'minibar', 'activity', 'spa', 'late_charge', 'stay_fee', 'day_use', 'manual'];
+    const sourceLabel = (source: string) => (source === '' ? t('rpt.card.revenue.other') : SOURCES.includes(source) ? t(`rpt.source.${source}` as 'rpt.source.fnb') : source);
     const format = useFormatters();
     const action = useServerAction();
     const [shownAt, setShownAt] = useState(() => new Date().toISOString());
@@ -209,7 +212,10 @@ export default function DashboardPage({ currency, preferences, snapshot: s, tv }
                                     <dt>{t('rpt.card.revenue.room')}</dt><dd>{format.money((c.values.room as Money).total, currency)}</dd>
                                     <dt>{t('rpt.card.revenue.laundry')}</dt><dd>{format.money((c.values.laundry as Money).total, currency)}</dd>
                                     {((c.values.outlets ?? []) as { code: string; name: string; total: number }[]).map((o) => <Fragment key={o.code}><dt>{o.name}</dt><dd>{format.money(o.total, currency)}</dd></Fragment>)}
-                                    <dt>{t('rpt.card.revenue.other')}</dt><dd>{format.money((c.values.other as Money).total, currency)}</dd>
+                                    {(((c.values.others ?? []) as { source: string; total: number }[]).length > 0
+                                        ? ((c.values.others ?? []) as { source: string; total: number }[])
+                                        : [{ source: '', total: (c.values.other as Money).total }]
+                                    ).map((o) => <Fragment key={o.source}><dt>{sourceLabel(o.source)}</dt><dd>{format.money(o.total, currency)}</dd></Fragment>)}
                                 </dl>
                                 <ul className="flex flex-col gap-1 text-xs text-muted-foreground">
                                     {(['previous', 'week_earlier', 'month_earlier'] as const).map((k) => {

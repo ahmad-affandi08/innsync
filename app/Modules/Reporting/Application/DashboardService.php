@@ -86,7 +86,7 @@ final readonly class DashboardService
             $rev = $this->queries->revenue($property, $period, $only);
             $compare = fn (ReportPeriod $other): array => ['from' => $other->from->toString(), 'to' => $other->to->toString(), 'net_minor' => $this->queries->revenue($property, $other, $only)['net']['total']];
             $cards[] = $this->card('revenue', 'period', $period, $asOf, '/reports/flash?'.http_build_query($period->toArray()), [
-                'room' => $rev['room'], 'laundry' => $rev['laundry'], 'outlets' => $rev['outlets'], 'other' => $rev['other'], 'net' => $rev['net'],
+                'room' => $rev['room'], 'laundry' => $rev['laundry'], 'outlets' => $rev['outlets'], 'other' => $rev['other'], 'others' => $rev['others'], 'net' => $rev['net'],
                 'previous' => $compare($period->previous()), 'week_earlier' => $compare($period->weekEarlier()), 'month_earlier' => $compare($period->monthEarlier()),
             ], $revenue);
         }

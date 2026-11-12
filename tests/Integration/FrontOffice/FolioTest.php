@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Integration\FrontOffice;
 
+use App\Modules\FrontOffice\Application\Board\RoomBoardService;
 use App\Modules\FrontOffice\Application\Folios\FolioRepository;
 use App\Modules\FrontOffice\Application\Folios\FolioService;
 use App\Modules\FrontOffice\Application\Reservations\ReservationService;
@@ -528,5 +529,25 @@ final class FolioTest extends TestCase
         self::assertSame([2, 'open'], [(int) $second->window_no, $second->status]);
         self::assertSame(1, DB::table('audit_entries')->where('action', 'folio.opened')->where('aggregate_id', $second->id)->count());
         self::assertNotEmpty($posted);
+    }
+
+    public function test_the_room_board_shows_the_guest_and_what_the_stay_has_been_charged_and_still_owes(): void
+    {
+        app(ChargeSchemeService::class)->define($this->property(), $this->adminId, 'laundry', '2026-10-01', '10', '10', true, 'Regional regulation');
+        $reservation = $this->book('2026-10-01', '2026-10-03', 'confirmed');
+        app(StayService::class)->checkIn($this->property(), $this->managerId, new CheckInRequest($reservation->id, $this->roomIds[0], 'Budi Santoso', 'ID', 'ktp', '3174010101900001', null, null, 'Jl. Merdeka 1', 2, 0), IdempotencyKey::fromString('board-bill-checkin-001'));
+        $folio = DB::table('folios')->where('reservation_id', $reservation->id)->value('id');
+        $this->folios()->postGuestCharge($this->property(), $this->managerId, $reservation->id, 'laundry', 'LAUNDRY', 'Laundry', 50_000_000, 'laundry', 'ldy:board');
+        $this->folios()->pay($this->property(), $this->managerId, $folio, 'cash', 20_000_000, null, 'deposit');
+
+        $rows = array_column(app(RoomBoardService::class)->board($this->property(), $this->managerId)['rooms'], null, 'room_id');
+        $row = $rows[$this->roomIds[0]];
+        $view = $this->folios()->view($this->property(), $this->managerId, $folio);
+
+        self::assertSame('Budi Santoso', $row['guest_name']);
+        self::assertSame(60_500_000, $row['charges_minor'], 'the laundry with its service charge and tax');
+        self::assertSame(40_500_000, $row['balance_minor'], 'less the deposit');
+        self::assertSame($view['balance_minor'], $row['balance_minor']);
+        self::assertSame([null, null, null], [$rows[$this->roomIds[1]]['guest_name'], $rows[$this->roomIds[1]]['charges_minor'], $rows[$this->roomIds[1]]['balance_minor']], 'an empty room has no bill');
     }
 }

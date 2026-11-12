@@ -79,6 +79,7 @@ export const housekeeping = {
     'fo.board.vacant': 'Vacant',
     'fo.board.blocked': 'Out of order or service',
     'fo.board.openStay': 'Open the stay of room {room}',
+    'fo.board.bill': 'Billed {total} · owes {balance}',
     'fo.board.arrivals': 'Arrivals to check in',
     'fo.board.noArrivals': 'No arrivals waiting.',
     'fo.board.checkInTo': 'Check in to a ready room',

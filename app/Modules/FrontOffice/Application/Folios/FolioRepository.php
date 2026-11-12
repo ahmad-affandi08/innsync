@@ -32,6 +32,13 @@ interface FolioRepository
     /** @return list<Folio> */
     public function byReservation(PropertyId $property, string $reservationId): array;
 
+    /**
+     * What every guest in the house has been charged and still owes, for the room board: the charges of all the folios of the stay (net of reversals) and the balance of them.
+     *
+     * @return array<string, array{guest_name: string, charges_minor: int, balance_minor: int}> by reservation id
+     */
+    public function billsOfInHouse(PropertyId $property): array;
+
     /** Appends a posting under the held lock, gives it the next sequence number and moves the balance. */
     public function append(PropertyId $property, Folio $locked, Posting $posting): Posting;
 

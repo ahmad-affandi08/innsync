@@ -68,7 +68,7 @@ final readonly class DatabaseReportQueries implements ReportQueries
 
     public function revenue(PropertyId $property, ReportPeriod $period, ?RevenueScope $scope = null, ?string $userId = null): array
     {
-        $result = ['room' => self::zero(), 'laundry' => self::zero(), 'other' => self::zero(), 'net' => self::zero(), 'outlets' => []];
+        $result = ['room' => self::zero(), 'laundry' => self::zero(), 'other' => self::zero(), 'net' => self::zero(), 'outlets' => [], 'others' => []];
         $named = $this->outletsBySource($property);
 
         foreach ($named['outlets'] as $code => $name) {
@@ -80,6 +80,15 @@ final readonly class DatabaseReportQueries implements ReportQueries
                 'room', 'laundry', 'other' => $row['kind'],
                 default => null,
             };
+
+            // What no outlet of the owner names is still told apart by where it came from (restaurant, mini bar, spa...), so that a sale is never lost in one "other" line.
+            if ($bucket === 'other') {
+                $result['others'][$row['source']] ??= ['source' => $row['source'], ...self::zero()];
+
+                foreach (['base', 'service_charge', 'tax', 'total'] as $key) {
+                    $result['others'][$row['source']][$key] += $row[$key];
+                }
+            }
 
             foreach (['base', 'service_charge', 'tax', 'total'] as $key) {
                 if ($bucket === null) {
@@ -95,6 +104,9 @@ final readonly class DatabaseReportQueries implements ReportQueries
         // A limited view names only the outlets that sold something it may see.
         $outlets = $scope === null ? $result['outlets'] : array_filter($result['outlets'], static fn (array $o): bool => $o['total'] !== 0 || $o['base'] !== 0);
         $result['outlets'] = array_values($outlets);
+        $others = array_filter($result['others'], static fn (array $o): bool => $o['total'] !== 0 || $o['base'] !== 0);
+        usort($others, static fn (array $a, array $b): int => [$b['total'], $a['source']] <=> [$a['total'], $b['source']]);
+        $result['others'] = $others;
 
         return $result;
     }
