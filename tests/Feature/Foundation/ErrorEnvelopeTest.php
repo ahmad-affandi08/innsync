@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Foundation;
 
 use App\Shared\Application\Concurrency\OptimisticLockConflict;
+use App\Shared\Application\Errors\Refusal;
 use App\Shared\Application\Files\FileAccessDenied;
 use App\Shared\Application\Files\FileRejected;
 use App\Shared\Application\Idempotency\IdempotencyConflict;
@@ -15,6 +16,7 @@ use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Lang;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Validation\ValidationException;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -128,5 +130,56 @@ final class ErrorEnvelopeTest extends TestCase
 
         self::assertFalse($handler->shouldReport(OptimisticLockConflict::forRecord('a', 'b', 1)));
         self::assertTrue($handler->shouldReport(new RuntimeException('defect')));
+    }
+
+    public function test_a_refusal_with_its_own_code_is_told_in_its_own_translated_sentence(): void
+    {
+        Route::post('/_test/needs-shift', fn () => throw Refusal::stateConflict('Open your cashier shift before taking a payment.', 'fnb_shift_required'));
+        Route::post('/_test/wrong-name', fn () => throw Refusal::invalid('The name does not match the guest in this room.', ['guest_name'], 'room_name_mismatch'));
+        Route::post('/_test/plain', fn () => throw Refusal::stateConflict('Something about the state with the secret-id 42.'));
+        Route::post('/_test/unknown-code', fn () => throw Refusal::stateConflict('Another state.', 'no_such_sentence'));
+        $headers = ['Accept' => 'application/json', 'X-Correlation-ID' => self::CORRELATION_ID];
+
+        foreach (['en', 'id'] as $locale) {
+            app()->setLocale($locale);
+
+            $this->withHeaders($headers)->post('/_test/needs-shift')->assertStatus(409)
+                ->assertJsonPath('error.reason', 'fnb_shift_required')
+                ->assertJsonPath('error.message', __('errors.reason_fnb_shift_required'))
+                ->assertJsonPath('error.conflict.reason', 'state');
+
+            $this->withHeaders($headers)->post('/_test/wrong-name')->assertStatus(422)
+                ->assertJsonPath('error.reason', 'room_name_mismatch')
+                ->assertJsonPath('error.message', __('errors.reason_room_name_mismatch'))
+                ->assertJsonPath('error.fields.guest_name.0', __('errors.reason_room_name_mismatch'));
+        }
+
+        // The general sentence of the status stays for a refusal without a code or with a code that has no sentence, and the English text of the code never reaches the response.
+        foreach (['/_test/plain', '/_test/unknown-code'] as $url) {
+            $response = $this->withHeaders($headers)->post($url)->assertStatus(409)->assertJsonPath('error.message', __('errors.conflict_state'));
+            self::assertArrayNotHasKey('reason', $response->json('error'));
+            self::assertStringNotContainsString('secret-id', (string) $response->getContent());
+            self::assertStringNotContainsString('Another state', (string) $response->getContent());
+        }
+    }
+
+    public function test_every_reason_code_a_refusal_uses_has_a_sentence_in_both_languages(): void
+    {
+        $codes = [];
+
+        foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator(base_path('app'), \RecursiveDirectoryIterator::SKIP_DOTS)) as $file) {
+            if (str_ends_with((string) $file, '.php')) {
+                preg_match_all("/Refusal::(?:invalid|stateConflict|forbidden|notFound)\\('[^']*'(?:, \\[[^\\]]*\\])?, '([a-z_]+)'\\)/", (string) file_get_contents((string) $file), $found);
+                $codes = [...$codes, ...$found[1]];
+            }
+        }
+
+        self::assertNotSame([], $codes);
+
+        foreach (array_unique($codes) as $code) {
+            foreach (['en', 'id'] as $locale) {
+                self::assertTrue(Lang::has("errors.reason_{$code}", $locale, false), "errors.reason_{$code} is missing in {$locale}");
+            }
+        }
     }
 }

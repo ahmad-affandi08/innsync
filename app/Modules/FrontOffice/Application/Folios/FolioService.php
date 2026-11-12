@@ -12,6 +12,7 @@ use App\Modules\FrontOffice\Domain\Folios\Folio;
 use App\Modules\FrontOffice\Domain\Folios\FolioRuleViolation;
 use App\Modules\FrontOffice\Domain\Folios\PaymentMethod;
 use App\Modules\FrontOffice\Domain\Folios\Posting;
+use App\Modules\FrontOffice\Domain\Reservations\Reservation;
 use App\Modules\Property\Application\Catalog\RoomCatalogReader;
 use App\Modules\Property\Application\Ports\PropertyProfileReader;
 use App\Modules\Property\Application\Rates\ChargeCalculator;
@@ -201,6 +202,36 @@ final readonly class FolioService
             throw Refusal::invalid('A window is 1 to 20 and has a label of at most 60 characters.', ['window', 'label']);
         }
 
+        return $this->create($property, $actorId, $reservation, $window, $label);
+    }
+
+    /** The folio opened for a charge of another context, only for a reservation whose guest is checked in. */
+    private function openForGuestCharge(PropertyId $property, string $actorId, string $reservationId): Folio
+    {
+        $reservation = $this->reservations->find($property, $reservationId);
+
+        if ($reservation === null || $reservation->status->value !== 'checked_in') {
+            throw Refusal::stateConflict('This guest has no open folio to charge.', 'folio_none_open');
+        }
+
+        $window = 1;
+
+        foreach ($this->folios->byReservation($property, $reservationId) as $existing) {
+            $window = max($window, $existing->window + 1);
+        }
+
+        if ($window > 20) {
+            throw Refusal::stateConflict('This guest has no open folio to charge.', 'folio_none_open');
+        }
+
+        $opened = $this->create($property, $actorId, $reservation, $window, 'Guest');
+
+        return $this->folios->find($property, (string) $opened['id']) ?? throw Refusal::notFound('Folio not found.');
+    }
+
+    /** Makes the folio of a window. It checks nothing: `open` and the charges raised by another context each decide who may. @return array<string, mixed> */
+    private function create(PropertyId $property, string $actorId, Reservation $reservation, int $window, string $label): array
+    {
         return $this->transactions->run(function () use ($property, $actorId, $reservation, $window, $label): array {
             // The number is taken inside the transaction: a refused attempt does not consume one.
             $folio = new Folio($this->ledger->newId(), $this->numbers->next($property, 'FOL'), $reservation->id, $window, trim($label), $reservation->total->currency, false, Money::zero($reservation->total->currency), 0, 0);
@@ -327,8 +358,9 @@ final readonly class FolioService
             }
         }
 
+        // A guest in the house always has a folio to be charged: when the others are closed, or there is none, the next window is opened here (nobody has to open one by hand before a restaurant or laundry charge).
         if ($folio === null) {
-            throw Refusal::stateConflict('This guest has no open folio to charge.');
+            $folio = $this->openForGuestCharge($property, $actorId, strtolower($reservationId));
         }
 
         $split = $this->charges->breakdown($property, $scope, $this->businessDate->current($property), $quotedMinor, false);

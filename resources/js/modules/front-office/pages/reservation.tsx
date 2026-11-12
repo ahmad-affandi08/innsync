@@ -65,6 +65,21 @@ export default function ReservationPage({ billing, folios, group, guest_note: gu
         if (done !== null) router.visit(`/front-office/folios/${done.folio.id}`);
     }
 
+    // A payment can be taken at any time: the folio of the reservation is opened here if there is none yet, so nobody has to open one first.
+    async function takePayment() {
+        const existing = folios.find((f) => f.status !== 'closed');
+        const purpose = r.status === 'checked_in' ? 'settlement' : 'deposit';
+
+        if (existing !== undefined) {
+            router.visit(`/front-office/folios/${existing.id}?pay=${purpose}`);
+
+            return;
+        }
+
+        const done = await action.run<{ folio: { id: string } }>(`/front-office/reservations/${r.id}/folios`, { body: { label: 'Guest', window: folios.length + 1 } });
+        if (done !== null) router.visit(`/front-office/folios/${done.folio.id}?pay=${purpose}`);
+    }
+
     const expected = r.status === 'tentative' || r.status === 'confirmed' || r.status === 'guaranteed';
 
     function close() {
@@ -203,7 +218,12 @@ export default function ReservationPage({ billing, folios, group, guest_note: gu
             <section aria-labelledby="folio-h" className="flex flex-col gap-2">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                     <h2 className="text-lg font-semibold" id="folio-h">{t('fo.folio.postings')}</h2>
-                    {r.status !== 'cancelled' && r.status !== 'no_show' ? <Button disabled={action.busy} onClick={() => setNewFolio(folios.length === 0 ? 'Guest' : '')} size="sm" type="button" variant="outline">{t('fo.folio.open')}</Button> : null}
+                    {r.status !== 'cancelled' && r.status !== 'no_show' ? (
+                        <div className="flex flex-wrap gap-2">
+                            <Button disabled={action.busy} onClick={() => void takePayment()} size="sm" type="button">{t('fo.folio.addPayment')}</Button>
+                            {folios.length > 0 ? <Button disabled={action.busy} onClick={() => setNewFolio('')} size="sm" type="button" variant="outline">{t('fo.folio.open')}</Button> : null}
+                        </div>
+                    ) : null}
                 </div>
                 {newFolio !== null && (
                     <form className="flex flex-wrap items-end gap-2" onSubmit={(e) => { e.preventDefault(); void openFolio(); }}>

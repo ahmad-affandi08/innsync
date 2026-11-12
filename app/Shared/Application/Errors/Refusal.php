@@ -13,30 +13,40 @@ use RuntimeException;
 final class Refusal extends RuntimeException implements ExpectedFailure
 {
     /** @param list<string> $fields */
-    private function __construct(private readonly int $httpStatus, private readonly array $fields, string $message)
+    private function __construct(private readonly int $httpStatus, private readonly array $fields, string $message, private readonly ?string $reason = null)
     {
         parent::__construct($message);
     }
 
-    public static function forbidden(string $message): self
+    /**
+     * The `$reason` of each factory is a stable code with a fixed, translated sentence in the `errors` translation file of each language (`reason_<code>`): when there is one, the person is told that sentence instead of the
+     * general one for the status ("Open your cashier shift first" instead of "this data changed, reload"). The English `$message` stays for logs and tests and never reaches the response.
+     */
+    public static function forbidden(string $message, ?string $reason = null): self
     {
-        return new self(403, [], $message);
+        return new self(403, [], $message, $reason);
     }
 
     /** @param list<string> $fields */
-    public static function invalid(string $message, array $fields = []): self
+    public static function invalid(string $message, array $fields = [], ?string $reason = null): self
     {
-        return new self(422, $fields, $message);
+        return new self(422, $fields, $message, $reason);
     }
 
-    public static function stateConflict(string $message): self
+    public static function stateConflict(string $message, ?string $reason = null): self
     {
-        return new self(409, [], $message);
+        return new self(409, [], $message, $reason);
     }
 
-    public static function notFound(string $message): self
+    public static function notFound(string $message, ?string $reason = null): self
     {
-        return new self(404, [], $message);
+        return new self(404, [], $message, $reason);
+    }
+
+    /** The stable code of the sentence to show, or null for the general one of the status. */
+    public function reason(): ?string
+    {
+        return $this->reason;
     }
 
     public function status(): int

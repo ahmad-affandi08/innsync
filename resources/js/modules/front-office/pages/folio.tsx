@@ -1,5 +1,5 @@
 import { Link } from '@inertiajs/react';
-import { useState, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -58,6 +58,17 @@ export default function FolioPage({ approvals, folio, foreign, may_late_charge: 
     // One key per intent: a retry of the same form is the same posting (NFR-18, BR-005).
     const [intent, setIntent] = useState(() => newIdempotencyKey());
     const open = folio.status !== 'closed';
+
+    // Coming from the reservation's "Record payment" (?pay=deposit): the payment form is already open on the folio that was opened for it.
+    useEffect(() => {
+        const asked = new URLSearchParams(window.location.search).get('pay');
+
+        if (asked !== null && open) {
+            setPayment({ method: 'cash', amount: '', reference: '', purpose: asked === 'deposit' ? 'deposit' : 'settlement', currency: folio.currency });
+        }
+        // Only once, when the page is shown.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
     const money = (v: number) => format.money(v, folio.currency);
     const readyApproval = (ref: string, type: string) => approvals.find((a) => a.subject_ref === ref && a.subject_type === type && a.status === 'approved' && !a.consumed);
     const pendingApproval = (ref: string, type: string) => approvals.find((a) => a.subject_ref === ref && a.subject_type === type && a.status === 'pending');

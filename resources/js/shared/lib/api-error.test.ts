@@ -27,6 +27,16 @@ describe('failureFromResponse', () => {
         assert.equal(failure.retryable, false)
     })
 
+    it('carries the sentence of a refusal that has its own code, and nothing from one that has not', () => {
+        const withCode = failureFromResponse(409, envelope({ message: 'Buka dulu shift kasir restoran.', reason: 'fnb_shift_required', conflict: { reason: 'state', action: 'refresh' } }))
+        const without = failureFromResponse(409, envelope({ message: 'Data ini berubah.', conflict: { reason: 'state', action: 'refresh' } }))
+
+        assert.equal(withCode.detail, 'Buka dulu shift kasir restoran.')
+        assert.equal(without.detail, null)
+        assert.equal(failureFromResponse(500, null).detail, null)
+        assert.equal(offlineFailure().detail, null)
+    })
+
     it('keeps the retryable flag of a retry-action conflict', () => {
         const failure = failureFromResponse(
             409,

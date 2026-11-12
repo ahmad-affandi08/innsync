@@ -80,7 +80,7 @@ final readonly class PaymentService
 
         $this->transactions->run(function () use ($property, $actor, $billId, $lock, $method, $amountMinor, $tenderedMinor, $reference, $roomId, $guestName): void {
             $bill = $this->guard->open($property, strtolower($billId), $lock);
-            $shift = $this->store->openShiftOf($property, $actor) ?? throw Refusal::stateConflict('Open your cashier shift before taking a payment.');
+            $shift = $this->store->openShiftOf($property, $actor) ?? throw Refusal::stateConflict('Open your cashier shift before taking a payment.', 'fnb_shift_required');
             [$outlet, $totals] = $this->ready($property, $bill);
             $payments = $this->store->paymentsOf($property, $bill['id']);
             $paid = $this->sum($payments, ['paid']);
@@ -117,17 +117,17 @@ final readonly class PaymentService
                 $row['reference'] = $reference = $this->giftCards->redeem($property, $actor, $reference, $amountMinor, $this->currencies->currencyOf($property), 'fnb_payment', $row['id']);
             } else {
                 if ($paid > 0 || $reserved > 0 || $amountMinor !== $totals['total_minor']) {
-                    throw Refusal::invalid('A bill is charged to a room in full.', ['amount_minor']);
+                    throw Refusal::invalid('A bill is charged to a room in full.', ['amount_minor'], 'room_charge_in_full');
                 }
 
                 $verdict = $this->guestCharges->verdict($property, $bill['id']);
 
                 if ($verdict === 'pending') {
-                    throw Refusal::stateConflict('A guest asked to charge this bill to the room and a person has not verified the guest yet. Verify the guest first.');
+                    throw Refusal::stateConflict('A guest asked to charge this bill to the room and a person has not verified the guest yet. Verify the guest first.', 'room_charge_pending');
                 }
 
                 if ($verdict === 'rejected') {
-                    throw Refusal::stateConflict('The charge to the room of this guest order was refused. Take another way of payment.');
+                    throw Refusal::stateConflict('The charge to the room of this guest order was refused. Take another way of payment.', 'room_charge_rejected');
                 }
 
                 $stay = $this->roomStay($property, $roomId ?? $bill['room_id'], $guestName);
@@ -223,7 +223,7 @@ final readonly class PaymentService
         }
 
         if ($totals['scheme_missing']) {
-            throw Refusal::stateConflict('The service charge and tax of this outlet are not configured, so the bill cannot be paid yet.');
+            throw Refusal::stateConflict('The service charge and tax of this outlet are not configured, so the bill cannot be paid yet.', 'fnb_scheme_missing');
         }
 
         return [$outlet, $totals];
@@ -271,18 +271,18 @@ final readonly class PaymentService
     private function roomStay(PropertyId $property, ?string $roomId, ?string $guestName): array
     {
         if ($roomId === null) {
-            throw Refusal::invalid('Choose the room it is charged to.', ['room_id']);
+            throw Refusal::invalid('Choose the room it is charged to.', ['room_id'], 'room_charge_room_required');
         }
 
         $room = $this->rooms->room($property, strtolower($roomId));
         $stay = $room === null ? null : $this->guests->inHouseStayOfRoom($property, $room->id);
 
         if ($room === null || $stay === null) {
-            throw Refusal::invalid('Choose a room that has a guest in it.', ['room_id']);
+            throw Refusal::invalid('Choose a room that has a guest in it.', ['room_id'], 'room_no_guest');
         }
 
         if (! self::nameMatches((string) $guestName, (string) ($stay['guest_name'] ?? ''))) {
-            throw Refusal::invalid('The name does not match the guest in this room.', ['guest_name']);
+            throw Refusal::invalid('The name does not match the guest in this room.', ['guest_name'], 'room_name_mismatch');
         }
 
         return ['stay_id' => $stay['stay_id'], 'reservation_id' => $stay['reservation_id'], 'room_id' => $room->id];

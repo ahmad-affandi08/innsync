@@ -60,8 +60,9 @@ function pictureFor(kind: FailureKind): IllustrationName {
  * Maps a failed request to its dedicated state. Conflict, forbidden,
  * session-expired and offline are never rendered as a generic error
  * (docs/DESIGN/05-FORMS-VALIDATION.md, 07-STATES-FEEDBACK.md). Only the
- * correlation id is shown for support; server messages and exception text are
- * never rendered.
+ * correlation id is shown for support. Exception text is never rendered; the
+ * only server text shown is the fixed, translated sentence of a refusal that has
+ * its own code (`Refusal::reason()`), which says what to do first.
  */
 function ErrorState(props: ErrorStateProps) {
     const failure: Failure = toFailure(props.error);
@@ -97,6 +98,7 @@ function ErrorState(props: ErrorStateProps) {
             <Illustration className="hidden w-14 shrink-0 sm:block" name={pictureFor(failure.kind)} />
             <div className="min-w-0 flex-1">
                 <Alert actions={actions.length > 0 ? actions : undefined} title={copy.title} tone={toneFor(failure.kind)}>
+                    {failure.detail !== null ? <p className="font-medium" data-testid="error-detail">{failure.detail}</p> : null}
                     {copy.description ? <p>{copy.description}</p> : null}
                     {props.children}
                     {failure.correlationId ? (

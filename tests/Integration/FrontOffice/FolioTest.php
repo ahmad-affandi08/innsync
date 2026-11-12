@@ -500,4 +500,33 @@ final class FolioTest extends TestCase
         $moved = $this->folios()->transfer($this->property(), $this->managerId, $charge['id'], $otherFolio, 'Posted to the wrong room');
         self::assertSame([0, 12_100_000], [$moved['from']['balance_minor'], $moved['to']['balance_minor']]);
     }
+
+    public function test_a_charge_for_a_guest_in_the_house_opens_a_folio_when_none_is_open_and_one_for_a_guest_who_has_not_arrived_is_refused(): void
+    {
+        app(ChargeSchemeService::class)->define($this->property(), $this->adminId, 'laundry', '2026-10-01', '10', '10', true, 'Regional regulation');
+        $reservation = $this->book('2026-10-01', '2026-10-03', 'confirmed');
+
+        // Not arrived: no folio exists and none is made for a charge.
+        $this->expect(fn () => $this->folios()->postGuestCharge($this->property(), $this->managerId, $reservation->id, 'laundry', 'LAUNDRY', 'Laundry', 50_000_000, 'laundry', 'ldy:early'), 409);
+        self::assertSame(0, DB::table('folios')->where('reservation_id', $reservation->id)->count());
+
+        // Checked in: the folio of the stay is there, and the charge goes to it.
+        app(StayService::class)->checkIn($this->property(), $this->managerId, new CheckInRequest($reservation->id, $this->roomIds[0], 'Budi Santoso', 'ID', 'ktp', '3174010101900001', null, null, 'Jl. Merdeka 1', 2, 0), IdempotencyKey::fromString('auto-folio-checkin-0001'));
+        $first = DB::table('folios')->where('reservation_id', $reservation->id)->first();
+        $this->folios()->postGuestCharge($this->property(), $this->managerId, $reservation->id, 'laundry', 'LAUNDRY', 'Laundry', 50_000_000, 'laundry', 'ldy:one');
+        self::assertSame(1, DB::table('folios')->where('reservation_id', $reservation->id)->count());
+
+        // The only folio is paid and closed: the next charge opens window 2 by itself, with no permission asked of the caller beyond its own.
+        $view = $this->folios()->view($this->property(), $this->managerId, $first->id);
+        $this->folios()->pay($this->property(), $this->managerId, $first->id, 'cash', (int) $view['balance_minor'], null, 'settlement');
+        $this->folios()->close($this->property(), $this->managerId, $first->id, $this->folios()->view($this->property(), $this->managerId, $first->id)['lock_version']);
+
+        $posted = $this->folios()->postGuestCharge($this->property(), $this->managerId, $reservation->id, 'laundry', 'LAUNDRY', 'Laundry', 20_000_000, 'laundry', 'ldy:two');
+        $second = DB::table('folios')->where('reservation_id', $reservation->id)->where('id', '<>', $first->id)->first();
+
+        self::assertNotNull($second);
+        self::assertSame([2, 'open'], [(int) $second->window_no, $second->status]);
+        self::assertSame(1, DB::table('audit_entries')->where('action', 'folio.opened')->where('aggregate_id', $second->id)->count());
+        self::assertNotEmpty($posted);
+    }
 }

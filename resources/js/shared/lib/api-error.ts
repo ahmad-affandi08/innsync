@@ -8,6 +8,8 @@ export interface ApiErrorBody {
     correlation_id: string
     fields?: Record<string, string[]>
     conflict?: { reason: string; action: ConflictAction }
+    /** Present when the refusal has its own translated sentence in `message` (a fixed text, never exception text). */
+    reason?: string
 }
 
 export interface ApiErrorEnvelope {
@@ -60,6 +62,8 @@ export interface Failure {
     correlationId: string | null
     fields: Record<string, string[]>
     conflict: { reason: string; action: ConflictAction } | null
+    /** The refusal's own sentence ("Open your cashier shift first"), only when the server gave it a code; null otherwise. */
+    detail: string | null
 }
 
 /** Thrown by the HTTP client for every non-success outcome, including a lost network. */
@@ -99,6 +103,7 @@ export function failureFromResponse(status: number, body: unknown): Failure {
             correlationId: error.correlation_id,
             fields: error.fields ?? {},
             conflict: error.conflict ?? null,
+            detail: typeof error.reason === 'string' && typeof error.message === 'string' ? error.message : null,
         }
     }
 
@@ -110,6 +115,7 @@ export function failureFromResponse(status: number, body: unknown): Failure {
         correlationId: null,
         fields: {},
         conflict: null,
+        detail: null,
     }
 }
 
@@ -123,6 +129,7 @@ export function offlineFailure(): Failure {
         correlationId: null,
         fields: {},
         conflict: null,
+        detail: null,
     }
 }
 
@@ -140,6 +147,7 @@ export function toFailure(error: unknown): Failure {
         correlationId: null,
         fields: {},
         conflict: null,
+        detail: null,
     }
 }
 

@@ -6,6 +6,7 @@ namespace App\Shared\Infrastructure\Http\Errors;
 
 use App\Shared\Application\Concurrency\OptimisticLockConflict;
 use App\Shared\Application\Errors\ExpectedFailure;
+use App\Shared\Application\Errors\Refusal;
 use App\Shared\Application\Files\FileAccessDenied;
 use App\Shared\Application\Files\FileRejected;
 use App\Shared\Application\Files\StoredFileNotFound;
@@ -17,6 +18,7 @@ use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Session\TokenMismatchException;
+use Illuminate\Support\Facades\Lang;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 use Throwable;
@@ -83,22 +85,30 @@ final class ErrorEnvelopeFactory
     private static function expected(ExpectedFailure $failure): ErrorEnvelope
     {
         $message = __('errors.'.$failure->messageKey());
+        $reason = null;
+
+        // A refusal with its own code is told in its own fixed, translated sentence; without a sentence for it, the general one of the status stays.
+        if ($failure instanceof Refusal && $failure->reason() !== null && Lang::has('errors.reason_'.$failure->reason())) {
+            $reason = $failure->reason();
+            $message = __('errors.reason_'.$reason);
+        }
 
         if ($failure->status() === 409 && $failure->conflict() !== null) {
-            return new ErrorEnvelope(409, 'conflict', $message, conflict: $failure->conflict());
+            return new ErrorEnvelope(409, 'conflict', $message, conflict: $failure->conflict(), reason: $reason);
         }
 
         if ($failure->status() === 422) {
             $fields = [];
 
             foreach ($failure->invalidFields() as $field) {
-                $fields[$field] = [__('validation.required', ['attribute' => __("validation.attributes.{$field}") === "validation.attributes.{$field}" ? $field : __("validation.attributes.{$field}")])];
+                // A refusal that has its own sentence says it at the field; without one the field is reported as missing.
+                $fields[$field] = [$reason !== null ? $message : __('validation.required', ['attribute' => __("validation.attributes.{$field}") === "validation.attributes.{$field}" ? $field : __("validation.attributes.{$field}")])];
             }
 
-            return new ErrorEnvelope(422, 'validation_failed', $message, fields: $fields === [] ? null : $fields);
+            return new ErrorEnvelope(422, 'validation_failed', $message, fields: $fields === [] ? null : $fields, reason: $reason);
         }
 
-        return new ErrorEnvelope($failure->status(), $failure->errorCode(), $message);
+        return new ErrorEnvelope($failure->status(), $failure->errorCode(), $message, reason: $reason);
     }
 
     private static function conflict(string $reason, string $action, string $message, bool $retryable = false): ErrorEnvelope
