@@ -1,5 +1,5 @@
 import { router } from '@inertiajs/react';
-import { Eye } from 'lucide-react';
+import { Eye, UserPlus } from 'lucide-react';
 import { useState } from 'react';
 
 import { Alert } from '@/components/ui/alert';
@@ -46,6 +46,10 @@ export default function EmployeesPage({ overview }: { overview: HrOverview }) {
     const [off, setOff] = useState(OFFBOARD);
     const [settings, setSettings] = useState<{ warnDays: string; required: string[]; lock: number | null } | null>(null);
     const [loadFailed, setLoadFailed] = useState(false);
+    const [make, setMake] = useState<Employee | null>(null);
+    const [bulk, setBulk] = useState(false);
+    const [handOver, setHandOver] = useState<{ list: { name: string; email: string; role: string; password: string }[]; skipped: { name: string; reason: string }[] } | null>(null);
+    const [copied, setCopied] = useState(false);
     const failure = action.error !== null ? <ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /> : null;
     const label = (prefix: string, key: string) => t(`${prefix}.${key}` as MessageKey);
     const d = detail;
@@ -121,6 +125,37 @@ export default function EmployeesPage({ overview }: { overview: HrOverview }) {
         taken(await action.run<EmployeeDetail>(`/hr/employees/${d.id}/offboard`, { body }));
     }
 
+    async function makeAccount() {
+        if (make === null) return;
+        const result = await action.run<EmployeeDetail>(`/hr/employees/${make.id}/account`, { body: {}, reload: ['overview'] });
+
+        if (result !== null && result.account_made !== undefined) {
+            setMake(null);
+            setCopied(false);
+            setHandOver({ list: [{ name: result.full_name, email: result.account_made.email, role: result.account_made.role, password: result.account_made.temporary_password }], skipped: [] });
+            if (detail !== null) setDetail({ ...result, account_made: undefined });
+        }
+    }
+
+    async function makeAccounts() {
+        const result = await action.run<{ made: { name: string; email: string; role: string; temporary_password: string }[]; skipped: { name: string; reason: string }[] }>('/hr/employees/accounts', { body: {}, reload: ['overview'] });
+
+        if (result !== null) {
+            setBulk(false);
+            setCopied(false);
+            setHandOver({ list: result.made.map((m) => ({ name: m.name, email: m.email, role: m.role, password: m.temporary_password })), skipped: result.skipped });
+        }
+    }
+
+    async function copy(text: string) {
+        try {
+            await navigator.clipboard.writeText(text);
+            setCopied(true);
+        } catch {
+            setCopied(false);
+        }
+    }
+
     async function saveSettings() {
         if (settings === null) return;
         const result = await action.run<HrSettings>('/hr/settings', { body: { warn_days: Number(settings.warnDays), required_kinds: settings.required, lock_version: settings.lock }, reload: ['overview'] });
@@ -130,6 +165,8 @@ export default function EmployeesPage({ overview }: { overview: HrOverview }) {
 
     const edit = (e: Employee) => { action.clear(); setForm({ id: e.id, fullName: e.full_name, department: e.department, position: e.position, joinedOn: e.joined_on, contractType: e.contract_type, contractEnd: e.contract_end_on ?? '', supervisorId: e.supervisor_id ?? '', userId: e.user_id ?? '', phone: e.phone ?? '', email: e.email ?? '', lock: e.lock_version }); };
     const warningText = (w: HrWarning) => (w.type === 'contract_end' ? t('hr.warn.contract') : w.type === 'missing' ? t('hr.warn.missing', { kind: label('hr.kind', w.kind) }) : t('hr.warn.document', { kind: label('hr.kind', w.kind), title: w.title ?? '' }));
+    const ready = overview.may.account ? overview.employees.filter((e) => e.account_offer?.state === 'ready') : [];
+    const withoutLogin = overview.may.manage ? overview.employees.filter((e) => e.status === 'active' && e.user_id === null).length : 0;
     const supervisors = overview.employees.filter((e) => e.status === 'active' && e.id !== form?.id);
 
     const columns: DataGridColumn<Employee>[] = [
@@ -140,7 +177,13 @@ export default function EmployeesPage({ overview }: { overview: HrOverview }) {
         { id: 'supervisor', label: t('hr.col.supervisor'), value: (e) => e.supervisor ?? '', cell: (e) => e.supervisor ?? '—' },
         { id: 'joined', label: t('hr.col.joined'), value: (e) => e.joined_on, cell: (e) => format.date(e.joined_on) },
         { id: 'status', label: t('hr.col.status'), value: (e) => e.status, filter: 'select', filterLabel: (v) => label('hr.status', v), cell: (e) => <StatusBadge label={label('hr.status', e.status)} tone={e.status === 'active' ? 'success' : 'neutral'} /> },
-        { id: 'open', label: '', value: () => '', sortable: false, cell: (e) => <RowAction icon={Eye} label={t('hr.open')} onClick={() => void open(e)} tone="info" /> },
+        { id: 'login', label: t('hr.login.col'), value: (e) => e.account ?? '', cell: (e) => (e.account !== null ? e.account : e.status === 'active' ? <StatusBadge label={t('hr.login.none')} tone="warning" /> : '—') },
+        { id: 'open', label: '', value: () => '', sortable: false, cell: (e) => (
+            <span className="flex gap-1">
+                <RowAction icon={Eye} label={t('hr.open')} onClick={() => void open(e)} tone="info" />
+                {e.account_offer?.state === 'ready' ? <RowAction icon={UserPlus} label={t('hr.login.create')} onClick={() => { action.clear(); setMake(e); }} tone="success" /> : null}
+            </span>
+        ) },
     ];
     const warningColumns: DataGridColumn<HrWarning>[] = [
         { id: 'status', label: t('hr.col.status'), value: (w) => w.status, filter: 'select', filterLabel: (v) => label('hr.warn.status', v), cell: (w) => <StatusBadge label={label('hr.warn.status', w.status)} tone={WARNING_TONE[w.status]} /> },
@@ -157,6 +200,9 @@ export default function EmployeesPage({ overview }: { overview: HrOverview }) {
         >
             {loadFailed ? <Alert title={t('hr.loadFailed')} tone="danger" /> : null}
             {failure !== null && form === null && detail === null && settings === null ? failure : null}
+            {withoutLogin > 0 ? (
+                <Alert actions={ready.length > 0 ? <Button onClick={() => { action.clear(); setBulk(true); }} size="sm" type="button" variant="outline">{t('hr.login.createAll', { count: ready.length })}</Button> : undefined} title={t('hr.login.banner', { count: withoutLogin })} tone="info" />
+            ) : null}
             <div className="grid gap-3 sm:grid-cols-3" data-testid="hr-counts">
                 <Metric label={t('hr.status.active')} value={String(overview.counts.active)} />
                 <Metric label={t('hr.status.offboarded')} value={String(overview.counts.offboarded)} />
@@ -211,7 +257,14 @@ export default function EmployeesPage({ overview }: { overview: HrOverview }) {
                             <div><dt className="text-muted-foreground">{t('hr.col.supervisor')}</dt><dd>{d.supervisor ?? '—'}</dd></div>
                             <div><dt className="text-muted-foreground">{t('hr.col.joined')}</dt><dd>{format.date(d.joined_on)}</dd></div>
                             <div><dt className="text-muted-foreground">{t('hr.col.contract')}</dt><dd>{label('hr.contract', d.contract_type)}{d.contract_end_on !== null ? ` · ${t('hr.until', { date: format.date(d.contract_end_on) })}` : ''}</dd></div>
-                            <div><dt className="text-muted-foreground">{t('hr.account')}</dt><dd>{d.account ?? '—'}</dd></div>
+                            <div>
+                                <dt className="text-muted-foreground">{t('hr.account')}</dt>
+                                <dd>
+                                    {d.account ?? (d.account_offer === null ? '—' : d.account_offer.state === 'ready'
+                                        ? <Button onClick={() => { action.clear(); setMake(d); }} size="sm" type="button" variant="outline">{t('hr.login.create')}</Button>
+                                        : <span className="text-warning">{d.account_offer.state === 'no_email' ? t('hr.login.noEmail') : t('hr.login.noRole', { position: d.position })}</span>)}
+                                </dd>
+                            </div>
                             <div><dt className="text-muted-foreground">{t('hr.phone')}</dt><dd>{d.phone ?? '—'}</dd></div>
                             {d.status === 'offboarded' ? <div className="sm:col-span-2"><dt className="text-muted-foreground">{t('hr.left')}</dt><dd>{d.offboarded_on === null ? '' : format.date(d.offboarded_on)} · {d.offboard_kind === null ? '' : label('hr.leave', d.offboard_kind)}{d.offboard_reason !== null ? ` · ${d.offboard_reason}` : ''}{d.offboarded_by !== null ? ` · ${d.offboarded_by}` : ''}</dd></div> : null}
                         </dl>
@@ -287,6 +340,57 @@ export default function EmployeesPage({ overview }: { overview: HrOverview }) {
                 )}
             </Dialog>
             <CsvImportDialog endpoint="/hr/employees/import" hint={t('import.emp.hint')} onClose={() => setImporting(false)} open={importing} title={t('import.emp.title')} />
+            <Dialog
+                footer={<><Button disabled={action.busy} onClick={() => setMake(null)} type="button" variant="outline">{t('ui.dialog.cancel')}</Button><Button loading={action.busy} onClick={() => void makeAccount()} type="button">{t('hr.login.submit')}</Button></>}
+                onClose={() => setMake(null)}
+                open={make !== null}
+                title={make === null ? '' : t('hr.login.title', { name: make.full_name })}
+            >
+                {make !== null && (
+                    <div className="flex flex-col gap-3">
+                        {failure}
+                        <p className="text-sm text-muted-foreground">{t('hr.login.body', { email: make.email ?? '', role: make.account_offer?.role ?? '' })}</p>
+                    </div>
+                )}
+            </Dialog>
+
+            <Dialog
+                footer={<Button onClick={() => setHandOver(null)} type="button">{t('acc.temp.done')}</Button>}
+                onClose={() => setHandOver(null)}
+                open={handOver !== null}
+                title={t('acc.temp.title')}
+            >
+                {handOver !== null && (
+                    <div className="flex flex-col gap-3">
+                        <p className="text-sm text-muted-foreground">{t('acc.temp.body')}</p>
+                        <ul className="max-h-72 divide-y divide-border overflow-y-auto border border-border bg-surface">
+                            {handOver.list.map((h) => (
+                                <li className="flex flex-col gap-0.5 px-3 py-2" key={h.email}>
+                                    <span className="text-sm font-medium">{h.name} <span className="font-normal text-muted-foreground">· {h.email} · {h.role}</span></span>
+                                    <code className="break-all font-mono text-base" data-testid="temporary-password">{h.password}</code>
+                                </li>
+                            ))}
+                        </ul>
+                        {handOver.skipped.length > 0 ? <Alert title={t('hr.login.skipped', { count: handOver.skipped.length })} tone="warning"><ul className="mt-1 list-disc pl-5 text-sm">{handOver.skipped.map((k) => <li key={k.name}>{k.name}: {k.reason}</li>)}</ul></Alert> : null}
+                        <div><Button onClick={() => void copy(handOver.list.map((h) => `${h.name}\t${h.email}\t${h.password}`).join('\n'))} size="sm" type="button" variant="outline">{copied ? t('acc.temp.copied') : t('acc.temp.copy')}</Button></div>
+                    </div>
+                )}
+            </Dialog>
+
+            <Dialog
+                footer={<><Button disabled={action.busy} onClick={() => setBulk(false)} type="button" variant="outline">{t('ui.dialog.cancel')}</Button><Button loading={action.busy} onClick={() => void makeAccounts()} type="button">{t('hr.login.submitAll', { count: ready.length })}</Button></>}
+                onClose={() => setBulk(false)}
+                open={bulk}
+                title={t('hr.login.titleAll')}
+            >
+                <div className="flex flex-col gap-3">
+                    {failure}
+                    <p className="text-sm text-muted-foreground">{t('hr.login.bodyAll')}</p>
+                    <ul className="max-h-60 divide-y divide-border overflow-y-auto border border-border bg-surface text-sm">
+                        {ready.map((e) => <li className="flex flex-wrap justify-between gap-2 px-3 py-1.5" key={e.id}><span>{e.full_name} <span className="text-muted-foreground">· {e.email}</span></span><span className="text-muted-foreground">{e.account_offer?.role}</span></li>)}
+                    </ul>
+                </div>
+            </Dialog>
         </HrShell>
     );
 }

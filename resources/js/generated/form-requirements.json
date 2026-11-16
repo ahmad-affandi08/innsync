@@ -622,6 +622,7 @@
         "email",
         "name",
         "people",
+        "position",
         "reason",
         "role_id",
         "scope_type"

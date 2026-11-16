@@ -42,6 +42,18 @@ final readonly class EmployeeController
         return $this->json($this->employees->update($this->property->current(), $this->actor($request), $id, $this->fields($request), (int) $lock['lock_version']));
     }
 
+    /** The temporary password is in the answer once; `json()` already says not to cache it. */
+    public function openAccount(Request $request, string $id): JsonResponse
+    {
+        return $this->json($this->employees->openAccount($this->property->current(), $this->actor($request), $id), 201);
+    }
+
+    /** Every employee who can have an account now; the temporary passwords are in the answer once. */
+    public function openAccounts(Request $request): JsonResponse
+    {
+        return $this->json($this->employees->openAccounts($this->property->current(), $this->actor($request)), 201);
+    }
+
     public function offboard(Request $request, string $id): JsonResponse
     {
         $data = $request->validate([

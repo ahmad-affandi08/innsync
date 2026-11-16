@@ -64,6 +64,22 @@ final readonly class AccessAdminController
         return $this->once(['created' => array_map(static fn (array $p, string $id): array => ['id' => $id, 'name' => $p['name'], 'email' => mb_strtolower(trim($p['email'])), 'temporary_password' => $p['password']], $people, $ids)], 201);
     }
 
+    public function setPositionRole(Request $request): JsonResponse
+    {
+        $data = $request->validate(['position' => ['required', 'string', 'max:80'], 'role_id' => ['required', 'string', 'size:26'], 'reason' => ['required', 'string', 'max:500']]);
+        $this->access->setPositionRole($this->property->current(), $this->actor($request), $data['position'], $data['role_id'], $data['reason']);
+
+        return $this->once(['ok' => true]);
+    }
+
+    public function removePositionRole(Request $request): JsonResponse
+    {
+        $data = $request->validate(['position' => ['required', 'string', 'max:80'], 'reason' => ['required', 'string', 'max:500']]);
+        $this->access->removePositionRole($this->property->current(), $this->actor($request), $data['position'], $data['reason']);
+
+        return $this->once(['ok' => true]);
+    }
+
     public function assign(Request $request, string $id): JsonResponse
     {
         $data = $request->validate([

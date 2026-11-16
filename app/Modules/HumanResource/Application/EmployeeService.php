@@ -8,11 +8,13 @@ use App\Modules\Property\Application\Settings\BusinessDateProvider;
 use App\Shared\Application\Audit\AuditEntry;
 use App\Shared\Application\Audit\AuditTrail;
 use App\Shared\Application\Documents\DocumentNumbers;
+use App\Shared\Application\Errors\ExpectedFailure;
 use App\Shared\Application\Errors\Refusal;
 use App\Shared\Application\Files\StoredFileRepository;
 use App\Shared\Application\Identifiers\IdentifierGenerator;
 use App\Shared\Application\Retention\RetentionPolicies;
 use App\Shared\Application\Security\StaffAccess;
+use App\Shared\Application\Security\StaffAccounts;
 use App\Shared\Application\Security\StaffDirectory;
 use App\Shared\Application\Time\Clock;
 use App\Shared\Application\Transactions\TransactionRunner;
@@ -20,6 +22,7 @@ use App\Shared\Domain\Tenancy\PropertyId;
 use App\Shared\Domain\Time\DateMath;
 use DateTimeImmutable;
 use DateTimeZone;
+use Throwable;
 
 /**
  * The people who work in the property (FR-HR-001, -003, -005). A manager keeps the employee records (number, name, department, position, the day they joined, the kind of contract
@@ -40,11 +43,14 @@ final readonly class EmployeeService
 
     private const MAX_ITEMS = 20;
 
+    public const MAX_ACCOUNTS = 50;
+
     public function __construct(
         private EmployeeStore $store,
         private HrAccess $access,
         private StaffDirectory $staff,
         private StaffAccess $staffAccess,
+        private StaffAccounts $accounts,
         private RosterService $roster,
         private LeaveService $leave,
         private FaceService $faces,
@@ -72,15 +78,18 @@ final readonly class EmployeeService
         $names = $this->staff->namesOf($property, array_values(array_filter(array_column($rows, 'user_id'))));
         $linked = array_filter(array_column($rows, 'user_id'));
 
+        $mayOpen = $caps['manage'] && $this->accounts->mayOpen($property, $actorId);
+        $roles = $mayOpen ? $this->accounts->roleNamesFor($property, array_values(array_unique(array_column($rows, 'position')))) : [];
+
         return [
-            'employees' => array_map(fn (array $e): array => $this->head($e, $names), $rows),
+            'employees' => array_map(fn (array $e): array => [...$this->head($e, $names), 'account_offer' => $mayOpen ? $this->offer($e, $roles) : null], $rows),
             'counts' => ['active' => count(array_filter($rows, static fn (array $e): bool => $e['status'] === 'active')), 'offboarded' => count(array_filter($rows, static fn (array $e): bool => $e['status'] === 'offboarded'))],
             'warnings' => $caps['manage'] || $caps['documents'] ? $this->warnings($property) : [],
             'settings' => $this->settings($property),
             'departments' => self::DEPARTMENTS, 'contracts' => self::CONTRACTS, 'offboard_kinds' => self::OFFBOARD_KINDS, 'document_kinds' => DocumentService::KINDS,
             'accounts' => $caps['manage'] ? array_values(array_filter($this->staff->members($property), static fn (array $m): bool => ! in_array($m['id'], $linked, true))) : [],
             'business_date' => $this->businessDate->current($property)->toString(),
-            'may' => $caps,
+            'may' => [...$caps, 'account' => $mayOpen],
         ];
     }
 
@@ -92,8 +101,11 @@ final readonly class EmployeeService
         $names = $this->staff->namesOf($property, array_values(array_filter([$e['user_id'], $e['offboarded_by'], $e['created_by']])));
         $items = $this->store->offboardItems($property, $e['id']);
 
+        $mayOpen = $caps['manage'] && $this->accounts->mayOpen($property, $actorId);
+
         return [
             ...$this->head($e, $names),
+            'account_offer' => $mayOpen ? $this->offer($e, $this->accounts->roleNamesFor($property, [$e['position']])) : null,
             'subordinates' => count($this->store->subordinatesOf($property, $e['id'])), 'offboard_reason' => $e['offboard_reason'], 'offboarded_by' => $names[$e['offboarded_by'] ?? ''] ?? null,
             'offboard_items' => array_map(static fn (array $i): array => ['item' => $i['item'], 'returned' => (bool) $i['returned'], 'note' => $i['note']], $items),
             'supervisors' => $caps['manage'] ? array_values(array_map(static fn (array $s): array => ['id' => $s['id'], 'number' => $s['number'], 'name' => $s['full_name']], array_filter($this->store->employees($property, 'active'), static fn (array $s): bool => $s['id'] !== $e['id']))) : [],
@@ -145,6 +157,106 @@ final readonly class EmployeeService
         });
 
         return $this->show($property, $actorId, $id);
+    }
+
+    /**
+     * Opens the login account of the employee (CR-0002): the name and work e-mail come from the record, the role from the position map, and the record is linked to the new account in
+     * the same step. The temporary password is returned once and kept nowhere in clear. Needs the right to write employees and to manage users.
+     *
+     * @return array<string, mixed>
+     */
+    public function openAccount(PropertyId $property, string $actorId, string $id): array
+    {
+        $this->access->require($property, $actorId, HrAccess::MANAGE, 'This person may not write employee records.');
+        $made = $this->openOne($property, $actorId, $id);
+
+        return [...$this->show($property, $actorId, $id), 'account_made' => $made];
+    }
+
+    /**
+     * Opens the account of every active employee who can have one now (a work e-mail and a role set for the position), up to MAX_ACCOUNTS at a time. Each one stands alone: someone whose
+     * e-mail is already used is left out and named, the others are made.
+     *
+     * @return array{made: list<array{name: string, email: string, role: string, temporary_password: string}>, skipped: list<array{name: string, reason: string}>}
+     */
+    public function openAccounts(PropertyId $property, string $actorId): array
+    {
+        $this->access->require($property, $actorId, HrAccess::MANAGE, 'This person may not write employee records.');
+
+        if (! $this->accounts->mayOpen($property, $actorId)) {
+            throw Refusal::forbidden('This person may not open accounts.');
+        }
+
+        $rows = $this->store->employees($property, 'active');
+        $roles = $this->accounts->roleNamesFor($property, array_values(array_unique(array_column($rows, 'position'))));
+        $ready = array_slice(array_values(array_filter($rows, fn (array $e): bool => ($this->offer($e, $roles)['state'] ?? '') === 'ready')), 0, self::MAX_ACCOUNTS);
+        $made = [];
+        $skipped = [];
+
+        foreach ($ready as $e) {
+            try {
+                $made[] = ['name' => $e['full_name'], ...$this->openOne($property, $actorId, $e['id'])];
+            } catch (Throwable $failure) {
+                if (! $failure instanceof ExpectedFailure) {
+                    throw $failure;
+                }
+
+                $skipped[] = ['name' => $e['full_name'], 'reason' => $failure->getMessage()];
+            }
+        }
+
+        return ['made' => $made, 'skipped' => $skipped];
+    }
+
+    /** @return array{email: string, role: string, temporary_password: string} */
+    private function openOne(PropertyId $property, string $actorId, string $id): array
+    {
+        $actor = strtolower($actorId);
+        $made = [];
+
+        $this->transactions->run(function () use ($property, $actor, $actorId, $id, &$made): void {
+            $this->store->lockEmployee($property, strtolower($id));
+            $e = $this->employee($property, $id);
+
+            if ($e['status'] !== 'active') {
+                throw Refusal::stateConflict('This person has left. No account is opened for them.');
+            }
+
+            if ($e['user_id'] !== null) {
+                throw Refusal::stateConflict('This person already has an account.');
+            }
+
+            if ($e['email'] === null || trim((string) $e['email']) === '') {
+                throw Refusal::invalid('Add the work e-mail of this person first: it is the login.', ['email']);
+            }
+
+            $made = $this->accounts->open($property, $actorId, $e['full_name'], (string) $e['email'], $e['position'], 'From the employee record '.$e['number']);
+
+            if (! $this->store->updateEmployee($property, $e['id'], (int) $e['lock_version'], ['user_id' => $made['user_id']], $this->clock->nowUtc())) {
+                throw Refusal::stateConflict('This record changed after you opened it. Reload it.');
+            }
+
+            $this->audit->record(new AuditEntry($property->toString(), $actor, 'employee.account-opened', 'employee', $e['id'], null, ['number' => $e['number'], 'user_id' => $made['user_id'], 'role' => $made['role']]));
+        });
+
+        return ['email' => $made['email'], 'role' => $made['role'], 'temporary_password' => $made['temporary_password']];
+    }
+
+    /**
+     * What may be done about the missing account of an active employee: `ready` (with the role it would get), `no_email` or `no_role`; null when they have one or have left.
+     *
+     * @param  array<string, string>  $roles position to role name
+     * @return array{state: string, role: ?string}|null
+     */
+    private function offer(array $e, array $roles): ?array
+    {
+        if ($e['status'] !== 'active' || $e['user_id'] !== null) {
+            return null;
+        }
+
+        $role = $roles[$e['position']] ?? null;
+
+        return ['state' => $role === null ? 'no_role' : (trim((string) $e['email']) === '' ? 'no_email' : 'ready'), 'role' => $role];
     }
 
     /**

@@ -246,4 +246,24 @@ final readonly class DatabaseAccessDirectory implements AccessDirectory
 
         DB::table('role_permissions')->insert($rows);
     }
+
+    public function positionRoles(PropertyId $property): array
+    {
+        return DB::table('access_position_roles')->where('property_id', $property->toString())->orderBy('position')->get(['position_key', 'position', 'role_id'])
+            ->map(static fn ($r): array => ['position_key' => (string) $r->position_key, 'position' => (string) $r->position, 'role_id' => strtolower((string) $r->role_id)])->all();
+    }
+
+    public function savePositionRole(PropertyId $property, string $key, string $position, string $roleId, string $by): void
+    {
+        DB::table('access_position_roles')->upsert(
+            [['property_id' => $property->toString(), 'position_key' => $key, 'position' => $position, 'role_id' => $roleId, 'updated_by' => $by, 'created_at' => now(), 'updated_at' => now()]],
+            ['property_id', 'position_key'],
+            ['position', 'role_id', 'updated_by', 'updated_at'],
+        );
+    }
+
+    public function deletePositionRole(PropertyId $property, string $key): void
+    {
+        DB::table('access_position_roles')->where('property_id', $property->toString())->where('position_key', $key)->delete();
+    }
 }

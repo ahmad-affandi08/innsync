@@ -8,6 +8,7 @@ use App\Modules\IdentityAccess\Application\Ports\AccessDirectory;
 use App\Shared\Application\Audit\AuditEntry;
 use App\Shared\Application\Audit\AuditTrail;
 use App\Shared\Application\Identifiers\IdentifierGenerator;
+use App\Shared\Application\Security\EmployeeLinks;
 use App\Shared\Application\Security\PermissionChecker;
 use App\Shared\Application\Tenancy\PropertyContext;
 use App\Shared\Application\Tenancy\PropertyScopeViolation;
@@ -43,14 +44,118 @@ final readonly class AccessAdmin
         private AuditTrail $audit,
         private PropertyContext $property,
         private IdentifierGenerator $ids,
+        private EmployeeLinks $employees,
     ) {}
 
-    /** @return array{people: list<array<string, mixed>>, roles: list<array<string, mixed>>, outlets: list<array{id: string, name: string}>} */
+    /** @return array{people: list<array<string, mixed>>, roles: list<array<string, mixed>>, outlets: list<array{id: string, name: string}>, position_roles: list<array<string, string>>} */
     public function peopleOverview(PropertyId $property, string $actorId): array
     {
         $this->authorize($property, $actorId, self::USER_PERMISSION);
 
-        return ['people' => $this->directory->people($property), 'roles' => $this->directory->roles($property), 'outlets' => $this->directory->outlets($property)];
+        $people = $this->directory->people($property);
+        $roles = $this->directory->roles($property);
+        $links = $this->employees->ofUsers($property, array_column($people, 'id'));
+        $names = array_column($roles, 'name', 'id');
+
+        return [
+            'people' => array_map(static fn (array $p): array => [...$p, 'employee' => $links[$p['id']] ?? null], $people),
+            'roles' => $roles,
+            'outlets' => $this->directory->outlets($property),
+            'position_roles' => array_map(static fn (array $m): array => ['position' => $m['position'], 'role_id' => $m['role_id'], 'role_name' => $names[$m['role_id']] ?? ''], $this->directory->positionRoles($property)),
+        ];
+    }
+
+    /** The role an employee in this position gets when their account is opened from the HR record; null when none is set (CR-0002). */
+    public function roleForPosition(PropertyId $property, string $position): ?array
+    {
+        $map = $this->directory->positionRoles($property);
+        $key = self::positionKey($position);
+
+        foreach ($map as $m) {
+            if ($m['position_key'] === $key) {
+                return $this->directory->role($property, $m['role_id']);
+            }
+        }
+
+        return null;
+    }
+
+    /** @return array<string, string> the name of the active role each mapped position gets, keyed by the position key */
+    public function roleNamesByPosition(PropertyId $property): array
+    {
+        $roles = [];
+
+        foreach ($this->directory->roles($property) as $r) {
+            if ($r['is_active']) {
+                $roles[$r['id']] = $r['name'];
+            }
+        }
+
+        $out = [];
+
+        foreach ($this->directory->positionRoles($property) as $m) {
+            if (isset($roles[$m['role_id']])) {
+                $out[$m['position_key']] = $roles[$m['role_id']];
+            }
+        }
+
+        return $out;
+    }
+
+    /** Sets the role the account of an employee in this position gets. Only a role the actor may give, and never the Administrator role. */
+    public function setPositionRole(PropertyId $property, string $actorId, string $position, string $roleId, string $reason): void
+    {
+        $this->authorize($property, $actorId, self::USER_PERMISSION);
+        $this->requireReason($reason);
+        $position = trim((string) preg_replace('/\s+/u', ' ', $position));
+
+        if ($position === '' || mb_strlen($position) > 80) {
+            throw AccessRefused::because(AccessRefused::INVALID, 'Give the position in at most 80 characters.', 'position');
+        }
+
+        $a = $this->prepareAssignment($property, $actorId, $roleId, 'property', null);
+
+        if ($a['role_name'] === self::PROTECTED_ROLE) {
+            throw AccessRefused::because(AccessRefused::PROTECTED_ROLE, 'The Administrator role cannot be given from a position.', 'role_id');
+        }
+
+        $this->transactions->run(function () use ($property, $actorId, $position, $a, $reason): void {
+            $this->directory->savePositionRole($property, self::positionKey($position), $position, $a['role_id'], strtolower($actorId));
+            $this->audit->record(new AuditEntry($property->toString(), $actorId, 'identity.position-role.set', 'position', self::positionKey($position), null, ['position' => $position, 'role' => $a['role_name']], trim($reason)));
+        });
+    }
+
+    public function removePositionRole(PropertyId $property, string $actorId, string $position, string $reason): void
+    {
+        $this->authorize($property, $actorId, self::USER_PERMISSION);
+        $this->requireReason($reason);
+        $key = self::positionKey($position);
+
+        $this->transactions->run(function () use ($property, $actorId, $key, $position, $reason): void {
+            $this->directory->deletePositionRole($property, $key);
+            $this->audit->record(new AuditEntry($property->toString(), $actorId, 'identity.position-role.removed', 'position', $key, ['position' => $position], null, trim($reason)));
+        });
+    }
+
+    /**
+     * Opens the account of an employee: the role comes from the position map, the scope is the whole property. All the rules of createAccount apply (the actor manages users and holds
+     * every permission of the role; the email is new). Returns the new account's id and the name of the role it was given.
+     *
+     * @return array{user_id: string, role: string}
+     */
+    public function createAccountForPosition(PropertyId $property, string $actorId, string $name, string $email, string $position, string $password, string $reason): array
+    {
+        $this->authorize($property, $actorId, self::USER_PERMISSION);
+        $role = $this->roleForPosition($property, $position) ?? throw AccessRefused::because(AccessRefused::INVALID, 'No role is set for this position yet. Set it under People and access.', 'position');
+        $userId = $this->createAccount($property, $actorId, $name, $email, $password, [['role_id' => $role['id'], 'scope_type' => 'property', 'scope_id' => null]], $reason);
+
+        return ['user_id' => $userId, 'role' => $role['name']];
+    }
+
+    /** Position written the way an employee record has it, for comparing without case or extra spaces. */
+    public static function positionKey(string $position): string
+    {
+        return mb_substr(mb_strtolower(trim((string) preg_replace('/\s+/u', ' ', $position))), 0, 80);
     }
 
     /** @return array{roles: list<array<string, mixed>>, permissions: list<string>} */

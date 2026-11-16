@@ -255,6 +255,8 @@ use App\Modules\IdentityAccess\Infrastructure\Authentication\EloquentUserPasswor
 use App\Modules\IdentityAccess\Infrastructure\Authorization\DatabaseAccessDirectory;
 use App\Modules\IdentityAccess\Infrastructure\Authorization\DatabaseModuleAccess;
 use App\Modules\IdentityAccess\Infrastructure\Authorization\DatabaseProfileRoles;
+use App\Modules\HumanResource\Infrastructure\DatabaseEmployeeLinks;
+use App\Modules\IdentityAccess\Infrastructure\Authorization\AccessStaffAccounts;
 use App\Modules\IdentityAccess\Infrastructure\Authorization\DatabaseStaffAccess;
 use App\Modules\IdentityAccess\Infrastructure\Authorization\DatabaseStaffContacts;
 use App\Modules\IdentityAccess\Infrastructure\Authorization\DatabaseStaffDirectory;
@@ -433,7 +435,9 @@ use App\Shared\Application\Retention\RetentionOverrides;
 use App\Shared\Application\Security\PermissionChecker;
 use App\Shared\Application\Security\SecurityEventWriter;
 use App\Shared\Application\Security\SecurityLog;
+use App\Shared\Application\Security\EmployeeLinks;
 use App\Shared\Application\Security\StaffAccess;
+use App\Shared\Application\Security\StaffAccounts;
 use App\Shared\Application\Security\StaffContacts;
 use App\Shared\Application\Security\StaffDirectory;
 use App\Shared\Application\Security\SystemActors;
@@ -579,6 +583,8 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(ReportScheduleRepository::class, DatabaseReportScheduleRepository::class);
         $this->app->bind(ReportNotifier::class, MailReportNotifier::class);
         $this->app->bind(StaffAccess::class, DatabaseStaffAccess::class);
+        $this->app->bind(StaffAccounts::class, AccessStaffAccounts::class);
+        $this->app->bind(EmployeeLinks::class, DatabaseEmployeeLinks::class);
         $this->app->bind(EmployeeStore::class, DatabaseEmployeeStore::class);
         $this->app->bind(RosterStore::class, DatabaseRosterStore::class);
         $this->app->bind(AttendanceStore::class, DatabaseAttendanceStore::class);

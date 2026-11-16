@@ -16,7 +16,9 @@ import { useErrorStateCopy } from '@/shared/i18n/use-ui-copy';
 import { parsePeople } from '@/shared/lib/people-list';
 
 type Assignment = { id: string; role_id: string; role_name: string; scope_type: string; scope_id: string; scope_name: string; is_active: boolean };
-type Person = { id: string; name: string; email: string; is_active: boolean; must_change_password: boolean; mfa: boolean; locked_until: string | null; last_login_at: string | null; assignments: Assignment[] };
+type EmployeeLink = { id: string; number: string; name: string; department: string; position: string; status: string };
+type PositionRole = { position: string; role_id: string; role_name: string };
+type Person = { employee: EmployeeLink | null; id: string; name: string; email: string; is_active: boolean; must_change_password: boolean; mfa: boolean; locked_until: string | null; last_login_at: string | null; assignments: Assignment[] };
 type Role = { id: string; name: string; is_active: boolean };
 type Outlet = { id: string; name: string };
 
@@ -27,9 +29,11 @@ type Dialogue =
     | { kind: 'revoke'; person: Person; assignment: Assignment; reason: string }
     | { kind: 'active'; person: Person; active: boolean; reason: string }
     | { kind: 'unlock'; person: Person; reason: string }
-    | { kind: 'reset'; person: Person; reason: string };
+    | { kind: 'reset'; person: Person; reason: string }
+    | { kind: 'position'; position: string; roleId: string; reason: string }
+    | { kind: 'unposition'; position: string; reason: string };
 
-export default function UsersPage({ people, roles, outlets }: { people: Person[]; roles: Role[]; outlets: Outlet[] }) {
+export default function UsersPage({ people, roles, outlets, position_roles: positionRoles }: { people: Person[]; roles: Role[]; outlets: Outlet[]; position_roles: PositionRole[] }) {
     const { t } = useTranslation();
     const format = useFormatters();
     const errorCopy = useErrorStateCopy();
@@ -38,6 +42,8 @@ export default function UsersPage({ people, roles, outlets }: { people: Person[]
     const [handOver, setHandOver] = useState<{ name: string; email: string; password: string }[] | null>(null);
     const [copied, setCopied] = useState(false);
     const activeRoles = roles.filter((r) => r.is_active);
+    // The Administrator role is the system's: it is never given from a position.
+    const mappable = activeRoles.filter((r) => r.name !== 'Administrator');
 
     const scopeLabel = (a: Assignment) => (a.scope_type === 'outlet' ? t('acc.scope.outlet', { name: a.scope_name }) : t('acc.scope.property'));
 
@@ -48,7 +54,7 @@ export default function UsersPage({ people, roles, outlets }: { people: Person[]
 
     async function submit() {
         if (dialogue === null) return;
-        const reload = ['people'];
+        const reload = ['people', 'position_roles'];
         const scope = (d: { scopeType: string; outletId: string }) => ({ scope_type: d.scopeType, scope_id: d.scopeType === 'outlet' ? d.outletId : null });
         let done: unknown = null;
 
@@ -72,6 +78,10 @@ export default function UsersPage({ people, roles, outlets }: { people: Person[]
                 setHandOver(result.created.map((c) => ({ name: c.name, email: c.email, password: c.temporary_password })));
             }
             done = result;
+        } else if (dialogue.kind === 'position') {
+            done = await action.run('/access/position-roles', { body: { position: dialogue.position, role_id: dialogue.roleId, reason: dialogue.reason }, reload });
+        } else if (dialogue.kind === 'unposition') {
+            done = await action.run('/access/position-roles/remove', { body: { position: dialogue.position, reason: dialogue.reason }, reload });
         } else if (dialogue.kind === 'assign') {
             done = await action.run(`/access/users/${dialogue.person.id}/roles`, { body: { role_id: dialogue.roleId, reason: dialogue.reason, ...scope(dialogue) }, reload });
         } else if (dialogue.kind === 'revoke') {
@@ -110,6 +120,8 @@ export default function UsersPage({ people, roles, outlets }: { people: Person[]
             case 'revoke': return t('acc.revoke.title', { role: dialogue.assignment.role_name, name: dialogue.person.name });
             case 'active': return t(dialogue.active ? 'acc.activate.title' : 'acc.deactivate.title', { name: dialogue.person.name });
             case 'unlock': return t('acc.unlock.title', { name: dialogue.person.name });
+            case 'position': return t('acc.map.setTitle');
+            case 'unposition': return t('acc.map.removeTitle', { position: dialogue.position });
             default: return t('acc.reset.title', { name: dialogue.person.name });
         }
     })();
@@ -122,6 +134,8 @@ export default function UsersPage({ people, roles, outlets }: { people: Person[]
         active: dialogue.kind === 'active' && dialogue.active ? t('acc.users.activate') : t('acc.users.deactivate'),
         unlock: t('acc.users.unlock'),
         reset: t('acc.users.resetPassword'),
+        position: t('acc.map.submit'),
+        unposition: t('acc.map.remove'),
     }[dialogue.kind];
 
     const roleFields = dialogue !== null && (dialogue.kind === 'create' || dialogue.kind === 'assign' || dialogue.kind === 'bulk') ? (
@@ -164,6 +178,28 @@ export default function UsersPage({ people, roles, outlets }: { people: Person[]
             >
                 {dialogue === null && action.error !== null ? <ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /> : null}
                 {activeRoles.length === 0 ? <Alert title={t('acc.users.noRolesAvailable')} tone="warning" /> : null}
+                <section aria-labelledby="acc-map-h" className="flex flex-col gap-3" data-testid="position-roles">
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                        <div className="min-w-0">
+                            <h2 className="text-base font-semibold" id="acc-map-h">{t('acc.map.title')}</h2>
+                            <p className="max-w-3xl text-sm text-muted-foreground">{t('acc.map.hint')}</p>
+                        </div>
+                        <Button disabled={mappable.length === 0} onClick={() => open({ kind: 'position', position: '', roleId: mappable[0]?.id ?? '', reason: '' })} type="button" variant="outline">{t('acc.map.add')}</Button>
+                    </div>
+                    {positionRoles.length === 0 ? <p className="text-sm text-muted-foreground">{t('acc.map.empty')}</p> : (
+                        <ul className="list-panel divide-y divide-border">
+                            {positionRoles.map((m) => (
+                                <li className="flex flex-wrap items-center justify-between gap-2 py-2 text-sm" key={m.position}>
+                                    <span><span className="font-medium">{m.position}</span> → {m.role_name}</span>
+                                    <span className="flex gap-2">
+                                        <Button onClick={() => open({ kind: 'position', position: m.position, roleId: m.role_id, reason: '' })} size="sm" type="button" variant="outline">{t('acc.map.change')}</Button>
+                                        <Button onClick={() => open({ kind: 'unposition', position: m.position, reason: '' })} size="sm" type="button" variant="outline">{t('acc.map.remove')}</Button>
+                                    </span>
+                                </li>
+                            ))}
+                        </ul>
+                    )}
+                </section>
                 {people.length === 0 ? <p className="text-sm text-muted-foreground">{t('acc.users.empty')}</p> : (
                     <ul className="list-panel divide-y divide-border">
                         {people.map((p) => {
@@ -175,6 +211,11 @@ export default function UsersPage({ people, roles, outlets }: { people: Person[]
                                         <div className="min-w-0">
                                             <p className="truncate text-sm font-semibold">{p.name}</p>
                                             <p className="truncate text-sm text-muted-foreground">{p.email}</p>
+                                            <p className="truncate text-sm">
+                                                {p.employee !== null
+                                                    ? <a className="underline-offset-2 hover:underline" href="/hr/employees">{t('acc.users.employee', { number: p.employee.number, position: p.employee.position })}</a>
+                                                    : <span className="text-warning">{t('acc.users.noEmployee')}</span>}
+                                            </p>
                                             <p className="mt-1 text-xs text-muted-foreground">
                                                 {p.last_login_at === null ? t('acc.users.neverLogin') : t('acc.users.lastLogin', { when: format.instant(p.last_login_at) })}
                                             </p>
@@ -212,7 +253,7 @@ export default function UsersPage({ people, roles, outlets }: { people: Person[]
             <Dialog
                 footer={<>
                     <Button disabled={action.busy} onClick={() => setDialogue(null)} type="button" variant="outline">{t('ui.dialog.cancel')}</Button>
-                    <Button loading={action.busy} onClick={() => void submit()} type="button" variant={dialogue?.kind === 'revoke' || (dialogue?.kind === 'active' && !dialogue.active) ? 'destructive' : 'default'}>{submitLabel}</Button>
+                    <Button loading={action.busy} onClick={() => void submit()} type="button" variant={dialogue?.kind === 'revoke' || dialogue?.kind === 'unposition' || (dialogue?.kind === 'active' && !dialogue.active) ? 'destructive' : 'default'}>{submitLabel}</Button>
                 </>}
                 onClose={() => setDialogue(null)}
                 open={dialogue !== null}
@@ -248,6 +289,19 @@ export default function UsersPage({ people, roles, outlets }: { people: Person[]
                         })() : null}
                         {dialogue.kind === 'active' && !dialogue.active ? <p className="text-sm text-muted-foreground">{t('acc.deactivate.body')}</p> : null}
                         {dialogue.kind === 'reset' ? <p className="text-sm text-muted-foreground">{t('acc.reset.body')}</p> : null}
+                        {dialogue.kind === 'unposition' ? <p className="text-sm text-muted-foreground">{t('acc.map.removeBody')}</p> : null}
+                        {dialogue.kind === 'position' ? (
+                            <>
+                                <FormField error={action.fieldError('position')} field="position" hint={t('acc.map.positionHint')} label={t('acc.map.position')}>
+                                    <Input maxLength={80} onChange={(e) => setDialogue({ ...dialogue, position: e.target.value })} value={dialogue.position} />
+                                </FormField>
+                                <FormField error={action.fieldError('role_id')} field="role_id" label={t('acc.field.role')}>
+                                    <Select onChange={(e) => setDialogue({ ...dialogue, roleId: e.target.value })} searchable={false} value={dialogue.roleId}>
+                                        {mappable.map((r) => <option key={r.id} value={r.id}>{r.name}</option>)}
+                                    </Select>
+                                </FormField>
+                            </>
+                        ) : null}
                         {roleFields}
                         <FormField error={action.fieldError('reason')} field="reason" hint={t('property.field.reasonHint')} label={t('property.field.reason')}>
                             <Input maxLength={500} onChange={(e) => setDialogue({ ...dialogue, reason: e.target.value })} value={dialogue.reason} />

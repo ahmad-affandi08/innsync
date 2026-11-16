@@ -911,6 +911,28 @@
             "reason"
         ]
     },
+    "POST /access/position-roles": {
+        "required": [
+            "position",
+            "reason",
+            "role_id"
+        ],
+        "declared": [
+            "position",
+            "reason",
+            "role_id"
+        ]
+    },
+    "POST /access/position-roles/remove": {
+        "required": [
+            "position",
+            "reason"
+        ],
+        "declared": [
+            "position",
+            "reason"
+        ]
+    },
     "POST /access/roles": {
         "required": [
             "name",

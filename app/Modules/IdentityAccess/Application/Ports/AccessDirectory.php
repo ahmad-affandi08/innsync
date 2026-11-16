@@ -72,4 +72,11 @@ interface AccessDirectory
     public function otherHolders(PropertyId $property, string $permission, ?string $exceptUserId, ?string $exceptAssignmentId, ?string $exceptRoleId = null): int;
 
     public function outletExists(PropertyId $property, string $outletId): bool;
+
+    /** @return list<array{position_key: string, position: string, role_id: string}> */
+    public function positionRoles(PropertyId $property): array;
+
+    public function savePositionRole(PropertyId $property, string $key, string $position, string $roleId, string $by): void;
+
+    public function deletePositionRole(PropertyId $property, string $key): void;
 }

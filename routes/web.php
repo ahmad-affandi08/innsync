@@ -319,6 +319,8 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
     Route::middleware(['password.confirm', 'throttle:access-admin'])->group(function () use ($id): void {
         Route::post('/users', [AccessAdminController::class, 'createUser'])->middleware('permission:identity.user.manage')->name('access.users.create');
         Route::post('/users/bulk', [AccessAdminController::class, 'createUsers'])->middleware('permission:identity.user.manage')->name('access.users.bulk');
+        Route::post('/position-roles', [AccessAdminController::class, 'setPositionRole'])->middleware('permission:identity.user.manage')->name('access.position-roles.set');
+        Route::post('/position-roles/remove', [AccessAdminController::class, 'removePositionRole'])->middleware('permission:identity.user.manage')->name('access.position-roles.remove');
         Route::post('/users/{id}/roles', [AccessAdminController::class, 'assign'])->middleware('permission:identity.user.manage')->where('id', $id)->name('access.users.assign');
         Route::post('/users/{id}/active', [AccessAdminController::class, 'setActive'])->middleware('permission:identity.user.manage')->where('id', $id)->name('access.users.active');
         Route::post('/users/{id}/unlock', [AccessAdminController::class, 'unlock'])->middleware('permission:identity.user.manage')->where('id', $id)->name('access.users.unlock');
@@ -1076,6 +1078,8 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
     Route::post('/settings', [EmployeeController::class, 'settings'])->name('hr.settings');
     Route::get('/employees/{id}', [EmployeeController::class, 'show'])->where('id', $id)->name('hr.employees.show');
     Route::post('/employees/{id}', [EmployeeController::class, 'update'])->where('id', $id)->name('hr.employees.update');
+    Route::post('/employees/accounts', [EmployeeController::class, 'openAccounts'])->middleware(['password.confirm', 'throttle:access-admin'])->name('hr.employees.accounts');
+    Route::post('/employees/{id}/account', [EmployeeController::class, 'openAccount'])->middleware(['password.confirm', 'throttle:access-admin'])->where('id', $id)->name('hr.employees.account');
     Route::post('/employees/{id}/offboard', [EmployeeController::class, 'offboard'])->where('id', $id)->name('hr.employees.offboard');
     Route::get('/employees/{id}/documents', [EmployeeController::class, 'documents'])->where('id', $id)->name('hr.documents');
     Route::post('/employees/{id}/documents', [EmployeeController::class, 'addDocument'])->where('id', $id)->name('hr.documents.add');

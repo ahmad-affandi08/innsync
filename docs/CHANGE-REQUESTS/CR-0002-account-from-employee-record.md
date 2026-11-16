@@ -20,4 +20,5 @@
 - Rollback plan: remove the map entries; accounts already made are ordinary accounts and are managed in Access.
 - Target phase/release: Tahap 6 of `docs/OPERATIONS/AUTOMATION-PLAN.md`.
 - Approvers: Owner / GM, IT (security reviewer).
-- Decision: Pending
+- Decision: Approved by the product owner (Ahmad Affandi) in chat on 2026-11-16, built the same day. The map ships empty. IT security second-pass review is still to be done before the first hotel uses it.
+- Built differently from the proposal: no invitation e-mail (the application sends none; the temporary password is shown once as on the Access screen) and the role is given at property scope (no department scope exists). Also added: a count and a bulk *Create all ready accounts*, and the employee shown on each account. Migration 163; see `docs/OPERATIONS/ACCESS-ADMINISTRATION.md`.

@@ -51,6 +51,18 @@ General Manager, Owner (read only), Front Office Manager, Receptionist, Night Au
 - **No second approver for access changes.** Giving a role does not go through the approval inbox. If the owner later wants it, declare an approval subject such as `identity.role-assignment` in `config/approvals.php` and consume the request in `AccessAdmin::assignRole`.
 - **No invitation by email, no department scope.** Not needed.
 
+## Account from the employee record (CR-0002, owner approved 2026-11-16)
+
+An employee is entered once, in HR. The login is opened from that record, not typed again in People and access.
+
+1. **Position to role map** (People and access → *Position to role*, needs `identity.user.manage`). Each line says: an employee in this position gets this role. The position is compared the way it is written on the employee record, without capital letters or extra spaces. **Nothing is set from the start**: the property decides. The role must be one the person who sets it may give (rule 2, no escalation) and is never `Administrator`. Each change is audited (`identity.position-role.set`, `identity.position-role.removed`) with a reason.
+2. **Create account** (HR → Employees, a button on the row and in the employee's detail, and *Create all ready accounts* for everyone at once, at most 50 at a time). It is never automatic and never on save. It needs the right to write employee records **and** `identity.user.manage`, and a recent password confirmation. The account takes the employee's name and **work e-mail** (nothing else of the HR record is copied), the mapped role at **property scope**, and the record is linked to it in the same step. Every rule of *Rules* above applies: a new e-mail, only a role the person holds themselves. The temporary password is shown once, as on this screen, and is never stored or audited (`employee.account-opened` records the role, not the password).
+3. **Nothing to press** when the employee has no work e-mail, the position has no role, the employee has left, or already has an account; the record says which. The person who has no right to manage users does not see the button.
+4. **People and access** shows the employee record of each account, or *Not linked to an employee record*; **Employees** shows who has no login yet and a count above the table.
+5. Leaving the company is unchanged: offboarding ends the person's access in the property. It is not part of this change to deactivate the account itself.
+
+The invitation by e-mail the CR first described is not built: the application sends no e-mail for accounts (see *Not in this change*), so the temporary password is handed over as before. Department scope does not exist for a role, so the role is given for the whole property. Migration 163 adds `access_position_roles`.
+
 ## Not in this change
 
 - Inviting by email, self-registration and a "forgot password" email flow: the application sends no email for accounts; the administrator hands the temporary password over.
