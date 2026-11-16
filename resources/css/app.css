@@ -360,3 +360,16 @@ input[type='datetime-local']::-webkit-date-and-time-value {
     min-height: 1.25rem;
     margin: 0;
 }
+
+/*
+ * A row of fields with a button beside them (`flex items-end`): a hint or an error under one field must not drag the button, or the shorter fields, down with it. The fields line up on their
+ * top edge, and the button drops by the height of the label so it stands level with the control; beside a field a button is the height of the control (36px), as the form rules say.
+ */
+.flex.items-end:has(> [data-form-field]) {
+    align-items: flex-start;
+}
+
+.flex.items-end:has(> [data-form-field]) > :is(button, a, [role='button']) {
+    height: 2.25rem;
+    margin-top: 1.625rem;
+}
