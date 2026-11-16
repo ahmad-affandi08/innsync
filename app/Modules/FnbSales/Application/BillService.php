@@ -147,8 +147,11 @@ final readonly class BillService
         $rooms = [];
 
         foreach ($this->rooms->activeRooms($property) as $room) {
-            if ($this->guests->inHouseStayOfRoom($property, $room->id) !== null) {
-                $rooms[] = ['id' => $room->id, 'number' => $room->number];
+            $stay = $this->guests->inHouseStayOfRoom($property, $room->id);
+
+            if ($stay !== null) {
+                // The name of the guest the room is let to, so the payment form can fill it in; only rooms with a guest in them are listed.
+                $rooms[] = ['id' => $room->id, 'number' => $room->number, 'guest_name' => (string) ($stay['guest_name'] ?? '')];
             }
         }
 

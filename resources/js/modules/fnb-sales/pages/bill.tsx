@@ -218,9 +218,11 @@ export default function BillPage({ targets, view }: { targets: RearrangeTargets;
     }
 
     function openPay() {
+        // The room the bill was opened for, when a guest is in it; otherwise the cashier chooses among the rooms that have a guest.
+        const startRoom = view.rooms.find((r) => r.id === bill.room_id);
         action.clear();
         setPayError(null);
-        setPay({ method: 'cash', amount: minorToMajorText(view.left_minor, view.currency), tendered: minorToMajorText(view.left_minor, view.currency), reference: '', room: bill.room_id ?? '', guest: '' });
+        setPay({ method: 'cash', amount: minorToMajorText(view.left_minor, view.currency), tendered: minorToMajorText(view.left_minor, view.currency), reference: '', room: startRoom?.id ?? '', guest: startRoom?.guest_name ?? '' });
     }
 
     async function submitPay() {
@@ -602,7 +604,7 @@ export default function BillPage({ targets, view }: { targets: RearrangeTargets;
                         {pay.method === 'room' ? (
                             <>
                                 <FormField error={action.fieldError('room_id')} field="room_id" hint={t('fnb.pay.roomHint')} label={t('fnb.pay.room')}>
-                                    <Select onChange={(e) => setPay({ ...pay, room: e.target.value })} value={pay.room}>
+                                    <Select onChange={(e) => setPay({ ...pay, room: e.target.value, guest: view.rooms.find((r) => r.id === e.target.value)?.guest_name ?? '' })} value={pay.room}>
                                         <option value="" />
                                         {view.rooms.map((r) => <option key={r.id} value={r.id}>{r.number}</option>)}
                                     </Select>

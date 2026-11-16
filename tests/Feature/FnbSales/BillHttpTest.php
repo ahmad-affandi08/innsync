@@ -204,6 +204,8 @@ final class BillHttpTest extends TestCase
             ->where('floor.tables.1.status', 'free')
             ->has('floor.bills', 3)
             ->where('floor.rooms.0.number', '101')
+            ->where('floor.rooms.0.guest_name', 'Budi Santoso')
+            ->has('floor.rooms', 1)
             ->where('floor.may.operate', true));
     }
 

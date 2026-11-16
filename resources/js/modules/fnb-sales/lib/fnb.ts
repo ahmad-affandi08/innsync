@@ -22,7 +22,7 @@ export type FloorTable = { id: string; code: string; area: string | null; seats:
 export type FloorBill = { id: string; number: string; table: string | null; room: string | null; covers: number; source: 'staff' | 'qr'; lines: number; sent: boolean; ready_lines: number; subtotal_minor: number; opened_at: string };
 export type Floor = {
     currency: string; outlets: { id: string; code: string; name: string; kind: string }[]; outlet: { id: string; code: string; name: string } | null;
-    tables: FloorTable[]; bills: FloorBill[]; rooms: { id: string; number: string }[]; may: { operate: boolean };
+    tables: FloorTable[]; bills: FloorBill[]; rooms: { id: string; number: string; guest_name: string }[]; may: { operate: boolean };
 };
 
 export type BillLine = {
@@ -41,7 +41,7 @@ export type BillView = {
     bill: { id: string; number: string; status: 'open' | 'settled' | 'cancelled' | 'refunded'; waive_service_charge: boolean; waive_tax: boolean; source: 'staff' | 'qr'; covers: number; note: string | null; business_date: string; opened_at: string; closed_at: string | null; table: string | null; room_id: string | null; room: string | null; lock_version: number; cancel_reason: string | null; reprint_count: number; refund: { number: string; reason: string; total_minor: number; business_date: string; at: string; payments: { method: string; amount_minor: number; reference: string | null }[] } | null; lines: BillLine[] };
     outlet: { id: string; code: string; name: string; prices_include_charges: boolean };
     totals: { subtotal_minor: number; base_minor: number; service_charge_minor: number; tax_minor: number; total_minor: number; scheme_missing: boolean; discount_minor: number };
-    payments: BillPayment[]; paid_minor: number; reserved_minor: number; left_minor: number; shift: { id: string; number: string } | null; rooms: { id: string; number: string }[];
+    payments: BillPayment[]; paid_minor: number; reserved_minor: number; left_minor: number; shift: { id: string; number: string } | null; rooms: { id: string; number: string; guest_name: string }[];
     menu: OrderCategory[]; approvals: BillApproval[]; may: { operate: boolean; pay: boolean; cashier: boolean; discount: boolean; refund: boolean; reprint: boolean };
 };
 export type BillPayment = { id: string; method: 'cash' | 'card' | 'qris' | 'room'; status: string; amount_minor: number; tendered_minor: number | null; change_minor: number; reference: string | null; guest_name: string | null; status_reason: string | null; created_at: string };
