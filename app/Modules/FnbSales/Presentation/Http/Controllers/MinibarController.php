@@ -50,9 +50,9 @@ final readonly class MinibarController
 
     public function check(Request $request): JsonResponse
     {
-        $data = $request->validate(['room_code' => ['required', 'string', 'max:40'], 'lines' => ['required', 'array', 'max:60'], 'lines.*.item_id' => ['required', 'string', 'size:26'], 'lines.*.consumed' => ['required', 'integer', 'min:0'], 'lines.*.refilled' => ['required', 'integer', 'min:0']]);
+        $data = $request->validate(['room_code' => ['required', 'string', 'max:40'], 'lines' => ['required', 'array', 'max:60'], 'lines.*.item_id' => ['required', 'string', 'size:26'], 'lines.*.consumed' => ['required', 'integer', 'min:0'], 'lines.*.refilled' => ['required', 'integer', 'min:0'], 'waive_service_charge' => ['nullable', 'boolean'], 'waive_tax' => ['nullable', 'boolean'], 'waive_reason' => ['nullable', 'string', 'max:200']]);
 
-        return response()->json($this->minibar->check($this->property->current(), $this->actor($request), $data['room_code'], array_map(static fn (array $l): array => ['item_id' => $l['item_id'], 'consumed' => (int) $l['consumed'], 'refilled' => (int) $l['refilled']], $data['lines'])), 201);
+        return response()->json($this->minibar->check($this->property->current(), $this->actor($request), $data['room_code'], array_map(static fn (array $l): array => ['item_id' => $l['item_id'], 'consumed' => (int) $l['consumed'], 'refilled' => (int) $l['refilled']], $data['lines']), (bool) ($data['waive_service_charge'] ?? false), (bool) ($data['waive_tax'] ?? false), $data['waive_reason'] ?? null), 201);
     }
 
     public function createItem(Request $request): JsonResponse

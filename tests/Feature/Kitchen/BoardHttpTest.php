@@ -268,6 +268,20 @@ final class BoardHttpTest extends TestCase
         self::assertSame([], $this->board('bar')['tickets']);
     }
 
+    public function test_the_screen_warns_when_orders_wait_because_the_background_processing_stopped(): void
+    {
+        $this->order('t1', ['nasi']);
+        $this->actAs($this->cook);
+        self::assertSame(0, $this->board()['delayed_orders']);
+
+        DB::table('outbox_messages')->update(['occurred_at' => now()->subMinutes(10)]);
+        self::assertSame(1, $this->board()['delayed_orders']);
+
+        $this->drain(['fnb.order.sent']);
+        self::assertSame(0, $this->board()['delayed_orders']);
+        self::assertCount(1, $this->board()['tickets']);
+    }
+
     public function test_the_screen_marks_late_tickets_by_the_waiting_time_the_property_sets(): void
     {
         $this->order('t1', ['nasi']);

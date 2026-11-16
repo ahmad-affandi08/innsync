@@ -37,6 +37,14 @@ final readonly class LaundryOrder
         public array $lines,
         /** How the order was settled when the guest checked out with it still in hand (FR-LDY-012): `late_charge` or `claim`; null when it was not. */
         public ?string $settlement = null,
+        /** Free of charge, decided at hand-over with a reason: the order is washed like any other and never charged. */
+        public bool $isFoc = false,
+        public ?string $focReason = null,
+        public ?string $focBy = null,
+        /** The service charge and the tax can be left off the charge of this order, with a reason. */
+        public bool $waiveServiceCharge = false,
+        public bool $waiveTax = false,
+        public ?string $waiveReason = null,
     ) {
         if (preg_match('/^[A-Za-z0-9._\/-]{3,40}$/D', $barcode) !== 1) {
             throw LaundryRuleViolation::invalid('The bag tag is 3 to 40 letters, digits or . _ / -.', 'barcode');
@@ -44,6 +52,14 @@ final readonly class LaundryOrder
 
         if ($lines === []) {
             throw LaundryRuleViolation::invalid('An order lists at least one item.', 'lines');
+        }
+
+        if ($isFoc && ($focReason === null || trim($focReason) === '' || mb_strlen($focReason) > 300 || $focBy === null)) {
+            throw LaundryRuleViolation::invalid('Say why the laundry is free of charge, at most 300 characters.', 'foc_reason');
+        }
+
+        if (($waiveServiceCharge || $waiveTax) && ($waiveReason === null || trim($waiveReason) === '' || mb_strlen($waiveReason) > 300)) {
+            throw LaundryRuleViolation::invalid('Say why the service charge or the tax is left off, at most 300 characters.', 'waive_reason');
         }
 
         if ($notes !== null && mb_strlen($notes) > 500) {
@@ -106,7 +122,7 @@ final readonly class LaundryOrder
             throw LaundryRuleViolation::notAllowed('Only ironed laundry can be marked ready.');
         }
 
-        return $this->copy(LaundryStatus::Ready, $this->hasDiscrepancy, $this->discrepancyNote, $this->billableMinor(), $this->deliveredAt, $this->lines);
+        return $this->copy(LaundryStatus::Ready, $this->hasDiscrepancy, $this->discrepancyNote, $this->chargeableMinor(), $this->deliveredAt, $this->lines);
     }
 
     public function deliver(DateTimeImmutable $at): self
@@ -154,6 +170,12 @@ final readonly class LaundryOrder
         return array_sum(array_map(static fn (LaundryLine $l): int => $l->totalMinor(), $this->lines));
     }
 
+    /** What the guest pays: nothing for an order that is free of charge. */
+    public function chargeableMinor(): int
+    {
+        return $this->isFoc ? 0 : $this->billableMinor();
+    }
+
     /** Past its promised time and still not ready (FR-LDY-011). */
     public function isOverdue(DateTimeImmutable $now): bool
     {
@@ -166,6 +188,13 @@ final readonly class LaundryOrder
         return new self(
             $this->id, $this->number, $this->barcode, $this->roomId, $this->stayId, $this->reservationId, $status, $this->express, $this->pickupDate, $this->promisedAt, $this->notes,
             $discrepancy, $note, $charged, $deliveredAt, $this->lockVersion, $lines, $settlement ?? $this->settlement,
+            $this->isFoc, $this->focReason, $this->focBy, $this->waiveServiceCharge, $this->waiveTax, $this->waiveReason,
         );
+    }
+
+    /** @return list<string> what is left off the charge: `service_charge`, `tax` */
+    public function waived(): array
+    {
+        return [...($this->waiveServiceCharge ? ['service_charge'] : []), ...($this->waiveTax ? ['tax'] : [])];
     }
 }

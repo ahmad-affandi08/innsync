@@ -14,7 +14,7 @@ use InvalidArgumentException;
 final class DepartmentScope
 {
     /** The departments of a property, as finance, inventory and human resource name them. */
-    public const DEPARTMENTS = ['front_office', 'housekeeping', 'laundry', 'fnb', 'kitchen', 'maintenance', 'hr', 'finance', 'purchasing', 'general'];
+    public const DEPARTMENTS = ['front_office', 'housekeeping', 'laundry', 'fnb', 'kitchen', 'maintenance', 'hr', 'finance', 'purchasing', 'spa', 'general'];
 
     private const ALPHABET = '0123456789abcdefghjkmnpqrstvwxyz';
 

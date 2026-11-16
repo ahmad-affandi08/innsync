@@ -248,7 +248,7 @@ final class SpaHttpTest extends TestCase
             ->where('report.money.base_minor', 60_000_000)->where('report.money.unpaid_minor', 60_000_000));
 
         $this->as($this->therapistUser);
-        $this->get('/front-office/spa/me')->assertInertia(fn (Assert $p) => $p->where('me.treatments_done', 3)->where('me.commission_today_minor', 24_000_000));
+        $this->get('/front-office/spa/me')->assertInertia(fn (Assert $p) => $p->where('me.treatments_done', 3)->where('me.commission_today_minor', 24_000_000)->where('me.commission_total_minor', 24_000_000));
         $this->get('/front-office/spa/manage')->assertForbidden();
     }
 

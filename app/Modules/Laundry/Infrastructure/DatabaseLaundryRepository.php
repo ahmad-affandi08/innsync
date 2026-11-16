@@ -132,7 +132,8 @@ final readonly class DatabaseLaundryRepository implements LaundryRepository
             DB::transaction(static function () use ($property, $order, $createdBy, $at): void {
                 DB::table('laundry_orders')->insert([
                     'id' => $order->id, 'property_id' => $property->toString(), 'number' => $order->number, 'barcode' => $order->barcode, 'room_id' => $order->roomId,
-                    'stay_id' => $order->stayId, 'reservation_id' => $order->reservationId, 'status' => $order->status->value, 'express' => $order->express,
+                    'stay_id' => $order->stayId, 'reservation_id' => $order->reservationId, 'status' => $order->status->value, 'express' => $order->express, 'is_foc' => $order->isFoc, 'foc_reason' => $order->focReason, 'foc_by' => $order->focBy,
+                    'waive_service_charge' => $order->waiveServiceCharge, 'waive_tax' => $order->waiveTax, 'waive_reason' => $order->waiveReason,
                     'pickup_date' => $order->pickupDate, 'promised_at' => $order->promisedAt, 'notes' => $order->notes, 'created_by' => $createdBy, 'lock_version' => 0,
                     'created_at' => $at, 'updated_at' => $at,
                 ]);
@@ -241,6 +242,7 @@ final readonly class DatabaseLaundryRepository implements LaundryRepository
             $r->id, $r->number, $r->barcode, $r->room_id, $r->stay_id, $r->reservation_id, LaundryStatus::from($r->status), (bool) $r->express, substr((string) $r->pickup_date, 0, 10),
             new DateTimeImmutable((string) $r->promised_at, $utc), $r->notes, (bool) $r->has_discrepancy, $r->discrepancy_note, $r->charged_minor === null ? null : (int) $r->charged_minor,
             $r->delivered_at === null ? null : new DateTimeImmutable((string) $r->delivered_at, $utc), (int) $r->lock_version, $lines, $r->settlement,
+            (bool) $r->is_foc, $r->foc_reason, $r->foc_by, (bool) $r->waive_service_charge, (bool) $r->waive_tax, $r->waive_reason,
         );
     }
 

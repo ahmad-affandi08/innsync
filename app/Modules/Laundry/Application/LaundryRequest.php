@@ -21,11 +21,16 @@ final readonly class LaundryRequest
         public string $promisedTime,
         public ?string $notes,
         public array $lines,
+        public bool $foc = false,
+        public ?string $focReason = null,
+        public bool $waiveServiceCharge = false,
+        public bool $waiveTax = false,
+        public ?string $waiveReason = null,
     ) {}
 
     /** @return array<string, mixed> */
     public function fingerprint(): array
     {
-        return ['sha256' => hash('sha256', json_encode([$this->barcode, $this->roomId, $this->express, $this->promisedDate, $this->promisedTime, $this->notes, $this->lines], JSON_THROW_ON_ERROR))];
+        return ['sha256' => hash('sha256', json_encode([$this->barcode, $this->roomId, $this->express, $this->promisedDate, $this->promisedTime, $this->notes, $this->lines, $this->foc, $this->focReason, $this->waiveServiceCharge, $this->waiveTax, $this->waiveReason], JSON_THROW_ON_ERROR))];
     }
 }

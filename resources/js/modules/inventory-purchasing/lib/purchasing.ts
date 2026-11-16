@@ -12,8 +12,8 @@ export type ApprovalSummary = {
     decisions: { step: number; approver_id: string; decision: string; reason: string | null; decided_at: string }[];
 }
 
-export const REQUEST_TONE: Record<string, StatusTone> = { draft: 'neutral', pending_approval: 'pending', approved: 'success', rejected: 'danger', cancelled: 'neutral', ordered: 'info' }
-export const REQUEST_STATUSES = ['draft', 'pending_approval', 'approved', 'rejected', 'cancelled', 'ordered'] as const
+export const REQUEST_TONE: Record<string, StatusTone> = { draft: 'neutral', pending_approval: 'pending', approved: 'success', on_hold: 'warning', rejected: 'danger', cancelled: 'neutral', ordered: 'info' }
+export const REQUEST_STATUSES = ['draft', 'pending_approval', 'approved', 'on_hold', 'rejected', 'cancelled', 'ordered'] as const
 export const URGENCY_TONE: Record<string, StatusTone> = { low: 'neutral', normal: 'info', high: 'warning', urgent: 'danger' }
 export const ORDER_TONE: Record<string, StatusTone> = {
     draft: 'neutral', pending_approval: 'pending', approved: 'info', issued: 'info', partially_received: 'warning', received: 'success', closed: 'neutral', cancelled: 'neutral',

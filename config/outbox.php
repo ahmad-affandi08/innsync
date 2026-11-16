@@ -19,6 +19,7 @@ use App\Modules\InventoryPurchasing\Application\KitchenWasteConsumer;
 use App\Modules\InventoryPurchasing\Application\MaintenancePartConsumer;
 use App\Modules\InventoryPurchasing\Application\RecipeConsumptionConsumer;
 use App\Modules\Kitchen\Application\SaleConsumptionConsumer;
+use App\Modules\HumanResource\Application\SpaCommissionConsumer;
 use App\Modules\Kitchen\Application\TicketIntakeConsumer;
 use App\Modules\Maintenance\Application\MaintenanceNoticeConsumer;
 use App\Modules\Reporting\Application\ScheduledReportNoticeConsumer;
@@ -74,5 +75,6 @@ return [
         LoyaltyEarningConsumer::class,
         GuestRequestPushConsumer::class,
         TicketIntakeConsumer::class,
+        SpaCommissionConsumer::class,
     ],
 ];

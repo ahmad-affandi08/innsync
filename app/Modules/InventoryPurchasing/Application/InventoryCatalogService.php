@@ -31,7 +31,7 @@ final readonly class InventoryCatalogService
     public const VIEW_PERMISSION = 'inventory.catalog.view';
 
     /** The departments that can own an item. */
-    public const DEPARTMENTS = ['front_office', 'housekeeping', 'laundry', 'fnb', 'kitchen', 'maintenance', 'hr', 'finance', 'purchasing', 'general'];
+    public const DEPARTMENTS = ['front_office', 'housekeeping', 'laundry', 'fnb', 'kitchen', 'maintenance', 'hr', 'finance', 'purchasing', 'spa', 'general'];
 
     public const LOCATION_KINDS = ['main', 'bar', 'kitchen', 'housekeeping', 'engineering', 'galley', 'other'];
 

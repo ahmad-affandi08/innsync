@@ -206,7 +206,7 @@ export const REPORT_MAX_DAYS = 366;
 /** The days between two calendar dates (`YYYY-MM-DD`). */
 export const spanDays = (from: string, to: string): number => Math.round((Date.parse(to) - Date.parse(from)) / 86_400_000);
 
-const KNOWN_DEPARTMENTS = ['front_office', 'housekeeping', 'laundry', 'fnb', 'kitchen', 'maintenance', 'hr', 'finance', 'purchasing', 'general'];
+const KNOWN_DEPARTMENTS = ['front_office', 'housekeeping', 'laundry', 'fnb', 'kitchen', 'maintenance', 'hr', 'finance', 'purchasing', 'spa', 'general'];
 const SUPPLIER_METHODS = ['transfer', 'cash', 'giro', 'other'];
 const RECEIVABLE_METHODS = ['transfer', 'giro', 'online'];
 

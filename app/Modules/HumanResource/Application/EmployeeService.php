@@ -28,7 +28,7 @@ use DateTimeZone;
  */
 final readonly class EmployeeService
 {
-    public const DEPARTMENTS = ['front_office', 'housekeeping', 'laundry', 'fnb', 'kitchen', 'maintenance', 'security', 'purchasing', 'finance', 'hr', 'management', 'general'];
+    public const DEPARTMENTS = ['front_office', 'housekeeping', 'laundry', 'fnb', 'kitchen', 'maintenance', 'security', 'purchasing', 'spa', 'finance', 'hr', 'management', 'general'];
 
     public const CONTRACTS = ['permanent', 'contract', 'probation', 'daily', 'intern'];
 

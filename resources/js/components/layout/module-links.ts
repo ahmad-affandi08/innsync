@@ -115,6 +115,8 @@ export const HR_LINKS: readonly NavLink[] = [
     { href: '/hr/payroll', label: 'hr.nav.payroll', needs: ['hr.payroll'], group: 'nav.group.payroll' },
     { href: '/hr/service-charge', label: 'hr.nav.serviceCharge', needs: ['hr.service-charge'], group: 'nav.group.payroll' },
     { href: '/hr/payroll/runs', label: 'hr.nav.payrollRuns', needs: ['hr.payroll'], group: 'nav.group.payroll' },
+    { href: '/hr/commissions', label: 'hr.nav.commissions', needs: ['hr.commission'], group: 'nav.group.payroll' },
+    { href: '/hr/my-commissions', label: 'hr.nav.myCommissions', group: 'nav.group.payroll' },
     { href: '/hr/payslips', label: 'hr.nav.payslips', group: 'nav.group.payroll' },
 ];
 

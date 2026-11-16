@@ -26,7 +26,7 @@ final class DefaultRoles
             'Owner (read only)' => ['*.view', 'reporting.builder.use', 'reporting.guests.view', '!finance.audit.view'],
             'Front Office Manager' => [
                 'front-office.*', 'guest.*', 'property.*.view', 'reporting.dashboard.view', 'reporting.report.view', 'reporting.revenue.view', 'reporting.guests.view',
-                'housekeeping.view', 'laundry.view', 'finance.receivable.view', 'offline.reconcile',
+                'housekeeping.view', 'laundry.view', 'laundry.order.foc', 'finance.receivable.view', 'offline.reconcile',
             ],
             'Receptionist' => [
                 'front-office.availability.view', 'front-office.cashier.operate', 'front-office.cashier.view', 'front-office.company.view', 'front-office.feedback.manage',
@@ -46,7 +46,7 @@ final class DefaultRoles
                 'reporting.dashboard.view', 'reporting.revenue.view', 'finance.revenue.view',
             ],
             'Housekeeping Supervisor' => [
-                'housekeeping.*', 'laundry.view', 'laundry.order.intake', 'laundry.linen.handle', 'maintenance.work.report', 'front-office.availability.view',
+                'housekeeping.*', 'laundry.view', 'laundry.order.intake', 'laundry.order.foc', 'laundry.linen.handle', 'maintenance.work.report', 'front-office.availability.view',
                 'front-office.logbook.read', 'front-office.logbook.write', 'inventory.requisition.request', 'inventory.stock.view', 'reporting.housekeeping.view',
             ],
             'Room Attendant' => [

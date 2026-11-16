@@ -27,7 +27,7 @@ For a period (this month by default): treatments done, sales before and after th
 ## Not decided here
 
 - **Commission on tips, on products sold with a treatment, a different rate for one treatment or one therapist-and-treatment pair, a minimum guaranteed pay, and paying the commission out** (it is reported; payroll takes it from the report by hand). The report is the base to build them on.
-- **The spa's own stock (oils, towels), its assets, maintenance list and purchase ordering.** The spa uses the hotel's inventory, maintenance and purchasing as another department would; a department *Spa* of its own in those modules is not made yet.
+- **The spa's own stock (oils, towels), its assets, maintenance list and purchase ordering.** The spa uses the hotel's inventory, maintenance and purchasing as another department would. *Spa* is now a department of its own in purchasing requests, stock items, expense accounts and the staff list (so spa orders and costs are reported apart); the spa has no separate stock screen, asset list or maintenance list yet.
 - **Memberships and packages (5 massages for the price of 4), a deposit for a booking, and a booking made by the guest on the guest's phone.**
 - **Refund of a treatment already paid:** a correction of the day in Finance, with its approval, like a day use.
 - **Billiards or other timed rooms.** The board, the time left and the booking by room are written for treatment rooms; a billiard table uses the same shape (a room, a length, a price, an attendant) and would be set up as another kind of room in a later change.

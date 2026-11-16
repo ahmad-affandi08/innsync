@@ -83,6 +83,9 @@ interface SpaStore
      *
      * @return list<array{start: int, end: int}>
      */
+    /** What a therapist earned on the treatments finished since they began, in the smallest unit. */
+    public function commissionTotal(PropertyId $property, string $therapistId): int;
+
     public function holding(PropertyId $property, string $column, string $id, string $date, ?string $exceptBookingId): array;
 
     /** @return list<array<string, mixed>> the bookings done in the period (by the day they were given) */

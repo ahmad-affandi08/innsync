@@ -259,6 +259,7 @@ export const id: Record<MessageKey, string> = {
     'today.task.mtc.open': "Perintah kerja terbuka",
     'today.task.mtc.escalated': "Perintah kerja dieskalasi",
     'today.task.inv.low': "Barang di bawah stok minimum",
+    'today.task.inv.held': "Permintaan pembelian ditahan lebih dari 3 hari",
     'today.task.inv.deliveries': "Pengiriman jatuh tempo atau terlambat",
     'today.task.fin.overdue': "Tagihan supplier lewat jatuh tempo",
     'today.task.fin.due': "Tagihan supplier jatuh tempo pekan ini",

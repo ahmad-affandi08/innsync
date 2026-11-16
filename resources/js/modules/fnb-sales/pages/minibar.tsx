@@ -26,7 +26,7 @@ type Check = {
     lines: { code: string; name: string; unit_price_minor: number; consumed: number; refilled: number; stock_after: number }[];
 };
 type Refill = { rooms: { room: { id: string; number: string }; items: { item_id: string; code: string; name: string; quantity: number }[] }[]; totals: { item_id: string; code: string; name: string; quantity: number }[] };
-type Overview = { currency: string; may: { operate: boolean; manage: boolean }; items: Item[]; today: string };
+type Overview = { currency: string; may: { operate: boolean; manage: boolean; waive: boolean }; items: Item[]; today: string };
 
 /** The mini bars of the rooms: scan a room, enter what was consumed and put back, see what to refill, and the history of every check. */
 export default function MinibarPage({ history, overview, refill, scan_error: scanError, scanned }: { history: { checks: Check[] } | null; overview: Overview; refill: Refill | null; scan_error: string | null; scanned: Scanned | null }) {
@@ -37,6 +37,7 @@ export default function MinibarPage({ history, overview, refill, scan_error: sca
     const [code, setCode] = useState(scanned?.room.number ?? '');
     const [qty, setQty] = useState<Record<string, { consumed: string; refilled: string }>>({});
     const [done, setDone] = useState<Check | null>(null);
+    const [waive, setWaive] = useState({ service: false, tax: false, reason: '' });
     const [item, setItem] = useState<{ id: string; code: string; name: string; price: string; par: string; lock: number } | null>(null);
     const failure = action.error !== null ? <ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /> : null;
     const money = (minor: number) => format.money(minor, overview.currency);
@@ -52,11 +53,12 @@ export default function MinibarPage({ history, overview, refill, scan_error: sca
     async function save() {
         if (scanned === null) return;
         const lines = scanned.items.map((i) => ({ item_id: i.id, consumed: n(qty[i.id]?.consumed), refilled: n(qty[i.id]?.refilled) })).filter((l) => l.consumed > 0 || l.refilled > 0);
-        const result = await action.run<Check>('/fnb/minibar/checks', { idempotencyKey: newIdempotencyKey(), body: { room_code: scanned.room.number, lines }, reload });
+        const result = await action.run<Check>('/fnb/minibar/checks', { idempotencyKey: newIdempotencyKey(), body: { room_code: scanned.room.number, lines, waive_service_charge: waive.service, waive_tax: waive.tax, waive_reason: waive.service || waive.tax ? waive.reason : null }, reload });
 
         if (result !== null) {
             setDone(result as unknown as Check);
             setQty({});
+            setWaive({ service: false, tax: false, reason: '' });
         }
     }
 
@@ -133,6 +135,13 @@ export default function MinibarPage({ history, overview, refill, scan_error: sca
                                     </table>
                                 </div>
                                 <p className="text-sm">{t('fnb.mini.total', { amount: money(scanned.items.reduce((sum, i) => sum + n(qty[i.id]?.consumed) * i.price_minor, 0)) })}</p>
+                                {overview.may.waive ? (
+                                    <div className="flex flex-col gap-2">
+                                        <label className="flex items-center gap-2 text-sm"><input checked={waive.service} onChange={(e) => setWaive({ ...waive, service: e.target.checked })} type="checkbox" />{t('fnb.mini.waiveService')}</label>
+                                        <label className="flex items-center gap-2 text-sm"><input checked={waive.tax} onChange={(e) => setWaive({ ...waive, tax: e.target.checked })} type="checkbox" />{t('fnb.mini.waiveTax')}</label>
+                                        {waive.service || waive.tax ? <FormField error={action.fieldError('waive_reason')} field="waive_reason" label={t('fnb.mini.waiveReason')}><Input maxLength={200} onChange={(e) => setWaive({ ...waive, reason: e.target.value })} value={waive.reason} /></FormField> : null}
+                                    </div>
+                                ) : null}
                                 <div><Button disabled={action.busy || scanned.items.every((i) => n(qty[i.id]?.consumed) === 0 && n(qty[i.id]?.refilled) === 0)} loading={action.busy} onClick={() => void save()} type="button">{t('fnb.mini.save')}</Button></div>
                             </section>
                         ) : null}

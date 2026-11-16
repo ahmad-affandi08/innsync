@@ -37,7 +37,7 @@ final readonly class LaundryController
 
     public function create(Request $request): Response
     {
-        return Inertia::render('laundry/pages/intake', ['lookups' => $this->laundry->intakeLookups($this->property->current(), $this->actor($request)), 'currency' => $this->laundry->currency($this->property->current())]);
+        return Inertia::render('laundry/pages/intake', ['lookups' => $this->laundry->intakeLookups($this->property->current(), $this->actor($request)), 'currency' => $this->laundry->currency($this->property->current()), 'mayFoc' => $this->laundry->abilities($this->property->current(), $this->actor($request))['foc']]);
     }
 
     public function prices(Request $request): Response
@@ -53,6 +53,8 @@ final readonly class LaundryController
         $data = $request->validate([
             'barcode' => ['required', 'string', 'max:40'], 'room_id' => ['required', 'string', 'size:26'], 'express' => ['nullable', 'boolean'],
             'promised_date' => ['required', 'string', 'size:10'], 'promised_time' => ['required', 'string', 'max:8'], 'notes' => ['nullable', 'string', 'max:500'],
+            'foc' => ['nullable', 'boolean'], 'foc_reason' => ['nullable', 'required_if:foc,true', 'string', 'max:300'],
+            'waive_service_charge' => ['nullable', 'boolean'], 'waive_tax' => ['nullable', 'boolean'], 'waive_reason' => ['nullable', 'required_if:waive_service_charge,true', 'required_if:waive_tax,true', 'string', 'max:300'],
             'lines' => ['required', 'array', 'min:1', 'max:30'], 'lines.*.price_item_id' => ['required', 'string', 'size:26'], 'lines.*.quantity' => ['required', 'integer', 'min:1', 'max:999'],
             'lines.*.brand' => ['nullable', 'string', 'max:60'], 'lines.*.condition_note' => ['nullable', 'string', 'max:200'], 'lines.*.treatment_id' => ['nullable', 'string', 'size:26'],
         ]);
@@ -60,7 +62,7 @@ final readonly class LaundryController
         $order = $this->laundry->intake(
             $this->property->current(),
             $this->actor($request),
-            new LaundryRequest($data['barcode'], $data['room_id'], (bool) ($data['express'] ?? false), $data['promised_date'], $data['promised_time'], $data['notes'] ?? null, array_values($data['lines'])),
+            new LaundryRequest($data['barcode'], $data['room_id'], (bool) ($data['express'] ?? false), $data['promised_date'], $data['promised_time'], $data['notes'] ?? null, array_values($data['lines']), (bool) ($data['foc'] ?? false), $data['foc_reason'] ?? null, (bool) ($data['waive_service_charge'] ?? false), (bool) ($data['waive_tax'] ?? false), $data['waive_reason'] ?? null),
             IdempotencyKey::fromString((string) $request->header('Idempotency-Key')),
         );
 

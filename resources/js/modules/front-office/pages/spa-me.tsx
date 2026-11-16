@@ -27,6 +27,7 @@ type Me = {
     bookings: SpaBooking[];
     treatments_done: number;
     commission_today_minor: number;
+    commission_total_minor: number;
 };
 
 const TONE: Record<string, StatusTone> = { booked: 'info', accepted: 'info', declined: 'neutral', in_progress: 'warning', done: 'success', cancelled: 'neutral', no_show: 'neutral' };
@@ -77,6 +78,7 @@ export default function SpaMePage({ me }: { me: Me }) {
             <div className="grid grid-cols-2 gap-3">
                 <Metric detail={running !== undefined ? t('fo.spa.me.growing') : undefined} label={t('fo.spa.me.earned')} value={money(me.commission_today_minor + live)} />
                 <Metric label={t('fo.spa.me.done')} value={me.treatments_done} />
+                <Metric label={t('fo.spa.me.lifetime')} value={money(me.commission_total_minor + live)} />
             </div>
 
             {me.bookings.length === 0 ? <EmptyState title={t('fo.spa.me.none')} /> : (

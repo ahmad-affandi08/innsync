@@ -418,6 +418,12 @@
             "to"
         ]
     },
+    "GET /hr/commissions": {
+        "required": [],
+        "declared": [
+            "employee"
+        ]
+    },
     "GET /hr/conduct": {
         "required": [],
         "declared": [
@@ -2092,7 +2098,10 @@
             "lines.*.consumed",
             "lines.*.item_id",
             "lines.*.refilled",
-            "room_code"
+            "room_code",
+            "waive_reason",
+            "waive_service_charge",
+            "waive_tax"
         ]
     },
     "POST /fnb/minibar/items": {
@@ -4357,6 +4366,51 @@
             "side"
         ]
     },
+    "POST /hr/commissions": {
+        "required": [
+            "amount_minor",
+            "earned_on",
+            "employee_id",
+            "type_id"
+        ],
+        "declared": [
+            "amount_minor",
+            "earned_on",
+            "employee_id",
+            "note",
+            "type_id"
+        ]
+    },
+    "POST /hr/commissions/types": {
+        "required": [
+            "code",
+            "name"
+        ],
+        "declared": [
+            "code",
+            "name"
+        ]
+    },
+    "POST /hr/commissions/types/{id}": {
+        "required": [
+            "is_active",
+            "lock_version",
+            "name"
+        ],
+        "declared": [
+            "is_active",
+            "lock_version",
+            "name"
+        ]
+    },
+    "POST /hr/commissions/{id}/reverse": {
+        "required": [
+            "reason"
+        ],
+        "declared": [
+            "reason"
+        ]
+    },
     "POST /hr/conduct": {
         "required": [
             "employee_id",
@@ -5406,6 +5460,24 @@
             "reason"
         ]
     },
+    "POST /inventory/requests/{id}/hold": {
+        "required": [
+            "lock_version",
+            "reason"
+        ],
+        "declared": [
+            "lock_version",
+            "reason"
+        ]
+    },
+    "POST /inventory/requests/{id}/resume": {
+        "required": [
+            "lock_version"
+        ],
+        "declared": [
+            "lock_version"
+        ]
+    },
     "POST /inventory/requests/{id}/submit": {
         "required": [
             "lock_version"
@@ -5947,6 +6019,8 @@
         "declared": [
             "barcode",
             "express",
+            "foc",
+            "foc_reason",
             "lines",
             "lines.*.brand",
             "lines.*.condition_note",
@@ -5956,7 +6030,10 @@
             "notes",
             "promised_date",
             "promised_time",
-            "room_id"
+            "room_id",
+            "waive_reason",
+            "waive_service_charge",
+            "waive_tax"
         ]
     },
     "POST /laundry/orders/{id}/advance": {

@@ -644,4 +644,5 @@ export const access = {
     'acc.push.kind.approval': "Approvals waiting for me",
     'acc.push.kind.work_order': "Work orders given to me, and ones near their deadline",
     'acc.push.kind.guest_request': "Requests from guests",
+    'acc.push.kind.system': "System alerts (something stopped working)",
 } as const

@@ -39,6 +39,6 @@ final class DepartmentScopeTest extends TestCase
     {
         $this->expectException(InvalidArgumentException::class);
 
-        DepartmentScope::idFor(PropertyId::fromString(self::A), 'spa');
+        DepartmentScope::idFor(PropertyId::fromString(self::A), 'gym');
     }
 }

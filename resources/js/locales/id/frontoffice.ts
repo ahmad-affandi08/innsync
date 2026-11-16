@@ -1282,6 +1282,7 @@ export const frontOffice = {
     'fo.spa.me.out': "Pulang jam {time}",
     'fo.spa.me.clockIn': "Absen masuk",
     'fo.spa.me.clockOut': "Absen pulang",
+    'fo.spa.me.lifetime': "Komisi sejak awal",
     'fo.spa.me.earned': "Komisi hari ini",
     'fo.spa.me.growing': "bertambah selama treatment berjalan",
     'fo.spa.me.done': "Treatment selesai",

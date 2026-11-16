@@ -9,7 +9,7 @@ export type Ticket = {
 };
 
 export type Board = {
-    station: 'kitchen' | 'bar'; stations: { key: 'kitchen' | 'bar'; open: number }[]; tickets: Ticket[]; served: Ticket[]; late_after_minutes: number; loaded_at: string; may: { settings: boolean };
+    station: 'kitchen' | 'bar'; stations: { key: 'kitchen' | 'bar'; open: number }[]; tickets: Ticket[]; served: Ticket[]; late_after_minutes: number; loaded_at: string; delayed_orders: number; may: { settings: boolean };
 };
 
 export type SoldOutItem = { id: string; code: string; name: string; category: string; outlet: string; is_available: boolean };

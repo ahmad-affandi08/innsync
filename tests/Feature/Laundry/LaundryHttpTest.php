@@ -101,6 +101,34 @@ final class LaundryHttpTest extends TestCase
         $this->postJson("/laundry/orders/{$order['id']}/deliver", ['receipt' => 'Mr Budi', 'lock_version' => 5])->assertOk()->assertJsonPath('order.status', 'delivered');
     }
 
+    public function test_an_order_free_of_charge_needs_the_privilege_and_a_reason_and_is_never_charged_to_the_folio(): void
+    {
+        $item = $this->postJson('/laundry/prices', ['code' => 'SHIRT', 'name' => 'Shirt', 'unit_price_minor' => 2_500_000, 'reason' => 'Opening list'])->assertCreated()->json('item.id');
+        $body = ['barcode' => 'BAG-FOC', 'room_id' => $this->roomId, 'promised_date' => '2026-10-02', 'promised_time' => '17:00', 'foc' => true, 'foc_reason' => 'Service recovery', 'lines' => [['price_item_id' => $item, 'quantity' => 2]]];
+
+        // A person without the privilege cannot give laundry free, and does not see the choice.
+        $this->post('/logout');
+        $this->signIn(self::A, [LaundryService::INTAKE_PERMISSION, LaundryService::VIEW_PERMISSION]);
+        $this->get('/laundry/new')->assertInertia(fn (Assert $p) => $p->where('mayFoc', false));
+        $this->postJson('/laundry/orders', $body, ['Idempotency-Key' => 'laundry-foc-order-01'])->assertStatus(403);
+
+        $this->post('/logout');
+        $this->signIn(self::A, [LaundryService::INTAKE_PERMISSION, LaundryService::PROCESS_PERMISSION, LaundryService::VIEW_PERMISSION, LaundryService::FOC_PERMISSION]);
+        $this->get('/laundry/new')->assertInertia(fn (Assert $p) => $p->where('mayFoc', true));
+        $this->postJson('/laundry/orders', [...$body, 'foc_reason' => ''], ['Idempotency-Key' => 'laundry-foc-order-02'])->assertStatus(422);
+        $order = $this->postJson('/laundry/orders', $body, ['Idempotency-Key' => 'laundry-foc-order-03'])->assertCreated()->assertJsonPath('order.is_foc', true)->assertJsonPath('order.foc_reason', 'Service recovery')->json('order');
+
+        $line = $order['lines'][0]['id'];
+        $this->postJson("/laundry/orders/{$order['id']}/receive", ['counts' => [$line => 2], 'lock_version' => 0])->assertOk();
+        foreach ([1, 2, 3] as $version) {
+            $this->postJson("/laundry/orders/{$order['id']}/advance", ['lock_version' => $version])->assertOk();
+        }
+
+        $this->postJson("/laundry/orders/{$order['id']}/ready", ['lock_version' => 4])->assertOk()->assertJsonPath('order.charged_minor', 0)->assertJsonPath('order.billable_minor', 5_000_000);
+        self::assertSame(0, DB::table('folio_postings')->where('source', 'laundry')->count());
+        $this->assertDatabaseHas('audit_entries', ['action' => 'laundry.order.ready', 'aggregate_id' => $order['id']]);
+    }
+
     public function test_treatments_are_managed_and_chosen_at_hand_over_over_http(): void
     {
         $item = $this->postJson('/laundry/prices', ['code' => 'SHIRT', 'name' => 'Shirt', 'unit_price_minor' => 2_000_000, 'reason' => 'Opening list'])->assertCreated()->json('item.id');

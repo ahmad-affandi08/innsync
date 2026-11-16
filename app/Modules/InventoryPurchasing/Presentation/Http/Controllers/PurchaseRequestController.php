@@ -69,6 +69,20 @@ final readonly class PurchaseRequestController
         return $this->json(['request' => $this->requests->cancel($this->property->current(), $this->actor($request), $id, $data['reason'], (int) $data['lock_version'])]);
     }
 
+    public function hold(Request $request, string $id): JsonResponse
+    {
+        $data = $request->validate(['reason' => ['required', 'string', 'max:200'], 'lock_version' => ['required', 'integer', 'min:0']]);
+
+        return $this->json(['request' => $this->requests->hold($this->property->current(), $this->actor($request), $id, $data['reason'], (int) $data['lock_version'])]);
+    }
+
+    public function resume(Request $request, string $id): JsonResponse
+    {
+        $data = $request->validate(['lock_version' => ['required', 'integer', 'min:0']]);
+
+        return $this->json(['request' => $this->requests->resume($this->property->current(), $this->actor($request), $id, (int) $data['lock_version'])]);
+    }
+
     /** @param array<string, mixed> $body */
     private function json(array $body, int $status = 200): JsonResponse
     {

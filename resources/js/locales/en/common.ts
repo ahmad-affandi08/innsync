@@ -55,6 +55,7 @@ export const common = {
     'today.task.mtc.escalated': "Escalated work orders",
     'today.task.inv.low': "Items below minimum stock",
     'today.task.inv.deliveries': "Deliveries due or late",
+    'today.task.inv.held': "Purchase requests on hold for more than 3 days",
     'today.task.fin.overdue': "Supplier bills overdue",
     'today.task.fin.due': "Supplier bills due this week",
     'today.task.fin.unverified': "Revenue days to verify",

@@ -46,6 +46,15 @@ Rules every item follows (`AGENTS.md`, `docs/RULES/13-AI-AGENT-GUARDRAILS.md`): 
 | 6 | Role-aware "Today" page | FR-DSH-001 to FR-DSH-022 | Done 2026-11-10: 11 `TodayTasks` classes (front office, web bookings, housekeeping, laundry, kitchen, F&B, maintenance, inventory, finance, HR, approvals), see `DESIGN/03-LAYOUT-NAVIGATION.md`. Counts are not yet checked against real data |
 | — | Not now: auto-assign a technician; auto take a room off sale | FR-MTC-003, FR-MTC-006, BR-008 | Not proposed. Both change who does the work or whether a room can be sold, which is a hotel policy |
 
+## Done 2026-11-16 (from the notes of 16 November)
+
+| Proposal | What was built | Gate |
+| --- | --- | --- |
+| Health alerts reach a person | `PushAlertNotifier` puts a raised or worse alert on the devices of people with `property.settings.manage`, as the notice kind `system` (`docs/OPERATIONS/WEB-PUSH.md`) | None (no policy; web push exists) |
+| Spa commission on the employee's record | A finished treatment publishes `frontoffice.spa.treatment_done`; `SpaCommissionConsumer` records the commission the spa fixed under the kind SPA, once per booking (`docs/OPERATIONS/EMPLOYEE-COMMISSIONS.md`) | None (no new amount is worked out) |
+| Held purchase requests come back | `inv.held` on Purchasing's Today list for requests on hold more than 3 days (`InventoryTodayTasks::HELD_DAYS`); the person decides, nothing is released by itself | None |
+| **Not automated on purpose** | Free-of-charge laundry and leaving off the service charge or tax (laundry, minibar, restaurant, spa), putting a request on hold or releasing it, and a commission worked out from sales (needs the hotel's rule) | Human decision / decision of the hotel |
+
 ## Decisions
 
 Owner instruction of 2026-11-10: D-8 is closed (one shared Automation account, narrow permissions, no approve/verify/pay) and the rest follow common Indonesian hotel practice. The defaults below are **starting values, each a property setting a manager can change**; they are not a PRD change. They stay open for the named manager to confirm at UAT.

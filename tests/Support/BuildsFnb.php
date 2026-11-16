@@ -38,7 +38,7 @@ trait BuildsFnb
 
             public function charge(PropertyId $property, string $actorId, string $reservationId, string $scope, string $code, string $description, int $quotedMinor, string $source, string $sourceRef, array $waive = []): array
             {
-                $this->test->recordCharge(['scope' => $scope, 'quoted' => $quotedMinor, 'source' => $source, 'ref' => $sourceRef, 'reservation' => $reservationId]);
+                $this->test->recordCharge(['scope' => $scope, 'quoted' => $quotedMinor, 'source' => $source, 'ref' => $sourceRef, 'reservation' => $reservationId, 'waive' => $waive]);
 
                 return ['posting_id' => '01arz3ndektsv4rrffq69g5fc4', 'total_minor' => intdiv($quotedMinor * 121, 100), 'currency' => 'IDR', 'replayed' => false];
             }

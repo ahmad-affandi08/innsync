@@ -59,7 +59,7 @@ final readonly class MinibarService
             throw Refusal::forbidden('This person may not see the mini bars.');
         }
 
-        return ['currency' => $this->currencies->currencyOf($property), 'may' => ['operate' => $operate, 'manage' => $manage], 'items' => array_map(self::item(...), $this->store->items($property, ! $manage)), 'today' => $this->businessDate->current($property)->toString()];
+        return ['currency' => $this->currencies->currencyOf($property), 'may' => ['operate' => $operate, 'manage' => $manage, 'waive' => $this->access->may($property, $actorId, FnbAccess::DISCOUNT_APPLY)], 'items' => array_map(self::item(...), $this->store->items($property, ! $manage)), 'today' => $this->businessDate->current($property)->toString()];
     }
 
     /** Finds the room by what was scanned and says whom it is let to and what it holds. @return array<string, mixed> */
@@ -83,9 +83,22 @@ final readonly class MinibarService
      * @param  list<array{item_id: string, consumed: int, refilled: int}>  $lines
      * @return array<string, mixed>
      */
-    public function check(PropertyId $property, string $actorId, string $roomCode, array $lines): array
+    public function check(PropertyId $property, string $actorId, string $roomCode, array $lines, bool $waiveServiceCharge = false, bool $waiveTax = false, ?string $waiveReason = null): array
     {
         $this->access->require($property, $actorId, FnbAccess::MINIBAR_OPERATE, 'This person may not check the mini bars.');
+        $waiveReason = $waiveReason === null ? null : trim($waiveReason);
+
+        if ($waiveServiceCharge || $waiveTax) {
+            $this->access->require($property, $actorId, FnbAccess::DISCOUNT_APPLY, 'This person may not leave off the service charge or the tax.');
+
+            if ($waiveReason === null || $waiveReason === '' || mb_strlen($waiveReason) > 200) {
+                throw Refusal::invalid('Give the reason, at most 200 characters.', ['waive_reason']);
+            }
+        } else {
+            $waiveReason = null;
+        }
+
+        $waive = [...($waiveServiceCharge ? ['service_charge'] : []), ...($waiveTax ? ['tax'] : [])];
         $actor = strtolower($actorId);
         $room = $this->find($property, $roomCode);
 
@@ -97,7 +110,7 @@ final readonly class MinibarService
         $now = $this->clock->nowUtc();
         $date = $this->businessDate->current($property)->toString();
 
-        $this->transactions->run(function () use ($property, $actor, $room, $lines, $id, $now, $date): void {
+        $this->transactions->run(function () use ($property, $actor, $room, $lines, $id, $now, $date, $waive, $waiveServiceCharge, $waiveTax, $waiveReason): void {
             $stay = $this->guests->inHouseStayOfRoom($property, $room->id);
             $items = array_column($this->store->items($property, false), null, 'id');
             $held = $this->store->stock($property, [$room->id])[$room->id] ?? [];
@@ -147,7 +160,7 @@ final readonly class MinibarService
                 }
 
                 try {
-                    $result = $this->guests->charge($property, $actor, $stay['reservation_id'], self::SCOPE, 'MINIBAR', 'Mini bar room '.$room->number, $consumedTotal, self::SOURCE, $id);
+                    $result = $this->guests->charge($property, $actor, $stay['reservation_id'], self::SCOPE, 'MINIBAR', 'Mini bar room '.$room->number, $consumedTotal, self::SOURCE, $id, $waive);
                 } catch (Refusal $e) {
                     throw Refusal::stateConflict($e->getMessage().' If the folio is closed, charge it with the late charge procedure of the front office.');
                 }
@@ -158,7 +171,7 @@ final readonly class MinibarService
 
             $number = $this->numbers->next($property, 'MBAR');
             $this->store->addCheck($property, ['id' => $id, 'number' => $number, 'room_id' => $room->id, 'room_number' => $room->number, 'stay_id' => $stay['stay_id'] ?? null, 'reservation_id' => $stay['reservation_id'] ?? null, 'guest_name' => $stay['guest_name'] ?? null, 'checked_by' => $actor, 'checked_at' => $now->format('Y-m-d H:i:s.u'),
-                'business_date' => $date, 'consumed_minor' => $consumedTotal, 'folio_posting_id' => $posting, 'charged_total_minor' => $charged], $rows, $now);
+                'business_date' => $date, 'consumed_minor' => $consumedTotal, 'waive_service_charge' => $waiveServiceCharge, 'waive_tax' => $waiveTax, 'waive_reason' => $waiveReason, 'folio_posting_id' => $posting, 'charged_total_minor' => $charged], $rows, $now);
 
             foreach ($stockNow as $itemId => $qty) {
                 $this->store->setStock($property, $room->id, $itemId, $qty, $now);

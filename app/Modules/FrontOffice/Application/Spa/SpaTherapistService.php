@@ -11,6 +11,8 @@ use App\Shared\Application\Audit\AuditEntry;
 use App\Shared\Application\Audit\AuditTrail;
 use App\Shared\Application\Errors\Refusal;
 use App\Shared\Application\Identifiers\IdentifierGenerator;
+use App\Shared\Application\Outbox\OutboxEvent;
+use App\Shared\Application\Outbox\OutboxPublisher;
 use App\Shared\Application\Security\PermissionChecker;
 use App\Shared\Application\Time\Clock;
 use App\Shared\Application\Transactions\TransactionRunner;
@@ -22,6 +24,8 @@ use App\Shared\Domain\Tenancy\PropertyId;
  */
 final readonly class SpaTherapistService
 {
+    public const DONE_EVENT = 'frontoffice.spa.treatment_done';
+
     public function __construct(
         private SpaStore $store,
         private FolioService $folios,
@@ -32,6 +36,7 @@ final readonly class SpaTherapistService
         private AuditTrail $audit,
         private IdentifierGenerator $ids,
         private Clock $clock,
+        private OutboxPublisher $outbox,
     ) {}
 
     /** @return array<string, mixed> */
@@ -56,7 +61,7 @@ final readonly class SpaTherapistService
             'therapist' => ['id' => $therapist['id'], 'name' => $therapist['name']],
             'date' => $today, 'currency' => $this->currency->currencyOf($property), 'now' => $this->clock->nowUtc()->format('Y-m-d\TH:i:s\Z'),
             'present' => $present !== null && $present['clock_out_at'] === null, 'clock_in_at' => $present['clock_in_at'] ?? null, 'clock_out_at' => $present['clock_out_at'] ?? null,
-            'bookings' => $bookings, 'treatments_done' => $done, 'commission_today_minor' => $earned,
+            'bookings' => $bookings, 'treatments_done' => $done, 'commission_today_minor' => $earned, 'commission_total_minor' => $this->store->commissionTotal($property, $therapist['id']),
         ];
     }
 
@@ -182,6 +187,13 @@ final readonly class SpaTherapistService
                 $property->toString(), $therapist['user_id'], 'spa.'.$to, 'spa_booking', $b['id'], ['status' => $b['status']],
                 ['status' => $to, 'number' => $b['number'], ...($to === 'done' ? ['commission_minor' => $fields['commission_minor'], 'charged_to_room' => isset($fields['folio_posting_id'])] : [])], $reason,
             ));
+
+            if ($to === 'done') {
+                // The commission is a fact the moment the treatment is finished; Human Resource keeps it on the therapist's own record, once per booking.
+                $this->outbox->publish(new OutboxEvent($property, self::DONE_EVENT, $b['id'], 1, [
+                    'booking_id' => $b['id'], 'number' => $b['number'], 'therapist_user_id' => $therapist['user_id'], 'earned_on' => $today, 'commission_minor' => (int) $fields['commission_minor'], 'treatment' => $b['treatment_name'],
+                ]));
+            }
         });
 
         return SpaView::booking($this->store->booking($property, strtolower($id)) ?? throw Refusal::notFound('Booking not found.'));

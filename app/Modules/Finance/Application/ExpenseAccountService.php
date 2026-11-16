@@ -18,7 +18,7 @@ use App\Shared\Domain\Tenancy\PropertyId;
  */
 final readonly class ExpenseAccountService
 {
-    public const DEPARTMENTS = ['front_office', 'housekeeping', 'laundry', 'fnb', 'kitchen', 'maintenance', 'hr', 'finance', 'purchasing', 'general'];
+    public const DEPARTMENTS = ['front_office', 'housekeeping', 'laundry', 'fnb', 'kitchen', 'maintenance', 'hr', 'finance', 'purchasing', 'spa', 'general'];
 
     public const CATEGORIES = ['goods', 'supplies', 'utilities', 'rent', 'maintenance', 'services', 'salaries', 'other'];
 

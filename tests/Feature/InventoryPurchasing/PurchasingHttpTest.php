@@ -8,6 +8,7 @@ use App\Modules\IdentityAccess\Application\Approval\ApprovalPolicyAdmin;
 use App\Modules\IdentityAccess\Application\Approval\ApprovalService;
 use App\Modules\IdentityAccess\Infrastructure\Persistence\Eloquent\UserRecord;
 use App\Modules\InventoryPurchasing\Application\InventoryCatalogService;
+use App\Modules\InventoryPurchasing\Application\InventoryTodayTasks;
 use App\Modules\InventoryPurchasing\Application\PurchasingAccess;
 use App\Modules\InventoryPurchasing\Application\SupplierService;
 use App\Modules\Property\Application\Settings\PropertySettingsService;
@@ -157,6 +158,38 @@ final class PurchasingHttpTest extends TestCase
         $done = $this->postJson("/inventory/requests/{$r['id']}/submit", ['lock_version' => $r['lock_version']])->assertOk()->json('request');
         $this->assertSame('approved', $done['status']);
         $this->assertNull(DB::table('purchase_requests')->value('approval_id'));
+    }
+
+    public function test_purchasing_can_hold_an_approved_request_and_release_it_and_a_held_one_cannot_be_ordered(): void
+    {
+        $r = $this->pr();
+        $approved = $this->postJson("/inventory/requests/{$r['id']}/submit", ['lock_version' => $r['lock_version']])->assertOk()->json('request');
+        self::assertTrue($approved['may_hold']);
+
+        $this->postJson("/inventory/requests/{$r['id']}/hold", ['reason' => '', 'lock_version' => $approved['lock_version']])->assertStatus(422);
+        $held = $this->postJson("/inventory/requests/{$r['id']}/hold", ['reason' => 'Waiting for budget', 'lock_version' => $approved['lock_version']])->assertOk()->assertJsonPath('request.status', 'on_hold')->assertJsonPath('request.decision_note', 'Waiting for budget')->json('request');
+        self::assertTrue($held['may_resume']);
+        $this->assertDatabaseHas('audit_entries', ['action' => 'purchase_request.held', 'aggregate_id' => $r['id']]);
+
+        // A held request is not offered for ordering, and it cannot be held twice.
+        $this->get('/inventory/orders')->assertInertia(fn (Assert $p) => $p->has('overview.request_lines', 0));
+        $this->postJson("/inventory/requests/{$r['id']}/hold", ['reason' => 'Again', 'lock_version' => $held['lock_version']])->assertStatus(409);
+
+        // A request held for more than three days is put in front of Purchasing again on the Today list; a fresh one is not.
+        app(PropertyContext::class)->activate(PropertyId::fromString(self::A));
+        $manager = (string) DB::table('purchase_requests')->value('requested_by');
+        $count = static fn (array $tasks): int => (int) (collect($tasks)->firstWhere('key', 'inv.held')['count'] ?? -1);
+        self::assertSame(0, $count(app(InventoryTodayTasks::class)->tasks(PropertyId::fromString(self::A), $manager)));
+        DB::table('purchase_requests')->where('id', $r['id'])->update(['updated_at' => '2000-01-01 00:00:00']);
+        self::assertSame(1, $count(app(InventoryTodayTasks::class)->tasks(PropertyId::fromString(self::A), $manager)));
+
+        // Someone who only makes requests cannot hold or release.
+        $this->as([PurchasingAccess::REQUEST_CREATE]);
+        $this->postJson("/inventory/requests/{$r['id']}/resume", ['lock_version' => $held['lock_version']])->assertForbidden();
+
+        $this->as([PropertySettingsService::MANAGE_PERMISSION, InventoryCatalogService::MANAGE_PERMISSION, SupplierService::MANAGE_PERMISSION, PurchasingAccess::REQUEST_CREATE, PurchasingAccess::ORDER_MANAGE]);
+        $this->postJson("/inventory/requests/{$r['id']}/resume", ['lock_version' => $held['lock_version']])->assertOk()->assertJsonPath('request.status', 'approved');
+        $this->postJson("/inventory/requests/{$r['id']}/resume", ['lock_version' => $held['lock_version'] + 1])->assertStatus(409);
     }
 
     public function test_a_request_over_a_policy_band_waits_for_the_chain_and_is_released_once_approved(): void

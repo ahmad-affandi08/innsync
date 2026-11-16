@@ -27,6 +27,7 @@ export const kitchen = {
     "kitchen.served.meta": "{place} · {bill} · took {time}",
     "kitchen.live.updated": "Updated {time}",
     "kitchen.live.offline": "No connection. This is how the screen looked at {time}. It keeps trying.",
+    "kitchen.delayed.title": "{count} order(s) sent more than 3 minutes ago have not reached the screen. The background processing (cron: php artisan schedule:run every minute) has stopped; ask whoever runs the server.",
     "kitchen.soldOut.title": "Dishes",
     "kitchen.soldOut.hint": "A dish marked sold out cannot be ordered at the point of sale until it is put back.",
     "kitchen.soldOut.item": "Dish",

@@ -1283,6 +1283,7 @@ export const frontOffice = {
     'fo.spa.me.clockIn': "Clock in",
     'fo.spa.me.clockOut': "Clock out",
     'fo.spa.me.earned': "Commission today",
+    'fo.spa.me.lifetime': "Commission since the beginning",
     'fo.spa.me.growing': "growing while the treatment runs",
     'fo.spa.me.done': "Treatments done",
     'fo.spa.me.none': "No booking for you today.",

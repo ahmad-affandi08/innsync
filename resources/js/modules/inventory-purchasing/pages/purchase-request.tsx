@@ -27,7 +27,7 @@ type PurchaseRequest = {
     requested_by_name: string | null; submitted_at: string | null; business_date: string; line_count: number; ordered_count: number; lock_version: number;
     currency: string; departments: string[]; urgencies: string[]; items: ItemChoice[]; lines: Line[];
     approval: ApprovalSummary | null; budget: Standing;
-    may_edit: boolean; may_submit: boolean; may_release: boolean; may_cancel: boolean;
+    may_edit: boolean; may_submit: boolean; may_release: boolean; may_hold: boolean; may_resume: boolean; may_cancel: boolean;
 };
 
 const reload = ['purchaseRequest'];
@@ -40,6 +40,7 @@ export default function PurchaseRequestPage({ purchaseRequest: pr }: { purchaseR
     const [edit, setEdit] = useState<RequestFormState | null>(null);
     const [badCosts, setBadCosts] = useState<string[]>([]);
     const [cancelling, setCancelling] = useState<string | null>(null);
+    const [holding, setHolding] = useState<string | null>(null);
     const [warning, setWarning] = useState<Standing | null>(null);
     const money = (minor: number) => format.money(minor, pr.currency);
     const qty = (milli: number) => formatMilli(milli, locale);
@@ -76,6 +77,16 @@ export default function PurchaseRequestPage({ purchaseRequest: pr }: { purchaseR
         await action.run(`/inventory/requests/${pr.id}/release`, { reload });
     }
 
+    async function hold() {
+        if (holding === null) return;
+        const done = await action.run(`/inventory/requests/${pr.id}/hold`, { body: { reason: holding, lock_version: pr.lock_version }, reload });
+        if (done !== null) setHolding(null);
+    }
+
+    async function resume() {
+        await action.run(`/inventory/requests/${pr.id}/resume`, { body: { lock_version: pr.lock_version }, reload });
+    }
+
     async function cancel() {
         if (cancelling === null) return;
         const done = await action.run(`/inventory/requests/${pr.id}/cancel`, { body: { reason: cancelling, lock_version: pr.lock_version }, reload });
@@ -99,6 +110,8 @@ export default function PurchaseRequestPage({ purchaseRequest: pr }: { purchaseR
                 <Button onClick={() => window.print()} type="button" variant="outline">{t('inv.po.print')}</Button>
                 {pr.may_edit ? <Button onClick={openEdit} type="button" variant="outline">{t('inv.req.edit')}</Button> : null}
                 {pr.may_release ? <Button disabled={action.busy} onClick={() => void release()} type="button" variant="outline">{t('inv.req.release')}</Button> : null}
+                {pr.may_hold ? <Button onClick={() => { action.clear(); setHolding(''); }} type="button" variant="outline">{t('inv.req.hold')}</Button> : null}
+                {pr.may_resume ? <Button disabled={action.busy} onClick={() => void resume()} type="button" variant="outline">{t('inv.req.resume')}</Button> : null}
                 {pr.may_cancel ? <Button onClick={() => { action.clear(); setCancelling(''); }} type="button" variant="outline">{t('inv.req.cancel')}</Button> : null}
                 {pr.may_submit ? <Button loading={action.busy} onClick={() => void submit()} type="button">{t('inv.req.submit')}</Button> : null}
             </>}
@@ -106,9 +119,9 @@ export default function PurchaseRequestPage({ purchaseRequest: pr }: { purchaseR
             title={t('inv.req.detailTitle', { number: pr.number })}
             wide
         >
-            {action.error !== null && edit === null && cancelling === null ? <ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /> : null}
+            {action.error !== null && edit === null && cancelling === null && holding === null ? <ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /> : null}
             {warning !== null ? <BudgetWarning currency={pr.currency} standing={warning} /> : null}
-            {pr.decision_note && (pr.status === 'rejected' || pr.status === 'cancelled') ? <Alert title={t(pr.status === 'rejected' ? 'inv.req.rejectedNote' : 'inv.req.cancelledNote')} tone={pr.status === 'rejected' ? 'danger' : 'info'}>{pr.decision_note}</Alert> : null}
+            {pr.decision_note && (pr.status === 'rejected' || pr.status === 'cancelled' || pr.status === 'on_hold') ? <Alert title={t(pr.status === 'rejected' ? 'inv.req.rejectedNote' : pr.status === 'on_hold' ? 'inv.req.holdNote' : 'inv.req.cancelledNote')} tone={pr.status === 'rejected' ? 'danger' : pr.status === 'on_hold' ? 'warning' : 'info'}>{pr.decision_note}</Alert> : null}
 
             <section aria-labelledby="pr-details-h" className="flex flex-col gap-3">
                 <div className="flex flex-wrap items-center justify-between gap-2">
@@ -206,6 +219,26 @@ export default function PurchaseRequestPage({ purchaseRequest: pr }: { purchaseR
                     <div className="flex flex-col gap-3">
                         {action.error !== null ? <ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /> : null}
                         <RequestFields badCosts={badCosts} currency={pr.currency} departments={pr.departments} fieldError={action.fieldError} form={edit} items={pr.items} onChange={setEdit} urgencies={pr.urgencies} />
+                    </div>
+                )}
+            </Dialog>
+
+            <Dialog
+                footer={<>
+                    <Button disabled={action.busy} onClick={() => setHolding(null)} type="button" variant="outline">{t('inv.trf.back')}</Button>
+                    <Button loading={action.busy} onClick={() => void hold()} type="button">{t('inv.req.holdConfirm')}</Button>
+                </>}
+                onClose={() => setHolding(null)}
+                open={holding !== null}
+                title={t('inv.req.hold')}
+            >
+                {holding !== null && (
+                    <div className="flex flex-col gap-3">
+                        <p className="text-sm text-muted-foreground">{t('inv.req.holdHint')}</p>
+                        {action.error !== null ? <ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /> : null}
+                        <FormField error={action.fieldError('reason')} field="reason" label={t('inv.col.reason')}>
+                            <Input maxLength={200} onChange={(e) => setHolding(e.target.value)} value={holding} />
+                        </FormField>
                     </div>
                 )}
             </Dialog>

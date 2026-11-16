@@ -157,6 +157,11 @@ final class DatabaseSpaStore implements SpaStore
         return DB::table('spa_bookings')->where('property_id', $property->toString())->where('therapist_id', $therapistId)->where('booking_date', $date)->orderBy('start_minute')->get()->map(static fn ($r): array => self::booking_((array) $r))->all();
     }
 
+    public function commissionTotal(PropertyId $property, string $therapistId): int
+    {
+        return (int) DB::table('spa_bookings')->where('property_id', $property->toString())->where('therapist_id', $therapistId)->where('status', 'done')->sum('commission_minor');
+    }
+
     public function holding(PropertyId $property, string $column, string $id, string $date, ?string $exceptBookingId): array
     {
         if (! in_array($column, ['room_id', 'therapist_id'], true)) {

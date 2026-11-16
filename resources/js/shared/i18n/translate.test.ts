@@ -284,6 +284,8 @@ describe('dictionaries', () => {
             'guide.laundry.title',
             'guide.maintenance.title',
             'shell.version',
+            'hr.department.spa',
+            'inv.dept.spa',
             'rpt.export.pdf',
         ])
         const identical = (Object.keys(en) as (keyof typeof en)[]).filter(

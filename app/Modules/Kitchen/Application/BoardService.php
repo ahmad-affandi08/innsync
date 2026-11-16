@@ -10,6 +10,7 @@ use App\Modules\InventoryPurchasing\Application\IngredientCatalog;
 use App\Shared\Application\Audit\AuditEntry;
 use App\Shared\Application\Audit\AuditTrail;
 use App\Shared\Application\Errors\Refusal;
+use App\Shared\Application\Outbox\OutboxBacklog;
 use App\Shared\Application\Outbox\OutboxEvent;
 use App\Shared\Application\Outbox\OutboxPublisher;
 use App\Shared\Application\Time\Clock;
@@ -35,6 +36,9 @@ final readonly class BoardService
 
     private const SERVED_LIMIT = 30;
 
+    /** How long events may wait before the screen warns that the background processing has stopped. */
+    private const STALLED_MINUTES = 3;
+
     private const TRANSITIONS = ['start' => ['from' => ['new'], 'to' => 'preparing'], 'ready' => ['from' => ['new', 'preparing'], 'to' => 'ready'], 'serve' => ['from' => ['ready'], 'to' => 'served']];
 
     public function __construct(
@@ -46,6 +50,7 @@ final readonly class BoardService
         private AuditTrail $audit,
         private OutboxPublisher $outbox,
         private Clock $clock,
+        private OutboxBacklog $backlog,
     ) {}
 
     /** @return array<string, mixed> */
@@ -66,6 +71,8 @@ final readonly class BoardService
             'served' => $served,
             'late_after_minutes' => $late,
             'loaded_at' => $now->format('Y-m-d\TH:i:s\Z'),
+            // Orders wait for the background processing; when it has stopped they pile up and no ticket appears, so the screen says so.
+            'delayed_orders' => $this->backlog->waitingSince($property, $now->modify('-'.self::STALLED_MINUTES.' minutes')),
             'may' => ['settings' => $this->access->may($property, $actorId, KitchenAccess::SETTINGS_MANAGE)],
         ];
     }

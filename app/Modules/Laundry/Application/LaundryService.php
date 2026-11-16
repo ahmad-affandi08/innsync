@@ -54,6 +54,8 @@ final readonly class LaundryService implements LaundryLiability
 
     public const PRICES_PERMISSION = 'laundry.prices.manage';
 
+    public const FOC_PERMISSION = 'laundry.order.foc';
+
     public const VIEW_PERMISSION = 'laundry.view';
 
     public const CHARGE_SCOPE = 'laundry';
@@ -411,17 +413,22 @@ final readonly class LaundryService implements LaundryLiability
             $before = $this->repository->findOrder($property, strtolower($orderId)) ?? throw Refusal::notFound('Order not found.');
             $after = $this->transition(static fn () => $before->markReady());
             $this->assertVersion($before, $expectedLockVersion);
-            $total = $after->billableMinor();
+            $total = $after->chargeableMinor();
+
+            if ($total > 0 && $before->settlement === LaundryOrder::LATE_CHARGE && $before->waived() !== []) {
+                throw Refusal::stateConflict('This order leaves off the service charge or the tax, which a late charge after check-out cannot do. Ask the front office.');
+            }
+
             // The guest left with this order in hand and an approval was recorded for it: the charge goes to the late folio of the stay, not to a folio that is closed (FR-LDY-012).
             $posting = $total > 0
                 ? ($before->settlement === LaundryOrder::LATE_CHARGE
                     ? $this->charging->chargeLate($property, $actor, $before->reservationId, self::CHARGE_SCOPE, self::CHARGE_CODE, 'Laundry '.$before->number, $total, 'laundry', $before->id, 'Laundry left in hand at check-out: '.$before->number)
-                    : $this->charging->charge($property, $actor, $before->reservationId, self::CHARGE_SCOPE, self::CHARGE_CODE, 'Laundry '.$before->number, $total, 'laundry', $before->id))
+                    : $this->charging->charge($property, $actor, $before->reservationId, self::CHARGE_SCOPE, self::CHARGE_CODE, 'Laundry '.$before->number, $total, 'laundry', $before->id, $before->waived()))
                 : null;
             $now = $this->clock->nowUtc();
             $saved = $this->save($property, $after, $expectedLockVersion, ['processed_by' => $actor, 'ready_at' => $now, 'currency_code' => $posting['currency'] ?? null], $now);
             $this->repository->logStatus($property, $before->id, $before->status, LaundryStatus::Ready, $actor, $now);
-            $this->audit->record(new AuditEntry($property->toString(), $actor, 'laundry.order.ready', 'laundry_order', $before->id, ['status' => $before->status->value], ['status' => 'ready', 'billable_minor' => $total, 'posting_id' => $posting['posting_id'] ?? null]));
+            $this->audit->record(new AuditEntry($property->toString(), $actor, 'laundry.order.ready', 'laundry_order', $before->id, ['status' => $before->status->value], ['status' => 'ready', 'billable_minor' => $total, 'free_of_charge_minor' => $after->isFoc ? $after->billableMinor() : 0, 'posting_id' => $posting['posting_id'] ?? null]));
             $this->announce($property, 'laundry.order.ready', $saved, $actor);
 
             return $this->describe($saved, $this->repository->history($property, $saved->id));
@@ -499,6 +506,7 @@ final readonly class LaundryService implements LaundryLiability
             'deliver' => $this->permissions->allowsInProperty($actorId, self::DELIVER_PERMISSION, $property),
             'cancel' => $this->permissions->allowsInProperty($actorId, self::CANCEL_PERMISSION, $property),
             'prices' => $this->permissions->allowsInProperty($actorId, self::PRICES_PERMISSION, $property),
+            'foc' => $this->permissions->allowsInProperty($actorId, self::FOC_PERMISSION, $property),
         ];
     }
 
@@ -506,6 +514,10 @@ final readonly class LaundryService implements LaundryLiability
 
     private function open(PropertyId $property, string $actor, LaundryRequest $request): LaundryOrder
     {
+        if ($request->foc || $request->waiveServiceCharge || $request->waiveTax) {
+            $this->authorize($property, $actor, self::FOC_PERMISSION);
+        }
+
         $stay = $this->charging->inHouseStayOfRoom($property, strtolower($request->roomId)) ?? throw Refusal::invalid('Choose a room that has a guest in it.', ['room_id']);
         $zone = $this->zones->forProperty($property) ?? throw Refusal::notFound('Property not found.');
 
@@ -564,6 +576,8 @@ final readonly class LaundryService implements LaundryLiability
                 $this->ids->next(), $this->numbers->next($property, 'LDY'), trim($request->barcode), strtolower($request->roomId), $stay['stay_id'], $stay['reservation_id'], LaundryStatus::Sent,
                 $request->express, $this->businessDate->current($property)->toString(), $promised,
                 $request->notes === null || trim($request->notes) === '' ? null : trim($request->notes), false, null, null, null, 0, $lines,
+                null, $request->foc, $request->foc ? trim((string) $request->focReason) : null, $request->foc ? $actor : null,
+                $request->waiveServiceCharge, $request->waiveTax, $request->waiveServiceCharge || $request->waiveTax ? trim((string) $request->waiveReason) : null,
             );
         } catch (LaundryRuleViolation $e) {
             throw Refusal::invalid($e->getMessage(), $e->field === null ? [] : [$e->field]);
@@ -676,6 +690,11 @@ final readonly class LaundryService implements LaundryLiability
             'settlement' => $o->settlement,
             'delivered_at' => $o->deliveredAt?->format('Y-m-d\TH:i:s\Z'),
             'billable_minor' => $o->billableMinor(),
+            'is_foc' => $o->isFoc,
+            'waive_service_charge' => $o->waiveServiceCharge,
+            'waive_tax' => $o->waiveTax,
+            'waive_reason' => $o->waiveReason,
+            'foc_reason' => $o->focReason,
             'lines' => array_map(static fn (LaundryLine $l): array => [
                 'id' => $l->id, 'item_name' => $l->itemName, 'brand' => $l->brand, 'quantity' => $l->quantity, 'verified_quantity' => $l->verifiedQuantity,
                 'unit_price_minor' => $l->unitPriceMinor, 'treatment_name' => $l->treatmentName, 'treatment_extra_minor' => $l->treatmentExtraMinor, 'express_extra_minor' => $l->expressExtraMinor,

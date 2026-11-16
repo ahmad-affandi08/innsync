@@ -21,9 +21,13 @@ On an iPhone or iPad notices work only for the app added to the home screen (iOS
 - **Who.** Only a person who turned notices on, on that device. Up to 5 devices a person (`PUSH_MAX_DEVICES`). A device is dropped when the push service says it is gone, or after 20 failures in a row. Signing a device in as another person moves it to that person.
 - **Where it is sent.** Only to the addresses of known push services (`config/push.php`, `allowed_hosts`): the address is typed by a browser, and the server must never be pointed at an address of a person's choosing. The address of a device is kept sealed.
 - **What it says.** The same plain words as the e-mail notices: an approval waits (nothing about its subject, amount or maker), a work order's number, priority and place (never its title or a guest). The place to open is a path of this application only.
-- **Kinds.** A person can turn off a kind of notice for themselves (*Tell me about*: approvals, work orders, guest requests; every kind is on until then); it holds for all their devices. A guest request notice names the room, the kind of request and whether it is urgent, never the guest or what was written, and the person who made the request is not told of it.
+- **Kinds.** A person can turn off a kind of notice for themselves (*Tell me about*: approvals, work orders, guest requests, system alerts; every kind is on until then); it holds for all their devices. A guest request notice names the room, the kind of request and whether it is urgent, never the guest or what was written, and the person who made the request is not told of it.
 - **Alongside e-mail.** Push is sent whenever it is set up; the e-mail notices stay behind `APPROVAL_EMAIL_NOTICE` and `MAINTENANCE_EMAIL_NOTICE`.
 - **Waiting notices** are kept 3 days (`PUSH_NOTICE_DAYS`) and then removed.
+
+## System alerts
+
+When a health check is raised or gets worse (the outbox delivery is stalled, jobs fail, storage is low), people who may change the property settings (`property.settings.manage`), in every property, get a notice of the kind `system` with the plain summary of the check (`PushAlertNotifier`, which also keeps the log line). A resolved alert is not pushed. It cannot warn that **cron itself stopped**, because cron is what runs the checks: for that, point an uptime monitor at `/health`; the kitchen and bar screen also says so when orders have waited more than 3 minutes.
 
 ## Not done
 

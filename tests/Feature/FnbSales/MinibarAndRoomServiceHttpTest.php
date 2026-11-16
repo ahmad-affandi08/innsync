@@ -158,6 +158,23 @@ final class MinibarAndRoomServiceHttpTest extends TestCase
         }
     }
 
+    public function test_a_check_can_leave_off_the_service_charge_or_the_tax_only_for_a_person_who_may_discount_and_with_a_reason(): void
+    {
+        $lines = [['item_id' => $this->item['WATER'], 'consumed' => 1, 'refilled' => 0]];
+        $body = ['room_code' => '101', 'lines' => $lines, 'waive_service_charge' => true, 'waive_tax' => false, 'waive_reason' => 'Welcome gift'];
+
+        $this->actAs($this->attendant);
+        $this->postJson('/fnb/minibar/checks', $body, $this->key())->assertStatus(403);
+
+        $discounter = UserRecord::factory()->create();
+        $this->grant($discounter, self::A, [FnbAccess::MINIBAR_OPERATE, FnbAccess::DISCOUNT_APPLY]);
+        $this->actAs($discounter);
+        $this->postJson('/fnb/minibar/checks', [...$body, 'waive_reason' => ''], $this->key())->assertStatus(422);
+        $this->postJson('/fnb/minibar/checks', $body, $this->key())->assertCreated();
+        self::assertSame(['service_charge'], $this->charged[0]['waive']);
+        self::assertSame([1, 0, 'Welcome gift'], [(int) DB::table('fnb_minibar_checks')->value('waive_service_charge'), (int) DB::table('fnb_minibar_checks')->value('waive_tax'), DB::table('fnb_minibar_checks')->value('waive_reason')]);
+    }
+
     public function test_a_check_is_refused_when_it_cannot_have_happened(): void
     {
         $this->actAs($this->attendant);

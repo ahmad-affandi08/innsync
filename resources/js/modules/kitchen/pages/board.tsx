@@ -204,6 +204,7 @@ export default function KitchenBoardPage(props: BoardPageProps) {
             title={t('kitchen.title')}
         >
             {saved ? <Alert title={t('kitchen.settings.saved')} tone="success" /> : null}
+            {board.delayed_orders > 0 ? <Alert title={t('kitchen.delayed.title', { count: board.delayed_orders })} tone="warning" /> : null}
             {offline ? <Alert title={t('kitchen.live.offline', { time: stamp })} tone="warning" /> : <p className="text-xs text-muted-foreground" data-testid="kitchen-updated">{t('kitchen.live.updated', { time: stamp })}</p>}
             <div className={printing !== null ? 'print:hidden' : undefined}>
             <Tabs onValueChange={pickStation} value={tab}>

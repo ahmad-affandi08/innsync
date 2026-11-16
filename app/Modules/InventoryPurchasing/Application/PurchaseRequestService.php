@@ -62,7 +62,7 @@ final readonly class PurchaseRequestService
     {
         $this->access->requireView($property, $actorId);
 
-        if ($status !== null && $status !== '' && ! in_array($status, ['draft', 'pending_approval', 'approved', 'rejected', 'cancelled', 'ordered'], true)) {
+        if ($status !== null && $status !== '' && ! in_array($status, ['draft', 'pending_approval', 'approved', 'on_hold', 'rejected', 'cancelled', 'ordered'], true)) {
             throw Refusal::invalid('Choose a status from the list.', ['status']);
         }
 
@@ -111,7 +111,9 @@ final readonly class PurchaseRequestService
             'may_edit' => $mine && $request['status'] === 'draft' && $this->access->may($property, $actorId, PurchasingAccess::REQUEST_CREATE),
             'may_submit' => $mine && $request['status'] === 'draft' && $this->access->may($property, $actorId, PurchasingAccess::REQUEST_CREATE),
             'may_release' => $mine && $request['status'] === 'pending_approval',
-            'may_cancel' => in_array($request['status'], ['draft', 'pending_approval', 'approved'], true) && ($mine || $this->access->may($property, $actorId, PurchasingAccess::ORDER_MANAGE)) && ! $this->hasOrderedLines($request),
+            'may_hold' => $request['status'] === 'approved' && $this->access->may($property, $actorId, PurchasingAccess::ORDER_MANAGE) && ! $this->hasOrderedLines($request),
+            'may_resume' => $request['status'] === 'on_hold' && $this->access->may($property, $actorId, PurchasingAccess::ORDER_MANAGE),
+            'may_cancel' => in_array($request['status'], ['draft', 'pending_approval', 'approved', 'on_hold'], true) && ($mine || $this->access->may($property, $actorId, PurchasingAccess::ORDER_MANAGE)) && ! $this->hasOrderedLines($request),
         ];
     }
 
@@ -254,7 +256,7 @@ final readonly class PurchaseRequestService
             throw Refusal::forbidden('Only the requester or Purchasing may cancel a request.');
         }
 
-        if (! in_array($request['status'], ['draft', 'pending_approval', 'approved'], true) || $this->hasOrderedLines($request)) {
+        if (! in_array($request['status'], ['draft', 'pending_approval', 'approved', 'on_hold'], true) || $this->hasOrderedLines($request)) {
             throw Refusal::stateConflict('This request can no longer be cancelled.');
         }
 
@@ -271,6 +273,52 @@ final readonly class PurchaseRequestService
         });
 
         return $this->show($property, $actorId, $request['id']);
+    }
+
+    /** Purchasing keeps an approved request from being ordered for now, and says why. Nothing on it can go on an order until it is released. @return array<string, mixed> */
+    public function hold(PropertyId $property, string $actorId, string $id, string $reason, int $lock): array
+    {
+        $this->access->require($property, $actorId, PurchasingAccess::ORDER_MANAGE, 'Only Purchasing may hold a request.');
+        $request = $this->store->request($property, strtolower($id)) ?? throw Refusal::notFound('Purchase request not found.');
+
+        if ($request['status'] !== 'approved' || $this->hasOrderedLines($request)) {
+            throw Refusal::stateConflict('Only an approved request with nothing ordered yet can be put on hold.');
+        }
+
+        if (trim($reason) === '' || mb_strlen($reason) > 200) {
+            throw Refusal::invalid('A reason of at most 200 characters is required.', ['reason']);
+        }
+
+        $this->move($property, strtolower($actorId), $request, 'on_hold', trim($reason), $lock, 'purchase_request.held');
+
+        return $this->show($property, $actorId, $request['id']);
+    }
+
+    /** @return array<string, mixed> */
+    public function resume(PropertyId $property, string $actorId, string $id, int $lock): array
+    {
+        $this->access->require($property, $actorId, PurchasingAccess::ORDER_MANAGE, 'Only Purchasing may release a request that is on hold.');
+        $request = $this->store->request($property, strtolower($id)) ?? throw Refusal::notFound('Purchase request not found.');
+
+        if ($request['status'] !== 'on_hold') {
+            throw Refusal::stateConflict('This request is not on hold.');
+        }
+
+        $this->move($property, strtolower($actorId), $request, 'approved', null, $lock, 'purchase_request.resumed');
+
+        return $this->show($property, $actorId, $request['id']);
+    }
+
+    /** @param array<string, mixed> $request */
+    private function move(PropertyId $property, string $actor, array $request, string $to, ?string $note, int $lock, string $action): void
+    {
+        $this->transactions->run(function () use ($property, $actor, $request, $to, $note, $lock, $action): void {
+            if (! $this->store->updateRequest($property, $request['id'], $lock, ['status' => $to, 'decision_note' => $note], $this->clock->nowUtc())) {
+                throw Refusal::stateConflict('This request changed after you opened it.');
+            }
+
+            $this->audit->record(new AuditEntry($property->toString(), $actor, $action, 'purchase_request', $request['id'], ['status' => $request['status']], ['status' => $to, 'number' => $request['number']], $note));
+        });
     }
 
     /** @param array<string, mixed> $request */
@@ -405,6 +453,7 @@ final readonly class PurchaseRequestService
             'id' => $r['id'], 'number' => $r['number'], 'department' => $r['department'], 'urgency' => $r['urgency'], 'reason' => $r['reason'], 'needed_by' => substr((string) $r['needed_by'], 0, 10), 'status' => $r['status'],
             'total_minor' => (int) $r['total_minor'], 'decision_note' => $r['decision_note'], 'requested_by_name' => $names[$r['requested_by']] ?? null, 'submitted_at' => $utc($r['submitted_at']), 'business_date' => substr((string) $r['business_date'], 0, 10),
             'line_count' => (int) ($r['line_count'] ?? 0), 'ordered_count' => (int) ($r['ordered_count'] ?? 0), 'lock_version' => (int) $r['lock_version'],
+            'held_since' => $r['status'] === 'on_hold' ? $utc($r['updated_at'] ?? null) : null,
         ];
     }
 

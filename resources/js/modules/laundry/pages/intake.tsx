@@ -26,13 +26,13 @@ type Line = { itemId: string; quantity: string; brand: string; condition: string
 const blank = (): Line => ({ itemId: '', quantity: '1', brand: '', condition: '', treatmentId: '' });
 
 /** The housekeeping hand-over screen: a bag tag, a room with a guest, what is in the bag and when it was promised back. */
-export default function LaundryIntakePage({ currency, lookups }: { currency: string; lookups: Lookups }) {
+export default function LaundryIntakePage({ currency, lookups, mayFoc }: { currency: string; lookups: Lookups; mayFoc: boolean }) {
     const { t } = useTranslation();
     const format = useFormatters();
     const errorCopy = useErrorStateCopy();
     const action = useServerAction();
     const [intent, setIntent] = useState(() => newIdempotencyKey());
-    const [form, setForm] = useState({ roomId: lookups.rooms[0]?.id ?? '', barcode: '', express: false, date: lookups.promised.standard.date, time: lookups.promised.standard.time, notes: '' });
+    const [form, setForm] = useState({ roomId: lookups.rooms[0]?.id ?? '', barcode: '', express: false, date: lookups.promised.standard.date, time: lookups.promised.standard.time, notes: '', foc: false, focReason: '', waiveService: false, waiveTax: false, waiveReason: '' });
     // The suggested time follows the express switch until the attendant types a time of their own.
     const [typedTime, setTypedTime] = useState(false);
     const [lines, setLines] = useState<Line[]>([blank()]);
@@ -50,6 +50,8 @@ export default function LaundryIntakePage({ currency, lookups }: { currency: str
             idempotencyKey: intent,
             body: {
                 barcode: form.barcode, room_id: form.roomId, express: form.express, promised_date: form.date, promised_time: form.time, notes: form.notes || null,
+                foc: form.foc, foc_reason: form.foc ? form.focReason : null,
+                waive_service_charge: form.waiveService, waive_tax: form.waiveTax, waive_reason: form.waiveService || form.waiveTax ? form.waiveReason : null,
                 lines: lines.filter((l) => l.itemId !== '').map((l) => ({ price_item_id: l.itemId, quantity: Number(l.quantity), brand: l.brand || null, condition_note: l.condition || null, treatment_id: l.treatmentId || null })),
             },
         });
@@ -105,6 +107,15 @@ export default function LaundryIntakePage({ currency, lookups }: { currency: str
                     </div>
                 </fieldset>
 
+                {mayFoc ? (
+                    <div className="flex flex-col gap-2 sm:col-span-2">
+                        <label className="flex items-center gap-2 text-sm"><input checked={form.foc} onChange={(e) => set({ foc: e.target.checked })} type="checkbox" />{t('ldy.intake.foc')}</label>
+                        <label className="flex items-center gap-2 text-sm"><input checked={form.waiveService} onChange={(e) => set({ waiveService: e.target.checked })} type="checkbox" />{t('ldy.intake.waiveService')}</label>
+                        <label className="flex items-center gap-2 text-sm"><input checked={form.waiveTax} onChange={(e) => set({ waiveTax: e.target.checked })} type="checkbox" />{t('ldy.intake.waiveTax')}</label>
+                        {form.waiveService || form.waiveTax ? <FormField field="waive_reason" error={action.fieldError('waive_reason')} label={t('ldy.intake.waiveReason')}><Input maxLength={300} onChange={(e) => set({ waiveReason: e.target.value })} value={form.waiveReason} /></FormField> : null}
+                        {form.foc ? <FormField field="foc_reason" error={action.fieldError('foc_reason')} label={t('ldy.intake.focReason')}><Input maxLength={300} onChange={(e) => set({ focReason: e.target.value })} value={form.focReason} /></FormField> : null}
+                    </div>
+                ) : null}
                 <div className="sm:col-span-2"><FormField field="notes" error={action.fieldError('notes')} label={t('ldy.intake.notes')}><Textarea maxLength={500} onChange={(e) => set({ notes: e.target.value })} rows={2} value={form.notes} /></FormField></div>
                 <div className="sm:col-span-2"><Button disabled={form.roomId === '' || lines.every((l) => l.itemId === '')} loading={action.busy} type="submit">{t('ldy.intake.submit')}</Button></div>
             </form>

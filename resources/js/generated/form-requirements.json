@@ -509,6 +509,13 @@
         "reason",
         "work_date"
     ],
+    "hr/pages/commissions": [
+        "amount_minor",
+        "code",
+        "earned_on",
+        "employee_id",
+        "type_id"
+    ],
     "hr/pages/conduct": [
         "employee_id",
         "issued_on",

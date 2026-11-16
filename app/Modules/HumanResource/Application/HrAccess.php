@@ -52,6 +52,9 @@ final readonly class HrAccess
     /** Makes the appraisal forms and appraises anyone, not only the people the person supervises. Sensitive: held by very few. */
     public const APPRAISAL = 'hr.appraisal.manage';
 
+    /** Adds the kinds of commission, records what a person earned and reverses a mistake. */
+    public const COMMISSION = 'hr.commission.manage';
+
     public function __construct(private PermissionChecker $permissions, private PropertyContext $property) {}
 
     public function assertProperty(PropertyId $property): void

@@ -27,6 +27,7 @@ export const kitchen = {
     "kitchen.served.meta": "{place} · {bill} · selesai dalam {time}",
     "kitchen.live.updated": "Diperbarui {time}",
     "kitchen.live.offline": "Tidak ada koneksi. Layar ini seperti pada {time}. Layar terus mencoba.",
+    "kitchen.delayed.title": "{count} pesanan yang dikirim lebih dari 3 menit lalu belum sampai ke layar. Pemrosesan latar (cron: php artisan schedule:run tiap menit) berhenti; hubungi pengelola server.",
     "kitchen.soldOut.title": "Menu",
     "kitchen.soldOut.hint": "Menu yang ditandai habis tidak bisa dipesan di kasir sampai dikembalikan.",
     "kitchen.soldOut.item": "Menu",
