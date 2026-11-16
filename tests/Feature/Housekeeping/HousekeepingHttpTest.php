@@ -13,6 +13,10 @@ use App\Modules\Property\Application\Catalog\RoomCatalogService;
 use App\Modules\Property\Application\Rates\ChargeSchemeService;
 use App\Modules\Property\Application\Rates\RatePlanService;
 use App\Modules\Property\Application\Settings\PropertySettingsService;
+use App\Shared\Application\Notifications\PushNotifier;
+use App\Shared\Application\Outbox\ProcessOutboxMessage;
+use App\Shared\Application\Tenancy\PropertyContext;
+use App\Shared\Domain\Tenancy\PropertyId;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Inertia\Testing\AssertableInertia as Assert;
@@ -32,6 +36,9 @@ final class HousekeepingHttpTest extends TestCase
     private string $reservationId;
 
     private string $attendantId;
+
+    /** @var list<array{users: list<string>, title: string, body: string, url: string, kind: string}> */
+    public array $pushed = [];
 
     protected function beforeRefreshingDatabase(): void
     {
@@ -158,6 +165,75 @@ final class HousekeepingHttpTest extends TestCase
         self::assertSame('waived', DB::table('inspection_findings')->where('id', $mandatory)->value('status'));
         self::assertSame(1, DB::table('audit_entries')->where('action', 'housekeeping.finding.waived')->where('aggregate_id', $mandatory)->count());
         $this->postJson("/housekeeping/findings/{$mandatory}/waive", ['reason' => 'Again'])->assertStatus(409);
+    }
+
+    public function test_housekeeping_is_told_on_their_phones_of_a_room_vacated_a_task_given_and_a_room_to_inspect(): void
+    {
+        $test = $this;
+        $this->app->instance(PushNotifier::class, new class($test) implements PushNotifier
+        {
+            public function __construct(private HousekeepingHttpTest $test) {}
+
+            public function notify(PropertyId $property, array $userIds, string $title, string $body, string $url, string $kind = 'general'): int
+            {
+                sort($userIds);
+                $this->test->pushed[] = ['users' => $userIds, 'title' => $title, 'body' => $body, 'url' => $url, 'kind' => $kind];
+
+                return count($userIds);
+            }
+
+            public function enabled(): bool
+            {
+                return true;
+            }
+        });
+        $supervisor = UserRecord::factory()->create();
+        $this->grant($supervisor, self::A, [HousekeepingService::MANAGE_PERMISSION, HousekeepingService::INSPECT_PERMISSION]);
+        $supervisorId = strtolower((string) $supervisor->getKey());
+        self::assertSame(3, DB::table('users')->count());
+
+        // Check-out by the signed-in desk clerk: the supervisor hears of it, the clerk who did it does not.
+        $this->checkInAndOut();
+        $taskId = (string) DB::table('housekeeping_tasks')->value('id');
+        $this->postJson("/housekeeping/tasks/{$taskId}/assign", ['assigned_to' => $this->attendantId, 'lock_version' => 0])->assertOk();
+        $this->post('/logout');
+        $this->flushSession();
+        $this->actingAsAttendant();
+        $this->postJson("/housekeeping/tasks/{$taskId}/start", ['lock_version' => 1])->assertOk();
+        $this->postJson("/housekeeping/tasks/{$taskId}/finish", ['lock_version' => 2])->assertOk();
+        $this->drain();
+
+        $told = array_column(array_map(static fn (array $p): array => [$p['title'], [$p['users'], $p['url'], $p['kind']]], $this->pushed), 1, 0);
+        self::assertSame([
+            'Kamar kosong, perlu dibersihkan / Room vacated, to be cleaned' => [[$supervisorId], '/housekeeping', 'housekeeping'],
+            'Tugas kamar baru / New room task' => [[$this->attendantId], '/housekeeping/my-rooms', 'housekeeping'],
+            'Kamar siap diinspeksi / Room ready for inspection' => [$this->inspectors(), '/housekeeping', 'housekeeping'],
+        ], $told);
+        self::assertCount(3, $this->pushed);
+        foreach ($this->pushed as $p) {
+            self::assertStringContainsString('Kamar 101', $p['body']);
+            self::assertStringNotContainsString('Budi', $p['title'].$p['body']);
+        }
+    }
+
+    /** Those who may inspect: the supervisor and the clerk signed in at set-up, never the attendant who cleaned. @return list<string> */
+    private function inspectors(): array
+    {
+        $ids = array_map(static fn ($id): string => strtolower((string) $id), DB::table('users')->pluck('id')->all());
+        $ids = array_values(array_diff($ids, [$this->attendantId]));
+        sort($ids);
+
+        return $ids;
+    }
+
+    private function drain(): void
+    {
+        app(PropertyContext::class)->activate(PropertyId::fromString(self::A));
+
+        foreach (DB::table('outbox_messages')->whereIn('event_type', ['housekeeping.task.assigned', 'housekeeping.room.status_changed'])->where('status', 'pending')->orderBy('id')->pluck('id')->all() as $id) {
+            DB::table('outbox_messages')->where('id', $id)->update(['status' => 'queued']);
+            app(ProcessOutboxMessage::class)->execute(PropertyId::fromString(self::A), (string) $id, 1);
+        }
     }
 
     private function actingAsAttendant(): void

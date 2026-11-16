@@ -143,7 +143,7 @@ final class WebPushTest extends TestCase
         Http::fake(['*' => Http::response('', 201)]);
         $notifier = app(PushNotifier::class);
 
-        $this->getJson('/push/config')->assertJsonPath('kinds', ['approval', 'work_order', 'guest_request', 'system', 'laundry'])->assertJsonPath('muted', []);
+        $this->getJson('/push/config')->assertJsonPath('kinds', ['approval', 'work_order', 'guest_request', 'system', 'laundry', 'housekeeping', 'guest_order'])->assertJsonPath('muted', []);
         $this->postJson('/push/preferences', ['kind' => 'nonsense', 'enabled' => false])->assertStatus(422);
         $this->postJson('/push/preferences', ['kind' => 'approval', 'enabled' => false])->assertOk()->assertJsonPath('muted', ['approval']);
 
@@ -155,11 +155,25 @@ final class WebPushTest extends TestCase
         $this->assertSame(1, $notifier->notify(PropertyId::fromString(self::A), [$this->userId], 'T', 'B', '/approvals', 'approval'));
     }
 
+    public function test_a_person_can_send_a_test_notice_to_their_own_devices(): void
+    {
+        $this->postJson('/push/test')->assertStatus(409);
+
+        $this->switchOn();
+        $this->postJson('/push/test')->assertOk()->assertJsonPath('devices', 0);
+        $this->postJson('/push/devices', ['endpoint' => self::PHONE])->assertCreated();
+        Http::fake(['*' => Http::response('', 201)]);
+
+        $this->postJson('/push/test')->assertOk()->assertJsonPath('devices', 1);
+        $this->getJson('/push/next', ['X-Push-Endpoint' => self::PHONE])->assertOk()->assertJsonPath('notice.title', 'Notifikasi uji / Test notice')->assertJsonPath('notice.url', '/account/sessions');
+    }
+
     public function test_the_routes_need_a_signed_in_person(): void
     {
         $this->post('/logout');
         $this->getJson('/push/config')->assertUnauthorized();
         $this->postJson('/push/devices', ['endpoint' => self::PHONE])->assertUnauthorized();
         $this->getJson('/push/next')->assertUnauthorized();
+        $this->postJson('/push/test')->assertUnauthorized();
     }
 }

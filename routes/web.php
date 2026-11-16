@@ -266,6 +266,8 @@ Route::middleware(['auth', 'auth.session', 'active'])->group(function (): void {
 Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->get('/', [HomeController::class, 'show'])->name('home');
 
 // The guide of the product by role, inside the product (NFR-15).
+// A test notice to one's own devices; it belongs to the property being worked in.
+Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property', 'throttle:push-devices'])->post('/push/test', [PushController::class, 'test'])->name('push.test');
 Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->get('/help', fn () => Inertia::render('foundation/pages/guide'))->name('help');
 
 // Offline queue synchronization (TASK-FND-017): signed in, MFA satisfied, property selected. Each item is

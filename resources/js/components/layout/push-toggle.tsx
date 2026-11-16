@@ -19,6 +19,7 @@ export function PushToggle() {
     const [failed, setFailed] = useState(false);
     const [kinds, setKinds] = useState<string[]>([]);
     const [muted, setMuted] = useState<string[]>([]);
+    const [tested, setTested] = useState<number | null>(null);
 
     useEffect(() => {
         let alive = true;
@@ -77,6 +78,17 @@ export function PushToggle() {
         }
     }
 
+    async function sendTest() {
+        setFailed(false);
+        setTested(null);
+
+        try {
+            setTested((await apiRequest<{ devices: number }>('/push/test', { method: 'POST' })).devices);
+        } catch {
+            setFailed(true);
+        }
+    }
+
     async function turnOff() {
         setBusy(true);
         setFailed(false);
@@ -111,9 +123,11 @@ export function PushToggle() {
             {state === 'on' ? (
                 <div className="flex flex-wrap items-center gap-3">
                     <span className="text-sm" data-testid="push-on">{t('acc.push.on')}</span>
+                    <Button onClick={() => void sendTest()} type="button" variant="outline">{t('acc.push.test')}</Button>
                     <Button loading={busy} onClick={() => void turnOff()} type="button" variant="outline">{t('acc.push.turnOff')}</Button>
                 </div>
             ) : null}
+            {tested !== null ? <Alert title={tested > 0 ? t('acc.push.testSent', { count: tested }) : t('acc.push.testNone')} tone={tested > 0 ? 'success' : 'warning'} /> : null}
             {state === 'on' && kinds.length > 0 ? (
                 <fieldset className="grid gap-2">
                     <legend className="text-sm font-medium">{t('acc.push.kinds')}</legend>

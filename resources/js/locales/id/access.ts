@@ -663,5 +663,10 @@ export const access = {
     'acc.push.kind.work_order': "Pekerjaan perbaikan untuk saya, dan yang mendekati batas waktu",
     'acc.push.kind.guest_request': "Permintaan dari tamu",
     'acc.push.kind.laundry': "Laundry siap diantar",
+    'acc.push.kind.housekeeping': "Tugas tata graha: kamar untuk saya, kamar kosong, kamar siap diinspeksi",
+    'acc.push.kind.guest_order': "Pesanan tamu dari QR kamar atau meja",
+    'acc.push.test': "Kirim notifikasi uji",
+    'acc.push.testSent': "Notifikasi uji dikirim ke {count} perangkat. Kalau tidak muncul dalam satu menit, periksa izin notifikasi di pengaturan HP.",
+    'acc.push.testNone': "Belum ada perangkat yang menerima. Nyalakan notifikasi di perangkat ini dulu.",
     'acc.push.kind.system': "Peringatan sistem (ada yang berhenti bekerja)",
 }

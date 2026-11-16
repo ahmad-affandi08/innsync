@@ -130,7 +130,7 @@ final readonly class GuestOrderService
                 'verified_by' => null, 'verified_at' => null, 'verify_note' => null, 'note' => $note,
             ], $now);
             $this->audit->record(new AuditEntry($property->toString(), null, 'guest_order.placed', 'guest_order', $id, null, ['code' => $session['label'], 'bill' => $placed['bill_number'], 'lines' => count($placed['line_ids']), 'payment' => $payment, 'subtotal_minor' => $placed['subtotal_minor']]));
-            $this->outbox->publish(new OutboxEvent($property, 'guest.order.placed', $id, 1, ['order_id' => $id, 'bill_id' => $placed['bill_id'], 'bill_number' => $placed['bill_number'], 'kind' => $session['kind'], 'payment' => $payment]));
+            $this->outbox->publish(new OutboxEvent($property, 'guest.order.placed', $id, 1, ['order_id' => $id, 'bill_id' => $placed['bill_id'], 'bill_number' => $placed['bill_number'], 'kind' => $session['kind'], 'label' => $session['label'], 'payment' => $payment]));
         });
 
         return $this->shape($property, $this->orders->find($property, $id) ?? throw Refusal::notFound('Order not found.'));

@@ -663,5 +663,10 @@ export const access = {
     'acc.push.kind.work_order': "Work orders given to me, and ones near their deadline",
     'acc.push.kind.guest_request': "Requests from guests",
     'acc.push.kind.laundry': "Laundry ready to bring back",
+    'acc.push.kind.housekeeping': "Housekeeping: a room for me, a room vacated, a room ready for inspection",
+    'acc.push.kind.guest_order': "Guest orders from a room or table QR code",
+    'acc.push.test': "Send a test notice",
+    'acc.push.testSent': "A test notice went to {count} device(s). If it does not show within a minute, check the notification permission in the phone settings.",
+    'acc.push.testNone': "No device received it yet. Turn notices on for this device first.",
     'acc.push.kind.system': "System alerts (something stopped working)",
 } as const

@@ -22,6 +22,8 @@ use App\Modules\InventoryPurchasing\Application\RecipeConsumptionConsumer;
 use App\Modules\Kitchen\Application\SaleConsumptionConsumer;
 use App\Modules\Kitchen\Application\TicketIntakeConsumer;
 use App\Modules\Laundry\Application\LaundryReadyPushConsumer;
+use App\Modules\Housekeeping\Application\HousekeepingPushConsumer;
+use App\Modules\GuestExperience\Application\GuestOrderPushConsumer;
 use App\Modules\Maintenance\Application\MaintenanceNoticeConsumer;
 use App\Modules\Reporting\Application\ScheduledReportNoticeConsumer;
 use App\Shared\Application\Outbox\OutboxConsumer;
@@ -78,5 +80,7 @@ return [
         TicketIntakeConsumer::class,
         SpaCommissionConsumer::class,
         LaundryReadyPushConsumer::class,
+        HousekeepingPushConsumer::class,
+        GuestOrderPushConsumer::class,
     ],
 ];

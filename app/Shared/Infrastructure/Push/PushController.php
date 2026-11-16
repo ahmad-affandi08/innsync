@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Shared\Infrastructure\Push;
 
 use App\Shared\Application\Errors\Refusal;
+use App\Shared\Application\Notifications\PushNotifier;
+use App\Shared\Application\Tenancy\PropertyContext;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -60,6 +62,18 @@ final readonly class PushController
         $this->devices->remove($this->user($request), $data['endpoint']);
 
         return $this->json(['ok' => true]);
+    }
+
+    /** Sends a notice to the person's own devices so they can see that notices reach this phone. Says how many devices were told. */
+    public function test(Request $request, PushNotifier $push, PropertyContext $property): JsonResponse
+    {
+        if (! $push->enabled()) {
+            throw Refusal::stateConflict('Notices on devices are not set up on this server.');
+        }
+
+        $told = $push->notify($property->current(), [strtolower($this->user($request))], 'Notifikasi uji / Test notice', 'Notifikasi di perangkat ini berfungsi. / Notices on this device work.', '/account/sessions');
+
+        return $this->json(['devices' => $told]);
     }
 
     /** What the device shows after an empty push. It marks the notice as taken, which is the one thing a GET does here; see the header note below. */

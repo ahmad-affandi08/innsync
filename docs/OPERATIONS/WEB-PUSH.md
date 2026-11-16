@@ -1,6 +1,6 @@
 # Notices on devices (web push)
 
-A person can allow notices on a phone or computer (Account → Sessions and password → *Notices on this device*). Today an approval waiting for them, a work order given to them or nearing or passing its deadline, and a request from a guest (to those who may work on guest requests) are shown there. Routes: `GET /push/config`, `POST` and `DELETE /push/devices`, `GET /push/next`. Tables `push_devices`, `push_notices` (migration 145). The service worker (`public/sw.js`, version `innsync-v3`) shows them.
+A person can allow notices on a phone or computer (Account → Sessions and password → *Notices on this device*). Today an approval waiting for them, a work order given to them or nearing or passing its deadline, a request from a guest (to those who may work on guest requests), laundry ready to bring back, housekeeping work (a room task given to an attendant, a room vacated at check-out to those who hand out tasks, a cleaned room to those who inspect) and a guest order from a room or table QR code (to the kitchen and the F&B service) are shown there. A person can send a test notice to their own devices from the same place (`POST /push/test`). Routes: `GET /push/config`, `POST` and `DELETE /push/devices`, `GET /push/next`. Tables `push_devices`, `push_notices` (migration 145). The service worker (`public/sw.js`, version `innsync-v3`) shows them.
 
 ## How it works, and why there is no library
 
@@ -21,7 +21,7 @@ On an iPhone or iPad notices work only for the app added to the home screen (iOS
 - **Who.** Only a person who turned notices on, on that device. Up to 5 devices a person (`PUSH_MAX_DEVICES`). A device is dropped when the push service says it is gone, or after 20 failures in a row. Signing a device in as another person moves it to that person.
 - **Where it is sent.** Only to the addresses of known push services (`config/push.php`, `allowed_hosts`): the address is typed by a browser, and the server must never be pointed at an address of a person's choosing. The address of a device is kept sealed.
 - **What it says.** The same plain words as the e-mail notices: an approval waits (nothing about its subject, amount or maker), a work order's number, priority and place (never its title or a guest). The place to open is a path of this application only.
-- **Kinds.** A person can turn off a kind of notice for themselves (*Tell me about*: approvals, work orders, guest requests, system alerts; every kind is on until then); it holds for all their devices. A guest request notice names the room, the kind of request and whether it is urgent, never the guest or what was written, and the person who made the request is not told of it.
+- **Kinds.** A person can turn off a kind of notice for themselves (*Tell me about*: approvals, work orders, guest requests, laundry, housekeeping, guest orders, system alerts; every kind is on until then); it holds for all their devices. A guest request notice names the room, the kind of request and whether it is urgent, never the guest or what was written, and the person who made the request is not told of it.
 - **Alongside e-mail.** Push is sent whenever it is set up; the e-mail notices stay behind `APPROVAL_EMAIL_NOTICE` and `MAINTENANCE_EMAIL_NOTICE`.
 - **Waiting notices** are kept 3 days (`PUSH_NOTICE_DAYS`) and then removed.
 

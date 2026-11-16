@@ -612,6 +612,11 @@ final readonly class HousekeepingService implements GuestServiceRequests, RoomHa
             $after = $this->save($property, $after, $expectedLockVersion, $assignedBy, $now);
             $this->audit->record(new AuditEntry($property->toString(), strtolower($actorId), $action, 'housekeeping_task', $before->id, ['status' => $before->status->value, 'assigned_to' => $before->assignedTo], ['status' => $after->status->value, 'assigned_to' => $after->assignedTo], $reason === null ? null : trim($reason)));
 
+            if ($action === 'housekeeping.task.assigned' && $after->assignedTo !== null) {
+                // Tells the attendant's phone (HousekeepingPushConsumer); the task is on their list either way.
+                $this->outbox->publish(new OutboxEvent($property, 'housekeeping.task.assigned', $after->id, 1, ['task_id' => $after->id, 'room_id' => $after->roomId, 'assigned_to' => $after->assignedTo, 'actor_id' => strtolower($actorId)]));
+            }
+
             return $this->describe($after, $before->kind->priority(), []);
         });
     }

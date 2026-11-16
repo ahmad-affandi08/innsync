@@ -6,10 +6,12 @@ namespace Tests\Feature\GuestExperience;
 
 use App\Modules\FnbSales\Application\FnbAccess;
 use App\Modules\GuestExperience\Application\GuestAccess;
+use App\Modules\GuestExperience\Application\GuestOrderPushConsumer;
 use App\Modules\IdentityAccess\Infrastructure\Persistence\Eloquent\UserRecord;
 use App\Modules\Kitchen\Application\KitchenAccess;
 use App\Modules\Property\Application\Rates\ChargeSchemeService;
 use App\Modules\Property\Application\Settings\PropertySettingsService;
+use App\Shared\Application\Notifications\PushNotifier;
 use App\Shared\Application\Outbox\ProcessOutboxMessage;
 use App\Shared\Application\Tenancy\PropertyContext;
 use App\Shared\Domain\Tenancy\PropertyId;
@@ -34,6 +36,9 @@ final class QrMenuHttpTest extends TestCase
     private UserRecord $owner;
 
     private UserRecord $waiter;
+
+    /** @var list<array{users: list<string>, title: string, body: string, url: string, kind: string}> */
+    public array $pushed = [];
 
     /** @var array<string, string> */
     private array $code = [];
@@ -245,6 +250,40 @@ final class QrMenuHttpTest extends TestCase
         $this->post('/logout');
         $this->flushSession();
         $this->guestGet($cookie, '/g/orders')->assertOk();
+    }
+
+    public function test_the_kitchen_and_the_waiters_are_told_on_their_phones_of_a_guest_order_without_the_guest_or_the_dishes(): void
+    {
+        $test = $this;
+        $this->app->instance(PushNotifier::class, new class($test) implements PushNotifier
+        {
+            public function __construct(private QrMenuHttpTest $test) {}
+
+            public function notify(PropertyId $property, array $userIds, string $title, string $body, string $url, string $kind = 'general'): int
+            {
+                sort($userIds);
+                $this->test->pushed[] = ['users' => $userIds, 'title' => $title, 'body' => $body, 'url' => $url, 'kind' => $kind];
+
+                return count($userIds);
+            }
+
+            public function enabled(): bool
+            {
+                return true;
+            }
+        });
+        $cook = UserRecord::factory()->create();
+        $this->grant($cook, self::A, [GuestOrderPushConsumer::PERMISSIONS[0]]);
+
+        $cookie = $this->scan('Table T1 · Restaurant');
+        $bill = $this->guestPost($cookie, '/g/order', $this->order('order-key-0000000099', [$this->line('nasi')]))->assertCreated()->json('bill_number');
+        $this->drain(['guest.order.placed']);
+
+        $everyone = array_map(static fn (UserRecord $u): string => strtolower((string) $u->getKey()), [$this->owner, $this->waiter, $cook]);
+        sort($everyone);
+        self::assertCount(1, $this->pushed);
+        self::assertSame([$everyone, 'Pesanan tamu baru / New guest order', 'Meja T1 · Restaurant / Table T1 · Restaurant · '.$bill, '/kitchen', 'guest_order'], array_values($this->pushed[0]));
+        self::assertSame('Kamar 101 / Room 101', GuestOrderPushConsumer::place('Room 101'));
     }
 
     public function test_a_dish_that_ran_out_cannot_be_ordered_and_the_order_is_checked_before_it_is_taken(): void
