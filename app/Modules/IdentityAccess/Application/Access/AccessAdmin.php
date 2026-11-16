@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Modules\IdentityAccess\Application\Access;
 
 use App\Modules\IdentityAccess\Application\Ports\AccessDirectory;
+use App\Shared\Application\Notifications\PushReach;
 use App\Shared\Application\Audit\AuditEntry;
 use App\Shared\Application\Audit\AuditTrail;
 use App\Shared\Application\Identifiers\IdentifierGenerator;
@@ -45,6 +46,7 @@ final readonly class AccessAdmin
         private PropertyContext $property,
         private IdentifierGenerator $ids,
         private EmployeeLinks $employees,
+        private PushReach $push,
     ) {}
 
     /** @return array{people: list<array<string, mixed>>, roles: list<array<string, mixed>>, outlets: list<array{id: string, name: string}>, position_roles: list<array<string, string>>} */
@@ -56,9 +58,11 @@ final readonly class AccessAdmin
         $roles = $this->directory->roles($property);
         $links = $this->employees->ofUsers($property, array_column($people, 'id'));
         $names = array_column($roles, 'name', 'id');
+        // Whether notices reach each person's phone, so a manager can see who still has to turn them on.
+        $reach = $this->push->reach(array_map(static fn (array $p): string => (string) $p['id'], $people));
 
         return [
-            'people' => array_map(static fn (array $p): array => [...$p, 'employee' => $links[$p['id']] ?? null], $people),
+            'people' => array_map(static fn (array $p): array => [...$p, 'employee' => $links[$p['id']] ?? null, 'push' => $reach[strtolower((string) $p['id'])] ?? ['devices' => 0, 'last_received_at' => null]], $people),
             'roles' => $roles,
             'outlets' => $this->directory->outlets($property),
             'position_roles' => array_map(static fn (array $m): array => ['position' => $m['position'], 'role_id' => $m['role_id'], 'role_name' => $names[$m['role_id']] ?? ''], $this->directory->positionRoles($property)),

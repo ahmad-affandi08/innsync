@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { apiRequest } from '@/shared/api/http';
 import { useTranslation } from '@/shared/i18n/i18n';
-import { deviceLabel, keyToBytes } from '@/shared/pwa/push';
+import { subscribeDevice } from '@/shared/pwa/push';
 
 type Config = { enabled: boolean; public_key: string | null; subscribed: boolean; kinds: string[]; muted: string[] };
 type State = 'checking' | 'unsupported' | 'off-server' | 'blocked' | 'off' | 'on';
@@ -55,11 +55,7 @@ export function PushToggle() {
         setFailed(false);
 
         try {
-            if ((await Notification.requestPermission()) !== 'granted') return setState('blocked');
-            const registration = await navigator.serviceWorker.ready;
-            const subscription = (await registration.pushManager.getSubscription()) ?? (await registration.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: keyToBytes(key) as BufferSource }));
-            await apiRequest('/push/devices', { method: 'POST', body: { endpoint: subscription.endpoint, label: deviceLabel(navigator.userAgent) } });
-            setState('on');
+            setState(await subscribeDevice(key, (endpoint, label) => apiRequest('/push/devices', { method: 'POST', body: { endpoint, label } })));
         } catch {
             setFailed(true);
         } finally {

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Shared\Infrastructure\Push;
 
+use App\Shared\Application\Notifications\PushReach;
 use App\Shared\Application\Identifiers\IdentifierGenerator;
 use App\Shared\Application\Privacy\FieldCipher;
 use Illuminate\Database\UniqueConstraintViolationException;
@@ -11,7 +12,7 @@ use Illuminate\Support\Facades\DB;
 use Throwable;
 
 /** The devices that allowed notices, and the notices waiting for them. */
-final readonly class PushDevices
+final readonly class PushDevices implements PushReach
 {
     public function __construct(private FieldCipher $cipher, private IdentifierGenerator $ids) {}
 
@@ -64,6 +65,23 @@ final readonly class PushDevices
             } catch (Throwable) {
                 DB::table('push_devices')->where('id', $row->id)->delete();
             }
+        }
+
+        return $out;
+    }
+
+    public function reach(array $userIds): array
+    {
+        if ($userIds === []) {
+            return [];
+        }
+
+        $out = [];
+        $rows = DB::table('push_devices as d')->leftJoin('push_notices as n', 'n.device_id', '=', 'd.id')->whereIn('d.user_id', array_map('strtolower', $userIds))
+            ->groupBy('d.user_id')->selectRaw('d.user_id, count(distinct d.id) as devices, max(n.fetched_at) as last_received_at')->get();
+
+        foreach ($rows as $r) {
+            $out[strtolower((string) $r->user_id)] = ['devices' => (int) $r->devices, 'last_received_at' => $r->last_received_at === null ? null : (new \DateTimeImmutable((string) $r->last_received_at, new \DateTimeZone('UTC')))->format('Y-m-d\TH:i:s\Z')];
         }
 
         return $out;

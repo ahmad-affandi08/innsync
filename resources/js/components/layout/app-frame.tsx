@@ -48,6 +48,7 @@ import { NavSections } from '@/components/layout/nav-sections';
 import { Sheet, SheetContent, SheetDescription, SheetTitle } from '@/components/ui/sheet';
 import { useFormatters, useTranslation } from '@/shared/i18n/i18n';
 import { LAYOUT_MODES, useLayout, type LayoutMode } from '@/shared/lib/use-layout';
+import { PushNudge } from '@/components/layout/push-nudge';
 import { cn } from '@/shared/lib/utils';
 import type { MessageKey } from '@/locales/en/index';
 
@@ -494,6 +495,7 @@ export function AppFrame({ actions, children, description, links: allLinks = [],
     const body = (
         <main className={cn('mx-auto flex w-full flex-1 flex-col gap-4 px-4 pb-6 pt-3 lg:px-8', wide ? 'max-w-[90rem]' : 'max-w-5xl', printClass)} id="content" tabIndex={-1}>
             <div className="flex flex-col gap-1.5">{crumbs}{pageHead}</div>
+            <PushNudge />
             <div className="flex flex-col gap-6 border border-border bg-surface p-4 lg:p-6 print:border-0 print:bg-transparent print:p-0">{pageBar}{children}</div>
         </main>
     );
@@ -687,6 +689,7 @@ export function AppFrame({ actions, children, description, links: allLinks = [],
                     {layout === 'topbar' ? (
                         <main className={cn('mx-auto flex w-full flex-1 flex-col gap-4 px-4 pb-6 pt-3 lg:px-8', wide ? 'max-w-[100rem]' : 'max-w-5xl', printClass)} id="content" tabIndex={-1}>
                             <div className="flex flex-col gap-1.5">{crumbs}{pageHead}</div>
+                            <PushNudge />
                             <div className="flex flex-col gap-6 border border-border bg-surface p-4 lg:p-6 print:border-0 print:bg-transparent print:p-0">{pageBar}{children}</div>
                         </main>
                     ) : body}

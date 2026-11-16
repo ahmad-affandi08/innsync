@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Modules\FrontOffice\Application\Requests;
 
 use App\Modules\Property\Application\Catalog\RoomCatalogReader;
+use App\Shared\Application\Notifications\DutyFilter;
 use App\Shared\Application\Notifications\PushNotifier;
 use App\Shared\Application\Outbox\OutboxConsumer;
 use App\Shared\Application\Outbox\OutboxMessage;
@@ -17,7 +18,7 @@ use App\Shared\Application\Tenancy\PropertyContext;
  */
 final readonly class GuestRequestPushConsumer implements OutboxConsumer
 {
-    public function __construct(private StaffDirectory $staff, private RoomCatalogReader $rooms, private PushNotifier $push, private PropertyContext $context) {}
+    public function __construct(private StaffDirectory $staff, private RoomCatalogReader $rooms, private PushNotifier $push, private PropertyContext $context, private DutyFilter $duty) {}
 
     public function name(): string
     {
@@ -39,7 +40,7 @@ final readonly class GuestRequestPushConsumer implements OutboxConsumer
             $property = $message->event->propertyId;
             $d = $message->event->data;
             $ids = array_map(static fn (array $p): string => strtolower($p['id']), $this->staff->withPermission($property, GuestRequestService::MANAGE_PERMISSION));
-            $ids = array_values(array_diff($ids, [strtolower((string) ($d['actor_id'] ?? ''))]));
+            $ids = $this->duty->onDuty($property, array_values(array_diff($ids, [strtolower((string) ($d['actor_id'] ?? ''))])));
 
             if ($ids === []) {
                 return;

@@ -18,3 +18,28 @@ export function deviceLabel(userAgent: string): string {
 
     return system === '' ? browser : `${browser} · ${system}`
 }
+
+/** An iPhone or iPad (an iPad says it is a Mac, but a Mac has no touch screen): there notices work only for the app added to the home screen. */
+export function isAppleMobile(userAgent: string, maxTouchPoints: number): boolean {
+    return /iPhone|iPad|iPod/.test(userAgent) || (/Macintosh/.test(userAgent) && maxTouchPoints > 1)
+}
+
+/** How long "Not now" keeps the invitation to turn notices on away. */
+export const NUDGE_PAUSE_MS = 7 * 24 * 60 * 60 * 1000
+
+/** Whether to invite again: never asked, or "Not now" was said long enough ago (a stored value that is not a time counts as never). */
+export function nudgeDue(dismissedAt: string | null, now: number): boolean {
+    const at = dismissedAt === null ? Number.NaN : Number(dismissedAt)
+
+    return !Number.isFinite(at) || now - at >= NUDGE_PAUSE_MS
+}
+
+/** Asks the browser for permission and registers this device with the server. 'blocked' when the person says no. */
+export async function subscribeDevice(publicKey: string, register: (endpoint: string, label: string) => Promise<unknown>): Promise<'on' | 'blocked'> {
+    if ((await Notification.requestPermission()) !== 'granted') return 'blocked'
+    const registration = await navigator.serviceWorker.ready
+    const subscription = (await registration.pushManager.getSubscription()) ?? (await registration.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: keyToBytes(publicKey) as BufferSource }))
+    await register(subscription.endpoint, deviceLabel(navigator.userAgent))
+
+    return 'on'
+}

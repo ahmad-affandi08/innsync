@@ -18,7 +18,7 @@ import { parsePeople } from '@/shared/lib/people-list';
 type Assignment = { id: string; role_id: string; role_name: string; scope_type: string; scope_id: string; scope_name: string; is_active: boolean };
 type EmployeeLink = { id: string; number: string; name: string; department: string; position: string; status: string };
 type PositionRole = { position: string; role_id: string; role_name: string };
-type Person = { employee: EmployeeLink | null; id: string; name: string; email: string; is_active: boolean; must_change_password: boolean; mfa: boolean; locked_until: string | null; last_login_at: string | null; assignments: Assignment[] };
+type Person = { employee: EmployeeLink | null; id: string; name: string; email: string; is_active: boolean; must_change_password: boolean; mfa: boolean; locked_until: string | null; last_login_at: string | null; assignments: Assignment[]; push: { devices: number; last_received_at: string | null } };
 type Role = { id: string; name: string; is_active: boolean };
 type Outlet = { id: string; name: string };
 
@@ -200,6 +200,7 @@ export default function UsersPage({ people, roles, outlets, position_roles: posi
                         </ul>
                     )}
                 </section>
+                {people.length > 0 ? <p className="text-sm text-muted-foreground" data-testid="push-summary">{t('acc.users.pushSummary', { on: people.filter((p) => p.is_active && p.push.devices > 0).length, all: people.filter((p) => p.is_active).length })}</p> : null}
                 {people.length === 0 ? <p className="text-sm text-muted-foreground">{t('acc.users.empty')}</p> : (
                     <ul className="list-panel divide-y divide-border">
                         {people.map((p) => {
@@ -218,6 +219,7 @@ export default function UsersPage({ people, roles, outlets, position_roles: posi
                                             </p>
                                             <p className="mt-1 text-xs text-muted-foreground">
                                                 {p.last_login_at === null ? t('acc.users.neverLogin') : t('acc.users.lastLogin', { when: format.instant(p.last_login_at) })}
+                                                {p.push.last_received_at !== null ? ` · ${t('acc.users.pushReceived', { when: format.instant(p.push.last_received_at) })}` : null}
                                             </p>
                                         </div>
                                         <div className="flex flex-wrap gap-2">
@@ -225,6 +227,7 @@ export default function UsersPage({ people, roles, outlets, position_roles: posi
                                             {p.locked_until !== null ? <StatusBadge label={t('acc.users.locked', { until: format.instant(p.locked_until) })} tone="danger" /> : null}
                                             {p.must_change_password ? <StatusBadge label={t('acc.users.mustChange')} tone="warning" /> : null}
                                             {p.mfa ? <StatusBadge label={t('acc.users.mfa')} tone="info" /> : null}
+                                            <StatusBadge label={p.push.devices > 0 ? t('acc.users.pushOn', { count: p.push.devices }) : t('acc.users.pushOff')} tone={p.push.devices > 0 ? 'success' : 'warning'} />
                                         </div>
                                     </div>
                                     {live.length === 0 ? <p className="text-sm text-muted-foreground">{t('acc.users.noRoles')}</p> : (

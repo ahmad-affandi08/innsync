@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Modules\Housekeeping\Application;
 
 use App\Modules\Property\Application\Catalog\RoomCatalogReader;
+use App\Shared\Application\Notifications\DutyFilter;
 use App\Shared\Application\Notifications\PushNotifier;
 use App\Shared\Application\Outbox\OutboxConsumer;
 use App\Shared\Application\Outbox\OutboxMessage;
@@ -22,7 +23,7 @@ final readonly class HousekeepingPushConsumer implements OutboxConsumer
 
     public const STATUS_CHANGED = 'housekeeping.room.status_changed';
 
-    public function __construct(private StaffDirectory $staff, private RoomCatalogReader $rooms, private PushNotifier $push, private PropertyContext $context) {}
+    public function __construct(private StaffDirectory $staff, private RoomCatalogReader $rooms, private PushNotifier $push, private PropertyContext $context, private DutyFilter $duty) {}
 
     public function name(): string
     {
@@ -63,6 +64,8 @@ final readonly class HousekeepingPushConsumer implements OutboxConsumer
     /** @return list<string> */
     private function holders(string $permission): array
     {
-        return array_map(static fn (array $p): string => strtolower($p['id']), $this->staff->withPermission($this->context->current(), $permission));
+        $property = $this->context->current();
+
+        return $this->duty->onDuty($property, array_map(static fn (array $p): string => strtolower($p['id']), $this->staff->withPermission($property, $permission)));
     }
 }

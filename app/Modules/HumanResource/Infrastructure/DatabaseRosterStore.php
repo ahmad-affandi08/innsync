@@ -44,7 +44,7 @@ final class DatabaseRosterStore implements RosterStore
     public function entriesBetween(PropertyId $property, string $from, string $to, ?string $department): array
     {
         return DB::table('hr_roster_entries as r')->join('hr_employees as e', 'e.id', '=', 'r.employee_id')->where('r.property_id', $property->toString())->whereBetween('r.work_date', [$from, $to])
-            ->when($department !== null, static fn ($q) => $q->where('r.department', $department))->orderBy('r.work_date')->orderBy('e.full_name')->select('r.*', 'e.number', 'e.full_name', 'e.status as employee_status')->get()->map(static fn ($r): array => (array) $r)->all();
+            ->when($department !== null, static fn ($q) => $q->where('r.department', $department))->orderBy('r.work_date')->orderBy('e.full_name')->select('r.*', 'e.number', 'e.full_name', 'e.status as employee_status', 'e.user_id')->get()->map(static fn ($r): array => (array) $r)->all();
     }
 
     public function entry(PropertyId $property, string $employeeId, string $date): ?array

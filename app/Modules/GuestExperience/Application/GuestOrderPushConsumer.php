@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\GuestExperience\Application;
 
+use App\Shared\Application\Notifications\DutyFilter;
 use App\Shared\Application\Notifications\PushNotifier;
 use App\Shared\Application\Outbox\OutboxConsumer;
 use App\Shared\Application\Outbox\OutboxMessage;
@@ -21,7 +22,7 @@ final readonly class GuestOrderPushConsumer implements OutboxConsumer
     /** Who makes and who brings the food. */
     public const PERMISSIONS = ['kitchen.board.operate', 'fnb.pos.operate'];
 
-    public function __construct(private StaffDirectory $staff, private PushNotifier $push, private PropertyContext $context) {}
+    public function __construct(private StaffDirectory $staff, private PushNotifier $push, private PropertyContext $context, private DutyFilter $duty) {}
 
     public function name(): string
     {
@@ -50,11 +51,13 @@ final readonly class GuestOrderPushConsumer implements OutboxConsumer
                 }
             }
 
+            $ids = $this->duty->onDuty($property, array_keys($ids));
+
             if ($ids === []) {
                 return;
             }
 
-            $this->push->notify($property, array_keys($ids), 'Pesanan tamu baru / New guest order', self::place((string) ($d['label'] ?? '')).' · '.(string) ($d['bill_number'] ?? ''), '/kitchen', 'guest_order');
+            $this->push->notify($property, $ids, 'Pesanan tamu baru / New guest order', self::place((string) ($d['label'] ?? '')).' · '.(string) ($d['bill_number'] ?? ''), '/kitchen', 'guest_order');
         });
     }
 
