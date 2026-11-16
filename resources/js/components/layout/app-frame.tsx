@@ -482,19 +482,19 @@ export function AppFrame({ actions, children, description, links: allLinks = [],
     );
 
     const pageHead = (
-        <div className={cn('flex flex-wrap items-start justify-between gap-4', !printHead && 'print:hidden')}>
-            <div className="min-w-0">
-                <h1 className="text-xl font-semibold tracking-tight text-foreground">{title}</h1>
-                {description ? <p className="mt-0.5 max-w-3xl text-[13px] leading-5 text-muted-foreground">{description}</p> : null}
-            </div>
-            {actions ? <div className="flex flex-wrap items-center gap-2 print:hidden">{actions}</div> : null}
+        <div className={cn('min-w-0', !printHead && 'print:hidden')}>
+            <h1 className="text-xl font-semibold tracking-tight text-foreground">{title}</h1>
+            {description ? <p className="mt-0.5 max-w-3xl text-[13px] leading-5 text-muted-foreground">{description}</p> : null}
         </div>
     );
+
+    /** The page's own buttons sit on its panel, at the top right, never beside the title. */
+    const pageBar = actions ? <div className="-mb-3 flex flex-wrap items-center justify-end gap-2 print:hidden">{actions}</div> : null;
 
     const body = (
         <main className={cn('mx-auto flex w-full flex-1 flex-col gap-4 px-4 pb-6 pt-3 lg:px-8', wide ? 'max-w-[90rem]' : 'max-w-5xl', printClass)} id="content" tabIndex={-1}>
             <div className="flex flex-col gap-1.5">{crumbs}{pageHead}</div>
-            <div className="flex flex-col gap-6 border border-border bg-surface p-4 lg:p-6 print:border-0 print:bg-transparent print:p-0">{children}</div>
+            <div className="flex flex-col gap-6 border border-border bg-surface p-4 lg:p-6 print:border-0 print:bg-transparent print:p-0">{pageBar}{children}</div>
         </main>
     );
 
@@ -687,7 +687,7 @@ export function AppFrame({ actions, children, description, links: allLinks = [],
                     {layout === 'topbar' ? (
                         <main className={cn('mx-auto flex w-full flex-1 flex-col gap-4 px-4 pb-6 pt-3 lg:px-8', wide ? 'max-w-[100rem]' : 'max-w-5xl', printClass)} id="content" tabIndex={-1}>
                             <div className="flex flex-col gap-1.5">{crumbs}{pageHead}</div>
-                            <div className="flex flex-col gap-6 border border-border bg-surface p-4 lg:p-6 print:border-0 print:bg-transparent print:p-0">{children}</div>
+                            <div className="flex flex-col gap-6 border border-border bg-surface p-4 lg:p-6 print:border-0 print:bg-transparent print:p-0">{pageBar}{children}</div>
                         </main>
                     ) : body}
                     <footer className="px-4 pb-6 text-xs text-muted-foreground lg:px-8 print:hidden" data-testid="app-version">

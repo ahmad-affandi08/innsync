@@ -21,7 +21,7 @@
 
 ## As built (2026-10-02)
 
-`AppFrame` (`resources/js/components/layout/app-frame.tsx`) is the one frame of every back-office page: a persistent light sidebar on a large screen and a Sheet drawer on a phone, grouped by domain (start, operations, insight, control) with the pages of the active domain nested under it; a header with breadcrumbs, the property, the business date, the language and the person's menu (sessions, sign out); and the page's title, description and actions above its content. The module shells (`FrontOfficeShell`, `HousekeepingShell`, `LaundryShell`, `ReportingShell`, `PropertyShell`) only declare their pages and pass them to the frame. The property, the business date and the person's name reach the frame as the shared Inertia prop `shell`.
+`AppFrame` (`resources/js/components/layout/app-frame.tsx`) is the one frame of every back-office page: a persistent light sidebar on a large screen and a Sheet drawer on a phone, grouped by domain (start, operations, insight, control) with the pages of the active domain nested under it; a header with breadcrumbs, the property, the business date, the language and the person's menu (sessions, sign out); and the page's title and description above its content. The page's own buttons (`actions`) are never beside the title: the frame puts them at the top right of the white panel, above the content. The module shells (`FrontOfficeShell`, `HousekeepingShell`, `LaundryShell`, `ReportingShell`, `PropertyShell`) only declare their pages and pass them to the frame. The property, the business date and the person's name reach the frame as the shared Inertia prop `shell`.
 
 
 ## Layout choice (2026-10-02, updated 2026-10-05)
