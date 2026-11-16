@@ -134,7 +134,7 @@ export default function SpaManagePage({ overview, report }: { overview: Overview
     return (
         <FrontOfficeShell description={t('fo.spa.manage.description')} title={t('fo.spa.manage.title')} wide>
             {action.error !== null && !busy ? <ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /> : null}
-            <Link className="text-sm font-medium text-brand underline-offset-4 hover:underline print:hidden" href="/front-office/spa">{t('fo.spa.backToBoard')}</Link>
+            <div className="print:hidden"><Button asChild variant="outline"><Link href="/front-office/spa">{t('fo.spa.backToBoard')}</Link></Button></div>
             <Tabs defaultValue="report">
                 <TabsList>
                     <TabsTrigger value="report">{t('fo.spa.tab.report')}</TabsTrigger>

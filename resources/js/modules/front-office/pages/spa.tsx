@@ -155,7 +155,7 @@ export default function SpaPage({ overview }: { overview: Overview }) {
             {action.error !== null && book === null && assign === null && cancel === null && pay === null ? <ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /> : null}
             <div className="flex flex-wrap items-end gap-3 print:hidden">
                 <FormField label={t('fo.spa.day')}><DatePicker onChange={(e) => router.get('/front-office/spa', { date: e.target.value }, { only: reload, preserveState: true, preserveScroll: true })} value={overview.date} /></FormField>
-                {overview.may.manage ? <Link className="text-sm font-medium text-brand underline-offset-4 hover:underline" href="/front-office/spa/manage">{t('fo.spa.manageLink')}</Link> : null}
+                {overview.may.manage ? <Button asChild variant="outline"><Link href="/front-office/spa/manage">{t('fo.spa.manageLink')}</Link></Button> : null}
             </div>
 
             {overview.rooms.filter((r) => r.is_active).length === 0 ? <EmptyState title={t('fo.spa.noRooms')} /> : (
