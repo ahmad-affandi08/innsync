@@ -185,6 +185,7 @@ export const id: Record<MessageKey, string> = {
     'ui.grid.columnsTitle': 'Tampilkan atau sembunyikan kolom',
     'ui.grid.showAll': 'Tampilkan semua kolom',
     'ui.grid.perPage': 'Baris per halaman',
+    'ui.grid.perPageShort': 'Baris',
     'ui.grid.summary': 'Menampilkan {from}–{to} dari {total}',
     'ui.grid.summaryFiltered': 'Menampilkan {from}–{to} dari {total} (dari {all} seluruhnya)',
     'ui.grid.first': 'Halaman pertama',

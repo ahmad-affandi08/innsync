@@ -43,6 +43,7 @@ export const ui = {
     'ui.grid.columnsTitle': 'Show or hide columns',
     'ui.grid.showAll': 'Show all columns',
     'ui.grid.perPage': 'Rows per page',
+    'ui.grid.perPageShort': 'Rows',
     'ui.grid.summary': 'Showing {from}–{to} of {total}',
     'ui.grid.summaryFiltered': 'Showing {from}–{to} of {total} (from {all} in all)',
     'ui.grid.first': 'First page',

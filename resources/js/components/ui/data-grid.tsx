@@ -144,7 +144,7 @@ function DataGrid<T>({ caption, className, columns, empty, footerLabel, getRowId
     return (
         <div className={cn('flex flex-col gap-3', className)} data-grid={id}>
             <div className="flex flex-wrap items-center gap-2">
-                {searchable ? <div className="relative w-full sm:w-72">
+                {searchable ? <div className="relative min-w-0 flex-1 basis-40 sm:w-72 sm:flex-none">
                     <Search aria-hidden="true" className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
                     <label className="sr-only" htmlFor={searchId}>{t('ui.grid.search')}</label>
                     <Input
@@ -165,10 +165,10 @@ function DataGrid<T>({ caption, className, columns, empty, footerLabel, getRowId
                 {filterable.length > 0 ? (
                     <Popover>
                         <PopoverTrigger asChild>
-                            <Button type="button" variant="outline">
+                            <Button aria-label={t('ui.grid.filters')} className="relative max-sm:w-9 max-sm:px-0" type="button" variant="outline">
                                 <SlidersHorizontal aria-hidden="true" className="size-4" />
-                                {t('ui.grid.filters')}
-                                {filterCount > 0 ? <Badge tone="info">{filterCount}</Badge> : null}
+                                <span className="max-sm:hidden">{t('ui.grid.filters')}</span>
+                                {filterCount > 0 ? <Badge className="max-sm:absolute max-sm:-right-1.5 max-sm:-top-1.5" tone="info">{filterCount}</Badge> : null}
                             </Button>
                         </PopoverTrigger>
                         <PopoverContent align="start" aria-label={t('ui.grid.filtersTitle')} className="w-80">
@@ -198,9 +198,9 @@ function DataGrid<T>({ caption, className, columns, empty, footerLabel, getRowId
 
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <Button type="button" variant="outline">
+                        <Button aria-label={t('ui.grid.columns')} className="max-sm:w-9 max-sm:px-0" type="button" variant="outline">
                             <Columns3 aria-hidden="true" className="size-4" />
-                            {t('ui.grid.columns')}
+                            <span className="max-sm:hidden">{t('ui.grid.columns')}</span>
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="start" className="min-w-56">
@@ -297,15 +297,17 @@ function DataGrid<T>({ caption, className, columns, empty, footerLabel, getRowId
                 ) : null}
             </div>
 
-            <nav aria-label={t('ui.pagination.navigation')} className="flex flex-wrap items-center justify-between gap-3 text-sm">
+            {/* On a phone: the summary and the page size share a row and the pager is one row under them, centred; from `sm` up it is one row as before. */}
+            <nav aria-label={t('ui.pagination.navigation')} className="grid grid-cols-[1fr_auto] items-center gap-3 text-sm sm:flex sm:flex-wrap sm:justify-between">
                 <p className="text-muted-foreground" data-testid="grid-summary">
                     {filtering
                         ? t('ui.grid.summaryFiltered', { from: view.from, to: view.to, total: view.matched.length, all: rows.length })
                         : t('ui.grid.summary', { from: view.from, to: view.to, total: view.matched.length })}
                 </p>
-                <div className="flex flex-wrap items-center gap-3">
+                <div className="contents sm:flex sm:flex-wrap sm:items-center sm:gap-3">
                     <label className="flex items-center gap-2 text-muted-foreground">
-                        <span>{t('ui.grid.perPage')}</span>
+                        <span className="max-sm:hidden">{t('ui.grid.perPage')}</span>
+                        <span className="sm:hidden">{t('ui.grid.perPageShort')}</span>
                         <Select
                             className="min-h-9 w-20"
                             searchable={false}
@@ -320,16 +322,17 @@ function DataGrid<T>({ caption, className, columns, empty, footerLabel, getRowId
                             {PAGE_SIZES.map((n) => <option key={n} value={n}>{n}</option>)}
                         </Select>
                     </label>
-                    <div className="flex items-center gap-1">
-                        <Button aria-label={t('ui.grid.first')} disabled={view.page <= 1} onClick={() => patch({ page: 1 }, false)} size="icon" type="button" variant="outline"><ChevronsLeft aria-hidden="true" className="size-4" /></Button>
-                        <Button aria-label={t('ui.grid.previous')} disabled={view.page <= 1} onClick={() => patch({ page: view.page - 1 }, false)} size="icon" type="button" variant="outline"><ChevronLeft aria-hidden="true" className="size-4" /></Button>
+                    <div className={cn('col-span-2 flex items-center justify-center gap-1', view.pages <= 1 && 'max-sm:hidden')}>
+                        <Button aria-label={t('ui.grid.first')} className="max-sm:size-10" disabled={view.page <= 1} onClick={() => patch({ page: 1 }, false)} size="icon" type="button" variant="outline"><ChevronsLeft aria-hidden="true" className="size-4" /></Button>
+                        <Button aria-label={t('ui.grid.previous')} className="max-sm:size-10" disabled={view.page <= 1} onClick={() => patch({ page: view.page - 1 }, false)} size="icon" type="button" variant="outline"><ChevronLeft aria-hidden="true" className="size-4" /></Button>
+                        <span aria-hidden="true" className="min-w-20 px-2 text-center tabular-nums sm:hidden"><b>{view.page}</b> / {view.pages}</span>
                         {pages.map((p, i) => p === 'gap'
-                            ? <span aria-hidden="true" className="px-1 text-muted-foreground" key={`gap-${i}`}>…</span>
+                            ? <span aria-hidden="true" className="px-1 text-muted-foreground max-sm:hidden" key={`gap-${i}`}>…</span>
                             : (
                                 <Button
                                     aria-current={p === view.page ? 'page' : undefined}
                                     aria-label={t('ui.grid.goTo', { page: p })}
-                                    className="min-w-10 tabular-nums"
+                                    className="min-w-10 tabular-nums max-sm:hidden"
                                     key={p}
                                     onClick={() => patch({ page: p }, false)}
                                     size="icon"
@@ -339,8 +342,8 @@ function DataGrid<T>({ caption, className, columns, empty, footerLabel, getRowId
                                     {p}
                                 </Button>
                             ))}
-                        <Button aria-label={t('ui.grid.next')} disabled={view.page >= view.pages} onClick={() => patch({ page: view.page + 1 }, false)} size="icon" type="button" variant="outline"><ChevronRight aria-hidden="true" className="size-4" /></Button>
-                        <Button aria-label={t('ui.grid.last')} disabled={view.page >= view.pages} onClick={() => patch({ page: view.pages }, false)} size="icon" type="button" variant="outline"><ChevronsRight aria-hidden="true" className="size-4" /></Button>
+                        <Button aria-label={t('ui.grid.next')} className="max-sm:size-10" disabled={view.page >= view.pages} onClick={() => patch({ page: view.page + 1 }, false)} size="icon" type="button" variant="outline"><ChevronRight aria-hidden="true" className="size-4" /></Button>
+                        <Button aria-label={t('ui.grid.last')} className="max-sm:size-10" disabled={view.page >= view.pages} onClick={() => patch({ page: view.pages }, false)} size="icon" type="button" variant="outline"><ChevronsRight aria-hidden="true" className="size-4" /></Button>
                     </div>
                 </div>
             </nav>
