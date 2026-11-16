@@ -65,7 +65,7 @@ final readonly class ChargeSchemeService implements ChargeCalculator
 
     public function breakdown(PropertyId $property, string $scope, BusinessDate $date, int $quotedMinor, bool $pricesIncludeCharges, array $waive = []): array
     {
-        $config = $this->schemeFor($property, $scope, $date) ?? throw Refusal::invalid('Service charge and tax are not configured for this date, so this cannot be priced.', ['amount']);
+        $config = $this->schemeFor($property, $scope, $date) ?? throw Refusal::invalid('Service charge and tax are not configured for this date, so this cannot be priced.', ['amount'], 'scheme_missing_'.$scope);
         $rounding = $this->settings->get($property)->rounding;
         $serviceCharge = in_array('service_charge', $waive, true) ? Percentage::ofBasisPoints(0) : $config->serviceCharge;
         $tax = in_array('tax', $waive, true) ? Percentage::ofBasisPoints(0) : $config->tax;

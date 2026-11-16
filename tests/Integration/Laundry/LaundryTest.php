@@ -269,7 +269,14 @@ final class LaundryTest extends TestCase
     {
         $order = $this->toIroned($this->handOver());
 
-        $this->assertRefused(422, fn () => $this->laundry()->markReady($this->property(), $this->laundererId, $order['id'], $order['lock_version']));
+        try {
+            $this->laundry()->markReady($this->property(), $this->laundererId, $order['id'], $order['lock_version']);
+            self::fail('Expected a refusal.');
+        } catch (Refusal $e) {
+            // The person is told what is missing and where to set it, not that a field they cannot see is empty.
+            self::assertSame([422, 'scheme_missing_laundry'], [$e->status(), $e->reason()]);
+            self::assertNotSame('errors.reason_scheme_missing_laundry', __('errors.reason_scheme_missing_laundry'));
+        }
         self::assertSame('ironing', DB::table('laundry_orders')->value('status'));
         self::assertSame(0, DB::table('folio_postings')->where('source', 'laundry')->count());
 
