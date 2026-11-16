@@ -484,17 +484,16 @@ export function AppFrame({ actions, children, description, links: allLinks = [],
     const pageHead = (
         <div className={cn('flex flex-wrap items-start justify-between gap-4', !printHead && 'print:hidden')}>
             <div className="min-w-0">
-                <h1 className="text-2xl font-semibold tracking-tight text-foreground">{title}</h1>
-                {description ? <p className="mt-1.5 max-w-3xl text-sm leading-6 text-muted-foreground">{description}</p> : null}
+                <h1 className="text-xl font-semibold tracking-tight text-foreground">{title}</h1>
+                {description ? <p className="mt-0.5 max-w-3xl text-[13px] leading-5 text-muted-foreground">{description}</p> : null}
             </div>
             {actions ? <div className="flex flex-wrap items-center gap-2 print:hidden">{actions}</div> : null}
         </div>
     );
 
     const body = (
-        <main className={cn('mx-auto flex w-full flex-1 flex-col gap-6 px-4 py-6 lg:px-8', wide ? 'max-w-[90rem]' : 'max-w-5xl', printClass)} id="content" tabIndex={-1}>
-            <div className="-mb-4">{crumbs}</div>
-            {pageHead}
+        <main className={cn('mx-auto flex w-full flex-1 flex-col gap-4 px-4 pb-6 pt-3 lg:px-8', wide ? 'max-w-[90rem]' : 'max-w-5xl', printClass)} id="content" tabIndex={-1}>
+            <div className="flex flex-col gap-1.5">{crumbs}{pageHead}</div>
             <div className="flex flex-col gap-6 border border-border bg-surface p-4 lg:p-6 print:border-0 print:bg-transparent print:p-0">{children}</div>
         </main>
     );
@@ -686,9 +685,8 @@ export function AppFrame({ actions, children, description, links: allLinks = [],
                         </header>
                     )}
                     {layout === 'topbar' ? (
-                        <main className={cn('mx-auto flex w-full flex-1 flex-col gap-6 px-4 py-6 lg:px-8', wide ? 'max-w-[100rem]' : 'max-w-5xl', printClass)} id="content" tabIndex={-1}>
-                            <div className="-mb-4">{crumbs}</div>
-                            {pageHead}
+                        <main className={cn('mx-auto flex w-full flex-1 flex-col gap-4 px-4 pb-6 pt-3 lg:px-8', wide ? 'max-w-[100rem]' : 'max-w-5xl', printClass)} id="content" tabIndex={-1}>
+                            <div className="flex flex-col gap-1.5">{crumbs}{pageHead}</div>
                             <div className="flex flex-col gap-6 border border-border bg-surface p-4 lg:p-6 print:border-0 print:bg-transparent print:p-0">{children}</div>
                         </main>
                     ) : body}
