@@ -17,6 +17,7 @@
     --color-muted-foreground: var(--muted-foreground);
     --color-border: var(--border);
     --color-input: var(--input);
+    --color-control: var(--control);
     --color-ring: var(--ring);
     --color-accent: var(--accent);
     --color-accent-foreground: var(--accent-foreground);
@@ -83,6 +84,8 @@
     --muted-foreground: #5b6472;
     --border: #e4e7ec;
     --input: #cfd4dc;
+    /* The frame of a button that is not filled: darker than a field's, so it does not read as an input. */
+    --control: #98a2b3;
     --ring: #f97316;
     --primary: #16233b;
     --primary-foreground: #ffffff;
