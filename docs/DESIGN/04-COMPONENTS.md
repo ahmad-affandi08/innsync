@@ -50,4 +50,4 @@ The colour is the meaning, the same on every screen:
 | `danger` (red) | Stop or remove: delete, cancel, reject, deactivate, void, check out | `Trash2`, `X`, `Ban`, `CircleX`, `Undo2`, `LogOut` |
 | `neutral` (grey) | Anything else: copy, move, more | `Copy`, `ArrowRightLeft`, `Ellipsis` |
 
-`label` is the same translated text the text button had. A link uses `href`; a busy action uses `loading`; `disabled` still shows its name on hover. Several actions sit in `RowActions` (or an existing `flex gap-1` wrapper).
+A row action that picks a file (a photo) is a `FileRowAction` from the same file: the same icon button, with the file chooser behind it. `label` is the same translated text the text button had. A link uses `href`; a busy action uses `loading`; `disabled` still shows its name on hover. Several actions sit in `RowActions` (or an existing `flex gap-1` wrapper).

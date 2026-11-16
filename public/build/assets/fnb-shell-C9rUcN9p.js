@@ -1,1 +1,0 @@
-import{n as e}from"./rolldown-runtime-Dd_uD5pT.js";import{f as t}from"./i18n-CBAKUqHG.js";import{i as n,t as r}from"./app-frame-B22qQkB9.js";var i=e({FnbShell:()=>o}),a=t();function o({actions:e,children:t,description:i,printClass:o,title:s,wide:c}){return(0,a.jsx)(r,{actions:e,description:i,links:n,printClass:o,title:s,wide:c,children:t})}export{i as n,o as t};

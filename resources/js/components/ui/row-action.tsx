@@ -22,6 +22,10 @@ const tones: Record<RowActionTone, string> = {
     neutral: 'bg-muted-foreground border-b-[color-mix(in_oklch,var(--muted-foreground),black_35%)]',
 };
 
+/** A light line on top and a 3px dark edge below make it stand up; pressing sinks it onto its edge. */
+const raised =
+    'inline-flex size-8 shrink-0 cursor-pointer items-center justify-center border-t border-b-[3px] border-t-white/35 text-white transition-[filter,transform] hover:brightness-110 active:translate-y-0.5 active:border-b focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-40 aria-busy:cursor-progress';
+
 type RowActionProps = Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'children'> & {
     icon: LucideIcon;
     /** Accessible name and the hover text; an icon alone is not a label. */
@@ -41,12 +45,7 @@ type RowActionProps = Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'children'> 
 
 /** An icon button for a table row, coloured by what it does, named on hover and to assistive technology. */
 function RowAction({ icon: Icon, label, tone = 'neutral', href, native = false, newTab = false, loading = false, disabled, className, type = 'button', ...props }: RowActionProps) {
-    const cls = cn(
-        // A light line on top and a 3px dark edge below make it stand up; pressing sinks it onto its edge.
-        'inline-flex size-8 shrink-0 cursor-pointer items-center justify-center border-t border-b-[3px] border-t-white/35 text-white transition-[filter,transform] hover:brightness-110 active:translate-y-0.5 active:border-b focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-40 aria-busy:cursor-progress',
-        tones[tone],
-        className,
-    );
+    const cls = cn(raised, tones[tone], className);
     const glyph = loading ? <LoaderCircle aria-hidden="true" className="size-4 animate-spin motion-reduce:animate-none" /> : <Icon aria-hidden="true" className="size-4" />;
     const off = disabled === true || loading;
     const control =
@@ -75,9 +74,27 @@ function RowAction({ icon: Icon, label, tone = 'neutral', href, native = false, 
     );
 }
 
+/** A row action that picks a file (a photo): the same icon button, the browser's file chooser behind it. */
+function FileRowAction({ icon: Icon, label, tone = 'neutral', accept, disabled = false, onFile }: { icon: LucideIcon; label: string; tone?: RowActionTone; accept: string; disabled?: boolean; onFile: (file: File | null) => void }) {
+    return (
+        <TooltipProvider delayDuration={150}>
+            <Tooltip>
+                <TooltipTrigger asChild>
+                    <label className={cn(raised, tones[tone], 'focus-within:ring-2 focus-within:ring-ring', disabled && 'pointer-events-none opacity-40')}>
+                        <Icon aria-hidden="true" className="size-4" />
+                        <span className="sr-only">{label}</span>
+                        <input accept={accept} className="sr-only" disabled={disabled} onChange={(e) => { onFile(e.target.files?.[0] ?? null); e.target.value = ''; }} type="file" />
+                    </label>
+                </TooltipTrigger>
+                <TooltipContent>{label}</TooltipContent>
+            </Tooltip>
+        </TooltipProvider>
+    );
+}
+
 /** Lays out a row's actions: small gap, never wrapping into a second line. */
 function RowActions({ children, className }: { children: React.ReactNode; className?: string }) {
     return <div className={cn('flex flex-nowrap items-center gap-1', className)}>{children}</div>;
 }
 
-export { RowAction, RowActions };
+export { FileRowAction, RowAction, RowActions };

@@ -1,5 +1,5 @@
 import { router } from '@inertiajs/react';
-import { Ban, CircleCheck, ImageOff, Pencil, Plus, Trash2 } from 'lucide-react';
+import { Ban, CircleCheck, ImageOff, ImagePlus, ImageUp, Pencil, Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 
 import { Alert } from '@/components/ui/alert';
@@ -11,7 +11,7 @@ import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
 import { MoneyInput } from '@/components/ui/money-input';
-import { RowAction } from '@/components/ui/row-action';
+import { FileRowAction, RowAction } from '@/components/ui/row-action';
 import { Select } from '@/components/ui/select';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -175,12 +175,7 @@ export default function MenuPage({ menu }: { menu: MenuView }) {
             cell: (i) => (
                 <span className="flex items-center gap-1">
                     {menu.may.availability && i.is_active ? <RowAction disabled={action.busy} icon={i.is_available ? Ban : CircleCheck} label={t(i.is_available ? 'fnb.menu.markSoldOut' : 'fnb.menu.markOnSale')} onClick={() => void toggleAvailable(i)} tone={i.is_available ? 'danger' : 'success'} /> : null}
-                    {menu.may.manage ? (
-                        <label className="inline-flex cursor-pointer items-center border border-border px-3 py-1 text-sm font-medium hover:bg-muted">
-                            {t(i.has_photo ? 'fnb.menu.changePhoto' : 'fnb.menu.addPhoto')}
-                            <input accept="image/jpeg,image/png" className="sr-only" disabled={action.busy} onChange={(e) => { void sendPhoto(i, e.target.files?.[0] ?? null); e.target.value = ''; }} type="file" />
-                        </label>
-                    ) : null}
+                    {menu.may.manage ? <FileRowAction accept="image/jpeg,image/png" disabled={action.busy} icon={i.has_photo ? ImageUp : ImagePlus} label={t(i.has_photo ? 'fnb.menu.changePhoto' : 'fnb.menu.addPhoto')} onFile={(file) => void sendPhoto(i, file)} tone="warning" /> : null}
                     {menu.may.manage && i.has_photo ? <RowAction disabled={action.busy} icon={ImageOff} label={t('fnb.menu.removePhoto')} onClick={() => void removePhoto(i)} tone="danger" /> : null}
                     {menu.may.manage ? <RowAction icon={Pencil} label={t('fnb.menu.edit')} onClick={() => openItem(i)} tone="warning" /> : null}
                 </span>
