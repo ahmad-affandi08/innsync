@@ -146,12 +146,39 @@
         -webkit-font-smoothing: antialiased;
     }
 
-    /* The plain radio of a form: one size, the brand colour and a pointer, so it matches the shared RadioGroup. */
-    input[type='radio'] {
-        width: 1rem;
-        height: 1rem;
+    /*
+     * The plain radio of a form looks like the checkbox, in a circle so a choice of one is told from a choice of many: a navy frame with a thicker lower edge, the brand orange with a white dot when
+     * chosen. The box the shared RadioGroup keeps out of sight for forms (aria-hidden) is left alone.
+     */
+    input[type='radio']:not([aria-hidden='true']) {
+        appearance: none;
         flex-shrink: 0;
-        accent-color: var(--primary);
+        width: 1.25rem;
+        height: 1.25rem;
+        margin: 0;
+        vertical-align: middle;
+        border: 1.5px solid var(--primary);
+        border-bottom-width: 3px;
+        border-radius: 50%;
+        background-color: var(--surface);
+        background-position: center;
+        background-repeat: no-repeat;
+        background-size: 0.875rem;
+        transition: background-color 0.15s;
+    }
+
+    input[type='radio']:not([aria-hidden='true']):checked {
+        background-color: var(--brand);
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='5' fill='%23fff'/%3E%3C/svg%3E");
+    }
+
+    input[type='radio']:not([aria-hidden='true']):focus-visible {
+        outline: 2px solid var(--ring);
+        outline-offset: 2px;
+    }
+
+    input[type='radio']:disabled {
+        opacity: 0.5;
     }
 
     /*
