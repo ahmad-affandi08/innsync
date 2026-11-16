@@ -23,6 +23,7 @@ import { useServerAction } from '@/shared/api/use-server-action';
 import { useFormatters, useTranslation } from '@/shared/i18n/i18n';
 import { useErrorStateCopy } from '@/shared/i18n/use-ui-copy';
 import type { MessageKey } from '@/locales/en/index';
+import { useAutoApply } from '@/shared/lib/use-auto-apply';
 
 const RUN_TONE: Record<DutyRunStatus, StatusTone> = { open: 'info', done: 'success', missed: 'danger' };
 const RESULT_TONE: Record<DutyResult, StatusTone> = { pending: 'neutral', ok: 'success', issue: 'danger', na: 'unknown' };
@@ -36,6 +37,8 @@ export default function DutiesPage({ overview, duties, choices }: { overview: Du
     const action = useServerAction();
     const [from, setFrom] = useState(overview.from);
     const [to, setTo] = useState(overview.to);
+    const applyFilter = () => { if (from === '' || to === '') return; router.get('/maintenance/duties', { from, to }, { preserveScroll: true, preserveState: true, replace: true }); };
+    useAutoApply([from, to], applyFilter);
     const [run, setRun] = useState<DutyRunDetail | null>(null);
     const [notes, setNotes] = useState<Record<string, string>>({});
     const [closing, setClosing] = useState('');
@@ -114,7 +117,6 @@ export default function DutiesPage({ overview, duties, choices }: { overview: Du
             <div className="flex flex-wrap items-end gap-2">
                 <FormField label={t('mtc.rep.from')}><DatePicker onChange={(e) => setFrom(e.target.value)} value={from} /></FormField>
                 <FormField label={t('mtc.rep.to')}><DatePicker onChange={(e) => setTo(e.target.value)} value={to} /></FormField>
-                <Button disabled={from === '' || to === ''} onClick={() => router.get('/maintenance/duties', { from, to })} type="button">{t('mtc.rep.show')}</Button>
             </div>
             <DataGrid caption={t('mtc.duty.runs')} columns={runColumns} empty={<EmptyState illustration="checklist" title={t('mtc.duty.noRuns')} />} getRowId={(r) => r.id} id="mtc.duty.runs" rows={overview.runs} testId="mtc-duty-runs" />
         </div>

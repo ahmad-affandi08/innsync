@@ -1,7 +1,6 @@
 import { router } from '@inertiajs/react';
 import { useState } from 'react';
 
-import { Button } from '@/components/ui/button';
 import { DataGrid, type DataGridColumn } from '@/components/ui/data-grid';
 import { DatePicker } from '@/components/ui/date-picker';
 import { EmptyState } from '@/components/ui/empty-state';
@@ -12,6 +11,7 @@ import { HrShell } from '@/modules/hr/components/hr-shell';
 import type { PerformanceOverview, PerformanceRow, PerformanceSource } from '@/modules/hr/lib/hr';
 import { useTranslation } from '@/shared/i18n/i18n';
 import type { MessageKey } from '@/locales/en/index';
+import { useAutoApply } from '@/shared/lib/use-auto-apply';
 
 /** How people are doing: attendance, punctuality, the routines each one did, the complaints they own, and how far each source's checklists got. It counts; it does not judge. */
 export default function PerformancePage({ overview }: { overview: PerformanceOverview }) {
@@ -22,6 +22,8 @@ export default function PerformancePage({ overview }: { overview: PerformanceOve
     const percent = (value: number | null) => (value === null ? '—' : `${value}%`);
     const hm = (minutes: number) => `${Math.floor(minutes / 60)}:${String(minutes % 60).padStart(2, '0')}`;
     const show = (department: string | null) => router.get('/hr/performance', { from, to, ...(department === null || department === '' ? {} : { department }) });
+    const applyFilter = () => { if (from === '' || to === '') return; router.get('/hr/performance', { from, to, ...(overview.department ? { department: overview.department } : {}) }, { preserveScroll: true, preserveState: true, replace: true }); };
+    useAutoApply([from, to], applyFilter);
 
     const boardColumns: DataGridColumn<PerformanceRow>[] = [
         { id: 'name', label: t('hr.col.name'), value: (r) => r.employee.name, rowHeader: true, cell: (r) => <span>{r.employee.name}<span className="block text-xs text-muted-foreground">{r.employee.number} · {label('hr.department', r.employee.department)}</span></span> },
@@ -47,7 +49,6 @@ export default function PerformancePage({ overview }: { overview: PerformanceOve
                 <FormField label={t('mtc.rep.from')}><DatePicker onChange={(e) => setFrom(e.target.value)} value={from} /></FormField>
                 <FormField label={t('mtc.rep.to')}><DatePicker onChange={(e) => setTo(e.target.value)} value={to} /></FormField>
                 <FormField label={t('hr.col.department')}><Select onChange={(e) => show(e.target.value)} value={overview.department ?? ''}><option value="">{t('hr.roster.allDepartments')}</option>{overview.departments.map((d) => <option key={d} value={d}>{label('hr.department', d)}</option>)}</Select></FormField>
-                <Button disabled={from === '' || to === ''} onClick={() => show(overview.department)} type="button">{t('mtc.rep.show')}</Button>
             </div>
             <Tabs defaultValue="board">
                 <TabsList>

@@ -21,6 +21,7 @@ import { FrontOfficeShell } from '@/modules/front-office/components/front-office
 import { useServerAction } from '@/shared/api/use-server-action';
 import { useFormatters, useTranslation } from '@/shared/i18n/i18n';
 import { useErrorStateCopy } from '@/shared/i18n/use-ui-copy';
+import { useAutoApply } from '@/shared/lib/use-auto-apply';
 import { minorToMajorText, parseMajorToMinor } from '@/shared/money/money';
 
 type Room = { id: string; code: string; name: string; is_active: boolean; lock_version: number };
@@ -57,6 +58,11 @@ export default function SpaManagePage({ overview, report }: { overview: Overview
     const [treatment, setTreatment] = useState<TreatmentForm | null>(null);
     const [therapist, setTherapist] = useState<TherapistForm | null>(null);
     const [period, setPeriod] = useState({ from: report.from, to: report.to });
+    const applyFilter = () => {
+        if (period.from === '' || period.to === '') return;
+        router.get('/front-office/spa/manage', period, { only: reload, preserveScroll: true, preserveState: true, replace: true });
+    };
+    useAutoApply([period.from, period.to], applyFilter);
     const busy = room !== null || treatment !== null || therapist !== null;
 
     async function saveRoom() {
@@ -141,7 +147,6 @@ export default function SpaManagePage({ overview, report }: { overview: Overview
                     <div className="flex flex-wrap items-end gap-3 print:hidden">
                         <FormField label={t('fo.spa.rep.from')}><DatePicker onChange={(e) => setPeriod({ ...period, from: e.target.value })} value={period.from} /></FormField>
                         <FormField label={t('fo.spa.rep.to')}><DatePicker onChange={(e) => setPeriod({ ...period, to: e.target.value })} value={period.to} /></FormField>
-                        <Button onClick={() => router.get('/front-office/spa/manage', period, { only: reload, preserveScroll: true, preserveState: true })} type="button" variant="outline">{t('fo.spa.rep.show')}</Button>
                     </div>
                     <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
                         <Metric label={t('fo.spa.rep.treatments')} value={report.treatments_done} />

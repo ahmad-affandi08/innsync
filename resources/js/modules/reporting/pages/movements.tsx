@@ -11,6 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ReportMeta, type Meta } from '@/modules/reporting/components/report-meta';
 import { ReportingShell } from '@/modules/reporting/components/reporting-shell';
 import { useFormatters, useTranslation } from '@/shared/i18n/i18n';
+import { useAutoApply } from '@/shared/lib/use-auto-apply';
 
 type Arrival = { reservation: string; guest: string; status: string; adults: number; children: number; room_type: string; room: string | null; departure: string };
 type Stay = { room: string; reservation: string; guest: string; adults: number; children: number; status: string; checked_in: string; expected_departure: string; checked_out: string | null; balance_minor: number };
@@ -24,6 +25,8 @@ export default function MovementsPage({ context, may_export, report: r }: { cont
     const { t } = useTranslation();
     const format = useFormatters();
     const [date, setDate] = useState(r.date);
+    const applyFilter = () => { if (date === '') return; router.get('/reports/movements', { date }, { preserveScroll: true, preserveState: true, replace: true }); };
+    useAutoApply([date], applyFilter);
     const [purpose, setPurpose] = useState('');
     const query = new URLSearchParams({ date: r.date, purpose }).toString();
     const pax = (a: number, c: number) => t('rpt.mov.guests', { adults: a, children: c });
@@ -57,9 +60,8 @@ export default function MovementsPage({ context, may_export, report: r }: { cont
 
     return (
         <ReportingShell description={t('rpt.mov.description')} title={t('rpt.mov.title')} wide>
-            <form className="flex flex-wrap items-end gap-3 print:hidden" onSubmit={(e) => { e.preventDefault(); router.get('/reports/movements', { date }); }}>
+            <form className="flex flex-wrap items-end gap-3 print:hidden" onSubmit={(e) => { e.preventDefault(); applyFilter(); }}>
                 <FormField label={t('rpt.mov.date')}><DatePicker onChange={(e) => setDate(e.target.value)} required value={date} /></FormField>
-                <Button type="submit" variant="outline">{t('rpt.mov.show')}</Button>
                 <Button onClick={() => window.print()} size="sm" type="button" variant="outline">{t('rpt.export.print')}</Button>
             </form>
             {may_export && (

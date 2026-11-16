@@ -10,6 +10,7 @@ import { PeriodPicker } from '@/modules/reporting/components/period-picker';
 import { ReportMeta, type Meta } from '@/modules/reporting/components/report-meta';
 import { ReportingShell } from '@/modules/reporting/components/reporting-shell';
 import { useFormatters, useTranslation } from '@/shared/i18n/i18n';
+import { useAutoApply } from '@/shared/lib/use-auto-apply';
 
 type Row = { label: string; days_closed: number; days_in_period: number; sellable_nights: number; occupied_nights: number; room_nights: number; occupancy_bp: number; room_revenue_minor: number; adr_minor: number; revpar_minor: number };
 type Report = { meta: Meta & { period: { preset: string; from: string; to: string } }; by: 'day' | 'month' | 'year'; year: number; rows: Row[] };
@@ -19,6 +20,8 @@ export default function PerformancePage({ context, report: r }: { context: { cur
     const { t } = useTranslation();
     const format = useFormatters();
     const [year, setYear] = useState(String(r.year));
+    const applyFilter = () => { if (year.length !== 4) return; router.get('/reports/performance', { by: r.by, year }, { preserveScroll: true, preserveState: true, replace: true }); };
+    useAutoApply([year], applyFilter);
     const q = new URLSearchParams(r.by === 'day' ? { by: 'day', from: r.meta.period.from, to: r.meta.period.to } : { by: r.by, year: String(r.year) }).toString();
     const label = (row: Row) => (r.by === 'day' ? format.date(row.label) : row.label);
 
@@ -43,9 +46,8 @@ export default function PerformancePage({ context, report: r }: { context: { cur
             {r.by === 'day'
                 ? <PeriodPicker extra={{ by: 'day' }} from={r.meta.period.from} path="/reports/performance" preset={r.meta.period.preset} to={r.meta.period.to} />
                 : (
-                    <form className="flex flex-wrap items-end gap-3 print:hidden" onSubmit={(e) => { e.preventDefault(); router.get('/reports/performance', { by: r.by, year }); }}>
+                    <form className="flex flex-wrap items-end gap-3 print:hidden" onSubmit={(e) => { e.preventDefault(); applyFilter(); }}>
                         <FormField label={t('rpt.perf.year')}><Input inputMode="numeric" maxLength={4} onChange={(e) => setYear(e.target.value.replace(/\D/g, ''))} value={year} /></FormField>
-                        <Button type="submit" variant="outline">{t('rpt.perf.show')}</Button>
                     </form>
                 )}
             <div className="flex flex-wrap gap-2 print:hidden">

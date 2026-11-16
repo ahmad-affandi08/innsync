@@ -8,6 +8,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { FormField } from '@/components/ui/form-field';
 import { RoutineShell } from '@/modules/routines/components/routine-shell';
 import { useTranslation } from '@/shared/i18n/i18n';
+import { useAutoApply } from '@/shared/lib/use-auto-apply';
 
 type Run = { run_id: string; template: string; frequency: string; period_key: string; items: number; completed: number; percent: number };
 type Props = { report: { from: string; to: string; runs: Run[]; people: { user_id: string; name: string | null; items: number }[] }; department: string };
@@ -16,6 +17,8 @@ type Props = { report: { from: string; to: string; runs: Run[]; people: { user_i
 export default function RoutinePerformancePage({ department, report: r }: Props) {
     const { t } = useTranslation();
     const [range, setRange] = useState({ from: r.from, to: r.to });
+    const applyFilter = () => { if (range.from === '' || range.to === '') return; router.get(`/${department}/routines/performance`, range, { preserveScroll: true, preserveState: true, replace: true }); };
+    useAutoApply([range.from, range.to], applyFilter);
 
     const columns: DataGridColumn<Run>[] = [
         { id: 'run', label: t('rtn.perf.runs'), value: (x) => `${x.template} · ${x.period_key}`, rowHeader: true, cell: (x) => t('rtn.perf.run', { name: x.template, period: x.period_key }) },
@@ -27,10 +30,9 @@ export default function RoutinePerformancePage({ department, report: r }: Props)
     return (
         <RoutineShell department={department} description={t('rtn.perf.description')} title={t('rtn.perf.title')}>
             <div><Button asChild size="sm" variant="outline"><Link href={`/${department}/routines`}>{t('rtn.nav')}</Link></Button></div>
-            <form className="flex flex-wrap items-end gap-3" onSubmit={(e) => { e.preventDefault(); router.get(`/${department}/routines/performance`, range); }}>
+            <form className="flex flex-wrap items-end gap-3" onSubmit={(e) => { e.preventDefault(); applyFilter(); }}>
                 <FormField label={t('rtn.perf.from')}><DatePicker onChange={(e) => setRange({ ...range, from: e.target.value })} required value={range.from} /></FormField>
                 <FormField label={t('rtn.perf.to')}><DatePicker onChange={(e) => setRange({ ...range, to: e.target.value })} required value={range.to} /></FormField>
-                <Button type="submit" variant="outline">{t('rtn.perf.apply')}</Button>
             </form>
             <DataGrid caption={t('rtn.perf.runs')} columns={columns} empty={<EmptyState title={t('rtn.perf.noRuns')} />} getRowId={(x) => x.run_id} id="rtn.runs" rows={r.runs} testId="runs" />
             <section aria-labelledby="people-h" className="flex flex-col gap-1">

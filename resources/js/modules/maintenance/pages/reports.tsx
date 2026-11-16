@@ -1,7 +1,6 @@
 import { router } from '@inertiajs/react';
 import { useState } from 'react';
 
-import { Button } from '@/components/ui/button';
 import { DataGrid, type DataGridColumn } from '@/components/ui/data-grid';
 import { DatePicker } from '@/components/ui/date-picker';
 import { EmptyState } from '@/components/ui/empty-state';
@@ -11,6 +10,7 @@ import { MaintenanceShell } from '@/modules/maintenance/components/maintenance-s
 import type { MaintenanceReport } from '@/modules/maintenance/lib/maintenance';
 import { useFormatters, useTranslation } from '@/shared/i18n/i18n';
 import type { MessageKey } from '@/locales/en/index';
+import { useAutoApply } from '@/shared/lib/use-auto-apply';
 
 /** How the work went in a period: what was reported, how long it took, the rooms that broke again, and the days rooms could not be sold. */
 export default function MaintenanceReportsPage({ report }: { report: MaintenanceReport }) {
@@ -18,6 +18,8 @@ export default function MaintenanceReportsPage({ report }: { report: Maintenance
     const format = useFormatters();
     const [from, setFrom] = useState(report.from);
     const [to, setTo] = useState(report.to);
+    const applyFilter = () => { if (from === '' || to === '') return; router.get('/maintenance/reports', { from, to }, { preserveScroll: true, preserveState: true, replace: true }); };
+    useAutoApply([from, to], applyFilter);
     const label = (prefix: string, key: string) => t(`${prefix}.${key}` as MessageKey);
     const hours = (h: number | null) => (h === null ? '—' : t('mtc.rep.hours', { n: h }));
     const statuses = Object.entries(report.by_status);
@@ -38,7 +40,6 @@ export default function MaintenanceReportsPage({ report }: { report: Maintenance
             <div className="flex flex-wrap items-end gap-2 print:hidden">
                 <FormField label={t('mtc.rep.from')}><DatePicker onChange={(e) => setFrom(e.target.value)} value={from} /></FormField>
                 <FormField label={t('mtc.rep.to')}><DatePicker onChange={(e) => setTo(e.target.value)} value={to} /></FormField>
-                <Button disabled={from === '' || to === ''} onClick={() => router.get('/maintenance/reports', { from, to })} type="button">{t('mtc.rep.show')}</Button>
             </div>
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" data-testid="mtc-rep-kpis">
                 <Metric label={t('mtc.rep.reported')} value={String(report.reported)} />

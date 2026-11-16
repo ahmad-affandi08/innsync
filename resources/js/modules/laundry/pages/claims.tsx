@@ -120,12 +120,9 @@ export default function LaundryClaimsPage({ order, overview, status }: { order: 
             <Alert title={t('ldy.claim.note')} tone="info" />
 
             <div className="flex flex-wrap items-end justify-between gap-2">
-                <form className="flex flex-wrap items-end gap-2" onSubmit={(e) => { e.preventDefault(); router.get('/laundry/claims', (e.currentTarget.elements.namedItem('status') as HTMLSelectElement).value === '' ? {} : { status: (e.currentTarget.elements.namedItem('status') as HTMLSelectElement).value }); }}>
-                    <FormField label={t('ldy.claim.status')}>
-                        <Select defaultValue={status} name="status"><option value="">{t('ldy.claim.all')}</option>{(['open', 'approved', 'rejected'] as const).map((s) => <option key={s} value={s}>{t(`ldy.claim.status.${s}` as 'ldy.claim.status.open')}</option>)}</Select>
-                    </FormField>
-                    <Button type="submit" variant="outline">{t('ldy.claim.filter')}</Button>
-                </form>
+                <FormField label={t('ldy.claim.status')}>
+                    <Select onChange={(e) => router.get('/laundry/claims', e.target.value === '' ? {} : { status: e.target.value }, { preserveScroll: true, preserveState: true, replace: true })} value={status}><option value="">{t('ldy.claim.all')}</option>{(['open', 'approved', 'rejected'] as const).map((s) => <option key={s} value={s}>{t(`ldy.claim.status.${s}` as 'ldy.claim.status.open')}</option>)}</Select>
+                </FormField>
                 {overview.may.record ? <Button onClick={() => { action.clear(); setInvalid(false); setOpen(true); }} size="sm" type="button">{t('ldy.claim.new')}</Button> : null}
             </div>
 

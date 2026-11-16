@@ -25,6 +25,7 @@ import { useServerAction } from '@/shared/api/use-server-action';
 import { useFormatters, useTranslation } from '@/shared/i18n/i18n';
 import { useErrorStateCopy } from '@/shared/i18n/use-ui-copy';
 import type { MessageKey } from '@/locales/en/index';
+import { useAutoApply } from '@/shared/lib/use-auto-apply';
 
 const TONE: Record<AttendanceStatus, StatusTone> = { upcoming: 'neutral', not_in: 'warning', on_duty: 'info', present: 'success', missing_out: 'warning', absent: 'danger' };
 const OVERTIME_TONE: Record<OvertimeStatus, StatusTone> = { pending_approval: 'pending', approved: 'success', rejected: 'danger', cancelled: 'neutral' };
@@ -49,6 +50,10 @@ export default function AttendancePage({ overview, overtime, corrections, review
     const [date, setDate] = useState(overview.day?.date ?? overview.today);
     const [from, setFrom] = useState(overview.summary?.from ?? overview.today);
     const [to, setTo] = useState(overview.summary?.to ?? overview.today);
+    const applyDay = () => { if (date === '') return; router.get('/hr/attendance', { date }, { preserveScroll: true, preserveState: true, replace: true }); };
+    const applySummary = () => { if (from === '' || to === '') return; router.get('/hr/attendance', { from, to, ...(overview.summary?.department ? { department: overview.summary.department } : {}) }, { preserveScroll: true, preserveState: true, replace: true }); };
+    useAutoApply([date], applyDay);
+    useAutoApply([from, to], applySummary);
     const [manual, setManual] = useState<{ employeeId: string; date: string; inTime: string; outTime: string; reason: string } | null>(null);
     const [ask, setAsk] = useState<{ employeeId: string; date: string; minutes: string; reason: string } | null>(null);
     const [fix, setFix] = useState<{ employeeId: string; date: string; inTime: string; outTime: string; reason: string } | null>(null);
@@ -235,7 +240,6 @@ export default function AttendancePage({ overview, overtime, corrections, review
                     <TabsContent className="flex flex-col gap-3" value="day">
                         <div className="flex flex-wrap items-end gap-2">
                             <FormField label={t('hr.att.date')}><DatePicker onChange={(e) => setDate(e.target.value)} value={date} /></FormField>
-                            <Button disabled={date === ''} onClick={() => router.get('/hr/attendance', { date })} type="button">{t('mtc.rep.show')}</Button>
                         </div>
                         <DataGrid caption={t('hr.att.dayTab')} columns={dayColumns} empty={<EmptyState illustration="checklist" title={t('hr.att.noRows')} />} getRowId={(r) => r.employee.id} id="hr.att.day" rows={overview.day.rows} testId="hr-att-day" />
                     </TabsContent>
@@ -244,7 +248,6 @@ export default function AttendancePage({ overview, overtime, corrections, review
                             <FormField label={t('mtc.rep.from')}><DatePicker onChange={(e) => setFrom(e.target.value)} value={from} /></FormField>
                             <FormField label={t('mtc.rep.to')}><DatePicker onChange={(e) => setTo(e.target.value)} value={to} /></FormField>
                             <FormField label={t('hr.col.department')}><Select onChange={(e) => router.get('/hr/attendance', { from, to, ...(e.target.value === '' ? {} : { department: e.target.value }) })} value={overview.summary.department ?? ''}><option value="">{t('hr.roster.allDepartments')}</option>{overview.departments.map((d) => <option key={d} value={d}>{label('hr.department', d)}</option>)}</Select></FormField>
-                            <Button disabled={from === '' || to === ''} onClick={() => router.get('/hr/attendance', { from, to, ...(overview.summary?.department ? { department: overview.summary.department } : {}) })} type="button">{t('mtc.rep.show')}</Button>
                         </div>
                         <p className="text-xs text-muted-foreground">{t('hr.att.summaryHint')}</p>
                         <DataGrid caption={t('hr.att.summaryTab')} columns={summaryColumns} empty={<EmptyState illustration="checklist" title={t('hr.att.noRows')} />} getRowId={(r) => r.employee.id} id="hr.att.summary" rows={overview.summary.rows} testId="hr-att-summary" />

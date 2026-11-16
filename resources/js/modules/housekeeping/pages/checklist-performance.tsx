@@ -9,6 +9,7 @@ import { FormField } from '@/components/ui/form-field';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { HousekeepingShell } from '@/modules/housekeeping/components/housekeeping-shell';
 import { useTranslation } from '@/shared/i18n/i18n';
+import { useAutoApply } from '@/shared/lib/use-auto-apply';
 
 type Props = {
     report: {
@@ -24,6 +25,11 @@ type Run = Props['report']['runs'][number];
 export default function ChecklistPerformancePage({ report: r }: Props) {
     const { t } = useTranslation();
     const [range, setRange] = useState({ from: r.from, to: r.to });
+    const applyFilter = () => {
+        if (range.from === '' || range.to === '') return;
+        router.get('/housekeeping/checklists/performance', range, { preserveScroll: true, preserveState: true, replace: true });
+    };
+    useAutoApply([range.from, range.to], applyFilter);
 
     const columns: DataGridColumn<Run>[] = [
         { id: 'run', label: t('hk.cl.perf.runs'), value: (x) => t('hk.cl.perf.run', { name: x.template, target: x.target, period: x.period_key }), rowHeader: true },
@@ -34,10 +40,9 @@ export default function ChecklistPerformancePage({ report: r }: Props) {
     return (
         <HousekeepingShell description={t('hk.cl.perf.description')} title={t('hk.cl.perf.title')} wide>
             <div><Button asChild size="sm" variant="outline"><Link href="/housekeeping/checklists">{t('hk.cl.nav')}</Link></Button></div>
-            <form className="flex flex-wrap items-end gap-3" onSubmit={(e) => { e.preventDefault(); router.get('/housekeeping/checklists/performance', range); }}>
+            <form className="flex flex-wrap items-end gap-3" onSubmit={(e) => { e.preventDefault(); applyFilter(); }}>
                 <FormField label={t('hk.cl.perf.from')}><DatePicker onChange={(e) => setRange({ ...range, from: e.target.value })} required value={range.from} /></FormField>
                 <FormField label={t('hk.cl.perf.to')}><DatePicker onChange={(e) => setRange({ ...range, to: e.target.value })} required value={range.to} /></FormField>
-                <Button type="submit" variant="outline">{t('hk.cl.perf.apply')}</Button>
             </form>
             <p className="text-sm">{t('hk.cl.perf.overall')} <StatusBadge label={`${r.percent}%`} tone={r.percent === 100 ? 'success' : 'info'} /></p>
 

@@ -14,6 +14,7 @@ import { newIdempotencyKey } from '@/shared/api/http';
 import { useServerAction } from '@/shared/api/use-server-action';
 import { useFormatters, useTranslation } from '@/shared/i18n/i18n';
 import { useErrorStateCopy } from '@/shared/i18n/use-ui-copy';
+import { useAutoApply } from '@/shared/lib/use-auto-apply';
 
 type Req = {
     due_at: string | null; id: string; number: string; room: string; category: string; priority: string; title: string; detail: string | null; status: string; recorded_status: string; housekeeping_state: string | null; work_order: { number: string; state: string } | null;
@@ -34,6 +35,8 @@ export default function RequestsPage({ filters, in_house: inHouse, queue }: Prop
     const action = useServerAction();
     const [status, setStatus] = useState(filters.status);
     const [category, setCategory] = useState(filters.category);
+    const applyFilter = () => router.get('/front-office/requests', { status, ...(category !== '' ? { category } : {}), ...(filters.room !== '' ? { room: filters.room } : {}) }, { preserveScroll: true, preserveState: true, replace: true });
+    useAutoApply([status, category], applyFilter);
     const [form, setForm] = useState<{ stay: string; category: string; title: string; detail: string; urgent: boolean; due: string } | null>(null);
     const [finish, setFinish] = useState<{ req: Req; kind: 'complete' | 'cancel'; text: string } | null>(null);
     const [intent, setIntent] = useState(() => newIdempotencyKey());
@@ -67,7 +70,7 @@ export default function RequestsPage({ filters, in_house: inHouse, queue }: Prop
     return (
         <FrontOfficeShell description={t('fo.req.description')} title={t('fo.req.title')} wide>
             <div className="flex flex-wrap items-end justify-between gap-3">
-                <form className="flex flex-wrap items-end gap-3" onSubmit={(e) => { e.preventDefault(); router.get('/front-office/requests', { status, ...(category !== '' ? { category } : {}), ...(filters.room !== '' ? { room: filters.room } : {}) }); }}>
+                <form className="flex flex-wrap items-end gap-3" onSubmit={(e) => { e.preventDefault(); applyFilter(); }}>
                     <FormField label={t('fo.req.filter.status')}>
                         <Select onChange={(e) => setStatus(e.target.value)} value={status}>
                             <option value="active">{t('fo.req.filter.active')}</option><option value="">{t('fo.req.filter.all')}</option>
@@ -80,7 +83,6 @@ export default function RequestsPage({ filters, in_house: inHouse, queue }: Prop
                             {queue.categories.map((c) => <option key={c} value={c}>{t(`fo.req.category.${c}` as 'fo.req.category.other')}</option>)}
                         </Select>
                     </FormField>
-                    <Button type="submit" variant="outline">{t('fo.req.filter.apply')}</Button>
                 </form>
                 {queue.may_manage ? <Button onClick={() => { action.clear(); setForm({ stay: '', category: 'housekeeping', title: '', detail: '', urgent: false, due: '' }); }} size="sm" type="button">{t('fo.req.new')}</Button> : null}
             </div>

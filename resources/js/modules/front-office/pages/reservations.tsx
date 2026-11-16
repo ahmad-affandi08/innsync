@@ -21,6 +21,7 @@ import { useFormatters, useTranslation } from '@/shared/i18n/i18n';
 import { CsvImportDialog } from '@/components/csv-import-dialog';
 import { useErrorStateCopy } from '@/shared/i18n/use-ui-copy';
 import { ApiError } from '@/shared/lib/api-error';
+import { useAutoApply } from '@/shared/lib/use-auto-apply';
 import { isIsoDate, nightsBetween } from '@/shared/time/time';
 
 export type ReservationRow = {
@@ -64,10 +65,11 @@ export default function ReservationsPage({ filters, lookups, reservations }: { f
     const conflictReason = action.error instanceof ApiError ? action.error.failure.conflict?.reason ?? null : null;
     const violation = (v: Quote['violations'][number]) => t(`rates.violation.${v.code}` as 'rates.violation.no_price', { date: v.date ? format.date(v.date) : '', value: v.value ?? '' });
 
-    function search(next = filter) {
-        const params = Object.fromEntries(Object.entries(next).filter(([, v]) => v !== ''));
-        router.get('/front-office/reservations', params, { preserveState: true });
+    function search() {
+        const params = Object.fromEntries(Object.entries(filter).filter(([, v]) => v !== ''));
+        router.get('/front-office/reservations', params, { preserveScroll: true, preserveState: true, replace: true });
     }
+    useAutoApply([filter.query, filter.status, filter.arrival_from, filter.arrival_to], search);
 
     function open() {
         action.clear();
@@ -143,8 +145,7 @@ export default function ReservationsPage({ filters, lookups, reservations }: { f
                 <FormField label={t('fo.res.arrivalFrom')}><DatePicker onChange={(e) => setFilter({ ...filter, arrival_from: e.target.value })} value={filter.arrival_from} /></FormField>
                 <FormField label={t('fo.res.arrivalTo')}><DatePicker onChange={(e) => setFilter({ ...filter, arrival_to: e.target.value })} value={filter.arrival_to} /></FormField>
                 <div className="flex items-end gap-2">
-                    <Button type="submit" variant="outline">{t('fo.res.apply')}</Button>
-                    <Button onClick={() => { const cleared = { query: '', status: '', arrival_from: '', arrival_to: '' }; setFilter(cleared); search(cleared); }} type="button" variant="outline">{t('fo.res.clear')}</Button>
+                    <Button onClick={() => { const cleared = { query: '', status: '', arrival_from: '', arrival_to: '' }; setFilter(cleared); }} type="button" variant="outline">{t('fo.res.clear')}</Button>
                 </div>
             </form>
 

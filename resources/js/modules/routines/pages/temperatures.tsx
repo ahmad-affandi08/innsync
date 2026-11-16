@@ -15,6 +15,7 @@ import { RoutineShell } from '@/modules/routines/components/routine-shell';
 import { useServerAction } from '@/shared/api/use-server-action';
 import { useFormatters, useTranslation } from '@/shared/i18n/i18n';
 import { useErrorStateCopy } from '@/shared/i18n/use-ui-copy';
+import { useAutoApply } from '@/shared/lib/use-auto-apply';
 
 type Point = { id: string; name: string; min_tenth: number; max_tenth: number; active: boolean; lock_version: number };
 type Reading = { id: string; point: string; value_tenth: number; min_tenth: number; max_tenth: number; in_range: boolean; action_taken: string | null; by: string | null; at: string };
@@ -37,6 +38,8 @@ export default function TemperaturesPage({ department, overview }: { department:
     const [reading, setReading] = useState({ pointId: active[0]?.id ?? '', value: '', actionTaken: '' });
     const [point, setPoint] = useState<{ id: string; name: string; min: string; max: string; active: boolean; lock: number } | null>(null);
     const [range, setRange] = useState({ from: overview.from, to: overview.to });
+    const applyFilter = () => { if (range.from === '' || range.to === '') return; router.get(`/${department}/temperatures`, range, { preserveScroll: true, preserveState: true, replace: true }); };
+    useAutoApply([range.from, range.to], applyFilter);
     const chosen = overview.points.find((p) => p.id === reading.pointId);
     const value = toTenth(reading.value);
     const outside = chosen !== undefined && value !== null && (value < chosen.min_tenth || value > chosen.max_tenth);
@@ -108,10 +111,9 @@ export default function TemperaturesPage({ department, overview }: { department:
                 </Dialog>
             ) : null}
 
-            <form className="flex flex-wrap items-end gap-3" onSubmit={(e) => { e.preventDefault(); router.get(`/${department}/temperatures`, range); }}>
+            <form className="flex flex-wrap items-end gap-3" onSubmit={(e) => { e.preventDefault(); applyFilter(); }}>
                 <FormField label={t('rtn.perf.from')}><DatePicker onChange={(e) => setRange({ ...range, from: e.target.value })} required value={range.from} /></FormField>
                 <FormField label={t('rtn.perf.to')}><DatePicker onChange={(e) => setRange({ ...range, to: e.target.value })} required value={range.to} /></FormField>
-                <Button type="submit" variant="outline">{t('rtn.perf.apply')}</Button>
             </form>
             <DataGrid caption={t('rtn.temp.title')} columns={columns} empty={<EmptyState title={t('rtn.temp.none')} />} getRowId={(r) => r.id} id="rtn.readings" rows={overview.readings} testId="readings" />
         </RoutineShell>

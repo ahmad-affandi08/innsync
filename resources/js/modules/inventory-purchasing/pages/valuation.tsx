@@ -1,7 +1,6 @@
 import { router } from '@inertiajs/react';
 import { useState } from 'react';
 
-import { Button } from '@/components/ui/button';
 import { DataGrid, type DataGridColumn } from '@/components/ui/data-grid';
 import { DatePicker } from '@/components/ui/date-picker';
 import { EmptyState } from '@/components/ui/empty-state';
@@ -9,6 +8,7 @@ import { FormField } from '@/components/ui/form-field';
 import { InventoryShell } from '@/modules/inventory-purchasing/components/inventory-shell';
 import { formatMilli } from '@/modules/inventory-purchasing/lib/quantity';
 import { useFormatters, useTranslation } from '@/shared/i18n/i18n';
+import { useAutoApply } from '@/shared/lib/use-auto-apply';
 
 type Row = {
     item_id: string; item_code: string; item_name: string; category_name: string; base_unit: string;
@@ -21,6 +21,8 @@ export default function ValuationPage({ report }: { report: Report }) {
     const { t, locale } = useTranslation();
     const format = useFormatters();
     const [date, setDate] = useState(report.as_of);
+    const applyFilter = () => router.get('/inventory/valuation', date === '' ? {} : { as_of: date }, { preserveScroll: true, preserveState: true, replace: true });
+    useAutoApply([date], applyFilter);
     const money = (minor: number) => format.money(minor, report.currency);
 
     const columns: DataGridColumn<Row>[] = [
@@ -38,7 +40,7 @@ export default function ValuationPage({ report }: { report: Report }) {
                 className="flex max-w-md items-end gap-3"
                 onSubmit={(e) => {
                     e.preventDefault();
-                    router.get('/inventory/valuation', date === '' ? {} : { as_of: date }, { preserveScroll: true });
+                    applyFilter();
                 }}
             >
                 <div className="flex-1">
@@ -46,7 +48,6 @@ export default function ValuationPage({ report }: { report: Report }) {
                         <DatePicker onChange={(e) => setDate(e.target.value)} value={date} />
                     </FormField>
                 </div>
-                <Button type="submit">{t('inv.val.show')}</Button>
             </form>
             <p className="text-sm text-muted-foreground">{t('inv.val.note')}</p>
             <DataGrid caption={t('inv.val.title')} columns={columns} empty={<EmptyState title={t('inv.val.empty')} />} footerLabel={t('inv.val.total')} getRowId={(r) => `${r.item_id}:${r.location_id}`} id="inv.valuation" rows={report.rows} testId="valuation" />

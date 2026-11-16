@@ -1,7 +1,6 @@
 import { router } from '@inertiajs/react';
 import { useState } from 'react';
 
-import { Button } from '@/components/ui/button';
 import { DatePicker } from '@/components/ui/date-picker';
 import { EmptyState } from '@/components/ui/empty-state';
 import { FormField } from '@/components/ui/form-field';
@@ -10,6 +9,7 @@ import { Select } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { FrontOfficeShell } from '@/modules/front-office/components/front-office-shell';
 import { useFormatters, useTranslation } from '@/shared/i18n/i18n';
+import { useAutoApply } from '@/shared/lib/use-auto-apply';
 
 type Night = {
     date: string; total: number; blocked: number; held: number; sold: number; available: number; allowance: number; oversold: boolean;
@@ -34,8 +34,10 @@ export default function AvailabilityPage({ calendar, plans, selected_plan }: { c
     const [form, setForm] = useState({ from: calendar.from, days: String(calendar.days), plan: selected_plan ?? '' });
 
     function show() {
-        router.get('/front-office/availability', { from: form.from, days: form.days, plan: form.plan || undefined }, { preserveState: true });
+        if (form.from === '' || !/^\d+$/.test(form.days)) return;
+        router.get('/front-office/availability', { from: form.from, days: form.days, plan: form.plan || undefined }, { preserveScroll: true, preserveState: true, replace: true });
     }
+    useAutoApply([form.from, form.days, form.plan], show);
 
     return (
         <FrontOfficeShell description={t('fo.availability.description')} title={t('fo.availability.title')} wide>
@@ -48,7 +50,6 @@ export default function AvailabilityPage({ calendar, plans, selected_plan }: { c
                         {plans.map((p) => <option key={p.id} value={p.id}>{p.code} · {p.name}</option>)}
                     </Select>
                 </FormField>
-                <div className="flex items-end"><Button type="submit" variant="outline">{t('fo.availability.show')}</Button></div>
             </form>
 
             <p className="flex flex-wrap gap-3 text-xs text-muted-foreground" role="note">

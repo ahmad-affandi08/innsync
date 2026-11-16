@@ -15,6 +15,7 @@ import { newIdempotencyKey } from '@/shared/api/http';
 import { useServerAction } from '@/shared/api/use-server-action';
 import { useFormatters, useTranslation } from '@/shared/i18n/i18n';
 import { useErrorStateCopy } from '@/shared/i18n/use-ui-copy';
+import { useAutoApply } from '@/shared/lib/use-auto-apply';
 
 export type FeedbackRow = {
     id: string; number: string; kind: string; severity: string | null; status: string; guest_name: string | null; room: string | null; summary: string; owner_name: string | null; overdue: boolean; created_at: string; follow_up_by: string | null;
@@ -34,6 +35,8 @@ export default function FeedbackPage({ filters, queue }: Props) {
     const errorCopy = useErrorStateCopy();
     const action = useServerAction();
     const [f, setF] = useState(filters);
+    const applyFilter = () => router.get('/front-office/feedback', { status: f.status, ...(f.kind !== '' ? { kind: f.kind } : {}), ...(f.severity !== '' ? { severity: f.severity } : {}) }, { preserveScroll: true, preserveState: true, replace: true });
+    useAutoApply([f.status, f.kind, f.severity], applyFilter);
     const [form, setForm] = useState<{ kind: string; severity: string; channel: string; reservation: string; guest: string; summary: string; detail: string; due: string } | null>(null);
     const [intent, setIntent] = useState(() => newIdempotencyKey());
 
@@ -57,7 +60,7 @@ export default function FeedbackPage({ filters, queue }: Props) {
     return (
         <FrontOfficeShell description={t('fo.fb.description')} title={t('fo.fb.title')} wide>
             <div className="flex flex-wrap items-end justify-between gap-3">
-                <form className="flex flex-wrap items-end gap-3" onSubmit={(e) => { e.preventDefault(); router.get('/front-office/feedback', { status: f.status, ...(f.kind !== '' ? { kind: f.kind } : {}), ...(f.severity !== '' ? { severity: f.severity } : {}) }); }}>
+                <form className="flex flex-wrap items-end gap-3" onSubmit={(e) => { e.preventDefault(); applyFilter(); }}>
                     <FormField label={t('fo.fb.filter.status')}>
                         <Select onChange={(e) => setF({ ...f, status: e.target.value })} value={f.status}>
                             <option value="active">{t('fo.fb.filter.active')}</option><option value="">{t('fo.fb.filter.all')}</option>
@@ -76,7 +79,6 @@ export default function FeedbackPage({ filters, queue }: Props) {
                             {queue.severities.map((s) => <option key={s} value={s}>{t(`fo.fb.severity.${s}` as 'fo.fb.severity.low')}</option>)}
                         </Select>
                     </FormField>
-                    <Button type="submit" variant="outline">{t('fo.fb.filter.apply')}</Button>
                 </form>
                 {queue.may_manage ? <Button onClick={() => { action.clear(); setForm({ kind: 'complaint', severity: 'medium', channel: 'in_person', reservation: '', guest: '', summary: '', detail: '', due: '' }); }} size="sm" type="button">{t('fo.fb.new')}</Button> : null}
             </div>

@@ -1,5 +1,5 @@
 import { Pencil } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -17,6 +17,7 @@ import { HousekeepingShell } from '@/modules/housekeeping/components/housekeepin
 import { useServerAction } from '@/shared/api/use-server-action';
 import { useFormatters, useTranslation } from '@/shared/i18n/i18n';
 import { useErrorStateCopy } from '@/shared/i18n/use-ui-copy';
+import { useAutoApply } from '@/shared/lib/use-auto-apply';
 
 type Level = { id: string; item_id: string; item_code: string; item_name: string; scope_kind: 'room_type' | 'area'; room_type_id: string | null; area: string | null; par_quantity: number; use_quantity: number; lock_version: number };
 type Need = { item_id: string; code: string; name: string; unit: string; target: number; on_floor: number; need: number; in_store: number; from_store: number; to_obtain: number };
@@ -53,6 +54,10 @@ export default function ParLevelsPage({ overview }: { overview: Overview }) {
         const result = await action.run<{ consumption: Consumption }>(`/housekeeping/par-levels/consumption?${query}`, { method: 'GET' });
         if (result !== null) setShown(result.consumption);
     }
+    useAutoApply([when.date, when.shift], () => { if (when.date !== '') void show(); });
+    // The hook skips the first render, so load the opening date and shift once.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    useEffect(() => { void show(); }, []);
 
     function add() {
         action.clear();
@@ -125,7 +130,6 @@ export default function ParLevelsPage({ overview }: { overview: Overview }) {
                 <div className="flex flex-wrap items-end gap-2">
                     <FormField label={t('hk.par.date')}><DatePicker onChange={(e) => setWhen({ ...when, date: e.target.value })} value={when.date} /></FormField>
                     <FormField label={t('hk.par.shift')}><Select onChange={(e) => setWhen({ ...when, shift: e.target.value })} value={when.shift}>{overview.shifts.map((s) => <option key={s.code} value={s.code}>{t(`hk.par.shift.${s.code}` as 'hk.par.shift.morning')} ({s.from}–{s.to})</option>)}</Select></FormField>
-                    <Button disabled={action.busy} onClick={() => void show()} type="button" variant="outline">{t('hk.par.show')}</Button>
                 </div>
                 {shown === null ? null : (
                     <DataGrid

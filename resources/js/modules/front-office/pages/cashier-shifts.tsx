@@ -14,6 +14,7 @@ import { FrontOfficeShell } from '@/modules/front-office/components/front-office
 import { useServerAction } from '@/shared/api/use-server-action';
 import { useFormatters, useTranslation } from '@/shared/i18n/i18n';
 import { useErrorStateCopy } from '@/shared/i18n/use-ui-copy';
+import { useAutoApply } from '@/shared/lib/use-auto-apply';
 
 type Row = { id: string; number: string; cashier_name: string | null; status: 'open' | 'closed'; opened_at: string; variance_minor: number | null };
 type Props = {
@@ -28,6 +29,8 @@ export default function CashierShiftsPage({ filters, list, settings }: Props) {
     const errorCopy = useErrorStateCopy();
     const action = useServerAction();
     const [status, setStatus] = useState(filters.status);
+    const applyFilter = () => router.get('/front-office/cashier/shifts', status === '' ? {} : { status }, { preserveScroll: true, preserveState: true, replace: true });
+    useAutoApply([status], applyFilter);
     const [require, setRequire] = useState(settings?.require_open_shift ?? false);
     const [reason, setReason] = useState('');
     const [saved, setSaved] = useState(false);
@@ -52,13 +55,12 @@ export default function CashierShiftsPage({ filters, list, settings }: Props) {
     return (
         <FrontOfficeShell description={t('fo.cash.list.description')} title={t('fo.cash.list.title')} wide>
             <div><Button asChild size="sm" variant="outline"><Link href="/front-office/cashier">{t('fo.cash.mine')}</Link></Button></div>
-            <form className="flex flex-wrap items-end gap-3" onSubmit={(e) => { e.preventDefault(); router.get('/front-office/cashier/shifts', status === '' ? {} : { status }); }}>
+            <form className="flex flex-wrap items-end gap-3" onSubmit={(e) => { e.preventDefault(); applyFilter(); }}>
                 <FormField label={t('fo.cash.list.filter')}>
                     <Select onChange={(e) => setStatus(e.target.value)} value={status}>
                         <option value="">{t('fo.cash.list.all')}</option><option value="open">{t('fo.cash.status.open')}</option><option value="closed">{t('fo.cash.status.closed')}</option>
                     </Select>
                 </FormField>
-                <Button type="submit" variant="outline">{t('fo.cash.list.apply')}</Button>
             </form>
 
             <DataGrid

@@ -8,6 +8,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { FormField } from '@/components/ui/form-field';
 import { FrontOfficeShell } from '@/modules/front-office/components/front-office-shell';
 import { useTranslation } from '@/shared/i18n/i18n';
+import { useAutoApply } from '@/shared/lib/use-auto-apply';
 
 type Run = { run_id: string; template: string; frequency: string; period_key: string; items: number; completed: number; percent: number };
 type Props = {
@@ -21,6 +22,11 @@ type Props = {
 export default function ChecklistPerformancePage({ report: r }: Props) {
     const { t } = useTranslation();
     const [range, setRange] = useState({ from: r.from, to: r.to });
+    const applyFilter = () => {
+        if (range.from === '' || range.to === '') return;
+        router.get('/front-office/checklists/performance', range, { preserveScroll: true, preserveState: true, replace: true });
+    };
+    useAutoApply([range.from, range.to], applyFilter);
 
     const columns: DataGridColumn<Run>[] = [
         { id: 'run', label: t('fo.sop.perf.runs'), value: (x) => `${x.template} · ${x.period_key}`, rowHeader: true, cell: (x) => t('fo.sop.perf.run', { name: x.template, period: x.period_key }) },
@@ -32,10 +38,9 @@ export default function ChecklistPerformancePage({ report: r }: Props) {
     return (
         <FrontOfficeShell description={t('fo.sop.perf.description')} title={t('fo.sop.perf.title')} wide>
             <div><Button asChild size="sm" variant="outline"><Link href="/front-office/checklists">{t('fo.sop.nav')}</Link></Button></div>
-            <form className="flex flex-wrap items-end gap-3" onSubmit={(e) => { e.preventDefault(); router.get('/front-office/checklists/performance', range); }}>
+            <form className="flex flex-wrap items-end gap-3" onSubmit={(e) => { e.preventDefault(); applyFilter(); }}>
                 <FormField label={t('fo.sop.perf.from')}><DatePicker onChange={(e) => setRange({ ...range, from: e.target.value })} required value={range.from} /></FormField>
                 <FormField label={t('fo.sop.perf.to')}><DatePicker onChange={(e) => setRange({ ...range, to: e.target.value })} required value={range.to} /></FormField>
-                <Button type="submit" variant="outline">{t('fo.sop.perf.apply')}</Button>
             </form>
 
             <section aria-labelledby="runs-h" className="flex flex-col gap-1">

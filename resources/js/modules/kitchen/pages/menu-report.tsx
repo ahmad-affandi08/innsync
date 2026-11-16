@@ -2,7 +2,6 @@ import { router } from '@inertiajs/react';
 import { useState } from 'react';
 
 import { Alert } from '@/components/ui/alert';
-import { Button } from '@/components/ui/button';
 import { DataGrid, type DataGridColumn } from '@/components/ui/data-grid';
 import { DatePicker } from '@/components/ui/date-picker';
 import { EmptyState } from '@/components/ui/empty-state';
@@ -14,6 +13,7 @@ import { KitchenShell } from '@/modules/kitchen/components/kitchen-shell';
 import type { MenuClass, MenuReport, MenuReportRow } from '@/modules/kitchen/lib/kitchen';
 import { useFormatters, useTranslation } from '@/shared/i18n/i18n';
 import type { MessageKey } from '@/locales/en/index';
+import { useAutoApply } from '@/shared/lib/use-auto-apply';
 
 const TONE = { star: 'success', plowhorse: 'info', puzzle: 'warning', dog: 'neutral' } as const;
 const percent = (bp: number | null) => (bp === null ? '—' : `${(bp / 100).toFixed(1)}%`);
@@ -29,8 +29,10 @@ export default function MenuReportPage({ report }: { report: MenuReport }) {
     const classes: MenuClass[] = ['star', 'plowhorse', 'puzzle', 'dog'];
 
     function apply() {
-        router.get('/kitchen/menu-report', { from, to, ...(outlet === '' ? {} : { outlet }) }, { preserveScroll: true });
+        if (from === '' || to === '') return;
+        router.get('/kitchen/menu-report', { from, to, ...(outlet === '' ? {} : { outlet }) }, { preserveScroll: true, preserveState: true, replace: true });
     }
+    useAutoApply([from, to, outlet], apply);
 
     const columns: DataGridColumn<MenuReportRow>[] = [
         { id: 'name', label: t('kitchen.rep.dish'), value: (r) => r.name, rowHeader: true, cell: (r) => <span>{r.name}<span className="block text-xs text-muted-foreground">{r.category} · {r.outlet}</span></span> },
@@ -55,7 +57,6 @@ export default function MenuReportPage({ report }: { report: MenuReport }) {
                         {report.outlets.map((o) => <option key={o.id} value={o.id}>{o.name}</option>)}
                     </Select>
                 </FormField>
-                <Button type="submit">{t('kitchen.rep.show')}</Button>
             </form>
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                 <Metric label={t('kitchen.rep.portions')} value={report.totals.portions} />
