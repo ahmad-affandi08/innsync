@@ -18,6 +18,7 @@
     --color-border: var(--border);
     --color-input: var(--input);
     --color-control: var(--control);
+    --color-primary-edge: var(--primary-edge);
     --color-ring: var(--ring);
     --color-accent: var(--accent);
     --color-accent-foreground: var(--accent-foreground);
@@ -86,6 +87,8 @@
     --input: #cfd4dc;
     /* The frame of a button that is not filled: darker than a field's, so it does not read as an input. */
     --control: #98a2b3;
+    /* The raised edge of a navy button; it turns orange (the brand) while the pointer is on it. */
+    --primary-edge: #070d18;
     --ring: #f97316;
     --primary: #16233b;
     --primary-foreground: #ffffff;
