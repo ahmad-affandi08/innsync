@@ -19,6 +19,7 @@ import {
     PanelLeft,
     PanelLeftClose,
     PanelTop,
+    Search,
     Settings2,
     ShieldCheck,
     Wallet,
@@ -36,6 +37,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Input } from '@/components/ui/input';
 import { LanguageSwitcher } from '@/components/ui/language-switcher';
 import { PoweredBy } from '@/components/layout/powered-by';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -44,6 +46,7 @@ import { useBrand } from '@/shared/lib/brand';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { MODULE_LINKS, quickActions, visibleLinks, type NavFeatures, type NavLink } from '@/components/layout/module-links';
+import { navIcon } from '@/components/layout/nav-icons';
 import { NavSections } from '@/components/layout/nav-sections';
 import { Sheet, SheetContent, SheetDescription, SheetTitle } from '@/components/ui/sheet';
 import { useFormatters, useTranslation } from '@/shared/i18n/i18n';
@@ -93,14 +96,19 @@ const AREAS: Area[] = [
 type RailArea = Area & { mods: ModuleEntry[] };
 
 /** The departments of an area, to choose between: small tabs at the top of the page list, shared by the rail, the full sidebar and the top bar. */
-function ModuleTabs({ area, currentKey, name, onNavigate, className }: { area: RailArea; currentKey: string; name: (m: ModuleEntry) => string; onNavigate?: () => void; className?: string }) {
+function ModuleTabs({ area, currentKey, name, onNavigate, className, raised = false }: { area: RailArea; currentKey: string; name: (m: ModuleEntry) => string; onNavigate?: () => void; className?: string; raised?: boolean }) {
     return (
         <ul className={cn('flex flex-wrap items-center gap-1', className)}>
             {area.mods.map((m) => (
                 <li key={m.key}>
                     <Link
                         aria-current={m.key === currentKey ? 'page' : undefined}
-                        className={cn('block whitespace-nowrap rounded-md px-2.5 py-1 text-xs font-medium transition-colors', m.key === currentKey ? 'bg-brand/10 text-brand' : 'text-muted-foreground hover:bg-surface-muted hover:text-foreground')}
+                        className={cn(
+                            'block whitespace-nowrap px-2.5 py-1 text-xs font-medium transition-colors',
+                            raised
+                                ? cn('border-b-[3px]', m.key === currentKey ? 'border-brand bg-primary text-primary-foreground' : 'border-input bg-secondary text-muted-foreground hover:text-foreground')
+                                : cn('rounded-md', m.key === currentKey ? 'bg-brand/10 text-brand' : 'text-muted-foreground hover:bg-surface-muted hover:text-foreground'),
+                        )}
                         href={m.href}
                         onClick={onNavigate}
                     >
@@ -198,6 +206,8 @@ export function AppFrame({ actions, children, description, links: allLinks = [],
     });
     const [layout, setLayout] = useLayout();
     const hasLinks = links.length > 0;
+    // What is typed in the page search of the panel; it starts empty on every page.
+    const [find, setFind] = useState('');
 
     const menu = (
         <nav aria-label={t('shell.menu')} className="flex flex-col gap-0.5 px-3 py-4">
@@ -502,14 +512,39 @@ export function AppFrame({ actions, children, description, links: allLinks = [],
 
     const here = (href: string) => isHere(links, href, path);
 
+    const HeadIcon = area?.icon ?? current.icon;
+    const query = find.trim().toLowerCase();
+    const found = query === '' ? [] : links.filter((l) => t(l.label as MessageKey).toLowerCase().includes(query));
+    // A page of the panel: its icon on a small raised tile, which turns orange on the page the person is on.
+    const panelLink = (l: NavLink) => {
+        const Icon = navIcon(l.href);
+        const on = here(l.href);
+
+        return (
+            <Link
+                aria-current={on ? 'page' : undefined}
+                className={cn('group flex items-center gap-2.5 border p-1.5 text-[0.8125rem] transition-colors', on ? 'border-border bg-surface-muted font-semibold text-foreground' : 'border-transparent text-foreground/85 hover:bg-surface-muted')}
+                href={l.href}
+            >
+                <span className={cn('grid size-7 shrink-0 place-items-center border-b-2', on ? 'border-b-[color-mix(in_oklch,var(--brand),black_25%)] bg-brand text-white' : 'border-b-input bg-secondary text-muted-foreground group-hover:text-foreground')}>
+                    <Icon aria-hidden="true" className="size-4" strokeWidth={1.75} />
+                </span>
+                <span className="min-w-0 flex-1">{t(l.label as MessageKey)}</span>
+                {on ? <ChevronRight aria-hidden="true" className="size-4 shrink-0 text-brand" strokeWidth={2.5} /> : null}
+            </Link>
+        );
+    };
+
     // Icon rail: modules as icons with a short label, the pages of the active module in a panel beside it.
     const rail = (
         <>
-            <aside className="fixed inset-y-0 left-0 z-30 hidden w-20 flex-col items-center border-r border-border bg-sidebar lg:flex print:hidden">
+            <aside className="fixed inset-y-0 left-0 z-30 hidden w-20 flex-col items-center bg-surface-muted lg:flex print:hidden">
+                {/* The line between the rail and the page list lives inside the rail, so the active module (drawn above it) can cover it and join the list. */}
+                <span aria-hidden="true" className="pointer-events-none absolute inset-y-0 right-0 z-0 w-px bg-border" />
                 <Link aria-label="InnSYnc" className="grid h-12 w-full place-items-center border-b border-border" href="/">
                     <img alt="" className="size-8" height={32} src={favicon} width={32} />
                 </Link>
-                <ScrollArea className="w-full flex-1" keep="rail">
+                <ScrollArea className="relative z-10 w-full flex-1" keep="rail">
                     <nav aria-label={t('shell.menu')} className="flex flex-col gap-1 py-3">
                         {railAreas.map((a) => {
                             const Icon = a.icon;
@@ -521,11 +556,21 @@ export function AppFrame({ actions, children, description, links: allLinks = [],
                                 <Link
                                     aria-current={isActive && !hasLinks ? 'page' : undefined}
                                     aria-label={t(a.label)}
-                                    className={cn('flex flex-col items-center gap-1 border-l-2 px-1 py-2 text-[0.625rem] leading-tight tracking-tight transition-colors', isActive ? 'border-brand bg-surface-muted font-medium text-foreground' : 'border-transparent text-muted-foreground hover:bg-surface-muted hover:text-foreground')}
+                                    className={cn('relative flex flex-col items-center gap-1 px-1 py-2.5 text-[0.625rem] leading-tight tracking-tight transition-colors', isActive ? 'z-10 bg-surface font-semibold text-foreground' : 'text-muted-foreground hover:bg-secondary hover:text-foreground')}
                                     href={a.mods[0]?.href ?? '/'}
                                     title={t(a.label)}
                                 >
-                                    <Icon aria-hidden="true" className={cn('size-5', isActive ? 'text-brand' : '')} strokeWidth={1.75} />
+                                    {isActive ? (
+                                        <>
+                                            <span aria-hidden="true" className="absolute inset-y-0 left-0 w-[3px] bg-brand" />
+                                            {/* The block joins the page list: no line on its right, and a small curve where the rail's grey meets the list above and below it. */}
+                                            <span aria-hidden="true" className="absolute left-0 right-3 top-0 h-px bg-border" />
+                                            <span aria-hidden="true" className="absolute bottom-0 left-0 right-3 h-px bg-border" />
+                                            <svg aria-hidden="true" className="absolute -top-3 right-0 size-3 overflow-visible" viewBox="0 0 12 12"><path d="M12 0A12 12 0 0 1 0 12L12 12Z" fill="var(--surface)" /><path d="M12 0A12 12 0 0 1 0 12" fill="none" stroke="var(--border)" /></svg>
+                                            <svg aria-hidden="true" className="absolute -bottom-3 right-0 size-3 overflow-visible" viewBox="0 0 12 12"><path d="M12 12A12 12 0 0 0 0 0L12 0Z" fill="var(--surface)" /><path d="M12 12A12 12 0 0 0 0 0" fill="none" stroke="var(--border)" /></svg>
+                                        </>
+                                    ) : null}
+                                    <Icon aria-hidden="true" className={cn('size-[1.3rem]', isActive ? 'text-brand' : '')} strokeWidth={1.75} />
                                     <span className="line-clamp-2 w-full break-words text-center">{t(a.label)}</span>
                                 </Link>
                                 </Fragment>
@@ -536,30 +581,31 @@ export function AppFrame({ actions, children, description, links: allLinks = [],
             </aside>
             {hasLinks ? (
                 <aside aria-label={t(current.label)} className="fixed inset-y-0 left-20 z-20 hidden w-56 flex-col border-r border-border bg-surface lg:flex print:hidden">
-                    <p className="flex h-12 items-center border-b border-border px-5 text-sm font-semibold">{t(area !== undefined && area.mods.length > 1 ? area.label : current.label)}</p>
+                    <p className="flex h-12 items-center gap-2 border-b border-border px-5 text-sm font-semibold">
+                        <HeadIcon aria-hidden="true" className="size-4 shrink-0" strokeWidth={2} />
+                        <span className="truncate">{t(area !== undefined && area.mods.length > 1 ? area.label : current.label)}</span>
+                    </p>
+                    <div className="relative px-3 pt-3">
+                        <Search aria-hidden="true" className="pointer-events-none absolute left-5.5 top-[1.4375rem] size-3.5 text-muted-foreground" />
+                        <Input aria-label={t('shell.pageSearch')} className="pl-8" onChange={(e) => setFind(e.target.value)} placeholder={t('shell.pageSearch')} type="search" value={find} />
+                    </div>
                     {area !== undefined && area.mods.length > 1 ? (
-                        <nav aria-label={t(area.label)} className="border-b border-border p-3">
-                            <ModuleTabs area={area} currentKey={current.key} name={(m) => t(m.short ?? m.label)} />
+                        <nav aria-label={t(area.label)} className="px-3 pt-3">
+                            <ModuleTabs area={area} currentKey={current.key} name={(m) => t(m.short ?? m.label)} raised />
                         </nav>
                     ) : null}
                     <ScrollArea className="flex-1" keep={`panel:${current.key}`}>
                         <ul className="flex flex-col gap-0.5 p-3">
-                            <NavSections
-                                headingClass="flex items-center gap-1.5 rounded-md px-2 py-1.5 text-[0.8125rem] font-semibold text-foreground"
-                                listClass="ml-[0.9rem] border-l border-border pl-2"
-                                here={here}
-                                label={(g) => t(g as MessageKey)}
-                                links={links}
-                                renderLink={(l) => (
-                                    <Link
-                                        aria-current={here(l.href) ? 'page' : undefined}
-                                        className={cn('block rounded-md px-3 py-1.5 text-[0.8125rem] transition-colors', here(l.href) ? 'bg-brand/10 font-medium text-brand' : 'text-muted-foreground hover:bg-surface-muted hover:text-foreground')}
-                                        href={l.href}
-                                    >
-                                        {t(l.label as MessageKey)}
-                                    </Link>
-                                )}
-                            />
+                            {found.length === 0 && query !== '' ? <li className="px-1.5 py-2 text-[0.8125rem] text-muted-foreground">{t('shell.pageSearchNone')}</li> : null}
+                            {query !== '' ? found.map((l) => <li key={l.href}>{panelLink(l)}</li>) : (
+                                <NavSections
+                                    headingClass="flex items-center gap-1 px-1.5 pb-1 pt-3 text-[0.6875rem] font-semibold uppercase tracking-wider text-muted-foreground"
+                                    here={here}
+                                    label={(g) => t(g as MessageKey)}
+                                    links={links}
+                                    renderLink={panelLink}
+                                />
+                            )}
                         </ul>
                     </ScrollArea>
                 </aside>

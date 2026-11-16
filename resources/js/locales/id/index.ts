@@ -323,6 +323,8 @@ export const id: Record<MessageKey, string> = {
     'shell.layout.rail': 'Rel ikon',
     'shell.layout.topbar': 'Bilah atas',
     'shell.allPages': 'Semua halaman',
+    'shell.pageSearch': 'Cari halaman…',
+    'shell.pageSearchNone': 'Tidak ada halaman yang cocok.',
     'err.page.403.title': 'Anda tidak dapat membuka halaman ini',
     'err.page.404.title': 'Halaman ini tidak ditemukan',
     'err.page.409.title': 'Datanya berubah sementara itu',

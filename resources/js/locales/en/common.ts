@@ -118,4 +118,6 @@ export const common = {
     'shell.layout.rail': 'Icon rail',
     'shell.layout.topbar': 'Top bar',
     'shell.allPages': 'All pages',
+    'shell.pageSearch': 'Find a page…',
+    'shell.pageSearchNone': 'No page matches.',
 } as const;
