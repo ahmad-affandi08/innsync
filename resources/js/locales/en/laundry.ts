@@ -90,6 +90,7 @@ export const laundry = {
     'ldy.order.cancelConsequence': 'The bag is released and nothing is charged. Possible only before work begins.',
     'ldy.order.back2': 'Keep it',
     'ldy.order.history': 'History',
+    'ldy.order.progress': 'Progress of the order',
     'ldy.order.saved': 'Saved.',
     'ldy.prices.title': 'Laundry price list',
     'ldy.prices.description': 'Price per item before service charge and tax. A change never alters an order already handed over.',

@@ -90,6 +90,7 @@ export const laundry = {
     'ldy.order.cancelConsequence': 'Kantong dilepas dan tidak ada tagihan. Hanya dapat dilakukan sebelum pengerjaan dimulai.',
     'ldy.order.back2': 'Pertahankan',
     'ldy.order.history': 'Riwayat',
+    'ldy.order.progress': 'Alur order',
     'ldy.order.saved': 'Tersimpan.',
     'ldy.prices.title': 'Daftar harga laundry',
     'ldy.prices.description': 'Harga per item sebelum service charge dan pajak. Perubahan tidak mengubah order yang sudah diserahkan.',

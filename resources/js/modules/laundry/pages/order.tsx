@@ -1,4 +1,5 @@
 import { Link } from '@inertiajs/react';
+import { Check } from 'lucide-react';
 import { useState } from 'react';
 
 import { Alert } from '@/components/ui/alert';
@@ -10,10 +11,11 @@ import { Input } from '@/components/ui/input';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { LaundryShell } from '@/modules/laundry/components/laundry-shell';
-import { statusTone } from '@/modules/laundry/pages/queue';
+import { NEXT, STEPS, statusTone } from '@/modules/laundry/pages/queue';
 import { useServerAction } from '@/shared/api/use-server-action';
 import { useFormatters, useTranslation } from '@/shared/i18n/i18n';
 import { useErrorStateCopy } from '@/shared/i18n/use-ui-copy';
+import { cn } from '@/shared/lib/utils';
 
 type Line = { id: string; item_name: string; brand: string | null; quantity: number; verified_quantity: number | null; unit_price_minor: number; treatment_name: string | null; treatment_extra_minor: number; express_extra_minor: number; piece_minor: number; condition_note: string | null; total_minor: number };
 type Order = {
@@ -23,7 +25,6 @@ type Order = {
 };
 type May = { process: boolean; deliver: boolean; cancel: boolean };
 
-const NEXT: Record<string, string> = { received: 'washing', washing: 'drying', drying: 'ironing' };
 
 export default function LaundryOrderPage({ claims, currency, may, order: o }: { claims: { id: string; number: string; kind: string; status: string; claimed_minor: number; approved_minor: number | null }[]; currency: string; may: May; order: Order }) {
     const { t } = useTranslation();
@@ -53,6 +54,22 @@ export default function LaundryOrderPage({ claims, currency, may, order: o }: { 
                     <StatusBadge label={t(`ldy.status.${o.status}` as 'ldy.status.sent')} tone={statusTone[o.status] ?? 'neutral'} />
                 </div>
             </div>
+            {o.status !== 'cancelled' ? (
+                <ol aria-label={t('ldy.order.progress')} className="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs">
+                    {STEPS.map((s, i) => {
+                        const at = STEPS.indexOf(o.status as (typeof STEPS)[number]);
+                        const state = i < at || o.status === 'delivered' ? 'past' : i === at ? 'now' : 'next';
+
+                        return (
+                            <li aria-current={state === 'now' ? 'step' : undefined} className="flex shrink-0 items-center gap-1.5" key={s}>
+                                {i > 0 ? <span aria-hidden="true" className={cn('h-px w-4 sm:w-8', i <= at ? 'bg-brand' : 'bg-border')} /> : null}
+                                <span className={cn('grid size-6 place-items-center font-semibold', state === 'next' ? 'border border-border text-muted-foreground' : 'bg-brand text-white')}>{state === 'past' ? <Check aria-hidden="true" className="size-3.5" /> : i + 1}</span>
+                                <span className={state === 'now' ? 'font-semibold text-foreground' : 'text-muted-foreground'}>{t(`ldy.status.${s}` as 'ldy.status.sent')}</span>
+                            </li>
+                        );
+                    })}
+                </ol>
+            ) : null}
             {saved ? <Alert title={t('ldy.order.saved')} tone="success" /> : null}
             {action.error !== null && dialog === null ? <ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /> : null}
             {o.has_discrepancy ? <Alert title={t('ldy.order.discrepancy', { note: o.discrepancy_note ?? '' })} tone="warning" /> : null}
