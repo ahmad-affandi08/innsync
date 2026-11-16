@@ -32,7 +32,7 @@ export type ComboboxProps = {
 const SEARCH_FROM = 7;
 
 export const fieldClass =
-    'flex h-9 min-h-9 w-full min-w-0 max-w-full cursor-pointer items-center justify-between gap-2 border border-input bg-surface px-3 py-2 text-left text-sm text-foreground outline-none transition focus-visible:border-brand focus-visible:ring-2 focus-visible:ring-ring/40 disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-danger';
+    'flex h-9 min-h-9 w-full min-w-0 max-w-full cursor-pointer items-center justify-between gap-2 border border-control bg-surface-muted shadow-[inset_0_2px_3px_rgba(16,24,40,0.14)] focus-visible:bg-surface px-3 py-2 text-left text-sm text-foreground outline-none transition focus-visible:border-brand focus-visible:ring-2 focus-visible:ring-ring/40 disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-danger';
 
 /**
  * A select with a search box. The list opens below the field (or above it when
