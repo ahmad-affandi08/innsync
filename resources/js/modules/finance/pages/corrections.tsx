@@ -1,5 +1,5 @@
 import { Link, router, usePage } from '@inertiajs/react';
-import { Plus, Trash2 } from 'lucide-react';
+import { Eye, Plus, Trash2 } from 'lucide-react';
 import { useMemo, useRef, useState } from 'react';
 
 import { Alert } from '@/components/ui/alert';
@@ -12,6 +12,7 @@ import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
 import { MoneyInput } from '@/components/ui/money-input';
+import { RowAction } from '@/components/ui/row-action';
 import { Select } from '@/components/ui/select';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { Textarea } from '@/components/ui/textarea';
@@ -143,7 +144,7 @@ export default function CorrectionsPage({ overview, status }: { overview: Overvi
         { id: 'requestedBy', label: t('fin.cor.colRequestedBy'), value: (c) => c.requested_by ?? '', cell: (c) => `${c.requested_by ?? '—'} · ${format.instant(c.requested_at)}` },
         { id: 'decidedBy', label: t('fin.cor.colDecidedBy'), value: (c) => c.decided_by ?? '', cell: (c) => c.decided_by ?? '—' },
         { id: 'effective', label: t('fin.cor.colEffective'), value: (c) => c.effective_date ?? '', cell: (c) => (c.effective_date === null ? '—' : format.date(c.effective_date)) },
-        { id: 'actions', label: t('inv.col.actions'), cell: (c) => <Button onClick={() => router.visit(`/finance/corrections/${c.id}`)} size="sm" type="button" variant="outline">{t('fin.pay.open')}</Button> },
+        { id: 'actions', label: t('inv.col.actions'), cell: (c) => <RowAction icon={Eye} label={t('fin.pay.open')} onClick={() => router.visit(`/finance/corrections/${c.id}`)} tone="info" /> },
     ];
 
     return (

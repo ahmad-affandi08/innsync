@@ -1,9 +1,10 @@
 import { router, usePage } from '@inertiajs/react';
+import { Eye } from 'lucide-react';
 
-import { Button } from '@/components/ui/button';
 import { DataGrid, type DataGridColumn } from '@/components/ui/data-grid';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Metric } from '@/components/ui/metric';
+import { RowAction } from '@/components/ui/row-action';
 import { Select } from '@/components/ui/select';
 import { FinanceShell } from '@/modules/finance/components/finance-shell';
 import { PayableStatus, type PayableRow } from '@/modules/finance/lib/finance';
@@ -42,7 +43,7 @@ export default function PayablesPage({ overview, status }: { overview: Overview;
         { id: 'paid', label: t('fin.col.paid'), align: 'right', value: (p) => p.paid_minor, cell: (p) => money(p.paid_minor, p.currency) },
         { id: 'balance', label: t('fin.col.balance'), align: 'right', value: (p) => p.balance_minor, cell: (p) => money(p.balance_minor, p.currency) },
         { id: 'state', label: t('inv.col.status'), value: (p) => (p.overdue ? 'overdue' : p.status), cell: (p) => <PayableStatus row={p} /> },
-        { id: 'actions', label: t('inv.col.actions'), cell: (p) => <Button onClick={() => router.visit(`/finance/payables/${p.id}`)} size="sm" type="button" variant="outline">{t('fin.pay.open')}</Button> },
+        { id: 'actions', label: t('inv.col.actions'), cell: (p) => <RowAction icon={Eye} label={t('fin.pay.open')} onClick={() => router.visit(`/finance/payables/${p.id}`)} tone="info" /> },
     ];
 
     const creditColumns: DataGridColumn<Credit>[] = [

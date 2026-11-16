@@ -1,5 +1,6 @@
 import { Link, router } from '@inertiajs/react';
 import { useState } from 'react';
+import { UserCog, UserX, Wallet, X } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -11,6 +12,7 @@ import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
 import { Progress } from '@/components/ui/progress';
+import { RowAction } from '@/components/ui/row-action';
 import { Select } from '@/components/ui/select';
 import { StatusBadge, type StatusTone } from '@/components/ui/status-badge';
 import { TimeInput } from '@/components/ui/time-input';
@@ -137,11 +139,11 @@ export default function SpaPage({ overview }: { overview: Overview }) {
                 const open = b.status === 'booked' || b.status === 'accepted' || b.status === 'declined';
 
                 return (
-                    <span className="flex flex-wrap justify-end gap-2">
-                        {b.status === 'done' && !b.paid ? <Button onClick={() => { action.clear(); setPay({ booking: b, method: overview.methods[0] ?? 'cash', reference: '' }); }} size="sm" type="button">{t('fo.spa.takePayment')}</Button> : null}
-                        {b.status === 'booked' || b.status === 'declined' ? <Button onClick={() => { action.clear(); setAssign({ booking: b, therapist: b.therapist_id }); }} size="sm" type="button" variant={b.status === 'declined' ? 'default' : 'outline'}>{t('fo.spa.changeTherapist')}</Button> : null}
-                        {open && b.date <= overview.today ? <Button disabled={action.busy} onClick={() => void step(b, 'no-show')} size="sm" type="button" variant="outline">{t('fo.spa.noShow')}</Button> : null}
-                        {open ? <Button onClick={() => { action.clear(); setCancel({ booking: b, reason: '' }); }} size="sm" type="button" variant="ghost">{t('fo.spa.cancel')}</Button> : null}
+                    <span className="flex flex-wrap justify-end gap-1">
+                        {b.status === 'done' && !b.paid ? <RowAction onClick={() => { action.clear(); setPay({ booking: b, method: overview.methods[0] ?? 'cash', reference: '' }); }} icon={Wallet} label={t('fo.spa.takePayment')} tone="success" /> : null}
+                        {b.status === 'booked' || b.status === 'declined' ? <RowAction onClick={() => { action.clear(); setAssign({ booking: b, therapist: b.therapist_id }); }} icon={UserCog} label={t('fo.spa.changeTherapist')} tone="warning" /> : null}
+                        {open && b.date <= overview.today ? <RowAction disabled={action.busy} onClick={() => void step(b, 'no-show')} icon={UserX} label={t('fo.spa.noShow')} tone="danger" /> : null}
+                        {open ? <RowAction onClick={() => { action.clear(); setCancel({ booking: b, reason: '' }); }} icon={X} label={t('fo.spa.cancel')} tone="danger" /> : null}
                     </span>
                 );
             },

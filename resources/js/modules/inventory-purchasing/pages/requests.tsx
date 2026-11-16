@@ -1,11 +1,13 @@
 import { router } from '@inertiajs/react';
 import { useState } from 'react';
+import { Eye } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { DataGrid, type DataGridColumn } from '@/components/ui/data-grid';
 import { Dialog } from '@/components/ui/dialog';
 import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
+import { RowAction } from '@/components/ui/row-action';
 import { Select } from '@/components/ui/select';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { blankRequest, RequestFields, requestLinesBody, type RequestFormState } from '@/modules/inventory-purchasing/components/request-form';
@@ -63,7 +65,7 @@ export default function RequestsPage({ overview, status, department }: { overvie
         { id: 'requestedBy', label: t('inv.req.requestedBy'), value: (r) => r.requested_by_name ?? '', cell: (r) => r.requested_by_name ?? '—' },
         { id: 'lines', label: t('inv.col.lines'), align: 'right', value: (r) => r.line_count, cell: (r) => (r.ordered_count > 0 ? t('inv.req.linesOrdered', { ordered: r.ordered_count, count: r.line_count }) : String(r.line_count)) },
         { id: 'state', label: t('inv.col.status'), value: (r) => r.status, filter: 'select', filterLabel: label, cell: (r) => <StatusBadge label={label(r.status)} tone={REQUEST_TONE[r.status] ?? 'neutral'} /> },
-        { id: 'actions', label: t('inv.col.actions'), cell: (r) => <Button onClick={() => router.visit(`/inventory/requests/${r.id}`)} size="sm" type="button" variant="outline">{t('inv.req.open')}</Button> },
+        { id: 'actions', label: t('inv.col.actions'), cell: (r) => <RowAction icon={Eye} label={t('inv.req.open')} onClick={() => router.visit(`/inventory/requests/${r.id}`)} tone="info" /> },
     ];
 
     return (

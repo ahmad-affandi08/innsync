@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Pencil, Ruler } from 'lucide-react';
 
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -8,6 +9,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
+import { RowAction } from '@/components/ui/row-action';
 import { Select } from '@/components/ui/select';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { InventoryShell } from '@/modules/inventory-purchasing/components/inventory-shell';
@@ -73,9 +75,9 @@ export default function ItemsPage({ catalog }: { catalog: Catalog }) {
         { id: 'state', label: t('inv.col.status'), value: (i) => (i.is_active ? 'active' : 'inactive'), filter: 'select', filterLabel: (v) => t(`inv.status.${v}` as MessageKey), cell: (i) => <StatusBadge label={t(i.is_active ? 'inv.status.active' : 'inv.status.inactive')} tone={i.is_active ? 'success' : 'neutral'} /> },
         {
             id: 'actions', label: t('inv.col.actions'), cell: (i) => (
-                <div className="flex flex-wrap gap-2">
-                    <Button onClick={() => { action.clear(); setSaved(false); setUnitsOf(i.id); }} size="sm" type="button" variant="outline">{t('inv.action.units')}</Button>
-                    {catalog.may.manage ? <Button onClick={() => openEdit(i)} size="sm" type="button" variant="outline">{t('inv.action.edit')}</Button> : null}
+                <div className="flex flex-nowrap items-center gap-1">
+                    <RowAction icon={Ruler} label={t('inv.action.units')} onClick={() => { action.clear(); setSaved(false); setUnitsOf(i.id); }} tone="info" />
+                    {catalog.may.manage ? <RowAction icon={Pencil} label={t('inv.action.edit')} onClick={() => openEdit(i)} tone="warning" /> : null}
                 </div>
             ),
         },

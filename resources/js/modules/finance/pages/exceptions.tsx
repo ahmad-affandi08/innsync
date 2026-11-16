@@ -1,5 +1,6 @@
 import { Link, router } from '@inertiajs/react';
 import { useMemo, useState } from 'react';
+import { CircleCheck } from 'lucide-react';
 
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -12,6 +13,7 @@ import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
 import { MoneyInput } from '@/components/ui/money-input';
 import { Metric } from '@/components/ui/metric';
+import { RowAction } from '@/components/ui/row-action';
 import { Select } from '@/components/ui/select';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { Textarea } from '@/components/ui/textarea';
@@ -127,7 +129,7 @@ export default function ExceptionsPage({ overview, status }: { overview: Overvie
         { id: 'resolvedBy', label: t('fin.exc.colResolvedBy'), value: (e) => e.resolved_by ?? '', cell: (e) => (e.resolved_by === null ? '—' : `${e.resolved_by}${e.resolved_at === null ? '' : ` · ${format.instant(e.resolved_at)}`}`), hidden: true },
         ...(overview.may.reconcile ? [{
             id: 'actions', label: t('inv.col.actions'),
-            cell: (e: Exception) => (e.may_reconcile ? <Button onClick={() => openReconcile(e)} size="sm" type="button" variant="outline">{t('fin.exc.reconcile')}</Button> : null),
+            cell: (e: Exception) => (e.may_reconcile ? <RowAction icon={CircleCheck} label={t('fin.exc.reconcile')} onClick={() => openReconcile(e)} tone="success" /> : null),
         }] : []),
     ];
 

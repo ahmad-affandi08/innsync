@@ -1,4 +1,5 @@
 import { router } from '@inertiajs/react';
+import { Ban, CircleCheck, Pencil } from 'lucide-react';
 import { useState } from 'react';
 
 import { Alert } from '@/components/ui/alert';
@@ -9,6 +10,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
+import { RowAction } from '@/components/ui/row-action';
 import { Select } from '@/components/ui/select';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -78,9 +80,9 @@ export default function RosterPage({ overview }: { overview: RosterOverview }) {
         { id: 'hours', label: t('hr.shift.hours'), align: 'right', value: (p) => p.minutes, cell: (p) => (p.off ? '—' : hours(p.minutes)) },
         { id: 'status', label: t('hr.col.status'), value: (p) => (p.active ? 'active' : 'retired'), cell: (p) => <StatusBadge label={t(p.active ? 'hr.shift.active' : 'hr.shift.retired')} tone={p.active ? 'success' : 'neutral'} /> },
         { id: 'edit', label: '', value: () => '', sortable: false, cell: (p) => overview.may.roster ? (
-            <span className="flex gap-1">
-                {p.active ? <Button onClick={() => { action.clear(); setForm({ id: p.id, code: p.code, name: p.name, off: p.off, starts: p.starts_at ?? '07:00', ends: p.ends_at ?? '15:00', starts2: p.starts2_at ?? '', ends2: p.ends2_at ?? '', lock: p.lock_version }); }} size="sm" type="button" variant="outline">{t('hr.edit')}</Button> : null}
-                <Button onClick={() => void action.run(`/hr/shift-patterns/${p.id}/active`, { body: { active: !p.active, lock_version: p.lock_version }, reload: ['overview'] })} size="sm" type="button" variant="outline">{t(p.active ? 'hr.shift.retire' : 'hr.shift.resume')}</Button>
+            <span className="flex flex-nowrap items-center gap-1">
+                {p.active ? <RowAction icon={Pencil} label={t('hr.edit')} onClick={() => { action.clear(); setForm({ id: p.id, code: p.code, name: p.name, off: p.off, starts: p.starts_at ?? '07:00', ends: p.ends_at ?? '15:00', starts2: p.starts2_at ?? '', ends2: p.ends2_at ?? '', lock: p.lock_version }); }} tone="warning" /> : null}
+                <RowAction icon={p.active ? Ban : CircleCheck} label={t(p.active ? 'hr.shift.retire' : 'hr.shift.resume')} onClick={() => void action.run(`/hr/shift-patterns/${p.id}/active`, { body: { active: !p.active, lock_version: p.lock_version }, reload: ['overview'] })} tone={p.active ? 'danger' : 'success'} />
             </span>
         ) : null },
     ];

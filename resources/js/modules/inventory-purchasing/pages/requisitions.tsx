@@ -1,5 +1,6 @@
 import { router } from '@inertiajs/react';
 import { useState } from 'react';
+import { Eye } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { DataGrid, type DataGridColumn } from '@/components/ui/data-grid';
@@ -8,6 +9,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
+import { RowAction } from '@/components/ui/row-action';
 import { Select } from '@/components/ui/select';
 import { StatusBadge, type StatusTone } from '@/components/ui/status-badge';
 import { InventoryShell } from '@/modules/inventory-purchasing/components/inventory-shell';
@@ -83,7 +85,7 @@ export default function RequisitionsPage({ overview, status }: { overview: Overv
         { id: 'by', label: t('inv.rq.by'), value: (r) => r.requested_by ?? '', hidden: true },
         { id: 'at', label: t('inv.col.date'), value: (r) => r.created_at ?? '', cell: (r) => (r.created_at === null ? '—' : format.instant(r.created_at)) },
         { id: 'state', label: t('inv.col.status'), value: (r) => r.status, filter: 'select', filterLabel: label, cell: (r) => <StatusBadge label={label(r.status)} tone={TONE[r.status]} /> },
-        { id: 'open', label: t('inv.col.actions'), value: () => '', sortable: false, cell: (r) => <Button onClick={() => { action.clear(); setSent({}); setRefusal(null); setOpenId(r.id); }} size="sm" type="button" variant="outline">{t('inv.trf.view')}</Button> },
+        { id: 'open', label: t('inv.col.actions'), value: () => '', sortable: false, cell: (r) => <RowAction icon={Eye} label={t('inv.trf.view')} onClick={() => { action.clear(); setSent({}); setRefusal(null); setOpenId(r.id); }} tone="info" /> },
     ];
 
     return (

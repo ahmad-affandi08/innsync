@@ -1,5 +1,6 @@
 import { router } from '@inertiajs/react';
 import { useMemo, useState } from 'react';
+import { Eye } from 'lucide-react';
 
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -11,6 +12,7 @@ import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
 import { MoneyInput } from '@/components/ui/money-input';
+import { RowAction } from '@/components/ui/row-action';
 import { Select } from '@/components/ui/select';
 import { StatusBadge, type StatusTone } from '@/components/ui/status-badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -98,7 +100,7 @@ export default function InvoicesPage({ overview, status }: { overview: Overview;
         { id: 'state', label: t('inv.col.status'), value: (i) => i.status, filter: 'select', filterLabel: label, cell: (i) => <StatusBadge label={label(i.status)} tone={INVOICE_TONE[i.status] ?? 'neutral'} /> },
         { id: 'differences', label: t('inv.inv.col.differences'), align: 'right', value: (i) => i.variance_count },
         { id: 'by', label: t('inv.inv.col.enteredBy'), value: (i) => i.entered_by_name ?? '', cell: (i) => i.entered_by_name ?? '—', hidden: true },
-        { id: 'actions', label: t('inv.col.actions'), cell: (i) => <Button onClick={() => router.visit(`/inventory/invoices/${i.id}`)} size="sm" type="button" variant="outline">{t('inv.inv.open')}</Button> },
+        { id: 'actions', label: t('inv.col.actions'), cell: (i) => <RowAction icon={Eye} label={t('inv.inv.open')} onClick={() => router.visit(`/inventory/invoices/${i.id}`)} tone="info" /> },
     ];
 
     return (

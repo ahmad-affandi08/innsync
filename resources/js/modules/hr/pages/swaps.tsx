@@ -1,3 +1,4 @@
+import { Ban, Check, X } from 'lucide-react';
 import { useState } from 'react';
 
 import { Alert } from '@/components/ui/alert';
@@ -9,6 +10,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
+import { RowAction } from '@/components/ui/row-action';
 import { Select } from '@/components/ui/select';
 import { StatusBadge, type StatusTone } from '@/components/ui/status-badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -55,12 +57,12 @@ export default function SwapsPage({ overview }: { overview: SwapOverview }) {
         {
             id: 'act', label: '', value: () => '', sortable: false,
             cell: (s) => (
-                <span className="flex flex-wrap gap-2">
-                    {s.may.respond ? <Button disabled={action.busy} onClick={() => void action.run(`/hr/swaps/${s.id}/accept`, { body: {}, reload })} size="sm" type="button">{t('hr.swap.accept')}</Button> : null}
-                    {s.may.respond ? <Button disabled={action.busy} onClick={() => void action.run(`/hr/swaps/${s.id}/decline`, { body: {}, reload })} size="sm" type="button" variant="outline">{t('hr.swap.decline')}</Button> : null}
-                    {decide && s.may.decide ? <Button disabled={action.busy} onClick={() => void action.run(`/hr/swaps/${s.id}/approve`, { body: {}, reload })} size="sm" type="button">{t('hr.swap.approve')}</Button> : null}
-                    {decide && s.may.decide ? <Button onClick={() => { action.clear(); setReject({ swap: s, note: '' }); }} size="sm" type="button" variant="outline">{t('hr.swap.reject')}</Button> : null}
-                    {s.may.cancel ? <Button disabled={action.busy} onClick={() => void action.run(`/hr/swaps/${s.id}/cancel`, { body: {}, reload })} size="sm" type="button" variant="outline">{t('hr.att.cancelRequest')}</Button> : null}
+                <span className="flex flex-nowrap items-center gap-1">
+                    {s.may.respond ? <RowAction disabled={action.busy} icon={Check} label={t('hr.swap.accept')} onClick={() => void action.run(`/hr/swaps/${s.id}/accept`, { body: {}, reload })} tone="success" /> : null}
+                    {s.may.respond ? <RowAction disabled={action.busy} icon={X} label={t('hr.swap.decline')} onClick={() => void action.run(`/hr/swaps/${s.id}/decline`, { body: {}, reload })} tone="danger" /> : null}
+                    {decide && s.may.decide ? <RowAction disabled={action.busy} icon={Check} label={t('hr.swap.approve')} onClick={() => void action.run(`/hr/swaps/${s.id}/approve`, { body: {}, reload })} tone="success" /> : null}
+                    {decide && s.may.decide ? <RowAction icon={X} label={t('hr.swap.reject')} onClick={() => { action.clear(); setReject({ swap: s, note: '' }); }} tone="danger" /> : null}
+                    {s.may.cancel ? <RowAction disabled={action.busy} icon={Ban} label={t('hr.att.cancelRequest')} onClick={() => void action.run(`/hr/swaps/${s.id}/cancel`, { body: {}, reload })} tone="danger" /> : null}
                 </span>
             ),
         },

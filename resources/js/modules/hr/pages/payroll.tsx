@@ -1,4 +1,5 @@
 import { router } from '@inertiajs/react';
+import { Ban, CircleCheck, History, Landmark, Pencil, Percent, SlidersHorizontal } from 'lucide-react';
 import { useState } from 'react';
 
 import { Alert } from '@/components/ui/alert';
@@ -11,6 +12,7 @@ import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
 import { MoneyInput } from '@/components/ui/money-input';
+import { RowAction } from '@/components/ui/row-action';
 import { Select } from '@/components/ui/select';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -135,11 +137,11 @@ export default function PayrollPage({ overview, banks }: { overview: PayrollOver
         {
             id: 'act', label: '', value: () => '', sortable: false,
             cell: (r) => (
-                <span className="flex flex-wrap gap-2">
-                    <Button disabled={active.length === 0} onClick={() => openPay(r)} size="sm" type="button" variant="outline">{t('hr.pay.setPay')}</Button>
-                    <Button onClick={() => { action.clear(); setTax({ employeeId: r.id, ptkp: r.profile?.ptkp_status ?? 'TK0', npwp: r.profile?.has_npwp ?? true, health: r.profile?.in_health ?? true, employment: r.profile?.in_employment ?? true, lock: r.profile?.lock_version ?? null }); }} size="sm" type="button" variant="outline">{t('hr.pay.setTax')}</Button>
-                    <Button onClick={() => { action.clear(); setBank({ employeeId: r.id, name: r.name, bankName: banks[r.id]?.bank_name ?? '', holder: banks[r.id]?.account_holder ?? r.name, number: '', lock: banks[r.id]?.lock_version ?? null }); }} size="sm" type="button" variant="outline">{t('hr.pay.setBank')}</Button>
-                    <Button onClick={() => router.get('/hr/payroll', { employee: r.id }, { preserveScroll: true })} size="sm" type="button" variant="outline">{t('hr.pay.history')}</Button>
+                <span className="flex flex-nowrap items-center gap-1">
+                    <RowAction disabled={active.length === 0} icon={SlidersHorizontal} label={t('hr.pay.setPay')} onClick={() => openPay(r)} tone="warning" />
+                    <RowAction icon={Percent} label={t('hr.pay.setTax')} onClick={() => { action.clear(); setTax({ employeeId: r.id, ptkp: r.profile?.ptkp_status ?? 'TK0', npwp: r.profile?.has_npwp ?? true, health: r.profile?.in_health ?? true, employment: r.profile?.in_employment ?? true, lock: r.profile?.lock_version ?? null }); }} tone="warning" />
+                    <RowAction icon={Landmark} label={t('hr.pay.setBank')} onClick={() => { action.clear(); setBank({ employeeId: r.id, name: r.name, bankName: banks[r.id]?.bank_name ?? '', holder: banks[r.id]?.account_holder ?? r.name, number: '', lock: banks[r.id]?.lock_version ?? null }); }} tone="warning" />
+                    <RowAction icon={History} label={t('hr.pay.history')} onClick={() => router.get('/hr/payroll', { employee: r.id }, { preserveScroll: true })} tone="info" />
                 </span>
             ),
         },
@@ -154,9 +156,9 @@ export default function PayrollPage({ overview, banks }: { overview: PayrollOver
         {
             id: 'act', label: '', value: () => '', sortable: false,
             cell: (k) => (
-                <span className="flex gap-2">
-                    <Button onClick={() => { action.clear(); setKind({ id: k.id, code: k.code, name: k.name, kind: k.kind, taxable: k.taxable, social: k.social_base, lock: k.lock_version }); }} size="sm" type="button" variant="outline">{t('hr.edit')}</Button>
-                    <Button disabled={action.busy} onClick={() => void action.run(`/hr/payroll/components/${k.id}/active`, { body: { active: !k.active, lock_version: k.lock_version }, reload })} size="sm" type="button" variant="outline">{k.active ? t('hr.shift.retire') : t('hr.shift.resume')}</Button>
+                <span className="flex flex-nowrap items-center gap-1">
+                    <RowAction icon={Pencil} label={t('hr.edit')} onClick={() => { action.clear(); setKind({ id: k.id, code: k.code, name: k.name, kind: k.kind, taxable: k.taxable, social: k.social_base, lock: k.lock_version }); }} tone="warning" />
+                    <RowAction disabled={action.busy} icon={k.active ? Ban : CircleCheck} label={k.active ? t('hr.shift.retire') : t('hr.shift.resume')} onClick={() => void action.run(`/hr/payroll/components/${k.id}/active`, { body: { active: !k.active, lock_version: k.lock_version }, reload })} tone={k.active ? 'danger' : 'success'} />
                 </span>
             ),
         },

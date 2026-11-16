@@ -1,5 +1,5 @@
-import { Link } from '@inertiajs/react';
 import { useState } from 'react';
+import { Eye } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { DataGrid, type DataGridColumn } from '@/components/ui/data-grid';
@@ -9,6 +9,7 @@ import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
 import { MoneyInput } from '@/components/ui/money-input';
+import { RowAction } from '@/components/ui/row-action';
 import { Select } from '@/components/ui/select';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { FinanceShell } from '@/modules/finance/components/finance-shell';
@@ -82,7 +83,7 @@ export default function PettyFundsPage({ overview }: { overview: Overview }) {
                 <StatusBadge label={stateLabel(fundState(f))} tone={!f.active ? 'neutral' : f.pending_settlement_id !== null ? 'pending' : 'success'} />
             ),
         },
-        { id: 'actions', label: t('inv.col.actions'), cell: (f) => <Button asChild size="sm" variant="outline"><Link href={`/finance/petty/${f.id}`}>{t('fin.petty.open')}</Link></Button> },
+        { id: 'actions', label: t('inv.col.actions'), cell: (f) => <RowAction href={`/finance/petty/${f.id}`} icon={Eye} label={t('fin.petty.open')} tone="info" /> },
     ];
 
     return (

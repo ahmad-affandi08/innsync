@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Pencil } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { DataGrid, type DataGridColumn } from '@/components/ui/data-grid';
@@ -7,6 +8,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
+import { RowAction } from '@/components/ui/row-action';
 import { Select } from '@/components/ui/select';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { FinanceShell } from '@/modules/finance/components/finance-shell';
@@ -56,7 +58,7 @@ export default function AccountsPage({ overview }: { overview: Overview }) {
             id: 'state', label: t('inv.col.status'), value: (a) => (a.is_active ? 'active' : 'inactive'), filter: 'select', filterLabel: (v) => t(v === 'active' ? 'fin.acc.active' : 'fin.acc.inactive'),
             cell: (a) => <StatusBadge label={t(a.is_active ? 'fin.acc.active' : 'fin.acc.inactive')} tone={a.is_active ? 'success' : 'neutral'} />,
         },
-        ...(overview.may.manage ? [{ id: 'actions', label: t('inv.col.actions'), cell: (a: Account) => <Button onClick={() => openEdit(a)} size="sm" type="button" variant="outline">{t('fin.acc.edit')}</Button> }] : []),
+        ...(overview.may.manage ? [{ id: 'actions', label: t('inv.col.actions'), cell: (a: Account) => <RowAction icon={Pencil} label={t('fin.acc.edit')} onClick={() => openEdit(a)} tone="warning" /> }] : []),
     ];
 
     return (

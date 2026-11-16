@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { Ban, Eye, QrCode, Send } from 'lucide-react';
 import qrcode from 'qrcode-generator';
 
 import { Alert } from '@/components/ui/alert';
@@ -10,6 +11,7 @@ import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
 import { MoneyInput } from '@/components/ui/money-input';
+import { RowAction } from '@/components/ui/row-action';
 import { Select } from '@/components/ui/select';
 import { StatusBadge, type StatusTone } from '@/components/ui/status-badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -81,7 +83,7 @@ export default function CheckInsPage({ notice, overview, queue }: Props) {
         { id: 'guest', label: t('guest.ck.colGuest'), value: (r) => r.guest_name, rowHeader: true, cell: (r) => <span>{r.guest_name}<span className="block text-xs text-muted-foreground">{r.number} · {format.date(r.arrival)} – {format.date(r.departure)}</span></span> },
         { id: 'deposit', label: t('guest.ck.colDeposit'), value: (r) => r.deposit.claimed_minor ?? 0, cell: (r) => (r.deposit.claimed_minor === null ? '—' : t('guest.ck.claimed', { amount: money(r.deposit.claimed_minor, r.deposit.currency) })) },
         { id: 'status', label: t('guest.ck.colStatus'), value: (r) => r.status, cell: (r) => <span><StatusBadge label={t(`guest.ck.status.${r.status}` as MessageKey)} tone={TONE[r.status] ?? 'neutral'} />{r.room_number !== null ? <span className="block text-xs text-muted-foreground">{t('guest.ck.room', { room: r.room_number })}</span> : null}{r.reject_reason !== null ? <span className="block text-xs text-muted-foreground">{r.reject_reason}</span> : null}</span> },
-        { id: 'act', label: '', value: () => '', sortable: false, cell: (r) => (r.status === 'submitted' && queue.may_read_identity ? <Button disabled={action.busy} onClick={() => void open(r)} size="sm" type="button">{t('guest.ck.review')}</Button> : null) },
+        { id: 'act', label: '', value: () => '', sortable: false, cell: (r) => (r.status === 'submitted' && queue.may_read_identity ? <RowAction disabled={action.busy} onClick={() => void open(r)} icon={Eye} label={t('guest.ck.review')} tone="info" /> : null) },
     ];
 
     const arrivalColumns: DataGridColumn<CheckInArrival>[] = [
@@ -91,10 +93,10 @@ export default function CheckInsPage({ notice, overview, queue }: Props) {
         {
             id: 'act', label: '', value: () => '', sortable: false,
             cell: (a) => (
-                <span className="flex flex-wrap gap-2">
-                    {a.link !== null ? <Button onClick={() => setLink({ number: a.number, url: `${origin}/g/c/${a.link?.token ?? ''}` })} size="sm" type="button" variant="outline">{t('guest.ck.showLink')}</Button> : null}
-                    {a.checkin === null || a.checkin.status === 'rejected' ? <Button disabled={action.busy} onClick={() => void send(a)} size="sm" type="button">{a.link === null ? t('guest.ck.makeLink') : t('guest.ck.renewLink')}</Button> : null}
-                    {a.link !== null && a.checkin === null ? <Button disabled={action.busy} onClick={() => void action.run(`/guest/checkins/links/${a.link?.id ?? ''}/revoke`, { body: {}, reload })} size="sm" type="button" variant="outline">{t('guest.ck.revoke')}</Button> : null}
+                <span className="flex flex-wrap gap-1">
+                    {a.link !== null ? <RowAction onClick={() => setLink({ number: a.number, url: `${origin}/g/c/${a.link?.token ?? ''}` })} icon={QrCode} label={t('guest.ck.showLink')} tone="info" /> : null}
+                    {a.checkin === null || a.checkin.status === 'rejected' ? <RowAction disabled={action.busy} onClick={() => void send(a)} icon={Send} label={a.link === null ? t('guest.ck.makeLink') : t('guest.ck.renewLink')} tone="success" /> : null}
+                    {a.link !== null && a.checkin === null ? <RowAction disabled={action.busy} onClick={() => void action.run(`/guest/checkins/links/${a.link?.id ?? ''}/revoke`, { body: {}, reload })} icon={Ban} label={t('guest.ck.revoke')} tone="danger" /> : null}
                 </span>
             ),
         },

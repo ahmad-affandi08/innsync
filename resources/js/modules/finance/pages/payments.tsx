@@ -1,8 +1,9 @@
 import { router } from '@inertiajs/react';
+import { Eye } from 'lucide-react';
 
-import { Button } from '@/components/ui/button';
 import { DataGrid, type DataGridColumn } from '@/components/ui/data-grid';
 import { EmptyState } from '@/components/ui/empty-state';
+import { RowAction } from '@/components/ui/row-action';
 import { Select } from '@/components/ui/select';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { FinanceShell } from '@/modules/finance/components/finance-shell';
@@ -38,7 +39,7 @@ export default function PaymentsPage({ overview, status }: { overview: Overview;
         { id: 'by', label: t('fin.col.madeBy'), value: (p) => p.created_by_name ?? '', cell: (p) => p.created_by_name ?? '—', hidden: true },
         { id: 'state', label: t('inv.col.status'), value: (p) => p.status, filter: 'select', filterLabel: label, cell: (p) => <StatusBadge label={label(p.status)} tone={PAYMENT_TONE[p.status] ?? 'neutral'} /> },
         { id: 'related', label: t('fin.pmt.related'), value: related, cell: (p) => related(p) || '—' },
-        { id: 'actions', label: t('inv.col.actions'), cell: (p) => <Button onClick={() => router.visit(`/finance/payments/${p.id}`)} size="sm" type="button" variant="outline">{t('fin.pmt.open')}</Button> },
+        { id: 'actions', label: t('inv.col.actions'), cell: (p) => <RowAction icon={Eye} label={t('fin.pmt.open')} onClick={() => router.visit(`/finance/payments/${p.id}`)} tone="info" /> },
     ];
 
     return (

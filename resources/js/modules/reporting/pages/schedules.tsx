@@ -1,3 +1,4 @@
+import { Pause, Pencil, Play } from 'lucide-react';
 import { useState } from 'react';
 
 import { Alert } from '@/components/ui/alert';
@@ -8,6 +9,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
+import { RowAction } from '@/components/ui/row-action';
 import { Select } from '@/components/ui/select';
 import { TimeInput } from '@/components/ui/time-input';
 import { StatusBadge } from '@/components/ui/status-badge';
@@ -87,9 +89,9 @@ export default function SchedulesPage({ overview }: { overview: Overview }) {
         {
             id: 'act', label: '', value: () => '', sortable: false,
             cell: (s) => (
-                <span className="flex gap-2">
-                    <Button onClick={() => start(s)} size="sm" type="button" variant="outline">{t('hr.edit')}</Button>
-                    <Button disabled={action.busy} onClick={() => void action.run(`/reports/schedules/${s.id}/active`, { body: { active: !s.is_active, lock_version: s.lock_version }, reload })} size="sm" type="button" variant="outline">{s.is_active ? t('rpt.sch.pause') : t('rpt.sch.resume')}</Button>
+                <span className="flex flex-nowrap items-center gap-1">
+                    <RowAction icon={Pencil} label={t('hr.edit')} onClick={() => start(s)} tone="warning" />
+                    <RowAction disabled={action.busy} icon={s.is_active ? Pause : Play} label={s.is_active ? t('rpt.sch.pause') : t('rpt.sch.resume')} onClick={() => void action.run(`/reports/schedules/${s.id}/active`, { body: { active: !s.is_active, lock_version: s.lock_version }, reload })} tone={s.is_active ? 'danger' : 'success'} />
                 </span>
             ),
         },

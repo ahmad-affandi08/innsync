@@ -1,4 +1,5 @@
 import { router } from '@inertiajs/react';
+import { Eye } from 'lucide-react';
 import { useState } from 'react';
 
 import { Alert } from '@/components/ui/alert';
@@ -11,6 +12,7 @@ import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
 import { Metric } from '@/components/ui/metric';
+import { RowAction } from '@/components/ui/row-action';
 import { Select } from '@/components/ui/select';
 import { StatusBadge, type StatusTone } from '@/components/ui/status-badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -150,7 +152,7 @@ export default function WorkOrdersPage({ overview }: { overview: Overview }) {
         { id: 'status', label: t('mtc.col.status'), value: (w) => w.status, filter: 'select', filterLabel: (v) => label('mtc.status', v), cell: (w) => <span className="flex flex-wrap items-center gap-1"><StatusBadge label={label('mtc.status', w.status)} tone={STATUS_TONE[w.status]} />{w.hold_reason !== null ? <span className="text-xs text-muted-foreground">{label('mtc.hold', w.hold_reason)}</span> : null}{w.off_sale ? <StatusBadge label={t('mtc.offSale')} tone="danger" /> : null}</span> },
         { id: 'due', label: t('mtc.col.due'), value: (w) => w.due_at, cell: (w) => <span className={w.overdue ? 'font-semibold text-danger' : ''}>{left(w)}</span> },
         { id: 'who', label: t('mtc.col.assigned'), value: (w) => w.assigned_name ?? '—', filter: 'select' },
-        { id: 'open', label: '', value: () => '', sortable: false, cell: (w) => <Button onClick={() => void open(w)} size="sm" type="button" variant="outline">{t('mtc.open')}</Button> },
+        { id: 'open', label: '', value: () => '', sortable: false, cell: (w) => <RowAction icon={Eye} label={t('mtc.open')} onClick={() => void open(w)} tone="info" /> },
     ];
     const mine = overview.work_orders.filter((w) => w.assigned_to === overview.me && OPEN.includes(w.status));
     const grid = (rows: WorkOrderSummary[], id: string) => <DataGrid caption={t('mtc.title')} columns={columns} empty={<EmptyState illustration="checklist" title={t('mtc.empty')} />} getRowId={(w) => w.id} id={id} rows={rows} testId={id} />;

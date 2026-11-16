@@ -1,5 +1,6 @@
 import { router } from '@inertiajs/react';
 import { useState } from 'react';
+import { Gift, History, SlidersHorizontal } from 'lucide-react';
 
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -9,6 +10,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
+import { RowAction } from '@/components/ui/row-action';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { FrontOfficeShell } from '@/modules/front-office/components/front-office-shell';
 import { newIdempotencyKey } from '@/shared/api/http';
@@ -59,10 +61,10 @@ export default function LoyaltyPage({ overview }: { overview: Overview }) {
             value: () => '',
             sortable: false,
             cell: (a) => (
-                <span className="flex flex-wrap justify-end gap-2">
-                    <Button onClick={() => look(a)} size="sm" type="button" variant="ghost">{t('fo.ly.history')}</Button>
-                    {overview.may.redeem && overview.enabled ? <Button disabled={a.balance_points < overview.min_redeem_points} onClick={() => { action.clear(); setRedeem({ account: a, points: String(Math.max(overview.min_redeem_points, 0)), intent: newIdempotencyKey() }); }} size="sm" type="button" variant="outline">{t('fo.ly.redeem')}</Button> : null}
-                    {overview.may.adjust ? <Button onClick={() => { action.clear(); setAdjust({ account: a, points: '', reason: '' }); }} size="sm" type="button" variant="ghost">{t('fo.ly.adjust')}</Button> : null}
+                <span className="flex flex-wrap justify-end gap-1">
+                    <RowAction onClick={() => look(a)} icon={History} label={t('fo.ly.history')} tone="info" />
+                    {overview.may.redeem && overview.enabled ? <RowAction disabled={a.balance_points < overview.min_redeem_points} onClick={() => { action.clear(); setRedeem({ account: a, points: String(Math.max(overview.min_redeem_points, 0)), intent: newIdempotencyKey() }); }} icon={Gift} label={t('fo.ly.redeem')} tone="success" /> : null}
+                    {overview.may.adjust ? <RowAction onClick={() => { action.clear(); setAdjust({ account: a, points: '', reason: '' }); }} icon={SlidersHorizontal} label={t('fo.ly.adjust')} tone="warning" /> : null}
                 </span>
             ),
         },

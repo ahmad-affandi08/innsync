@@ -1,5 +1,6 @@
 import { Link } from '@inertiajs/react';
 import { useEffect, useState, type ReactNode } from 'react';
+import { ArrowRightLeft, Undo2 } from 'lucide-react';
 
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -10,6 +11,7 @@ import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
 import { MoneyInput } from '@/components/ui/money-input';
+import { RowAction } from '@/components/ui/row-action';
 import { Select } from '@/components/ui/select';
 import { StatusBadge, type StatusTone } from '@/components/ui/status-badge';
 import { FrontOfficeShell } from '@/modules/front-office/components/front-office-shell';
@@ -203,8 +205,8 @@ export default function FolioPage({ approvals, folio, foreign, may_late_charge: 
             id: 'actions', label: t('fo.folio.col.actions'), align: 'right', header: <span className="sr-only">{t('fo.folio.col.actions')}</span>,
             cell: (p) => (
                 <div className="flex justify-end gap-1">
-                    {open && p.type === 'charge' && !p.is_reversed ? <Button onClick={() => void startMove(p)} size="sm" type="button" variant="outline">{t('fo.folio.move')}</Button> : null}
-                    {open && p.type !== 'reversal' && !p.is_reversed ? <Button onClick={() => { action.clear(); setReverse({ posting: p, reason: '' }); }} size="sm" type="button" variant="outline">{t('fo.folio.reverse')}</Button> : null}
+                    {open && p.type === 'charge' && !p.is_reversed ? <RowAction onClick={() => void startMove(p)} icon={ArrowRightLeft} label={t('fo.folio.move')} tone="neutral" /> : null}
+                    {open && p.type !== 'reversal' && !p.is_reversed ? <RowAction onClick={() => { action.clear(); setReverse({ posting: p, reason: '' }); }} icon={Undo2} label={t('fo.folio.reverse')} tone="danger" /> : null}
                 </div>
             ),
         },

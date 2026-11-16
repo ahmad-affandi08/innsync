@@ -1,3 +1,4 @@
+import { Ban, Check, CircleCheck, Eye, Pencil, X } from 'lucide-react';
 import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -8,6 +9,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
+import { RowAction } from '@/components/ui/row-action';
 import { Select } from '@/components/ui/select';
 import { StatusBadge, type StatusTone } from '@/components/ui/status-badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -91,11 +93,11 @@ export default function AppraisalsPage({ overview }: { overview: AppraisalOvervi
         {
             id: 'act', label: '', value: () => '', sortable: false,
             cell: (a) => (
-                <span className="flex flex-wrap gap-2">
-                    <Button onClick={() => setView(a)} size="sm" type="button" variant="outline">{t('hr.run.details')}</Button>
-                    {a.may.edit ? <Button onClick={() => { action.clear(); setRate({ a, scores: Object.fromEntries(a.criteria.map((c) => [c.key, a.scores[c.key] === undefined ? '' : String(a.scores[c.key])])), comment: a.comment ?? '' }); }} size="sm" type="button">{t('hr.appr.rate')}</Button> : null}
-                    {a.may.sign_employee ? <Button onClick={() => { action.clear(); setSign({ a, agrees: true, comment: '' }); }} size="sm" type="button">{t('hr.appr.signYours')}</Button> : null}
-                    {a.may.cancel ? <Button onClick={() => { action.clear(); setCancel({ a, reason: '' }); }} size="sm" type="button" variant="outline">{t('hr.att.cancelRequest')}</Button> : null}
+                <span className="flex flex-nowrap items-center gap-1">
+                    <RowAction icon={Eye} label={t('hr.run.details')} onClick={() => setView(a)} tone="info" />
+                    {a.may.edit ? <RowAction icon={Pencil} label={t('hr.appr.rate')} onClick={() => { action.clear(); setRate({ a, scores: Object.fromEntries(a.criteria.map((c) => [c.key, a.scores[c.key] === undefined ? '' : String(a.scores[c.key])])), comment: a.comment ?? '' }); }} tone="warning" /> : null}
+                    {a.may.sign_employee ? <RowAction icon={Check} label={t('hr.appr.signYours')} onClick={() => { action.clear(); setSign({ a, agrees: true, comment: '' }); }} tone="success" /> : null}
+                    {a.may.cancel ? <RowAction icon={X} label={t('hr.att.cancelRequest')} onClick={() => { action.clear(); setCancel({ a, reason: '' }); }} tone="danger" /> : null}
                 </span>
             ),
         },
@@ -104,7 +106,7 @@ export default function AppraisalsPage({ overview }: { overview: AppraisalOvervi
         { id: 'name', label: t('hr.shift.name'), value: (f) => f.name, rowHeader: true },
         { id: 'criteria', label: t('hr.appr.criteria'), value: (f) => f.criteria.length, sortable: false, cell: (f) => f.criteria.map((c) => `${c.label} ${c.weight}%`).join(' · ') },
         { id: 'status', label: t('hr.col.status'), value: (f) => (f.active ? 'active' : 'retired'), cell: (f) => <StatusBadge label={f.active ? t('hr.shift.active') : t('hr.shift.retired')} tone={f.active ? 'success' : 'neutral'} /> },
-        { id: 'act', label: '', value: () => '', sortable: false, cell: (f) => <Button disabled={action.busy} onClick={() => void action.run(`/hr/appraisals/forms/${f.id}/active`, { body: { active: !f.active, lock_version: f.lock_version }, reload })} size="sm" type="button" variant="outline">{f.active ? t('hr.shift.retire') : t('hr.shift.resume')}</Button> },
+        { id: 'act', label: '', value: () => '', sortable: false, cell: (f) => <RowAction disabled={action.busy} icon={f.active ? Ban : CircleCheck} label={f.active ? t('hr.shift.retire') : t('hr.shift.resume')} onClick={() => void action.run(`/hr/appraisals/forms/${f.id}/active`, { body: { active: !f.active, lock_version: f.lock_version }, reload })} tone={f.active ? 'danger' : 'success'} /> },
     ];
     const weightSum = form === null ? 0 : form.rows.reduce((n, r) => n + (Number(r.weight) || 0), 0);
 

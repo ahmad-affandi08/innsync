@@ -1,4 +1,5 @@
 import { Link } from '@inertiajs/react';
+import { CircleCheck } from 'lucide-react';
 import { useState } from 'react';
 
 import { Alert } from '@/components/ui/alert';
@@ -9,6 +10,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
+import { RowAction } from '@/components/ui/row-action';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { PropertyShell } from '@/modules/property/components/property-shell';
 import { useServerAction } from '@/shared/api/use-server-action';
@@ -43,7 +45,7 @@ export default function SyncExceptionsPage({ overview, status }: { overview: Ove
         { id: 'who', label: t('sync.col.who'), value: (r) => r.actor ?? '', cell: (r) => r.actor ?? '—' },
         { id: 'why', label: t('sync.col.why'), value: (r) => r.reason_code, cell: (r) => <span><StatusBadge label={t(r.kind === 'conflict' ? 'sync.kind.conflict' : 'sync.kind.rejected')} tone={r.kind === 'conflict' ? 'pending' : 'danger'} /><span className="block text-xs text-muted-foreground">{r.reason_code}</span></span> },
         { id: 'state', label: t('sync.col.state'), value: (r) => r.status, cell: (r) => (r.status === 'open' ? <StatusBadge label={t('sync.open')} tone="pending" /> : <span><StatusBadge label={t('sync.resolved')} tone="success" /><span className="block text-xs text-muted-foreground">{r.resolved_by ?? ''}{r.resolution_note !== null ? ` · ${r.resolution_note}` : ''}</span></span>) },
-        { id: 'act', label: '', value: () => '', sortable: false, cell: (r) => (r.status === 'open' ? <Button onClick={() => { action.clear(); setNote(''); setTarget(r); }} size="sm" type="button" variant="outline">{t('sync.resolve')}</Button> : null) },
+        { id: 'act', label: '', value: () => '', sortable: false, cell: (r) => (r.status === 'open' ? <RowAction icon={CircleCheck} label={t('sync.resolve')} onClick={() => { action.clear(); setNote(''); setTarget(r); }} tone="success" /> : null) },
     ];
 
     return (

@@ -1,4 +1,5 @@
 import { Link, router } from '@inertiajs/react';
+import { ExternalLink } from 'lucide-react';
 import { useState } from 'react';
 
 import { Alert } from '@/components/ui/alert';
@@ -9,6 +10,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
+import { RowAction } from '@/components/ui/row-action';
 import { Select } from '@/components/ui/select';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -61,7 +63,7 @@ export default function FloorPage({ floor }: { floor: Floor }) {
         { id: 'lines', label: t('fnb.pos.colLines'), align: 'right', value: (b) => b.lines },
         { id: 'sent', label: t('fnb.pos.colSent'), value: (b) => (b.sent ? 'yes' : 'no'), filter: 'select', filterLabel: (v) => t(v === 'yes' ? 'fnb.pos.yes' : 'fnb.pos.no') },
         { id: 'total', label: t('fnb.pos.colTotal'), align: 'right', value: (b) => b.subtotal_minor, cell: (b) => money(b.subtotal_minor) },
-        { id: 'opened', label: t('fnb.pos.openBill'), cell: (b) => <Button asChild size="sm" variant="outline"><Link href={`/fnb/bills/${b.id}`}>{t('fnb.pos.openBill')}</Link></Button> },
+        { id: 'opened', label: t('fnb.pos.openBill'), cell: (b) => <RowAction href={`/fnb/bills/${b.id}`} icon={ExternalLink} label={t('fnb.pos.openBill')} tone="info" /> },
     ];
 
     return (

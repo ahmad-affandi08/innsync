@@ -1,3 +1,4 @@
+import { Ban, CircleCheck, Save } from 'lucide-react';
 import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -8,6 +9,7 @@ import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
 import { MoneyInput } from '@/components/ui/money-input';
+import { RowAction } from '@/components/ui/row-action';
 import { Select } from '@/components/ui/select';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { LaundryShell } from '@/modules/laundry/components/laundry-shell';
@@ -100,8 +102,10 @@ export default function LaundryPricesPage({ currency, items, treatments, turnaro
                 <div className="flex flex-wrap items-center gap-2">
                     <MoneyInput currency={null} aria-label={`${t('ldy.prices.price')} ${i.code}`} className="min-h-9 w-32" onChange={(e) => setEdit({ ...edit, [i.id]: { price: e.target.value, reason: edit[i.id]?.reason ?? '' } })} placeholder={t('ldy.prices.price')} value={edit[i.id]?.price ?? ''} />
                     <Input aria-label={`${t('ldy.prices.reason')} ${i.code}`} className="min-h-9 w-44" maxLength={300} onChange={(e) => setEdit({ ...edit, [i.id]: { price: edit[i.id]?.price ?? '', reason: e.target.value } })} placeholder={t('ldy.prices.reason')} value={edit[i.id]?.reason ?? ''} />
-                    <Button disabled={action.busy || (edit[i.id]?.reason ?? '').trim() === ''} onClick={() => void save(i, i.is_active)} size="sm" type="button" variant="outline">{t('ldy.prices.save')}</Button>
-                    <Button disabled={action.busy || (edit[i.id]?.reason ?? '').trim() === ''} onClick={() => void save(i, !i.is_active)} size="sm" type="button" variant="outline">{i.is_active ? t('ldy.prices.deactivate') : t('ldy.prices.activate')}</Button>
+                    <div className="flex items-center gap-1">
+                        <RowAction disabled={action.busy || (edit[i.id]?.reason ?? '').trim() === ''} icon={Save} label={t('ldy.prices.save')} onClick={() => void save(i, i.is_active)} tone="warning" />
+                        <RowAction disabled={action.busy || (edit[i.id]?.reason ?? '').trim() === ''} icon={i.is_active ? Ban : CircleCheck} label={i.is_active ? t('ldy.prices.deactivate') : t('ldy.prices.activate')} onClick={() => void save(i, !i.is_active)} tone={i.is_active ? 'danger' : 'success'} />
+                    </div>
                 </div>
             ),
         }] : []),
@@ -118,7 +122,7 @@ export default function LaundryPricesPage({ currency, items, treatments, turnaro
             cell: (tr: Treatment) => (
                 <div className="flex flex-wrap items-center gap-2">
                     <Input aria-label={`${t('ldy.prices.reason')} ${tr.code}`} className="min-h-9 w-44" maxLength={300} onChange={(e) => setTReason({ ...tReason, [tr.id]: e.target.value })} placeholder={t('ldy.prices.reason')} value={tReason[tr.id] ?? ''} />
-                    <Button disabled={action.busy || (tReason[tr.id] ?? '').trim() === ''} onClick={() => void toggleTreatment(tr)} size="sm" type="button" variant="outline">{tr.is_active ? t('ldy.prices.deactivate') : t('ldy.prices.activate')}</Button>
+                    <RowAction disabled={action.busy || (tReason[tr.id] ?? '').trim() === ''} icon={tr.is_active ? Ban : CircleCheck} label={tr.is_active ? t('ldy.prices.deactivate') : t('ldy.prices.activate')} onClick={() => void toggleTreatment(tr)} tone={tr.is_active ? 'danger' : 'success'} />
                 </div>
             ),
         }] : []),

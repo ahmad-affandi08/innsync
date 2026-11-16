@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Pencil, Undo2 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { DataGrid, type DataGridColumn } from '@/components/ui/data-grid';
@@ -7,6 +8,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
+import { RowAction, RowActions } from '@/components/ui/row-action';
 import { Select } from '@/components/ui/select';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { useServerAction } from '@/shared/api/use-server-action';
@@ -60,10 +62,10 @@ export function JournalAccountsPanel({ journal }: { journal: JournalAccounts }) 
             ? [{
                 id: 'actions', label: t('inv.col.actions'),
                 cell: (a: JournalAccount) => (
-                    <span className="flex gap-2">
-                        <Button onClick={() => edit(a)} size="sm" type="button" variant="outline">{t('fin.acc.edit')}</Button>
-                        {a.changed ? <Button disabled={action.busy} onClick={() => void reset(a)} size="sm" type="button" variant="ghost">{t('fin.exp.acc.reset')}</Button> : null}
-                    </span>
+                    <RowActions>
+                        <RowAction icon={Pencil} label={t('fin.acc.edit')} onClick={() => edit(a)} tone="warning" />
+                        {a.changed ? <RowAction disabled={action.busy} icon={Undo2} label={t('fin.exp.acc.reset')} onClick={() => void reset(a)} tone="neutral" /> : null}
+                    </RowActions>
                 ),
             }]
             : []),

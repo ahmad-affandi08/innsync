@@ -1,10 +1,12 @@
-import { Link, router } from '@inertiajs/react';
+import { router } from '@inertiajs/react';
 import { useState } from 'react';
+import { Eye } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { DataGrid, type DataGridColumn } from '@/components/ui/data-grid';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Input } from '@/components/ui/input';
+import { RowAction } from '@/components/ui/row-action';
 import { FrontOfficeShell } from '@/modules/front-office/components/front-office-shell';
 import { useFormatters, useTranslation } from '@/shared/i18n/i18n';
 
@@ -35,7 +37,7 @@ export default function GuestsPage({ guests, query }: { guests: Guest[]; query: 
         { id: 'stays', label: t('fo.guests.stays'), align: 'right', value: (g) => g.stays, cell: (g) => <span className="tabular-nums">{g.stays}</span> },
         { id: 'nights', label: t('fo.guests.nights'), align: 'right', value: (g) => g.nights, cell: (g) => <span className="tabular-nums">{g.nights}</span> },
         { id: 'last', label: t('fo.guests.last'), value: (g) => g.last_arrival, searchText: (g) => `${format.date(g.last_arrival)} ${format.date(g.last_departure)}`, cell: (g) => `${format.date(g.last_arrival)} – ${format.date(g.last_departure)}` },
-        { id: 'open', label: '', value: () => '', sortable: false, cell: (g) => <Button asChild size="sm" variant="outline"><Link href={`/front-office/reservations/${g.last_reservation_id}`}>{t('fo.guests.open')}</Link></Button> },
+        { id: 'open', label: '', value: () => '', sortable: false, cell: (g) => <RowAction href={`/front-office/reservations/${g.last_reservation_id}`} icon={Eye} label={t('fo.guests.open')} tone="info" /> },
     ];
 
     return (

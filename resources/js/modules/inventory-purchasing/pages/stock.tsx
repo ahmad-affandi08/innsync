@@ -1,5 +1,6 @@
 import { Link, router } from '@inertiajs/react';
 import { useMemo, useState } from 'react';
+import { SlidersHorizontal } from 'lucide-react';
 
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -11,6 +12,7 @@ import { DatePicker } from '@/components/ui/date-picker';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
 import { MoneyInput } from '@/components/ui/money-input';
+import { RowAction } from '@/components/ui/row-action';
 import { Select } from '@/components/ui/select';
 import { StatusBadge, type StatusTone } from '@/components/ui/status-badge';
 import { InventoryShell } from '@/modules/inventory-purchasing/components/inventory-shell';
@@ -121,7 +123,7 @@ export default function StockPage({ position, movements, catalog, filters }: { p
         { id: 'max', label: t('inv.col.max'), align: 'right', value: (r) => r.max_milli, cell: (r) => (r.max_milli === null ? '—' : qty(r.max_milli)) },
         { id: 'category', label: t('inv.col.category'), value: (r) => r.category_name, filter: 'select', hidden: true },
         { id: 'status', label: t('inv.col.status'), value: (r) => r.status, filter: 'select', filterLabel: (v) => t((v === 'ok' ? 'inv.stock.ok' : `inv.stock.${v}`) as MessageKey), cell: (r) => <StatusBadge label={t((r.status === 'ok' ? 'inv.stock.ok' : `inv.stock.${r.status}`) as MessageKey)} tone={tone[r.status] ?? 'neutral'} /> },
-        ...(position.may.limits ? [{ id: 'actions', label: t('inv.col.actions'), cell: (r: Row) => <Button onClick={() => { action.clear(); setLimits({ row: r, min: r.min_milli === null ? '' : plainMilli(r.min_milli), max: r.max_milli === null ? '' : plainMilli(r.max_milli) }); }} size="sm" type="button" variant="outline">{t('inv.action.limits')}</Button> }] : []),
+        ...(position.may.limits ? [{ id: 'actions', label: t('inv.col.actions'), cell: (r: Row) => <RowAction icon={SlidersHorizontal} label={t('inv.action.limits')} onClick={() => { action.clear(); setLimits({ row: r, min: r.min_milli === null ? '' : plainMilli(r.min_milli), max: r.max_milli === null ? '' : plainMilli(r.max_milli) }); }} tone="warning" /> }] : []),
     ];
     const movementColumns: DataGridColumn<Movement>[] = [
         { id: 'date', label: t('inv.col.date'), value: (m) => m.business_date, rowHeader: true, cell: (m) => format.date(m.business_date) },

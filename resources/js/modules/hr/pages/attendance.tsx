@@ -1,4 +1,5 @@
 import { router } from '@inertiajs/react';
+import { Check, Image, X } from 'lucide-react';
 import { useState } from 'react';
 
 import { Alert } from '@/components/ui/alert';
@@ -10,6 +11,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
+import { RowAction } from '@/components/ui/row-action';
 import { Select } from '@/components/ui/select';
 import { StatusBadge, type StatusTone } from '@/components/ui/status-badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -157,7 +159,7 @@ export default function AttendancePage({ overview, overtime, corrections, review
         { id: 'out', label: t('hr.att.out'), value: (r) => r.record?.out_at ?? '', cell: (r) => time(r.record?.out_at ?? null) },
         { id: 'worked', label: t('hr.att.worked'), align: 'right', value: (r) => r.worked_minutes ?? 0, cell: (r) => (r.worked_minutes === null ? '—' : hm(r.worked_minutes)) },
         { id: 'flags', label: t('hr.att.flags'), value: (r) => flags(r), cell: (r) => <span className="text-sm">{flags(r) || '—'}{r.record?.manual_reason ? <span className="block text-xs text-muted-foreground">{r.record.manual_reason}</span> : null}</span> },
-        { id: 'photo', label: '', value: () => '', sortable: false, cell: (r) => r.record !== null && (r.record.has_in_photo || r.record.has_out_photo) ? <Button asChild size="sm" variant="outline"><a href={`/hr/attendance/${r.record.id}/photo/${r.record.has_in_photo ? 'in' : 'out'}`} rel="noreferrer" target="_blank">{t('hr.att.selfie')}</a></Button> : null },
+        { id: 'photo', label: '', value: () => '', sortable: false, cell: (r) => r.record !== null && (r.record.has_in_photo || r.record.has_out_photo) ? <RowAction href={`/hr/attendance/${r.record.id}/photo/${r.record.has_in_photo ? 'in' : 'out'}`} icon={Image} label={t('hr.att.selfie')} newTab tone="info" /> : null },
     ];
     const summaryColumns: DataGridColumn<AttendanceSummaryRow>[] = [
         { id: 'name', label: t('hr.col.name'), value: (r) => r.employee.name, rowHeader: true, cell: (r) => <span>{r.employee.name}<span className="block text-xs text-muted-foreground">{r.employee.number} · {label('hr.department', r.employee.department)}</span></span> },
@@ -180,7 +182,7 @@ export default function AttendancePage({ overview, overtime, corrections, review
         { id: 'minutes', label: t('hr.att.overtimeMinutes'), align: 'right', value: (r) => r.minutes, cell: (r) => hm(r.minutes) },
         { id: 'status', label: t('hr.col.status'), value: (r) => r.status, filter: 'select', filterLabel: (v) => label('hr.att.overtimeStatus', v), cell: (r) => <StatusBadge label={label('hr.att.overtimeStatus', r.status)} tone={OVERTIME_TONE[r.status]} /> },
         { id: 'reason', label: t('hr.att.reasonShort'), value: (r) => r.reason },
-        { id: 'act', label: '', value: () => '', sortable: false, cell: (r) => <span className="flex gap-2">{r.status === 'pending_approval' ? <Button disabled={action.busy} onClick={() => void settle(`/hr/overtime/${r.id}/release`, ['overtime'])} size="sm" type="button">{t('hr.att.take')}</Button> : null}{r.may_cancel ? <Button disabled={action.busy} onClick={() => void settle(`/hr/overtime/${r.id}/cancel`, ['overtime'])} size="sm" type="button" variant="outline">{t('hr.att.cancelRequest')}</Button> : null}</span> },
+        { id: 'act', label: '', value: () => '', sortable: false, cell: (r) => <span className="flex flex-nowrap items-center gap-1">{r.status === 'pending_approval' ? <RowAction disabled={action.busy} icon={Check} label={t('hr.att.take')} onClick={() => void settle(`/hr/overtime/${r.id}/release`, ['overtime'])} tone="success" /> : null}{r.may_cancel ? <RowAction disabled={action.busy} icon={X} label={t('hr.att.cancelRequest')} onClick={() => void settle(`/hr/overtime/${r.id}/cancel`, ['overtime'])} tone="danger" /> : null}</span> },
     ];
     const correctionColumns: DataGridColumn<AttendanceCorrection>[] = [
         { id: 'name', label: t('hr.col.name'), value: (r) => r.employee.name, rowHeader: true, cell: (r) => <span>{r.employee.name}<span className="block text-xs text-muted-foreground">{r.employee.number} · {label('hr.department', r.employee.department)}</span></span> },
@@ -189,7 +191,7 @@ export default function AttendancePage({ overview, overtime, corrections, review
         { id: 'after', label: t('hr.att.after'), value: (r) => range(r.new), sortable: false },
         { id: 'status', label: t('hr.col.status'), value: (r) => r.status, filter: 'select', filterLabel: (v) => label('hr.att.correctionStatus', v), cell: (r) => <StatusBadge label={label('hr.att.correctionStatus', r.status)} tone={CORRECTION_TONE[r.status]} /> },
         { id: 'reason', label: t('hr.att.reasonShort'), value: (r) => r.reason },
-        { id: 'act', label: '', value: () => '', sortable: false, cell: (r) => r.status === 'pending_approval' ? <span className="flex gap-2"><Button disabled={action.busy} onClick={() => void settle(`/hr/attendance/corrections/${r.id}/apply`, ['overview', 'corrections'])} size="sm" type="button">{t('hr.att.take')}</Button><Button disabled={action.busy} onClick={() => void settle(`/hr/attendance/corrections/${r.id}/cancel`, ['corrections'])} size="sm" type="button" variant="outline">{t('hr.att.cancelRequest')}</Button></span> : null },
+        { id: 'act', label: '', value: () => '', sortable: false, cell: (r) => r.status === 'pending_approval' ? <span className="flex flex-nowrap items-center gap-1"><RowAction disabled={action.busy} icon={Check} label={t('hr.att.take')} onClick={() => void settle(`/hr/attendance/corrections/${r.id}/apply`, ['overview', 'corrections'])} tone="success" /><RowAction disabled={action.busy} icon={X} label={t('hr.att.cancelRequest')} onClick={() => void settle(`/hr/attendance/corrections/${r.id}/cancel`, ['corrections'])} tone="danger" /></span> : null },
     ];
 
     return (

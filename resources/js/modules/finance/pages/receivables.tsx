@@ -1,5 +1,6 @@
 import { Link, router } from '@inertiajs/react';
 import { useMemo, useState } from 'react';
+import { Eye } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { DataGrid, type DataGridColumn } from '@/components/ui/data-grid';
@@ -11,6 +12,7 @@ import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
 import { MoneyInput } from '@/components/ui/money-input';
 import { Metric } from '@/components/ui/metric';
+import { RowAction } from '@/components/ui/row-action';
 import { Select } from '@/components/ui/select';
 import { FinanceShell } from '@/modules/finance/components/finance-shell';
 import { PromiseBadge, ReceivableStatus, useCustomerKindLabel, type ReceivableRow } from '@/modules/finance/lib/finance';
@@ -88,7 +90,7 @@ export default function ReceivablesPage({ filters, overview }: { filters: Filter
             cell: (r) => (r.promised_on !== null && r.balance_minor > 0 ? <PromiseBadge row={r} today={overview.today} /> : '—'),
         },
         { id: 'notes', label: t('fin.ar.notes'), align: 'right', value: (r) => r.note_count, cell: (r) => format.number(r.note_count), hidden: true },
-        { id: 'actions', label: t('inv.col.actions'), cell: (r) => <Button onClick={() => router.visit(`/finance/receivables/${r.id}`)} size="sm" type="button" variant="outline">{t('fin.ar.open')}</Button> },
+        { id: 'actions', label: t('inv.col.actions'), cell: (r) => <RowAction icon={Eye} label={t('fin.ar.open')} onClick={() => router.visit(`/finance/receivables/${r.id}`)} tone="info" /> },
     ];
 
     return (

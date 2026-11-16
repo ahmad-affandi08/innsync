@@ -1,4 +1,5 @@
 import { router } from '@inertiajs/react';
+import { Ban, Check, CircleCheck, FileText, Pencil, SlidersHorizontal, X } from 'lucide-react';
 import { useState } from 'react';
 
 import { Alert } from '@/components/ui/alert';
@@ -10,6 +11,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
+import { RowAction } from '@/components/ui/row-action';
 import { Select } from '@/components/ui/select';
 import { StatusBadge, type StatusTone } from '@/components/ui/status-badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -93,10 +95,10 @@ export default function LeavePage({ overview, kinds }: { overview: LeaveOverview
         {
             id: 'act', label: '', value: () => '', sortable: false,
             cell: (r) => (
-                <span className="flex flex-wrap gap-2">
-                    {r.has_evidence ? <Button asChild size="sm" variant="outline"><a href={`/hr/leave/${r.id}/evidence`} rel="noreferrer" target="_blank">{t('hr.leave.paper')}</a></Button> : null}
-                    {r.may.release ? <Button disabled={action.busy} onClick={() => void action.run(`/hr/leave/${r.id}/release`, { body: {}, reload })} size="sm" type="button">{t('hr.att.take')}</Button> : null}
-                    {r.may.cancel ? <Button disabled={action.busy} onClick={() => void action.run(`/hr/leave/${r.id}/cancel`, { body: {}, reload })} size="sm" type="button" variant="outline">{t('hr.att.cancelRequest')}</Button> : null}
+                <span className="flex flex-nowrap items-center gap-1">
+                    {r.has_evidence ? <RowAction href={`/hr/leave/${r.id}/evidence`} icon={FileText} label={t('hr.leave.paper')} newTab tone="info" /> : null}
+                    {r.may.release ? <RowAction disabled={action.busy} icon={Check} label={t('hr.att.take')} onClick={() => void action.run(`/hr/leave/${r.id}/release`, { body: {}, reload })} tone="success" /> : null}
+                    {r.may.cancel ? <RowAction disabled={action.busy} icon={X} label={t('hr.att.cancelRequest')} onClick={() => void action.run(`/hr/leave/${r.id}/cancel`, { body: {}, reload })} tone="danger" /> : null}
                 </span>
             ),
         },
@@ -112,7 +114,7 @@ export default function LeavePage({ overview, kinds }: { overview: LeaveOverview
         { id: 'taken', label: t('hr.leave.taken'), align: 'right', value: (r) => r.taken },
         { id: 'pending', label: t('hr.leave.pending'), align: 'right', value: (r) => r.pending },
         { id: 'left', label: t('hr.leave.remaining'), align: 'right', value: (r) => r.remaining, cell: (r) => <strong>{r.remaining}</strong> },
-        { id: 'act', label: '', value: () => '', sortable: false, cell: (r) => <Button onClick={() => { action.clear(); setAdjust({ employeeId: r.employee.id, typeId: r.type_id, days: '', reason: '' }); }} size="sm" type="button" variant="outline">{t('hr.leave.adjust')}</Button> },
+        { id: 'act', label: '', value: () => '', sortable: false, cell: (r) => <RowAction icon={SlidersHorizontal} label={t('hr.leave.adjust')} onClick={() => { action.clear(); setAdjust({ employeeId: r.employee.id, typeId: r.type_id, days: '', reason: '' }); }} tone="warning" /> },
     ];
     const kindColumns: DataGridColumn<LeaveKind>[] = [
         { id: 'code', label: t('hr.shift.code'), value: (k) => k.code, rowHeader: true },
@@ -124,9 +126,9 @@ export default function LeavePage({ overview, kinds }: { overview: LeaveOverview
         {
             id: 'act', label: '', value: () => '', sortable: false,
             cell: (k) => (
-                <span className="flex gap-2">
-                    <Button onClick={() => { action.clear(); setKind({ id: k.id, code: k.code, name: k.name, deducts: k.deducts_balance, days: String(k.entitlement_days), months: String(k.eligible_after_months), evidence: k.evidence_after_days === null ? '' : String(k.evidence_after_days), paid: k.paid, lock: k.lock_version }); }} size="sm" type="button" variant="outline">{t('hr.edit')}</Button>
-                    <Button disabled={action.busy} onClick={() => void action.run(`/hr/leave/types/${k.id}/active`, { body: { active: !k.active, lock_version: k.lock_version }, reload })} size="sm" type="button" variant="outline">{k.active ? t('hr.shift.retire') : t('hr.shift.resume')}</Button>
+                <span className="flex flex-nowrap items-center gap-1">
+                    <RowAction icon={Pencil} label={t('hr.edit')} onClick={() => { action.clear(); setKind({ id: k.id, code: k.code, name: k.name, deducts: k.deducts_balance, days: String(k.entitlement_days), months: String(k.eligible_after_months), evidence: k.evidence_after_days === null ? '' : String(k.evidence_after_days), paid: k.paid, lock: k.lock_version }); }} tone="warning" />
+                    <RowAction disabled={action.busy} icon={k.active ? Ban : CircleCheck} label={k.active ? t('hr.shift.retire') : t('hr.shift.resume')} onClick={() => void action.run(`/hr/leave/types/${k.id}/active`, { body: { active: !k.active, lock_version: k.lock_version }, reload })} tone={k.active ? 'danger' : 'success'} />
                 </span>
             ),
         },

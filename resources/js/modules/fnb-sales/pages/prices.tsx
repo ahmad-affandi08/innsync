@@ -1,4 +1,5 @@
 import { router } from '@inertiajs/react';
+import { Ban } from 'lucide-react';
 import { useState } from 'react';
 
 import { Alert } from '@/components/ui/alert';
@@ -10,6 +11,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
+import { RowAction } from '@/components/ui/row-action';
 import { MoneyInput } from '@/components/ui/money-input';
 import { Select } from '@/components/ui/select';
 import { TimeInput } from '@/components/ui/time-input';
@@ -82,7 +84,7 @@ export default function PricesPage({ overview }: { overview: PriceOverview }) {
             id: 'status', label: t('fnb.px.status'), value: (r) => (r.is_active ? (r.holds_now ? 'now' : 'active') : 'retired'),
             cell: (r) => (r.is_active ? <StatusBadge label={r.holds_now ? t('fnb.px.holdsNow') : t('fnb.px.active')} tone={r.holds_now ? 'success' : 'info'} /> : <span><StatusBadge label={t('fnb.px.retired')} tone="neutral" /><span className="block text-xs text-muted-foreground">{r.retire_reason}</span></span>),
         },
-        { id: 'act', label: '', value: () => '', sortable: false, cell: (r) => (overview.may.manage && r.is_active ? <Button disabled={action.busy} onClick={() => { action.clear(); setRetire({ rule: r, reason: '' }); }} size="sm" type="button" variant="outline">{t('fnb.px.retire')}</Button> : null) },
+        { id: 'act', label: '', value: () => '', sortable: false, cell: (r) => (overview.may.manage && r.is_active ? <RowAction disabled={action.busy} icon={Ban} label={t('fnb.px.retire')} onClick={() => { action.clear(); setRetire({ rule: r, reason: '' }); }} tone="danger" /> : null) },
     ];
     const nowColumns: DataGridColumn<PriceOverview['items'][number]>[] = [
         { id: 'item', label: t('fnb.px.item'), value: (i) => i.code, rowHeader: true, cell: (i) => `${i.code} · ${i.name}` },

@@ -1,5 +1,6 @@
 import { Link, router } from '@inertiajs/react';
 import { useMemo, useState } from 'react';
+import { Ban, Eye, Paperclip } from 'lucide-react';
 
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -12,6 +13,7 @@ import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
 import { MoneyInput } from '@/components/ui/money-input';
 import { Metric } from '@/components/ui/metric';
+import { RowAction, RowActions } from '@/components/ui/row-action';
 import { Select } from '@/components/ui/select';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -164,10 +166,10 @@ export default function PettyFundPage({ fund }: { fund: Fund }) {
     const voucherActions: DataGridColumn<PettyVoucher> | undefined = fund.may_proof || fund.may.manage ? {
         id: 'actions', label: t('inv.col.actions'),
         cell: (v) => (
-            <span className="flex flex-wrap gap-2">
-                {fund.may_proof && v.state !== 'voided' && v.proof_count < fund.max_proofs ? <Button onClick={() => openProof(v)} size="sm" type="button" variant="outline">{t('fin.petty.addProof')}</Button> : null}
-                {v.may_void ? <Button onClick={() => openVoid(v)} size="sm" type="button" variant="outline">{t('fin.petty.void')}</Button> : null}
-            </span>
+            <RowActions>
+                {fund.may_proof && v.state !== 'voided' && v.proof_count < fund.max_proofs ? <RowAction icon={Paperclip} label={t('fin.petty.addProof')} onClick={() => openProof(v)} tone="neutral" /> : null}
+                {v.may_void ? <RowAction icon={Ban} label={t('fin.petty.void')} onClick={() => openVoid(v)} tone="danger" /> : null}
+            </RowActions>
         ),
     } : undefined;
     const voucherColumns = usePettyVoucherColumns(fund.currency, voucherActions);
@@ -182,7 +184,7 @@ export default function PettyFundPage({ fund }: { fund: Fund }) {
         { id: 'status', label: t('inv.col.status'), value: (s) => s.status, filter: 'select', filterLabel: settlementStatus, cell: (s) => <StatusBadge label={settlementStatus(s.status)} tone={PETTY_SETTLEMENT_TONE[s.status] ?? 'neutral'} /> },
         { id: 'by', label: t('fin.petty.s.submittedBy'), value: (s) => s.submitted_by ?? '', cell: (s) => s.submitted_by ?? '—', hidden: true },
         { id: 'decidedBy', label: t('fin.petty.s.decidedBy'), value: (s) => s.decided_by ?? '', cell: (s) => (s.decided_by === null ? '—' : `${s.decided_by}${s.decided_at === null ? '' : ` · ${format.instant(s.decided_at)}`}`) },
-        { id: 'actions', label: t('inv.col.actions'), cell: (s) => <Button asChild size="sm" variant="outline"><Link href={`/finance/petty/settlements/${s.id}`}>{t('fin.petty.open')}</Link></Button> },
+        { id: 'actions', label: t('inv.col.actions'), cell: (s) => <RowAction href={`/finance/petty/settlements/${s.id}`} icon={Eye} label={t('fin.petty.open')} tone="info" /> },
     ];
 
     const entryColumns: DataGridColumn<Entry>[] = [

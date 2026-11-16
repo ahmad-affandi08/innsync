@@ -1,4 +1,5 @@
 import { router } from '@inertiajs/react';
+import { Ban, CircleCheck, Pencil } from 'lucide-react';
 import { useState } from 'react';
 
 import { Alert } from '@/components/ui/alert';
@@ -9,6 +10,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
+import { RowAction } from '@/components/ui/row-action';
 import { MoneyInput } from '@/components/ui/money-input';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -88,9 +90,9 @@ export default function MinibarPage({ history, overview, refill, scan_error: sca
         {
             id: 'act', label: '', value: () => '', sortable: false,
             cell: (i) => (
-                <span className="flex gap-2">
-                    <Button onClick={() => { action.clear(); setItem({ id: i.id, code: i.code, name: i.name, price: minorToMajorText(i.price_minor, overview.currency), par: String(i.par_qty), lock: i.lock_version }); }} size="sm" type="button" variant="outline">{t('hr.edit')}</Button>
-                    <Button disabled={action.busy} onClick={() => void action.run(`/fnb/minibar/items/${i.id}/active`, { body: { active: !i.active, lock_version: i.lock_version }, reload })} size="sm" type="button" variant="outline">{i.active ? t('hr.shift.retire') : t('hr.shift.resume')}</Button>
+                <span className="flex items-center gap-1">
+                    <RowAction icon={Pencil} label={t('hr.edit')} onClick={() => { action.clear(); setItem({ id: i.id, code: i.code, name: i.name, price: minorToMajorText(i.price_minor, overview.currency), par: String(i.par_qty), lock: i.lock_version }); }} tone="warning" />
+                    <RowAction disabled={action.busy} icon={i.active ? Ban : CircleCheck} label={i.active ? t('hr.shift.retire') : t('hr.shift.resume')} onClick={() => void action.run(`/fnb/minibar/items/${i.id}/active`, { body: { active: !i.active, lock_version: i.lock_version }, reload })} tone={i.active ? 'danger' : 'success'} />
                 </span>
             ),
         },

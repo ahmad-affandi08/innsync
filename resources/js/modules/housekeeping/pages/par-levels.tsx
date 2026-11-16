@@ -1,3 +1,4 @@
+import { Pencil } from 'lucide-react';
 import { useState } from 'react';
 
 import { Alert } from '@/components/ui/alert';
@@ -9,6 +10,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
+import { RowAction } from '@/components/ui/row-action';
 import { Select } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { HousekeepingShell } from '@/modules/housekeeping/components/housekeeping-shell';
@@ -89,7 +91,7 @@ export default function ParLevelsPage({ overview }: { overview: Overview }) {
         { id: 'standard', label: t('hk.par.standard'), align: 'right', value: (l) => (l.scope_kind === 'room_type' ? l.use_quantity : null), cell: (l) => (l.scope_kind === 'room_type' ? l.use_quantity : '—') },
         ...(overview.may.manage ? [{
             id: 'actions', label: t('hk.board.actions'),
-            cell: (l: Level) => <Button aria-label={`${t('hk.par.edit')} ${l.item_code} ${l.scope_kind === 'room_type' ? typeCode(l.room_type_id) : l.area}`} onClick={() => edit(l)} size="sm" type="button" variant="outline">{t('hk.par.edit')}</Button>,
+            cell: (l: Level) => <RowAction aria-label={`${t('hk.par.edit')} ${l.item_code} ${l.scope_kind === 'room_type' ? typeCode(l.room_type_id) : l.area}`} icon={Pencil} label={t('hk.par.edit')} onClick={() => edit(l)} tone="warning" />,
         }] : []),
     ];
 

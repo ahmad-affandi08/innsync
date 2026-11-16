@@ -1,5 +1,6 @@
 import { router } from '@inertiajs/react';
 import { useMemo, useState } from 'react';
+import { ArrowDownToLine, Eye } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { DataGrid, type DataGridColumn } from '@/components/ui/data-grid';
@@ -9,6 +10,7 @@ import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
 import { MoneyInput } from '@/components/ui/money-input';
+import { RowAction } from '@/components/ui/row-action';
 import { Select } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { InventoryShell } from '@/modules/inventory-purchasing/components/inventory-shell';
@@ -73,7 +75,7 @@ export default function ReturnsPage({ overview }: { overview: Overview }) {
         { id: 'date', label: t('inv.col.date'), value: (r) => r.business_date, cell: (r) => format.date(r.business_date) },
         { id: 'value', label: t('inv.col.value'), align: 'right', value: (r) => r.value_minor, cell: (r) => <span className="font-medium">{money(r.value_minor)}</span> },
         { id: 'by', label: t('inv.ret.col.returnedBy'), value: (r) => r.returned_by_name ?? '', cell: (r) => r.returned_by_name ?? '—', hidden: true },
-        { id: 'actions', label: t('inv.col.actions'), cell: (r) => <Button onClick={() => router.visit(`/inventory/returns/${r.id}`)} size="sm" type="button" variant="outline">{t('inv.ret.view')}</Button> },
+        { id: 'actions', label: t('inv.col.actions'), cell: (r) => <RowAction icon={Eye} label={t('inv.ret.view')} onClick={() => router.visit(`/inventory/returns/${r.id}`)} tone="info" /> },
     ];
 
     return (
@@ -133,7 +135,7 @@ export default function ReturnsPage({ overview }: { overview: Overview }) {
                                                     <TableCell>
                                                         <div className="flex items-center gap-2">
                                                             <Input aria-label={`${t('inv.ret.col.quantity')} ${l.item_code}`} className="w-28" inputMode="decimal" onChange={(e) => setForm({ ...form, quantities: { ...form.quantities, [l.id]: e.target.value } })} value={form.quantities[l.id] ?? ''} />
-                                                            <Button onClick={() => setForm({ ...form, quantities: { ...form.quantities, [l.id]: plainMilli(l.returnable_milli) } })} size="sm" type="button" variant="outline">{t('inv.ret.fillAll')}</Button>
+                                                            <RowAction icon={ArrowDownToLine} label={t('inv.ret.fillAll')} onClick={() => setForm({ ...form, quantities: { ...form.quantities, [l.id]: plainMilli(l.returnable_milli) } })} />
                                                         </div>
                                                     </TableCell>
                                                 </TableRow>

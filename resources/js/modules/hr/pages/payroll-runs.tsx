@@ -1,4 +1,5 @@
-import { Link, router } from '@inertiajs/react';
+import { router } from '@inertiajs/react';
+import { Eye, FileText, X } from 'lucide-react';
 import { useState } from 'react';
 
 import { Alert } from '@/components/ui/alert';
@@ -10,6 +11,7 @@ import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
 import { MoneyInput } from '@/components/ui/money-input';
+import { RowAction } from '@/components/ui/row-action';
 import { Select } from '@/components/ui/select';
 import { StatusBadge, type StatusTone } from '@/components/ui/status-badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -79,7 +81,7 @@ export default function PayrollRunsPage({ overview, withoutBank }: { overview: P
         { id: 'other', label: t('hr.run.otherDeductions'), align: 'right', value: (l) => l.other_deductions_minor, cell: (l) => money(l.other_deductions_minor) },
         { id: 'net', label: t('hr.run.net'), align: 'right', value: (l) => l.net_minor, cell: (l) => <strong>{money(l.net_minor)}</strong> },
         { id: 'warn', label: t('hr.run.warnings'), value: (l) => l.warnings.length, sortable: false, cell: (l) => (l.warnings.length === 0 ? '—' : <span className="text-xs text-warning">{l.warnings.map((w) => label('hr.run.warning', w)).join(' · ')}</span>) },
-        { id: 'act', label: '', value: () => '', sortable: false, cell: (l) => <span className="flex gap-2"><Button onClick={() => setDetail(l)} size="sm" type="button" variant="outline">{t('hr.run.details')}</Button>{run !== null ? <Button asChild size="sm" variant="outline"><Link href={`/hr/payroll/runs/${run.id}/payslips/${l.employee.id}`}>{t('hr.run.payslip')}</Link></Button> : null}</span> },
+        { id: 'act', label: '', value: () => '', sortable: false, cell: (l) => <span className="flex flex-nowrap items-center gap-1"><RowAction icon={Eye} label={t('hr.run.details')} onClick={() => setDetail(l)} tone="info" />{run !== null ? <RowAction href={`/hr/payroll/runs/${run.id}/payslips/${l.employee.id}`} icon={FileText} label={t('hr.run.payslip')} tone="info" /> : null}</span> },
     ];
     const adjustmentColumns: DataGridColumn<PayrollAdjustment>[] = [
         { id: 'name', label: t('hr.col.name'), value: (a) => a.employee.name, rowHeader: true, cell: (a) => <span>{a.employee.name}<span className="block text-xs text-muted-foreground">{a.employee.number}</span></span> },
@@ -87,7 +89,7 @@ export default function PayrollRunsPage({ overview, withoutBank }: { overview: P
         { id: 'amount', label: t('hr.pay.amount'), align: 'right', value: (a) => a.amount_minor, cell: (a) => money(a.amount_minor) },
         { id: 'source', label: t('hr.run.corrects'), value: (a) => a.source_period ?? '', cell: (a) => a.source_period ?? '—' },
         { id: 'status', label: t('hr.col.status'), value: (a) => a.status, cell: (a) => <StatusBadge label={label('hr.run.adjustStatus', a.status)} tone={ADJUSTMENT_TONE[a.status]} /> },
-        { id: 'act', label: '', value: () => '', sortable: false, cell: (a) => (a.status === 'open' ? <Button disabled={action.busy} onClick={() => void action.run(`/hr/payroll/adjustments/${a.id}/cancel`, { body: { lock_version: a.lock_version }, reload })} size="sm" type="button" variant="outline">{t('hr.att.cancelRequest')}</Button> : null) },
+        { id: 'act', label: '', value: () => '', sortable: false, cell: (a) => (a.status === 'open' ? <RowAction disabled={action.busy} icon={X} label={t('hr.att.cancelRequest')} onClick={() => void action.run(`/hr/payroll/adjustments/${a.id}/cancel`, { body: { lock_version: a.lock_version }, reload })} tone="danger" /> : null) },
     ];
 
     const step = (name: 'calculate' | 'review' | 'approve') => (run === null ? Promise.resolve(null) : action.run(`/hr/payroll/runs/${run.id}/${name}`, { body: { lock_version: run.lock_version }, reload }));

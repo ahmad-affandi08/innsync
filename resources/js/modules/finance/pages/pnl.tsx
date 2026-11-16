@@ -1,5 +1,6 @@
 import { Link, router } from '@inertiajs/react';
 import { useState, type ReactNode } from 'react';
+import { Eye } from 'lucide-react';
 
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -10,6 +11,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Metric } from '@/components/ui/metric';
+import { RowAction } from '@/components/ui/row-action';
 import { Select } from '@/components/ui/select';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { FinanceShell } from '@/modules/finance/components/finance-shell';
@@ -85,7 +87,7 @@ export default function PnlPage({ report }: { report: PnlReport }) {
         { id: 'result', label: t('fin.pnl.colResult'), align: 'right', value: (d) => d.result_minor, cell: (d) => signed(d.result_minor), footer: signed(report.totals.result_minor) },
         { id: 'margin', label: t('fin.pnl.colMargin'), align: 'right', value: (d) => d.margin_bp ?? -1_000_000, cell: (d) => margin(d.margin_bp), footer: margin(report.totals.margin_bp) },
         { id: 'service', label: t('fin.pnl.colService'), align: 'right', value: (d) => d.service_charge_minor, cell: (d) => money(d.service_charge_minor), footer: money(report.totals.service_charge_minor), hidden: true },
-        { id: 'actions', label: t('inv.col.actions'), cell: (d) => <Button onClick={() => setDetail(d)} size="sm" type="button" variant="outline">{t('fin.pnl.details')}</Button> },
+        { id: 'actions', label: t('inv.col.actions'), cell: (d) => <RowAction icon={Eye} label={t('fin.pnl.details')} onClick={() => setDetail(d)} tone="info" /> },
     ];
 
     const outletColumns: DataGridColumn<PnlOutlet>[] = [

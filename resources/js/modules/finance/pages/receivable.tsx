@@ -1,5 +1,6 @@
 import { Link } from '@inertiajs/react';
 import { useMemo, useState } from 'react';
+import { Undo2 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { DatePicker } from '@/components/ui/date-picker';
@@ -8,6 +9,7 @@ import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
 import { MoneyInput } from '@/components/ui/money-input';
+import { RowAction } from '@/components/ui/row-action';
 import { Select } from '@/components/ui/select';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -232,7 +234,7 @@ export default function ReceivablePage({ receivable }: { receivable: Receivable 
                                         <TableCell>{r.by ?? '—'}</TableCell>
                                         {receivable.receipts.some((o) => o.may_reverse) ? (
                                             <TableCell className="text-right print:hidden">
-                                                {r.may_reverse ? <Button onClick={() => openReverse(r)} size="sm" type="button" variant="outline">{t('fin.ar.reverse')}</Button> : null}
+                                                {r.may_reverse ? <RowAction icon={Undo2} label={t('fin.ar.reverse')} onClick={() => openReverse(r)} tone="danger" /> : null}
                                             </TableCell>
                                         ) : null}
                                     </TableRow>

@@ -1,5 +1,6 @@
 import { router } from '@inertiajs/react';
 import { useMemo, useState } from 'react';
+import { Eye } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { DataGrid, type DataGridColumn } from '@/components/ui/data-grid';
@@ -9,6 +10,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
+import { RowAction } from '@/components/ui/row-action';
 import { Select } from '@/components/ui/select';
 import { StatusBadge, type StatusTone } from '@/components/ui/status-badge';
 import { InventoryShell } from '@/modules/inventory-purchasing/components/inventory-shell';
@@ -58,7 +60,7 @@ export default function CountsPage({ overview, status, locationKind }: { overvie
         { id: 'differences', label: t('inv.col.differences'), align: 'right', value: (c) => c.variance_count ?? 0, cell: (c) => (c.status === 'counting' ? '—' : String(c.variance_count ?? 0)) },
         { id: 'startedBy', label: t('inv.col.startedBy'), value: (c) => c.started_by_name ?? '', hidden: true },
         { id: 'state', label: t('inv.col.status'), value: (c) => c.status, filter: 'select', filterLabel: label, cell: (c) => <StatusBadge label={label(c.status)} tone={tone[c.status] ?? 'neutral'} /> },
-        { id: 'actions', label: t('inv.col.actions'), cell: (c) => <Button onClick={() => router.visit(`/inventory/counts/${c.id}`)} size="sm" type="button" variant="outline">{t('inv.cnt.open')}</Button> },
+        { id: 'actions', label: t('inv.col.actions'), cell: (c) => <RowAction icon={Eye} label={t('inv.cnt.open')} onClick={() => router.visit(`/inventory/counts/${c.id}`)} tone="info" /> },
     ];
 
     return (

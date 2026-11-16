@@ -1,3 +1,4 @@
+import { Ban, CircleCheck } from 'lucide-react';
 import { useState, type FormEvent } from 'react';
 
 import { Alert } from '@/components/ui/alert';
@@ -8,6 +9,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
+import { RowAction } from '@/components/ui/row-action';
 import { Select } from '@/components/ui/select';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -113,7 +115,7 @@ export default function LinenPage({ linen }: { linen: Linen }) {
         { id: 'damaged', label: t('hk.linen.damaged'), align: 'right', value: (row) => row.damaged, cell: (row) => format.number(row.damaged) },
         ...(linen.may.manage ? [{
             id: 'actions', label: t('hk.board.actions'), align: 'right' as const,
-            cell: (row: Item) => <Button disabled={action.busy} onClick={() => void toggle(row)} size="sm" type="button" variant="outline">{row.is_active ? t('hk.linen.deactivate') : t('hk.linen.activate')}</Button>,
+            cell: (row: Item) => <RowAction disabled={action.busy} icon={row.is_active ? Ban : CircleCheck} label={row.is_active ? t('hk.linen.deactivate') : t('hk.linen.activate')} onClick={() => void toggle(row)} tone={row.is_active ? 'danger' : 'success'} />,
         }] : []),
     ];
     const usageColumns: DataGridColumn<UsageRow>[] = [

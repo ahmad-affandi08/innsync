@@ -1,5 +1,5 @@
-import { Link } from '@inertiajs/react';
 import { useState } from 'react';
+import { Check, ExternalLink, X } from 'lucide-react';
 
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -9,6 +9,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
+import { RowAction } from '@/components/ui/row-action';
 import { StatusBadge, type StatusTone } from '@/components/ui/status-badge';
 import { GuestStaffShell } from '@/modules/guest/components/guest-staff-shell';
 import { qrLabel } from '@/modules/guest/lib/qr';
@@ -46,9 +47,9 @@ export default function OrdersQueuePage({ overview }: { overview: QueueOverview 
         {
             id: 'act', label: '', value: () => '', sortable: false,
             cell: (o) => (
-                <span className="flex flex-wrap gap-2">
-                    {o.room_charge === 'pending' ? <><Button onClick={() => { action.clear(); setDecide({ order: o, accept: true, note: '' }); }} size="sm" type="button">{t('guest.queue.verify')}</Button><Button onClick={() => { action.clear(); setDecide({ order: o, accept: false, note: '' }); }} size="sm" type="button" variant="outline">{t('guest.queue.refuse')}</Button></> : null}
-                    <Button asChild size="sm" variant="outline"><Link href={`/fnb/bills/${o.bill_id}`}>{t('guest.queue.openBill')}</Link></Button>
+                <span className="flex flex-wrap gap-1">
+                    {o.room_charge === 'pending' ? <><RowAction onClick={() => { action.clear(); setDecide({ order: o, accept: true, note: '' }); }} icon={Check} label={t('guest.queue.verify')} tone="success" /><RowAction onClick={() => { action.clear(); setDecide({ order: o, accept: false, note: '' }); }} icon={X} label={t('guest.queue.refuse')} tone="danger" /></> : null}
+                    <RowAction href={`/fnb/bills/${o.bill_id}`} icon={ExternalLink} label={t('guest.queue.openBill')} tone="info" />
                 </span>
             ),
         },

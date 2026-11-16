@@ -1,4 +1,5 @@
 import { router } from '@inertiajs/react';
+import { Eye } from 'lucide-react';
 import { useState } from 'react';
 
 import { Alert } from '@/components/ui/alert';
@@ -11,6 +12,7 @@ import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
 import { Metric } from '@/components/ui/metric';
+import { RowAction } from '@/components/ui/row-action';
 import { Select } from '@/components/ui/select';
 import { StatusBadge, type StatusTone } from '@/components/ui/status-badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -138,7 +140,7 @@ export default function EmployeesPage({ overview }: { overview: HrOverview }) {
         { id: 'supervisor', label: t('hr.col.supervisor'), value: (e) => e.supervisor ?? '', cell: (e) => e.supervisor ?? '—' },
         { id: 'joined', label: t('hr.col.joined'), value: (e) => e.joined_on, cell: (e) => format.date(e.joined_on) },
         { id: 'status', label: t('hr.col.status'), value: (e) => e.status, filter: 'select', filterLabel: (v) => label('hr.status', v), cell: (e) => <StatusBadge label={label('hr.status', e.status)} tone={e.status === 'active' ? 'success' : 'neutral'} /> },
-        { id: 'open', label: '', value: () => '', sortable: false, cell: (e) => <Button onClick={() => void open(e)} size="sm" type="button" variant="outline">{t('hr.open')}</Button> },
+        { id: 'open', label: '', value: () => '', sortable: false, cell: (e) => <RowAction icon={Eye} label={t('hr.open')} onClick={() => void open(e)} tone="info" /> },
     ];
     const warningColumns: DataGridColumn<HrWarning>[] = [
         { id: 'status', label: t('hr.col.status'), value: (w) => w.status, filter: 'select', filterLabel: (v) => label('hr.warn.status', v), cell: (w) => <StatusBadge label={label('hr.warn.status', w.status)} tone={WARNING_TONE[w.status]} /> },

@@ -1,5 +1,6 @@
 import { router } from '@inertiajs/react';
 import { useState } from 'react';
+import { Archive, Check, Undo2 } from 'lucide-react';
 
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -9,6 +10,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
+import { RowAction } from '@/components/ui/row-action';
 import { Select } from '@/components/ui/select';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { FinanceShell } from '@/modules/finance/components/finance-shell';
@@ -92,7 +94,7 @@ export default function BankPage({ overview }: { overview: Overview }) {
                         {l.suggestions.map((s) => (
                             <div className="flex flex-wrap items-center gap-2" key={`${s.type}-${s.id}`}>
                                 <span className="text-sm">{t(`fin.bk.type.${s.type}` as 'fin.bk.type.receipt')} · {s.label}<span className="text-xs text-muted-foreground"> · {t('fin.bk.days', { n: s.days })}</span></span>
-                                {overview.may_manage ? <Button disabled={action.busy} onClick={() => void match(l, s)} size="sm" type="button" variant="outline">{t('fin.bk.match')}</Button> : null}
+                                {overview.may_manage ? <RowAction disabled={action.busy} icon={Check} label={t('fin.bk.match')} onClick={() => void match(l, s)} tone="success" /> : null}
                             </div>
                         ))}
                     </div>
@@ -106,9 +108,9 @@ export default function BankPage({ overview }: { overview: Overview }) {
             sortable: false,
             cell: (l) => {
                 if (!overview.may_manage) return null;
-                if (l.status === 'open') return <Button onClick={() => { action.clear(); setAside({ line: l, note: '', category: '' }); }} size="sm" type="button" variant="ghost">{t('fin.bk.aside')}</Button>;
+                if (l.status === 'open') return <RowAction icon={Archive} label={t('fin.bk.aside')} onClick={() => { action.clear(); setAside({ line: l, note: '', category: '' }); }} tone="neutral" />;
 
-                return <Button onClick={() => { action.clear(); setReopen({ line: l, reason: '' }); }} size="sm" type="button" variant="ghost">{t('fin.bk.reopen')}</Button>;
+                return <RowAction icon={Undo2} label={t('fin.bk.reopen')} onClick={() => { action.clear(); setReopen({ line: l, reason: '' }); }} tone="neutral" />;
             },
         },
     ];

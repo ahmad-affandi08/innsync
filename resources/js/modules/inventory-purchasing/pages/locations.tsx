@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Pencil } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { DataGrid, type DataGridColumn } from '@/components/ui/data-grid';
@@ -7,6 +8,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
+import { RowAction } from '@/components/ui/row-action';
 import { Select } from '@/components/ui/select';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -67,14 +69,14 @@ export default function LocationsPage({ catalog }: { catalog: Catalog }) {
         { id: 'kind', label: t('inv.col.kind'), value: (l) => l.kind, filter: 'select', filterLabel: kind, cell: (l) => kind(l.kind) },
         negative<Location>(),
         state<Location>(),
-        ...(catalog.may.manage ? [{ id: 'actions', label: t('inv.col.actions'), cell: (l: Location) => <Button onClick={() => open({ what: 'location', id: l.id, code: l.code, name: l.name, kind: l.kind, active: l.is_active, blocked: l.negative_blocked, lock: l.lock_version })} size="sm" type="button" variant="outline">{t('inv.action.edit')}</Button> }] : []),
+        ...(catalog.may.manage ? [{ id: 'actions', label: t('inv.col.actions'), cell: (l: Location) => <RowAction icon={Pencil} label={t('inv.action.edit')} onClick={() => open({ what: 'location', id: l.id, code: l.code, name: l.name, kind: l.kind, active: l.is_active, blocked: l.negative_blocked, lock: l.lock_version })} tone="warning" /> }] : []),
     ];
     const categoryColumns: DataGridColumn<Category>[] = [
         { id: 'code', label: t('inv.col.code'), value: (c) => c.code, rowHeader: true },
         { id: 'name', label: t('inv.col.name'), value: (c) => c.name },
         negative<Category>(),
         state<Category>(),
-        ...(catalog.may.manage ? [{ id: 'actions', label: t('inv.col.actions'), cell: (c: Category) => <Button onClick={() => open({ what: 'category', id: c.id, code: c.code, name: c.name, active: c.is_active, blocked: c.negative_blocked, lock: c.lock_version })} size="sm" type="button" variant="outline">{t('inv.action.edit')}</Button> }] : []),
+        ...(catalog.may.manage ? [{ id: 'actions', label: t('inv.col.actions'), cell: (c: Category) => <RowAction icon={Pencil} label={t('inv.action.edit')} onClick={() => open({ what: 'category', id: c.id, code: c.code, name: c.name, active: c.is_active, blocked: c.negative_blocked, lock: c.lock_version })} tone="warning" /> }] : []),
     ];
     const title = edit === null ? '' : t(edit.what === 'location' ? (edit.id === null ? 'inv.loc.addLocation' : 'inv.loc.editLocation') : (edit.id === null ? 'inv.loc.addCategory' : 'inv.loc.editCategory'));
 

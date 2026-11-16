@@ -1,4 +1,5 @@
 import { router } from '@inertiajs/react';
+import { Eye } from 'lucide-react';
 import { useState } from 'react';
 
 import { Alert } from '@/components/ui/alert';
@@ -10,6 +11,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
+import { RowAction } from '@/components/ui/row-action';
 import { Select } from '@/components/ui/select';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { MaintenanceShell } from '@/modules/maintenance/components/maintenance-shell';
@@ -83,7 +85,7 @@ export default function AssetsPage({ overview }: { overview: AssetsOverview }) {
         { id: 'meter', label: t('mtc.asset.meter'), align: 'right', value: (a) => a.reading ?? 0, cell: (a) => (a.meter_unit === null ? '—' : `${a.reading ?? 0} ${label('mtc.asset.unit', a.meter_unit)}`) },
         { id: 'due', label: t('mtc.asset.nextCare'), value: (a) => a.next_due_on ?? '', cell: (a) => (a.next_due_on === null ? '—' : format.date(a.next_due_on)) },
         { id: 'status', label: t('mtc.col.status'), value: (a) => a.status, filter: 'select', filterLabel: (v) => label('mtc.asset.status', v), cell: (a) => <StatusBadge label={label('mtc.asset.status', a.status)} tone={a.status === 'active' ? 'success' : 'neutral'} /> },
-        { id: 'open', label: '', value: () => '', sortable: false, cell: (a) => <Button onClick={() => void open(a)} size="sm" type="button" variant="outline">{t('mtc.open')}</Button> },
+        { id: 'open', label: '', value: () => '', sortable: false, cell: (a) => <RowAction icon={Eye} label={t('mtc.open')} onClick={() => void open(a)} tone="info" /> },
     ];
     const d = detail?.asset ?? null;
     const planText = (p: Plan) => (p.trigger === 'calendar' ? t('mtc.plan.everyDays', { n: p.interval }) : t('mtc.plan.everyUnits', { n: p.interval, unit: label('mtc.asset.unit', d?.meter_unit ?? 'hours') }));

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Pencil } from 'lucide-react';
 
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -9,6 +10,7 @@ import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
 import { MoneyInput } from '@/components/ui/money-input';
+import { RowAction } from '@/components/ui/row-action';
 import { Select } from '@/components/ui/select';
 import { InventoryShell } from '@/modules/inventory-purchasing/components/inventory-shell';
 import { bpToInput, minorToInput, parsePercentToBp } from '@/modules/inventory-purchasing/lib/amounts';
@@ -96,7 +98,7 @@ export default function PurchasingSettingsPage({ overview }: { overview: Overvie
         { id: 'department', label: t('inv.col.department'), value: (b) => b.department, filter: 'select', filterLabel: dept, rowHeader: true, cell: (b) => dept(b.department) },
         { id: 'period', label: t('inv.pset.period'), value: (b) => b.period, filter: 'select' },
         { id: 'amount', label: t('inv.pset.amount'), align: 'right', value: (b) => b.amount_minor, cell: (b) => format.money(b.amount_minor, overview.currency) },
-        ...(manage ? [{ id: 'actions', label: t('inv.col.actions'), cell: (b: Budget) => <Button onClick={() => openBudget(b)} size="sm" type="button" variant="outline">{t('inv.pset.change')}</Button> }] : []),
+        ...(manage ? [{ id: 'actions', label: t('inv.col.actions'), cell: (b: Budget) => <RowAction icon={Pencil} label={t('inv.pset.change')} onClick={() => openBudget(b)} tone="warning" /> }] : []),
     ];
 
     return (

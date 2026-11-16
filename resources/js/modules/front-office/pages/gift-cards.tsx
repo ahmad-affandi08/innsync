@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Ban } from 'lucide-react';
 
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -10,6 +11,7 @@ import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
 import { MoneyInput } from '@/components/ui/money-input';
+import { RowAction } from '@/components/ui/row-action';
 import { Select } from '@/components/ui/select';
 import { StatusBadge, type StatusTone } from '@/components/ui/status-badge';
 import { FrontOfficeShell } from '@/modules/front-office/components/front-office-shell';
@@ -75,7 +77,7 @@ export default function GiftCardsPage({ overview }: { overview: Overview }) {
         { id: 'balance', label: t('fo.gc.col.balance'), align: 'right', value: (c) => c.balance_minor, cell: (c) => money(c.balance_minor) },
         { id: 'expires', label: t('fo.gc.col.expires'), value: (c) => c.expires_on ?? '', cell: (c) => (c.expires_on === null ? '—' : format.date(c.expires_on)) },
         { id: 'state', label: t('fo.gc.col.state'), value: (c) => c.state, filter: 'select', filterLabel: (v) => t(`fo.gc.state.${v}` as 'fo.gc.state.active'), cell: (c) => <StatusBadge label={t(`fo.gc.state.${c.state}` as 'fo.gc.state.active')} tone={TONE[c.state] ?? 'neutral'} /> },
-        { id: 'actions', label: '', value: () => '', sortable: false, cell: (c) => (overview.may.void && c.state !== 'void' ? <Button onClick={() => { action.clear(); setVoiding({ card: c, disposition: 'refunded', reason: '' }); }} size="sm" type="button" variant="outline">{t('fo.gc.void')}</Button> : null) },
+        { id: 'actions', label: '', value: () => '', sortable: false, cell: (c) => (overview.may.void && c.state !== 'void' ? <RowAction onClick={() => { action.clear(); setVoiding({ card: c, disposition: 'refunded', reason: '' }); }} icon={Ban} label={t('fo.gc.void')} tone="danger" /> : null) },
     ];
 
     return (

@@ -1,3 +1,4 @@
+import { Eye, Pencil } from 'lucide-react';
 import { useState } from 'react';
 
 import { Alert } from '@/components/ui/alert';
@@ -9,6 +10,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
+import { RowAction } from '@/components/ui/row-action';
 import { Select } from '@/components/ui/select';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -110,7 +112,7 @@ export default function RecipesPage({ consumed, overview }: RecipesPageProps) {
         { id: 'ingredients', label: t('recipes.ingredients'), align: 'right', value: (d) => d.ingredients },
         { id: 'cost', label: t('recipes.cost'), align: 'right', value: (d) => d.cost_minor ?? 0, cell: (d) => (d.cost_minor === null ? '—' : <span>{money(d.cost_minor)}{!d.cost_complete ? <span className="block text-xs text-muted-foreground">{t('recipes.costPartial')}</span> : null}</span>) },
         { id: 'foodCost', label: t('recipes.foodCost'), align: 'right', value: (d) => d.food_cost_bp ?? 0, cell: (d) => (d.food_cost_bp === null ? '—' : `${(d.food_cost_bp / 100).toFixed(1)}%`) },
-        { id: 'open', label: '', value: () => '', sortable: false, cell: (d) => <Button onClick={() => void openDish(d)} size="sm" type="button" variant="outline">{t(overview.may.manage ? 'recipes.edit' : 'recipes.view')}</Button> },
+        { id: 'open', label: '', value: () => '', sortable: false, cell: (d) => <RowAction icon={overview.may.manage ? Pencil : Eye} label={t(overview.may.manage ? 'recipes.edit' : 'recipes.view')} onClick={() => void openDish(d)} tone={overview.may.manage ? 'warning' : 'info'} /> },
     ];
     const consumedColumns: DataGridColumn<Consumption>[] = [
         { id: 'at', label: t('recipes.colAt'), value: (c) => c.at, cell: (c) => format.instant(c.at) },

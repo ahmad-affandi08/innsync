@@ -1,5 +1,6 @@
 import { router } from '@inertiajs/react';
 import { useState } from 'react';
+import { Ban, Pencil, Wallet } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { DataGrid, type DataGridColumn } from '@/components/ui/data-grid';
@@ -9,6 +10,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
+import { RowAction } from '@/components/ui/row-action';
 import { Select } from '@/components/ui/select';
 import { StatusBadge, type StatusTone } from '@/components/ui/status-badge';
 import { FrontOfficeShell } from '@/modules/front-office/components/front-office-shell';
@@ -71,9 +73,9 @@ export default function CommissionsPage({ overview }: { overview: Overview }) {
         {
             id: 'actions', label: '', value: () => '', sortable: false,
             cell: (p) => (overview.may_manage
-                ? <span className="flex flex-wrap gap-2">
-                    <Button disabled={p.owed_minor === 0} onClick={() => { action.clear(); setPay({ partner: p, method: 'transfer', reference: '', paidOn: overview.today, key: newIdempotencyKey() }); }} size="sm" type="button">{t('fo.com.payAll')}</Button>
-                    <Button onClick={() => { action.clear(); setEdit({ partner: p, rate: percent(p.rate_bp), active: p.is_active }); }} size="sm" type="button" variant="outline">{t('fo.gc.edit')}</Button>
+                ? <span className="flex flex-wrap gap-1">
+                    <RowAction disabled={p.owed_minor === 0} onClick={() => { action.clear(); setPay({ partner: p, method: 'transfer', reference: '', paidOn: overview.today, key: newIdempotencyKey() }); }} icon={Wallet} label={t('fo.com.payAll')} tone="success" />
+                    <RowAction onClick={() => { action.clear(); setEdit({ partner: p, rate: percent(p.rate_bp), active: p.is_active }); }} icon={Pencil} label={t('fo.gc.edit')} tone="warning" />
                 </span>
                 : null),
         },
@@ -87,7 +89,7 @@ export default function CommissionsPage({ overview }: { overview: Overview }) {
         { id: 'rate', label: t('fo.com.col.rate'), align: 'right', value: (a) => a.rate_bp, cell: (a) => `${percent(a.rate_bp)}%` },
         { id: 'commission', label: t('fo.com.col.commission'), align: 'right', value: (a) => a.commission_minor, cell: (a) => money(a.commission_minor) },
         { id: 'status', label: t('fo.wl.col.status'), value: (a) => a.status, filter: 'select', filterLabel: (v) => t(`fo.com.status.${v}` as 'fo.com.status.accrued'), cell: (a) => <StatusBadge label={t(`fo.com.status.${a.status}` as 'fo.com.status.accrued')} tone={TONE[a.status] ?? 'neutral'} /> },
-        { id: 'actions', label: '', value: () => '', sortable: false, cell: (a) => (overview.may_manage && a.status === 'accrued' ? <Button onClick={() => { action.clear(); setVoid({ accrual: a, reason: '' }); }} size="sm" type="button" variant="outline">{t('fo.com.void')}</Button> : (a.void_reason ?? '')) },
+        { id: 'actions', label: '', value: () => '', sortable: false, cell: (a) => (overview.may_manage && a.status === 'accrued' ? <RowAction onClick={() => { action.clear(); setVoid({ accrual: a, reason: '' }); }} icon={Ban} label={t('fo.com.void')} tone="danger" /> : (a.void_reason ?? '')) },
     ];
 
     return (

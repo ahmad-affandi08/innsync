@@ -1,5 +1,6 @@
 import { Link, router } from '@inertiajs/react';
 import { useState } from 'react';
+import { Pencil } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -12,6 +13,7 @@ import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
 import { Metric } from '@/components/ui/metric';
 import { MoneyInput } from '@/components/ui/money-input';
+import { RowAction } from '@/components/ui/row-action';
 import { Select } from '@/components/ui/select';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -102,7 +104,7 @@ export default function SpaManagePage({ overview, report }: { overview: Overview
     const rooms: DataGridColumn<Room>[] = [
         { id: 'room', label: t('fo.spa.col.room'), value: (r) => r.name, rowHeader: true, cell: (r) => <span>{r.name}<span className="block text-xs text-muted-foreground">{r.code}</span></span> },
         { id: 'state', label: t('fo.spa.col.status'), value: (r) => (r.is_active ? 'on' : 'off'), cell: (r) => state(r.is_active) },
-        { id: 'edit', label: '', value: () => '', sortable: false, cell: (r) => <Button onClick={() => { action.clear(); setRoom({ id: r.id, lock: r.lock_version, code: r.code, name: r.name, active: r.is_active }); }} size="sm" type="button" variant="outline">{t('fo.spa.edit')}</Button> },
+        { id: 'edit', label: '', value: () => '', sortable: false, cell: (r) => <RowAction onClick={() => { action.clear(); setRoom({ id: r.id, lock: r.lock_version, code: r.code, name: r.name, active: r.is_active }); }} icon={Pencil} label={t('fo.spa.edit')} tone="warning" /> },
     ];
 
     const treatments: DataGridColumn<Treatment>[] = [
@@ -110,14 +112,14 @@ export default function SpaManagePage({ overview, report }: { overview: Overview
         { id: 'minutes', label: t('fo.spa.col.length'), align: 'right', value: (x) => x.minutes, cell: (x) => t('fo.spa.minutes', { n: x.minutes }) },
         { id: 'price', label: t('fo.spa.col.price'), align: 'right', value: (x) => x.price_minor, cell: (x) => money(x.price_minor) },
         { id: 'state', label: t('fo.spa.col.status'), value: (x) => (x.is_active ? 'on' : 'off'), cell: (x) => state(x.is_active) },
-        { id: 'edit', label: '', value: () => '', sortable: false, cell: (x) => <Button onClick={() => { action.clear(); setTreatment({ id: x.id, lock: x.lock_version, name: x.name, minutes: String(x.minutes), price: minorToMajorText(x.price_minor, overview.currency), active: x.is_active }); }} size="sm" type="button" variant="outline">{t('fo.spa.edit')}</Button> },
+        { id: 'edit', label: '', value: () => '', sortable: false, cell: (x) => <RowAction onClick={() => { action.clear(); setTreatment({ id: x.id, lock: x.lock_version, name: x.name, minutes: String(x.minutes), price: minorToMajorText(x.price_minor, overview.currency), active: x.is_active }); }} icon={Pencil} label={t('fo.spa.edit')} tone="warning" /> },
     ];
 
     const therapists: DataGridColumn<Therapist>[] = [
         { id: 'name', label: t('fo.spa.col.therapist'), value: (x) => x.name, rowHeader: true, cell: (x) => <span>{x.name}<span className="block text-xs text-muted-foreground">{x.user_id === null ? t('fo.spa.noAccount') : staffName(x.user_id) ?? t('fo.spa.accountLinked')}</span></span> },
         { id: 'commission', label: t('fo.spa.rep.rate'), align: 'right', value: (x) => x.commission_bp ?? 0, cell: (x) => `${toPercent(x.commission_bp ?? 0)}%` },
         { id: 'state', label: t('fo.spa.col.status'), value: (x) => (x.is_active ? 'on' : 'off'), cell: (x) => state(x.is_active) },
-        { id: 'edit', label: '', value: () => '', sortable: false, cell: (x) => <Button onClick={() => { action.clear(); setTherapist({ id: x.id, lock: x.lock_version, name: x.name, user: x.user_id ?? '', percent: toPercent(x.commission_bp ?? 0), active: x.is_active }); }} size="sm" type="button" variant="outline">{t('fo.spa.edit')}</Button> },
+        { id: 'edit', label: '', value: () => '', sortable: false, cell: (x) => <RowAction onClick={() => { action.clear(); setTherapist({ id: x.id, lock: x.lock_version, name: x.name, user: x.user_id ?? '', percent: toPercent(x.commission_bp ?? 0), active: x.is_active }); }} icon={Pencil} label={t('fo.spa.edit')} tone="warning" /> },
     ];
 
     const footer = (close: () => void, save: () => void) => <><Button disabled={action.busy} onClick={close} type="button" variant="outline">{t('ui.dialog.cancel')}</Button><Button loading={action.busy} onClick={save} type="button">{t('fo.spa.save')}</Button></>;

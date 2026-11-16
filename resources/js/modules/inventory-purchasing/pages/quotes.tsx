@@ -1,5 +1,6 @@
-import { Link, router } from '@inertiajs/react';
+import { router } from '@inertiajs/react';
 import { useState } from 'react';
+import { ShoppingCart } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { DataGrid, type DataGridColumn } from '@/components/ui/data-grid';
@@ -10,6 +11,7 @@ import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
 import { MoneyInput } from '@/components/ui/money-input';
+import { RowAction } from '@/components/ui/row-action';
 import { Select } from '@/components/ui/select';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -160,7 +162,7 @@ export default function QuotesPage({ overview }: { overview: Overview }) {
                                                 <TableCell>{o.valid_until === null ? '—' : format.date(o.valid_until)}</TableCell>
                                                 <TableCell className="text-right">{o.lead_time_days === null ? '—' : t('inv.sup.days', { count: o.lead_time_days })}</TableCell>
                                                 <TableCell className="text-right">{o.min_qty_milli === 0 ? '—' : `${formatMilli(o.min_qty_milli, locale)} ${o.unit}`}</TableCell>
-                                                <TableCell><Button asChild size="sm" variant="outline"><Link href="/inventory/orders">{t('inv.quo.order')}</Link></Button></TableCell>
+                                                <TableCell><RowAction href="/inventory/orders" icon={ShoppingCart} label={t('inv.quo.order')} tone="success" /></TableCell>
                                             </TableRow>
                                         ))}
                                     </TableBody>

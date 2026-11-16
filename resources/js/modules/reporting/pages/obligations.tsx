@@ -1,4 +1,5 @@
 import { router } from '@inertiajs/react';
+import { Check } from 'lucide-react';
 import { useState } from 'react';
 
 import { Alert } from '@/components/ui/alert';
@@ -9,6 +10,7 @@ import { DatePicker } from '@/components/ui/date-picker';
 import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
+import { RowAction } from '@/components/ui/row-action';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { ReportingShell } from '@/modules/reporting/components/reporting-shell';
 import { useServerAction } from '@/shared/api/use-server-action';
@@ -79,7 +81,7 @@ export default function ObligationsPage({ context, timeline: tl }: { context: { 
             id: 'action',
             label: t('rpt.obl.markReported'),
             header: <span className="sr-only">{t('rpt.obl.markReported')}</span>,
-            cell: (r) => (tl.may_manage && (r.status === 'due' || r.status === 'overdue') ? <Button onClick={() => setFiling({ month: r.month, date: tl.business_date, reference: '' })} size="sm" type="button" variant="outline">{t('rpt.obl.markReported')}</Button> : null),
+            cell: (r) => (tl.may_manage && (r.status === 'due' || r.status === 'overdue') ? <RowAction icon={Check} label={t('rpt.obl.markReported')} onClick={() => setFiling({ month: r.month, date: tl.business_date, reference: '' })} tone="success" /> : null),
         },
     ];
 

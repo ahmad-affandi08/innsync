@@ -1,5 +1,6 @@
 import { router } from '@inertiajs/react';
 import { useState } from 'react';
+import { Eye } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { DataGrid, type DataGridColumn } from '@/components/ui/data-grid';
@@ -8,6 +9,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
+import { RowAction } from '@/components/ui/row-action';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { CsvImportDialog } from '@/components/csv-import-dialog';
 import { InventoryShell } from '@/modules/inventory-purchasing/components/inventory-shell';
@@ -63,7 +65,7 @@ export default function SuppliersPage({ overview }: { overview: Overview }) {
             id: 'state', label: t('inv.col.status'), value: (s) => (s.is_active ? 'active' : 'inactive'), filter: 'select', filterLabel: (v) => t(v === 'active' ? 'inv.status.active' : 'inv.status.inactive'),
             cell: (s) => <StatusBadge label={t(s.is_active ? 'inv.status.active' : 'inv.status.inactive')} tone={s.is_active ? 'success' : 'neutral'} />,
         },
-        { id: 'actions', label: t('inv.col.actions'), cell: (s) => <Button onClick={() => router.visit(`/inventory/suppliers/${s.id}`)} size="sm" type="button" variant="outline">{t('inv.sup.open')}</Button> },
+        { id: 'actions', label: t('inv.col.actions'), cell: (s) => <RowAction icon={Eye} label={t('inv.sup.open')} onClick={() => router.visit(`/inventory/suppliers/${s.id}`)} tone="info" /> },
     ];
 
     return (

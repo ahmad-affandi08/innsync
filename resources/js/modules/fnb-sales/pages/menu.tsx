@@ -1,5 +1,5 @@
 import { router } from '@inertiajs/react';
-import { Plus, Trash2 } from 'lucide-react';
+import { Ban, CircleCheck, ImageOff, Pencil, Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 
 import { Alert } from '@/components/ui/alert';
@@ -11,6 +11,7 @@ import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
 import { MoneyInput } from '@/components/ui/money-input';
+import { RowAction } from '@/components/ui/row-action';
 import { Select } from '@/components/ui/select';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -149,7 +150,7 @@ export default function MenuPage({ menu }: { menu: MenuView }) {
         { id: 'station', label: t('fnb.menu.colStation'), value: (c) => c.station, filter: 'select', filterLabel: station, cell: (c) => station(c.station) },
         { id: 'order', label: t('fnb.menu.order'), align: 'right', value: (c) => c.sort_order },
         { id: 'state', label: t('inv.col.status'), value: (c) => (c.is_active ? 'active' : 'inactive'), filter: 'select', filterLabel: activeLabel, cell: (c) => stateBadge(c.is_active) },
-        ...(menu.may.manage ? [{ id: 'actions', label: t('inv.col.actions'), cell: (c: Category) => <Button onClick={() => openCategory(c)} size="sm" type="button" variant="outline">{t('fnb.menu.edit')}</Button> }] : []),
+        ...(menu.may.manage ? [{ id: 'actions', label: t('inv.col.actions'), cell: (c: Category) => <RowAction icon={Pencil} label={t('fnb.menu.edit')} onClick={() => openCategory(c)} tone="warning" /> }] : []),
     ];
 
     const itemColumns: DataGridColumn<MenuItem>[] = [
@@ -172,16 +173,16 @@ export default function MenuPage({ menu }: { menu: MenuView }) {
         {
             id: 'actions', label: t('inv.col.actions'),
             cell: (i) => (
-                <span className="flex gap-2">
-                    {menu.may.availability && i.is_active ? <Button disabled={action.busy} onClick={() => void toggleAvailable(i)} size="sm" type="button" variant="outline">{t(i.is_available ? 'fnb.menu.markSoldOut' : 'fnb.menu.markOnSale')}</Button> : null}
+                <span className="flex items-center gap-1">
+                    {menu.may.availability && i.is_active ? <RowAction disabled={action.busy} icon={i.is_available ? Ban : CircleCheck} label={t(i.is_available ? 'fnb.menu.markSoldOut' : 'fnb.menu.markOnSale')} onClick={() => void toggleAvailable(i)} tone={i.is_available ? 'danger' : 'success'} /> : null}
                     {menu.may.manage ? (
                         <label className="inline-flex cursor-pointer items-center border border-border px-3 py-1 text-sm font-medium hover:bg-muted">
                             {t(i.has_photo ? 'fnb.menu.changePhoto' : 'fnb.menu.addPhoto')}
                             <input accept="image/jpeg,image/png" className="sr-only" disabled={action.busy} onChange={(e) => { void sendPhoto(i, e.target.files?.[0] ?? null); e.target.value = ''; }} type="file" />
                         </label>
                     ) : null}
-                    {menu.may.manage && i.has_photo ? <Button disabled={action.busy} onClick={() => void removePhoto(i)} size="sm" type="button" variant="outline">{t('fnb.menu.removePhoto')}</Button> : null}
-                    {menu.may.manage ? <Button onClick={() => openItem(i)} size="sm" type="button" variant="outline">{t('fnb.menu.edit')}</Button> : null}
+                    {menu.may.manage && i.has_photo ? <RowAction disabled={action.busy} icon={ImageOff} label={t('fnb.menu.removePhoto')} onClick={() => void removePhoto(i)} tone="danger" /> : null}
+                    {menu.may.manage ? <RowAction icon={Pencil} label={t('fnb.menu.edit')} onClick={() => openItem(i)} tone="warning" /> : null}
                 </span>
             ),
         },
@@ -193,7 +194,7 @@ export default function MenuPage({ menu }: { menu: MenuView }) {
         { id: 'range', label: t('fnb.menu.colRange'), value: (g) => t('fnb.menu.groupRange', { min: g.min_select, max: g.max_select }) },
         { id: 'choices', label: t('fnb.menu.colChoices'), value: (g) => g.modifiers.filter((m) => m.is_active).map((m) => m.name).join(', ') },
         { id: 'state', label: t('inv.col.status'), value: (g) => (g.is_active ? 'active' : 'inactive'), filter: 'select', filterLabel: activeLabel, cell: (g) => stateBadge(g.is_active) },
-        ...(menu.may.manage ? [{ id: 'actions', label: t('inv.col.actions'), cell: (g: ModifierGroup) => <Button onClick={() => openGroup(g)} size="sm" type="button" variant="outline">{t('fnb.menu.edit')}</Button> }] : []),
+        ...(menu.may.manage ? [{ id: 'actions', label: t('inv.col.actions'), cell: (g: ModifierGroup) => <RowAction icon={Pencil} label={t('fnb.menu.edit')} onClick={() => openGroup(g)} tone="warning" /> }] : []),
     ];
 
     const saveBar = (busy: boolean, onCancel: () => void, onSave: () => void) => (

@@ -1,4 +1,5 @@
 import { router } from '@inertiajs/react';
+import { Ban } from 'lucide-react';
 import { useState } from 'react';
 
 import { Alert } from '@/components/ui/alert';
@@ -10,6 +11,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
+import { RowAction } from '@/components/ui/row-action';
 import { Select } from '@/components/ui/select';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -118,7 +120,7 @@ export default function ProductionPage({ overview }: { overview: ProductionOverv
         { id: 'product', label: t('kitchen.prod.colProduct'), value: (f) => f.output_name, cell: (f) => `${f.output_name} · ${formatMilli(f.standard_output_milli)} ${f.output_unit}` },
         { id: 'lines', label: t('kitchen.prod.colInputs'), value: (f) => f.lines.length, sortable: false, cell: (f) => f.lines.map((l) => `${l.name} ${formatMilli(l.quantity_milli)} ${l.unit}`).join(', ') },
         { id: 'status', label: t('kitchen.prod.colStatus'), value: (f) => (f.is_active ? 'active' : 'retired'), cell: (f) => (f.is_active ? <StatusBadge label={t('kitchen.prod.inUse')} tone="success" /> : <span><StatusBadge label={t('kitchen.prod.retired')} tone="neutral" /><span className="block text-xs text-muted-foreground">{f.retire_reason}</span></span>) },
-        { id: 'act', label: '', value: () => '', sortable: false, cell: (f) => (overview.may.manage && f.is_active ? <Button disabled={action.busy} onClick={() => { action.clear(); setRetire({ formula: f, reason: '' }); }} size="sm" type="button" variant="outline">{t('kitchen.prod.retire')}</Button> : null) },
+        { id: 'act', label: '', value: () => '', sortable: false, cell: (f) => (overview.may.manage && f.is_active ? <RowAction disabled={action.busy} icon={Ban} label={t('kitchen.prod.retire')} onClick={() => { action.clear(); setRetire({ formula: f, reason: '' }); }} tone="danger" /> : null) },
     ];
 
     return (

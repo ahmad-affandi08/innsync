@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Check, LogIn, Pencil, UserX, X } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -10,6 +11,7 @@ import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
 import { MoneyInput } from '@/components/ui/money-input';
+import { RowAction } from '@/components/ui/row-action';
 import { Select } from '@/components/ui/select';
 import { StatusBadge, type StatusTone } from '@/components/ui/status-badge';
 import { FrontOfficeShell } from '@/modules/front-office/components/front-office-shell';
@@ -87,14 +89,14 @@ export default function DayUsePage({ overview }: { overview: Overview }) {
             sortable: false,
             cell: (b) => {
                 if (!overview.may.book) return null;
-                if (b.status === 'in_use') return <Button disabled={action.busy} onClick={() => void settle(b, 'finish')} size="sm" type="button">{t('fo.du.finish')}</Button>;
+                if (b.status === 'in_use') return <RowAction disabled={action.busy} onClick={() => void settle(b, 'finish')} icon={Check} label={t('fo.du.finish')} tone="success" />;
                 if (b.status !== 'booked') return null;
 
                 return (
-                    <span className="flex flex-wrap justify-end gap-2">
-                        {b.starts_on === overview.today ? <Button onClick={() => { action.clear(); setPay({ booking: b, method: 'cash', reference: '' }); }} size="sm" type="button">{t('fo.du.start')}</Button> : null}
-                        {b.starts_on <= overview.today ? <Button disabled={action.busy} onClick={() => void settle(b, 'no-show')} size="sm" type="button" variant="outline">{t('fo.act.noShow')}</Button> : null}
-                        <Button onClick={() => { action.clear(); setCancel({ booking: b, reason: '' }); }} size="sm" type="button" variant="ghost">{t('fo.act.cancel')}</Button>
+                    <span className="flex flex-wrap justify-end gap-1">
+                        {b.starts_on === overview.today ? <RowAction onClick={() => { action.clear(); setPay({ booking: b, method: 'cash', reference: '' }); }} icon={LogIn} label={t('fo.du.start')} tone="success" /> : null}
+                        {b.starts_on <= overview.today ? <RowAction disabled={action.busy} onClick={() => void settle(b, 'no-show')} icon={UserX} label={t('fo.act.noShow')} tone="danger" /> : null}
+                        <RowAction onClick={() => { action.clear(); setCancel({ booking: b, reason: '' }); }} icon={X} label={t('fo.act.cancel')} tone="danger" />
                     </span>
                 );
             },
@@ -106,7 +108,7 @@ export default function DayUsePage({ overview }: { overview: Overview }) {
         { id: 'price', label: t('fo.du.col.price'), align: 'right', value: (r) => r.price_minor, cell: (r) => money(r.price_minor) },
         { id: 'hours', label: t('fo.du.col.hours'), align: 'right', value: (r) => r.max_hours, cell: (r) => t('fo.du.hours', { n: r.max_hours }) },
         { id: 'active', label: t('fo.act.col.status'), value: (r) => (r.is_active ? 'on' : 'off'), cell: (r) => <StatusBadge label={r.is_active ? t('fo.act.offered') : t('fo.act.paused')} tone={r.is_active ? 'success' : 'neutral'} /> },
-        { id: 'actions', label: '', value: () => '', sortable: false, cell: (r) => (overview.may.manage ? <Button onClick={() => { action.clear(); setRate({ id: r.id, lock: r.lock_version, type: r.room_type_id, price: minorToMajorText(r.price_minor, overview.currency), hours: String(r.max_hours), active: r.is_active }); }} size="sm" type="button" variant="outline">{t('fo.act.edit')}</Button> : null) },
+        { id: 'actions', label: '', value: () => '', sortable: false, cell: (r) => (overview.may.manage ? <RowAction onClick={() => { action.clear(); setRate({ id: r.id, lock: r.lock_version, type: r.room_type_id, price: minorToMajorText(r.price_minor, overview.currency), hours: String(r.max_hours), active: r.is_active }); }} icon={Pencil} label={t('fo.act.edit')} tone="warning" /> : null) },
     ];
 
     return (

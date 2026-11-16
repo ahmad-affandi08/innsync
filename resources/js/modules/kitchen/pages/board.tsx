@@ -1,3 +1,4 @@
+import { Ban, CircleCheck } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { Alert } from '@/components/ui/alert';
@@ -8,6 +9,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
+import { RowAction } from '@/components/ui/row-action';
 import { Select } from '@/components/ui/select';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -190,7 +192,7 @@ export default function KitchenBoardPage(props: BoardPageProps) {
         { id: 'category', label: t('kitchen.soldOut.category'), value: (i) => i.category, filter: 'select' },
         { id: 'outlet', label: t('kitchen.soldOut.outlet'), value: (i) => i.outlet, filter: 'select' },
         { id: 'status', label: t('kitchen.soldOut.status'), value: (i) => (i.is_available ? 'on' : 'out'), filter: 'select', filterLabel: (v) => t(v === 'on' ? 'kitchen.soldOut.onSale' : 'kitchen.soldOut.soldOut'), cell: (i) => <StatusBadge label={t(i.is_available ? 'kitchen.soldOut.onSale' : 'kitchen.soldOut.soldOut')} tone={i.is_available ? 'success' : 'danger'} /> },
-        { id: 'act', label: '', value: () => '', sortable: false, cell: (i) => <Button disabled={action.busy} onClick={() => void mark(i, !i.is_available)} size="sm" type="button" variant="outline">{t(i.is_available ? 'kitchen.soldOut.markOut' : 'kitchen.soldOut.putBack')}</Button> },
+        { id: 'act', label: '', value: () => '', sortable: false, cell: (i) => <RowAction disabled={action.busy} icon={i.is_available ? Ban : CircleCheck} label={t(i.is_available ? 'kitchen.soldOut.markOut' : 'kitchen.soldOut.putBack')} onClick={() => void mark(i, !i.is_available)} tone={i.is_available ? 'danger' : 'success'} /> },
     ];
 
     const stamp = format.instant(board.loaded_at);

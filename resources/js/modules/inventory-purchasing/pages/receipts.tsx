@@ -1,5 +1,6 @@
 import { router } from '@inertiajs/react';
 import { useMemo, useState } from 'react';
+import { ArrowDownToLine, Eye } from 'lucide-react';
 
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -10,6 +11,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
+import { RowAction } from '@/components/ui/row-action';
 import { Select } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { InventoryShell } from '@/modules/inventory-purchasing/components/inventory-shell';
@@ -105,7 +107,7 @@ export default function ReceiptsPage({ overview, order }: { overview: Overview; 
         { id: 'date', label: t('inv.col.date'), value: (r) => r.received_on, cell: (r) => format.date(r.received_on) },
         { id: 'value', label: t('inv.col.value'), align: 'right', value: (r) => r.value_minor, cell: (r) => money(r.value_minor) },
         { id: 'by', label: t('inv.rcv.col.receivedBy'), value: (r) => r.received_by_name ?? '', cell: (r) => r.received_by_name ?? '—', hidden: true },
-        { id: 'actions', label: t('inv.col.actions'), cell: (r) => <Button onClick={() => router.visit(`/inventory/receipts/${r.id}`)} size="sm" type="button" variant="outline">{t('inv.rcv.open')}</Button> },
+        { id: 'actions', label: t('inv.col.actions'), cell: (r) => <RowAction icon={Eye} label={t('inv.rcv.open')} onClick={() => router.visit(`/inventory/receipts/${r.id}`)} tone="info" /> },
     ];
 
     return (
@@ -183,7 +185,7 @@ export default function ReceiptsPage({ overview, order }: { overview: Overview; 
                                                                 <FormField className={CELL} field="lines.*.accepted" label={<span className="sr-only">{t('inv.rcv.accepted')} {l.item_code}</span>}>
                                                                     <Input className="w-24" inputMode="decimal" onChange={(ev) => setLine(l.id, { accepted: ev.target.value })} value={e.accepted} />
                                                                 </FormField>
-                                                                {l.remaining_milli > 0 ? <Button aria-label={`${t('inv.rcv.fillRemaining')} ${l.item_code}`} onClick={() => setLine(l.id, { accepted: plainMilli(l.remaining_milli) })} size="sm" title={t('inv.rcv.fillRemaining')} type="button" variant="outline">{t('inv.rcv.fill')}</Button> : null}
+                                                                {l.remaining_milli > 0 ? <RowAction icon={ArrowDownToLine} label={`${t('inv.rcv.fillRemaining')} ${l.item_code}`} onClick={() => setLine(l.id, { accepted: plainMilli(l.remaining_milli) })} /> : null}
                                                             </div>
                                                         </TableCell>
                                                         <TableCell>

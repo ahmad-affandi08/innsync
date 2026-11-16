@@ -1,5 +1,6 @@
 import { Link, router } from '@inertiajs/react';
 import { useMemo, useState } from 'react';
+import { Eye, Pencil } from 'lucide-react';
 
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -9,6 +10,7 @@ import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
 import { MoneyInput } from '@/components/ui/money-input';
+import { RowAction } from '@/components/ui/row-action';
 import { Select } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Textarea } from '@/components/ui/textarea';
@@ -115,7 +117,7 @@ export default function BudgetPage({ budget }: { budget: BudgetOverview }) {
         { id: 'months', label: t('fin.bud.monthsSet'), value: (s) => s.months, cell: (s) => (s.months === 0 ? t('fin.bud.none') : t('fin.bud.monthsCount', { count: s.months })) },
         {
             id: 'actions', label: t('inv.col.actions'),
-            cell: (s) => <Button disabled={s.department === department} onClick={() => pickDepartment(s.department)} size="sm" type="button" variant="outline">{manage ? t('fin.bud.edit') : t('fin.bud.view')}</Button>,
+            cell: (s) => <RowAction disabled={s.department === department} icon={manage ? Pencil : Eye} label={manage ? t('fin.bud.edit') : t('fin.bud.view')} onClick={() => pickDepartment(s.department)} tone={manage ? 'warning' : 'info'} />,
         },
     ];
 

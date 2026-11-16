@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { CircleCheck, RefreshCw } from 'lucide-react';
 
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -8,6 +9,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
+import { RowAction } from '@/components/ui/row-action';
 import { Select } from '@/components/ui/select';
 import { StatusBadge, type StatusTone } from '@/components/ui/status-badge';
 import { FrontOfficeShell } from '@/modules/front-office/components/front-office-shell';
@@ -58,9 +60,9 @@ export default function DoorLocksPage({ overview }: { overview: Overview }) {
         {
             id: 'actions', label: '', value: () => '', sortable: false,
             cell: (j) => (['pending', 'sent', 'failed'].includes(j.status)
-                ? <span className="flex gap-2">
-                    {j.status !== 'pending' ? <Button disabled={action.busy} onClick={() => void action.run(`/front-office/door-locks/jobs/${j.id}/retry`, { body: {}, reload })} size="sm" type="button" variant="outline">{t('fo.lock.retry')}</Button> : null}
-                    <Button onClick={() => { action.clear(); setSettle({ id: j.id, reason: '' }); }} size="sm" type="button" variant="outline">{t('fo.lock.settle')}</Button>
+                ? <span className="flex gap-1">
+                    {j.status !== 'pending' ? <RowAction disabled={action.busy} onClick={() => void action.run(`/front-office/door-locks/jobs/${j.id}/retry`, { body: {}, reload })} icon={RefreshCw} label={t('fo.lock.retry')} tone="neutral" /> : null}
+                    <RowAction onClick={() => { action.clear(); setSettle({ id: j.id, reason: '' }); }} icon={CircleCheck} label={t('fo.lock.settle')} tone="success" />
                 </span>
                 : null),
         },

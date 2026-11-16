@@ -1,4 +1,5 @@
 import { router } from '@inertiajs/react';
+import { Eye } from 'lucide-react';
 import { useState } from 'react';
 
 import { Alert } from '@/components/ui/alert';
@@ -11,6 +12,7 @@ import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
 import { MoneyInput } from '@/components/ui/money-input';
+import { RowAction } from '@/components/ui/row-action';
 import { Select } from '@/components/ui/select';
 import { StatusBadge, type StatusTone } from '@/components/ui/status-badge';
 import { MaintenanceShell } from '@/modules/maintenance/components/maintenance-shell';
@@ -109,7 +111,7 @@ export default function VendorWorkPage({ overview }: { overview: VendorOverview 
         { id: 'agreed', label: t('mtc.vendor.agreed'), align: 'right', value: (j) => j.agreed_minor ?? 0, cell: (j) => money(j.agreed_minor) },
         { id: 'actual', label: t('mtc.vendor.actual'), align: 'right', value: (j) => j.actual_minor ?? 0, cell: (j) => <span>{money(j.actual_minor)}{j.over_quote ? <span className="block text-xs text-danger">{t('mtc.vendor.over')}</span> : null}</span> },
         { id: 'date', label: t('mtc.vendor.date'), value: (j) => j.done_on ?? j.scheduled_on ?? '', cell: (j) => (j.done_on ?? j.scheduled_on) === null ? '—' : format.date((j.done_on ?? j.scheduled_on) as string) },
-        { id: 'open', label: '', value: () => '', sortable: false, cell: (j) => <Button onClick={() => void open(j)} size="sm" type="button" variant="outline">{t('mtc.open')}</Button> },
+        { id: 'open', label: '', value: () => '', sortable: false, cell: (j) => <RowAction icon={Eye} label={t('mtc.open')} onClick={() => void open(j)} tone="info" /> },
     ];
 
     return (

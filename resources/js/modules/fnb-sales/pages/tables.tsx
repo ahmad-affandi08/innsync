@@ -1,4 +1,5 @@
 import { Link } from '@inertiajs/react';
+import { Pencil } from 'lucide-react';
 import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -8,6 +9,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
+import { RowAction } from '@/components/ui/row-action';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { FnbShell } from '@/modules/fnb-sales/components/fnb-shell';
 import type { Table, TablesOverview } from '@/modules/fnb-sales/lib/fnb';
@@ -52,7 +54,7 @@ export default function TablesPage({ overview }: { overview: TablesOverview }) {
             id: 'state', label: t('inv.col.status'), value: (r) => (r.is_active ? 'active' : 'inactive'), filter: 'select', filterLabel: (v) => t(v === 'active' ? 'fnb.out.active' : 'fnb.out.inactive'),
             cell: (r) => <StatusBadge label={t(r.is_active ? 'fnb.out.active' : 'fnb.out.inactive')} tone={r.is_active ? 'success' : 'neutral'} />,
         },
-        ...(overview.may.manage ? [{ id: 'actions', label: t('inv.col.actions'), cell: (r: Table) => <Button onClick={() => openEdit(r)} size="sm" type="button" variant="outline">{t('fnb.out.edit')}</Button> }] : []),
+        ...(overview.may.manage ? [{ id: 'actions', label: t('inv.col.actions'), cell: (r: Table) => <RowAction icon={Pencil} label={t('fnb.out.edit')} onClick={() => openEdit(r)} tone="warning" /> }] : []),
     ];
 
     return (

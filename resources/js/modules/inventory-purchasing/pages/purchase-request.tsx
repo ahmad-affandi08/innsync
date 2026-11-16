@@ -1,5 +1,6 @@
 import { Link } from '@inertiajs/react';
 import { useState } from 'react';
+import { Eye } from 'lucide-react';
 
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -8,6 +9,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
+import { RowAction } from '@/components/ui/row-action';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ApprovalProgress } from '@/modules/inventory-purchasing/components/approval-progress';
@@ -166,7 +168,7 @@ export default function PurchaseRequestPage({ purchaseRequest: pr }: { purchaseR
                                         <TableCell className="text-right">{money(l.est_unit_cost_minor)}</TableCell>
                                         <TableCell className="text-right">{money(l.line_total_minor)}</TableCell>
                                         <TableCell>{l.note ?? '—'}</TableCell>
-                                        <TableCell>{l.po_id === null ? '—' : <Link className="underline" href={`/inventory/orders/${l.po_id}`}>{t('inv.req.viewOrder')}</Link>}</TableCell>
+                                        <TableCell>{l.po_id === null ? '—' : <RowAction href={`/inventory/orders/${l.po_id}`} icon={Eye} label={t('inv.req.viewOrder')} tone="info" />}</TableCell>
                                     </TableRow>
                                 ))}
                             </TableBody>

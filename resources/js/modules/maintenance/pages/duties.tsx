@@ -1,4 +1,5 @@
 import { router } from '@inertiajs/react';
+import { Ban, CircleCheck, Eye, Pencil } from 'lucide-react';
 import { useState } from 'react';
 
 import { Alert } from '@/components/ui/alert';
@@ -11,6 +12,7 @@ import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
 import { Metric } from '@/components/ui/metric';
+import { RowAction } from '@/components/ui/row-action';
 import { Select } from '@/components/ui/select';
 import { StatusBadge, type StatusTone } from '@/components/ui/status-badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -90,7 +92,7 @@ export default function DutiesPage({ overview, duties, choices }: { overview: Du
         { id: 'status', label: t('mtc.col.status'), value: (r) => r.status, filter: 'select', filterLabel: (v) => label('mtc.duty.status', v), cell: (r) => <StatusBadge label={label('mtc.duty.status', r.status)} tone={RUN_TONE[r.status]} /> },
         { id: 'progress', label: t('mtc.duty.progress'), align: 'right', value: (r) => r.steps - r.pending, cell: (r) => <span>{t('mtc.duty.answered', { done: r.steps - r.pending, of: r.steps })}{r.issues > 0 ? <span className="block text-xs text-danger">{t('mtc.duty.issues', { n: r.issues })}</span> : null}</span> },
         { id: 'by', label: t('mtc.duty.doneBy'), value: (r) => r.done_by ?? '', cell: (r) => r.done_by ?? '—' },
-        { id: 'open', label: '', value: () => '', sortable: false, cell: (r) => <Button onClick={() => void open(r)} size="sm" type="button" variant="outline">{t('mtc.open')}</Button> },
+        { id: 'open', label: '', value: () => '', sortable: false, cell: (r) => <RowAction icon={Eye} label={t('mtc.open')} onClick={() => void open(r)} tone="info" /> },
     ];
     const dutyColumns: DataGridColumn<Duty>[] = [
         { id: 'title', label: t('mtc.duty.title'), value: (d) => d.title, rowHeader: true },
@@ -100,9 +102,9 @@ export default function DutiesPage({ overview, duties, choices }: { overview: Du
         { id: 'steps', label: t('mtc.duty.steps'), align: 'right', value: (d) => d.steps.length },
         { id: 'status', label: t('mtc.col.status'), value: (d) => (d.active ? 'active' : 'retired'), cell: (d) => <StatusBadge label={t(d.active ? 'mtc.duty.active' : 'mtc.duty.retired')} tone={d.active ? 'success' : 'neutral'} /> },
         { id: 'edit', label: '', value: () => '', sortable: false, cell: (d) => (
-            <span className="flex gap-1">
-                {d.active ? <Button onClick={() => edit(d)} size="sm" type="button" variant="outline">{t('mtc.duty.edit')}</Button> : null}
-                <Button onClick={() => void action.run<Duty>(`/maintenance/duties/${d.id}/active`, { body: { active: !d.active, lock_version: d.lock_version }, reload: ['duties', 'overview'] })} size="sm" type="button" variant="outline">{t(d.active ? 'mtc.duty.retire' : 'mtc.duty.resume')}</Button>
+            <span className="flex items-center gap-1">
+                {d.active ? <RowAction icon={Pencil} label={t('mtc.duty.edit')} onClick={() => edit(d)} tone="warning" /> : null}
+                <RowAction icon={d.active ? Ban : CircleCheck} label={t(d.active ? 'mtc.duty.retire' : 'mtc.duty.resume')} onClick={() => void action.run<Duty>(`/maintenance/duties/${d.id}/active`, { body: { active: !d.active, lock_version: d.lock_version }, reload: ['duties', 'overview'] })} tone={d.active ? 'danger' : 'success'} />
             </span>
         ) },
     ];

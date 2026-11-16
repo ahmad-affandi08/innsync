@@ -1,4 +1,5 @@
 import { Link } from '@inertiajs/react';
+import { ExternalLink, Pencil } from 'lucide-react';
 import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -8,6 +9,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
+import { RowAction } from '@/components/ui/row-action';
 import { Select } from '@/components/ui/select';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { FnbShell } from '@/modules/fnb-sales/components/fnb-shell';
@@ -60,9 +62,9 @@ export default function OutletsPage({ overview }: { overview: OutletsOverview })
         {
             id: 'actions', label: t('inv.col.actions'),
             cell: (o) => (
-                <span className="flex gap-2">
-                    <Button asChild size="sm" variant="outline"><Link href={`/fnb/menu?outlet=${o.id}`}>{t('fnb.out.menu')}</Link></Button>
-                    {overview.may.manage ? <Button onClick={() => openEdit(o)} size="sm" type="button" variant="outline">{t('fnb.out.edit')}</Button> : null}
+                <span className="flex items-center gap-1">
+                    <RowAction href={`/fnb/menu?outlet=${o.id}`} icon={ExternalLink} label={t('fnb.out.menu')} tone="info" />
+                    {overview.may.manage ? <RowAction icon={Pencil} label={t('fnb.out.edit')} onClick={() => openEdit(o)} tone="warning" /> : null}
                 </span>
             ),
         },

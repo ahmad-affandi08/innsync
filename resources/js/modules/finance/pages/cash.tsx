@@ -1,5 +1,6 @@
 import { router, usePage } from '@inertiajs/react';
 import { useMemo, useState } from 'react';
+import { CircleCheck, PackageCheck } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { DataGrid, type DataGridColumn } from '@/components/ui/data-grid';
@@ -11,6 +12,7 @@ import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
 import { MoneyInput } from '@/components/ui/money-input';
 import { Metric } from '@/components/ui/metric';
+import { RowAction } from '@/components/ui/row-action';
 import { Select } from '@/components/ui/select';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -130,7 +132,7 @@ export default function CashPage({ filters, overview }: { filters: Filters; over
         },
         ...(overview.may.reconcile ? [{
             id: 'actions', label: t('inv.col.actions'),
-            cell: (s: Shift) => (s.may_receive ? <Button onClick={() => openReceive(s)} size="sm" type="button">{t('fin.cash.receive')}</Button> : null),
+            cell: (s: Shift) => (s.may_receive ? <RowAction icon={PackageCheck} label={t('fin.cash.receive')} onClick={() => openReceive(s)} tone="success" /> : null),
         }] : []),
     ];
 
@@ -147,7 +149,7 @@ export default function CashPage({ filters, overview }: { filters: Filters; over
         { id: 'resolvedBy', label: t('fin.cash.colResolvedBy'), value: (e) => e.resolved_by ?? '', cell: (e) => (e.resolved_by === null ? '—' : `${e.resolved_by}${e.resolved_at === null ? '' : ` · ${format.instant(e.resolved_at)}`}`), hidden: true },
         ...(overview.may.reconcile ? [{
             id: 'actions', label: t('inv.col.actions'),
-            cell: (e: Exception) => (e.may_settle ? <Button onClick={() => openSettle(e)} size="sm" type="button" variant="outline">{t('fin.cash.settle')}</Button> : null),
+            cell: (e: Exception) => (e.may_settle ? <RowAction icon={CircleCheck} label={t('fin.cash.settle')} onClick={() => openSettle(e)} tone="success" /> : null),
         }] : []),
     ];
 

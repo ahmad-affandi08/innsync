@@ -1,12 +1,13 @@
 import { Link, router } from '@inertiajs/react';
 import { useMemo, useState } from 'react';
+import { Eye } from 'lucide-react';
 
-import { Button } from '@/components/ui/button';
 import { DataGrid, type DataGridColumn } from '@/components/ui/data-grid';
 import { DateRangePicker } from '@/components/ui/date-picker';
 import { EmptyState } from '@/components/ui/empty-state';
 import { FormField } from '@/components/ui/form-field';
 import { Metric } from '@/components/ui/metric';
+import { RowAction } from '@/components/ui/row-action';
 import { Select } from '@/components/ui/select';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -87,7 +88,7 @@ export default function RevenuePage({ monthly, report }: { monthly: Monthly; rep
             cell: (d) => <StatusBadge label={statusLabel(d.status)} tone={REVENUE_TONE[d.status] ?? 'neutral'} />,
         },
         { id: 'verifiedAt', label: t('fin.day.verifiedTitle'), value: (d) => d.verified_at ?? '', cell: (d) => (d.verified_at === null ? '—' : format.instant(d.verified_at)), hidden: true },
-        { id: 'actions', label: t('inv.col.actions'), cell: (d) => <Button onClick={() => router.visit(`/finance/revenue/${d.date}`)} size="sm" type="button" variant="outline">{t('fin.pay.open')}</Button> },
+        { id: 'actions', label: t('inv.col.actions'), cell: (d) => <RowAction icon={Eye} label={t('fin.pay.open')} onClick={() => router.visit(`/finance/revenue/${d.date}`)} tone="info" /> },
     ];
 
     const outletColumns: DataGridColumn<OutletRevenue>[] = [

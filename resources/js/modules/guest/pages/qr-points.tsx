@@ -1,5 +1,6 @@
 import { Link } from '@inertiajs/react';
 import { useMemo, useState } from 'react';
+import { Ban, CircleCheck, QrCode, RefreshCw } from 'lucide-react';
 
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -7,6 +8,7 @@ import { DataGrid, type DataGridColumn } from '@/components/ui/data-grid';
 import { Dialog } from '@/components/ui/dialog';
 import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
+import { RowAction } from '@/components/ui/row-action';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { GuestStaffShell } from '@/modules/guest/components/guest-staff-shell';
 import { qrLabel, qrSvg } from '@/modules/guest/lib/qr';
@@ -57,10 +59,10 @@ export default function QrPointsPage({ overview }: { overview: QrOverview }) {
         {
             id: 'act', label: '', value: () => '', sortable: false,
             cell: (p) => (
-                <span className="flex flex-wrap gap-2">
-                    {p.is_active ? <Button disabled={action.busy} onClick={() => void show(p)} size="sm" type="button" variant="outline">{t('guest.qr.show')}</Button> : null}
-                    <Button disabled={action.busy} onClick={() => void action.run(`/guest/qr/${p.id}/active`, { body: { active: !p.is_active, lock_version: p.lock_version }, reload })} size="sm" type="button" variant="outline">{p.is_active ? t('guest.qr.switchOff') : t('guest.qr.switchOn')}</Button>
-                    <Button disabled={action.busy} onClick={() => { action.clear(); setRotate(p); }} size="sm" type="button" variant="outline">{t('guest.qr.rotate')}</Button>
+                <span className="flex flex-wrap gap-1">
+                    {p.is_active ? <RowAction disabled={action.busy} onClick={() => void show(p)} icon={QrCode} label={t('guest.qr.show')} tone="info" /> : null}
+                    <RowAction disabled={action.busy} onClick={() => void action.run(`/guest/qr/${p.id}/active`, { body: { active: !p.is_active, lock_version: p.lock_version }, reload })} icon={p.is_active ? Ban : CircleCheck} label={p.is_active ? t('guest.qr.switchOff') : t('guest.qr.switchOn')} tone={p.is_active ? 'danger' : 'success'} />
+                    <RowAction disabled={action.busy} onClick={() => { action.clear(); setRotate(p); }} icon={RefreshCw} label={t('guest.qr.rotate')} tone="warning" />
                 </span>
             ),
         },

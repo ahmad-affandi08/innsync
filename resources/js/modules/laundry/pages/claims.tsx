@@ -1,4 +1,5 @@
 import { Link, router } from '@inertiajs/react';
+import { Check, Image, X } from 'lucide-react';
 import { useState, type FormEvent } from 'react';
 
 import { Alert } from '@/components/ui/alert';
@@ -10,6 +11,7 @@ import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
 import { MoneyInput } from '@/components/ui/money-input';
+import { RowAction } from '@/components/ui/row-action';
 import { Select } from '@/components/ui/select';
 import { StatusBadge, type StatusTone } from '@/components/ui/status-badge';
 import { Textarea } from '@/components/ui/textarea';
@@ -103,10 +105,10 @@ export default function LaundryClaimsPage({ order, overview, status }: { order: 
         {
             id: 'actions', label: t('ldy.actions'),
             cell: (c) => (
-                <div className="flex flex-wrap gap-2">
-                    {c.has_photo ? <Button asChild size="sm" variant="outline"><a href={`/laundry/claims/${c.id}/photo`} rel="noreferrer" target="_blank">{t('ldy.claim.photo')}</a></Button> : null}
-                    {c.may_decide ? <Button onClick={() => { action.clear(); setInvalid(false); setDeciding({ claim: c, mode: 'approve', amount: String(c.claimed_minor / 100), note: '' }); }} size="sm" type="button">{t('ldy.claim.approve')}</Button> : null}
-                    {c.may_decide ? <Button onClick={() => { action.clear(); setDeciding({ claim: c, mode: 'reject', amount: '', note: '' }); }} size="sm" type="button" variant="outline">{t('ldy.claim.reject')}</Button> : null}
+                <div className="flex flex-nowrap items-center gap-1">
+                    {c.has_photo ? <RowAction icon={Image} label={t('ldy.claim.photo')} href={`/laundry/claims/${c.id}/photo`} newTab tone="info" /> : null}
+                    {c.may_decide ? <RowAction icon={Check} label={t('ldy.claim.approve')} onClick={() => { action.clear(); setInvalid(false); setDeciding({ claim: c, mode: 'approve', amount: String(c.claimed_minor / 100), note: '' }); }} tone="success" /> : null}
+                    {c.may_decide ? <RowAction icon={X} label={t('ldy.claim.reject')} onClick={() => { action.clear(); setDeciding({ claim: c, mode: 'reject', amount: '', note: '' }); }} tone="danger" /> : null}
                 </div>
             ),
         },

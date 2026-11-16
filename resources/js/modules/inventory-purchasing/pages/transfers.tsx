@@ -1,5 +1,6 @@
 import { router } from '@inertiajs/react';
 import { useMemo, useState } from 'react';
+import { Eye } from 'lucide-react';
 
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -9,6 +10,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
+import { RowAction } from '@/components/ui/row-action';
 import { Select } from '@/components/ui/select';
 import { StatusBadge, type StatusTone } from '@/components/ui/status-badge';
 import { InventoryShell } from '@/modules/inventory-purchasing/components/inventory-shell';
@@ -99,7 +101,7 @@ export default function TransfersPage({ overview, catalog, status }: { overview:
         { id: 'date', label: t('inv.col.date'), value: (x) => x.business_date, cell: (x) => format.date(x.business_date) },
         { id: 'sentBy', label: t('inv.col.sentBy'), value: (x) => x.created_by_name ?? '', hidden: true },
         { id: 'state', label: t('inv.col.status'), value: (x) => x.status, filter: 'select', filterLabel: label, cell: (x) => <StatusBadge label={label(x.status)} tone={tone[x.status] ?? 'neutral'} /> },
-        { id: 'actions', label: t('inv.col.actions'), cell: (x) => <Button onClick={() => { action.clear(); setShowReject(false); setOpenId(x.id); }} size="sm" type="button" variant="outline">{t('inv.trf.view')}</Button> },
+        { id: 'actions', label: t('inv.col.actions'), cell: (x) => <RowAction icon={Eye} label={t('inv.trf.view')} onClick={() => { action.clear(); setShowReject(false); setOpenId(x.id); }} tone="info" /> },
     ];
 
     return (

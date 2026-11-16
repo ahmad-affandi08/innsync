@@ -1,4 +1,5 @@
 import { router } from '@inertiajs/react';
+import { Undo2 } from 'lucide-react';
 import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -9,6 +10,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
+import { RowAction } from '@/components/ui/row-action';
 import { Select } from '@/components/ui/select';
 import { HrShell } from '@/modules/hr/components/hr-shell';
 import { useServerAction } from '@/shared/api/use-server-action';
@@ -61,7 +63,7 @@ export default function CommissionsPage({ overview }: { overview: Overview }) {
         { id: 'type', label: t('hr.com.col.type'), value: (e) => e.type_name ?? '', filter: 'select' },
         { id: 'amount', label: t('hr.com.col.amount'), value: (e) => e.amount_minor, align: 'right', cell: (e) => money(e.amount_minor) },
         { id: 'note', label: t('hr.com.col.note'), value: (e) => e.note ?? '', cell: (e) => <span>{e.note ?? ''}{e.reverses_id !== null ? <span className="block text-xs text-muted-foreground">{t('hr.com.reversal')}</span> : null}</span> },
-        { id: 'act', label: '', value: () => '', sortable: false, cell: (e) => (e.reverses_id === null && !reversed.has(e.id) ? <Button disabled={action.busy} onClick={() => { action.clear(); setReverse({ entry: e, reason: '' }); }} size="sm" type="button" variant="outline">{t('hr.com.reverse')}</Button> : null) },
+        { id: 'act', label: '', value: () => '', sortable: false, cell: (e) => (e.reverses_id === null && !reversed.has(e.id) ? <RowAction disabled={action.busy} icon={Undo2} label={t('hr.com.reverse')} onClick={() => { action.clear(); setReverse({ entry: e, reason: '' }); }} tone="danger" /> : null) },
     ];
 
     return (

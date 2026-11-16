@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Check, Pencil, UserX, X } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -10,6 +11,7 @@ import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
 import { MoneyInput } from '@/components/ui/money-input';
+import { RowAction } from '@/components/ui/row-action';
 import { Select } from '@/components/ui/select';
 import { StatusBadge, type StatusTone } from '@/components/ui/status-badge';
 import { FrontOfficeShell } from '@/modules/front-office/components/front-office-shell';
@@ -76,10 +78,10 @@ export default function ActivitiesPage({ overview }: { overview: Overview }) {
             value: () => '',
             sortable: false,
             cell: (b) => (overview.may.book && b.status === 'booked' ? (
-                <span className="flex flex-wrap justify-end gap-2">
-                    {b.starts_on <= overview.today ? <Button disabled={action.busy} onClick={() => void settle(b, 'complete')} size="sm" type="button">{t('fo.act.done')}</Button> : null}
-                    {b.starts_on <= overview.today ? <Button disabled={action.busy} onClick={() => void settle(b, 'no-show')} size="sm" type="button" variant="outline">{t('fo.act.noShow')}</Button> : null}
-                    <Button onClick={() => { action.clear(); setCancel({ booking: b, reason: '' }); }} size="sm" type="button" variant="ghost">{t('fo.act.cancel')}</Button>
+                <span className="flex flex-wrap justify-end gap-1">
+                    {b.starts_on <= overview.today ? <RowAction disabled={action.busy} onClick={() => void settle(b, 'complete')} icon={Check} label={t('fo.act.done')} tone="success" /> : null}
+                    {b.starts_on <= overview.today ? <RowAction disabled={action.busy} onClick={() => void settle(b, 'no-show')} icon={UserX} label={t('fo.act.noShow')} tone="danger" /> : null}
+                    <RowAction onClick={() => { action.clear(); setCancel({ booking: b, reason: '' }); }} icon={X} label={t('fo.act.cancel')} tone="danger" />
                 </span>
             ) : null),
         },
@@ -91,7 +93,7 @@ export default function ActivitiesPage({ overview }: { overview: Overview }) {
         { id: 'capacity', label: t('fo.act.col.capacity'), align: 'right', value: (s) => s.capacity, cell: (s) => t('fo.act.people', { n: s.capacity }) },
         { id: 'price', label: t('fo.act.col.price'), align: 'right', value: (s) => s.price_minor, cell: (s) => money(s.price_minor) },
         { id: 'active', label: t('fo.act.col.status'), value: (s) => (s.is_active ? 'on' : 'off'), cell: (s) => <StatusBadge label={s.is_active ? t('fo.act.offered') : t('fo.act.paused')} tone={s.is_active ? 'success' : 'neutral'} /> },
-        { id: 'actions', label: '', value: () => '', sortable: false, cell: (s) => (overview.may.manage ? <Button onClick={() => { action.clear(); setService({ id: s.id, lock: s.lock_version, code: s.code, name: s.name, category: s.category, minutes: String(s.duration_minutes), price: minorToMajorText(s.price_minor, overview.currency), capacity: String(s.capacity), active: s.is_active }); }} size="sm" type="button" variant="outline">{t('fo.act.edit')}</Button> : null) },
+        { id: 'actions', label: '', value: () => '', sortable: false, cell: (s) => (overview.may.manage ? <RowAction onClick={() => { action.clear(); setService({ id: s.id, lock: s.lock_version, code: s.code, name: s.name, category: s.category, minutes: String(s.duration_minutes), price: minorToMajorText(s.price_minor, overview.currency), capacity: String(s.capacity), active: s.is_active }); }} icon={Pencil} label={t('fo.act.edit')} tone="warning" /> : null) },
     ];
 
     return (

@@ -35,3 +35,19 @@ Do not create one-off variants inside feature pages when a semantic shared varia
 - The page is grey; what a person reads or acts on stands on the white surface. A table or grid, a card, a bordered box (`border border-border` with padding) and a list of rows all have `bg-surface` behind them. Write a list of rows as `list-panel divide-y divide-border` (a border, the surface and a side padding for the rows), never as bare rows with only a line between them.
 - Headings, descriptions and definition lists may sit on the page itself; a row that has a button or a status does not.
 - `resources/js/shared/ui/surface-contract.test.ts` fails on a bare list or a bordered box with no background.
+
+## Row actions in tables (2026-11-16)
+
+Every action inside a table row (a cell of a `DataGrid`, `DataTable` or plain `Table`) is a `RowAction` from `resources/js/components/ui/row-action.tsx`: a 32px square icon, coloured by what it does, with its name shown on hover and given to assistive technology (`label`). Never a text button inside a row. Actions above or below the table (add, export, filters) and inside dialogs stay text `Button`s. Inputs inside a row stay inputs.
+
+The colour is the meaning, the same on every screen:
+
+| Tone | Meaning | Usual icons (lucide-react) |
+|---|---|---|
+| `info` (blue) | Look: open, detail, view, history, print, download | `Eye`, `ExternalLink`, `History`, `Printer`, `Download`, `FileText` |
+| `warning` (amber) | Change: edit, adjust, save an edit, reschedule, assign | `Pencil`, `Save`, `SlidersHorizontal`, `CalendarClock`, `UserCog` |
+| `success` (green) | Move forward: approve, confirm, activate, post, pay, complete, receive, check in | `Check`, `CircleCheck`, `Send`, `Wallet`, `PackageCheck`, `LogIn` |
+| `danger` (red) | Stop or remove: delete, cancel, reject, deactivate, void, check out | `Trash2`, `X`, `Ban`, `CircleX`, `Undo2`, `LogOut` |
+| `neutral` (grey) | Anything else: copy, move, more | `Copy`, `ArrowRightLeft`, `Ellipsis` |
+
+`label` is the same translated text the text button had. A link uses `href`; a busy action uses `loading`; `disabled` still shows its name on hover. Several actions sit in `RowActions` (or an existing `flex gap-1` wrapper).

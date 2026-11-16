@@ -1,5 +1,6 @@
 import { Link } from '@inertiajs/react';
 import { useState } from 'react';
+import { Eye, Wallet } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { DataGrid, type DataGridColumn } from '@/components/ui/data-grid';
@@ -11,6 +12,7 @@ import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
 import { MoneyInput } from '@/components/ui/money-input';
 import { Metric } from '@/components/ui/metric';
+import { RowAction, RowActions } from '@/components/ui/row-action';
 import { Select } from '@/components/ui/select';
 import { FinanceShell } from '@/modules/finance/components/finance-shell';
 import { MonthPicker } from '@/modules/finance/components/month-picker';
@@ -116,10 +118,10 @@ export default function RecurringPage({ overview }: { overview: Overview }) {
         {
             id: 'actions', label: t('inv.col.actions'),
             cell: (r) => (
-                <span className="flex flex-wrap gap-2">
-                    {overview.may.manage && canSettle(r) ? <Button onClick={() => setSettleFor(r)} size="sm" type="button">{t('fin.rec.settle.open')}</Button> : null}
-                    <Button asChild size="sm" variant="outline"><Link href={`/finance/recurring/${r.id}`}>{t('fin.rec.open')}</Link></Button>
-                </span>
+                <RowActions>
+                    {overview.may.manage && canSettle(r) ? <RowAction icon={Wallet} label={t('fin.rec.settle.open')} onClick={() => setSettleFor(r)} tone="success" /> : null}
+                    <RowAction href={`/finance/recurring/${r.id}`} icon={Eye} label={t('fin.rec.open')} tone="info" />
+                </RowActions>
             ),
         },
     ];

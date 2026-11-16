@@ -1,3 +1,4 @@
+import { ClipboardCheck, Send, UserCog, X } from 'lucide-react';
 import { useState } from 'react';
 
 import { Alert } from '@/components/ui/alert';
@@ -8,6 +9,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
+import { RowAction } from '@/components/ui/row-action';
 import { Select } from '@/components/ui/select';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { FlagsPanel, RequestsList, type RoomFlag, type RoomRequest } from '@/modules/housekeeping/components/room-annotations';
@@ -121,8 +123,10 @@ export default function HousekeepingBoardPage({ board }: { board: Board }) {
                                         <option value="">{t('hk.board.chooseStaff')}</option>
                                         {board.staff.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
                                     </Select>
-                                    <Button disabled={action.busy || (assignTo[r.task.id] ?? '') === ''} onClick={() => void assign(r.task!)} size="sm" type="button" variant="outline">{t('hk.board.assign')}</Button>
-                                    <Button disabled={action.busy} onClick={() => void cancel(r.task!)} size="sm" type="button" variant="outline">{t('hk.board.cancel')}</Button>
+                                    <div className="flex items-center gap-1">
+                                        <RowAction disabled={action.busy || (assignTo[r.task.id] ?? '') === ''} icon={UserCog} label={t('hk.board.assign')} onClick={() => void assign(r.task!)} tone="warning" />
+                                        <RowAction disabled={action.busy} icon={X} label={t('hk.board.cancel')} onClick={() => void cancel(r.task!)} tone="danger" />
+                                    </div>
                                 </div>
                             ) : null}
                         </div>
@@ -133,9 +137,9 @@ export default function HousekeepingBoardPage({ board }: { board: Board }) {
         ...(board.may.manage || board.may.inspect ? [{
             id: 'actions', label: t('hk.board.actions'),
             cell: (r: Room) => (
-                <div className="flex flex-wrap gap-2">
-                    {board.may.manage && r.task === null ? <Button onClick={() => { action.clear(); setRequest(r); }} size="sm" type="button" variant="outline">{t('hk.board.request')}</Button> : null}
-                    {board.may.inspect && r.status === 'clean' ? <Button onClick={() => void openInspection(r)} size="sm" type="button">{t('hk.board.inspect')}</Button> : null}
+                <div className="flex items-center gap-1">
+                    {board.may.manage && r.task === null ? <RowAction icon={Send} label={t('hk.board.request')} onClick={() => { action.clear(); setRequest(r); }} tone="success" /> : null}
+                    {board.may.inspect && r.status === 'clean' ? <RowAction icon={ClipboardCheck} label={t('hk.board.inspect')} onClick={() => void openInspection(r)} tone="success" /> : null}
                 </div>
             ),
         }] : []),

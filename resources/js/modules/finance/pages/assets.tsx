@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Ban } from 'lucide-react';
 
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -10,6 +11,7 @@ import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
 import { MoneyInput } from '@/components/ui/money-input';
+import { RowAction } from '@/components/ui/row-action';
 import { Select } from '@/components/ui/select';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { FinanceShell } from '@/modules/finance/components/finance-shell';
@@ -59,7 +61,7 @@ export default function AssetsPage({ overview }: { overview: Overview }) {
         { id: 'accumulated', label: t('fin.as.col.accumulated'), align: 'right', value: (a) => a.accumulated_minor, cell: (a) => <span>{money(a.accumulated_minor)}<span className="block text-xs text-muted-foreground">{a.depreciated_through ?? '—'}</span></span> },
         { id: 'book', label: t('fin.as.col.book'), align: 'right', value: (a) => a.book_minor, cell: (a) => money(a.book_minor) },
         { id: 'status', label: t('fin.as.col.status'), value: (a) => a.status, filter: 'select', filterLabel: (v) => t(`fin.as.status.${v}` as 'fin.as.status.active'), cell: (a) => (a.status === 'active' ? <span className="flex items-center gap-2"><StatusBadge label={t('fin.as.status.active')} tone="success" />{a.pending_months > 0 ? <span className="text-xs text-warning">{t('fin.as.pending', { n: a.pending_months })}</span> : null}</span> : <StatusBadge label={`${t(`fin.as.kind.${a.disposal_kind}` as 'fin.as.kind.sale')} ${a.disposed_on === null ? '' : format.date(a.disposed_on)}`} tone="neutral" />) },
-        { id: 'actions', label: '', value: () => '', sortable: false, cell: (a) => (overview.may_manage && a.status === 'active' ? <Button onClick={() => { action.clear(); setDispose({ asset: a, kind: 'sale', on: overview.today, proceeds: '0', method: 'transfer', reason: '' }); }} size="sm" type="button" variant="outline">{t('fin.as.leaves')}</Button> : null) },
+        { id: 'actions', label: '', value: () => '', sortable: false, cell: (a) => (overview.may_manage && a.status === 'active' ? <RowAction icon={Ban} label={t('fin.as.leaves')} onClick={() => { action.clear(); setDispose({ asset: a, kind: 'sale', on: overview.today, proceeds: '0', method: 'transfer', reason: '' }); }} tone="danger" /> : null) },
     ];
 
     return (

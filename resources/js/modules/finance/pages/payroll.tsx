@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { CircleCheck, Wallet } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { DataGrid, type DataGridColumn } from '@/components/ui/data-grid';
@@ -8,6 +9,7 @@ import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
 import { MoneyInput } from '@/components/ui/money-input';
+import { RowAction, RowActions } from '@/components/ui/row-action';
 import { Select } from '@/components/ui/select';
 import { StatusBadge, type StatusTone } from '@/components/ui/status-badge';
 import { FinanceShell } from '@/modules/finance/components/finance-shell';
@@ -60,10 +62,10 @@ export default function PayrollPage({ overview }: { overview: { rows: Row[] } })
         {
             id: 'act', label: '', value: () => '', sortable: false,
             cell: (r) => (
-                <span className="flex gap-2">
-                    {r.may.verify ? <Button onClick={() => { action.clear(); setVerify({ row: r, amount: '' }); }} size="sm" type="button">{t('fin.payroll.verify')}</Button> : null}
-                    {r.may.pay ? <Button onClick={() => { action.clear(); setPay({ row: r, method: 'transfer', reference: '' }); }} size="sm" type="button">{t('fin.payroll.pay')}</Button> : null}
-                </span>
+                <RowActions>
+                    {r.may.verify ? <RowAction icon={CircleCheck} label={t('fin.payroll.verify')} onClick={() => { action.clear(); setVerify({ row: r, amount: '' }); }} tone="success" /> : null}
+                    {r.may.pay ? <RowAction icon={Wallet} label={t('fin.payroll.pay')} onClick={() => { action.clear(); setPay({ row: r, method: 'transfer', reference: '' }); }} tone="success" /> : null}
+                </RowActions>
             ),
         },
     ];

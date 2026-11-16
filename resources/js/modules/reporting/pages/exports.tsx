@@ -1,3 +1,4 @@
+import { Download, FileText } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 import { Alert } from '@/components/ui/alert';
@@ -9,6 +10,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
+import { RowAction } from '@/components/ui/row-action';
 import { Select } from '@/components/ui/select';
 import { StatusBadge, type StatusTone } from '@/components/ui/status-badge';
 import { ReportingShell } from '@/modules/reporting/components/reporting-shell';
@@ -66,7 +68,7 @@ export default function ExportsPage({ overview }: { overview: Overview }) {
             cell: (j) => <><StatusBadge label={t(`rpt.exports.status.${j.status}` as 'rpt.exports.status.queued')} tone={TONE[j.status]} />{j.error !== null ? <span className="block text-xs text-danger">{j.error}</span> : null}</>,
         },
         { id: 'lines', label: t('rpt.exports.lines'), align: 'right', value: (j) => j.rows, cell: (j) => j.rows ?? '—' },
-        { id: 'download', label: t('rpt.exports.download'), cell: (j) => (j.status === 'done' ? <span className="flex gap-2"><Button asChild size="sm" variant="outline"><a href={`/reports/exports/${j.id}/download`}>{t('rpt.exports.download')}</a></Button><Button asChild size="sm" variant="outline"><a href={`/reports/exports/${j.id}/download?format=pdf`}>{t('rpt.export.pdf')}</a></Button></span> : null) },
+        { id: 'download', label: t('rpt.exports.download'), cell: (j) => (j.status === 'done' ? <span className="flex gap-1"><RowAction href={`/reports/exports/${j.id}/download`} icon={Download} label={t('rpt.exports.download')} native tone="info" /><RowAction href={`/reports/exports/${j.id}/download?format=pdf`} icon={FileText} label={t('rpt.export.pdf')} native tone="info" /></span> : null) },
     ];
 
     return (

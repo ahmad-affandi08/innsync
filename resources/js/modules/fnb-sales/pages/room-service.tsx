@@ -1,9 +1,11 @@
+import { CircleCheck } from 'lucide-react';
 import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { DataGrid, type DataGridColumn } from '@/components/ui/data-grid';
 import { Dialog } from '@/components/ui/dialog';
 import { EmptyState } from '@/components/ui/empty-state';
+import { RowAction } from '@/components/ui/row-action';
 import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
@@ -45,7 +47,7 @@ export default function RoomServicePage({ board }: { board: Board }) {
         { id: 'room', label: t('fnb.mini.room'), value: (o) => o.room.number, cell: (o) => <span>{o.room.number}<span className="block text-xs text-muted-foreground">{o.guest_name ?? ''}</span></span> },
         { id: 'bill', label: t('fnb.rs.bill'), value: (o) => o.bill_number, cell: (o) => <a className="underline" href={`/fnb/bills/${o.bill_id}`}>{o.bill_number}</a> },
         { id: 'status', label: t('hr.col.status'), value: (o) => o.status, filter: 'select', filterLabel: (v) => t(`fnb.rs.status.${v}` as MessageKey), cell: (o) => <StatusBadge label={t(`fnb.rs.status.${o.status}` as MessageKey)} tone={TONE[o.status]} /> },
-        { id: 'act', label: '', value: () => '', sortable: false, cell: (o) => (o.next === null ? null : <Button disabled={action.busy} onClick={() => void action.run(`/fnb/room-service/${o.id}/status`, { body: { status: o.next, lock_version: o.lock_version }, reload })} size="sm" type="button">{t(`fnb.rs.mark.${o.next}` as MessageKey)}</Button>) },
+        { id: 'act', label: '', value: () => '', sortable: false, cell: (o) => (o.next === null ? null : <RowAction disabled={action.busy} icon={CircleCheck} label={t(`fnb.rs.mark.${o.next}` as MessageKey)} onClick={() => void action.run(`/fnb/room-service/${o.id}/status`, { body: { status: o.next, lock_version: o.lock_version }, reload })} tone="success" />) },
     ];
 
     return (

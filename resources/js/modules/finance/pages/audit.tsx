@@ -1,5 +1,6 @@
 import { router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
+import { Eye } from 'lucide-react';
 
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -9,6 +10,7 @@ import { Dialog } from '@/components/ui/dialog';
 import { EmptyState } from '@/components/ui/empty-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
+import { RowAction } from '@/components/ui/row-action';
 import { Select } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { FinanceShell } from '@/modules/finance/components/finance-shell';
@@ -76,7 +78,7 @@ export default function AuditPage({ trail }: { trail: Trail }) {
         { id: 'approval', label: t('fin.aud.colApproval'), value: (r) => r.approval ?? '', cell: (r) => r.approval ?? '—', hidden: true },
         {
             id: 'details', label: t('inv.col.actions'),
-            cell: (r) => <Button disabled={r.before === null && r.after === null} onClick={() => setDetail(r)} size="sm" type="button" variant="outline">{t('fin.aud.details')}</Button>,
+            cell: (r) => <RowAction disabled={r.before === null && r.after === null} icon={Eye} label={t('fin.aud.details')} onClick={() => setDetail(r)} tone="info" />,
         },
     ];
 

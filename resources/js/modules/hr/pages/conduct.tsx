@@ -1,4 +1,5 @@
 import { router } from '@inertiajs/react';
+import { FileText, Undo2 } from 'lucide-react';
 import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -9,6 +10,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
+import { RowAction } from '@/components/ui/row-action';
 import { Select } from '@/components/ui/select';
 import { StatusBadge, type StatusTone } from '@/components/ui/status-badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -71,9 +73,9 @@ export default function ConductPage({ overview }: { overview: ConductOverview })
         {
             id: 'act', label: '', value: () => '', sortable: false,
             cell: (r) => (
-                <span className="flex flex-wrap gap-2">
-                    {r.has_letter ? <Button asChild size="sm" variant="outline"><a href={`/hr/conduct/${r.id}/letter`} rel="noreferrer" target="_blank">{t('hr.conduct.letter')}</a></Button> : null}
-                    {r.may.revoke ? <Button onClick={() => { action.clear(); setRevoke({ record: r, reason: '' }); }} size="sm" type="button" variant="outline">{t('hr.conduct.revoke')}</Button> : null}
+                <span className="flex flex-nowrap items-center gap-1">
+                    {r.has_letter ? <RowAction href={`/hr/conduct/${r.id}/letter`} icon={FileText} label={t('hr.conduct.letter')} newTab tone="info" /> : null}
+                    {r.may.revoke ? <RowAction icon={Undo2} label={t('hr.conduct.revoke')} onClick={() => { action.clear(); setRevoke({ record: r, reason: '' }); }} tone="danger" /> : null}
                 </span>
             ),
         },

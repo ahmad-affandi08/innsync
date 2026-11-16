@@ -1,5 +1,6 @@
 import { router } from '@inertiajs/react';
 import { useState } from 'react';
+import { CalendarCheck, PhoneCall, X } from 'lucide-react';
 
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -10,6 +11,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
+import { RowAction } from '@/components/ui/row-action';
 import { Select } from '@/components/ui/select';
 import { StatusBadge, type StatusTone } from '@/components/ui/status-badge';
 import { FrontOfficeShell } from '@/modules/front-office/components/front-office-shell';
@@ -68,10 +70,10 @@ export default function WaitlistPage({ overview }: { overview: Overview }) {
         {
             id: 'actions', label: '', value: () => '', sortable: false,
             cell: (e) => (overview.may_write && live(e)
-                ? <span className="flex flex-wrap gap-2">
-                    {e.status === 'waiting' ? <Button disabled={action.busy} onClick={() => void action.run(`/front-office/waitlist/${e.id}/offer`, { body: { lock_version: e.lock_version }, reload })} size="sm" type="button" variant="outline">{t('fo.wl.called')}</Button> : null}
-                    <Button disabled={!e.available} onClick={() => { action.clear(); setBook({ entry: e, plan: overview.plans[0]?.id ?? '', status: 'confirmed', key: newIdempotencyKey() }); }} size="sm" type="button">{t('fo.wl.book')}</Button>
-                    <Button onClick={() => { action.clear(); setCancel({ entry: e, reason: '' }); }} size="sm" type="button" variant="outline">{t('fo.wl.cancel')}</Button>
+                ? <span className="flex flex-wrap gap-1">
+                    {e.status === 'waiting' ? <RowAction disabled={action.busy} onClick={() => void action.run(`/front-office/waitlist/${e.id}/offer`, { body: { lock_version: e.lock_version }, reload })} icon={PhoneCall} label={t('fo.wl.called')} tone="success" /> : null}
+                    <RowAction disabled={!e.available} onClick={() => { action.clear(); setBook({ entry: e, plan: overview.plans[0]?.id ?? '', status: 'confirmed', key: newIdempotencyKey() }); }} icon={CalendarCheck} label={t('fo.wl.book')} tone="success" />
+                    <RowAction onClick={() => { action.clear(); setCancel({ entry: e, reason: '' }); }} icon={X} label={t('fo.wl.cancel')} tone="danger" />
                 </span>
                 : null),
         },

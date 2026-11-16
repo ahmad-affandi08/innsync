@@ -1,11 +1,13 @@
 import { router } from '@inertiajs/react';
 import { useState } from 'react';
+import { Eye } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { DataGrid, type DataGridColumn } from '@/components/ui/data-grid';
 import { Dialog } from '@/components/ui/dialog';
 import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
+import { RowAction } from '@/components/ui/row-action';
 import { Select } from '@/components/ui/select';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { InventoryShell } from '@/modules/inventory-purchasing/components/inventory-shell';
@@ -61,7 +63,7 @@ export default function OrdersPage({ overview, status }: { overview: Overview; s
         { id: 'expected', label: t('inv.po.expected'), value: (o) => o.expected_date ?? '', cell: (o) => (o.expected_date === null ? '—' : format.date(o.expected_date)) },
         { id: 'total', label: t('inv.req.total'), align: 'right', value: (o) => o.total_minor, cell: (o) => format.money(o.total_minor, overview.currency) },
         { id: 'state', label: t('inv.col.status'), value: (o) => o.status, filter: 'select', filterLabel: label, cell: (o) => <StatusBadge label={label(o.status)} tone={ORDER_TONE[o.status] ?? 'neutral'} /> },
-        { id: 'actions', label: t('inv.col.actions'), cell: (o) => <Button onClick={() => router.visit(`/inventory/orders/${o.id}`)} size="sm" type="button" variant="outline">{t('inv.po.open')}</Button> },
+        { id: 'actions', label: t('inv.col.actions'), cell: (o) => <RowAction icon={Eye} label={t('inv.po.open')} onClick={() => router.visit(`/inventory/orders/${o.id}`)} tone="info" /> },
     ];
 
     return (

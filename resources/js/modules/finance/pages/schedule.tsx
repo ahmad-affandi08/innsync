@@ -1,9 +1,10 @@
 import { router } from '@inertiajs/react';
+import { Eye } from 'lucide-react';
 
-import { Button } from '@/components/ui/button';
 import { DataGrid, type DataGridColumn } from '@/components/ui/data-grid';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Metric } from '@/components/ui/metric';
+import { RowAction } from '@/components/ui/row-action';
 import { Select } from '@/components/ui/select';
 import { FinanceShell } from '@/modules/finance/components/finance-shell';
 import { DueBadge, type PayableRow } from '@/modules/finance/lib/finance';
@@ -28,7 +29,7 @@ export default function SchedulePage({ schedule }: { schedule: Schedule }) {
         { id: 'document', label: t('fin.col.document'), value: (p) => p.document_number },
         { id: 'ours', label: t('fin.col.ourNumber'), value: (p) => p.source_number, hidden: true },
         { id: 'balance', label: t('fin.col.balance'), align: 'right', value: (p) => p.balance_minor, cell: (p) => money(p.balance_minor, p.currency) },
-        { id: 'actions', label: t('inv.col.actions'), cell: (p) => <Button onClick={() => router.visit(`/finance/payables/${p.id}`)} size="sm" type="button" variant="outline">{t('fin.sch.open')}</Button> },
+        { id: 'actions', label: t('inv.col.actions'), cell: (p) => <RowAction icon={Eye} label={t('fin.sch.open')} onClick={() => router.visit(`/finance/payables/${p.id}`)} tone="info" /> },
     ];
 
     return (
