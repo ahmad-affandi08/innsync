@@ -27,11 +27,11 @@ function TableRow({ className, ...props }: ComponentProps<'tr'>) {
 }
 
 function TableHead({ className, ...props }: ComponentProps<'th'>) {
-    return <th className={cn('h-10 px-3 text-left align-middle text-xs font-medium text-muted-foreground', className)} data-slot="table-head" scope="col" {...props} />;
+    return <th className={cn('h-9 px-3 text-left align-middle text-xs font-medium text-muted-foreground', className)} data-slot="table-head" scope="col" {...props} />;
 }
 
 function TableCell({ className, ...props }: ComponentProps<'td'>) {
-    return <td className={cn('px-3 py-3 align-middle', className)} data-slot="table-cell" {...props} />;
+    return <td className={cn('px-3 py-2 align-middle', className)} data-slot="table-cell" {...props} />;
 }
 
 function TableCaption({ className, ...props }: ComponentProps<'caption'>) {

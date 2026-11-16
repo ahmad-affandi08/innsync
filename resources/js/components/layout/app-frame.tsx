@@ -489,10 +489,10 @@ export function AppFrame({ actions, children, description, links: allLinks = [],
     );
 
     const body = (
-        <main className={cn('mx-auto flex w-full flex-1 flex-col gap-8 px-4 py-8 lg:px-8', wide ? 'max-w-[90rem]' : 'max-w-5xl', printClass)} id="content" tabIndex={-1}>
+        <main className={cn('mx-auto flex w-full flex-1 flex-col gap-6 px-4 py-6 lg:px-8', wide ? 'max-w-[90rem]' : 'max-w-5xl', printClass)} id="content" tabIndex={-1}>
             <div className="-mb-4">{crumbs}</div>
             {pageHead}
-            <div className="flex flex-col gap-8">{children}</div>
+            <div className="flex flex-col gap-6 border border-border bg-surface p-4 lg:p-6 print:border-0 print:bg-transparent print:p-0">{children}</div>
         </main>
     );
 
@@ -678,10 +678,10 @@ export function AppFrame({ actions, children, description, links: allLinks = [],
                         </header>
                     )}
                     {layout === 'topbar' ? (
-                        <main className={cn('mx-auto flex w-full flex-1 flex-col gap-8 px-4 py-8 lg:px-8', wide ? 'max-w-[100rem]' : 'max-w-5xl', printClass)} id="content" tabIndex={-1}>
+                        <main className={cn('mx-auto flex w-full flex-1 flex-col gap-6 px-4 py-6 lg:px-8', wide ? 'max-w-[100rem]' : 'max-w-5xl', printClass)} id="content" tabIndex={-1}>
                             <div className="-mb-4">{crumbs}</div>
                             {pageHead}
-                            <div className="flex flex-col gap-8">{children}</div>
+                            <div className="flex flex-col gap-6 border border-border bg-surface p-4 lg:p-6 print:border-0 print:bg-transparent print:p-0">{children}</div>
                         </main>
                     ) : body}
                     <footer className="px-4 pb-6 text-xs text-muted-foreground lg:px-8 print:hidden" data-testid="app-version">
