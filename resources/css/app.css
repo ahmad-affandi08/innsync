@@ -146,13 +146,51 @@
         -webkit-font-smoothing: antialiased;
     }
 
-    /* The plain checkbox and radio of a form: one size, the brand colour and a pointer, so they match the shared Checkbox and RadioGroup. */
-    input[type='checkbox'],
+    /* The plain radio of a form: one size, the brand colour and a pointer, so it matches the shared RadioGroup. */
     input[type='radio'] {
         width: 1rem;
         height: 1rem;
         flex-shrink: 0;
         accent-color: var(--primary);
+    }
+
+    /*
+     * The plain checkbox of a form looks like the shared Checkbox: a navy frame with a thicker lower edge, the brand orange when ticked and a dash when only part of a group is chosen. The box the shared
+     * Checkbox keeps out of sight for forms (aria-hidden) is left alone.
+     */
+    input[type='checkbox']:not([aria-hidden='true']) {
+        appearance: none;
+        flex-shrink: 0;
+        width: 1.25rem;
+        height: 1.25rem;
+        margin: 0;
+        vertical-align: middle;
+        border: 1.5px solid var(--primary);
+        border-bottom-width: 3px;
+        background-color: var(--surface);
+        background-position: center;
+        background-repeat: no-repeat;
+        background-size: 0.875rem;
+        transition: background-color 0.15s;
+    }
+
+    input[type='checkbox']:not([aria-hidden='true']):checked {
+        background-color: var(--brand);
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23fff' stroke-width='3.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12l5 5 9-10'/%3E%3C/svg%3E");
+    }
+
+    input[type='checkbox']:not([aria-hidden='true']):indeterminate {
+        background-color: var(--brand);
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23fff' stroke-width='3.6' stroke-linecap='round'%3E%3Cpath d='M6 12h12'/%3E%3C/svg%3E");
+    }
+
+    input[type='checkbox']:not([aria-hidden='true']):focus-visible {
+        outline: 2px solid var(--ring);
+        outline-offset: 2px;
+    }
+
+    input[type='checkbox']:disabled {
+        opacity: 0.5;
     }
 
     input[type='checkbox']:not(:disabled),
