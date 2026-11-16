@@ -265,6 +265,7 @@ describe('dictionaries', () => {
             'fnb.px.outlet',
             'fnb.px.status',
             'guest.nav.menu',
+            'guest.tab.menu',
             'guest.pay.qris',
             'guest.qr.colStatus',
             'rpt.sch.colStatus',

@@ -1,5 +1,5 @@
 import { Head, Link, router } from '@inertiajs/react';
-import { Minus, Plus } from 'lucide-react';
+import { ArrowRight, Lock, Minus, Plus, UtensilsCrossed } from 'lucide-react';
 import { useState } from 'react';
 
 import { Alert } from '@/components/ui/alert';
@@ -10,6 +10,7 @@ import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
 import { GuestShell } from '@/modules/guest/components/guest-shell';
 import { qrLabel } from '@/modules/guest/lib/qr';
+import { cn } from '@/shared/lib/utils';
 import type { GuestItem, GuestMenu, GuestOrder } from '@/modules/guest/lib/guest';
 import { newIdempotencyKey } from '@/shared/api/http';
 import { useServerAction } from '@/shared/api/use-server-action';
@@ -119,6 +120,24 @@ export default function MenuPage({ view: first }: { view: GuestMenu }) {
         setKey(newIdempotencyKey());
     }
 
+    const count = cart.reduce((n, l) => n + l.quantity, 0);
+    // A plain item (no choices, no note) is one line; its count shows and changes on the item itself.
+    const plainLine = (i: GuestItem) => cart.find((l) => l.item.id === i.id && l.variant === null && l.modifiers.length === 0 && l.note === '');
+    const roomProof = view.kind === 'room' && !view.verified;
+
+    const proof = (
+        <div className="flex flex-col gap-3 border border-border bg-surface p-4" data-testid="guest-proof">
+            <p className="flex items-center gap-2 font-semibold"><Lock aria-hidden="true" className="size-4 text-accent" />{t('guest.proof.title')}</p>
+            <p className="-mt-1 text-sm text-muted-foreground">{t('guest.proof.hint')}</p>
+            {proofError ? <Alert title={view.locked ? t('guest.proof.locked') : t('guest.proof.failed')} tone="warning" /> : null}
+            <div className="grid gap-3 sm:grid-cols-2">
+                <FormField label={t('guest.proof.room')}><Input autoComplete="off" inputMode="text" onChange={(e) => setRoom(e.target.value)} value={room} /></FormField>
+                <FormField label={t('guest.proof.name')}><Input autoComplete="off" onChange={(e) => setSurname(e.target.value)} value={surname} /></FormField>
+            </div>
+            <Button className="w-full sm:w-auto sm:self-start" disabled={room.trim() === '' || surname.trim() === ''} loading={action.busy} onClick={() => void prove()} type="button" variant="accent">{t('guest.proof.confirm')}</Button>
+        </div>
+    );
+
     return (
         <>
             <Head title={qrLabel(view.label, t)} />
@@ -130,73 +149,96 @@ export default function MenuPage({ view: first }: { view: GuestMenu }) {
                     </Alert>
                 ) : null}
 
-                {view.needs_proof ? <Alert title={t('guest.proof.needed')} tone="info" /> : null}
+                {roomProof ? proof : view.needs_proof ? <Alert title={t('guest.proof.needed')} tone="info" /> : null}
                 {view.menu.length === 0 && view.available ? <EmptyState illustration="coffee" title={t('guest.menu.empty')} /> : null}
-                {view.menu.map((c) => (
-                    <section aria-label={c.name} className="flex flex-col gap-2" key={c.id}>
-                        <h2 className="text-sm font-semibold text-muted-foreground">{c.name}</h2>
-                        <ul className="flex flex-col divide-y divide-border border border-border bg-surface">
-                            {c.items.map((i) => (
-                                <li key={i.id}>
-                                    <button className="flex w-full items-start justify-between gap-3 px-3 py-3 text-left disabled:opacity-60" disabled={!i.is_available || !view.available} onClick={() => choose(i)} type="button">
-                                        <span>
-                                            <span className="block font-medium">{i.name}</span>
-                                            {i.description !== null ? <span className="block text-xs text-muted-foreground">{i.description}</span> : null}
-                                            {!i.is_available ? <span className="mt-1 block text-xs font-semibold text-danger">{t('guest.menu.soldOut')}</span> : null}
-                                        </span>
-                                        <span className="whitespace-nowrap tabular-nums">{i.variants.length > 0 ? t('guest.menu.from', { price: money(Math.min(...i.variants.map((v) => v.price_minor))) }) : money(i.price_minor)}</span>
-                                    </button>
+
+                {view.menu.length > 1 ? (
+                    <nav aria-label={t('guest.menu.categories')} className="sticky top-0 z-20 -mx-4 overflow-x-auto border-b border-border bg-background/95 px-4 py-2 backdrop-blur">
+                        <ul className="flex gap-2">
+                            {view.menu.map((c) => (
+                                <li className="shrink-0" key={c.id}>
+                                    <a className="inline-flex h-9 items-center border border-control bg-surface px-3 text-sm font-medium hover:border-primary hover:bg-primary hover:text-primary-foreground" href={`#cat-${c.id}`}>{c.name}</a>
                                 </li>
                             ))}
+                        </ul>
+                    </nav>
+                ) : null}
+
+                {view.menu.map((c) => (
+                    <section aria-label={c.name} className="flex scroll-mt-16 flex-col gap-2" id={`cat-${c.id}`} key={c.id}>
+                        <h2 className="text-base font-semibold">{c.name}</h2>
+                        <ul className="flex flex-col gap-2">
+                            {c.items.map((i) => {
+                                const open = i.is_available && view.available;
+                                const line = plainLine(i);
+
+                                return (
+                                    <li className={cn('grid grid-cols-[3rem_minmax(0,1fr)_auto] items-center gap-3 border border-border bg-surface p-3', !open && 'opacity-60')} key={i.id}>
+                                        <span aria-hidden="true" className="grid size-12 place-items-center bg-brand/10 text-accent"><UtensilsCrossed className="size-5" /></span>
+                                        <button className="min-w-0 text-left disabled:cursor-not-allowed" disabled={!open} onClick={() => choose(i)} type="button">
+                                            <span className="block font-medium leading-snug">{i.name}</span>
+                                            {i.description !== null ? <span className="mt-0.5 block text-xs text-muted-foreground">{i.description}</span> : null}
+                                            {!i.is_available ? <span className="mt-1 block text-xs font-semibold text-danger">{t('guest.menu.soldOut')}</span> : null}
+                                            <span className="mt-1 block font-semibold tabular-nums">{i.variants.length > 0 ? t('guest.menu.from', { price: money(Math.min(...i.variants.map((v) => v.price_minor))) }) : money(i.price_minor)}</span>
+                                        </button>
+                                        {!open ? <span /> : line !== undefined ? (
+                                            <span className="flex items-center gap-1">
+                                                <Button aria-label={t('guest.cart.less')} className="size-8" onClick={() => step(line.key, -1)} size="icon" type="button" variant="outline"><Minus aria-hidden="true" className="size-4" /></Button>
+                                                <span className="w-6 text-center font-semibold tabular-nums">{line.quantity}</span>
+                                                <Button aria-label={t('guest.cart.more')} className="size-8 border-b-[3px] border-t border-b-[color-mix(in_oklch,var(--accent),black_35%)] border-t-white/35" onClick={() => step(line.key, 1)} size="icon" type="button" variant="accent"><Plus aria-hidden="true" className="size-4" /></Button>
+                                            </span>
+                                        ) : (
+                                            <Button aria-label={`${t('guest.menu.add')} ${i.name}`} className="size-9 border-b-[3px] border-t border-b-[color-mix(in_oklch,var(--accent),black_35%)] border-t-white/35" onClick={() => choose(i)} size="icon" type="button" variant="accent"><Plus aria-hidden="true" className="size-5" /></Button>
+                                        )}
+                                    </li>
+                                );
+                            })}
                         </ul>
                     </section>
                 ))}
 
                 {cart.length > 0 ? (
-                    <section aria-labelledby="guest-cart-h" className="flex flex-col gap-3 border border-border bg-surface p-3" data-testid="guest-cart">
-                        <h2 className="font-semibold" id="guest-cart-h">{t('guest.cart.title')}</h2>
+                    <section aria-labelledby="guest-cart-h" className="flex scroll-mt-4 flex-col gap-3 border border-border bg-surface p-4" data-testid="guest-cart" id="guest-cart">
+                        <h2 className="text-lg font-semibold" id="guest-cart-h">{t('guest.cart.title')}</h2>
                         <ul className="flex flex-col divide-y divide-border">
                             {cart.map((l) => (
                                 <li className="flex items-center justify-between gap-2 py-2 text-sm" key={l.key}>
-                                    <span>{l.item.name}{l.variant !== null ? ` (${l.item.variants.find((v) => v.id === l.variant)?.name ?? ''})` : ''}{l.modifiers.length > 0 ? <span className="block text-xs text-muted-foreground">{l.item.groups.flatMap((g) => g.modifiers).filter((m) => l.modifiers.includes(m.id)).map((m) => m.name).join(', ')}</span> : null}</span>
-                                    <span className="flex items-center gap-1">
-                                        <Button aria-label={t('guest.cart.less')} onClick={() => step(l.key, -1)} size="icon" type="button" variant="outline"><Minus aria-hidden="true" className="size-4" /></Button>
+                                    <span className="min-w-0">{l.item.name}{l.variant !== null ? ` (${l.item.variants.find((v) => v.id === l.variant)?.name ?? ''})` : ''}{l.modifiers.length > 0 ? <span className="block text-xs text-muted-foreground">{l.item.groups.flatMap((g) => g.modifiers).filter((m) => l.modifiers.includes(m.id)).map((m) => m.name).join(', ')}</span> : null}{l.note !== '' ? <span className="block text-xs text-muted-foreground">{l.note}</span> : null}</span>
+                                    <span className="flex shrink-0 items-center gap-1">
+                                        <Button aria-label={t('guest.cart.less')} className="size-8" onClick={() => step(l.key, -1)} size="icon" type="button" variant="outline"><Minus aria-hidden="true" className="size-4" /></Button>
                                         <span className="w-6 text-center tabular-nums">{l.quantity}</span>
-                                        <Button aria-label={t('guest.cart.more')} onClick={() => step(l.key, 1)} size="icon" type="button" variant="outline"><Plus aria-hidden="true" className="size-4" /></Button>
+                                        <Button aria-label={t('guest.cart.more')} className="size-8" onClick={() => step(l.key, 1)} size="icon" type="button" variant="outline"><Plus aria-hidden="true" className="size-4" /></Button>
                                         <span className="w-24 text-right tabular-nums">{money(unit(l) * l.quantity)}</span>
                                     </span>
                                 </li>
                             ))}
                         </ul>
-                        <p className="flex justify-between font-semibold"><span>{t('guest.cart.subtotal')}</span><span className="tabular-nums">{money(total)}</span></p>
-                        <p className="text-xs text-muted-foreground">{t('guest.cart.chargesHint')}</p>
+                        <p className="flex justify-between border-t border-border pt-3 text-base font-semibold"><span>{t('guest.cart.subtotal')}</span><span className="tabular-nums">{money(total)}</span></p>
+                        <p className="-mt-2 text-xs text-muted-foreground">{t('guest.cart.chargesHint')}</p>
                         <FormField label={t('guest.cart.note')}><Input maxLength={200} onChange={(e) => setNote(e.target.value)} value={note} /></FormField>
                         <fieldset className="flex flex-col gap-2">
-                            <legend className="text-sm font-medium">{t('guest.pay.title')}</legend>
+                            <legend className="mb-1 text-sm font-medium">{t('guest.pay.title')}</legend>
                             {view.payments.map((p) => (
-                                <label className="flex items-start gap-2 text-sm" key={p}>
-                                    <input checked={payment === p} name="payment" onChange={() => setPayment(p)} type="radio" />
+                                <label className={cn('flex cursor-pointer items-start gap-3 border px-3 py-2.5 text-sm', payment === p ? 'border-brand bg-brand/5' : 'border-border')} key={p}>
+                                    <input checked={payment === p} className="mt-0.5" name="payment" onChange={() => setPayment(p)} type="radio" />
                                     <span>{t(`guest.pay.${p}` as MessageKey)}<span className="block text-xs text-muted-foreground">{t(`guest.pay.${p}.hint` as MessageKey)}</span></span>
                                 </label>
                             ))}
                         </fieldset>
-                        {needsProof ? (
-                            <div className="flex flex-col gap-3 border border-border bg-surface p-3" data-testid="guest-proof">
-                                <p className="text-sm font-medium">{t('guest.proof.title')}</p>
-                                <p className="text-xs text-muted-foreground">{t('guest.proof.hint')}</p>
-                                {proofError ? <Alert title={view.locked ? t('guest.proof.locked') : t('guest.proof.failed')} tone="warning" /> : null}
-                                <div className="grid gap-3 sm:grid-cols-2">
-                                    <FormField label={t('guest.proof.room')}><Input autoComplete="off" inputMode="text" onChange={(e) => setRoom(e.target.value)} value={room} /></FormField>
-                                    <FormField label={t('guest.proof.name')}><Input autoComplete="off" onChange={(e) => setSurname(e.target.value)} value={surname} /></FormField>
-                                </div>
-                                <div><Button disabled={room.trim() === '' || surname.trim() === ''} loading={action.busy} onClick={() => void prove()} type="button" variant="outline">{t('guest.proof.confirm')}</Button></div>
-                            </div>
-                        ) : null}
+                        {needsProof && !roomProof ? proof : null}
                         {error !== null ? <Alert title={error} tone="warning" /> : null}
-                        <Button disabled={needsProof || !view.can_order && !(view.kind === 'table')} loading={action.busy} onClick={() => void send()} type="button">{t('guest.cart.send')}</Button>
+                        <Button className="w-full" disabled={needsProof || !view.can_order && !(view.kind === 'table')} loading={action.busy} onClick={() => void send()} size="lg" type="button" variant="accent">{t('guest.cart.send')}</Button>
                     </section>
                 ) : null}
-                {cart.length === 0 ? <p className="text-center text-sm"><Link className="underline" href="/g/orders">{t('guest.menu.myOrders')}</Link></p> : null}
+
+                {count > 0 ? (
+                    <div className="fixed inset-x-0 bottom-14 z-20 px-4 pb-2">
+                        <a className="mx-auto flex max-w-xl items-center justify-between gap-3 border-b-[3px] border-brand bg-primary px-4 py-3 text-primary-foreground" href="#guest-cart">
+                            <span><span className="font-semibold">{t('guest.cart.count', { count })}</span> · <span className="tabular-nums">{money(total)}</span></span>
+                            <span className="flex items-center gap-1 font-medium">{t('guest.cart.view')}<ArrowRight aria-hidden="true" className="size-4" /></span>
+                        </a>
+                    </div>
+                ) : null}
             </GuestShell>
 
             <Dialog

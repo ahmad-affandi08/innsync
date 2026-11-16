@@ -1,4 +1,5 @@
 import { Head, Link, router } from '@inertiajs/react';
+import { Check } from 'lucide-react';
 import { useEffect } from 'react';
 
 import { Alert } from '@/components/ui/alert';
@@ -9,7 +10,18 @@ import { GuestShell } from '@/modules/guest/components/guest-shell';
 import { qrLabel } from '@/modules/guest/lib/qr';
 import type { GuestOrders } from '@/modules/guest/lib/guest';
 import { useFormatters, useTranslation } from '@/shared/i18n/i18n';
+import { cn } from '@/shared/lib/utils';
 import type { MessageKey } from '@/locales/en/index';
+
+const STEPS = ['new', 'preparing', 'ready', 'served'] as const;
+
+/** How far the order is: as far as its slowest dish that is still on it (a cancelled one does not hold it back); delivered to the room is the end. */
+function stage(o: GuestOrders['orders'][number]): number {
+    if (o.delivery === 'delivered') return STEPS.length - 1;
+    const steps = o.lines.map((l) => STEPS.indexOf(l.status as (typeof STEPS)[number])).filter((i) => i >= 0);
+
+    return steps.length === 0 ? -1 : Math.min(...steps);
+}
 
 const TONE: Record<string, StatusTone> = { new: 'pending', preparing: 'info', ready: 'success', served: 'success', voided: 'neutral', removed: 'neutral', pending: 'pending' };
 
@@ -30,14 +42,24 @@ export default function OrdersPage({ view }: { view: GuestOrders }) {
         <>
             <Head title={t('guest.orders.title')} />
             <GuestShell hotel={view.hotel} subtitle={qrLabel(view.label, t)} title={t('guest.orders.title')}>
-                <Button asChild size="sm" variant="outline"><Link href="/g/menu">{t('guest.orders.back')}</Link></Button>
+                <Button asChild className="self-start" size="sm" variant="outline"><Link href="/g/menu">{t('guest.orders.back')}</Link></Button>
                 {view.orders.length === 0 ? <EmptyState illustration="coffee" title={t('guest.orders.none')} /> : null}
                 {view.orders.map((o) => (
-                    <section aria-label={o.bill_number} className="flex flex-col gap-2 border border-border bg-surface p-3" data-testid="guest-order" key={o.id}>
+                    <section aria-label={o.bill_number} className="flex flex-col gap-3 border border-border bg-surface p-4" data-testid="guest-order" key={o.id}>
                         <div className="flex items-center justify-between gap-2">
                             <h2 className="font-semibold">{t('guest.orders.number', { number: o.bill_number })}</h2>
                             <span className="text-xs text-muted-foreground">{format.instant(o.placed_at)}</span>
                         </div>
+                        {stage(o) >= 0 ? (
+                            <ol aria-label={t('guest.orders.progress')} className="grid grid-cols-4 gap-1 text-[11px]">
+                                {STEPS.map((step, i) => (
+                                    <li aria-current={i === stage(o) ? 'step' : undefined} className="flex flex-col items-center gap-1 text-center" key={step}>
+                                        <span className={cn('grid size-7 place-items-center text-xs font-semibold', i <= stage(o) ? 'bg-brand text-white' : 'border border-border text-muted-foreground')}>{i < stage(o) ? <Check aria-hidden="true" className="size-4" /> : i + 1}</span>
+                                        <span className={i === stage(o) ? 'font-semibold' : 'text-muted-foreground'}>{t(`guest.orders.step.${step}` as MessageKey)}</span>
+                                    </li>
+                                ))}
+                            </ol>
+                        ) : null}
                         {o.delivery !== null ? <StatusBadge label={t(`guest.delivery.${o.delivery}` as MessageKey)} tone={o.delivery === 'delivered' ? 'success' : 'info'} /> : null}
                         <ul className="flex flex-col divide-y divide-border text-sm">
                             {o.lines.map((l, i) => (
