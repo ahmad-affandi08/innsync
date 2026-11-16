@@ -1,1 +1,0 @@
-import{i as e}from"./rolldown-runtime-Dd_uD5pT.js";import{y as t}from"./i18n-C5MPOHTr.js";var n=e(t(),1);function r(e,t,r=300){let i=JSON.stringify(e),a=(0,n.useRef)(i),o=(0,n.useRef)(t);(0,n.useEffect)(()=>{o.current=t}),(0,n.useEffect)(()=>{if(i===a.current)return;let e=window.setTimeout(()=>{a.current=i,o.current()},r);return()=>window.clearTimeout(e)},[i,r])}export{r as t};
