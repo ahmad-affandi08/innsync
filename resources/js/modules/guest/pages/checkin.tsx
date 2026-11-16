@@ -170,7 +170,7 @@ export default function CheckInPage({ token, view: first }: { token: string; vie
             <section className="flex flex-col gap-3 border border-border bg-surface p-3" data-testid="checkin-notice">
                 <h2 className="text-sm font-semibold">{t('guest.checkin.notice')}</h2>
                 <p className="whitespace-pre-line text-sm">{body}</p>
-                <label className="flex items-start gap-2 text-sm"><Checkbox checked={form.agree} className="mt-0.5" onCheckedChange={(v) => set({ agree: v === true })} />{t('guest.checkin.agree')}</label>
+                <label className="flex items-start gap-2 text-sm"><Checkbox checked={form.agree} onCheckedChange={(v) => set({ agree: v === true })} />{t('guest.checkin.agree')}</label>
                 {action.fieldError('agree') !== undefined ? <p className="text-sm text-destructive" role="alert">{action.fieldError('agree')}</p> : null}
             </section>
 

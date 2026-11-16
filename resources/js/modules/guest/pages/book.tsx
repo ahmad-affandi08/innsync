@@ -304,7 +304,7 @@ export default function BookPage({ booking, property_id: propertyId }: { booking
                                     <summary className="cursor-pointer font-medium">{t('guest.booking.privacy')}</summary>
                                     <p className="mt-2 whitespace-pre-line text-muted-foreground">{notice}</p>
                                 </details>
-                                <label className="flex items-start gap-2 text-sm"><Checkbox checked={form.agree} className="mt-0.5" onCheckedChange={(v) => setForm({ ...form, agree: v === true })} />{t('guest.booking.agree')}</label>
+                                <label className="flex items-start gap-2 text-sm"><Checkbox checked={form.agree} onCheckedChange={(v) => setForm({ ...form, agree: v === true })} />{t('guest.booking.agree')}</label>
                                 {action.fieldError('agree') !== undefined ? <p className="text-sm text-destructive" role="alert">{action.fieldError('agree')}</p> : null}
                                 <div className="flex flex-col gap-2 border-t border-border pt-4 sm:flex-row sm:items-center sm:justify-between">
                                     <p className="flex items-center gap-2 text-sm text-muted-foreground"><Wallet aria-hidden="true" className="size-4 text-brand" />{t('guest.booking.payAtHotel')}</p>

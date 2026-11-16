@@ -141,7 +141,7 @@ export default function SetupPage({ steps, progress, profile }: { steps: Step[];
                             <p className="text-xs text-muted-foreground">{t('setup.profile.featuresHint')}</p>
                             {profile.optional_features.map((f) => (
                                 <div className="flex items-start gap-2" key={f}>
-                                    <Checkbox checked={form.features.includes(f)} className="mt-0.5" id={`feature-${f}`} onCheckedChange={(v) => toggleFeature(f, v === true)} />
+                                    <Checkbox checked={form.features.includes(f)} id={`feature-${f}`} onCheckedChange={(v) => toggleFeature(f, v === true)} />
                                     <Label className="flex flex-col gap-0.5 font-normal" htmlFor={`feature-${f}`}>
                                         <span className="text-sm">{t(`setup.feature.${f}` as MessageKey)}</span>
                                         <span className="text-xs text-muted-foreground">{t(`setup.feature.${f}.hint` as MessageKey)}</span>
