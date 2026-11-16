@@ -148,7 +148,7 @@ export default function SpaManagePage({ overview, report }: { overview: Overview
                         <FormField label={t('fo.spa.rep.from')}><DatePicker onChange={(e) => setPeriod({ ...period, from: e.target.value })} value={period.from} /></FormField>
                         <FormField label={t('fo.spa.rep.to')}><DatePicker onChange={(e) => setPeriod({ ...period, to: e.target.value })} value={period.to} /></FormField>
                     </div>
-                    <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                         <Metric label={t('fo.spa.rep.treatments')} value={report.treatments_done} />
                         <Metric detail={t('fo.spa.rep.beforeCharges')} label={t('fo.spa.rep.revenue')} value={money(report.money.base_minor)} />
                         <Metric detail={t('fo.spa.rep.withCharges')} label={t('fo.spa.rep.total')} value={money(report.money.total_minor)} />
@@ -175,7 +175,7 @@ export default function SpaManagePage({ overview, report }: { overview: Overview
 
                 <TabsContent className="gap-3" value="rooms">
                     <div><Button onClick={() => { action.clear(); setRoom({ id: null, lock: 0, code: '', name: '', active: true }); }} type="button">{t('fo.spa.addRoom')}</Button></div>
-                    <DataGrid caption={t('fo.spa.tab.rooms')} columns={rooms} empty={<EmptyState title={t('fo.spa.noRooms')} />} getRowId={(x) => x.id} id="fo.spa.rooms" rows={overview.rooms} testId="spa-room-list" />
+                    <DataGrid caption={t('fo.spa.tab.rooms')} columns={rooms} empty={<EmptyState title={t('fo.spa.noRoomsHere')} />} getRowId={(x) => x.id} id="fo.spa.rooms" rows={overview.rooms} testId="spa-room-list" />
                 </TabsContent>
             </Tabs>
 

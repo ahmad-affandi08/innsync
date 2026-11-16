@@ -1186,6 +1186,7 @@ export const frontOffice = {
     'fo.spa.next': "Berikutnya jam {time}: {guest}",
     'fo.spa.bookRoom': "Pesan ruang ini",
     'fo.spa.setUpFirst': "Tambah treatment dan terapis dulu (Pengaturan dan laporan), baru ruang bisa dipesan.",
+    'fo.spa.noRoomsHere': "Belum ada ruang treatment. Klik Tambah ruang.",
     'fo.spa.noRooms': "Belum ada ruang treatment. Tambahkan di pengaturan.",
     'fo.spa.bookings': "Pesanan hari ini",
     'fo.spa.noBookings': "Tidak ada pesanan di hari ini.",

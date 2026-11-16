@@ -1186,6 +1186,7 @@ export const frontOffice = {
     'fo.spa.next': "Next at {time}: {guest}",
     'fo.spa.bookRoom': "Book this room",
     'fo.spa.setUpFirst': "Add a treatment and a therapist first (Set-up and report), then rooms can be booked.",
+    'fo.spa.noRoomsHere': "No treatment room yet. Click Add room.",
     'fo.spa.noRooms': "No treatment room yet. Add one in the set-up.",
     'fo.spa.bookings': "Bookings of the day",
     'fo.spa.noBookings': "No booking on this day.",

@@ -8,7 +8,7 @@ function Tabs({ className, ...props }: ComponentProps<typeof TabsPrimitive.Root>
 }
 
 function TabsList({ className, ...props }: ComponentProps<typeof TabsPrimitive.List>) {
-    return <TabsPrimitive.List className={cn('flex w-full flex-wrap items-stretch gap-1 overflow-x-auto border-b border-border print:hidden', className)} data-slot="tabs-list" {...props} />;
+    return <TabsPrimitive.List className={cn('flex w-full flex-wrap items-stretch gap-1 overflow-x-auto overflow-y-hidden border-b border-border print:hidden', className)} data-slot="tabs-list" {...props} />;
 }
 
 function TabsTrigger({ className, ...props }: ComponentProps<typeof TabsPrimitive.Trigger>) {
@@ -26,7 +26,7 @@ function TabsTrigger({ className, ...props }: ComponentProps<typeof TabsPrimitiv
 
 function TabsContent({ className, ...props }: ComponentProps<typeof TabsPrimitive.Content>) {
     // Every panel stays mounted (what was typed in one is kept when another is shown), the hidden ones are not displayed, and a printout has all of them.
-    return <TabsPrimitive.Content className={cn('focus-visible:outline-none data-[state=inactive]:hidden print:data-[state=inactive]:!flex', className)} data-slot="tabs-content" forceMount {...props} />;
+    return <TabsPrimitive.Content className={cn('flex flex-col gap-4 focus-visible:outline-none data-[state=inactive]:hidden print:data-[state=inactive]:!flex', className)} data-slot="tabs-content" forceMount {...props} />;
 }
 
 export { Tabs, TabsContent, TabsList, TabsTrigger };
