@@ -148,7 +148,7 @@ function DataGrid<T>({ caption, className, columns, empty, footerLabel, getRowId
                     <Search aria-hidden="true" className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
                     <label className="sr-only" htmlFor={searchId}>{t('ui.grid.search')}</label>
                     <Input
-                        className="min-h-10 pl-9 pr-9"
+                        className="min-h-9 pl-9 pr-9"
                         id={searchId}
                         onChange={(e) => patch({ search: e.target.value })}
                         placeholder={t('ui.grid.searchPlaceholder')}
@@ -307,7 +307,7 @@ function DataGrid<T>({ caption, className, columns, empty, footerLabel, getRowId
                     <label className="flex items-center gap-2 text-muted-foreground">
                         <span>{t('ui.grid.perPage')}</span>
                         <Select
-                            className="min-h-10 w-20"
+                            className="min-h-9 w-20"
                             searchable={false}
                             onChange={(e) => {
                                 const size = Number(e.target.value);

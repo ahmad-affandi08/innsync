@@ -45,7 +45,7 @@ On a touch screen every text field, select and text area is at least 16px so the
 The header includes a `LanguageSwitcher` (`resources/js/components/ui/language-switcher.tsx`) positioned beside the layout switcher:
 - Uses a `DropdownMenu` showing flag icons and language codes: Indonesian (`ID`, `id.png`) and English (`ENG`, `uk.png`).
 - Asset paths: `resources/js/assets/flags/` for Vite bundling and `public/images/flags/` for public assets.
-- Trigger displays the active country flag and 2-3 letter code (`ID` or `ENG`) in a compact 40px (`size-10`) button matching the header icon button standard.
+- Trigger displays the active country flag and 2-3 letter code (`ID` or `ENG`) in a compact 36px (`h-9`) button matching the header icon button standard.
 - Active language is marked with a checkmark in the dropdown menu. Switching language posts to `/language` and reloads Inertia page state.
 
 ## Sections of one page: tabs

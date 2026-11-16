@@ -32,7 +32,7 @@ export type ComboboxProps = {
 const SEARCH_FROM = 7;
 
 export const fieldClass =
-    'flex h-10 min-h-10 w-full min-w-0 max-w-full cursor-pointer items-center justify-between gap-2 border border-input bg-surface px-3 py-2 text-left text-sm text-foreground outline-none transition focus-visible:border-brand focus-visible:ring-2 focus-visible:ring-ring/40 disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-danger';
+    'flex h-9 min-h-9 w-full min-w-0 max-w-full cursor-pointer items-center justify-between gap-2 border border-input bg-surface px-3 py-2 text-left text-sm text-foreground outline-none transition focus-visible:border-brand focus-visible:ring-2 focus-visible:ring-ring/40 disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-danger';
 
 /**
  * A select with a search box. The list opens below the field (or above it when
@@ -85,7 +85,7 @@ function Combobox({ className, disabled, emptyLabel, id, name, onValueChange, op
                             <Search aria-hidden="true" className="size-4 shrink-0 text-muted-foreground" />
                             <CommandPrimitive.Input
                                 aria-label={searchPlaceholder ?? t('ui.picker.search')}
-                                className="h-10 w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+                                className="h-9 w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
                                 placeholder={searchPlaceholder ?? t('ui.picker.search')}
                             />
                         </div>

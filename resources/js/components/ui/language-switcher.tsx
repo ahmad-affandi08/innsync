@@ -59,7 +59,7 @@ function LanguageSwitcher({ className }: { className?: string }) {
             <DropdownMenuTrigger
                 aria-label={`${t('common.language.label')}: ${current.fullName} (${current.label})`}
                 className={cn(
-                    'inline-flex h-10 cursor-pointer select-none items-center gap-2 border border-input bg-surface px-3 text-xs font-semibold text-foreground transition hover:border-brand/50 hover:bg-surface-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                    'inline-flex h-9 cursor-pointer select-none items-center gap-2 border border-input bg-surface px-3 text-xs font-semibold text-foreground transition hover:border-brand/50 hover:bg-surface-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                     className,
                 )}
                 id="language-switcher"

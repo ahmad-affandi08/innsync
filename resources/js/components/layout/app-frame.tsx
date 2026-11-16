@@ -456,7 +456,7 @@ export function AppFrame({ actions, children, description, links: allLinks = [],
 
     const layoutSwitcher = (
         <DropdownMenu>
-            <DropdownMenuTrigger aria-label={t('shell.layout')} className="grid size-10 place-items-center border border-input bg-surface text-muted-foreground hover:bg-surface-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" title={t('shell.layout')} type="button">
+            <DropdownMenuTrigger aria-label={t('shell.layout')} className="grid size-9 place-items-center border border-input bg-surface text-muted-foreground hover:bg-surface-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" title={t('shell.layout')} type="button">
                 <LayoutIcon aria-hidden="true" className="size-[1.125rem]" strokeWidth={1.75} />
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-52">

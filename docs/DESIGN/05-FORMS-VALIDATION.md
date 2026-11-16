@@ -10,7 +10,7 @@
 
 ## Form Control Alignment (2026-10-05)
 
-- All single-line input controls (`Input`, `Select`, `Combobox`, `DatePicker`) enforce an exact height of `h-10 min-h-10` (40px / 2.5rem), exactly matching standard button controls (`Button` with default size).
+- All single-line input controls (`Input`, `Select`, `Combobox`, `DatePicker`) enforce an exact height of `h-9 min-h-9` (36px / 2.25rem), exactly matching standard button controls (`Button` with default size).
 - In horizontal filter bars (`<form className="flex flex-wrap items-end gap-3">`), wrap fields with `<FormField label="...">`. Action buttons must use default height (`<Button type="submit" variant="outline">` without `size="sm"`), preventing vertical staggered misalignment.
 - `FormField` maintains a uniform layout (`flex flex-col gap-1.5`) without ad-hoc bottom alignment hacks (`mt-auto`).
 

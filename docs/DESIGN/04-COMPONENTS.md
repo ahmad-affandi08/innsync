@@ -8,7 +8,7 @@ Do not create one-off variants inside feature pages when a semantic shared varia
 
 ## Control dimensions and vertical alignment (2026-10-05)
 
-- **Standard 40px height**: All single-line form controls (`Input`, `Select`, `Combobox`, `DatePicker`) and standard `Button` variants share an identical height of `h-10 min-h-10` (40px / 2.5rem). Never set standalone inputs to `min-h-11` (44px) or ad-hoc heights that cause misalignment against adjacent buttons or select menus.
+- **Standard 36px height**: All single-line form controls (`Input`, `Select`, `Combobox`, `DatePicker`) and standard `Button` variants share an identical height of `h-9 min-h-9` (36px / 2.25rem); `sm` is 32px and `lg` is 40px. Never set standalone inputs to `min-h-10`/`min-h-11` or ad-hoc heights that cause misalignment against adjacent buttons or select menus.
 - **Inline filter rows**: In filter bars (such as in reporting, cashier shifts, routines, housekeeping), wrap fields in `<FormField>` without vertical hacks (`mt-auto`). Align the row with `items-end gap-3`. The submit/apply button must use standard height (`<Button type="submit" variant="outline">` without `size="sm"`) so it aligns flush with the inputs and pickers.
 
 ## Interaction affordance (cursor: pointer) (2026-10-05)

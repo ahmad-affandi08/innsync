@@ -54,7 +54,7 @@ function Pagination({
                 <label className="flex items-center gap-2 text-muted-foreground">
                     <span>{labels.perPage}</span>
                     <Select
-                        className="min-h-10 w-20"
+                        className="min-h-9 w-20"
                         disabled={disabled}
                         onChange={(event) =>
                             onPerPageChange(Number(event.target.value))
