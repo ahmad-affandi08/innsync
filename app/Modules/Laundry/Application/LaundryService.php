@@ -578,6 +578,7 @@ final readonly class LaundryService implements LaundryLiability
                 $request->notes === null || trim($request->notes) === '' ? null : trim($request->notes), false, null, null, null, 0, $lines,
                 null, $request->foc, $request->foc ? trim((string) $request->focReason) : null, $request->foc ? $actor : null,
                 $request->waiveServiceCharge, $request->waiveTax, $request->waiveServiceCharge || $request->waiveTax ? trim((string) $request->waiveReason) : null,
+                trim((string) ($stay['guest_name'] ?? '')) === '' ? null : mb_substr(trim((string) $stay['guest_name']), 0, 120),
             );
         } catch (LaundryRuleViolation $e) {
             throw Refusal::invalid($e->getMessage(), $e->field === null ? [] : [$e->field]);
@@ -665,6 +666,7 @@ final readonly class LaundryService implements LaundryLiability
             'barcode' => $o->barcode,
             'room_id' => $o->roomId,
             'room_number' => $this->rooms->room($this->property->current(), $o->roomId)?->number,
+            'guest_name' => $o->guestName,
             'status' => $o->status->value,
             'express' => $o->express,
             'promised_at' => $o->promisedAt->format('Y-m-d\TH:i:s\Z'),

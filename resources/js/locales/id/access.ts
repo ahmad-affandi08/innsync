@@ -644,5 +644,6 @@ export const access = {
     'acc.push.kind.approval': "Persetujuan yang menunggu saya",
     'acc.push.kind.work_order': "Pekerjaan perbaikan untuk saya, dan yang mendekati batas waktu",
     'acc.push.kind.guest_request': "Permintaan dari tamu",
+    'acc.push.kind.laundry': "Laundry siap diantar",
     'acc.push.kind.system': "Peringatan sistem (ada yang berhenti bekerja)",
 }

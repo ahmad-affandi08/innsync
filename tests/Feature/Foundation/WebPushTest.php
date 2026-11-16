@@ -143,7 +143,7 @@ final class WebPushTest extends TestCase
         Http::fake(['*' => Http::response('', 201)]);
         $notifier = app(PushNotifier::class);
 
-        $this->getJson('/push/config')->assertJsonPath('kinds', ['approval', 'work_order', 'guest_request', 'system'])->assertJsonPath('muted', []);
+        $this->getJson('/push/config')->assertJsonPath('kinds', ['approval', 'work_order', 'guest_request', 'system', 'laundry'])->assertJsonPath('muted', []);
         $this->postJson('/push/preferences', ['kind' => 'nonsense', 'enabled' => false])->assertStatus(422);
         $this->postJson('/push/preferences', ['kind' => 'approval', 'enabled' => false])->assertOk()->assertJsonPath('muted', ['approval']);
 

@@ -16,6 +16,8 @@ use App\Modules\Property\Application\Catalog\RoomCatalogService;
 use App\Modules\Property\Application\Rates\ChargeSchemeService;
 use App\Modules\Property\Application\Rates\RatePlanService;
 use App\Modules\Property\Application\Settings\PropertySettingsService;
+use App\Shared\Application\Notifications\PushNotifier;
+use App\Shared\Application\Outbox\ProcessOutboxMessage;
 use App\Shared\Application\Tenancy\PropertyContext;
 use App\Shared\Application\Time\Clock;
 use App\Shared\Domain\Tenancy\PropertyId;
@@ -35,6 +37,9 @@ final class LaundryHttpTest extends TestCase
     private const A = '01arz3ndektsv4rrffq69g5fav';
 
     private string $roomId;
+
+    /** @var list<array{users: list<string>, title: string, body: string, url: string, kind: string}> */
+    public array $pushed = [];
 
     protected function beforeRefreshingDatabase(): void
     {
@@ -116,7 +121,7 @@ final class LaundryHttpTest extends TestCase
         $this->signIn(self::A, [LaundryService::INTAKE_PERMISSION, LaundryService::PROCESS_PERMISSION, LaundryService::VIEW_PERMISSION, LaundryService::FOC_PERMISSION]);
         $this->get('/laundry/new')->assertInertia(fn (Assert $p) => $p->where('mayFoc', true));
         $this->postJson('/laundry/orders', [...$body, 'foc_reason' => ''], ['Idempotency-Key' => 'laundry-foc-order-02'])->assertStatus(422);
-        $order = $this->postJson('/laundry/orders', $body, ['Idempotency-Key' => 'laundry-foc-order-03'])->assertCreated()->assertJsonPath('order.is_foc', true)->assertJsonPath('order.foc_reason', 'Service recovery')->json('order');
+        $order = $this->postJson('/laundry/orders', $body, ['Idempotency-Key' => 'laundry-foc-order-03'])->assertCreated()->assertJsonPath('order.is_foc', true)->assertJsonPath('order.guest_name', 'Budi')->assertJsonPath('order.foc_reason', 'Service recovery')->json('order');
 
         $line = $order['lines'][0]['id'];
         $this->postJson("/laundry/orders/{$order['id']}/receive", ['counts' => [$line => 2], 'lock_version' => 0])->assertOk();
@@ -127,6 +132,52 @@ final class LaundryHttpTest extends TestCase
         $this->postJson("/laundry/orders/{$order['id']}/ready", ['lock_version' => 4])->assertOk()->assertJsonPath('order.charged_minor', 0)->assertJsonPath('order.billable_minor', 5_000_000);
         self::assertSame(0, DB::table('folio_postings')->where('source', 'laundry')->count());
         $this->assertDatabaseHas('audit_entries', ['action' => 'laundry.order.ready', 'aggregate_id' => $order['id']]);
+    }
+
+    public function test_the_list_names_the_guest_and_the_people_who_bring_laundry_back_are_told_when_it_is_ready_without_the_guest_name(): void
+    {
+        $test = $this;
+        $this->app->instance(PushNotifier::class, new class($test) implements PushNotifier
+        {
+            public function __construct(private LaundryHttpTest $test) {}
+
+            public function notify(PropertyId $property, array $userIds, string $title, string $body, string $url, string $kind = 'general'): int
+            {
+                $this->test->pushed[] = ['users' => $userIds, 'title' => $title, 'body' => $body, 'url' => $url, 'kind' => $kind];
+
+                return count($userIds);
+            }
+
+            public function enabled(): bool
+            {
+                return true;
+            }
+        });
+        $courier = UserRecord::factory()->create();
+        $this->grant($courier, self::A, [LaundryService::DELIVER_PERMISSION, LaundryService::VIEW_PERMISSION]);
+
+        $item = $this->postJson('/laundry/prices', ['code' => 'SHIRT', 'name' => 'Shirt', 'unit_price_minor' => 2_500_000, 'reason' => 'Opening list'])->assertCreated()->json('item.id');
+        $order = $this->postJson('/laundry/orders', ['barcode' => 'BAG-PUSH', 'room_id' => $this->roomId, 'promised_date' => '2026-10-02', 'promised_time' => '17:00', 'lines' => [['price_item_id' => $item, 'quantity' => 1]]], ['Idempotency-Key' => 'laundry-push-order-01'])
+            ->assertCreated()->assertJsonPath('order.guest_name', 'Budi')->json('order');
+        $this->get('/laundry')->assertInertia(fn (Assert $p) => $p->where('orders.0.guest_name', 'Budi')->where('orders.0.room_number', '101'));
+
+        $this->postJson("/laundry/orders/{$order['id']}/receive", ['counts' => [$order['lines'][0]['id'] => 1], 'lock_version' => 0])->assertOk();
+        foreach ([1, 2, 3] as $version) {
+            $this->postJson("/laundry/orders/{$order['id']}/advance", ['lock_version' => $version])->assertOk();
+        }
+
+        $this->postJson("/laundry/orders/{$order['id']}/ready", ['lock_version' => 4])->assertOk();
+        app(PropertyContext::class)->activate(PropertyId::fromString(self::A));
+
+        foreach (DB::table('outbox_messages')->where('event_type', 'laundry.order.ready')->where('status', 'pending')->pluck('id')->all() as $id) {
+            DB::table('outbox_messages')->where('id', $id)->update(['status' => 'queued']);
+            app(ProcessOutboxMessage::class)->execute(PropertyId::fromString(self::A), (string) $id, 1);
+        }
+
+        self::assertCount(1, $this->pushed);
+        self::assertSame([[strtolower((string) $courier->getKey())], 'laundry', '/laundry/orders/'.$order['id']], [$this->pushed[0]['users'], $this->pushed[0]['kind'], $this->pushed[0]['url']]);
+        self::assertStringContainsString('Kamar 101', $this->pushed[0]['body']);
+        self::assertStringNotContainsString('Budi', $this->pushed[0]['title'].$this->pushed[0]['body']);
     }
 
     public function test_treatments_are_managed_and_chosen_at_hand_over_over_http(): void

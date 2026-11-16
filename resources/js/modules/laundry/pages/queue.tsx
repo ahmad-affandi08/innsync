@@ -5,7 +5,7 @@ import { StatusBadge } from '@/components/ui/status-badge';
 import { LaundryShell } from '@/modules/laundry/components/laundry-shell';
 import { useFormatters, useTranslation } from '@/shared/i18n/i18n';
 
-type Order = { id: string; number: string; barcode: string; room_number: string | null; status: string; express: boolean; promised_at: string; overdue: boolean; items: number; has_discrepancy: boolean };
+type Order = { id: string; number: string; barcode: string; room_number: string | null; guest_name: string | null; status: string; express: boolean; promised_at: string; overdue: boolean; items: number; has_discrepancy: boolean };
 
 export const statusTone: Record<string, 'success' | 'warning' | 'danger' | 'info' | 'neutral'> = { sent: 'neutral', received: 'info', washing: 'info', drying: 'info', ironing: 'info', ready: 'success', delivered: 'neutral', cancelled: 'neutral' };
 
@@ -20,7 +20,7 @@ export default function LaundryQueuePage({ orders }: { orders: Order[] }) {
                     {orders.map((o) => (
                         <li className="flex flex-wrap items-center justify-between gap-2 py-3" key={o.id}>
                             <div className="flex flex-col gap-1">
-                                <Link className="font-medium underline-offset-2 hover:underline" href={`/laundry/orders/${o.id}`}>{o.number} · {o.room_number}</Link>
+                                <Link className="font-medium underline-offset-2 hover:underline" href={`/laundry/orders/${o.id}`}>{o.number} · {o.room_number}{o.guest_name !== null ? ` (${o.guest_name})` : ''}</Link>
                                 <span className="text-xs text-muted-foreground">{t('ldy.queue.row', { items: o.items, when: format.instant(o.promised_at) })}</span>
                             </div>
                             <div className="flex flex-wrap items-center gap-2">

@@ -17,7 +17,7 @@ import { useErrorStateCopy } from '@/shared/i18n/use-ui-copy';
 
 type Line = { id: string; item_name: string; brand: string | null; quantity: number; verified_quantity: number | null; unit_price_minor: number; treatment_name: string | null; treatment_extra_minor: number; express_extra_minor: number; piece_minor: number; condition_note: string | null; total_minor: number };
 type Order = {
-    id: string; number: string; barcode: string; room_number: string | null; status: string; express: boolean; promised_at: string; overdue: boolean; pickup_date: string; notes: string | null;
+    id: string; number: string; barcode: string; room_number: string | null; guest_name: string | null; status: string; express: boolean; promised_at: string; overdue: boolean; pickup_date: string; notes: string | null;
     has_discrepancy: boolean; discrepancy_note: string | null; charged_minor: number | null; billable_minor: number; lock_version: number; lines: Line[];
     history: { from: string | null; to: string; occurred_at: string }[];
 };
@@ -44,7 +44,7 @@ export default function LaundryOrderPage({ claims, currency, may, order: o }: { 
     };
 
     return (
-        <LaundryShell description={t('ldy.order.description', { room: o.room_number ?? '', barcode: o.barcode })} title={t('ldy.order.title', { number: o.number })} wide>
+        <LaundryShell description={t('ldy.order.description', { room: `${o.room_number ?? ''}${o.guest_name !== null ? ` (${o.guest_name})` : ''}`, barcode: o.barcode })} title={t('ldy.order.title', { number: o.number })} wide>
             <div className="flex flex-wrap items-center justify-between gap-2">
                 <Button asChild size="sm" variant="outline"><Link href="/laundry">{t('ldy.order.back')}</Link></Button>
                 <div className="flex flex-wrap items-center gap-2">

@@ -81,7 +81,7 @@ final class BillHttpTest extends TestCase
         {
             public function inHouseStayOfRoom(PropertyId $property, string $roomId): ?array
             {
-                return $roomId === '01arz3ndektsv4rrffq69g5fc1' ? ['stay_id' => '01arz3ndektsv4rrffq69g5fc2', 'reservation_id' => '01arz3ndektsv4rrffq69g5fc3'] : null;
+                return $roomId === '01arz3ndektsv4rrffq69g5fc1' ? ['stay_id' => '01arz3ndektsv4rrffq69g5fc2', 'reservation_id' => '01arz3ndektsv4rrffq69g5fc3', 'guest_name' => 'Budi Santoso'] : null;
             }
 
             public function charge(PropertyId $property, string $actorId, string $reservationId, string $scope, string $code, string $description, int $quotedMinor, string $source, string $sourceRef, array $waive = []): array

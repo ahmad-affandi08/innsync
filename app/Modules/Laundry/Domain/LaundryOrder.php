@@ -45,6 +45,8 @@ final readonly class LaundryOrder
         public bool $waiveServiceCharge = false,
         public bool $waiveTax = false,
         public ?string $waiveReason = null,
+        /** The guest the room was let to when the bag was handed over; null on orders made before the name was kept. */
+        public ?string $guestName = null,
     ) {
         if (preg_match('/^[A-Za-z0-9._\/-]{3,40}$/D', $barcode) !== 1) {
             throw LaundryRuleViolation::invalid('The bag tag is 3 to 40 letters, digits or . _ / -.', 'barcode');
@@ -188,7 +190,7 @@ final readonly class LaundryOrder
         return new self(
             $this->id, $this->number, $this->barcode, $this->roomId, $this->stayId, $this->reservationId, $status, $this->express, $this->pickupDate, $this->promisedAt, $this->notes,
             $discrepancy, $note, $charged, $deliveredAt, $this->lockVersion, $lines, $settlement ?? $this->settlement,
-            $this->isFoc, $this->focReason, $this->focBy, $this->waiveServiceCharge, $this->waiveTax, $this->waiveReason,
+            $this->isFoc, $this->focReason, $this->focBy, $this->waiveServiceCharge, $this->waiveTax, $this->waiveReason, $this->guestName,
         );
     }
 

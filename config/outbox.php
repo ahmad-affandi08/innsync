@@ -13,14 +13,15 @@ use App\Modules\FrontOffice\Application\Loyalty\LoyaltyEarningConsumer;
 use App\Modules\FrontOffice\Application\Requests\GuestRequestPushConsumer;
 use App\Modules\HumanResource\Application\PayrollPaidConsumer;
 use App\Modules\HumanResource\Application\SopCompletionConsumer;
+use App\Modules\HumanResource\Application\SpaCommissionConsumer;
 use App\Modules\IdentityAccess\Application\Approval\ApprovalNoticeConsumer;
 use App\Modules\InventoryPurchasing\Application\KitchenProductionConsumer;
 use App\Modules\InventoryPurchasing\Application\KitchenWasteConsumer;
 use App\Modules\InventoryPurchasing\Application\MaintenancePartConsumer;
 use App\Modules\InventoryPurchasing\Application\RecipeConsumptionConsumer;
 use App\Modules\Kitchen\Application\SaleConsumptionConsumer;
-use App\Modules\HumanResource\Application\SpaCommissionConsumer;
 use App\Modules\Kitchen\Application\TicketIntakeConsumer;
+use App\Modules\Laundry\Application\LaundryReadyPushConsumer;
 use App\Modules\Maintenance\Application\MaintenanceNoticeConsumer;
 use App\Modules\Reporting\Application\ScheduledReportNoticeConsumer;
 use App\Shared\Application\Outbox\OutboxConsumer;
@@ -76,5 +77,6 @@ return [
         GuestRequestPushConsumer::class,
         TicketIntakeConsumer::class,
         SpaCommissionConsumer::class,
+        LaundryReadyPushConsumer::class,
     ],
 ];
