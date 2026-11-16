@@ -64,7 +64,7 @@ export function QuickFind() {
 
     return (
         <>
-            <button aria-label={t('find.open')} className="inline-flex h-9 items-center gap-2 border border-border bg-surface px-2.5 text-sm text-muted-foreground hover:bg-surface-muted" onClick={() => setOpen(true)} title={t('find.open')} type="button">
+            <button aria-label={t('find.open')} className="inline-flex h-8 items-center gap-1.5 border border-border bg-surface px-2.5 text-[13px] text-muted-foreground hover:bg-surface-muted" onClick={() => setOpen(true)} title={t('find.open')} type="button">
                 <Search aria-hidden="true" className="size-4" />
                 <span className="hidden xl:inline">{t('find.open')}</span>
             </button>

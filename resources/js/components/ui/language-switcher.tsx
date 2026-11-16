@@ -59,7 +59,7 @@ function LanguageSwitcher({ className }: { className?: string }) {
             <DropdownMenuTrigger
                 aria-label={`${t('common.language.label')}: ${current.fullName} (${current.label})`}
                 className={cn(
-                    'inline-flex h-9 cursor-pointer select-none items-center gap-2 border border-input bg-surface px-3 text-xs font-semibold text-foreground transition hover:border-brand/50 hover:bg-surface-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                    'inline-flex h-8 cursor-pointer select-none items-center gap-1.5 border border-border bg-surface px-2.5 text-xs font-semibold text-foreground transition hover:bg-surface-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                     className,
                 )}
                 id="language-switcher"
@@ -68,13 +68,13 @@ function LanguageSwitcher({ className }: { className?: string }) {
                 <img
                     alt=""
                     aria-hidden="true"
-                    className="size-4.5 shrink-0 rounded-full object-cover"
+                    className="size-4 shrink-0 rounded-full object-cover"
                     src={current.flag}
                 />
                 <span className="font-semibold tracking-wide">{current.label}</span>
                 <ChevronDown
                     aria-hidden="true"
-                    className="ml-0.5 size-3.5 text-muted-foreground"
+                    className="size-3.5 text-muted-foreground"
                 />
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="min-w-[10.5rem] p-1">

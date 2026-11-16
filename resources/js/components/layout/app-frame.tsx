@@ -167,7 +167,7 @@ export function AppFrame({ actions, children, description, links: allLinks = [],
     const bell = attentionTotal > 0 ? (
         <Popover>
             <PopoverTrigger asChild>
-                <button aria-label={t('attention.title')} className="relative inline-flex h-9 items-center gap-1.5 border border-border bg-surface px-2.5 text-sm font-medium hover:bg-surface-muted" title={t('attention.title')} type="button">
+                <button aria-label={t('attention.title')} className="relative inline-flex h-8 items-center gap-1.5 border border-border bg-surface px-2.5 text-[13px] font-medium hover:bg-surface-muted" title={t('attention.title')} type="button">
                     <Bell aria-hidden="true" className="size-4" />
                     <span className="bg-accent px-1.5 text-xs font-semibold text-accent-foreground" data-testid="waiting-approvals">{attentionTotal > 98 ? '99+' : attentionTotal}</span>
                 </button>
@@ -351,7 +351,7 @@ export function AppFrame({ actions, children, description, links: allLinks = [],
     // A property that uploaded its logo shows it; the InnSYnc credit is the "Powered by" line at the bottom of the page.
     const own = useBrand().logoUrl;
     const brand = (
-        <Link className="flex h-14 items-center gap-3 px-6" href="/">
+        <Link className="flex h-12 items-center gap-3 px-6" href="/">
             {own !== null ? <img alt={shell?.propertyName ?? ''} className="max-h-10 max-w-[10rem] w-auto object-contain" src={own} /> : <img alt="InnSYnc" className="h-8 w-auto" height={32} src={logo} width={116} />}
         </Link>
     );
@@ -376,8 +376,11 @@ export function AppFrame({ actions, children, description, links: allLinks = [],
         </Breadcrumb>
     );
 
+    // A thin line between the groups of the top bar: what day it is, what to do, how it looks, who is signed in.
+    const divider = <span aria-hidden="true" className="mx-0.5 hidden h-5 w-px shrink-0 bg-border md:block" />;
+
     const dateChip = shell?.businessDate ? (
-        <span className="hidden items-center gap-2 whitespace-nowrap text-sm text-muted-foreground md:inline-flex" title={t('shell.businessDate')}>
+        <span className="hidden items-center gap-1.5 whitespace-nowrap text-[13px] text-muted-foreground md:inline-flex" title={t('shell.businessDate')}>
             <CalendarDays aria-hidden="true" className="size-4 text-brand" strokeWidth={1.75} />
             <span className="sr-only">{t('shell.businessDate')}: </span>
             {format.date(shell.businessDate, 'long')}
@@ -387,7 +390,7 @@ export function AppFrame({ actions, children, description, links: allLinks = [],
     // The cashier shift this person has open, on every page, since money is taken from many screens. A shift opened on an earlier business date is marked: it should be closed.
     const staleShift = shell?.shift != null && shell.businessDate != null && shell.shift.opened_business_date.slice(0, 10) !== shell.businessDate.slice(0, 10);
     const shiftChip = shell?.shift != null ? (
-        <Link className={cn('inline-flex items-center gap-1.5 whitespace-nowrap border px-2 py-1 text-xs font-medium hover:bg-surface-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring', staleShift ? 'border-warning text-warning' : 'border-border text-muted-foreground')} href="/front-office/cashier" title={t(staleShift ? 'shell.shiftStale' : 'shell.shiftOpen', { number: shell.shift.number })}>
+        <Link className={cn('inline-flex h-8 items-center gap-1.5 whitespace-nowrap border px-2 text-xs font-medium hover:bg-surface-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring', staleShift ? 'border-warning text-warning' : 'border-border text-muted-foreground')} href="/front-office/cashier" title={t(staleShift ? 'shell.shiftStale' : 'shell.shiftOpen', { number: shell.shift.number })}>
             <Wallet aria-hidden="true" className="size-4" strokeWidth={1.75} />
             <span className="sr-only">{t(staleShift ? 'shell.shiftStale' : 'shell.shiftOpen', { number: shell.shift.number })}</span>
             <span aria-hidden="true" className="hidden sm:inline">{shell.shift.number}</span>{staleShift ? <span aria-hidden="true" className="font-bold">!</span> : null}
@@ -398,7 +401,7 @@ export function AppFrame({ actions, children, description, links: allLinks = [],
     const quick = quickActions(shell);
     const quickMenu = quick.length > 0 ? (
         <DropdownMenu>
-            <DropdownMenuTrigger className="inline-flex h-9 items-center gap-1.5 border border-border bg-surface px-2.5 text-sm font-medium hover:bg-surface-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" data-testid="quick-menu" type="button">
+            <DropdownMenuTrigger className="inline-flex h-8 items-center gap-1.5 border border-border bg-surface px-2.5 text-[13px] font-medium hover:bg-surface-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" data-testid="quick-menu" type="button">
                 <ClipboardPlus aria-hidden="true" className="size-4" />
                 <span className="hidden xl:inline">{t('quick.title')}</span>
                 <span className="sr-only xl:hidden">{t('quick.title')}</span>
@@ -421,9 +424,9 @@ export function AppFrame({ actions, children, description, links: allLinks = [],
 
     const userMenu = shell !== null ? (
         <DropdownMenu>
-            <DropdownMenuTrigger className="flex items-center gap-2 p-1 hover:bg-surface-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" type="button">
-                <Avatar className="size-8"><AvatarFallback>{initials(shell.userName)}</AvatarFallback></Avatar>
-                <span className={cn('hidden max-w-[10rem] truncate text-sm font-medium', layout === 'topbar' ? '2xl:block' : 'sm:block')}>{shell.userName}</span>
+            <DropdownMenuTrigger className="flex items-center gap-2 px-1 py-0.5 hover:bg-surface-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" type="button">
+                <Avatar className="size-7"><AvatarFallback>{initials(shell.userName)}</AvatarFallback></Avatar>
+                <span className={cn('hidden max-w-[10rem] truncate text-[13px] font-medium', layout === 'topbar' ? '2xl:block' : 'sm:block')}>{shell.userName}</span>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-60">
                 <DropdownMenuLabel className="truncate">{shell.userName}</DropdownMenuLabel>
@@ -456,7 +459,7 @@ export function AppFrame({ actions, children, description, links: allLinks = [],
 
     const layoutSwitcher = (
         <DropdownMenu>
-            <DropdownMenuTrigger aria-label={t('shell.layout')} className="grid size-9 place-items-center border border-input bg-surface text-muted-foreground hover:bg-surface-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" title={t('shell.layout')} type="button">
+            <DropdownMenuTrigger aria-label={t('shell.layout')} className="grid size-8 place-items-center border border-border bg-surface text-muted-foreground hover:bg-surface-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" title={t('shell.layout')} type="button">
                 <LayoutIcon aria-hidden="true" className="size-[1.125rem]" strokeWidth={1.75} />
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-52">
@@ -502,7 +505,7 @@ export function AppFrame({ actions, children, description, links: allLinks = [],
     const rail = (
         <>
             <aside className="fixed inset-y-0 left-0 z-30 hidden w-20 flex-col items-center border-r border-border bg-sidebar lg:flex print:hidden">
-                <Link aria-label="InnSYnc" className="grid h-14 w-full place-items-center border-b border-border" href="/">
+                <Link aria-label="InnSYnc" className="grid h-12 w-full place-items-center border-b border-border" href="/">
                     <img alt="" className="size-8" height={32} src={favicon} width={32} />
                 </Link>
                 <ScrollArea className="w-full flex-1" keep="rail">
@@ -532,7 +535,7 @@ export function AppFrame({ actions, children, description, links: allLinks = [],
             </aside>
             {hasLinks ? (
                 <aside aria-label={t(current.label)} className="fixed inset-y-0 left-20 z-20 hidden w-56 flex-col border-r border-border bg-surface lg:flex print:hidden">
-                    <p className="flex h-14 items-center border-b border-border px-5 text-sm font-semibold">{t(area !== undefined && area.mods.length > 1 ? area.label : current.label)}</p>
+                    <p className="flex h-12 items-center border-b border-border px-5 text-sm font-semibold">{t(area !== undefined && area.mods.length > 1 ? area.label : current.label)}</p>
                     {area !== undefined && area.mods.length > 1 ? (
                         <nav aria-label={t(area.label)} className="border-b border-border p-3">
                             <ModuleTabs area={area} currentKey={current.key} name={(m) => t(m.short ?? m.label)} />
@@ -566,7 +569,7 @@ export function AppFrame({ actions, children, description, links: allLinks = [],
     // Top bar: modules across the top, the pages of the active module as tabs under them, the whole width for the page.
     const topbar = (
         <header className="sticky top-0 z-30 border-b border-border bg-surface print:hidden">
-            <div className="flex h-14 items-center gap-3 px-4 lg:px-6">
+            <div className="flex h-12 items-center gap-2 px-4 lg:px-6">
                 {menuButton}
                 <Link className="flex shrink-0 items-center" href="/">{own !== null ? <img alt={shell?.propertyName ?? ''} className="max-h-8 max-w-[9rem] w-auto object-contain" src={own} /> : <img alt="InnSYnc" className="h-8 w-auto" height={32} src={logo} width={116} />}</Link>
                 <nav aria-label={t('shell.menu')} className="ml-4 hidden min-w-0 flex-1 items-stretch gap-0.5 self-stretch overflow-x-auto no-scrollbar lg:flex">
@@ -593,8 +596,10 @@ export function AppFrame({ actions, children, description, links: allLinks = [],
                     {canFind ? <QuickFind /> : null}
                     {quickMenu}
                     {bell}
+                    {divider}
                     <LanguageSwitcher />
                     {layoutSwitcher}
+                    {divider}
                     {userMenu}
                 </div>
             </div>
@@ -663,17 +668,20 @@ export function AppFrame({ actions, children, description, links: allLinks = [],
 
                 <div className={cn('flex min-w-0 flex-1 flex-col bg-surface-muted', layout === 'sidebar' && 'lg:pl-64', layout === 'rail' && (hasLinks ? 'lg:pl-[19rem]' : 'lg:pl-20'))}>
                     {layout === 'topbar' ? topbar : (
-                        <header className="sticky top-0 z-20 flex h-14 items-center gap-3 border-b border-border bg-surface px-4 lg:px-8 print:hidden">
+                        <header className="sticky top-0 z-20 flex h-12 items-center gap-2 border-b border-border bg-surface px-4 lg:px-6 print:hidden">
                             {menuButton}
                             {own !== null && layout === 'rail' ? <Link className="hidden shrink-0 lg:block" href="/"><img alt={shell?.propertyName ?? ''} className="max-h-8 max-w-[10rem] w-auto object-contain" src={own} /></Link> : null}
                             <span className="flex-1" />
                             {dateChip}
                             {shiftChip}
+                            {dateChip !== null || shiftChip !== null ? divider : null}
                             {canFind ? <QuickFind /> : null}
                             {quickMenu}
                             {bell}
+                            {divider}
                             <LanguageSwitcher />
                             {layoutSwitcher}
+                            {divider}
                             {userMenu}
                         </header>
                     )}
