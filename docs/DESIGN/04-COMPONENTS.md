@@ -38,7 +38,7 @@ Do not create one-off variants inside feature pages when a semantic shared varia
 
 ## Row actions in tables (2026-11-16)
 
-Every action inside a table row (a cell of a `DataGrid`, `DataTable` or plain `Table`) is a `RowAction` from `resources/js/components/ui/row-action.tsx`: a 32px square icon, coloured by what it does, with its name shown on hover and given to assistive technology (`label`). Never a text button inside a row. Actions above or below the table (add, export, filters) and inside dialogs stay text `Button`s. Inputs inside a row stay inputs.
+Every action inside a table row (a cell of a `DataGrid`, `DataTable` or plain `Table`) is a `RowAction` from `resources/js/components/ui/row-action.tsx`: a 32px square white icon on a solid colour, raised like the navy buttons (a light line on top, a 3px darker edge below, sinking when pressed), coloured by what it does, with its name shown on hover and given to assistive technology (`label`). Never a text button inside a row. Actions above or below the table (add, export, filters) and inside dialogs stay text `Button`s. Inputs inside a row stay inputs.
 
 The colour is the meaning, the same on every screen:
 

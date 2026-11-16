@@ -13,12 +13,13 @@ import { cn } from '@/shared/lib/utils';
  */
 export type RowActionTone = 'info' | 'warning' | 'success' | 'danger' | 'neutral';
 
+/** Solid colour with a darker edge underneath: raised like the navy buttons. The edge is the tone mixed with black. */
 const tones: Record<RowActionTone, string> = {
-    info: 'bg-info/10 text-info hover:bg-info hover:text-white',
-    warning: 'bg-warning/10 text-warning hover:bg-warning hover:text-white',
-    success: 'bg-success/10 text-success hover:bg-success hover:text-white',
-    danger: 'bg-danger/10 text-danger hover:bg-danger hover:text-white',
-    neutral: 'bg-surface-muted text-muted-foreground hover:bg-foreground hover:text-surface',
+    info: 'bg-info border-b-[color-mix(in_oklch,var(--info),black_35%)]',
+    warning: 'bg-warning border-b-[color-mix(in_oklch,var(--warning),black_35%)]',
+    success: 'bg-success border-b-[color-mix(in_oklch,var(--success),black_35%)]',
+    danger: 'bg-danger border-b-[color-mix(in_oklch,var(--danger),black_35%)]',
+    neutral: 'bg-muted-foreground border-b-[color-mix(in_oklch,var(--muted-foreground),black_35%)]',
 };
 
 type RowActionProps = Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'children'> & {
@@ -41,7 +42,8 @@ type RowActionProps = Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'children'> 
 /** An icon button for a table row, coloured by what it does, named on hover and to assistive technology. */
 function RowAction({ icon: Icon, label, tone = 'neutral', href, native = false, newTab = false, loading = false, disabled, className, type = 'button', ...props }: RowActionProps) {
     const cls = cn(
-        'inline-flex size-8 shrink-0 cursor-pointer items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-40 aria-busy:cursor-progress',
+        // A light line on top and a 3px dark edge below make it stand up; pressing sinks it onto its edge.
+        'inline-flex size-8 shrink-0 cursor-pointer items-center justify-center border-t border-b-[3px] border-t-white/35 text-white transition-[filter,transform] hover:brightness-110 active:translate-y-0.5 active:border-b focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-40 aria-busy:cursor-progress',
         tones[tone],
         className,
     );
