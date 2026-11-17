@@ -112,6 +112,13 @@ check "modified tracked files are never overwritten" "[[ $RC -ne 0 && ! -s $LOG 
 new_host "$R1"; rm "$ROOT/host/.env"; host update
 check "a missing .env refuses the release" "[[ $RC -ne 0 && ! -s $LOG ]]"
 
+new_host "$R1"; printf 'APP_ENV=local\nAPP_DEBUG=true\n' > "$ROOT/host/.env"; host update
+check "an .env still on the local template refuses the release" "[[ $RC -ne 0 && ! -s $LOG ]] && grep -q 'APP_ENV' <<<\"\$OUT\""
+new_host "$R1"; printf 'APP_ENV=production\nAPP_DEBUG=true\n' > "$ROOT/host/.env"; host update
+check "debug mode on a production host refuses the release" "[[ $RC -ne 0 && ! -s $LOG ]] && grep -q 'APP_DEBUG' <<<\"\$OUT\""
+new_host "$R1"; printf 'APP_ENV=local\n' > "$ROOT/host/.env"; ALLOW_NON_PRODUCTION=1 host update
+check "a rehearsal host may release with ALLOW_NON_PRODUCTION=1" "[[ $RC -eq 0 ]]"
+
 new_host "$R1"
 git -C "$ROOT/host" checkout -q -b rogue; echo x > "$ROOT/host/rogue.txt"; git -C "$ROOT/host" add rogue.txt; git -C "$ROOT/host" commit -q -m "rogue"
 ROGUE="$(git -C "$ROOT/host" rev-parse HEAD)"; git -C "$ROOT/host" checkout -q --detach "$R1"; : > "$LOG"

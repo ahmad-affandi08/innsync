@@ -37,6 +37,14 @@ artisan() { "$PHP_BIN" artisan "$@"; }
 require_clone() {
     [[ -d .git ]] || die "This directory is not a Git clone of the release branch."
     [[ -f .env ]] || die "No .env here. Create it from .env.example first (it is never part of a release)."
+    # An .env copied from the local template and not edited would put a debug site on the internet (SEC-06). A rehearsal host says so with ALLOW_NON_PRODUCTION=1.
+    if [[ "${ALLOW_NON_PRODUCTION:-0}" != "1" ]]; then
+        local env_value debug
+        env_value="$(sed -n 's/^APP_ENV=//p' .env | tail -n1 | tr -d "\"' \r")"
+        debug="$(sed -n 's/^APP_DEBUG=//p' .env | tail -n1 | tr -d "\"' \r" | tr 'A-Z' 'a-z')"
+        [[ -z "$env_value" || "$env_value" == "production" ]] || die "APP_ENV is '$env_value' in .env. A real host runs production; edit .env (or set ALLOW_NON_PRODUCTION=1 on a rehearsal host)."
+        [[ "$debug" != "true" && "$debug" != "1" ]] || die "APP_DEBUG is on in .env. Debug pages show configuration and secrets; set APP_DEBUG=false (or ALLOW_NON_PRODUCTION=1 on a rehearsal host)."
+    fi
     if [[ -n "$(git status --porcelain --untracked-files=no)" ]]; then
         die "Tracked files were modified on the host. Refusing to overwrite them; inspect with 'git status'."
     fi

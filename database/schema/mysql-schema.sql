@@ -19,7 +19,7 @@ CREATE TABLE `access_position_roles` (
   KEY `access_position_roles_role_id_foreign` (`role_id`),
   CONSTRAINT `access_position_roles_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `access_position_roles_role_id_foreign` FOREIGN KEY (`role_id`) REFERENCES `roles` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `activity_bookings`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -51,18 +51,17 @@ CREATE TABLE `activity_bookings` (
   KEY `activity_bookings_property_id_reservation_id_index` (`property_id`,`reservation_id`),
   CONSTRAINT `activity_bookings_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_activity_bookings` CHECK (((`status` in (_utf8mb4'booked',_utf8mb4'done',_utf8mb4'cancelled',_utf8mb4'no_show')) and (`guests` between 1 and 50) and ((`status` <> _utf8mb4'cancelled') or (`reason` is not null))))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `activity_bookings_guard` BEFORE UPDATE ON `activity_bookings` FOR EACH ROW BEGIN IF NEW.price_minor <> OLD.price_minor OR NEW.service_id <> OLD.service_id OR NEW.reservation_id <> OLD.reservation_id OR NEW.starts_on <> OLD.starts_on OR NEW.starts_at <> OLD.starts_at OR NEW.guests <> OLD.guests OR OLD.status <> 'booked' THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a settled activity booking cannot be changed'; END IF; END */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `activity_bookings_guard` BEFORE UPDATE ON `activity_bookings` FOR EACH ROW BEGIN IF NEW.price_minor <> OLD.price_minor OR NEW.service_id <> OLD.service_id OR NEW.reservation_id <> OLD.reservation_id OR NEW.starts_on <> OLD.starts_on OR NEW.starts_at <> OLD.starts_at OR NEW.guests <> OLD.guests OR OLD.status <> 'booked' THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a settled activity booking cannot be changed'; END IF; END */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -73,11 +72,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `activity_bookings_no_delete` BEFORE DELETE ON `activity_bookings` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'an activity booking cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `activity_bookings_no_delete` BEFORE DELETE ON `activity_bookings` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'an activity booking cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -103,7 +101,7 @@ CREATE TABLE `activity_services` (
   UNIQUE KEY `activity_services_property_id_code_unique` (`property_id`,`code`),
   CONSTRAINT `activity_services_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_activity_services` CHECK (((`category` in (_utf8mb4'spa',_utf8mb4'tour',_utf8mb4'sport',_utf8mb4'other')) and (`duration_minutes` between 15 and 480) and (`capacity` between 1 and 50)))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `ap_credit_applications`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -127,18 +125,17 @@ CREATE TABLE `ap_credit_applications` (
   CONSTRAINT `ap_credit_applications_payable_id_foreign` FOREIGN KEY (`payable_id`) REFERENCES `ap_payables` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `ap_credit_applications_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_ap_credit_application` CHECK ((`amount_minor` > 0))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `ap_credit_applications_no_update` BEFORE UPDATE ON `ap_credit_applications` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a credit application cannot be changed' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `ap_credit_applications_no_update` BEFORE UPDATE ON `ap_credit_applications` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a credit application cannot be changed' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -149,11 +146,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `ap_credit_applications_no_delete` BEFORE DELETE ON `ap_credit_applications` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a credit application cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `ap_credit_applications_no_delete` BEFORE DELETE ON `ap_credit_applications` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a credit application cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -183,18 +179,17 @@ CREATE TABLE `ap_credits` (
   UNIQUE KEY `ap_credits_once` (`property_id`,`source_type`,`source_id`),
   KEY `ap_credits_supplier_id_index` (`supplier_id`),
   CONSTRAINT `ap_credits_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `ap_credits_no_update` BEFORE UPDATE ON `ap_credits` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a supplier credit cannot be changed' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `ap_credits_no_update` BEFORE UPDATE ON `ap_credits` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a supplier credit cannot be changed' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -205,11 +200,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `ap_credits_no_delete` BEFORE DELETE ON `ap_credits` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a supplier credit cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `ap_credits_no_delete` BEFORE DELETE ON `ap_credits` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a supplier credit cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -246,18 +240,17 @@ CREATE TABLE `ap_payables` (
   KEY `ap_payables_property_id_due_date_index` (`property_id`,`due_date`),
   KEY `ap_payables_supplier_id_index` (`supplier_id`),
   CONSTRAINT `ap_payables_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `ap_payables_guard` BEFORE UPDATE ON `ap_payables` FOR EACH ROW BEGIN
+/*!50003 CREATE*/ /*!50003 TRIGGER `ap_payables_guard` BEFORE UPDATE ON `ap_payables` FOR EACH ROW BEGIN
     IF NEW.amount_minor <> OLD.amount_minor OR NEW.tax_minor <> OLD.tax_minor OR NEW.due_date <> OLD.due_date OR NEW.issued_on <> OLD.issued_on OR NEW.supplier_id <> OLD.supplier_id OR NEW.source_id <> OLD.source_id OR NEW.business_date <> OLD.business_date OR NEW.document_number <> OLD.document_number THEN
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'the facts of a payable cannot be changed';
     END IF;
@@ -272,11 +265,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `ap_payables_no_delete` BEFORE DELETE ON `ap_payables` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a payable cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `ap_payables_no_delete` BEFORE DELETE ON `ap_payables` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a payable cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -300,18 +292,17 @@ CREATE TABLE `ap_payment_proofs` (
   CONSTRAINT `ap_payment_proofs_created_by_foreign` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `ap_payment_proofs_payment_id_foreign` FOREIGN KEY (`payment_id`) REFERENCES `ap_payments` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `ap_payment_proofs_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `ap_payment_proofs_no_update` BEFORE UPDATE ON `ap_payment_proofs` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a payment proof cannot be changed' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `ap_payment_proofs_no_update` BEFORE UPDATE ON `ap_payment_proofs` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a payment proof cannot be changed' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -322,11 +313,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `ap_payment_proofs_no_delete` BEFORE DELETE ON `ap_payment_proofs` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a payment proof cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `ap_payment_proofs_no_delete` BEFORE DELETE ON `ap_payment_proofs` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a payment proof cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -367,18 +357,17 @@ CREATE TABLE `ap_payments` (
   CONSTRAINT `ap_payments_payable_id_foreign` FOREIGN KEY (`payable_id`) REFERENCES `ap_payables` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `ap_payments_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_ap_payment` CHECK (((`amount_minor` > 0) and (`method` in (_utf8mb4'transfer',_utf8mb4'cash',_utf8mb4'giro',_utf8mb4'other')) and (`status` in (_utf8mb4'pending_approval',_utf8mb4'paid',_utf8mb4'rejected',_utf8mb4'cancelled',_utf8mb4'reversal')) and ((`status` = _utf8mb4'reversal') = (`reverses_id` is not null))))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `ap_payments_guard` BEFORE UPDATE ON `ap_payments` FOR EACH ROW BEGIN
+/*!50003 CREATE*/ /*!50003 TRIGGER `ap_payments_guard` BEFORE UPDATE ON `ap_payments` FOR EACH ROW BEGIN
     IF OLD.status IN ('paid', 'rejected', 'cancelled', 'reversal') THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a decided payment cannot be changed'; END IF;
     IF NEW.amount_minor <> OLD.amount_minor OR NEW.payable_id <> OLD.payable_id OR NEW.number <> OLD.number OR NEW.created_by <> OLD.created_by OR NEW.paid_on <> OLD.paid_on THEN
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'the facts of a payment cannot be changed';
@@ -394,11 +383,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `ap_payments_no_delete` BEFORE DELETE ON `ap_payments` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a payment cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `ap_payments_no_delete` BEFORE DELETE ON `ap_payments` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a payment cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -426,18 +414,17 @@ CREATE TABLE `approval_decisions` (
   CONSTRAINT `approval_decisions_request_id_foreign` FOREIGN KEY (`request_id`) REFERENCES `approval_requests` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_approval_decision` CHECK ((`decision` in (_utf8mb4'approve',_utf8mb4'reject'))),
   CONSTRAINT `chk_approval_reject_reason` CHECK (((`decision` = _utf8mb4'approve') or ((`reason` is not null) and (`reason` <> _utf8mb4''))))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `approval_decisions_prevent_update` BEFORE UPDATE ON `approval_decisions` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'approval decisions are immutable evidence and cannot be updated' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `approval_decisions_prevent_update` BEFORE UPDATE ON `approval_decisions` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'approval decisions are immutable evidence and cannot be updated' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -448,11 +435,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `approval_decisions_prevent_delete` BEFORE DELETE ON `approval_decisions` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'approval decisions are immutable evidence and cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `approval_decisions_prevent_delete` BEFORE DELETE ON `approval_decisions` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'approval decisions are immutable evidence and cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -478,7 +464,7 @@ CREATE TABLE `approval_policies` (
   KEY `approval_policy_lookup` (`property_id`,`subject_type`,`superseded_at`),
   CONSTRAINT `approval_policies_created_by_foreign` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `approval_policies_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `approval_requests`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -521,18 +507,17 @@ CREATE TABLE `approval_requests` (
   CONSTRAINT `chk_approval_consumed` CHECK (((`consumed_at` is null) or (`status` = _utf8mb4'approved'))),
   CONSTRAINT `chk_approval_scope` CHECK ((((`scope_type` is null) and (`scope_id` is null)) or ((`scope_type` in (_utf8mb4'outlet',_utf8mb4'department')) and (`scope_id` is not null)))),
   CONSTRAINT `chk_approval_status` CHECK ((`status` in (_utf8mb4'pending',_utf8mb4'approved',_utf8mb4'rejected',_utf8mb4'cancelled')))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `approval_requests_prevent_delete` BEFORE DELETE ON `approval_requests` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'approval requests are evidence and cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `approval_requests_prevent_delete` BEFORE DELETE ON `approval_requests` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'approval requests are evidence and cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -563,18 +548,17 @@ CREATE TABLE `ar_notes` (
   CONSTRAINT `ar_notes_receivable_id_foreign` FOREIGN KEY (`receivable_id`) REFERENCES `ar_receivables` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_ar_note_kind` CHECK ((`kind` in (_utf8mb4'reminder',_utf8mb4'call',_utf8mb4'promise',_utf8mb4'dispute',_utf8mb4'note'))),
   CONSTRAINT `chk_ar_note_promise` CHECK ((((`kind` = _utf8mb4'promise') and (`promised_on` is not null)) or ((`kind` <> _utf8mb4'promise') and (`promised_on` is null) and (`promised_minor` is null))))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `ar_notes_no_update` BEFORE UPDATE ON `ar_notes` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a collection note cannot be changed' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `ar_notes_no_update` BEFORE UPDATE ON `ar_notes` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a collection note cannot be changed' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -585,11 +569,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `ar_notes_no_delete` BEFORE DELETE ON `ar_notes` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a collection note cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `ar_notes_no_delete` BEFORE DELETE ON `ar_notes` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a collection note cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -625,18 +608,17 @@ CREATE TABLE `ar_receipts` (
   CONSTRAINT `ar_receipts_receivable_id_foreign` FOREIGN KEY (`receivable_id`) REFERENCES `ar_receivables` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_ar_receipt_amount` CHECK ((`amount_minor` > 0)),
   CONSTRAINT `chk_ar_receipt_kind` CHECK (((`kind` in (_utf8mb4'receipt',_utf8mb4'reversal',_utf8mb4'credit_note',_utf8mb4'write_off')) and (((`kind` = _utf8mb4'receipt') and (`method` in (_utf8mb4'transfer',_utf8mb4'giro',_utf8mb4'online')) and (`reference` is not null) and (`reverses_id` is null)) or ((`kind` = _utf8mb4'reversal') and (`reverses_id` is not null) and (`note` is not null)) or ((`kind` in (_utf8mb4'credit_note',_utf8mb4'write_off')) and (`reverses_id` is null) and (`note` is not null)))))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `ar_receipts_no_update` BEFORE UPDATE ON `ar_receipts` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a receipt cannot be changed' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `ar_receipts_no_update` BEFORE UPDATE ON `ar_receipts` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a receipt cannot be changed' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -647,11 +629,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `ar_receipts_no_delete` BEFORE DELETE ON `ar_receipts` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a receipt cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `ar_receipts_no_delete` BEFORE DELETE ON `ar_receipts` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a receipt cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -690,18 +671,17 @@ CREATE TABLE `ar_receivables` (
   CONSTRAINT `chk_ar_receivable_amount` CHECK ((`amount_minor` > 0)),
   CONSTRAINT `chk_ar_receivable_due` CHECK ((`due_date` >= `issued_on`)),
   CONSTRAINT `chk_ar_receivable_source` CHECK ((`source_type` in (_utf8mb4'company_folio',_utf8mb4'manual')))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `ar_receivables_no_update` BEFORE UPDATE ON `ar_receivables` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a receivable cannot be changed' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `ar_receivables_no_update` BEFORE UPDATE ON `ar_receivables` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a receivable cannot be changed' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -712,11 +692,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `ar_receivables_no_delete` BEFORE DELETE ON `ar_receivables` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a receivable cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `ar_receivables_no_delete` BEFORE DELETE ON `ar_receivables` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a receivable cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -749,18 +728,17 @@ CREATE TABLE `audit_entries` (
   CONSTRAINT `audit_entries_actor_id_foreign` FOREIGN KEY (`actor_id`) REFERENCES `users` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `audit_entries_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_audit_state_present` CHECK (((`before_state` is not null) or (`after_state` is not null)))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `audit_entries_prevent_update` BEFORE UPDATE ON `audit_entries` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'immutable evidence cannot be updated' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `audit_entries_prevent_update` BEFORE UPDATE ON `audit_entries` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'immutable evidence cannot be updated' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -771,11 +749,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `audit_entries_prevent_delete` BEFORE DELETE ON `audit_entries` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'immutable evidence cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `audit_entries_prevent_delete` BEFORE DELETE ON `audit_entries` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'immutable evidence cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -801,7 +778,7 @@ CREATE TABLE `backup_runs` (
   KEY `backup_runs_started_at_index` (`started_at`),
   CONSTRAINT `chk_backup_runs_kind` CHECK ((`kind` in (_utf8mb4'backup',_utf8mb4'restore_test'))),
   CONSTRAINT `chk_backup_runs_status` CHECK ((`status` in (_utf8mb4'running',_utf8mb4'succeeded',_utf8mb4'failed')))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `booking_policies`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -835,18 +812,17 @@ CREATE TABLE `booking_policies` (
   CONSTRAINT `chk_policy_deposit` CHECK (((`deposit_basis` in (_utf8mb4'none',_utf8mb4'first_night',_utf8mb4'percent',_utf8mb4'fixed')) and (`deposit_value` >= 0) and ((`deposit_basis` <> _utf8mb4'percent') or (`deposit_value` <= 10000)) and ((`deposit_basis` not in (_utf8mb4'none',_utf8mb4'first_night')) or (`deposit_value` = 0)))),
   CONSTRAINT `chk_policy_noshow` CHECK (((`noshow_penalty_kind` in (_utf8mb4'none',_utf8mb4'first_night',_utf8mb4'all_nights',_utf8mb4'percent',_utf8mb4'fixed')) and (`noshow_penalty_value` >= 0) and ((`noshow_penalty_kind` <> _utf8mb4'percent') or (`noshow_penalty_value` <= 10000)) and ((`noshow_penalty_kind` not in (_utf8mb4'none',_utf8mb4'first_night',_utf8mb4'all_nights')) or (`noshow_penalty_value` = 0)))),
   CONSTRAINT `chk_policy_source` CHECK (((`source` is null) or (`source` in (_utf8mb4'direct',_utf8mb4'phone',_utf8mb4'ota',_utf8mb4'corporate',_utf8mb4'walk_in'))))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `booking_policies_scope_insert` BEFORE INSERT ON `booking_policies` FOR EACH ROW BEGIN
+/*!50003 CREATE*/ /*!50003 TRIGGER `booking_policies_scope_insert` BEFORE INSERT ON `booking_policies` FOR EACH ROW BEGIN
     SET NEW.scope_key = CONCAT(COALESCE(NEW.rate_plan_id, '*'), '|', COALESCE(NEW.source, '*'));
 END */;;
 DELIMITER ;
@@ -859,11 +835,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `booking_policies_no_update` BEFORE UPDATE ON `booking_policies` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a booking policy cannot be changed; add a new version' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `booking_policies_no_update` BEFORE UPDATE ON `booking_policies` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a booking policy cannot be changed; add a new version' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -874,11 +849,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `booking_policies_no_delete` BEFORE DELETE ON `booking_policies` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a booking policy cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `booking_policies_no_delete` BEFORE DELETE ON `booking_policies` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a booking policy cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -893,7 +867,7 @@ CREATE TABLE `cache` (
   `expiration` bigint NOT NULL,
   PRIMARY KEY (`key`),
   KEY `cache_expiration_index` (`expiration`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `cache_locks`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -904,7 +878,7 @@ CREATE TABLE `cache_locks` (
   `expiration` bigint NOT NULL,
   PRIMARY KEY (`key`),
   KEY `cache_locks_expiration_index` (`expiration`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `cash_drops`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -926,18 +900,17 @@ CREATE TABLE `cash_drops` (
   CONSTRAINT `cash_drops_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `cash_drops_shift_id_foreign` FOREIGN KEY (`shift_id`) REFERENCES `cashier_shifts` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_drops_amount` CHECK ((`amount_minor` > 0))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `cash_drops_only_open` BEFORE INSERT ON `cash_drops` FOR EACH ROW BEGIN
+/*!50003 CREATE*/ /*!50003 TRIGGER `cash_drops_only_open` BEFORE INSERT ON `cash_drops` FOR EACH ROW BEGIN
     IF (SELECT status FROM cashier_shifts WHERE id = NEW.shift_id) <> 'open' THEN
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a cash drop cannot be added to a closed shift';
     END IF;
@@ -952,11 +925,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `cash_drops_no_update` BEFORE UPDATE ON `cash_drops` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a cash drop cannot be changed' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `cash_drops_no_update` BEFORE UPDATE ON `cash_drops` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a cash drop cannot be changed' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -967,11 +939,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `cash_drops_no_delete` BEFORE DELETE ON `cash_drops` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a cash drop cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `cash_drops_no_delete` BEFORE DELETE ON `cash_drops` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a cash drop cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -991,7 +962,7 @@ CREATE TABLE `cashier_settings` (
   KEY `cashier_settings_updated_by_foreign` (`updated_by`),
   CONSTRAINT `cashier_settings_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `cashier_settings_updated_by_foreign` FOREIGN KEY (`updated_by`) REFERENCES `users` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `cashier_shift_postings`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -1007,18 +978,17 @@ CREATE TABLE `cashier_shift_postings` (
   CONSTRAINT `cashier_shift_postings_posting_id_foreign` FOREIGN KEY (`posting_id`) REFERENCES `folio_postings` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `cashier_shift_postings_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `cashier_shift_postings_shift_id_foreign` FOREIGN KEY (`shift_id`) REFERENCES `cashier_shifts` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `cashier_shift_postings_only_open` BEFORE INSERT ON `cashier_shift_postings` FOR EACH ROW BEGIN
+/*!50003 CREATE*/ /*!50003 TRIGGER `cashier_shift_postings_only_open` BEFORE INSERT ON `cashier_shift_postings` FOR EACH ROW BEGIN
     IF (SELECT status FROM cashier_shifts WHERE id = NEW.shift_id) <> 'open' THEN
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a shift posting cannot be added to a closed shift';
     END IF;
@@ -1033,11 +1003,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `cashier_shift_postings_no_update` BEFORE UPDATE ON `cashier_shift_postings` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a shift posting cannot be changed' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `cashier_shift_postings_no_update` BEFORE UPDATE ON `cashier_shift_postings` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a shift posting cannot be changed' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -1048,11 +1017,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `cashier_shift_postings_no_delete` BEFORE DELETE ON `cashier_shift_postings` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a shift posting cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `cashier_shift_postings_no_delete` BEFORE DELETE ON `cashier_shift_postings` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a shift posting cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -1097,18 +1065,17 @@ CREATE TABLE `cashier_shifts` (
   CONSTRAINT `chk_shifts_status` CHECK ((`status` in (_utf8mb4'open',_utf8mb4'closed'))),
   CONSTRAINT `chk_shifts_variance` CHECK (((`variance_minor` is null) or (`variance_minor` = (`counted_cash_minor` - `expected_cash_minor`)))),
   CONSTRAINT `chk_shifts_variance_reason` CHECK (((`variance_minor` is null) or (`variance_minor` = 0) or ((`variance_reason` is not null) and (char_length(trim(`variance_reason`)) > 0))))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `cashier_shifts_open_key_insert` BEFORE INSERT ON `cashier_shifts` FOR EACH ROW BEGIN
+/*!50003 CREATE*/ /*!50003 TRIGGER `cashier_shifts_open_key_insert` BEFORE INSERT ON `cashier_shifts` FOR EACH ROW BEGIN
     SET NEW.open_cashier_key = CASE WHEN NEW.status = 'open' THEN NEW.cashier_id ELSE NULL END;
 END */;;
 DELIMITER ;
@@ -1121,11 +1088,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `cashier_shifts_facts_immutable` BEFORE UPDATE ON `cashier_shifts` FOR EACH ROW BEGIN
+/*!50003 CREATE*/ /*!50003 TRIGGER `cashier_shifts_facts_immutable` BEFORE UPDATE ON `cashier_shifts` FOR EACH ROW BEGIN
     IF NOT (NEW.id <=> OLD.id AND NEW.property_id <=> OLD.property_id AND NEW.number <=> OLD.number AND NEW.cashier_id <=> OLD.cashier_id
         AND NEW.currency_code <=> OLD.currency_code AND NEW.opened_at <=> OLD.opened_at AND NEW.opened_business_date <=> OLD.opened_business_date
         AND NEW.opening_float_minor <=> OLD.opening_float_minor) THEN
@@ -1146,11 +1112,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `cashier_shifts_no_delete` BEFORE DELETE ON `cashier_shifts` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a cashier shift cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `cashier_shifts_no_delete` BEFORE DELETE ON `cashier_shifts` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a cashier shift cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -1176,18 +1141,17 @@ CREATE TABLE `charge_schemes` (
   CONSTRAINT `charge_schemes_created_by_foreign` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `charge_schemes_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_charge_schemes_rates` CHECK (((`service_charge_bp` <= 100000) and (`tax_bp` <= 100000)))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `charge_schemes_no_update` BEFORE UPDATE ON `charge_schemes` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'charge_schemes is append-only' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `charge_schemes_no_update` BEFORE UPDATE ON `charge_schemes` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'charge_schemes is append-only' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -1198,11 +1162,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `charge_schemes_no_delete` BEFORE DELETE ON `charge_schemes` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'charge_schemes is append-only' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `charge_schemes_no_delete` BEFORE DELETE ON `charge_schemes` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'charge_schemes is append-only' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -1233,18 +1196,17 @@ CREATE TABLE `commission_accruals` (
   KEY `commission_accruals_property_id_stay_out_on_index` (`property_id`,`stay_out_on`),
   CONSTRAINT `commission_accruals_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_commission_accruals` CHECK (((`status` in (_utf8mb4'accrued',_utf8mb4'paid',_utf8mb4'void')) and (`commission_minor` >= 0) and ((`status` <> _utf8mb4'paid') or (`statement_id` is not null)) and ((`status` <> _utf8mb4'void') or (`void_reason` is not null))))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `commission_accruals_guard` BEFORE UPDATE ON `commission_accruals` FOR EACH ROW BEGIN IF NEW.base_minor <> OLD.base_minor OR NEW.commission_minor <> OLD.commission_minor OR NEW.rate_bp <> OLD.rate_bp OR NEW.partner_id <> OLD.partner_id OR NEW.reservation_id <> OLD.reservation_id OR OLD.status <> 'accrued' THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a commission accrual cannot be changed once settled'; END IF; END */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `commission_accruals_guard` BEFORE UPDATE ON `commission_accruals` FOR EACH ROW BEGIN IF NEW.base_minor <> OLD.base_minor OR NEW.commission_minor <> OLD.commission_minor OR NEW.rate_bp <> OLD.rate_bp OR NEW.partner_id <> OLD.partner_id OR NEW.reservation_id <> OLD.reservation_id OR OLD.status <> 'accrued' THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a commission accrual cannot be changed once settled'; END IF; END */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -1255,11 +1217,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `commission_accruals_no_delete` BEFORE DELETE ON `commission_accruals` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a commission accrual cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `commission_accruals_no_delete` BEFORE DELETE ON `commission_accruals` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a commission accrual cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -1283,7 +1244,7 @@ CREATE TABLE `commission_partners` (
   UNIQUE KEY `commission_partners_once` (`property_id`,`partner_kind`,`partner_key`),
   CONSTRAINT `commission_partners_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_commission_partners` CHECK (((`partner_kind` in (_utf8mb4'company',_utf8mb4'channel')) and (`rate_bp` between 1 and 5000)))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `commission_statements`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -1304,18 +1265,17 @@ CREATE TABLE `commission_statements` (
   UNIQUE KEY `commission_statements_property_id_number_unique` (`property_id`,`number`),
   KEY `commission_statements_property_id_partner_id_index` (`property_id`,`partner_id`),
   CONSTRAINT `commission_statements_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `commission_statements_no_update` BEFORE UPDATE ON `commission_statements` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a commission statement cannot be changed' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `commission_statements_no_update` BEFORE UPDATE ON `commission_statements` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a commission statement cannot be changed' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -1326,11 +1286,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `commission_statements_no_delete` BEFORE DELETE ON `commission_statements` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a commission statement cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `commission_statements_no_delete` BEFORE DELETE ON `commission_statements` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a commission statement cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -1353,18 +1312,17 @@ CREATE TABLE `company_folios` (
   CONSTRAINT `company_folios_folio_id_foreign` FOREIGN KEY (`folio_id`) REFERENCES `folios` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `company_folios_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `company_folios_reservation_id_foreign` FOREIGN KEY (`reservation_id`) REFERENCES `reservations` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `company_folios_no_update` BEFORE UPDATE ON `company_folios` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a company folio mark cannot be changed' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `company_folios_no_update` BEFORE UPDATE ON `company_folios` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a company folio mark cannot be changed' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -1375,11 +1333,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `company_folios_no_delete` BEFORE DELETE ON `company_folios` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a company folio mark cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `company_folios_no_delete` BEFORE DELETE ON `company_folios` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a company folio mark cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -1410,18 +1367,17 @@ CREATE TABLE `company_profiles` (
   UNIQUE KEY `company_profiles_property_id_code_unique` (`property_id`,`code`),
   CONSTRAINT `company_profiles_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_company_kind` CHECK (((`kind` in (_utf8mb4'company',_utf8mb4'agent')) and ((`credit_limit_minor` is null) or (`credit_limit_minor` >= 0))))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `company_profiles_no_delete` BEFORE DELETE ON `company_profiles` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a company profile cannot be deleted; deactivate it' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `company_profiles_no_delete` BEFORE DELETE ON `company_profiles` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a company profile cannot be deleted; deactivate it' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -1446,18 +1402,17 @@ CREATE TABLE `consent_records` (
   KEY `consent_subject_purpose_index` (`property_id`,`subject_type`,`subject_id`,`purpose`,`recorded_at`),
   CONSTRAINT `consent_records_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `consent_records_recorded_by_foreign` FOREIGN KEY (`recorded_by`) REFERENCES `users` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `consent_records_no_update` BEFORE UPDATE ON `consent_records` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'consent_records is append-only' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `consent_records_no_update` BEFORE UPDATE ON `consent_records` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'consent_records is append-only' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -1468,11 +1423,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `consent_records_no_delete` BEFORE DELETE ON `consent_records` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'consent_records cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `consent_records_no_delete` BEFORE DELETE ON `consent_records` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'consent_records cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -1491,7 +1445,7 @@ CREATE TABLE `dashboard_preferences` (
   KEY `dashboard_preferences_user_id_foreign` (`user_id`),
   CONSTRAINT `dashboard_preferences_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `dashboard_preferences_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `data_subject_requests`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -1526,18 +1480,17 @@ CREATE TABLE `data_subject_requests` (
   CONSTRAINT `chk_dsr_final` CHECK ((((`status` in (_utf8mb4'received',_utf8mb4'in_progress')) and (`completed_at` is null)) or ((`status` = _utf8mb4'completed') and (`completed_at` is not null) and (`decision_note` is not null)) or ((`status` = _utf8mb4'refused') and (`completed_at` is not null) and (`decision_basis` is not null) and (`decision_note` is not null)))),
   CONSTRAINT `chk_dsr_status` CHECK ((`status` in (_utf8mb4'received',_utf8mb4'in_progress',_utf8mb4'completed',_utf8mb4'refused'))),
   CONSTRAINT `chk_dsr_type` CHECK ((`request_type` in (_utf8mb4'access',_utf8mb4'correction',_utf8mb4'deletion',_utf8mb4'withdraw_consent',_utf8mb4'objection')))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `data_subject_requests_no_delete` BEFORE DELETE ON `data_subject_requests` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'data_subject_requests cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `data_subject_requests_no_delete` BEFORE DELETE ON `data_subject_requests` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'data_subject_requests cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -1582,18 +1535,17 @@ CREATE TABLE `day_use_bookings` (
   KEY `day_use_bookings_property_id_starts_on_status_index` (`property_id`,`starts_on`,`status`),
   CONSTRAINT `day_use_bookings_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_day_use_bookings` CHECK (((`status` in (_utf8mb4'booked',_utf8mb4'in_use',_utf8mb4'done',_utf8mb4'cancelled',_utf8mb4'no_show')) and (`guests` between 1 and 20) and (`ends_at` > `starts_at`) and ((`status` not in (_utf8mb4'in_use',_utf8mb4'done')) or ((`payment_method` in (_utf8mb4'cash',_utf8mb4'card',_utf8mb4'qris')) and (`total_minor` > 0))) and ((`status` <> _utf8mb4'cancelled') or (`reason` is not null))))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `day_use_bookings_guard` BEFORE UPDATE ON `day_use_bookings` FOR EACH ROW BEGIN IF NEW.room_id <> OLD.room_id OR NEW.starts_on <> OLD.starts_on OR NEW.price_minor <> OLD.price_minor OR OLD.status IN ('done', 'cancelled', 'no_show') OR (OLD.status = 'in_use' AND (NEW.total_minor <> OLD.total_minor OR NEW.payment_method <> OLD.payment_method)) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a settled day use booking cannot be changed'; END IF; END */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `day_use_bookings_guard` BEFORE UPDATE ON `day_use_bookings` FOR EACH ROW BEGIN IF NEW.room_id <> OLD.room_id OR NEW.starts_on <> OLD.starts_on OR NEW.price_minor <> OLD.price_minor OR OLD.status IN ('done', 'cancelled', 'no_show') OR (OLD.status = 'in_use' AND (NEW.total_minor <> OLD.total_minor OR NEW.payment_method <> OLD.payment_method)) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a settled day use booking cannot be changed'; END IF; END */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -1604,11 +1556,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `day_use_bookings_no_delete` BEFORE DELETE ON `day_use_bookings` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a day use booking cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `day_use_bookings_no_delete` BEFORE DELETE ON `day_use_bookings` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a day use booking cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -1631,7 +1582,7 @@ CREATE TABLE `day_use_rates` (
   UNIQUE KEY `day_use_rates_type` (`property_id`,`room_type_id`),
   CONSTRAINT `day_use_rates_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_day_use_rates` CHECK (((`max_hours` between 1 and 12) and (`price_minor` > 0)))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `department_budgets`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -1651,7 +1602,7 @@ CREATE TABLE `department_budgets` (
   KEY `department_budgets_set_by_foreign` (`set_by`),
   CONSTRAINT `department_budgets_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `department_budgets_set_by_foreign` FOREIGN KEY (`set_by`) REFERENCES `users` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `document_sequences`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -1662,7 +1613,7 @@ CREATE TABLE `document_sequences` (
   `last_number` bigint unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`property_id`,`doc_type`),
   CONSTRAINT `document_sequences_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `door_lock_jobs`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -1690,7 +1641,7 @@ CREATE TABLE `door_lock_jobs` (
   KEY `door_lock_jobs_property_id_status_created_at_index` (`property_id`,`status`,`created_at`),
   CONSTRAINT `door_lock_jobs_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_door_lock_jobs` CHECK (((`kind` in (_utf8mb4'issue',_utf8mb4'revoke',_utf8mb4'update')) and (`status` in (_utf8mb4'pending',_utf8mb4'sent',_utf8mb4'done',_utf8mb4'failed',_utf8mb4'manual'))))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `door_lock_settings`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -1709,7 +1660,7 @@ CREATE TABLE `door_lock_settings` (
   PRIMARY KEY (`property_id`),
   CONSTRAINT `door_lock_settings_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_door_lock_settings` CHECK (((`key_count` between 1 and 6) and (`vendor` in (_utf8mb4'visionline',_utf8mb4'onity',_utf8mb4'salto',_utf8mb4'dormakaba',_utf8mb4'hafele',_utf8mb4'other'))))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `exchange_rates`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -1729,18 +1680,17 @@ CREATE TABLE `exchange_rates` (
   CONSTRAINT `exchange_rates_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `exchange_rates_set_by_foreign` FOREIGN KEY (`set_by`) REFERENCES `users` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_exchange_rate` CHECK (((`rate_e4` > 0) and (`version` >= 1)))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `exchange_rates_no_update` BEFORE UPDATE ON `exchange_rates` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'an exchange rate cannot be changed' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `exchange_rates_no_update` BEFORE UPDATE ON `exchange_rates` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'an exchange rate cannot be changed' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -1751,11 +1701,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `exchange_rates_no_delete` BEFORE DELETE ON `exchange_rates` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'an exchange rate cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `exchange_rates_no_delete` BEFORE DELETE ON `exchange_rates` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'an exchange rate cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -1775,7 +1724,7 @@ CREATE TABLE `failed_jobs` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `failed_jobs_uuid_unique` (`uuid`),
   KEY `failed_jobs_connection_queue_failed_at_index` (`connection`,`queue`,`failed_at`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `fin_bank_imports`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -1792,7 +1741,7 @@ CREATE TABLE `fin_bank_imports` (
   PRIMARY KEY (`id`),
   KEY `fin_bank_imports_property_id_created_at_index` (`property_id`,`created_at`),
   CONSTRAINT `fin_bank_imports_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `fin_bank_lines`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -1825,18 +1774,17 @@ CREATE TABLE `fin_bank_lines` (
   CONSTRAINT `fin_bank_lines_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_fin_bank_lines` CHECK (((`direction` in (_utf8mb4'in',_utf8mb4'out')) and (`amount_minor` > 0) and (`status` in (_utf8mb4'open',_utf8mb4'matched',_utf8mb4'ignored')) and ((`status` <> _utf8mb4'matched') or ((`match_type` is not null) and (`match_id` is not null))) and ((`status` <> _utf8mb4'ignored') or (`note` is not null)))),
   CONSTRAINT `chk_fin_bank_lines_category` CHECK (((`category` is null) or ((`status` = _utf8mb4'ignored') and (((`direction` = _utf8mb4'out') and (`category` in (_utf8mb4'bank_fee',_utf8mb4'interest_tax',_utf8mb4'other_expense'))) or ((`direction` = _utf8mb4'in') and (`category` in (_utf8mb4'interest',_utf8mb4'other_income')))))))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `fin_bank_lines_guard` BEFORE UPDATE ON `fin_bank_lines` FOR EACH ROW BEGIN IF NEW.amount_minor <> OLD.amount_minor OR NEW.line_date <> OLD.line_date OR NEW.direction <> OLD.direction OR NEW.fingerprint <> OLD.fingerprint OR NEW.description <> OLD.description THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a bank statement line cannot be changed'; END IF; END */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `fin_bank_lines_guard` BEFORE UPDATE ON `fin_bank_lines` FOR EACH ROW BEGIN IF NEW.amount_minor <> OLD.amount_minor OR NEW.line_date <> OLD.line_date OR NEW.direction <> OLD.direction OR NEW.fingerprint <> OLD.fingerprint OR NEW.description <> OLD.description THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a bank statement line cannot be changed'; END IF; END */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -1847,11 +1795,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `fin_bank_lines_no_delete` BEFORE DELETE ON `fin_bank_lines` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a bank statement line cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `fin_bank_lines_no_delete` BEFORE DELETE ON `fin_bank_lines` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a bank statement line cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -1872,7 +1819,7 @@ CREATE TABLE `fin_budgets` (
   PRIMARY KEY (`property_id`,`month`,`department`),
   CONSTRAINT `fin_budgets_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_fin_budget_month` CHECK ((dayofmonth(`month`) = 1))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `fin_cash_deposits`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -1901,18 +1848,17 @@ CREATE TABLE `fin_cash_deposits` (
   CONSTRAINT `fin_cash_deposits_received_by_foreign` FOREIGN KEY (`received_by`) REFERENCES `users` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_fin_deposit_reason` CHECK (((`variance_minor` = 0) or ((`reason` is not null) and (char_length(trim(`reason`)) > 0)))),
   CONSTRAINT `chk_fin_deposit_variance` CHECK ((`variance_minor` = (cast(`deposited_minor` as signed) - `expected_minor`)))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `fin_cash_deposits_no_update` BEFORE UPDATE ON `fin_cash_deposits` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a cash deposit cannot be changed' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `fin_cash_deposits_no_update` BEFORE UPDATE ON `fin_cash_deposits` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a cash deposit cannot be changed' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -1923,11 +1869,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `fin_cash_deposits_no_delete` BEFORE DELETE ON `fin_cash_deposits` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a cash deposit cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `fin_cash_deposits_no_delete` BEFORE DELETE ON `fin_cash_deposits` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a cash deposit cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -1955,18 +1900,17 @@ CREATE TABLE `fin_cash_exceptions` (
   CONSTRAINT `chk_fin_exception_resolved` CHECK ((((`status` = _utf8mb4'open') and (`resolved_at` is null) and (`resolved_by` is null) and (`resolution` is null)) or ((`status` <> _utf8mb4'open') and (`resolved_at` is not null) and (`resolved_by` is not null) and (`resolution` is not null) and (char_length(trim(`resolution`)) > 0)))),
   CONSTRAINT `chk_fin_exception_status` CHECK ((`status` in (_utf8mb4'open',_utf8mb4'explained',_utf8mb4'recovered',_utf8mb4'waived'))),
   CONSTRAINT `chk_fin_exception_variance` CHECK ((`variance_minor` <> 0))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `fin_cash_exceptions_guard` BEFORE UPDATE ON `fin_cash_exceptions` FOR EACH ROW BEGIN
+/*!50003 CREATE*/ /*!50003 TRIGGER `fin_cash_exceptions_guard` BEFORE UPDATE ON `fin_cash_exceptions` FOR EACH ROW BEGIN
     IF NOT (NEW.id <=> OLD.id AND NEW.property_id <=> OLD.property_id AND NEW.deposit_id <=> OLD.deposit_id AND NEW.variance_minor <=> OLD.variance_minor AND NEW.created_at <=> OLD.created_at) THEN
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'the facts of a cash exception cannot be changed';
     END IF;
@@ -1984,11 +1928,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `fin_cash_exceptions_no_delete` BEFORE DELETE ON `fin_cash_exceptions` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a cash exception cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `fin_cash_exceptions_no_delete` BEFORE DELETE ON `fin_cash_exceptions` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a cash exception cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -2008,7 +1951,7 @@ CREATE TABLE `fin_cash_settings` (
   `updated_at` timestamp(6) NULL DEFAULT NULL,
   PRIMARY KEY (`property_id`),
   CONSTRAINT `fin_cash_settings_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `fin_cash_shifts`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -2036,18 +1979,17 @@ CREATE TABLE `fin_cash_shifts` (
   UNIQUE KEY `fin_cash_shifts_once` (`property_id`,`shift_id`),
   KEY `fin_cash_shifts_property_id_closed_business_date_index` (`property_id`,`closed_business_date`),
   CONSTRAINT `fin_cash_shifts_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `fin_cash_shifts_no_update` BEFORE UPDATE ON `fin_cash_shifts` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a cash shift cannot be changed' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `fin_cash_shifts_no_update` BEFORE UPDATE ON `fin_cash_shifts` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a cash shift cannot be changed' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -2058,11 +2000,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `fin_cash_shifts_no_delete` BEFORE DELETE ON `fin_cash_shifts` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a cash shift cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `fin_cash_shifts_no_delete` BEFORE DELETE ON `fin_cash_shifts` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a cash shift cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -2090,18 +2031,17 @@ CREATE TABLE `fin_correction_lines` (
   CONSTRAINT `fin_correction_lines_correction_id_foreign` FOREIGN KEY (`correction_id`) REFERENCES `fin_corrections` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `fin_correction_lines_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_fin_correction_line` CHECK ((((`kind` = _utf8mb4'revenue') and (`outlet_code` is not null) and (`method` is null) and (`received_minor` = 0) and (`total_minor` = ((`base_minor` + `service_charge_minor`) + `tax_minor`)) and (`total_minor` <> 0)) or ((`kind` = _utf8mb4'payment') and (`method` is not null) and (`outlet_code` is null) and (`base_minor` = 0) and (`service_charge_minor` = 0) and (`tax_minor` = 0) and (`total_minor` = 0) and (`received_minor` <> 0))))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `fin_correction_lines_no_update` BEFORE UPDATE ON `fin_correction_lines` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a correction line cannot be changed' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `fin_correction_lines_no_update` BEFORE UPDATE ON `fin_correction_lines` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a correction line cannot be changed' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -2112,11 +2052,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `fin_correction_lines_no_delete` BEFORE DELETE ON `fin_correction_lines` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a correction line cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `fin_correction_lines_no_delete` BEFORE DELETE ON `fin_correction_lines` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a correction line cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -2154,18 +2093,17 @@ CREATE TABLE `fin_corrections` (
   CONSTRAINT `fin_corrections_requested_by_foreign` FOREIGN KEY (`requested_by`) REFERENCES `users` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_fin_correction_decided` CHECK ((((`status` = _utf8mb4'pending') and (`decided_by` is null) and (`decided_at` is null) and (`effective_date` is null)) or ((`status` = _utf8mb4'approved') and (`decided_by` is not null) and (`decided_at` is not null) and (`effective_date` is not null)) or ((`status` = _utf8mb4'rejected') and (`decided_by` is not null) and (`decided_at` is not null) and (`effective_date` is null) and (`decision_note` is not null) and (char_length(trim(`decision_note`)) > 0)))),
   CONSTRAINT `chk_fin_correction_status` CHECK ((`status` in (_utf8mb4'pending',_utf8mb4'approved',_utf8mb4'rejected')))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `fin_corrections_guard` BEFORE UPDATE ON `fin_corrections` FOR EACH ROW BEGIN
+/*!50003 CREATE*/ /*!50003 TRIGGER `fin_corrections_guard` BEFORE UPDATE ON `fin_corrections` FOR EACH ROW BEGIN
     IF NOT (NEW.id <=> OLD.id AND NEW.property_id <=> OLD.property_id AND NEW.number <=> OLD.number AND NEW.day_id <=> OLD.day_id AND NEW.business_date <=> OLD.business_date
         AND NEW.reason <=> OLD.reason AND NEW.requested_by <=> OLD.requested_by AND NEW.requested_at <=> OLD.requested_at) THEN
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'the facts of a correction cannot be changed';
@@ -2184,11 +2122,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `fin_corrections_no_delete` BEFORE DELETE ON `fin_corrections` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a correction cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `fin_corrections_no_delete` BEFORE DELETE ON `fin_corrections` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a correction cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -2215,18 +2152,17 @@ CREATE TABLE `fin_customers` (
   CONSTRAINT `fin_customers_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_fin_customer_kind` CHECK ((`kind` in (_utf8mb4'company',_utf8mb4'agent',_utf8mb4'ota',_utf8mb4'other'))),
   CONSTRAINT `chk_fin_customer_terms` CHECK ((`terms_days` <= 180))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `fin_customers_guard` BEFORE UPDATE ON `fin_customers` FOR EACH ROW BEGIN
+/*!50003 CREATE*/ /*!50003 TRIGGER `fin_customers_guard` BEFORE UPDATE ON `fin_customers` FOR EACH ROW BEGIN
     IF NOT (NEW.id <=> OLD.id AND NEW.property_id <=> OLD.property_id AND NEW.code <=> OLD.code AND NEW.kind <=> OLD.kind AND NEW.company_id <=> OLD.company_id) THEN
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'the code, kind and company of a customer cannot be changed';
     END IF;
@@ -2241,11 +2177,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `fin_customers_no_delete` BEFORE DELETE ON `fin_customers` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a customer cannot be deleted; deactivate it' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `fin_customers_no_delete` BEFORE DELETE ON `fin_customers` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a customer cannot be deleted; deactivate it' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -2268,18 +2203,17 @@ CREATE TABLE `fin_depreciation_entries` (
   KEY `fin_depreciation_entries_property_id_period_index` (`property_id`,`period`),
   CONSTRAINT `fin_depreciation_entries_asset_id_foreign` FOREIGN KEY (`asset_id`) REFERENCES `fin_fixed_assets` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `fin_depreciation_entries_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `fin_depreciation_entries_no_update` BEFORE UPDATE ON `fin_depreciation_entries` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a depreciation entry cannot be changed' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `fin_depreciation_entries_no_update` BEFORE UPDATE ON `fin_depreciation_entries` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a depreciation entry cannot be changed' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -2290,11 +2224,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `fin_depreciation_entries_no_delete` BEFORE DELETE ON `fin_depreciation_entries` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a depreciation entry cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `fin_depreciation_entries_no_delete` BEFORE DELETE ON `fin_depreciation_entries` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a depreciation entry cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -2334,18 +2267,17 @@ CREATE TABLE `fin_exceptions` (
   CONSTRAINT `chk_fin_exceptions_amount` CHECK ((`amount_minor` > 0)),
   CONSTRAINT `chk_fin_exceptions_resolved` CHECK ((((`status` = _utf8mb4'open') and (`resolved_by` is null) and (`resolved_at` is null) and (`resolution` is null) and (`correction_id` is null)) or ((`status` <> _utf8mb4'open') and (`resolved_by` is not null) and (`resolved_at` is not null) and (`resolution` is not null) and (char_length(trim(`resolution`)) > 0) and ((`status` = _utf8mb4'adjusted') = (`correction_id` is not null))))),
   CONSTRAINT `chk_fin_exceptions_status` CHECK ((`status` in (_utf8mb4'open',_utf8mb4'matched',_utf8mb4'adjusted',_utf8mb4'waived')))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `fin_exceptions_guard` BEFORE UPDATE ON `fin_exceptions` FOR EACH ROW BEGIN
+/*!50003 CREATE*/ /*!50003 TRIGGER `fin_exceptions_guard` BEFORE UPDATE ON `fin_exceptions` FOR EACH ROW BEGIN
     IF NOT (NEW.id <=> OLD.id AND NEW.property_id <=> OLD.property_id AND NEW.number <=> OLD.number AND NEW.kind <=> OLD.kind AND NEW.business_date <=> OLD.business_date
         AND NEW.amount_minor <=> OLD.amount_minor AND NEW.method <=> OLD.method AND NEW.reference <=> OLD.reference AND NEW.folio_ref <=> OLD.folio_ref
         AND NEW.description <=> OLD.description AND NEW.created_by <=> OLD.created_by AND NEW.created_at <=> OLD.created_at) THEN
@@ -2365,11 +2297,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `fin_exceptions_no_delete` BEFORE DELETE ON `fin_exceptions` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'an exception cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `fin_exceptions_no_delete` BEFORE DELETE ON `fin_exceptions` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'an exception cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -2405,18 +2336,17 @@ CREATE TABLE `fin_fixed_assets` (
   KEY `fin_fixed_assets_property_id_status_index` (`property_id`,`status`),
   CONSTRAINT `fin_fixed_assets_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_fin_fixed_assets` CHECK (((`cost_minor` > 0) and (`salvage_minor` < `cost_minor`) and (`life_months` between 1 and 600) and (`category` in (_utf8mb4'building',_utf8mb4'furniture',_utf8mb4'equipment',_utf8mb4'vehicle',_utf8mb4'it',_utf8mb4'other')) and (`status` in (_utf8mb4'active',_utf8mb4'disposed')) and ((`status` = _utf8mb4'active') or ((`disposed_on` is not null) and (`disposal_kind` in (_utf8mb4'sale',_utf8mb4'scrap',_utf8mb4'lost')) and (`disposal_proceeds_minor` is not null) and (`disposal_reason` is not null)))))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `fin_fixed_assets_guard` BEFORE UPDATE ON `fin_fixed_assets` FOR EACH ROW BEGIN IF NEW.cost_minor <> OLD.cost_minor OR NEW.salvage_minor <> OLD.salvage_minor OR NEW.life_months <> OLD.life_months OR NEW.acquired_on <> OLD.acquired_on OR OLD.status = 'disposed' THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'the facts of a fixed asset cannot be changed'; END IF; END */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `fin_fixed_assets_guard` BEFORE UPDATE ON `fin_fixed_assets` FOR EACH ROW BEGIN IF NEW.cost_minor <> OLD.cost_minor OR NEW.salvage_minor <> OLD.salvage_minor OR NEW.life_months <> OLD.life_months OR NEW.acquired_on <> OLD.acquired_on OR OLD.status = 'disposed' THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'the facts of a fixed asset cannot be changed'; END IF; END */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -2427,11 +2357,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `fin_fixed_assets_no_delete` BEFORE DELETE ON `fin_fixed_assets` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a fixed asset cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `fin_fixed_assets_no_delete` BEFORE DELETE ON `fin_fixed_assets` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a fixed asset cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -2450,7 +2379,7 @@ CREATE TABLE `fin_food_cost_settings` (
   PRIMARY KEY (`property_id`),
   CONSTRAINT `fin_food_cost_settings_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_food_cost_target` CHECK ((`target_bp` between 500 and 9000))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `fin_journal_accounts`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -2467,7 +2396,7 @@ CREATE TABLE `fin_journal_accounts` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `fin_journal_accounts_key` (`property_id`,`account_key`),
   CONSTRAINT `fin_journal_accounts_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `fin_payment_lines`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -2484,18 +2413,17 @@ CREATE TABLE `fin_payment_lines` (
   KEY `fin_payment_lines_property_id_business_date_index` (`property_id`,`business_date`),
   CONSTRAINT `fin_payment_lines_day_id_foreign` FOREIGN KEY (`day_id`) REFERENCES `fin_revenue_days` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `fin_payment_lines_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `fin_payment_lines_no_update` BEFORE UPDATE ON `fin_payment_lines` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a payment line cannot be changed' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `fin_payment_lines_no_update` BEFORE UPDATE ON `fin_payment_lines` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a payment line cannot be changed' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -2506,11 +2434,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `fin_payment_lines_no_delete` BEFORE DELETE ON `fin_payment_lines` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a payment line cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `fin_payment_lines_no_delete` BEFORE DELETE ON `fin_payment_lines` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a payment line cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -2542,18 +2469,17 @@ CREATE TABLE `fin_petty_entries` (
   CONSTRAINT `fin_petty_entries_fund_id_foreign` FOREIGN KEY (`fund_id`) REFERENCES `fin_petty_funds` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `fin_petty_entries_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_fin_petty_entry` CHECK ((((`kind` = _utf8mb4'expense') and (`signed_minor` < 0)) or ((`kind` in (_utf8mb4'opening',_utf8mb4'void',_utf8mb4'replenishment')) and (`signed_minor` > 0)) or ((`kind` = _utf8mb4'difference') and (`signed_minor` <> 0))))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `fin_petty_entries_not_below_zero` BEFORE INSERT ON `fin_petty_entries` FOR EACH ROW BEGIN
+/*!50003 CREATE*/ /*!50003 TRIGGER `fin_petty_entries_not_below_zero` BEFORE INSERT ON `fin_petty_entries` FOR EACH ROW BEGIN
     IF (SELECT COALESCE(SUM(signed_minor), 0) FROM fin_petty_entries WHERE fund_id = NEW.fund_id) + NEW.signed_minor < 0 THEN
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a petty cash fund cannot go below zero';
     END IF;
@@ -2568,11 +2494,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `fin_petty_entries_no_update` BEFORE UPDATE ON `fin_petty_entries` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a petty cash entry cannot be changed' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `fin_petty_entries_no_update` BEFORE UPDATE ON `fin_petty_entries` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a petty cash entry cannot be changed' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -2583,11 +2508,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `fin_petty_entries_no_delete` BEFORE DELETE ON `fin_petty_entries` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a petty cash entry cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `fin_petty_entries_no_delete` BEFORE DELETE ON `fin_petty_entries` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a petty cash entry cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -2613,18 +2537,17 @@ CREATE TABLE `fin_petty_funds` (
   UNIQUE KEY `fin_petty_funds_property_id_code_unique` (`property_id`,`code`),
   CONSTRAINT `fin_petty_funds_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_fin_petty_fund` CHECK (((`imprest_minor` > 0) and ((`max_voucher_minor` is null) or (`max_voucher_minor` > 0))))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `fin_petty_funds_guard` BEFORE UPDATE ON `fin_petty_funds` FOR EACH ROW BEGIN
+/*!50003 CREATE*/ /*!50003 TRIGGER `fin_petty_funds_guard` BEFORE UPDATE ON `fin_petty_funds` FOR EACH ROW BEGIN
     IF NOT (NEW.id <=> OLD.id AND NEW.property_id <=> OLD.property_id AND NEW.code <=> OLD.code AND NEW.imprest_minor <=> OLD.imprest_minor AND NEW.currency <=> OLD.currency) THEN
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'the code, the amount and the currency of a petty cash fund cannot be changed';
     END IF;
@@ -2639,11 +2562,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `fin_petty_funds_no_delete` BEFORE DELETE ON `fin_petty_funds` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a petty cash fund cannot be deleted; deactivate it' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `fin_petty_funds_no_delete` BEFORE DELETE ON `fin_petty_funds` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a petty cash fund cannot be deleted; deactivate it' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -2667,18 +2589,17 @@ CREATE TABLE `fin_petty_proofs` (
   CONSTRAINT `fin_petty_proofs_created_by_foreign` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `fin_petty_proofs_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `fin_petty_proofs_voucher_id_foreign` FOREIGN KEY (`voucher_id`) REFERENCES `fin_petty_vouchers` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `fin_petty_proofs_no_update` BEFORE UPDATE ON `fin_petty_proofs` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a petty cash proof cannot be changed' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `fin_petty_proofs_no_update` BEFORE UPDATE ON `fin_petty_proofs` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a petty cash proof cannot be changed' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -2689,11 +2610,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `fin_petty_proofs_no_delete` BEFORE DELETE ON `fin_petty_proofs` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a petty cash proof cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `fin_petty_proofs_no_delete` BEFORE DELETE ON `fin_petty_proofs` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a petty cash proof cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -2709,18 +2629,17 @@ CREATE TABLE `fin_petty_settlement_vouchers` (
   KEY `fin_petty_settlement_vouchers_voucher_id_index` (`voucher_id`),
   CONSTRAINT `fin_petty_settlement_vouchers_settlement_id_foreign` FOREIGN KEY (`settlement_id`) REFERENCES `fin_petty_settlements` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `fin_petty_settlement_vouchers_voucher_id_foreign` FOREIGN KEY (`voucher_id`) REFERENCES `fin_petty_vouchers` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `fin_petty_settlement_vouchers_no_update` BEFORE UPDATE ON `fin_petty_settlement_vouchers` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a settlement voucher cannot be changed' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `fin_petty_settlement_vouchers_no_update` BEFORE UPDATE ON `fin_petty_settlement_vouchers` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a settlement voucher cannot be changed' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -2731,11 +2650,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `fin_petty_settlement_vouchers_no_delete` BEFORE DELETE ON `fin_petty_settlement_vouchers` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a settlement voucher cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `fin_petty_settlement_vouchers_no_delete` BEFORE DELETE ON `fin_petty_settlement_vouchers` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a settlement voucher cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -2778,18 +2696,17 @@ CREATE TABLE `fin_petty_settlements` (
   CONSTRAINT `chk_fin_petty_settlement_decided` CHECK ((((`status` = _utf8mb4'submitted') and (`decided_by` is null) and (`decided_at` is null)) or ((`status` <> _utf8mb4'submitted') and (`decided_by` is not null) and (`decided_at` is not null)))),
   CONSTRAINT `chk_fin_petty_settlement_status` CHECK ((`status` in (_utf8mb4'submitted',_utf8mb4'approved',_utf8mb4'rejected'))),
   CONSTRAINT `chk_fin_petty_settlement_variance` CHECK (((`variance_minor` = (cast(`counted_minor` as signed) - `book_minor`)) and ((`variance_minor` = 0) or ((`variance_reason` is not null) and (char_length(trim(`variance_reason`)) > 0)))))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `fin_petty_settlements_pending_key_insert` BEFORE INSERT ON `fin_petty_settlements` FOR EACH ROW BEGIN
+/*!50003 CREATE*/ /*!50003 TRIGGER `fin_petty_settlements_pending_key_insert` BEFORE INSERT ON `fin_petty_settlements` FOR EACH ROW BEGIN
     SET NEW.pending_fund_key = CASE WHEN NEW.status = 'submitted' THEN NEW.fund_id ELSE NULL END;
 END */;;
 DELIMITER ;
@@ -2802,11 +2719,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `fin_petty_settlements_guard` BEFORE UPDATE ON `fin_petty_settlements` FOR EACH ROW BEGIN
+/*!50003 CREATE*/ /*!50003 TRIGGER `fin_petty_settlements_guard` BEFORE UPDATE ON `fin_petty_settlements` FOR EACH ROW BEGIN
     IF NOT (NEW.id <=> OLD.id AND NEW.property_id <=> OLD.property_id AND NEW.fund_id <=> OLD.fund_id AND NEW.number <=> OLD.number AND NEW.voucher_total_minor <=> OLD.voucher_total_minor
         AND NEW.book_minor <=> OLD.book_minor AND NEW.counted_minor <=> OLD.counted_minor AND NEW.variance_minor <=> OLD.variance_minor AND NEW.replenish_minor <=> OLD.replenish_minor
         AND NEW.submitted_by <=> OLD.submitted_by AND NEW.submitted_at <=> OLD.submitted_at) THEN
@@ -2827,11 +2743,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `fin_petty_settlements_no_delete` BEFORE DELETE ON `fin_petty_settlements` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a petty cash settlement cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `fin_petty_settlements_no_delete` BEFORE DELETE ON `fin_petty_settlements` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a petty cash settlement cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -2855,18 +2770,17 @@ CREATE TABLE `fin_petty_voids` (
   CONSTRAINT `fin_petty_voids_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `fin_petty_voids_voided_by_foreign` FOREIGN KEY (`voided_by`) REFERENCES `users` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `fin_petty_voids_voucher_id_foreign` FOREIGN KEY (`voucher_id`) REFERENCES `fin_petty_vouchers` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `fin_petty_voids_no_update` BEFORE UPDATE ON `fin_petty_voids` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a petty cash void cannot be changed' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `fin_petty_voids_no_update` BEFORE UPDATE ON `fin_petty_voids` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a petty cash void cannot be changed' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -2877,11 +2791,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `fin_petty_voids_no_delete` BEFORE DELETE ON `fin_petty_voids` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a petty cash void cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `fin_petty_voids_no_delete` BEFORE DELETE ON `fin_petty_voids` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a petty cash void cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -2915,18 +2828,17 @@ CREATE TABLE `fin_petty_vouchers` (
   CONSTRAINT `fin_petty_vouchers_fund_id_foreign` FOREIGN KEY (`fund_id`) REFERENCES `fin_petty_funds` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `fin_petty_vouchers_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_fin_petty_voucher` CHECK ((`amount_minor` > 0))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `fin_petty_vouchers_no_update` BEFORE UPDATE ON `fin_petty_vouchers` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a petty cash voucher cannot be changed' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `fin_petty_vouchers_no_update` BEFORE UPDATE ON `fin_petty_vouchers` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a petty cash voucher cannot be changed' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -2937,11 +2849,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `fin_petty_vouchers_no_delete` BEFORE DELETE ON `fin_petty_vouchers` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a petty cash voucher cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `fin_petty_vouchers_no_delete` BEFORE DELETE ON `fin_petty_vouchers` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a petty cash voucher cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -2959,7 +2870,7 @@ CREATE TABLE `fin_pnl_outlet_map` (
   `updated_at` timestamp(6) NULL DEFAULT NULL,
   PRIMARY KEY (`property_id`,`outlet_code`),
   CONSTRAINT `fin_pnl_outlet_map_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `fin_pos_refunds`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -2994,18 +2905,17 @@ CREATE TABLE `fin_pos_refunds` (
   KEY `fin_pos_refunds_correlation_idx` (`correlation_id`),
   CONSTRAINT `fin_pos_refunds_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_fin_pos_refund_total` CHECK (((`total_minor` = ((`base_minor` + `service_charge_minor`) + `tax_minor`)) and (`total_minor` = ((`cash_minor` + `card_minor`) + `qris_minor`)) and (`total_minor` > 0)))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `fin_pos_refunds_no_update` BEFORE UPDATE ON `fin_pos_refunds` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a refund cannot be changed' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `fin_pos_refunds_no_update` BEFORE UPDATE ON `fin_pos_refunds` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a refund cannot be changed' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -3016,11 +2926,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `fin_pos_refunds_no_delete` BEFORE DELETE ON `fin_pos_refunds` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a refund cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `fin_pos_refunds_no_delete` BEFORE DELETE ON `fin_pos_refunds` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a refund cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -3058,18 +2967,17 @@ CREATE TABLE `fin_pos_sales` (
   KEY `fin_pos_sales_property_id_business_date_index` (`property_id`,`business_date`),
   CONSTRAINT `fin_pos_sales_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_fin_pos_total` CHECK (((`total_minor` = ((`base_minor` + `service_charge_minor`) + `tax_minor`)) and (`total_minor` = (((`cash_minor` + `card_minor`) + `qris_minor`) + `room_minor`))))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `fin_pos_sales_no_update` BEFORE UPDATE ON `fin_pos_sales` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a point of sale bill cannot be changed' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `fin_pos_sales_no_update` BEFORE UPDATE ON `fin_pos_sales` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a point of sale bill cannot be changed' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -3080,11 +2988,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `fin_pos_sales_no_delete` BEFORE DELETE ON `fin_pos_sales` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a point of sale bill cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `fin_pos_sales_no_delete` BEFORE DELETE ON `fin_pos_sales` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a point of sale bill cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -3114,18 +3021,17 @@ CREATE TABLE `fin_recurring_expenses` (
   KEY `fin_recurring_expenses_property_id_is_active_next_due_index` (`property_id`,`is_active`,`next_due`),
   CONSTRAINT `fin_recurring_expenses_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_fin_recurring` CHECK (((`amount_minor` > 0) and (`frequency` in (_utf8mb4'monthly',_utf8mb4'quarterly',_utf8mb4'yearly')) and (`due_day` between 1 and 31) and (`remind_days` <= 60) and (dayofmonth(`start_month`) = 1)))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `fin_recurring_guard` BEFORE UPDATE ON `fin_recurring_expenses` FOR EACH ROW BEGIN
+/*!50003 CREATE*/ /*!50003 TRIGGER `fin_recurring_guard` BEFORE UPDATE ON `fin_recurring_expenses` FOR EACH ROW BEGIN
     IF NOT (NEW.id <=> OLD.id AND NEW.property_id <=> OLD.property_id AND NEW.frequency <=> OLD.frequency AND NEW.due_day <=> OLD.due_day AND NEW.start_month <=> OLD.start_month) THEN
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'the schedule of a recurring expense cannot be changed';
     END IF;
@@ -3143,11 +3049,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `fin_recurring_no_delete` BEFORE DELETE ON `fin_recurring_expenses` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a recurring expense cannot be deleted; deactivate it' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `fin_recurring_no_delete` BEFORE DELETE ON `fin_recurring_expenses` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a recurring expense cannot be deleted; deactivate it' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -3178,18 +3083,17 @@ CREATE TABLE `fin_recurring_occurrences` (
   CONSTRAINT `fin_recurring_occurrences_recurring_id_foreign` FOREIGN KEY (`recurring_id`) REFERENCES `fin_recurring_expenses` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `fin_recurring_occurrences_settled_by_foreign` FOREIGN KEY (`settled_by`) REFERENCES `users` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_fin_occurrence` CHECK ((((`status` = _utf8mb4'paid') and (`amount_minor` > 0) and (`paid_on` is not null) and (`method` in (_utf8mb4'cash',_utf8mb4'transfer',_utf8mb4'giro',_utf8mb4'other'))) or ((`status` = _utf8mb4'skipped') and (`amount_minor` is null) and (`paid_on` is null) and (`method` is null) and (`note` is not null) and (char_length(trim(`note`)) > 0))))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `fin_recurring_occurrences_no_update` BEFORE UPDATE ON `fin_recurring_occurrences` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a settled due date cannot be changed' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `fin_recurring_occurrences_no_update` BEFORE UPDATE ON `fin_recurring_occurrences` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a settled due date cannot be changed' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -3200,11 +3104,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `fin_recurring_occurrences_no_delete` BEFORE DELETE ON `fin_recurring_occurrences` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a settled due date cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `fin_recurring_occurrences_no_delete` BEFORE DELETE ON `fin_recurring_occurrences` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a settled due date cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -3240,18 +3143,17 @@ CREATE TABLE `fin_revenue_days` (
   CONSTRAINT `chk_fin_days_status` CHECK ((`status` in (_utf8mb4'recorded',_utf8mb4'verified'))),
   CONSTRAINT `chk_fin_days_total` CHECK ((`total_minor` = ((`base_minor` + `service_charge_minor`) + `tax_minor`))),
   CONSTRAINT `chk_fin_days_verified` CHECK ((((`status` = _utf8mb4'recorded') and (`verified_at` is null) and (`verified_by` is null)) or ((`status` = _utf8mb4'verified') and (`verified_at` is not null) and (`verified_by` is not null))))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `fin_revenue_days_guard` BEFORE UPDATE ON `fin_revenue_days` FOR EACH ROW BEGIN
+/*!50003 CREATE*/ /*!50003 TRIGGER `fin_revenue_days_guard` BEFORE UPDATE ON `fin_revenue_days` FOR EACH ROW BEGIN
     IF NOT (NEW.id <=> OLD.id AND NEW.property_id <=> OLD.property_id AND NEW.business_date <=> OLD.business_date AND NEW.currency <=> OLD.currency AND NEW.night_audit_id <=> OLD.night_audit_id
         AND NEW.base_minor <=> OLD.base_minor AND NEW.service_charge_minor <=> OLD.service_charge_minor AND NEW.tax_minor <=> OLD.tax_minor AND NEW.total_minor <=> OLD.total_minor
         AND NEW.collected_minor <=> OLD.collected_minor AND NEW.event_id <=> OLD.event_id AND NEW.actor_id <=> OLD.actor_id AND NEW.occurred_at <=> OLD.occurred_at) THEN
@@ -3271,11 +3173,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `fin_revenue_days_no_delete` BEFORE DELETE ON `fin_revenue_days` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a revenue day cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `fin_revenue_days_no_delete` BEFORE DELETE ON `fin_revenue_days` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a revenue day cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -3302,18 +3203,17 @@ CREATE TABLE `fin_revenue_lines` (
   CONSTRAINT `fin_revenue_lines_day_id_foreign` FOREIGN KEY (`day_id`) REFERENCES `fin_revenue_days` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `fin_revenue_lines_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_fin_lines_total` CHECK ((`total_minor` = ((`base_minor` + `service_charge_minor`) + `tax_minor`)))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `fin_revenue_lines_no_update` BEFORE UPDATE ON `fin_revenue_lines` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a revenue line cannot be changed' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `fin_revenue_lines_no_update` BEFORE UPDATE ON `fin_revenue_lines` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a revenue line cannot be changed' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -3324,11 +3224,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `fin_revenue_lines_no_delete` BEFORE DELETE ON `fin_revenue_lines` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a revenue line cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `fin_revenue_lines_no_delete` BEFORE DELETE ON `fin_revenue_lines` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a revenue line cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -3365,18 +3264,17 @@ CREATE TABLE `fin_settlements` (
   KEY `fin_settlements_property_id_settled_on_index` (`property_id`,`settled_on`),
   CONSTRAINT `fin_settlements_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_fin_settlement` CHECK (((`method` in (_utf8mb4'qris',_utf8mb4'card')) and (`covers_to` >= `covers_from`) and (`fee_minor` <= `gross_minor`) and (`gross_minor` > 0)))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `fin_settlements_no_update` BEFORE UPDATE ON `fin_settlements` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a settlement cannot be changed' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `fin_settlements_no_update` BEFORE UPDATE ON `fin_settlements` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a settlement cannot be changed' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -3387,11 +3285,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `fin_settlements_no_delete` BEFORE DELETE ON `fin_settlements` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a settlement cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `fin_settlements_no_delete` BEFORE DELETE ON `fin_settlements` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a settlement cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -3421,18 +3318,17 @@ CREATE TABLE `fin_tax_filings` (
   UNIQUE KEY `fin_tax_filings_property_id_period_unique` (`property_id`,`period`),
   CONSTRAINT `fin_tax_filings_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_fin_tax_filings` CHECK ((((`deposited_on` is null) and (`deposited_minor` is null) and (`deposit_reference` is null) and (`deposited_by` is null)) or ((`deposited_on` is not null) and (`deposited_minor` is not null) and (`deposit_reference` is not null) and (`deposited_by` is not null) and (`deposited_on` >= `reported_on`))))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `fin_tax_filings_guard` BEFORE UPDATE ON `fin_tax_filings` FOR EACH ROW BEGIN IF NOT (NEW.period <=> OLD.period AND NEW.base_minor <=> OLD.base_minor AND NEW.service_charge_minor <=> OLD.service_charge_minor AND NEW.tax_minor <=> OLD.tax_minor AND NEW.reported_on <=> OLD.reported_on AND NEW.reported_by <=> OLD.reported_by) OR OLD.deposited_on IS NOT NULL THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a tax filing cannot be changed'; END IF; END */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `fin_tax_filings_guard` BEFORE UPDATE ON `fin_tax_filings` FOR EACH ROW BEGIN IF NOT (NEW.period <=> OLD.period AND NEW.base_minor <=> OLD.base_minor AND NEW.service_charge_minor <=> OLD.service_charge_minor AND NEW.tax_minor <=> OLD.tax_minor AND NEW.reported_on <=> OLD.reported_on AND NEW.reported_by <=> OLD.reported_by) OR OLD.deposited_on IS NOT NULL THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a tax filing cannot be changed'; END IF; END */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -3443,11 +3339,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `fin_tax_filings_no_delete` BEFORE DELETE ON `fin_tax_filings` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a tax filing cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `fin_tax_filings_no_delete` BEFORE DELETE ON `fin_tax_filings` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a tax filing cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -3466,7 +3361,7 @@ CREATE TABLE `fin_tax_settings` (
   PRIMARY KEY (`property_id`),
   CONSTRAINT `fin_tax_settings_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_fin_tax_settings` CHECK ((`report_day` between 1 and 28))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `finance_expense_accounts`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -3485,7 +3380,7 @@ CREATE TABLE `finance_expense_accounts` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `finance_expense_accounts_property_id_code_unique` (`property_id`,`code`),
   CONSTRAINT `finance_expense_accounts_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `finance_payroll_disbursements`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -3517,18 +3412,17 @@ CREATE TABLE `finance_payroll_disbursements` (
   KEY `finance_payroll_disbursements_property_id_status_index` (`property_id`,`status`),
   CONSTRAINT `finance_payroll_disbursements_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_finance_payroll_disbursements` CHECK (((`status` in (_utf8mb4'awaiting',_utf8mb4'verified',_utf8mb4'paid',_utf8mb4'withdrawn')) and ((`status` <> _utf8mb4'paid') or ((`paid_at` is not null) and (`method` is not null) and (`reference` is not null)))))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `finance_payroll_disbursements_no_delete` BEFORE DELETE ON `finance_payroll_disbursements` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a payroll disbursement cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `finance_payroll_disbursements_no_delete` BEFORE DELETE ON `finance_payroll_disbursements` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a payroll disbursement cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -3581,7 +3475,7 @@ CREATE TABLE `fnb_bill_lines` (
   CONSTRAINT `fnb_bill_lines_item_id_foreign` FOREIGN KEY (`item_id`) REFERENCES `fnb_menu_items` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_fnb_line` CHECK (((`status` in (_utf8mb4'pending',_utf8mb4'sent',_utf8mb4'voided',_utf8mb4'removed')) and (`quantity` between 1 and 99) and (`line_total_minor` >= 0))),
   CONSTRAINT `chk_fnb_line_discount` CHECK (((`discount_kind` is null) or (`discount_kind` in (_utf8mb4'percent',_utf8mb4'amount',_utf8mb4'comp'))))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `fnb_bills`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -3635,18 +3529,17 @@ CREATE TABLE `fnb_bills` (
   CONSTRAINT `fnb_bills_table_id_foreign` FOREIGN KEY (`table_id`) REFERENCES `fnb_tables` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_fnb_bill_source` CHECK ((`source` in (_utf8mb4'staff',_utf8mb4'qr'))),
   CONSTRAINT `chk_fnb_bill_status` CHECK ((`status` in (_utf8mb4'open',_utf8mb4'settled',_utf8mb4'cancelled',_utf8mb4'refunded')))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `fnb_bills_open_table_insert` BEFORE INSERT ON `fnb_bills` FOR EACH ROW BEGIN
+/*!50003 CREATE*/ /*!50003 TRIGGER `fnb_bills_open_table_insert` BEFORE INSERT ON `fnb_bills` FOR EACH ROW BEGIN
     SET NEW.open_table_id = CASE WHEN NEW.status = 'open' THEN NEW.table_id ELSE NULL END;
 END */;;
 DELIMITER ;
@@ -3659,11 +3552,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `fnb_bills_open_table_update` BEFORE UPDATE ON `fnb_bills` FOR EACH ROW BEGIN
+/*!50003 CREATE*/ /*!50003 TRIGGER `fnb_bills_open_table_update` BEFORE UPDATE ON `fnb_bills` FOR EACH ROW BEGIN
     SET NEW.open_table_id = CASE WHEN NEW.status = 'open' THEN NEW.table_id ELSE NULL END;
 END */;;
 DELIMITER ;
@@ -3705,18 +3597,17 @@ CREATE TABLE `fnb_cashier_shifts` (
   CONSTRAINT `fnb_cashier_shifts_outlet_id_foreign` FOREIGN KEY (`outlet_id`) REFERENCES `fnb_outlets` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `fnb_cashier_shifts_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_fnb_shift` CHECK (((`status` in (_utf8mb4'open',_utf8mb4'closed')) and (`opening_float_minor` >= 0)))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `fnb_cashier_shifts_open_insert` BEFORE INSERT ON `fnb_cashier_shifts` FOR EACH ROW BEGIN
+/*!50003 CREATE*/ /*!50003 TRIGGER `fnb_cashier_shifts_open_insert` BEFORE INSERT ON `fnb_cashier_shifts` FOR EACH ROW BEGIN
     SET NEW.open_cashier_id = CASE WHEN NEW.status = 'open' THEN NEW.cashier_id ELSE NULL END;
 END */;;
 DELIMITER ;
@@ -3729,11 +3620,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `fnb_cashier_shifts_open_update` BEFORE UPDATE ON `fnb_cashier_shifts` FOR EACH ROW BEGIN
+/*!50003 CREATE*/ /*!50003 TRIGGER `fnb_cashier_shifts_open_update` BEFORE UPDATE ON `fnb_cashier_shifts` FOR EACH ROW BEGIN
     SET NEW.open_cashier_id = CASE WHEN NEW.status = 'open' THEN NEW.cashier_id ELSE NULL END;
 END */;;
 DELIMITER ;
@@ -3751,7 +3641,7 @@ CREATE TABLE `fnb_item_modifier_groups` (
   KEY `fnb_item_modifier_groups_group_id_foreign` (`group_id`),
   CONSTRAINT `fnb_item_modifier_groups_group_id_foreign` FOREIGN KEY (`group_id`) REFERENCES `fnb_modifier_groups` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `fnb_item_modifier_groups_item_id_foreign` FOREIGN KEY (`item_id`) REFERENCES `fnb_menu_items` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `fnb_item_variants`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -3768,7 +3658,7 @@ CREATE TABLE `fnb_item_variants` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `fnb_item_variants_item_id_name_unique` (`item_id`,`name`),
   CONSTRAINT `fnb_item_variants_item_id_foreign` FOREIGN KEY (`item_id`) REFERENCES `fnb_menu_items` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `fnb_menu_categories`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -3790,7 +3680,7 @@ CREATE TABLE `fnb_menu_categories` (
   KEY `fnb_menu_categories_property_id_foreign` (`property_id`),
   CONSTRAINT `fnb_menu_categories_outlet_id_foreign` FOREIGN KEY (`outlet_id`) REFERENCES `fnb_outlets` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `fnb_menu_categories_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `fnb_menu_items`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -3816,7 +3706,7 @@ CREATE TABLE `fnb_menu_items` (
   KEY `fnb_menu_items_category_id_foreign` (`category_id`),
   CONSTRAINT `fnb_menu_items_category_id_foreign` FOREIGN KEY (`category_id`) REFERENCES `fnb_menu_categories` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `fnb_menu_items_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `fnb_minibar_check_lines`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -3832,18 +3722,17 @@ CREATE TABLE `fnb_minibar_check_lines` (
   `stock_after` smallint unsigned NOT NULL,
   PRIMARY KEY (`check_id`,`item_id`),
   CONSTRAINT `fnb_minibar_check_lines_check_id_foreign` FOREIGN KEY (`check_id`) REFERENCES `fnb_minibar_checks` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `fnb_minibar_check_lines_no_update` BEFORE UPDATE ON `fnb_minibar_check_lines` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a mini bar check cannot be changed' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `fnb_minibar_check_lines_no_update` BEFORE UPDATE ON `fnb_minibar_check_lines` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a mini bar check cannot be changed' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -3854,11 +3743,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `fnb_minibar_check_lines_no_delete` BEFORE DELETE ON `fnb_minibar_check_lines` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a mini bar check cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `fnb_minibar_check_lines_no_delete` BEFORE DELETE ON `fnb_minibar_check_lines` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a mini bar check cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -3891,18 +3779,17 @@ CREATE TABLE `fnb_minibar_checks` (
   KEY `fnb_minibar_checks_property_id_checked_by_checked_at_index` (`property_id`,`checked_by`,`checked_at`),
   CONSTRAINT `fnb_minibar_checks_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_minibar_waiver` CHECK ((((`waive_service_charge` = 0) and (`waive_tax` = 0)) or (`waive_reason` is not null)))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `fnb_minibar_checks_no_update` BEFORE UPDATE ON `fnb_minibar_checks` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a mini bar check cannot be changed' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `fnb_minibar_checks_no_update` BEFORE UPDATE ON `fnb_minibar_checks` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a mini bar check cannot be changed' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -3913,11 +3800,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `fnb_minibar_checks_no_delete` BEFORE DELETE ON `fnb_minibar_checks` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a mini bar check cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `fnb_minibar_checks_no_delete` BEFORE DELETE ON `fnb_minibar_checks` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a mini bar check cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -3941,7 +3827,7 @@ CREATE TABLE `fnb_minibar_items` (
   UNIQUE KEY `fnb_minibar_items_property_id_code_unique` (`property_id`,`code`),
   CONSTRAINT `fnb_minibar_items_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_fnb_minibar_items` CHECK (((`par_qty` between 1 and 99) and (`price_minor` > 0)))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `fnb_minibar_stock`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -3957,7 +3843,7 @@ CREATE TABLE `fnb_minibar_stock` (
   KEY `fnb_minibar_stock_item_id_foreign` (`item_id`),
   CONSTRAINT `fnb_minibar_stock_item_id_foreign` FOREIGN KEY (`item_id`) REFERENCES `fnb_minibar_items` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `fnb_minibar_stock_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `fnb_modifier_groups`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -3976,7 +3862,7 @@ CREATE TABLE `fnb_modifier_groups` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `fnb_modifier_groups_property_id_code_unique` (`property_id`,`code`),
   CONSTRAINT `fnb_modifier_groups_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `fnb_modifiers`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -3993,7 +3879,7 @@ CREATE TABLE `fnb_modifiers` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `fnb_modifiers_group_id_name_unique` (`group_id`,`name`),
   CONSTRAINT `fnb_modifiers_group_id_foreign` FOREIGN KEY (`group_id`) REFERENCES `fnb_modifier_groups` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `fnb_order_batches`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -4008,7 +3894,7 @@ CREATE TABLE `fnb_order_batches` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `fnb_order_batches_bill_id_number_unique` (`bill_id`,`number`),
   CONSTRAINT `fnb_order_batches_bill_id_foreign` FOREIGN KEY (`bill_id`) REFERENCES `fnb_bills` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `fnb_outlets`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -4028,7 +3914,7 @@ CREATE TABLE `fnb_outlets` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `fnb_outlets_property_id_code_unique` (`property_id`,`code`),
   CONSTRAINT `fnb_outlets_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `fnb_payments`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -4061,7 +3947,7 @@ CREATE TABLE `fnb_payments` (
   CONSTRAINT `fnb_payments_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `fnb_payments_shift_id_foreign` FOREIGN KEY (`shift_id`) REFERENCES `fnb_cashier_shifts` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_fnb_payment` CHECK (((`method` in (_utf8mb4'cash',_utf8mb4'card',_utf8mb4'qris',_utf8mb4'room',_utf8mb4'gift_card')) and (`status` in (_utf8mb4'initiated',_utf8mb4'pending',_utf8mb4'paid',_utf8mb4'failed',_utf8mb4'expired',_utf8mb4'unknown',_utf8mb4'refunded')) and (`amount_minor` > 0)))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `fnb_price_rules`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -4096,18 +3982,17 @@ CREATE TABLE `fnb_price_rules` (
   CONSTRAINT `fnb_price_rules_outlet_id_foreign` FOREIGN KEY (`outlet_id`) REFERENCES `fnb_outlets` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `fnb_price_rules_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_fnb_price_rule` CHECK (((`channel` in (_utf8mb4'all',_utf8mb4'dine_in',_utf8mb4'room_service',_utf8mb4'takeaway')) and (`kind` in (_utf8mb4'price',_utf8mb4'promo')) and (`days` between 1 and 127) and ((`valid_to` is null) or (`valid_to` >= `valid_from`)) and (((`from_time` is null) and (`to_time` is null)) or ((`from_time` is not null) and (`to_time` is not null) and (`from_time` <> `to_time`)))))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `fnb_price_rules_retire_only` BEFORE UPDATE ON `fnb_price_rules` FOR EACH ROW BEGIN
+/*!50003 CREATE*/ /*!50003 TRIGGER `fnb_price_rules_retire_only` BEFORE UPDATE ON `fnb_price_rules` FOR EACH ROW BEGIN
                 IF NOT (OLD.outlet_id <=> NEW.outlet_id AND OLD.item_id <=> NEW.item_id AND OLD.variant_id <=> NEW.variant_id AND OLD.channel <=> NEW.channel AND OLD.kind <=> NEW.kind AND OLD.name <=> NEW.name
                     AND OLD.price_minor <=> NEW.price_minor AND OLD.valid_from <=> NEW.valid_from AND OLD.valid_to <=> NEW.valid_to AND OLD.days <=> NEW.days AND OLD.from_time <=> NEW.from_time AND OLD.to_time <=> NEW.to_time AND OLD.created_by <=> NEW.created_by)
                     OR (OLD.is_active = 0 AND NEW.is_active = 1) THEN
@@ -4124,11 +4009,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `fnb_price_rules_no_delete` BEFORE DELETE ON `fnb_price_rules` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a price rule cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `fnb_price_rules_no_delete` BEFORE DELETE ON `fnb_price_rules` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a price rule cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -4150,18 +4034,17 @@ CREATE TABLE `fnb_refund_payments` (
   CONSTRAINT `fnb_refund_payments_payment_id_foreign` FOREIGN KEY (`payment_id`) REFERENCES `fnb_payments` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `fnb_refund_payments_refund_id_foreign` FOREIGN KEY (`refund_id`) REFERENCES `fnb_refunds` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_fnb_refund_payment` CHECK (((`method` in (_utf8mb4'cash',_utf8mb4'card',_utf8mb4'qris',_utf8mb4'gift_card')) and (`amount_minor` > 0)))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `fnb_refund_payments_no_update` BEFORE UPDATE ON `fnb_refund_payments` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a refund cannot be changed' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `fnb_refund_payments_no_update` BEFORE UPDATE ON `fnb_refund_payments` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a refund cannot be changed' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -4172,11 +4055,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `fnb_refund_payments_no_delete` BEFORE DELETE ON `fnb_refund_payments` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a refund cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `fnb_refund_payments_no_delete` BEFORE DELETE ON `fnb_refund_payments` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a refund cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -4208,18 +4090,17 @@ CREATE TABLE `fnb_refunds` (
   CONSTRAINT `fnb_refunds_bill_id_foreign` FOREIGN KEY (`bill_id`) REFERENCES `fnb_bills` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `fnb_refunds_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `fnb_refunds_shift_id_foreign` FOREIGN KEY (`shift_id`) REFERENCES `fnb_cashier_shifts` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `fnb_refunds_no_update` BEFORE UPDATE ON `fnb_refunds` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a refund cannot be changed' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `fnb_refunds_no_update` BEFORE UPDATE ON `fnb_refunds` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a refund cannot be changed' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -4230,11 +4111,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `fnb_refunds_no_delete` BEFORE DELETE ON `fnb_refunds` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a refund cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `fnb_refunds_no_delete` BEFORE DELETE ON `fnb_refunds` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a refund cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -4265,18 +4145,17 @@ CREATE TABLE `fnb_room_service_orders` (
   CONSTRAINT `fnb_room_service_orders_bill_id_foreign` FOREIGN KEY (`bill_id`) REFERENCES `fnb_bills` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `fnb_room_service_orders_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_fnb_room_service_orders` CHECK (((`status` in (_utf8mb4'ordered',_utf8mb4'on_the_way',_utf8mb4'delivered')) and ((`status` <> _utf8mb4'delivered') or (`delivered_at` is not null))))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `fnb_room_service_orders_no_delete` BEFORE DELETE ON `fnb_room_service_orders` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a room service order cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `fnb_room_service_orders_no_delete` BEFORE DELETE ON `fnb_room_service_orders` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a room service order cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -4301,7 +4180,7 @@ CREATE TABLE `fnb_tables` (
   KEY `fnb_tables_property_id_foreign` (`property_id`),
   CONSTRAINT `fnb_tables_outlet_id_foreign` FOREIGN KEY (`outlet_id`) REFERENCES `fnb_outlets` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `fnb_tables_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `fo_reminders`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -4334,7 +4213,7 @@ CREATE TABLE `fo_reminders` (
   CONSTRAINT `fo_reminders_reservation_id_foreign` FOREIGN KEY (`reservation_id`) REFERENCES `reservations` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `fo_reminders_room_id_foreign` FOREIGN KEY (`room_id`) REFERENCES `rooms` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_fo_reminders_status` CHECK ((`status` in (_utf8mb4'open',_utf8mb4'done')))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `folio_postings`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -4380,18 +4259,17 @@ CREATE TABLE `folio_postings` (
   CONSTRAINT `chk_folio_postings_reversal` CHECK (((`entry_type` <> _utf8mb4'reversal') or ((`reverses_id` is not null) and (`reason` is not null) and (`total_minor` <> 0) and ((`total_minor` = ((`base_minor` + `service_charge_minor`) + `tax_minor`)) or ((`base_minor` = 0) and (`service_charge_minor` = 0) and (`tax_minor` = 0)))))),
   CONSTRAINT `chk_folio_postings_reverses` CHECK (((`reverses_id` is null) or (`entry_type` = _utf8mb4'reversal'))),
   CONSTRAINT `chk_folio_postings_type` CHECK ((`entry_type` in (_utf8mb4'charge',_utf8mb4'payment',_utf8mb4'refund',_utf8mb4'reversal')))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `folio_postings_day_locked` BEFORE INSERT ON `folio_postings` FOR EACH ROW BEGIN
+/*!50003 CREATE*/ /*!50003 TRIGGER `folio_postings_day_locked` BEFORE INSERT ON `folio_postings` FOR EACH ROW BEGIN
     IF EXISTS (SELECT 1 FROM night_audits WHERE property_id = NEW.property_id AND business_date >= NEW.business_date) THEN
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'the business date is closed by night audit';
     END IF;
@@ -4406,11 +4284,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `folio_postings_no_update` BEFORE UPDATE ON `folio_postings` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'folio_postings cannot be changed; post a reversal instead' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `folio_postings_no_update` BEFORE UPDATE ON `folio_postings` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'folio_postings cannot be changed; post a reversal instead' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -4421,11 +4298,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `folio_postings_no_delete` BEFORE DELETE ON `folio_postings` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'folio_postings cannot be deleted; post a reversal instead' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `folio_postings_no_delete` BEFORE DELETE ON `folio_postings` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'folio_postings cannot be deleted; post a reversal instead' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -4466,18 +4342,17 @@ CREATE TABLE `folios` (
   CONSTRAINT `chk_folios_closed` CHECK ((((`status` = _utf8mb4'open') and (`closed_at` is null) and (`closed_by` is null)) or ((`status` = _utf8mb4'closed') and (`closed_at` is not null) and (`closed_by` is not null)))),
   CONSTRAINT `chk_folios_status` CHECK ((`status` in (_utf8mb4'open',_utf8mb4'closed'))),
   CONSTRAINT `chk_folios_window` CHECK ((`window_no` between 1 and 20))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `folios_identity_immutable` BEFORE UPDATE ON `folios` FOR EACH ROW BEGIN
+/*!50003 CREATE*/ /*!50003 TRIGGER `folios_identity_immutable` BEFORE UPDATE ON `folios` FOR EACH ROW BEGIN
     IF NOT (NEW.id <=> OLD.id AND NEW.property_id <=> OLD.property_id AND NEW.number <=> OLD.number AND NEW.reservation_id <=> OLD.reservation_id
         AND NEW.window_no <=> OLD.window_no AND NEW.currency_code <=> OLD.currency_code AND NEW.created_by <=> OLD.created_by AND NEW.origin_folio_id <=> OLD.origin_folio_id) THEN
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'the identity of a folio cannot be changed';
@@ -4493,11 +4368,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `folios_no_delete` BEFORE DELETE ON `folios` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'folios cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `folios_no_delete` BEFORE DELETE ON `folios` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'folios cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -4517,7 +4391,7 @@ CREATE TABLE `foreign_payment_settings` (
   KEY `foreign_payment_settings_updated_by_foreign` (`updated_by`),
   CONSTRAINT `foreign_payment_settings_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `foreign_payment_settings_updated_by_foreign` FOREIGN KEY (`updated_by`) REFERENCES `users` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `foreign_payments`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -4536,18 +4410,17 @@ CREATE TABLE `foreign_payments` (
   CONSTRAINT `foreign_payments_posting_id_foreign` FOREIGN KEY (`posting_id`) REFERENCES `folio_postings` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `foreign_payments_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_foreign_payment` CHECK (((`foreign_minor` > 0) and (`booked_minor` > 0) and (`rate_e4` > 0)))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `foreign_payments_no_update` BEFORE UPDATE ON `foreign_payments` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a foreign payment record cannot be changed' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `foreign_payments_no_update` BEFORE UPDATE ON `foreign_payments` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a foreign payment record cannot be changed' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -4558,11 +4431,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `foreign_payments_no_delete` BEFORE DELETE ON `foreign_payments` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a foreign payment record cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `foreign_payments_no_delete` BEFORE DELETE ON `foreign_payments` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a foreign payment record cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -4579,7 +4451,7 @@ CREATE TABLE `ge_checkin_attempts` (
   PRIMARY KEY (`id`),
   KEY `ge_checkin_attempts_property_id_subject_hash_created_at_index` (`property_id`,`subject_hash`,`created_at`),
   CONSTRAINT `ge_checkin_attempts_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `ge_checkin_links`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -4602,7 +4474,7 @@ CREATE TABLE `ge_checkin_links` (
   KEY `ge_checkin_links_property_id_reservation_id_index` (`property_id`,`reservation_id`),
   CONSTRAINT `ge_checkin_links_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_ge_link` CHECK ((((`kind` = _utf8mb4'lobby') and (`reservation_id` is null)) or ((`kind` = _utf8mb4'reservation') and (`reservation_id` is not null))))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `ge_checkins`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -4642,18 +4514,17 @@ CREATE TABLE `ge_checkins` (
   CONSTRAINT `ge_checkins_link_id_foreign` FOREIGN KEY (`link_id`) REFERENCES `ge_checkin_links` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `ge_checkins_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_ge_checkin` CHECK (((`status` in (_utf8mb4'submitted',_utf8mb4'verified',_utf8mb4'rejected')) and ((`status` = _utf8mb4'verified') = (`stay_id` is not null)) and ((`status` = _utf8mb4'submitted') or (`decided_by` is not null)) and ((`status` <> _utf8mb4'rejected') or (`reject_reason` is not null)) and (`consent_locale` in (_utf8mb4'id',_utf8mb4'en')) and ((`deposit_method` is null) or (`deposit_method` = _utf8mb4'qris'))))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `ge_checkins_no_delete` BEFORE DELETE ON `ge_checkins` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a self check-in cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `ge_checkins_no_delete` BEFORE DELETE ON `ge_checkins` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a self check-in cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -4690,7 +4561,7 @@ CREATE TABLE `ge_orders` (
   CONSTRAINT `ge_orders_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `ge_orders_session_id_foreign` FOREIGN KEY (`session_id`) REFERENCES `ge_sessions` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_ge_order` CHECK (((`kind` in (_utf8mb4'room',_utf8mb4'table')) and (`payment_preference` in (_utf8mb4'qris',_utf8mb4'room',_utf8mb4'later')) and (`room_charge_state` in (_utf8mb4'none',_utf8mb4'pending',_utf8mb4'verified',_utf8mb4'rejected')) and ((`payment_preference` = _utf8mb4'room') or (`room_charge_state` = _utf8mb4'none'))))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `ge_privacy_notices`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -4707,18 +4578,17 @@ CREATE TABLE `ge_privacy_notices` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `ge_privacy_notices_property_id_version_unique` (`property_id`,`version`),
   CONSTRAINT `ge_privacy_notices_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `ge_privacy_notices_no_update` BEFORE UPDATE ON `ge_privacy_notices` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a privacy notice cannot be changed' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `ge_privacy_notices_no_update` BEFORE UPDATE ON `ge_privacy_notices` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a privacy notice cannot be changed' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -4729,11 +4599,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `ge_privacy_notices_no_delete` BEFORE DELETE ON `ge_privacy_notices` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a privacy notice cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `ge_privacy_notices_no_delete` BEFORE DELETE ON `ge_privacy_notices` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a privacy notice cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -4761,7 +4630,7 @@ CREATE TABLE `ge_qr_points` (
   UNIQUE KEY `ge_qr_points_property_id_kind_target_id_unique` (`property_id`,`kind`,`target_id`),
   CONSTRAINT `ge_qr_points_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_ge_qr_kind` CHECK ((`kind` in (_utf8mb4'room',_utf8mb4'table')))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `ge_requests`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -4784,18 +4653,17 @@ CREATE TABLE `ge_requests` (
   CONSTRAINT `ge_requests_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `ge_requests_session_id_foreign` FOREIGN KEY (`session_id`) REFERENCES `ge_sessions` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_ge_request` CHECK ((`kind` in (_utf8mb4'request',_utf8mb4'complaint')))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `ge_requests_no_update` BEFORE UPDATE ON `ge_requests` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a guest request reference cannot be changed' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `ge_requests_no_update` BEFORE UPDATE ON `ge_requests` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a guest request reference cannot be changed' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -4806,11 +4674,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `ge_requests_no_delete` BEFORE DELETE ON `ge_requests` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a guest request reference cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `ge_requests_no_delete` BEFORE DELETE ON `ge_requests` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a guest request reference cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -4841,7 +4708,7 @@ CREATE TABLE `ge_sessions` (
   KEY `ge_sessions_qr_point_id_foreign` (`qr_point_id`),
   CONSTRAINT `ge_sessions_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `ge_sessions_qr_point_id_foreign` FOREIGN KEY (`qr_point_id`) REFERENCES `ge_qr_points` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `ge_surveys`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -4867,18 +4734,17 @@ CREATE TABLE `ge_surveys` (
   CONSTRAINT `ge_surveys_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `ge_surveys_session_id_foreign` FOREIGN KEY (`session_id`) REFERENCES `ge_sessions` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_ge_survey` CHECK (((`overall` between 1 and 5) and ((`room_rating` is null) or (`room_rating` between 1 and 5)) and ((`service_rating` is null) or (`service_rating` between 1 and 5)) and ((`food_rating` is null) or (`food_rating` between 1 and 5)) and ((`value_rating` is null) or (`value_rating` between 1 and 5))))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `ge_surveys_no_update` BEFORE UPDATE ON `ge_surveys` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a survey cannot be changed' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `ge_surveys_no_update` BEFORE UPDATE ON `ge_surveys` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a survey cannot be changed' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -4889,11 +4755,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `ge_surveys_no_delete` BEFORE DELETE ON `ge_surveys` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a survey cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `ge_surveys_no_delete` BEFORE DELETE ON `ge_surveys` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a survey cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -4923,18 +4788,17 @@ CREATE TABLE `gift_card_entries` (
   CONSTRAINT `gift_card_entries_card_id_foreign` FOREIGN KEY (`card_id`) REFERENCES `gift_cards` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `gift_card_entries_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_gift_card_entries` CHECK (((`kind` in (_utf8mb4'issue',_utf8mb4'redeem',_utf8mb4'restore',_utf8mb4'void')) and (`delta_minor` <> 0)))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `gift_card_entries_no_update` BEFORE UPDATE ON `gift_card_entries` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a gift card entry cannot be changed' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `gift_card_entries_no_update` BEFORE UPDATE ON `gift_card_entries` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a gift card entry cannot be changed' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -4945,11 +4809,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `gift_card_entries_no_delete` BEFORE DELETE ON `gift_card_entries` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a gift card entry cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `gift_card_entries_no_delete` BEFORE DELETE ON `gift_card_entries` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a gift card entry cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -4983,7 +4846,7 @@ CREATE TABLE `gift_cards` (
   KEY `gift_cards_property_id_status_expires_on_index` (`property_id`,`status`,`expires_on`),
   CONSTRAINT `gift_cards_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_gift_cards` CHECK (((`kind` in (_utf8mb4'gift_card',_utf8mb4'voucher')) and (`status` in (_utf8mb4'active',_utf8mb4'void')) and (`face_minor` > 0) and (`balance_minor` <= `face_minor`) and (`issue_method` in (_utf8mb4'cash',_utf8mb4'card',_utf8mb4'qris',_utf8mb4'bank_transfer',_utf8mb4'complimentary'))))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `goods_receipt_lines`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -5011,18 +4874,17 @@ CREATE TABLE `goods_receipt_lines` (
   CONSTRAINT `goods_receipt_lines_order_line_id_foreign` FOREIGN KEY (`order_line_id`) REFERENCES `purchase_order_lines` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `goods_receipt_lines_receipt_id_foreign` FOREIGN KEY (`receipt_id`) REFERENCES `goods_receipts` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_goods_receipt_line` CHECK ((((`accepted_qty_milli` > 0) or (`rejected_qty_milli` > 0)) and (`goods_condition` in (_utf8mb4'good',_utf8mb4'minor_damage')) and ((`rejected_qty_milli` = 0) or (`rejection_reason` in (_utf8mb4'damaged',_utf8mb4'expired',_utf8mb4'wrong_item',_utf8mb4'quality',_utf8mb4'short',_utf8mb4'other')))))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `goods_receipt_lines_no_update` BEFORE UPDATE ON `goods_receipt_lines` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a goods receipt line cannot be changed' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `goods_receipt_lines_no_update` BEFORE UPDATE ON `goods_receipt_lines` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a goods receipt line cannot be changed' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -5033,11 +4895,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `goods_receipt_lines_no_delete` BEFORE DELETE ON `goods_receipt_lines` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a goods receipt line cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `goods_receipt_lines_no_delete` BEFORE DELETE ON `goods_receipt_lines` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a goods receipt line cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -5060,18 +4921,17 @@ CREATE TABLE `goods_receipt_photos` (
   CONSTRAINT `goods_receipt_photos_created_by_foreign` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `goods_receipt_photos_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `goods_receipt_photos_receipt_line_id_foreign` FOREIGN KEY (`receipt_line_id`) REFERENCES `goods_receipt_lines` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `goods_receipt_photos_no_update` BEFORE UPDATE ON `goods_receipt_photos` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a goods receipt photo cannot be changed' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `goods_receipt_photos_no_update` BEFORE UPDATE ON `goods_receipt_photos` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a goods receipt photo cannot be changed' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -5082,11 +4942,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `goods_receipt_photos_no_delete` BEFORE DELETE ON `goods_receipt_photos` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a goods receipt photo cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `goods_receipt_photos_no_delete` BEFORE DELETE ON `goods_receipt_photos` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a goods receipt photo cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -5120,18 +4979,17 @@ CREATE TABLE `goods_receipts` (
   CONSTRAINT `goods_receipts_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `goods_receipts_received_by_foreign` FOREIGN KEY (`received_by`) REFERENCES `users` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `goods_receipts_supplier_id_foreign` FOREIGN KEY (`supplier_id`) REFERENCES `suppliers` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `goods_receipts_no_update` BEFORE UPDATE ON `goods_receipts` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a goods receipt cannot be changed' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `goods_receipts_no_update` BEFORE UPDATE ON `goods_receipts` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a goods receipt cannot be changed' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -5142,11 +5000,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `goods_receipts_no_delete` BEFORE DELETE ON `goods_receipts` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a goods receipt cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `goods_receipts_no_delete` BEFORE DELETE ON `goods_receipts` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a goods receipt cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -5166,18 +5023,17 @@ CREATE TABLE `group_master_folios` (
   CONSTRAINT `group_master_folios_folio_id_foreign` FOREIGN KEY (`folio_id`) REFERENCES `folios` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `group_master_folios_group_id_foreign` FOREIGN KEY (`group_id`) REFERENCES `reservation_groups` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `group_master_folios_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `group_master_folios_no_update` BEFORE UPDATE ON `group_master_folios` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a group master folio mark cannot be changed' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `group_master_folios_no_update` BEFORE UPDATE ON `group_master_folios` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a group master folio mark cannot be changed' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -5188,11 +5044,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `group_master_folios_no_delete` BEFORE DELETE ON `group_master_folios` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a group master folio mark cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `group_master_folios_no_delete` BEFORE DELETE ON `group_master_folios` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a group master folio mark cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -5224,18 +5079,17 @@ CREATE TABLE `guest_corrections` (
   CONSTRAINT `guest_corrections_stay_id_foreign` FOREIGN KEY (`stay_id`) REFERENCES `stays` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_corrections_field` CHECK ((`field` in (_utf8mb4'full_name',_utf8mb4'nationality',_utf8mb4'id_type',_utf8mb4'id_number',_utf8mb4'id_valid_until',_utf8mb4'visa_number',_utf8mb4'address'))),
   CONSTRAINT `chk_corrections_reason` CHECK ((char_length(trim(`reason`)) > 0))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `guest_corrections_no_update` BEFORE UPDATE ON `guest_corrections` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a guest correction cannot be changed' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `guest_corrections_no_update` BEFORE UPDATE ON `guest_corrections` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a guest correction cannot be changed' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -5246,11 +5100,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `guest_corrections_no_delete` BEFORE DELETE ON `guest_corrections` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a guest correction cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `guest_corrections_no_delete` BEFORE DELETE ON `guest_corrections` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a guest correction cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -5305,18 +5158,17 @@ CREATE TABLE `guest_feedback` (
   CONSTRAINT `chk_feedback_severity` CHECK ((((`kind` = _utf8mb4'complaint') and (`severity` in (_utf8mb4'low',_utf8mb4'medium',_utf8mb4'high',_utf8mb4'critical'))) or ((`kind` <> _utf8mb4'complaint') and (`severity` is null)))),
   CONSTRAINT `chk_feedback_status` CHECK ((`status` in (_utf8mb4'open',_utf8mb4'in_progress',_utf8mb4'resolved',_utf8mb4'closed'))),
   CONSTRAINT `chk_feedback_summary` CHECK ((char_length(trim(`summary`)) > 0))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `guest_feedback_facts_immutable` BEFORE UPDATE ON `guest_feedback` FOR EACH ROW BEGIN
+/*!50003 CREATE*/ /*!50003 TRIGGER `guest_feedback_facts_immutable` BEFORE UPDATE ON `guest_feedback` FOR EACH ROW BEGIN
     IF NOT (NEW.id <=> OLD.id AND NEW.property_id <=> OLD.property_id AND NEW.number <=> OLD.number AND NEW.client_key <=> OLD.client_key AND NEW.kind <=> OLD.kind
         AND NEW.channel <=> OLD.channel AND NEW.reservation_id <=> OLD.reservation_id AND NEW.stay_id <=> OLD.stay_id AND NEW.room_id <=> OLD.room_id
         AND NEW.guest_name <=> OLD.guest_name AND NEW.summary <=> OLD.summary AND NEW.detail <=> OLD.detail AND NEW.created_by <=> OLD.created_by AND NEW.created_at <=> OLD.created_at) THEN
@@ -5336,11 +5188,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `guest_feedback_no_delete` BEFORE DELETE ON `guest_feedback` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'guest feedback cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `guest_feedback_no_delete` BEFORE DELETE ON `guest_feedback` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'guest feedback cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -5364,18 +5215,17 @@ CREATE TABLE `guest_feedback_events` (
   CONSTRAINT `guest_feedback_events_actor_id_foreign` FOREIGN KEY (`actor_id`) REFERENCES `users` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `guest_feedback_events_feedback_id_foreign` FOREIGN KEY (`feedback_id`) REFERENCES `guest_feedback` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `guest_feedback_events_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `guest_feedback_events_no_update` BEFORE UPDATE ON `guest_feedback_events` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a feedback event cannot be changed' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `guest_feedback_events_no_update` BEFORE UPDATE ON `guest_feedback_events` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a feedback event cannot be changed' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -5386,11 +5236,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `guest_feedback_events_no_delete` BEFORE DELETE ON `guest_feedback_events` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a feedback event cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `guest_feedback_events_no_delete` BEFORE DELETE ON `guest_feedback_events` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a feedback event cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -5408,7 +5257,7 @@ CREATE TABLE `guest_message_log` (
   KEY `guest_message_log_property_id_foreign` (`property_id`),
   CONSTRAINT `guest_message_log_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `guest_message_log_reservation_id_foreign` FOREIGN KEY (`reservation_id`) REFERENCES `reservations` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `guest_notes`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -5426,7 +5275,7 @@ CREATE TABLE `guest_notes` (
   CONSTRAINT `guest_notes_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `guest_notes_updated_by_foreign` FOREIGN KEY (`updated_by`) REFERENCES `users` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_guest_notes_flag` CHECK (((`flag` is null) or (`flag` in (_utf8mb4'vip',_utf8mb4'attention',_utf8mb4'do_not_rent'))))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `guest_preferences`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -5443,7 +5292,7 @@ CREATE TABLE `guest_preferences` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `guest_preferences_property_id_id_number_index_unique` (`property_id`,`id_number_index`),
   CONSTRAINT `guest_preferences_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `guest_requests`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -5492,18 +5341,17 @@ CREATE TABLE `guest_requests` (
   CONSTRAINT `chk_requests_priority` CHECK ((`priority` in (_utf8mb4'normal',_utf8mb4'urgent'))),
   CONSTRAINT `chk_requests_status` CHECK ((`status` in (_utf8mb4'open',_utf8mb4'in_progress',_utf8mb4'done',_utf8mb4'cancelled'))),
   CONSTRAINT `chk_requests_title` CHECK ((char_length(trim(`title`)) > 0))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `guest_requests_facts_immutable` BEFORE UPDATE ON `guest_requests` FOR EACH ROW BEGIN
+/*!50003 CREATE*/ /*!50003 TRIGGER `guest_requests_facts_immutable` BEFORE UPDATE ON `guest_requests` FOR EACH ROW BEGIN
     IF NOT (NEW.id <=> OLD.id AND NEW.property_id <=> OLD.property_id AND NEW.number <=> OLD.number AND NEW.client_key <=> OLD.client_key AND NEW.stay_id <=> OLD.stay_id
         AND NEW.reservation_id <=> OLD.reservation_id AND NEW.room_id <=> OLD.room_id AND NEW.category <=> OLD.category AND NEW.title <=> OLD.title AND NEW.due_at <=> OLD.due_at
         AND NEW.created_by <=> OLD.created_by AND NEW.created_at <=> OLD.created_at) THEN
@@ -5523,11 +5371,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `guest_requests_no_delete` BEFORE DELETE ON `guest_requests` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a guest request cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `guest_requests_no_delete` BEFORE DELETE ON `guest_requests` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a guest request cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -5559,18 +5406,17 @@ CREATE TABLE `guests` (
   CONSTRAINT `guests_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_guests_id_type` CHECK ((`id_type` in (_utf8mb4'ktp',_utf8mb4'passport',_utf8mb4'sim',_utf8mb4'kitas',_utf8mb4'other'))),
   CONSTRAINT `chk_guests_nationality` CHECK (regexp_like(`nationality`,_utf8mb4'^[A-Z]{2}$'))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `guests_no_delete` BEFORE DELETE ON `guests` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'guests cannot be deleted; erase through the retention process' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `guests_no_delete` BEFORE DELETE ON `guests` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'guests cannot be deleted; erase through the retention process' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -5596,18 +5442,17 @@ CREATE TABLE `hk_checklist_completions` (
   CONSTRAINT `hk_checklist_completions_completed_by_foreign` FOREIGN KEY (`completed_by`) REFERENCES `users` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `hk_checklist_completions_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `hk_checklist_completions_run_id_foreign` FOREIGN KEY (`run_id`) REFERENCES `hk_checklist_runs` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `hk_checklist_completions_no_update` BEFORE UPDATE ON `hk_checklist_completions` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a ticked checklist item cannot be changed' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `hk_checklist_completions_no_update` BEFORE UPDATE ON `hk_checklist_completions` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a ticked checklist item cannot be changed' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -5618,11 +5463,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `hk_checklist_completions_no_delete` BEFORE DELETE ON `hk_checklist_completions` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a ticked checklist item cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `hk_checklist_completions_no_delete` BEFORE DELETE ON `hk_checklist_completions` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a ticked checklist item cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -5648,18 +5492,17 @@ CREATE TABLE `hk_checklist_runs` (
   KEY `hk_checklist_runs_template_id_foreign` (`template_id`),
   CONSTRAINT `hk_checklist_runs_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `hk_checklist_runs_template_id_foreign` FOREIGN KEY (`template_id`) REFERENCES `hk_checklist_templates` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `hk_checklist_runs_no_update` BEFORE UPDATE ON `hk_checklist_runs` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a checklist run cannot be changed' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `hk_checklist_runs_no_update` BEFORE UPDATE ON `hk_checklist_runs` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a checklist run cannot be changed' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -5670,11 +5513,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `hk_checklist_runs_no_delete` BEFORE DELETE ON `hk_checklist_runs` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a checklist run cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `hk_checklist_runs_no_delete` BEFORE DELETE ON `hk_checklist_runs` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a checklist run cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -5702,18 +5544,17 @@ CREATE TABLE `hk_checklist_templates` (
   CONSTRAINT `hk_checklist_templates_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_hk_frequency` CHECK ((`frequency` in (_utf8mb4'daily',_utf8mb4'weekly',_utf8mb4'monthly'))),
   CONSTRAINT `chk_hk_scope` CHECK ((`scope` in (_utf8mb4'room',_utf8mb4'area')))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `hk_checklist_templates_no_update` BEFORE UPDATE ON `hk_checklist_templates` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a checklist template cannot be changed' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `hk_checklist_templates_no_update` BEFORE UPDATE ON `hk_checklist_templates` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a checklist template cannot be changed' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -5724,11 +5565,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `hk_checklist_templates_no_delete` BEFORE DELETE ON `hk_checklist_templates` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a checklist template cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `hk_checklist_templates_no_delete` BEFORE DELETE ON `hk_checklist_templates` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a checklist template cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -5751,7 +5591,7 @@ CREATE TABLE `housekeeping_rooms` (
   CONSTRAINT `housekeeping_rooms_room_id_foreign` FOREIGN KEY (`room_id`) REFERENCES `rooms` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `housekeeping_rooms_status_changed_by_foreign` FOREIGN KEY (`status_changed_by`) REFERENCES `users` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_hk_rooms_status` CHECK ((`status` in (_utf8mb4'dirty',_utf8mb4'cleaning',_utf8mb4'clean',_utf8mb4'ready',_utf8mb4'rework')))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `housekeeping_settings`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -5767,7 +5607,7 @@ CREATE TABLE `housekeeping_settings` (
   KEY `housekeeping_settings_updated_by_foreign` (`updated_by`),
   CONSTRAINT `housekeeping_settings_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `housekeeping_settings_updated_by_foreign` FOREIGN KEY (`updated_by`) REFERENCES `users` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `housekeeping_status_log`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -5789,18 +5629,17 @@ CREATE TABLE `housekeeping_status_log` (
   CONSTRAINT `housekeeping_status_log_actor_id_foreign` FOREIGN KEY (`actor_id`) REFERENCES `users` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `housekeeping_status_log_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `housekeeping_status_log_room_id_foreign` FOREIGN KEY (`room_id`) REFERENCES `rooms` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `housekeeping_status_log_no_update` BEFORE UPDATE ON `housekeeping_status_log` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'housekeeping_status_log is append-only' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `housekeeping_status_log_no_update` BEFORE UPDATE ON `housekeeping_status_log` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'housekeeping_status_log is append-only' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -5811,11 +5650,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `housekeeping_status_log_no_delete` BEFORE DELETE ON `housekeeping_status_log` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'housekeeping_status_log is append-only' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `housekeeping_status_log_no_delete` BEFORE DELETE ON `housekeeping_status_log` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'housekeeping_status_log is append-only' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -5859,18 +5697,17 @@ CREATE TABLE `housekeeping_tasks` (
   CONSTRAINT `chk_hk_tasks_kind` CHECK ((`kind` in (_utf8mb4'departure',_utf8mb4'vacant',_utf8mb4'request',_utf8mb4'stayover',_utf8mb4'rework'))),
   CONSTRAINT `chk_hk_tasks_status` CHECK ((`status` in (_utf8mb4'open',_utf8mb4'assigned',_utf8mb4'in_progress',_utf8mb4'done',_utf8mb4'cancelled'))),
   CONSTRAINT `chk_hk_tasks_times` CHECK ((((`status` in (_utf8mb4'open',_utf8mb4'assigned')) and (`started_at` is null) and (`finished_at` is null)) or ((`status` = _utf8mb4'in_progress') and (`started_at` is not null) and (`finished_at` is null)) or ((`status` = _utf8mb4'done') and (`started_at` is not null) and (`finished_at` is not null) and (`finished_at` >= `started_at`)) or (`status` = _utf8mb4'cancelled')))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `housekeeping_tasks_active_key_insert` BEFORE INSERT ON `housekeeping_tasks` FOR EACH ROW BEGIN
+/*!50003 CREATE*/ /*!50003 TRIGGER `housekeeping_tasks_active_key_insert` BEFORE INSERT ON `housekeeping_tasks` FOR EACH ROW BEGIN
     SET NEW.active_room_key = CASE WHEN NEW.status IN ('open', 'assigned', 'in_progress') THEN NEW.room_id ELSE NULL END;
 END */;;
 DELIMITER ;
@@ -5883,11 +5720,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `housekeeping_tasks_facts` BEFORE UPDATE ON `housekeeping_tasks` FOR EACH ROW BEGIN
+/*!50003 CREATE*/ /*!50003 TRIGGER `housekeeping_tasks_facts` BEFORE UPDATE ON `housekeeping_tasks` FOR EACH ROW BEGIN
     IF NOT (NEW.id <=> OLD.id AND NEW.property_id <=> OLD.property_id AND NEW.room_id <=> OLD.room_id AND NEW.kind <=> OLD.kind
         AND NEW.source <=> OLD.source AND NEW.source_ref <=> OLD.source_ref AND NEW.created_by <=> OLD.created_by) THEN
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'the origin of a housekeeping task cannot be changed';
@@ -5907,11 +5743,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `housekeeping_tasks_no_delete` BEFORE DELETE ON `housekeeping_tasks` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'housekeeping tasks cannot be deleted; cancel them' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `housekeeping_tasks_no_delete` BEFORE DELETE ON `housekeeping_tasks` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'housekeeping tasks cannot be deleted; cancel them' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -5932,18 +5767,17 @@ CREATE TABLE `hr_announcement_reads` (
   CONSTRAINT `hr_announcement_reads_announcement_id_foreign` FOREIGN KEY (`announcement_id`) REFERENCES `hr_announcements` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `hr_announcement_reads_employee_id_foreign` FOREIGN KEY (`employee_id`) REFERENCES `hr_employees` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `hr_announcement_reads_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `hr_announcement_reads_guard` BEFORE UPDATE ON `hr_announcement_reads` FOR EACH ROW BEGIN IF OLD.acknowledged_at IS NOT NULL THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a confirmation cannot be changed'; END IF; END */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `hr_announcement_reads_guard` BEFORE UPDATE ON `hr_announcement_reads` FOR EACH ROW BEGIN IF OLD.acknowledged_at IS NOT NULL THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a confirmation cannot be changed'; END IF; END */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -5954,11 +5788,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `hr_announcement_reads_no_delete` BEFORE DELETE ON `hr_announcement_reads` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a read record cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `hr_announcement_reads_no_delete` BEFORE DELETE ON `hr_announcement_reads` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a read record cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -5988,18 +5821,17 @@ CREATE TABLE `hr_announcements` (
   KEY `hr_announcements_property_id_status_published_at_index` (`property_id`,`status`,`published_at`),
   CONSTRAINT `hr_announcements_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_hr_announcements` CHECK (((`kind` in (_utf8mb4'announcement',_utf8mb4'policy')) and (`status` in (_utf8mb4'published',_utf8mb4'withdrawn')) and ((`status` <> _utf8mb4'withdrawn') or (`withdraw_reason` is not null))))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `hr_announcements_no_delete` BEFORE DELETE ON `hr_announcements` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'an announcement cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `hr_announcements_no_delete` BEFORE DELETE ON `hr_announcements` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'an announcement cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -6021,7 +5853,7 @@ CREATE TABLE `hr_appraisal_forms` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `hr_appraisal_forms_property_id_name_unique` (`property_id`,`name`),
   CONSTRAINT `hr_appraisal_forms_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `hr_appraisals`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -6064,18 +5896,17 @@ CREATE TABLE `hr_appraisals` (
   CONSTRAINT `hr_appraisals_form_id_foreign` FOREIGN KEY (`form_id`) REFERENCES `hr_appraisal_forms` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `hr_appraisals_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_hr_appraisals` CHECK (((`status` in (_utf8mb4'draft',_utf8mb4'signed_appraiser',_utf8mb4'completed',_utf8mb4'cancelled')) and (`period_end` >= `period_start`) and ((`status` not in (_utf8mb4'signed_appraiser',_utf8mb4'completed')) or ((`appraiser_signed_at` is not null) and (`appraiser_hash` is not null) and (`overall_x100` is not null))) and ((`status` <> _utf8mb4'completed') or ((`employee_signed_at` is not null) and (`employee_hash` is not null) and (`employee_agrees` is not null))) and ((`status` <> _utf8mb4'cancelled') or (`cancel_reason` is not null))))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `hr_appraisals_guard` BEFORE UPDATE ON `hr_appraisals` FOR EACH ROW BEGIN
+/*!50003 CREATE*/ /*!50003 TRIGGER `hr_appraisals_guard` BEFORE UPDATE ON `hr_appraisals` FOR EACH ROW BEGIN
     IF OLD.status IN ('signed_appraiser', 'completed') AND NOT (NEW.criteria <=> OLD.criteria AND NEW.scores <=> OLD.scores AND NEW.comment <=> OLD.comment AND NEW.overall_x100 <=> OLD.overall_x100 AND NEW.metrics <=> OLD.metrics AND NEW.appraiser_hash <=> OLD.appraiser_hash AND NEW.appraiser_id <=> OLD.appraiser_id AND NEW.employee_id <=> OLD.employee_id) THEN
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a signed appraisal cannot be changed';
     END IF;
@@ -6093,11 +5924,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `hr_appraisals_no_delete` BEFORE DELETE ON `hr_appraisals` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'an appraisal cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `hr_appraisals_no_delete` BEFORE DELETE ON `hr_appraisals` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'an appraisal cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -6143,18 +5973,17 @@ CREATE TABLE `hr_attendance` (
   CONSTRAINT `hr_attendance_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_hr_attendance` CHECK (((`in_method` in (_utf8mb4'mobile',_utf8mb4'manual')) and ((`out_at` is null) or (`out_at` > `in_at`)) and (((`out_at` is null) and (`out_method` is null)) or ((`out_at` is not null) and (`out_method` in (_utf8mb4'mobile',_utf8mb4'manual')))) and (((`in_method` = _utf8mb4'mobile') and ((`out_method` is null) or (`out_method` = _utf8mb4'mobile'))) or (`manual_reason` is not null)))),
   CONSTRAINT `chk_hr_attendance_face` CHECK ((((`in_face` is null) or (`in_face` in (_utf8mb4'match',_utf8mb4'mismatch',_utf8mb4'none'))) and ((`out_face` is null) or (`out_face` in (_utf8mb4'match',_utf8mb4'mismatch',_utf8mb4'none')))))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `hr_attendance_no_delete` BEFORE DELETE ON `hr_attendance` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'an attendance record cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `hr_attendance_no_delete` BEFORE DELETE ON `hr_attendance` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'an attendance record cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -6188,18 +6017,17 @@ CREATE TABLE `hr_attendance_corrections` (
   CONSTRAINT `hr_attendance_corrections_employee_id_foreign` FOREIGN KEY (`employee_id`) REFERENCES `hr_employees` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `hr_attendance_corrections_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_hr_attendance_corrections` CHECK (((`status` in (_utf8mb4'pending_approval',_utf8mb4'applied',_utf8mb4'rejected',_utf8mb4'cancelled')) and ((`new_out_at` is null) or (`new_out_at` > `new_in_at`)) and ((`status` <> _utf8mb4'applied') or (`applied_at` is not null))))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `hr_attendance_corrections_values` BEFORE UPDATE ON `hr_attendance_corrections` FOR EACH ROW BEGIN
+/*!50003 CREATE*/ /*!50003 TRIGGER `hr_attendance_corrections_values` BEFORE UPDATE ON `hr_attendance_corrections` FOR EACH ROW BEGIN
                 IF NOT (OLD.employee_id <=> NEW.employee_id AND OLD.work_date <=> NEW.work_date AND OLD.reason <=> NEW.reason AND OLD.record_id <=> NEW.record_id AND OLD.old_in_at <=> NEW.old_in_at AND OLD.old_out_at <=> NEW.old_out_at
                     AND OLD.new_in_at <=> NEW.new_in_at AND OLD.new_out_at <=> NEW.new_out_at AND OLD.requested_by <=> NEW.requested_by) THEN
                     SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'the values of a correction cannot change';
@@ -6215,11 +6043,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `hr_attendance_corrections_no_delete` BEFORE DELETE ON `hr_attendance_corrections` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a correction cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `hr_attendance_corrections_no_delete` BEFORE DELETE ON `hr_attendance_corrections` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a correction cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -6244,18 +6071,17 @@ CREATE TABLE `hr_attendance_reviews` (
   CONSTRAINT `hr_attendance_reviews_attendance_id_foreign` FOREIGN KEY (`attendance_id`) REFERENCES `hr_attendance` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `hr_attendance_reviews_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_hr_attendance_review` CHECK (((`side` in (_utf8mb4'in',_utf8mb4'out')) and (`decision` in (_utf8mb4'ok',_utf8mb4'questioned')) and ((`decision` = _utf8mb4'ok') or ((`note` is not null) and (char_length(`note`) > 0)))))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `hr_attendance_reviews_no_update` BEFORE UPDATE ON `hr_attendance_reviews` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a review decision cannot be changed' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `hr_attendance_reviews_no_update` BEFORE UPDATE ON `hr_attendance_reviews` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a review decision cannot be changed' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -6266,11 +6092,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `hr_attendance_reviews_no_delete` BEFORE DELETE ON `hr_attendance_reviews` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a review decision cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `hr_attendance_reviews_no_delete` BEFORE DELETE ON `hr_attendance_reviews` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a review decision cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -6297,7 +6122,7 @@ CREATE TABLE `hr_attendance_settings` (
   CONSTRAINT `hr_attendance_settings_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_hr_attendance_face_mode` CHECK ((`face_mode` in (_utf8mb4'off',_utf8mb4'flag',_utf8mb4'require'))),
   CONSTRAINT `chk_hr_attendance_settings` CHECK (((`radius_m` between 20 and 5000) and (`late_grace_minutes` <= 120) and (`early_grace_minutes` <= 120) and (`extra_after_minutes` <= 240) and (((`latitude` is null) and (`longitude` is null)) or ((`latitude` between -(90) and 90) and (`longitude` between -(180) and 180)))))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `hr_bank_accounts`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -6317,7 +6142,7 @@ CREATE TABLE `hr_bank_accounts` (
   KEY `hr_bank_accounts_property_id_foreign` (`property_id`),
   CONSTRAINT `hr_bank_accounts_employee_id_foreign` FOREIGN KEY (`employee_id`) REFERENCES `hr_employees` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `hr_bank_accounts_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `hr_commission_entries`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -6344,18 +6169,17 @@ CREATE TABLE `hr_commission_entries` (
   CONSTRAINT `hr_commission_entries_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `hr_commission_entries_type_id_foreign` FOREIGN KEY (`type_id`) REFERENCES `hr_commission_types` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_hr_commission_amount` CHECK (((`amount_minor` <> 0) and ((`reverses_id` is null) or (`amount_minor` < 0))))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `hr_commission_entries_no_update` BEFORE UPDATE ON `hr_commission_entries` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a commission entry cannot be changed' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `hr_commission_entries_no_update` BEFORE UPDATE ON `hr_commission_entries` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a commission entry cannot be changed' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -6366,11 +6190,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `hr_commission_entries_no_delete` BEFORE DELETE ON `hr_commission_entries` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a commission entry cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `hr_commission_entries_no_delete` BEFORE DELETE ON `hr_commission_entries` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a commission entry cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -6391,7 +6214,7 @@ CREATE TABLE `hr_commission_types` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `hr_commission_types_code_unique` (`property_id`,`code`),
   CONSTRAINT `hr_commission_types_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `hr_conduct_records`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -6419,18 +6242,17 @@ CREATE TABLE `hr_conduct_records` (
   CONSTRAINT `hr_conduct_records_employee_id_foreign` FOREIGN KEY (`employee_id`) REFERENCES `hr_employees` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `hr_conduct_records_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_hr_conduct_records` CHECK (((`kind` in (_utf8mb4'verbal',_utf8mb4'sp1',_utf8mb4'sp2',_utf8mb4'sp3',_utf8mb4'award')) and (`status` in (_utf8mb4'issued',_utf8mb4'revoked')) and ((`valid_until` is null) or (`valid_until` >= `issued_on`)) and ((`kind` <> _utf8mb4'award') or (`valid_until` is null)) and ((`status` <> _utf8mb4'revoked') or ((`revoke_reason` is not null) and (`revoked_at` is not null)))))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `hr_conduct_records_no_delete` BEFORE DELETE ON `hr_conduct_records` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a conduct record cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `hr_conduct_records_no_delete` BEFORE DELETE ON `hr_conduct_records` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a conduct record cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -6458,18 +6280,17 @@ CREATE TABLE `hr_documents` (
   CONSTRAINT `hr_documents_employee_id_foreign` FOREIGN KEY (`employee_id`) REFERENCES `hr_employees` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `hr_documents_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_hr_document` CHECK (((`kind` in (_utf8mb4'contract',_utf8mb4'identity',_utf8mb4'certificate',_utf8mb4'medical',_utf8mb4'other')) and ((`valid_until` is null) or (`issued_on` is null) or (`valid_until` >= `issued_on`))))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `hr_documents_no_delete` BEFORE DELETE ON `hr_documents` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a personnel document cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `hr_documents_no_delete` BEFORE DELETE ON `hr_documents` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a personnel document cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -6509,7 +6330,7 @@ CREATE TABLE `hr_employees` (
   CONSTRAINT `hr_employees_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `hr_employees_supervisor_id_foreign` FOREIGN KEY (`supervisor_id`) REFERENCES `hr_employees` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_hr_employee` CHECK (((`status` in (_utf8mb4'active',_utf8mb4'offboarded')) and (`contract_type` in (_utf8mb4'permanent',_utf8mb4'contract',_utf8mb4'probation',_utf8mb4'daily',_utf8mb4'intern')) and ((`contract_type` = _utf8mb4'permanent') or (`contract_end_on` is not null)) and ((`contract_type` <> _utf8mb4'permanent') or (`contract_end_on` is null)) and ((`contract_end_on` is null) or (`contract_end_on` >= `joined_on`)) and ((`supervisor_id` is null) or (`supervisor_id` <> `id`)) and ((`status` = _utf8mb4'active') or ((`offboarded_on` is not null) and (`offboard_kind` in (_utf8mb4'resigned',_utf8mb4'terminated',_utf8mb4'contract_ended',_utf8mb4'retired',_utf8mb4'other')) and (`offboarded_by` is not null) and (`offboarded_on` >= `joined_on`))) and ((`status` = _utf8mb4'offboarded') or ((`offboarded_on` is null) and (`offboard_kind` is null)))))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `hr_face_templates`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -6527,7 +6348,7 @@ CREATE TABLE `hr_face_templates` (
   CONSTRAINT `hr_face_templates_employee_id_foreign` FOREIGN KEY (`employee_id`) REFERENCES `hr_employees` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `hr_face_templates_enrolled_by_foreign` FOREIGN KEY (`enrolled_by`) REFERENCES `users` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `hr_face_templates_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `hr_leave_adjustments`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -6551,18 +6372,17 @@ CREATE TABLE `hr_leave_adjustments` (
   CONSTRAINT `hr_leave_adjustments_leave_type_id_foreign` FOREIGN KEY (`leave_type_id`) REFERENCES `hr_leave_types` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `hr_leave_adjustments_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_hr_leave_adjustments` CHECK ((`days_delta` <> 0))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `hr_leave_adjustments_no_update` BEFORE UPDATE ON `hr_leave_adjustments` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a leave adjustment cannot change' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `hr_leave_adjustments_no_update` BEFORE UPDATE ON `hr_leave_adjustments` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a leave adjustment cannot change' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -6573,11 +6393,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `hr_leave_adjustments_no_delete` BEFORE DELETE ON `hr_leave_adjustments` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a leave adjustment cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `hr_leave_adjustments_no_delete` BEFORE DELETE ON `hr_leave_adjustments` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a leave adjustment cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -6602,7 +6421,7 @@ CREATE TABLE `hr_leave_days` (
   CONSTRAINT `hr_leave_days_employee_id_foreign` FOREIGN KEY (`employee_id`) REFERENCES `hr_employees` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `hr_leave_days_leave_id_foreign` FOREIGN KEY (`leave_id`) REFERENCES `hr_leave_requests` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `hr_leave_days_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `hr_leave_requests`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -6635,18 +6454,17 @@ CREATE TABLE `hr_leave_requests` (
   CONSTRAINT `hr_leave_requests_leave_type_id_foreign` FOREIGN KEY (`leave_type_id`) REFERENCES `hr_leave_types` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `hr_leave_requests_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_hr_leave_requests` CHECK (((`to_date` >= `from_date`) and (`status` in (_utf8mb4'pending_approval',_utf8mb4'approved',_utf8mb4'rejected',_utf8mb4'cancelled')) and ((`status` <> _utf8mb4'approved') or (`decided_at` is not null))))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `hr_leave_requests_no_delete` BEFORE DELETE ON `hr_leave_requests` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a leave request cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `hr_leave_requests_no_delete` BEFORE DELETE ON `hr_leave_requests` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a leave request cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -6673,7 +6491,7 @@ CREATE TABLE `hr_leave_types` (
   UNIQUE KEY `hr_leave_types_property_id_code_unique` (`property_id`,`code`),
   CONSTRAINT `hr_leave_types_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_hr_leave_types` CHECK (((`entitlement_days` <= 365) and (`eligible_after_months` <= 60) and (((`deducts_balance` = 1) and (`entitlement_days` > 0)) or ((`deducts_balance` = 0) and (`entitlement_days` = 0)))))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `hr_offboard_items`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -6688,18 +6506,17 @@ CREATE TABLE `hr_offboard_items` (
   PRIMARY KEY (`id`),
   KEY `hr_offboard_items_employee_id_index` (`employee_id`),
   CONSTRAINT `hr_offboard_items_employee_id_foreign` FOREIGN KEY (`employee_id`) REFERENCES `hr_employees` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `hr_offboard_items_no_update` BEFORE UPDATE ON `hr_offboard_items` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'an offboarding record cannot be changed' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `hr_offboard_items_no_update` BEFORE UPDATE ON `hr_offboard_items` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'an offboarding record cannot be changed' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -6710,11 +6527,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `hr_offboard_items_no_delete` BEFORE DELETE ON `hr_offboard_items` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'an offboarding record cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `hr_offboard_items_no_delete` BEFORE DELETE ON `hr_offboard_items` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'an offboarding record cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -6743,18 +6559,17 @@ CREATE TABLE `hr_overtime` (
   CONSTRAINT `hr_overtime_employee_id_foreign` FOREIGN KEY (`employee_id`) REFERENCES `hr_employees` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `hr_overtime_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_hr_overtime` CHECK (((`minutes` between 15 and 480) and (`status` in (_utf8mb4'pending_approval',_utf8mb4'approved',_utf8mb4'rejected',_utf8mb4'cancelled')) and ((`status` <> _utf8mb4'approved') or (`approved_at` is not null))))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `hr_overtime_no_delete` BEFORE DELETE ON `hr_overtime` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'an overtime request cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `hr_overtime_no_delete` BEFORE DELETE ON `hr_overtime` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'an overtime request cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -6779,7 +6594,7 @@ CREATE TABLE `hr_pay_components` (
   UNIQUE KEY `hr_pay_components_property_id_code_unique` (`property_id`,`code`),
   CONSTRAINT `hr_pay_components_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_hr_pay_components` CHECK ((`kind` in (_utf8mb4'basic',_utf8mb4'fixed_allowance',_utf8mb4'variable_allowance',_utf8mb4'meal',_utf8mb4'transport')))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `hr_pay_items`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -6801,18 +6616,17 @@ CREATE TABLE `hr_pay_items` (
   CONSTRAINT `hr_pay_items_component_id_foreign` FOREIGN KEY (`component_id`) REFERENCES `hr_pay_components` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `hr_pay_items_employee_id_foreign` FOREIGN KEY (`employee_id`) REFERENCES `hr_employees` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `hr_pay_items_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `hr_pay_items_no_update` BEFORE UPDATE ON `hr_pay_items` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a pay line cannot be changed' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `hr_pay_items_no_update` BEFORE UPDATE ON `hr_pay_items` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a pay line cannot be changed' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -6823,11 +6637,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `hr_pay_items_no_delete` BEFORE DELETE ON `hr_pay_items` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a pay line cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `hr_pay_items_no_delete` BEFORE DELETE ON `hr_pay_items` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a pay line cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -6852,7 +6665,7 @@ CREATE TABLE `hr_pay_profiles` (
   CONSTRAINT `hr_pay_profiles_employee_id_foreign` FOREIGN KEY (`employee_id`) REFERENCES `hr_employees` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `hr_pay_profiles_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_hr_pay_profiles` CHECK ((`ptkp_status` in (_utf8mb4'TK0',_utf8mb4'TK1',_utf8mb4'TK2',_utf8mb4'TK3',_utf8mb4'K0',_utf8mb4'K1',_utf8mb4'K2',_utf8mb4'K3')))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `hr_payroll_adjustments`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -6882,18 +6695,17 @@ CREATE TABLE `hr_payroll_adjustments` (
   CONSTRAINT `hr_payroll_adjustments_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `hr_payroll_adjustments_source_run_id_foreign` FOREIGN KEY (`source_run_id`) REFERENCES `hr_payroll_runs` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_hr_payroll_adjustments` CHECK (((`amount_minor` <> 0) and (`status` in (_utf8mb4'open',_utf8mb4'applied',_utf8mb4'cancelled'))))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `hr_payroll_adjustments_no_delete` BEFORE DELETE ON `hr_payroll_adjustments` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'an adjustment cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `hr_payroll_adjustments_no_delete` BEFORE DELETE ON `hr_payroll_adjustments` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'an adjustment cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -6935,18 +6747,17 @@ CREATE TABLE `hr_payroll_lines` (
   CONSTRAINT `hr_payroll_lines_employee_id_foreign` FOREIGN KEY (`employee_id`) REFERENCES `hr_employees` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `hr_payroll_lines_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `hr_payroll_lines_run_id_foreign` FOREIGN KEY (`run_id`) REFERENCES `hr_payroll_runs` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `hr_payroll_lines_frozen_insert` BEFORE INSERT ON `hr_payroll_lines` FOR EACH ROW BEGIN IF (SELECT status FROM hr_payroll_runs WHERE id = NEW.run_id) IN ('approved', 'paid', 'locked') THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'the lines of an approved payroll run cannot be changed'; END IF; END */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `hr_payroll_lines_frozen_insert` BEFORE INSERT ON `hr_payroll_lines` FOR EACH ROW BEGIN IF (SELECT status FROM hr_payroll_runs WHERE id = NEW.run_id) IN ('approved', 'paid', 'locked') THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'the lines of an approved payroll run cannot be changed'; END IF; END */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -6957,11 +6768,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `hr_payroll_lines_frozen_update` BEFORE UPDATE ON `hr_payroll_lines` FOR EACH ROW BEGIN IF (SELECT status FROM hr_payroll_runs WHERE id = OLD.run_id) IN ('approved', 'paid', 'locked') THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'the lines of an approved payroll run cannot be changed'; END IF; END */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `hr_payroll_lines_frozen_update` BEFORE UPDATE ON `hr_payroll_lines` FOR EACH ROW BEGIN IF (SELECT status FROM hr_payroll_runs WHERE id = OLD.run_id) IN ('approved', 'paid', 'locked') THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'the lines of an approved payroll run cannot be changed'; END IF; END */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -6972,11 +6782,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `hr_payroll_lines_frozen_delete` BEFORE DELETE ON `hr_payroll_lines` FOR EACH ROW BEGIN IF (SELECT status FROM hr_payroll_runs WHERE id = OLD.run_id) IN ('approved', 'paid', 'locked') THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'the lines of an approved payroll run cannot be changed'; END IF; END */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `hr_payroll_lines_frozen_delete` BEFORE DELETE ON `hr_payroll_lines` FOR EACH ROW BEGIN IF (SELECT status FROM hr_payroll_runs WHERE id = OLD.run_id) IN ('approved', 'paid', 'locked') THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'the lines of an approved payroll run cannot be changed'; END IF; END */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -6999,18 +6808,17 @@ CREATE TABLE `hr_payroll_revisions` (
   KEY `hr_payroll_revisions_property_id_foreign` (`property_id`),
   CONSTRAINT `hr_payroll_revisions_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `hr_payroll_revisions_run_id_foreign` FOREIGN KEY (`run_id`) REFERENCES `hr_payroll_runs` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `hr_payroll_revisions_no_update` BEFORE UPDATE ON `hr_payroll_revisions` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a revision cannot be changed' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `hr_payroll_revisions_no_update` BEFORE UPDATE ON `hr_payroll_revisions` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a revision cannot be changed' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -7021,11 +6829,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `hr_payroll_revisions_no_delete` BEFORE DELETE ON `hr_payroll_revisions` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a revision cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `hr_payroll_revisions_no_delete` BEFORE DELETE ON `hr_payroll_revisions` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a revision cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -7070,18 +6877,17 @@ CREATE TABLE `hr_payroll_runs` (
   UNIQUE KEY `hr_payroll_runs_property_id_period_unique` (`property_id`,`period`),
   CONSTRAINT `hr_payroll_runs_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_hr_payroll_runs` CHECK (((`status` in (_utf8mb4'draft',_utf8mb4'calculated',_utf8mb4'reviewed',_utf8mb4'approved',_utf8mb4'paid',_utf8mb4'locked')) and (`period_end` >= `period_start`) and ((`status` not in (_utf8mb4'approved',_utf8mb4'paid',_utf8mb4'locked')) or (`approved_at` is not null))))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `hr_payroll_runs_no_delete` BEFORE DELETE ON `hr_payroll_runs` FOR EACH ROW BEGIN IF OLD.status <> 'draft' THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a payroll run past the draft cannot be deleted'; END IF; END */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `hr_payroll_runs_no_delete` BEFORE DELETE ON `hr_payroll_runs` FOR EACH ROW BEGIN IF OLD.status <> 'draft' THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a payroll run past the draft cannot be deleted'; END IF; END */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -7119,7 +6925,7 @@ CREATE TABLE `hr_payroll_settings` (
   PRIMARY KEY (`property_id`),
   CONSTRAINT `hr_payroll_settings_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_hr_payroll_settings` CHECK (((`health_employee_bp` <= 2000) and (`health_employer_bp` <= 2000) and (`jht_employee_bp` <= 2000) and (`jht_employer_bp` <= 2000) and (`jp_employee_bp` <= 2000) and (`jp_employer_bp` <= 2000) and (`jkk_employer_bp` <= 2000) and (`jkm_employer_bp` <= 2000) and (`job_cost_bp` <= 2000) and (`no_npwp_surcharge_bp` <= 10000) and (`overtime_divisor` between 1 and 744) and (`overtime_first_x100` between 100 and 1000) and (`overtime_next_x100` between 100 and 1000) and (`absence_divisor` between 1 and 31)))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `hr_roster_entries`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -7148,7 +6954,7 @@ CREATE TABLE `hr_roster_entries` (
   CONSTRAINT `hr_roster_entries_employee_id_foreign` FOREIGN KEY (`employee_id`) REFERENCES `hr_employees` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `hr_roster_entries_pattern_id_foreign` FOREIGN KEY (`pattern_id`) REFERENCES `hr_shift_patterns` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `hr_roster_entries_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `hr_service_distributions`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -7183,18 +6989,17 @@ CREATE TABLE `hr_service_distributions` (
   UNIQUE KEY `hr_service_distributions_property_id_period_unique` (`property_id`,`period`),
   CONSTRAINT `hr_service_distributions_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_hr_service_distributions` CHECK (((`status` in (_utf8mb4'draft',_utf8mb4'approved')) and ((`status` <> _utf8mb4'approved') or (`approved_at` is not null))))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `hr_service_distributions_no_delete` BEFORE DELETE ON `hr_service_distributions` FOR EACH ROW BEGIN IF OLD.status <> 'draft' THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'an approved distribution cannot be deleted'; END IF; END */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `hr_service_distributions_no_delete` BEFORE DELETE ON `hr_service_distributions` FOR EACH ROW BEGIN IF OLD.status <> 'draft' THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'an approved distribution cannot be deleted'; END IF; END */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -7226,18 +7031,17 @@ CREATE TABLE `hr_service_lines` (
   CONSTRAINT `hr_service_lines_distribution_id_foreign` FOREIGN KEY (`distribution_id`) REFERENCES `hr_service_distributions` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `hr_service_lines_employee_id_foreign` FOREIGN KEY (`employee_id`) REFERENCES `hr_employees` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `hr_service_lines_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `hr_service_lines_frozen_insert` BEFORE INSERT ON `hr_service_lines` FOR EACH ROW BEGIN IF (SELECT status FROM hr_service_distributions WHERE id = NEW.distribution_id) = 'approved' THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'the shares of an approved distribution cannot be changed'; END IF; END */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `hr_service_lines_frozen_insert` BEFORE INSERT ON `hr_service_lines` FOR EACH ROW BEGIN IF (SELECT status FROM hr_service_distributions WHERE id = NEW.distribution_id) = 'approved' THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'the shares of an approved distribution cannot be changed'; END IF; END */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -7248,11 +7052,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `hr_service_lines_frozen_update` BEFORE UPDATE ON `hr_service_lines` FOR EACH ROW BEGIN IF (SELECT status FROM hr_service_distributions WHERE id = OLD.distribution_id) = 'approved' THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'the shares of an approved distribution cannot be changed'; END IF; END */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `hr_service_lines_frozen_update` BEFORE UPDATE ON `hr_service_lines` FOR EACH ROW BEGIN IF (SELECT status FROM hr_service_distributions WHERE id = OLD.distribution_id) = 'approved' THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'the shares of an approved distribution cannot be changed'; END IF; END */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -7263,11 +7066,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `hr_service_lines_frozen_delete` BEFORE DELETE ON `hr_service_lines` FOR EACH ROW BEGIN IF (SELECT status FROM hr_service_distributions WHERE id = OLD.distribution_id) = 'approved' THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'the shares of an approved distribution cannot be changed'; END IF; END */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `hr_service_lines_frozen_delete` BEFORE DELETE ON `hr_service_lines` FOR EACH ROW BEGIN IF (SELECT status FROM hr_service_distributions WHERE id = OLD.distribution_id) = 'approved' THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'the shares of an approved distribution cannot be changed'; END IF; END */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -7284,7 +7086,7 @@ CREATE TABLE `hr_service_points` (
   PRIMARY KEY (`property_id`,`position_key`),
   CONSTRAINT `hr_service_points_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_hr_service_points` CHECK ((`points_x100` between 1 and 10000))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `hr_service_settings`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -7301,7 +7103,7 @@ CREATE TABLE `hr_service_settings` (
   PRIMARY KEY (`property_id`),
   CONSTRAINT `hr_service_settings_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_hr_service_settings` CHECK (((`staff_share_bp` between 0 and 10000) and (`reserve_bp` between 0 and 10000) and (`default_points_x100` between 1 and 10000)))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `hr_settings`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -7317,7 +7119,7 @@ CREATE TABLE `hr_settings` (
   PRIMARY KEY (`property_id`),
   CONSTRAINT `hr_settings_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_hr_settings` CHECK ((`expiry_warn_days` between 1 and 365))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `hr_shift_patterns`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -7340,7 +7142,7 @@ CREATE TABLE `hr_shift_patterns` (
   UNIQUE KEY `hr_shift_patterns_property_id_code_unique` (`property_id`,`code`),
   CONSTRAINT `hr_shift_patterns_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_hr_shift_pattern` CHECK ((((`is_off` = 1) and (`starts_at` is null) and (`ends_at` is null) and (`starts2_at` is null) and (`ends2_at` is null)) or ((`is_off` = 0) and (`starts_at` is not null) and (`ends_at` is not null) and (`starts_at` <> `ends_at`) and (((`starts2_at` is null) and (`ends2_at` is null)) or ((`starts2_at` is not null) and (`ends2_at` is not null) and (`ends_at` > `starts_at`) and (`starts2_at` > `ends_at`) and (`ends2_at` > `starts2_at`))))))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `hr_shift_swaps`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -7374,18 +7176,17 @@ CREATE TABLE `hr_shift_swaps` (
   CONSTRAINT `hr_shift_swaps_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `hr_shift_swaps_requester_id_foreign` FOREIGN KEY (`requester_id`) REFERENCES `hr_employees` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_hr_shift_swaps` CHECK (((`requester_id` <> `partner_id`) and (`status` in (_utf8mb4'awaiting_partner',_utf8mb4'awaiting_supervisor',_utf8mb4'approved',_utf8mb4'rejected',_utf8mb4'declined',_utf8mb4'cancelled')) and ((`status` <> _utf8mb4'approved') or (`decided_at` is not null))))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `hr_shift_swaps_no_delete` BEFORE DELETE ON `hr_shift_swaps` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a shift swap cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `hr_shift_swaps_no_delete` BEFORE DELETE ON `hr_shift_swaps` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a shift swap cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -7408,18 +7209,17 @@ CREATE TABLE `hr_sop_credits` (
   UNIQUE KEY `hr_sop_credits_once` (`property_id`,`source`,`run_id`,`item_key`),
   KEY `hr_sop_credits_property_id_user_id_credited_on_index` (`property_id`,`user_id`,`credited_on`),
   CONSTRAINT `hr_sop_credits_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `hr_sop_credits_no_update` BEFORE UPDATE ON `hr_sop_credits` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a credit cannot be changed' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `hr_sop_credits_no_update` BEFORE UPDATE ON `hr_sop_credits` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a credit cannot be changed' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -7430,11 +7230,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `hr_sop_credits_no_delete` BEFORE DELETE ON `hr_sop_credits` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a credit cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `hr_sop_credits_no_delete` BEFORE DELETE ON `hr_sop_credits` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a credit cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -7460,7 +7259,7 @@ CREATE TABLE `hr_sop_runs` (
   UNIQUE KEY `hr_sop_runs_property_id_source_run_id_unique` (`property_id`,`source`,`run_id`),
   KEY `hr_sop_runs_property_id_period_start_index` (`property_id`,`period_start`),
   CONSTRAINT `hr_sop_runs_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `hr_staffing_minimums`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -7479,7 +7278,7 @@ CREATE TABLE `hr_staffing_minimums` (
   KEY `hr_staffing_minimums_pattern_id_foreign` (`pattern_id`),
   CONSTRAINT `hr_staffing_minimums_pattern_id_foreign` FOREIGN KEY (`pattern_id`) REFERENCES `hr_shift_patterns` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `hr_staffing_minimums_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `idempotency_operations`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -7509,7 +7308,7 @@ CREATE TABLE `idempotency_operations` (
   CONSTRAINT `idempotency_operations_actor_id_foreign` FOREIGN KEY (`actor_id`) REFERENCES `users` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `idempotency_operations_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_idempotency_completion` CHECK ((((`result_payload` is null) and (`completed_at` is null)) or ((`result_payload` is not null) and (`completed_at` is not null))))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `import_batches`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -7530,18 +7329,17 @@ CREATE TABLE `import_batches` (
   CONSTRAINT `import_batches_actor_id_foreign` FOREIGN KEY (`actor_id`) REFERENCES `users` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `import_batches_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_import_batches_status` CHECK ((`status` in (_utf8mb4'validated',_utf8mb4'rejected',_utf8mb4'applied')))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `import_batches_no_update` BEFORE UPDATE ON `import_batches` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'an import batch record cannot be changed' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `import_batches_no_update` BEFORE UPDATE ON `import_batches` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'an import batch record cannot be changed' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -7552,11 +7350,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `import_batches_no_delete` BEFORE DELETE ON `import_batches` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'an import batch record cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `import_batches_no_delete` BEFORE DELETE ON `import_batches` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'an import batch record cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -7588,18 +7385,17 @@ CREATE TABLE `inspection_findings` (
   CONSTRAINT `inspection_findings_room_id_foreign` FOREIGN KEY (`room_id`) REFERENCES `rooms` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_findings_closed` CHECK ((((`status` = _utf8mb4'open') and (`closed_by` is null) and (`closed_at` is null) and (`waive_reason` is null)) or ((`status` = _utf8mb4'resolved') and (`closed_by` is not null) and (`closed_at` is not null) and (`waive_reason` is null)) or ((`status` = _utf8mb4'waived') and (`closed_by` is not null) and (`closed_at` is not null) and (`waive_reason` is not null)))),
   CONSTRAINT `chk_findings_status` CHECK ((`status` in (_utf8mb4'open',_utf8mb4'resolved',_utf8mb4'waived')))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `inspection_findings_closed_once` BEFORE UPDATE ON `inspection_findings` FOR EACH ROW BEGIN
+/*!50003 CREATE*/ /*!50003 TRIGGER `inspection_findings_closed_once` BEFORE UPDATE ON `inspection_findings` FOR EACH ROW BEGIN
     IF NOT (NEW.id <=> OLD.id AND NEW.property_id <=> OLD.property_id AND NEW.inspection_id <=> OLD.inspection_id AND NEW.room_id <=> OLD.room_id
         AND NEW.description <=> OLD.description AND NEW.mandatory <=> OLD.mandatory) THEN
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'what an inspection found cannot be changed';
@@ -7618,11 +7414,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `inspection_findings_no_delete` BEFORE DELETE ON `inspection_findings` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a finding cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `inspection_findings_no_delete` BEFORE DELETE ON `inspection_findings` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a finding cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -7640,7 +7435,7 @@ CREATE TABLE `integration_circuits` (
   `version` int unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`property_id`,`provider`),
   CONSTRAINT `integration_circuits_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `integration_unknowns`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -7664,18 +7459,17 @@ CREATE TABLE `integration_unknowns` (
   CONSTRAINT `integration_unknowns_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `integration_unknowns_resolved_by_foreign` FOREIGN KEY (`resolved_by`) REFERENCES `users` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_integration_unknown_status` CHECK ((((`status` = _utf8mb4'open') and (`resolved_at` is null) and (`resolved_by` is null) and (`resolution_reason` is null)) or ((`status` in (_utf8mb4'resolved_succeeded',_utf8mb4'resolved_failed')) and (`resolved_at` is not null) and (`resolved_by` is not null) and (`resolution_reason` is not null))))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `integration_unknowns_no_delete` BEFORE DELETE ON `integration_unknowns` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'integration_unknowns cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `integration_unknowns_no_delete` BEFORE DELETE ON `integration_unknowns` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'integration_unknowns cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -7697,7 +7491,7 @@ CREATE TABLE `inventory_categories` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `inventory_categories_property_id_code_unique` (`property_id`,`code`),
   CONSTRAINT `inventory_categories_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `inventory_holds`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -7727,18 +7521,17 @@ CREATE TABLE `inventory_holds` (
   CONSTRAINT `inventory_holds_room_type_id_foreign` FOREIGN KEY (`room_type_id`) REFERENCES `room_types` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_inventory_holds_release` CHECK ((((`released_at` is null) and (`released_by` is null) and (`release_reason` is null)) or ((`released_at` is not null) and (`released_by` is not null) and (`release_reason` is not null)))),
   CONSTRAINT `chk_inventory_holds_shape` CHECK (((`end_date` >= `start_date`) and (`rooms` >= 1)))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `inventory_holds_release_only` BEFORE UPDATE ON `inventory_holds` FOR EACH ROW BEGIN
+/*!50003 CREATE*/ /*!50003 TRIGGER `inventory_holds_release_only` BEFORE UPDATE ON `inventory_holds` FOR EACH ROW BEGIN
     IF NOT (OLD.released_at IS NULL AND NEW.released_at IS NOT NULL AND NEW.id <=> OLD.id AND NEW.property_id <=> OLD.property_id AND NEW.room_type_id <=> OLD.room_type_id AND NEW.start_date <=> OLD.start_date AND NEW.end_date <=> OLD.end_date AND NEW.rooms <=> OLD.rooms AND NEW.reason <=> OLD.reason AND NEW.expires_at <=> OLD.expires_at AND NEW.created_by <=> OLD.created_by AND NEW.created_at <=> OLD.created_at) THEN
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'inventory_holds rows can only be released, once';
     END IF;
@@ -7753,11 +7546,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `inventory_holds_no_delete` BEFORE DELETE ON `inventory_holds` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'inventory_holds cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `inventory_holds_no_delete` BEFORE DELETE ON `inventory_holds` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'inventory_holds cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -7784,18 +7576,17 @@ CREATE TABLE `inventory_item_units` (
   CONSTRAINT `inventory_item_units_item_id_foreign` FOREIGN KEY (`item_id`) REFERENCES `inventory_items` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `inventory_item_units_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_inventory_unit` CHECK ((regexp_like(`unit`,_utf8mb4'^[A-Z0-9]{1,8}$') and (`factor_milli` between 1 and 1000000000) and (`version` >= 1)))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `inventory_item_units_no_update` BEFORE UPDATE ON `inventory_item_units` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a unit conversion version cannot be changed' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `inventory_item_units_no_update` BEFORE UPDATE ON `inventory_item_units` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a unit conversion version cannot be changed' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -7806,11 +7597,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `inventory_item_units_no_delete` BEFORE DELETE ON `inventory_item_units` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a unit conversion version cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `inventory_item_units_no_delete` BEFORE DELETE ON `inventory_item_units` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a unit conversion version cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -7837,18 +7627,17 @@ CREATE TABLE `inventory_items` (
   CONSTRAINT `inventory_items_category_id_foreign` FOREIGN KEY (`category_id`) REFERENCES `inventory_categories` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `inventory_items_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_inventory_item_unit` CHECK (regexp_like(`base_unit`,_utf8mb4'^[A-Z0-9]{1,8}$'))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `inventory_items_base_unit_fixed` BEFORE UPDATE ON `inventory_items` FOR EACH ROW BEGIN IF NEW.base_unit <> OLD.base_unit OR NEW.code <> OLD.code THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'the code and base unit of an item cannot be changed'; END IF; END */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `inventory_items_base_unit_fixed` BEFORE UPDATE ON `inventory_items` FOR EACH ROW BEGIN IF NEW.base_unit <> OLD.base_unit OR NEW.code <> OLD.code THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'the code and base unit of an item cannot be changed'; END IF; END */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -7859,11 +7648,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `inventory_items_no_delete` BEFORE DELETE ON `inventory_items` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'an inventory item cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `inventory_items_no_delete` BEFORE DELETE ON `inventory_items` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'an inventory item cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -7887,7 +7675,7 @@ CREATE TABLE `inventory_locations` (
   UNIQUE KEY `inventory_locations_property_id_code_unique` (`property_id`,`code`),
   CONSTRAINT `inventory_locations_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_inventory_location_kind` CHECK ((`kind` in (_utf8mb4'main',_utf8mb4'bar',_utf8mb4'kitchen',_utf8mb4'housekeeping',_utf8mb4'engineering',_utf8mb4'galley',_utf8mb4'other')))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `inventory_lots`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -7912,7 +7700,7 @@ CREATE TABLE `inventory_lots` (
   CONSTRAINT `inventory_lots_location_id_foreign` FOREIGN KEY (`location_id`) REFERENCES `inventory_locations` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `inventory_lots_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_inventory_lots` CHECK (((`remaining_milli` <= `received_milli`) and (`received_milli` > 0) and ((`lot_number` is not null) or (`expires_on` is not null))))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `inventory_policies`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -7931,7 +7719,7 @@ CREATE TABLE `inventory_policies` (
   CONSTRAINT `inventory_policies_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `inventory_policies_room_type_id_foreign` FOREIGN KEY (`room_type_id`) REFERENCES `room_types` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `inventory_policies_updated_by_foreign` FOREIGN KEY (`updated_by`) REFERENCES `users` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `inventory_requisition_lines`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -7948,18 +7736,17 @@ CREATE TABLE `inventory_requisition_lines` (
   CONSTRAINT `inventory_requisition_lines_item_id_foreign` FOREIGN KEY (`item_id`) REFERENCES `inventory_items` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `inventory_requisition_lines_requisition_id_foreign` FOREIGN KEY (`requisition_id`) REFERENCES `inventory_requisitions` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_inventory_requisition_lines` CHECK ((`quantity_milli` > 0))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `inventory_requisition_lines_no_update` BEFORE UPDATE ON `inventory_requisition_lines` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a requisition line cannot change' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `inventory_requisition_lines_no_update` BEFORE UPDATE ON `inventory_requisition_lines` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a requisition line cannot change' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -7970,11 +7757,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `inventory_requisition_lines_no_delete` BEFORE DELETE ON `inventory_requisition_lines` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a requisition line cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `inventory_requisition_lines_no_delete` BEFORE DELETE ON `inventory_requisition_lines` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a requisition line cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -8008,18 +7794,17 @@ CREATE TABLE `inventory_requisitions` (
   CONSTRAINT `inventory_requisitions_requesting_location_id_foreign` FOREIGN KEY (`requesting_location_id`) REFERENCES `inventory_locations` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `inventory_requisitions_supplying_location_id_foreign` FOREIGN KEY (`supplying_location_id`) REFERENCES `inventory_locations` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_inventory_requisitions` CHECK (((`status` in (_utf8mb4'requested',_utf8mb4'fulfilled',_utf8mb4'rejected',_utf8mb4'cancelled')) and (`requesting_location_id` <> `supplying_location_id`)))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `inventory_requisitions_no_delete` BEFORE DELETE ON `inventory_requisitions` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a requisition cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `inventory_requisitions_no_delete` BEFORE DELETE ON `inventory_requisitions` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a requisition cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -8046,7 +7831,7 @@ CREATE TABLE `inventory_stock_limits` (
   CONSTRAINT `inventory_stock_limits_location_id_foreign` FOREIGN KEY (`location_id`) REFERENCES `inventory_locations` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `inventory_stock_limits_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_inventory_limits` CHECK (((`max_milli` is null) or (`max_milli` >= `min_milli`)))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `job_batches`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -8063,7 +7848,7 @@ CREATE TABLE `job_batches` (
   `created_at` int NOT NULL,
   `finished_at` int DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `jobs`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -8078,7 +7863,7 @@ CREATE TABLE `jobs` (
   `created_at` int unsigned NOT NULL,
   PRIMARY KEY (`id`),
   KEY `jobs_queue_index` (`queue`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `kitchen_consumptions`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -8106,18 +7891,17 @@ CREATE TABLE `kitchen_consumptions` (
   KEY `kitchen_consumptions_version_id_foreign` (`version_id`),
   CONSTRAINT `kitchen_consumptions_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `kitchen_consumptions_version_id_foreign` FOREIGN KEY (`version_id`) REFERENCES `kitchen_recipe_versions` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `kitchen_consumptions_no_update` BEFORE UPDATE ON `kitchen_consumptions` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a consumption cannot be changed' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `kitchen_consumptions_no_update` BEFORE UPDATE ON `kitchen_consumptions` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a consumption cannot be changed' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -8128,11 +7912,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `kitchen_consumptions_no_delete` BEFORE DELETE ON `kitchen_consumptions` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a consumption cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `kitchen_consumptions_no_delete` BEFORE DELETE ON `kitchen_consumptions` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a consumption cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -8153,18 +7936,17 @@ CREATE TABLE `kitchen_prep_formula_lines` (
   UNIQUE KEY `kitchen_prep_formula_lines_formula_id_ingredient_item_id_unique` (`formula_id`,`ingredient_item_id`),
   CONSTRAINT `kitchen_prep_formula_lines_formula_id_foreign` FOREIGN KEY (`formula_id`) REFERENCES `kitchen_prep_formulas` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_prep_formula_line` CHECK ((`quantity_milli` > 0))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `kitchen_prep_formula_lines_no_update` BEFORE UPDATE ON `kitchen_prep_formula_lines` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a formula cannot be changed' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `kitchen_prep_formula_lines_no_update` BEFORE UPDATE ON `kitchen_prep_formula_lines` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a formula cannot be changed' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -8175,11 +7957,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `kitchen_prep_formula_lines_no_delete` BEFORE DELETE ON `kitchen_prep_formula_lines` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a formula cannot be changed' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `kitchen_prep_formula_lines_no_delete` BEFORE DELETE ON `kitchen_prep_formula_lines` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a formula cannot be changed' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -8208,18 +7989,17 @@ CREATE TABLE `kitchen_prep_formulas` (
   UNIQUE KEY `kitchen_prep_formulas_property_id_code_unique` (`property_id`,`code`),
   CONSTRAINT `kitchen_prep_formulas_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_prep_formula` CHECK ((`standard_output_milli` > 0))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `kitchen_prep_formulas_retire_only` BEFORE UPDATE ON `kitchen_prep_formulas` FOR EACH ROW BEGIN
+/*!50003 CREATE*/ /*!50003 TRIGGER `kitchen_prep_formulas_retire_only` BEFORE UPDATE ON `kitchen_prep_formulas` FOR EACH ROW BEGIN
                 IF NOT (OLD.code <=> NEW.code AND OLD.name <=> NEW.name AND OLD.output_item_id <=> NEW.output_item_id AND OLD.output_unit <=> NEW.output_unit AND OLD.standard_output_milli <=> NEW.standard_output_milli AND OLD.created_by <=> NEW.created_by)
                     OR (OLD.is_active = 0 AND NEW.is_active = 1) THEN
                     SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a formula can only be retired';
@@ -8235,11 +8015,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `kitchen_prep_formulas_no_delete` BEFORE DELETE ON `kitchen_prep_formulas` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a formula cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `kitchen_prep_formulas_no_delete` BEFORE DELETE ON `kitchen_prep_formulas` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a formula cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -8259,18 +8038,17 @@ CREATE TABLE `kitchen_production_lines` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `kitchen_production_lines_production_id_ingredient_item_id_unique` (`production_id`,`ingredient_item_id`),
   CONSTRAINT `kitchen_production_lines_production_id_foreign` FOREIGN KEY (`production_id`) REFERENCES `kitchen_productions` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `kitchen_production_lines_no_update` BEFORE UPDATE ON `kitchen_production_lines` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a production batch cannot be changed' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `kitchen_production_lines_no_update` BEFORE UPDATE ON `kitchen_production_lines` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a production batch cannot be changed' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -8281,11 +8059,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `kitchen_production_lines_no_delete` BEFORE DELETE ON `kitchen_production_lines` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a production batch cannot be changed' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `kitchen_production_lines_no_delete` BEFORE DELETE ON `kitchen_production_lines` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a production batch cannot be changed' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -8323,18 +8100,17 @@ CREATE TABLE `kitchen_productions` (
   CONSTRAINT `kitchen_productions_formula_id_foreign` FOREIGN KEY (`formula_id`) REFERENCES `kitchen_prep_formulas` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `kitchen_productions_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_production` CHECK (((`batches` between 1 and 100) and (`actual_output_milli` > 0) and (`standard_output_milli` > 0)))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `kitchen_productions_no_update` BEFORE UPDATE ON `kitchen_productions` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a production batch cannot be changed' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `kitchen_productions_no_update` BEFORE UPDATE ON `kitchen_productions` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a production batch cannot be changed' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -8345,11 +8121,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `kitchen_productions_no_delete` BEFORE DELETE ON `kitchen_productions` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a production batch cannot be changed' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `kitchen_productions_no_delete` BEFORE DELETE ON `kitchen_productions` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a production batch cannot be changed' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -8371,18 +8146,17 @@ CREATE TABLE `kitchen_recipe_lines` (
   UNIQUE KEY `kitchen_recipe_lines_version_id_ingredient_item_id_unique` (`version_id`,`ingredient_item_id`),
   CONSTRAINT `kitchen_recipe_lines_version_id_foreign` FOREIGN KEY (`version_id`) REFERENCES `kitchen_recipe_versions` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_recipe_line` CHECK (((`quantity_milli` > 0) and (`waste_bp` <= 5000)))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `kitchen_recipe_lines_no_update` BEFORE UPDATE ON `kitchen_recipe_lines` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a recipe version cannot be changed' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `kitchen_recipe_lines_no_update` BEFORE UPDATE ON `kitchen_recipe_lines` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a recipe version cannot be changed' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -8393,11 +8167,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `kitchen_recipe_lines_no_delete` BEFORE DELETE ON `kitchen_recipe_lines` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a recipe version cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `kitchen_recipe_lines_no_delete` BEFORE DELETE ON `kitchen_recipe_lines` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a recipe version cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -8423,18 +8196,17 @@ CREATE TABLE `kitchen_recipe_versions` (
   CONSTRAINT `kitchen_recipe_versions_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `kitchen_recipe_versions_recipe_id_foreign` FOREIGN KEY (`recipe_id`) REFERENCES `kitchen_recipes` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_recipe_yield` CHECK ((`yield_portions` between 1 and 1000))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `kitchen_recipe_versions_no_update` BEFORE UPDATE ON `kitchen_recipe_versions` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a recipe version cannot be changed' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `kitchen_recipe_versions_no_update` BEFORE UPDATE ON `kitchen_recipe_versions` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a recipe version cannot be changed' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -8445,11 +8217,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `kitchen_recipe_versions_no_delete` BEFORE DELETE ON `kitchen_recipe_versions` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a recipe version cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `kitchen_recipe_versions_no_delete` BEFORE DELETE ON `kitchen_recipe_versions` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a recipe version cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -8469,7 +8240,7 @@ CREATE TABLE `kitchen_recipes` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `kitchen_recipes_property_id_menu_item_id_unique` (`property_id`,`menu_item_id`),
   CONSTRAINT `kitchen_recipes_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `kitchen_settings`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -8485,7 +8256,7 @@ CREATE TABLE `kitchen_settings` (
   PRIMARY KEY (`property_id`),
   CONSTRAINT `kitchen_settings_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_kitchen_late` CHECK ((`late_after_minutes` between 1 and 240))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `kitchen_ticket_lines`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -8504,7 +8275,7 @@ CREATE TABLE `kitchen_ticket_lines` (
   UNIQUE KEY `kitchen_ticket_lines_line_id_unique` (`line_id`),
   KEY `kitchen_ticket_lines_ticket_id_index` (`ticket_id`),
   CONSTRAINT `kitchen_ticket_lines_ticket_id_foreign` FOREIGN KEY (`ticket_id`) REFERENCES `kitchen_tickets` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `kitchen_tickets`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -8539,7 +8310,7 @@ CREATE TABLE `kitchen_tickets` (
   KEY `kitchen_tickets_property_id_station_status_received_at_index` (`property_id`,`station`,`status`,`received_at`),
   CONSTRAINT `kitchen_tickets_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_kitchen_ticket_status` CHECK ((`status` in (_utf8mb4'new',_utf8mb4'preparing',_utf8mb4'ready',_utf8mb4'served',_utf8mb4'cancelled')))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `kitchen_waste`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -8566,18 +8337,17 @@ CREATE TABLE `kitchen_waste` (
   KEY `kitchen_waste_property_id_business_date_index` (`property_id`,`business_date`),
   CONSTRAINT `kitchen_waste_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_kitchen_waste` CHECK (((`kind` in (_utf8mb4'ingredient',_utf8mb4'dish')) and (`reason` in (_utf8mb4'spoiled',_utf8mb4'expired',_utf8mb4'damaged',_utf8mb4'overcooked',_utf8mb4'returned',_utf8mb4'wrong_order',_utf8mb4'other'))))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `kitchen_waste_no_update` BEFORE UPDATE ON `kitchen_waste` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a waste entry cannot be changed' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `kitchen_waste_no_update` BEFORE UPDATE ON `kitchen_waste` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a waste entry cannot be changed' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -8588,11 +8358,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `kitchen_waste_no_delete` BEFORE DELETE ON `kitchen_waste` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a waste entry cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `kitchen_waste_no_delete` BEFORE DELETE ON `kitchen_waste` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a waste entry cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -8612,18 +8381,17 @@ CREATE TABLE `kitchen_waste_lines` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `kitchen_waste_lines_waste_id_ingredient_item_id_unique` (`waste_id`,`ingredient_item_id`),
   CONSTRAINT `kitchen_waste_lines_waste_id_foreign` FOREIGN KEY (`waste_id`) REFERENCES `kitchen_waste` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `kitchen_waste_lines_no_update` BEFORE UPDATE ON `kitchen_waste_lines` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a waste entry cannot be changed' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `kitchen_waste_lines_no_update` BEFORE UPDATE ON `kitchen_waste_lines` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a waste entry cannot be changed' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -8634,11 +8402,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `kitchen_waste_lines_no_delete` BEFORE DELETE ON `kitchen_waste_lines` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a waste entry cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `kitchen_waste_lines_no_delete` BEFORE DELETE ON `kitchen_waste_lines` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a waste entry cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -8658,7 +8425,7 @@ CREATE TABLE `laundry_claim_settings` (
   KEY `laundry_claim_settings_updated_by_foreign` (`updated_by`),
   CONSTRAINT `laundry_claim_settings_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `laundry_claim_settings_updated_by_foreign` FOREIGN KEY (`updated_by`) REFERENCES `users` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `laundry_claims`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -8694,18 +8461,17 @@ CREATE TABLE `laundry_claims` (
   CONSTRAINT `laundry_claims_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `laundry_claims_recorded_by_foreign` FOREIGN KEY (`recorded_by`) REFERENCES `users` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_laundry_claim` CHECK (((`kind` in (_utf8mb4'damage',_utf8mb4'loss')) and (`claimed_minor` > 0) and (`pieces` >= 1) and (((`status` = _utf8mb4'open') and (`approved_minor` is null) and (`decided_by` is null) and (`decided_at` is null)) or ((`status` = _utf8mb4'approved') and (`approved_minor` is not null) and (`approved_minor` > 0) and (`approved_minor` <= `claimed_minor`) and (`decided_by` is not null) and (`decided_at` is not null)) or ((`status` = _utf8mb4'rejected') and (`approved_minor` is null) and (`decision_note` is not null) and (`decided_by` is not null) and (`decided_at` is not null)))))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `laundry_claims_decide_once` BEFORE UPDATE ON `laundry_claims` FOR EACH ROW BEGIN
+/*!50003 CREATE*/ /*!50003 TRIGGER `laundry_claims_decide_once` BEFORE UPDATE ON `laundry_claims` FOR EACH ROW BEGIN
     IF OLD.status <> 'open' THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a decided laundry claim cannot be changed'; END IF;
     IF NEW.order_id <> OLD.order_id OR NEW.kind <> OLD.kind OR NEW.description <> OLD.description OR NEW.claimed_minor <> OLD.claimed_minor OR NEW.recorded_by <> OLD.recorded_by
         OR NEW.number <> OLD.number OR NEW.pieces <> OLD.pieces OR NOT (NEW.line_id <=> OLD.line_id) OR NOT (NEW.photo_file_id <=> OLD.photo_file_id) THEN
@@ -8722,11 +8488,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `laundry_claims_no_delete` BEFORE DELETE ON `laundry_claims` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a laundry claim cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `laundry_claims_no_delete` BEFORE DELETE ON `laundry_claims` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a laundry claim cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -8756,18 +8521,17 @@ CREATE TABLE `laundry_order_lines` (
   CONSTRAINT `laundry_order_lines_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_laundry_line_extras` CHECK (((`treatment_extra_minor` >= 0) and (`express_extra_minor` >= 0))),
   CONSTRAINT `chk_laundry_line_qty` CHECK (((`quantity` >= 1) and (`unit_price_minor` >= 0)))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `laundry_order_lines_facts` BEFORE UPDATE ON `laundry_order_lines` FOR EACH ROW BEGIN
+/*!50003 CREATE*/ /*!50003 TRIGGER `laundry_order_lines_facts` BEFORE UPDATE ON `laundry_order_lines` FOR EACH ROW BEGIN
     IF NOT (NEW.id <=> OLD.id AND NEW.order_id <=> OLD.order_id AND NEW.price_item_id <=> OLD.price_item_id AND NEW.item_name <=> OLD.item_name AND NEW.brand <=> OLD.brand
         AND NEW.quantity <=> OLD.quantity AND NEW.unit_price_minor <=> OLD.unit_price_minor AND NEW.condition_note <=> OLD.condition_note
         AND NEW.treatment_name <=> OLD.treatment_name AND NEW.treatment_extra_minor <=> OLD.treatment_extra_minor AND NEW.express_extra_minor <=> OLD.express_extra_minor) THEN
@@ -8787,11 +8551,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `laundry_order_lines_no_delete` BEFORE DELETE ON `laundry_order_lines` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'laundry order lines cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `laundry_order_lines_no_delete` BEFORE DELETE ON `laundry_order_lines` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'laundry order lines cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -8862,18 +8625,17 @@ CREATE TABLE `laundry_orders` (
   CONSTRAINT `chk_laundry_settlement` CHECK (((`settlement` is null) or ((`settlement` in (_utf8mb4'late_charge',_utf8mb4'claim')) and (`settlement_approval_id` is not null) and (`settlement_reason` is not null)))),
   CONSTRAINT `chk_laundry_status` CHECK ((`status` in (_utf8mb4'sent',_utf8mb4'received',_utf8mb4'washing',_utf8mb4'drying',_utf8mb4'ironing',_utf8mb4'ready',_utf8mb4'delivered',_utf8mb4'cancelled',_utf8mb4'claimed'))),
   CONSTRAINT `chk_laundry_waiver` CHECK ((((`waive_service_charge` = 0) and (`waive_tax` = 0)) or (`waive_reason` is not null)))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `laundry_orders_active_key_insert` BEFORE INSERT ON `laundry_orders` FOR EACH ROW BEGIN
+/*!50003 CREATE*/ /*!50003 TRIGGER `laundry_orders_active_key_insert` BEFORE INSERT ON `laundry_orders` FOR EACH ROW BEGIN
     SET NEW.active_barcode_key = CASE WHEN NEW.status IN ('delivered', 'cancelled', 'claimed') THEN NULL ELSE CONCAT(NEW.property_id, '|', NEW.barcode) END;
 END */;;
 DELIMITER ;
@@ -8886,11 +8648,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `laundry_orders_facts` BEFORE UPDATE ON `laundry_orders` FOR EACH ROW BEGIN
+/*!50003 CREATE*/ /*!50003 TRIGGER `laundry_orders_facts` BEFORE UPDATE ON `laundry_orders` FOR EACH ROW BEGIN
     IF NOT (NEW.id <=> OLD.id AND NEW.property_id <=> OLD.property_id AND NEW.number <=> OLD.number AND NEW.barcode <=> OLD.barcode AND NEW.room_id <=> OLD.room_id
         AND NEW.stay_id <=> OLD.stay_id AND NEW.reservation_id <=> OLD.reservation_id AND NEW.pickup_date <=> OLD.pickup_date AND NEW.created_by <=> OLD.created_by) THEN
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'the origin of a laundry order cannot be changed';
@@ -8913,11 +8674,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `laundry_orders_no_delete` BEFORE DELETE ON `laundry_orders` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'laundry orders cannot be deleted; cancel them' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `laundry_orders_no_delete` BEFORE DELETE ON `laundry_orders` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'laundry orders cannot be deleted; cancel them' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -8940,18 +8700,17 @@ CREATE TABLE `laundry_price_items` (
   UNIQUE KEY `laundry_price_items_property_id_code_unique` (`property_id`,`code`),
   CONSTRAINT `laundry_price_items_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_laundry_price_nonneg` CHECK ((`unit_price_minor` >= 0))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `laundry_price_items_no_delete` BEFORE DELETE ON `laundry_price_items` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'laundry price items cannot be deleted; deactivate them' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `laundry_price_items_no_delete` BEFORE DELETE ON `laundry_price_items` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'laundry price items cannot be deleted; deactivate them' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -8972,7 +8731,7 @@ CREATE TABLE `laundry_settings` (
   KEY `laundry_settings_updated_by_foreign` (`updated_by`),
   CONSTRAINT `laundry_settings_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `laundry_settings_updated_by_foreign` FOREIGN KEY (`updated_by`) REFERENCES `users` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `laundry_status_log`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -8992,18 +8751,17 @@ CREATE TABLE `laundry_status_log` (
   CONSTRAINT `laundry_status_log_actor_id_foreign` FOREIGN KEY (`actor_id`) REFERENCES `users` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `laundry_status_log_order_id_foreign` FOREIGN KEY (`order_id`) REFERENCES `laundry_orders` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `laundry_status_log_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `laundry_status_log_no_update` BEFORE UPDATE ON `laundry_status_log` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'laundry_status_log is append-only' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `laundry_status_log_no_update` BEFORE UPDATE ON `laundry_status_log` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'laundry_status_log is append-only' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -9014,11 +8772,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `laundry_status_log_no_delete` BEFORE DELETE ON `laundry_status_log` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'laundry_status_log is append-only' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `laundry_status_log_no_delete` BEFORE DELETE ON `laundry_status_log` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'laundry_status_log is append-only' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -9047,18 +8804,17 @@ CREATE TABLE `laundry_treatments` (
   CONSTRAINT `chk_treatment_kind` CHECK ((`kind` in (_utf8mb4'service',_utf8mb4'express'))),
   CONSTRAINT `chk_treatment_pricing` CHECK ((`pricing` in (_utf8mb4'percent',_utf8mb4'fixed'))),
   CONSTRAINT `chk_treatment_value` CHECK (((`value` >= 0) and ((`pricing` <> _utf8mb4'percent') or (`value` <= 100000))))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `laundry_treatments_active_key_insert` BEFORE INSERT ON `laundry_treatments` FOR EACH ROW BEGIN
+/*!50003 CREATE*/ /*!50003 TRIGGER `laundry_treatments_active_key_insert` BEFORE INSERT ON `laundry_treatments` FOR EACH ROW BEGIN
     SET NEW.active_express_key = CASE WHEN NEW.kind = 'express' AND NEW.is_active = 1 THEN NEW.property_id ELSE NULL END;
 END */;;
 DELIMITER ;
@@ -9071,11 +8827,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `laundry_treatments_active_key_update` BEFORE UPDATE ON `laundry_treatments` FOR EACH ROW BEGIN
+/*!50003 CREATE*/ /*!50003 TRIGGER `laundry_treatments_active_key_update` BEFORE UPDATE ON `laundry_treatments` FOR EACH ROW BEGIN
     SET NEW.active_express_key = CASE WHEN NEW.kind = 'express' AND NEW.is_active = 1 THEN NEW.property_id ELSE NULL END;
 END */;;
 DELIMITER ;
@@ -9088,11 +8843,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `laundry_treatments_no_delete` BEFORE DELETE ON `laundry_treatments` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'laundry treatments cannot be deleted; deactivate them' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `laundry_treatments_no_delete` BEFORE DELETE ON `laundry_treatments` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'laundry treatments cannot be deleted; deactivate them' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -9123,18 +8877,17 @@ CREATE TABLE `legal_holds` (
   CONSTRAINT `legal_holds_released_by_foreign` FOREIGN KEY (`released_by`) REFERENCES `users` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_legal_holds_release` CHECK ((((`released_at` is null) and (`released_by` is null) and (`release_reason` is null)) or ((`released_at` is not null) and (`released_by` is not null) and (`release_reason` is not null)))),
   CONSTRAINT `chk_legal_holds_scope` CHECK ((((`scope_type` = _utf8mb4'property') and (`purpose` is null) and (`owner_type` is null) and (`owner_id` is null)) or ((`scope_type` = _utf8mb4'purpose') and (`purpose` is not null) and (`owner_type` is null) and (`owner_id` is null)) or ((`scope_type` = _utf8mb4'owner') and (`purpose` is null) and (`owner_type` is not null) and (`owner_id` is not null))))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `legal_holds_release_only` BEFORE UPDATE ON `legal_holds` FOR EACH ROW BEGIN
+/*!50003 CREATE*/ /*!50003 TRIGGER `legal_holds_release_only` BEFORE UPDATE ON `legal_holds` FOR EACH ROW BEGIN
     IF NOT (OLD.released_at IS NULL AND NEW.released_at IS NOT NULL
         AND NEW.id <=> OLD.id AND NEW.property_id <=> OLD.property_id AND NEW.scope_type <=> OLD.scope_type
         AND NEW.purpose <=> OLD.purpose AND NEW.owner_type <=> OLD.owner_type AND NEW.owner_id <=> OLD.owner_id
@@ -9152,11 +8905,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `legal_holds_no_delete` BEFORE DELETE ON `legal_holds` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'legal_holds cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `legal_holds_no_delete` BEFORE DELETE ON `legal_holds` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'legal_holds cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -9180,18 +8932,17 @@ CREATE TABLE `linen_items` (
   UNIQUE KEY `linen_items_property_id_code_unique` (`property_id`,`code`),
   CONSTRAINT `linen_items_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_linen_kind` CHECK ((`kind` in (_utf8mb4'linen',_utf8mb4'amenity')))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `linen_items_no_delete` BEFORE DELETE ON `linen_items` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a linen item cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `linen_items_no_delete` BEFORE DELETE ON `linen_items` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a linen item cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -9222,18 +8973,17 @@ CREATE TABLE `linen_par_levels` (
   CONSTRAINT `linen_par_levels_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `linen_par_levels_updated_by_foreign` FOREIGN KEY (`updated_by`) REFERENCES `users` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_par_scope` CHECK ((((`scope_kind` = _utf8mb4'room_type') and (`room_type_id` is not null) and (`area` is null)) or ((`scope_kind` = _utf8mb4'area') and (`room_type_id` is null) and (`area` is not null) and (`use_quantity` = 0))))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `linen_par_levels_scope_insert` BEFORE INSERT ON `linen_par_levels` FOR EACH ROW BEGIN
+/*!50003 CREATE*/ /*!50003 TRIGGER `linen_par_levels_scope_insert` BEFORE INSERT ON `linen_par_levels` FOR EACH ROW BEGIN
     SET NEW.scope_key = COALESCE(NEW.room_type_id, CONCAT('area:', NEW.area));
 END */;;
 DELIMITER ;
@@ -9246,11 +8996,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `linen_par_levels_scope_update` BEFORE UPDATE ON `linen_par_levels` FOR EACH ROW BEGIN
+/*!50003 CREATE*/ /*!50003 TRIGGER `linen_par_levels_scope_update` BEFORE UPDATE ON `linen_par_levels` FOR EACH ROW BEGIN
     SET NEW.scope_key = COALESCE(NEW.room_type_id, CONCAT('area:', NEW.area));
 END */;;
 DELIMITER ;
@@ -9297,18 +9046,17 @@ CREATE TABLE `linen_transfers` (
   CONSTRAINT `chk_transfer_received` CHECK ((((`status` = _utf8mb4'received') and (`quantity_received` is not null) and (`quantity_received` <= `quantity_sent`) and (`received_at` is not null) and (`received_by` is not null)) or ((`status` <> _utf8mb4'received') and (`quantity_received` is null) and (`received_at` is null)))),
   CONSTRAINT `chk_transfer_status` CHECK ((`status` in (_utf8mb4'pending',_utf8mb4'received',_utf8mb4'cancelled'))),
   CONSTRAINT `chk_transfer_variance` CHECK ((((`status` = _utf8mb4'received') and (`quantity_received` < `quantity_sent`) and (`variance_kind` in (_utf8mb4'loss',_utf8mb4'damage')) and (`variance_note` is not null)) or (((`status` <> _utf8mb4'received') or (`quantity_received` >= `quantity_sent`)) and (`variance_kind` is null))))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `linen_transfers_facts_immutable` BEFORE UPDATE ON `linen_transfers` FOR EACH ROW BEGIN
+/*!50003 CREATE*/ /*!50003 TRIGGER `linen_transfers_facts_immutable` BEFORE UPDATE ON `linen_transfers` FOR EACH ROW BEGIN
     IF NOT (NEW.id <=> OLD.id AND NEW.property_id <=> OLD.property_id AND NEW.number <=> OLD.number AND NEW.item_id <=> OLD.item_id AND NEW.from_location <=> OLD.from_location
         AND NEW.to_location <=> OLD.to_location AND NEW.quantity_sent <=> OLD.quantity_sent AND NEW.sent_by <=> OLD.sent_by AND NEW.sent_at <=> OLD.sent_at AND NEW.client_key <=> OLD.client_key) THEN
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'what was sent cannot be changed';
@@ -9327,11 +9075,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `linen_transfers_no_delete` BEFORE DELETE ON `linen_transfers` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a linen transfer cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `linen_transfers_no_delete` BEFORE DELETE ON `linen_transfers` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a linen transfer cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -9360,18 +9107,17 @@ CREATE TABLE `linen_usage` (
   CONSTRAINT `linen_usage_recorded_by_foreign` FOREIGN KEY (`recorded_by`) REFERENCES `users` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `linen_usage_room_id_foreign` FOREIGN KEY (`room_id`) REFERENCES `rooms` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_usage_quantity` CHECK ((`quantity` > 0))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `linen_usage_no_update` BEFORE UPDATE ON `linen_usage` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a usage record cannot be changed' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `linen_usage_no_update` BEFORE UPDATE ON `linen_usage` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a usage record cannot be changed' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -9382,11 +9128,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `linen_usage_no_delete` BEFORE DELETE ON `linen_usage` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a usage record cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `linen_usage_no_delete` BEFORE DELETE ON `linen_usage` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a usage record cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -9430,18 +9175,17 @@ CREATE TABLE `lost_found_items` (
   CONSTRAINT `chk_lost_found_closed` CHECK ((((`status` = _utf8mb4'stored') and (`closed_at` is null) and (`closed_by` is null) and (`returned_to` is null) and (`closed_note` is null)) or ((`status` = _utf8mb4'returned') and (`closed_at` is not null) and (`closed_by` is not null) and (`returned_to` is not null)) or ((`status` = _utf8mb4'disposed') and (`closed_at` is not null) and (`closed_by` is not null) and (`closed_note` is not null) and (`returned_to` is null)))),
   CONSTRAINT `chk_lost_found_status` CHECK ((`status` in (_utf8mb4'stored',_utf8mb4'returned',_utf8mb4'disposed'))),
   CONSTRAINT `chk_lost_found_where` CHECK (((`room_id` is not null) or (`place` is not null)))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `lost_found_facts` BEFORE UPDATE ON `lost_found_items` FOR EACH ROW BEGIN
+/*!50003 CREATE*/ /*!50003 TRIGGER `lost_found_facts` BEFORE UPDATE ON `lost_found_items` FOR EACH ROW BEGIN
     IF NOT (NEW.id <=> OLD.id AND NEW.property_id <=> OLD.property_id AND NEW.number <=> OLD.number AND NEW.description <=> OLD.description AND NEW.room_id <=> OLD.room_id
         AND NEW.place <=> OLD.place AND NEW.found_business_date <=> OLD.found_business_date AND NEW.found_by <=> OLD.found_by AND NEW.found_at <=> OLD.found_at AND NEW.photo_file_id <=> OLD.photo_file_id) THEN
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'what was found cannot be changed';
@@ -9460,11 +9204,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `lost_found_no_delete` BEFORE DELETE ON `lost_found_items` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a lost and found item cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `lost_found_no_delete` BEFORE DELETE ON `lost_found_items` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a lost and found item cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -9487,7 +9230,7 @@ CREATE TABLE `loyalty_accounts` (
   UNIQUE KEY `loyalty_accounts_guest` (`property_id`,`guest_key`),
   KEY `loyalty_accounts_property_id_balance_points_index` (`property_id`,`balance_points`),
   CONSTRAINT `loyalty_accounts_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `loyalty_entries`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -9511,18 +9254,17 @@ CREATE TABLE `loyalty_entries` (
   CONSTRAINT `loyalty_entries_account_id_foreign` FOREIGN KEY (`account_id`) REFERENCES `loyalty_accounts` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `loyalty_entries_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_loyalty_entries` CHECK (((`kind` in (_utf8mb4'earn',_utf8mb4'redeem',_utf8mb4'adjust',_utf8mb4'expire')) and (`points` <> 0)))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `loyalty_entries_no_update` BEFORE UPDATE ON `loyalty_entries` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a loyalty entry cannot be changed' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `loyalty_entries_no_update` BEFORE UPDATE ON `loyalty_entries` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a loyalty entry cannot be changed' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -9533,11 +9275,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `loyalty_entries_no_delete` BEFORE DELETE ON `loyalty_entries` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a loyalty entry cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `loyalty_entries_no_delete` BEFORE DELETE ON `loyalty_entries` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a loyalty entry cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -9572,7 +9313,7 @@ CREATE TABLE `maintenance_assets` (
   KEY `maintenance_assets_property_id_status_index` (`property_id`,`status`),
   CONSTRAINT `maintenance_assets_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_mtc_asset` CHECK (((`category` in (_utf8mb4'machine',_utf8mb4'equipment',_utf8mb4'vehicle',_utf8mb4'building',_utf8mb4'it',_utf8mb4'other')) and (`status` in (_utf8mb4'active',_utf8mb4'retired')) and ((`meter_unit` is null) or (`meter_unit` in (_utf8mb4'hours',_utf8mb4'km',_utf8mb4'cycles'))) and ((`warranty_until` is null) or (`warranty_until` >= `acquired_on`)) and ((`status` = _utf8mb4'active') or (`retired_reason` is not null))))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `maintenance_duties`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -9600,7 +9341,7 @@ CREATE TABLE `maintenance_duties` (
   CONSTRAINT `maintenance_duties_asset_id_foreign` FOREIGN KEY (`asset_id`) REFERENCES `maintenance_assets` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `maintenance_duties_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_mtc_duty` CHECK (((`frequency` in (_utf8mb4'daily',_utf8mb4'weekly',_utf8mb4'monthly')) and (`shift` in (_utf8mb4'any',_utf8mb4'day',_utf8mb4'night')) and ((`frequency` <> _utf8mb4'weekly') or (`weekday` between 1 and 7)) and ((`frequency` <> _utf8mb4'monthly') or (`month_day` between 1 and 28)) and ((`asset_id` is not null) or (`area` is not null))))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `maintenance_duty_run_steps`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -9619,18 +9360,17 @@ CREATE TABLE `maintenance_duty_run_steps` (
   UNIQUE KEY `maintenance_duty_run_steps_run_id_position_unique` (`run_id`,`position`),
   CONSTRAINT `maintenance_duty_run_steps_run_id_foreign` FOREIGN KEY (`run_id`) REFERENCES `maintenance_duty_runs` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_mtc_duty_run_step` CHECK (((`result` in (_utf8mb4'pending',_utf8mb4'ok',_utf8mb4'issue',_utf8mb4'na')) and ((`result` = _utf8mb4'pending') or (`checked_by` is not null))))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `maintenance_duty_run_steps_closed` BEFORE UPDATE ON `maintenance_duty_run_steps` FOR EACH ROW BEGIN
+/*!50003 CREATE*/ /*!50003 TRIGGER `maintenance_duty_run_steps_closed` BEFORE UPDATE ON `maintenance_duty_run_steps` FOR EACH ROW BEGIN
                 IF (SELECT status FROM maintenance_duty_runs WHERE id = OLD.run_id) <> 'open' THEN
                     SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'the steps of a closed duty cannot be changed';
                 END IF;
@@ -9666,18 +9406,17 @@ CREATE TABLE `maintenance_duty_runs` (
   CONSTRAINT `maintenance_duty_runs_duty_id_foreign` FOREIGN KEY (`duty_id`) REFERENCES `maintenance_duties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `maintenance_duty_runs_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_mtc_duty_run` CHECK (((`status` in (_utf8mb4'open',_utf8mb4'done',_utf8mb4'missed')) and ((`status` <> _utf8mb4'done') or ((`done_by` is not null) and (`done_at` is not null)))))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `maintenance_duty_runs_closed` BEFORE UPDATE ON `maintenance_duty_runs` FOR EACH ROW BEGIN
+/*!50003 CREATE*/ /*!50003 TRIGGER `maintenance_duty_runs_closed` BEFORE UPDATE ON `maintenance_duty_runs` FOR EACH ROW BEGIN
                 IF OLD.status <> 'open' THEN
                     SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a closed duty cannot be changed';
                 END IF;
@@ -9698,7 +9437,7 @@ CREATE TABLE `maintenance_duty_steps` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `maintenance_duty_steps_duty_id_position_unique` (`duty_id`,`position`),
   CONSTRAINT `maintenance_duty_steps_duty_id_foreign` FOREIGN KEY (`duty_id`) REFERENCES `maintenance_duties` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `maintenance_escalations`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -9720,7 +9459,7 @@ CREATE TABLE `maintenance_escalations` (
   CONSTRAINT `maintenance_escalations_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `maintenance_escalations_work_order_id_foreign` FOREIGN KEY (`work_order_id`) REFERENCES `maintenance_work_orders` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_mtc_escalation` CHECK (((`level` in (1,2)) and (`target` in (_utf8mb4'supervisor',_utf8mb4'mod')) and (`shift` in (_utf8mb4'day',_utf8mb4'night'))))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `maintenance_meter_readings`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -9735,18 +9474,17 @@ CREATE TABLE `maintenance_meter_readings` (
   PRIMARY KEY (`id`),
   KEY `maintenance_meter_readings_asset_id_reading_index` (`asset_id`,`reading`),
   CONSTRAINT `maintenance_meter_readings_asset_id_foreign` FOREIGN KEY (`asset_id`) REFERENCES `maintenance_assets` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `maintenance_meter_readings_no_update` BEFORE UPDATE ON `maintenance_meter_readings` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a meter reading cannot be changed' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `maintenance_meter_readings_no_update` BEFORE UPDATE ON `maintenance_meter_readings` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a meter reading cannot be changed' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -9757,11 +9495,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `maintenance_meter_readings_no_delete` BEFORE DELETE ON `maintenance_meter_readings` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a meter reading cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `maintenance_meter_readings_no_delete` BEFORE DELETE ON `maintenance_meter_readings` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a meter reading cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -9784,18 +9521,17 @@ CREATE TABLE `maintenance_part_requests` (
   KEY `maintenance_part_requests_work_order_id_index` (`work_order_id`),
   CONSTRAINT `maintenance_part_requests_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `maintenance_part_requests_work_order_id_foreign` FOREIGN KEY (`work_order_id`) REFERENCES `maintenance_work_orders` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `maintenance_part_requests_no_update` BEFORE UPDATE ON `maintenance_part_requests` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a part request link cannot be changed' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `maintenance_part_requests_no_update` BEFORE UPDATE ON `maintenance_part_requests` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a part request link cannot be changed' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -9806,11 +9542,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `maintenance_part_requests_no_delete` BEFORE DELETE ON `maintenance_part_requests` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a part request link cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `maintenance_part_requests_no_delete` BEFORE DELETE ON `maintenance_part_requests` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a part request link cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -9841,18 +9576,17 @@ CREATE TABLE `maintenance_part_uses` (
   CONSTRAINT `maintenance_part_uses_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `maintenance_part_uses_work_order_id_foreign` FOREIGN KEY (`work_order_id`) REFERENCES `maintenance_work_orders` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_mtc_part_use` CHECK (((`quantity_milli` > 0) and ((`value_minor` is null) or (`value_minor` >= 0))))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `maintenance_part_uses_no_update` BEFORE UPDATE ON `maintenance_part_uses` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a part use cannot be changed' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `maintenance_part_uses_no_update` BEFORE UPDATE ON `maintenance_part_uses` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a part use cannot be changed' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -9863,11 +9597,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `maintenance_part_uses_no_delete` BEFORE DELETE ON `maintenance_part_uses` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a part use cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `maintenance_part_uses_no_delete` BEFORE DELETE ON `maintenance_part_uses` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a part use cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -9901,7 +9634,7 @@ CREATE TABLE `maintenance_pm_plans` (
   CONSTRAINT `maintenance_pm_plans_asset_id_foreign` FOREIGN KEY (`asset_id`) REFERENCES `maintenance_assets` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `maintenance_pm_plans_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_mtc_plan` CHECK (((`trigger_kind` in (_utf8mb4'calendar',_utf8mb4'meter')) and (`interval_value` >= 1) and (`lead_days` <= 60) and (`priority` in (_utf8mb4'urgent',_utf8mb4'high',_utf8mb4'normal',_utf8mb4'low')) and (((`trigger_kind` = _utf8mb4'calendar') and (`next_due_on` is not null)) or ((`trigger_kind` = _utf8mb4'meter') and (`last_meter` is not null)))))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `maintenance_room_blocks`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -9923,7 +9656,7 @@ CREATE TABLE `maintenance_room_blocks` (
   KEY `maintenance_room_blocks_work_order_id_foreign` (`work_order_id`),
   CONSTRAINT `maintenance_room_blocks_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `maintenance_room_blocks_work_order_id_foreign` FOREIGN KEY (`work_order_id`) REFERENCES `maintenance_work_orders` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `maintenance_settings`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -9946,7 +9679,7 @@ CREATE TABLE `maintenance_settings` (
   CONSTRAINT `maintenance_settings_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_mtc_escalation_settings` CHECK (((`warn_percent` between 10 and 100) and (`escalate_percent` between 50 and 300) and (`warn_percent` <= `escalate_percent`) and (`night_from_hour` <= 23) and (`night_to_hour` <= 23))),
   CONSTRAINT `chk_mtc_sla` CHECK (((`sla_urgent_minutes` between 5 and 43200) and (`sla_high_minutes` between 5 and 43200) and (`sla_normal_minutes` between 5 and 43200) and (`sla_low_minutes` between 5 and 43200) and (`sla_urgent_minutes` <= `sla_high_minutes`) and (`sla_high_minutes` <= `sla_normal_minutes`) and (`sla_normal_minutes` <= `sla_low_minutes`)))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `maintenance_vendor_jobs`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -9985,7 +9718,7 @@ CREATE TABLE `maintenance_vendor_jobs` (
   CONSTRAINT `maintenance_vendor_jobs_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `maintenance_vendor_jobs_work_order_id_foreign` FOREIGN KEY (`work_order_id`) REFERENCES `maintenance_work_orders` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_mtc_vendor_job` CHECK (((`status` in (_utf8mb4'quoting',_utf8mb4'pending_approval',_utf8mb4'approved',_utf8mb4'scheduled',_utf8mb4'done',_utf8mb4'rejected',_utf8mb4'cancelled')) and ((`agreed_minor` is null) or (`agreed_minor` > 0)) and ((`actual_minor` is null) or (`actual_minor` >= 0)) and ((`status` <> _utf8mb4'done') or ((`actual_minor` is not null) and (`proof_file_id` is not null) and (`done_at` is not null) and (`done_note` is not null))) and ((`status` not in (_utf8mb4'approved',_utf8mb4'scheduled',_utf8mb4'done')) or ((`quote_id` is not null) and (`agreed_minor` is not null))) and ((`status` <> _utf8mb4'cancelled') or (`cancel_reason` is not null))))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `maintenance_vendor_quotes`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -10004,18 +9737,17 @@ CREATE TABLE `maintenance_vendor_quotes` (
   UNIQUE KEY `maintenance_vendor_quotes_job_id_supplier_id_unique` (`job_id`,`supplier_id`),
   CONSTRAINT `maintenance_vendor_quotes_job_id_foreign` FOREIGN KEY (`job_id`) REFERENCES `maintenance_vendor_jobs` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_mtc_vendor_quote` CHECK ((`amount_minor` > 0))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `maintenance_vendor_quotes_no_update` BEFORE UPDATE ON `maintenance_vendor_quotes` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a quotation cannot be changed' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `maintenance_vendor_quotes_no_update` BEFORE UPDATE ON `maintenance_vendor_quotes` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a quotation cannot be changed' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -10026,11 +9758,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `maintenance_vendor_quotes_no_delete` BEFORE DELETE ON `maintenance_vendor_quotes` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a quotation cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `maintenance_vendor_quotes_no_delete` BEFORE DELETE ON `maintenance_vendor_quotes` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a quotation cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -10049,18 +9780,17 @@ CREATE TABLE `maintenance_work_events` (
   PRIMARY KEY (`id`),
   KEY `maintenance_work_events_work_order_id_at_index` (`work_order_id`,`at`),
   CONSTRAINT `maintenance_work_events_work_order_id_foreign` FOREIGN KEY (`work_order_id`) REFERENCES `maintenance_work_orders` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `maintenance_work_events_no_update` BEFORE UPDATE ON `maintenance_work_events` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'the history of a work order cannot be changed' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `maintenance_work_events_no_update` BEFORE UPDATE ON `maintenance_work_events` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'the history of a work order cannot be changed' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -10071,11 +9801,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `maintenance_work_events_no_delete` BEFORE DELETE ON `maintenance_work_events` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'the history of a work order cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `maintenance_work_events_no_delete` BEFORE DELETE ON `maintenance_work_events` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'the history of a work order cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -10128,7 +9857,7 @@ CREATE TABLE `maintenance_work_orders` (
   KEY `maintenance_work_orders_property_id_asset_id_index` (`property_id`,`asset_id`),
   CONSTRAINT `maintenance_work_orders_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_mtc_work_order` CHECK (((`status` in (_utf8mb4'open',_utf8mb4'assigned',_utf8mb4'in_progress',_utf8mb4'on_hold',_utf8mb4'done',_utf8mb4'cancelled')) and (`priority` in (_utf8mb4'urgent',_utf8mb4'high',_utf8mb4'normal',_utf8mb4'low')) and (`category` in (_utf8mb4'electrical',_utf8mb4'plumbing',_utf8mb4'hvac',_utf8mb4'furniture',_utf8mb4'appliance',_utf8mb4'structural',_utf8mb4'it',_utf8mb4'other')) and ((`room_id` is not null) or (`area` is not null)) and ((`status` <> _utf8mb4'done') or ((`done_photo_file_id` is not null) and (`done_at` is not null))) and ((`hold_reason` is null) or (`hold_reason` in (_utf8mb4'waiting_parts',_utf8mb4'waiting_vendor',_utf8mb4'waiting_access')))))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `messaging_channels`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -10145,7 +9874,7 @@ CREATE TABLE `messaging_channels` (
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`channel`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `migrations`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -10155,7 +9884,7 @@ CREATE TABLE `migrations` (
   `migration` varchar(255) NOT NULL,
   `batch` int NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `night_audits`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -10175,18 +9904,17 @@ CREATE TABLE `night_audits` (
   CONSTRAINT `night_audits_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `night_audits_run_by_foreign` FOREIGN KEY (`run_by`) REFERENCES `users` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_night_audits_next` CHECK ((`next_business_date` > `business_date`))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `night_audits_no_update` BEFORE UPDATE ON `night_audits` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a night audit record cannot be changed' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `night_audits_no_update` BEFORE UPDATE ON `night_audits` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a night audit record cannot be changed' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -10197,11 +9925,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `night_audits_no_delete` BEFORE DELETE ON `night_audits` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a night audit record cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `night_audits_no_delete` BEFORE DELETE ON `night_audits` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a night audit record cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -10222,7 +9949,7 @@ CREATE TABLE `obligation_settings` (
   CONSTRAINT `obligation_settings_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `obligation_settings_updated_by_foreign` FOREIGN KEY (`updated_by`) REFERENCES `users` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_obligation_values` CHECK (((`tax_report_day` between 1 and 28) and (`service_employee_share_bp` <= 10000)))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `offline_device_status`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -10239,7 +9966,7 @@ CREATE TABLE `offline_device_status` (
   KEY `offline_device_status_reported_at_index` (`reported_at`),
   CONSTRAINT `offline_device_status_actor_id_foreign` FOREIGN KEY (`actor_id`) REFERENCES `users` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `offline_device_status_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `offline_sync_exceptions`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -10281,18 +10008,17 @@ CREATE TABLE `offline_sync_exceptions` (
   CONSTRAINT `chk_offline_exc_kind` CHECK ((`kind` in (_utf8mb4'conflict',_utf8mb4'rejected'))),
   CONSTRAINT `chk_offline_exc_resolution` CHECK ((((`status` = _utf8mb4'open') and (`resolved_at` is null) and (`resolved_by` is null)) or ((`status` = _utf8mb4'resolved') and (`resolved_at` is not null) and (`resolved_by` is not null)))),
   CONSTRAINT `chk_offline_exc_status` CHECK ((`status` in (_utf8mb4'open',_utf8mb4'resolved')))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `offline_sync_exceptions_prevent_delete` BEFORE DELETE ON `offline_sync_exceptions` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'offline sync exceptions are reconciliation evidence and cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `offline_sync_exceptions_prevent_delete` BEFORE DELETE ON `offline_sync_exceptions` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'offline sync exceptions are reconciliation evidence and cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -10320,7 +10046,7 @@ CREATE TABLE `online_booking_settings` (
   CONSTRAINT `online_booking_settings_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `online_booking_settings_rate_plan_id_foreign` FOREIGN KEY (`rate_plan_id`) REFERENCES `rate_plans` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `online_booking_settings_updated_by_foreign` FOREIGN KEY (`updated_by`) REFERENCES `users` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `operational_alerts`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -10340,7 +10066,7 @@ CREATE TABLE `operational_alerts` (
   UNIQUE KEY `operational_alerts_open_key_unique` (`open_key`),
   KEY `operational_alerts_alert_key_first_seen_at_index` (`alert_key`,`first_seen_at`),
   KEY `operational_alerts_resolved_at_severity_index` (`resolved_at`,`severity`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `outbox_messages`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -10378,7 +10104,7 @@ CREATE TABLE `outbox_messages` (
   CONSTRAINT `chk_outbox_error_identity` CHECK ((((`last_error_type` is null) and (`last_error_fingerprint` is null)) or ((`last_error_type` is not null) and (`last_error_fingerprint` is not null)))),
   CONSTRAINT `chk_outbox_status` CHECK ((`status` in (_utf8mb4'pending',_utf8mb4'queued',_utf8mb4'processing',_utf8mb4'retrying',_utf8mb4'completed',_utf8mb4'dead_letter'))),
   CONSTRAINT `chk_outbox_terminal_timestamps` CHECK ((((`status` = _utf8mb4'completed') and (`completed_at` is not null) and (`dead_lettered_at` is null)) or ((`status` = _utf8mb4'dead_letter') and (`completed_at` is null) and (`dead_lettered_at` is not null)) or ((`status` not in (_utf8mb4'completed',_utf8mb4'dead_letter')) and (`completed_at` is null) and (`dead_lettered_at` is null))))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `password_reset_tokens`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -10388,7 +10114,7 @@ CREATE TABLE `password_reset_tokens` (
   `token` varchar(255) NOT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`email`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `permissions`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -10401,7 +10127,7 @@ CREATE TABLE `permissions` (
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `permissions_code_unique` (`code`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `processed_outbox_messages`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -10418,7 +10144,7 @@ CREATE TABLE `processed_outbox_messages` (
   KEY `processed_outbox_property_event_foreign` (`property_id`,`event_id`),
   CONSTRAINT `processed_outbox_messages_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `processed_outbox_property_event_foreign` FOREIGN KEY (`property_id`, `event_id`) REFERENCES `outbox_messages` (`property_id`, `id`) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `properties`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -10433,7 +10159,7 @@ CREATE TABLE `properties` (
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `property_branding_settings`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -10448,7 +10174,7 @@ CREATE TABLE `property_branding_settings` (
   KEY `property_branding_settings_updated_by_foreign` (`updated_by`),
   CONSTRAINT `property_branding_settings_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `property_branding_settings_updated_by_foreign` FOREIGN KEY (`updated_by`) REFERENCES `users` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `property_features`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -10464,7 +10190,7 @@ CREATE TABLE `property_features` (
   KEY `property_features_updated_by_foreign` (`updated_by`),
   CONSTRAINT `property_features_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `property_features_updated_by_foreign` FOREIGN KEY (`updated_by`) REFERENCES `users` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `property_logos`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -10482,7 +10208,7 @@ CREATE TABLE `property_logos` (
   CONSTRAINT `property_logos_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `property_logos_updated_by_foreign` FOREIGN KEY (`updated_by`) REFERENCES `users` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_property_logo_mime` CHECK ((`mime` in (_utf8mb4'image/png',_utf8mb4'image/jpeg',_utf8mb4'image/webp',_utf8mb4'image/svg+xml')))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `property_profiles`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -10500,7 +10226,7 @@ CREATE TABLE `property_profiles` (
   CONSTRAINT `property_profiles_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `property_profiles_updated_by_foreign` FOREIGN KEY (`updated_by`) REFERENCES `users` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_property_profile` CHECK ((`profile` in (_utf8mb4'hotel',_utf8mb4'small_resort',_utf8mb4'villa')))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `property_settings`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -10524,18 +10250,17 @@ CREATE TABLE `property_settings` (
   CONSTRAINT `property_settings_updated_by_foreign` FOREIGN KEY (`updated_by`) REFERENCES `users` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_property_settings_horizon` CHECK ((`availability_horizon_days` between 30 and 1095)),
   CONSTRAINT `chk_property_settings_rounding` CHECK (((`rounding_increment_minor` between 1 and 1000000) and (`rounding_mode` in (_utf8mb4'half_up',_utf8mb4'half_even',_utf8mb4'down',_utf8mb4'up'))))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `property_settings_business_date_forward` BEFORE UPDATE ON `property_settings` FOR EACH ROW BEGIN
+/*!50003 CREATE*/ /*!50003 TRIGGER `property_settings_business_date_forward` BEFORE UPDATE ON `property_settings` FOR EACH ROW BEGIN
     IF OLD.business_date IS NOT NULL AND (NEW.business_date IS NULL OR NEW.business_date < OLD.business_date) THEN
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'the business date only moves forward';
     END IF;
@@ -10550,11 +10275,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `property_settings_no_delete` BEFORE DELETE ON `property_settings` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'property_settings cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `property_settings_no_delete` BEFORE DELETE ON `property_settings` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'property_settings cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -10584,7 +10308,7 @@ CREATE TABLE `purchase_order_lines` (
   CONSTRAINT `purchase_order_lines_item_id_foreign` FOREIGN KEY (`item_id`) REFERENCES `inventory_items` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `purchase_order_lines_order_id_foreign` FOREIGN KEY (`order_id`) REFERENCES `purchase_orders` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_purchase_order_line` CHECK ((`qty_milli` > 0))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `purchase_order_revisions`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -10604,18 +10328,17 @@ CREATE TABLE `purchase_order_revisions` (
   KEY `purchase_order_revisions_created_by_foreign` (`created_by`),
   CONSTRAINT `purchase_order_revisions_created_by_foreign` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `purchase_order_revisions_order_id_foreign` FOREIGN KEY (`order_id`) REFERENCES `purchase_orders` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `purchase_order_revisions_no_update` BEFORE UPDATE ON `purchase_order_revisions` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a purchase order revision cannot be changed' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `purchase_order_revisions_no_update` BEFORE UPDATE ON `purchase_order_revisions` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a purchase order revision cannot be changed' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -10626,11 +10349,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `purchase_order_revisions_no_delete` BEFORE DELETE ON `purchase_order_revisions` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a purchase order revision cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `purchase_order_revisions_no_delete` BEFORE DELETE ON `purchase_order_revisions` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a purchase order revision cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -10676,18 +10398,17 @@ CREATE TABLE `purchase_orders` (
   CONSTRAINT `purchase_orders_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `purchase_orders_supplier_id_foreign` FOREIGN KEY (`supplier_id`) REFERENCES `suppliers` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_purchase_order` CHECK (((`status` in (_utf8mb4'draft',_utf8mb4'pending_approval',_utf8mb4'approved',_utf8mb4'issued',_utf8mb4'partially_received',_utf8mb4'received',_utf8mb4'closed',_utf8mb4'cancelled')) and (`total_minor` = (`subtotal_minor` + `tax_minor`))))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `purchase_orders_guard` BEFORE UPDATE ON `purchase_orders` FOR EACH ROW BEGIN
+/*!50003 CREATE*/ /*!50003 TRIGGER `purchase_orders_guard` BEFORE UPDATE ON `purchase_orders` FOR EACH ROW BEGIN
     IF OLD.status IN ('closed', 'cancelled', 'received') AND NEW.status <> OLD.status THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a finished purchase order cannot change state'; END IF;
     IF NEW.number <> OLD.number OR NEW.created_by <> OLD.created_by OR NEW.business_date <> OLD.business_date THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'the facts of a purchase order cannot be changed'; END IF;
     IF NEW.revision < OLD.revision THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a purchase order revision cannot go back'; END IF;
@@ -10702,11 +10423,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `purchase_orders_no_delete` BEFORE DELETE ON `purchase_orders` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a purchase order cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `purchase_orders_no_delete` BEFORE DELETE ON `purchase_orders` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a purchase order cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -10732,18 +10452,17 @@ CREATE TABLE `purchase_request_lines` (
   CONSTRAINT `purchase_request_lines_item_id_foreign` FOREIGN KEY (`item_id`) REFERENCES `inventory_items` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `purchase_request_lines_request_id_foreign` FOREIGN KEY (`request_id`) REFERENCES `purchase_requests` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_purchase_request_line` CHECK ((`qty_milli` > 0))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `purchase_request_lines_guard` BEFORE UPDATE ON `purchase_request_lines` FOR EACH ROW BEGIN
+/*!50003 CREATE*/ /*!50003 TRIGGER `purchase_request_lines_guard` BEFORE UPDATE ON `purchase_request_lines` FOR EACH ROW BEGIN
     IF (SELECT status FROM purchase_requests WHERE id = OLD.request_id) <> 'draft' AND (NEW.item_id <> OLD.item_id OR NEW.unit <> OLD.unit OR NEW.qty_milli <> OLD.qty_milli OR NEW.est_unit_cost_minor <> OLD.est_unit_cost_minor) THEN
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a line of a submitted purchase request cannot be edited';
     END IF;
@@ -10758,11 +10477,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `purchase_request_lines_no_delete` BEFORE DELETE ON `purchase_request_lines` FOR EACH ROW IF (SELECT status FROM purchase_requests WHERE id = OLD.request_id) <> 'draft' THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a line of a submitted purchase request cannot be deleted'; END IF */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `purchase_request_lines_no_delete` BEFORE DELETE ON `purchase_request_lines` FOR EACH ROW IF (SELECT status FROM purchase_requests WHERE id = OLD.request_id) <> 'draft' THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a line of a submitted purchase request cannot be deleted'; END IF */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -10796,18 +10514,17 @@ CREATE TABLE `purchase_requests` (
   CONSTRAINT `purchase_requests_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `purchase_requests_requested_by_foreign` FOREIGN KEY (`requested_by`) REFERENCES `users` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_purchase_request` CHECK (((`urgency` in (_utf8mb4'low',_utf8mb4'normal',_utf8mb4'high',_utf8mb4'urgent')) and (`status` in (_utf8mb4'draft',_utf8mb4'pending_approval',_utf8mb4'approved',_utf8mb4'on_hold',_utf8mb4'rejected',_utf8mb4'cancelled',_utf8mb4'ordered'))))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `purchase_requests_guard` BEFORE UPDATE ON `purchase_requests` FOR EACH ROW BEGIN
+/*!50003 CREATE*/ /*!50003 TRIGGER `purchase_requests_guard` BEFORE UPDATE ON `purchase_requests` FOR EACH ROW BEGIN
     IF OLD.status IN ('rejected', 'cancelled') THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a decided purchase request cannot be changed'; END IF;
     IF NEW.number <> OLD.number OR NEW.requested_by <> OLD.requested_by OR NEW.business_date <> OLD.business_date THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'the facts of a purchase request cannot be changed'; END IF;
     IF OLD.status <> 'draft' AND (NEW.department <> OLD.department OR NEW.urgency <> OLD.urgency OR NEW.reason <> OLD.reason OR NEW.needed_by <> OLD.needed_by OR NEW.total_minor <> OLD.total_minor) THEN
@@ -10824,11 +10541,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `purchase_requests_no_delete` BEFORE DELETE ON `purchase_requests` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a purchase request cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `purchase_requests_no_delete` BEFORE DELETE ON `purchase_requests` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a purchase request cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -10858,18 +10574,17 @@ CREATE TABLE `purchase_return_lines` (
   CONSTRAINT `purchase_return_lines_receipt_line_id_foreign` FOREIGN KEY (`receipt_line_id`) REFERENCES `goods_receipt_lines` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `purchase_return_lines_return_id_foreign` FOREIGN KEY (`return_id`) REFERENCES `purchase_returns` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_purchase_return_line` CHECK ((`qty_milli` > 0))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `purchase_return_lines_no_update` BEFORE UPDATE ON `purchase_return_lines` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a purchase return line cannot be changed' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `purchase_return_lines_no_update` BEFORE UPDATE ON `purchase_return_lines` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a purchase return line cannot be changed' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -10880,11 +10595,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `purchase_return_lines_no_delete` BEFORE DELETE ON `purchase_return_lines` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a purchase return line cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `purchase_return_lines_no_delete` BEFORE DELETE ON `purchase_return_lines` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a purchase return line cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -10923,18 +10637,17 @@ CREATE TABLE `purchase_returns` (
   CONSTRAINT `purchase_returns_returned_by_foreign` FOREIGN KEY (`returned_by`) REFERENCES `users` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `purchase_returns_supplier_id_foreign` FOREIGN KEY (`supplier_id`) REFERENCES `suppliers` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_purchase_return` CHECK ((`reason` in (_utf8mb4'damaged',_utf8mb4'expired',_utf8mb4'wrong_item',_utf8mb4'quality',_utf8mb4'overstock',_utf8mb4'other')))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `purchase_returns_no_update` BEFORE UPDATE ON `purchase_returns` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a purchase return cannot be changed' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `purchase_returns_no_update` BEFORE UPDATE ON `purchase_returns` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a purchase return cannot be changed' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -10945,11 +10658,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `purchase_returns_no_delete` BEFORE DELETE ON `purchase_returns` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a purchase return cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `purchase_returns_no_delete` BEFORE DELETE ON `purchase_returns` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a purchase return cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -10972,7 +10684,7 @@ CREATE TABLE `purchasing_settings` (
   PRIMARY KEY (`property_id`),
   CONSTRAINT `purchasing_settings_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_purchasing_settings` CHECK (((`budget_policy` in (_utf8mb4'off',_utf8mb4'warn',_utf8mb4'block')) and (`tax_bp` <= 5000) and (`po_tolerance_bp` <= 10000) and (`over_receipt_bp` <= 10000) and (`invoice_price_tolerance_bp` <= 10000) and (`invoice_qty_tolerance_bp` <= 10000)))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `push_devices`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -10990,7 +10702,7 @@ CREATE TABLE `push_devices` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `push_devices_endpoint_hash_unique` (`endpoint_hash`),
   KEY `push_devices_user_id_index` (`user_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `push_notices`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -11006,7 +10718,7 @@ CREATE TABLE `push_notices` (
   `fetched_at` timestamp(6) NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `push_notices_device_id_fetched_at_created_at_index` (`device_id`,`fetched_at`,`created_at`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `push_preferences`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -11016,7 +10728,7 @@ CREATE TABLE `push_preferences` (
   `kind` varchar(20) NOT NULL,
   `created_at` timestamp(6) NOT NULL,
   PRIMARY KEY (`user_id`,`kind`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `rate_periods`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -11048,18 +10760,17 @@ CREATE TABLE `rate_periods` (
   CONSTRAINT `rate_periods_room_type_id_foreign` FOREIGN KEY (`room_type_id`) REFERENCES `room_types` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `rate_periods_superseded_by_foreign` FOREIGN KEY (`superseded_by`) REFERENCES `users` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_rate_periods_shape` CHECK (((`end_date` >= `start_date`) and (`weekday_mask` between 1 and 127) and (`amount_minor` >= 0)))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `rate_periods_supersede_only` BEFORE UPDATE ON `rate_periods` FOR EACH ROW BEGIN
+/*!50003 CREATE*/ /*!50003 TRIGGER `rate_periods_supersede_only` BEFORE UPDATE ON `rate_periods` FOR EACH ROW BEGIN
     IF NOT (OLD.superseded_at IS NULL AND NEW.superseded_at IS NOT NULL AND NEW.superseded_by IS NOT NULL
         AND NEW.id <=> OLD.id AND NEW.property_id <=> OLD.property_id AND NEW.rate_plan_id <=> OLD.rate_plan_id
         AND NEW.start_date <=> OLD.start_date AND NEW.end_date <=> OLD.end_date
@@ -11077,11 +10788,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `rate_periods_no_delete` BEFORE DELETE ON `rate_periods` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'rate_periods cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `rate_periods_no_delete` BEFORE DELETE ON `rate_periods` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'rate_periods cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -11106,18 +10816,17 @@ CREATE TABLE `rate_plans` (
   UNIQUE KEY `rate_plans_property_id_code_unique` (`property_id`,`code`),
   CONSTRAINT `rate_plans_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_rate_plans_kind` CHECK ((`kind` in (_utf8mb4'public',_utf8mb4'corporate',_utf8mb4'package',_utf8mb4'ota',_utf8mb4'promotion')))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `rate_plans_no_delete` BEFORE DELETE ON `rate_plans` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'rate_plans cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `rate_plans_no_delete` BEFORE DELETE ON `rate_plans` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'rate_plans cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -11155,18 +10864,17 @@ CREATE TABLE `rate_restrictions` (
   CONSTRAINT `rate_restrictions_room_type_id_foreign` FOREIGN KEY (`room_type_id`) REFERENCES `room_types` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `rate_restrictions_superseded_by_foreign` FOREIGN KEY (`superseded_by`) REFERENCES `users` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_rate_restrictions_shape` CHECK (((`end_date` >= `start_date`) and ((`min_stay` is null) or (`min_stay` between 1 and 365)) and ((`max_stay` is null) or (`max_stay` between 1 and 365)) and ((`min_stay` is null) or (`max_stay` is null) or (`min_stay` <= `max_stay`))))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `rate_restrictions_supersede_only` BEFORE UPDATE ON `rate_restrictions` FOR EACH ROW BEGIN
+/*!50003 CREATE*/ /*!50003 TRIGGER `rate_restrictions_supersede_only` BEFORE UPDATE ON `rate_restrictions` FOR EACH ROW BEGIN
     IF NOT (OLD.superseded_at IS NULL AND NEW.superseded_at IS NOT NULL AND NEW.superseded_by IS NOT NULL
         AND NEW.id <=> OLD.id AND NEW.property_id <=> OLD.property_id AND NEW.rate_plan_id <=> OLD.rate_plan_id
         AND NEW.start_date <=> OLD.start_date AND NEW.end_date <=> OLD.end_date
@@ -11184,11 +10892,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `rate_restrictions_no_delete` BEFORE DELETE ON `rate_restrictions` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'rate_restrictions cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `rate_restrictions_no_delete` BEFORE DELETE ON `rate_restrictions` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'rate_restrictions cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -11213,18 +10920,17 @@ CREATE TABLE `registration_cards` (
   CONSTRAINT `registration_cards_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `registration_cards_recorded_by_foreign` FOREIGN KEY (`recorded_by`) REFERENCES `users` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `registration_cards_stay_id_foreign` FOREIGN KEY (`stay_id`) REFERENCES `stays` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `registration_cards_no_update` BEFORE UPDATE ON `registration_cards` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a signed registration card cannot be changed' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `registration_cards_no_update` BEFORE UPDATE ON `registration_cards` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a signed registration card cannot be changed' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -11235,11 +10941,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `registration_cards_no_delete` BEFORE DELETE ON `registration_cards` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a signed registration card cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `registration_cards_no_delete` BEFORE DELETE ON `registration_cards` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a signed registration card cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -11261,18 +10966,17 @@ CREATE TABLE `registration_terms` (
   KEY `registration_terms_created_by_foreign` (`created_by`),
   CONSTRAINT `registration_terms_created_by_foreign` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `registration_terms_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `registration_terms_no_update` BEFORE UPDATE ON `registration_terms` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'registration terms cannot be changed' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `registration_terms_no_update` BEFORE UPDATE ON `registration_terms` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'registration terms cannot be changed' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -11283,11 +10987,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `registration_terms_no_delete` BEFORE DELETE ON `registration_terms` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'registration terms cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `registration_terms_no_delete` BEFORE DELETE ON `registration_terms` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'registration terms cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -11319,18 +11022,17 @@ CREATE TABLE `report_export_jobs` (
   CONSTRAINT `report_export_jobs_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `report_export_jobs_requested_by_foreign` FOREIGN KEY (`requested_by`) REFERENCES `users` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_export_job` CHECK (((`status` in (_utf8mb4'queued',_utf8mb4'running',_utf8mb4'done',_utf8mb4'failed')) and (((`status` in (_utf8mb4'queued',_utf8mb4'running')) and (`file_id` is null) and (`finished_at` is null)) or ((`status` = _utf8mb4'done') and (`file_id` is not null) and (`finished_at` is not null) and (`filename` is not null)) or ((`status` = _utf8mb4'failed') and (`file_id` is null) and (`error` is not null) and (`finished_at` is not null)))))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `report_export_jobs_facts` BEFORE UPDATE ON `report_export_jobs` FOR EACH ROW BEGIN
+/*!50003 CREATE*/ /*!50003 TRIGGER `report_export_jobs_facts` BEFORE UPDATE ON `report_export_jobs` FOR EACH ROW BEGIN
     IF NOT (NEW.report <=> OLD.report AND NEW.requested_by <=> OLD.requested_by AND NEW.requested_at <=> OLD.requested_at AND NEW.purpose <=> OLD.purpose AND NEW.property_id <=> OLD.property_id) THEN
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'what was asked of an export cannot be changed';
     END IF;
@@ -11348,11 +11050,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `report_export_jobs_no_delete` BEFORE DELETE ON `report_export_jobs` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'an export request cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `report_export_jobs_no_delete` BEFORE DELETE ON `report_export_jobs` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'an export request cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -11366,7 +11067,7 @@ CREATE TABLE `report_schedule_recipients` (
   `user_id` char(26) NOT NULL,
   PRIMARY KEY (`schedule_id`,`user_id`),
   CONSTRAINT `report_schedule_recipients_schedule_id_foreign` FOREIGN KEY (`schedule_id`) REFERENCES `report_schedules` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `report_schedule_runs`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -11385,18 +11086,17 @@ CREATE TABLE `report_schedule_runs` (
   KEY `report_schedule_runs_schedule_id_ran_at_index` (`schedule_id`,`ran_at`),
   CONSTRAINT `report_schedule_runs_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `report_schedule_runs_schedule_id_foreign` FOREIGN KEY (`schedule_id`) REFERENCES `report_schedules` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `report_schedule_runs_no_update` BEFORE UPDATE ON `report_schedule_runs` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a run of a schedule cannot be changed' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `report_schedule_runs_no_update` BEFORE UPDATE ON `report_schedule_runs` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a run of a schedule cannot be changed' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -11407,11 +11107,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `report_schedule_runs_no_delete` BEFORE DELETE ON `report_schedule_runs` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a run of a schedule cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `report_schedule_runs_no_delete` BEFORE DELETE ON `report_schedule_runs` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a run of a schedule cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -11442,7 +11141,7 @@ CREATE TABLE `report_schedules` (
   KEY `report_schedules_property_id_is_active_next_run_at_index` (`property_id`,`is_active`,`next_run_at`),
   CONSTRAINT `report_schedules_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_report_schedule` CHECK (((`cadence` in (_utf8mb4'daily',_utf8mb4'weekly',_utf8mb4'monthly')) and ((`cadence` <> _utf8mb4'weekly') or (`weekday` between 1 and 7)) and ((`cadence` <> _utf8mb4'monthly') or (`month_day` between 1 and 28))))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `reservation_amendments`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -11473,18 +11172,17 @@ CREATE TABLE `reservation_amendments` (
   CONSTRAINT `chk_amendments_dates` CHECK ((`new_departure` > `old_departure`)),
   CONSTRAINT `chk_amendments_kind` CHECK ((`kind` = _utf8mb4'extension')),
   CONSTRAINT `chk_amendments_total` CHECK ((`added_total_minor` = ((`added_base_minor` + `added_service_charge_minor`) + `added_tax_minor`)))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `reservation_amendments_no_update` BEFORE UPDATE ON `reservation_amendments` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a reservation amendment cannot be changed' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `reservation_amendments_no_update` BEFORE UPDATE ON `reservation_amendments` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a reservation amendment cannot be changed' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -11495,11 +11193,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `reservation_amendments_no_delete` BEFORE DELETE ON `reservation_amendments` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a reservation amendment cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `reservation_amendments_no_delete` BEFORE DELETE ON `reservation_amendments` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a reservation amendment cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -11522,18 +11219,17 @@ CREATE TABLE `reservation_companies` (
   CONSTRAINT `reservation_companies_linked_by_foreign` FOREIGN KEY (`linked_by`) REFERENCES `users` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `reservation_companies_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `reservation_companies_reservation_id_foreign` FOREIGN KEY (`reservation_id`) REFERENCES `reservations` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `reservation_companies_no_update` BEFORE UPDATE ON `reservation_companies` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'the company of a reservation cannot be changed' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `reservation_companies_no_update` BEFORE UPDATE ON `reservation_companies` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'the company of a reservation cannot be changed' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -11544,11 +11240,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `reservation_companies_no_delete` BEFORE DELETE ON `reservation_companies` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'the company of a reservation cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `reservation_companies_no_delete` BEFORE DELETE ON `reservation_companies` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'the company of a reservation cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -11573,18 +11268,17 @@ CREATE TABLE `reservation_external_refs` (
   CONSTRAINT `reservation_external_refs_imported_by_foreign` FOREIGN KEY (`imported_by`) REFERENCES `users` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `reservation_external_refs_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `reservation_external_refs_reservation_id_foreign` FOREIGN KEY (`reservation_id`) REFERENCES `reservations` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `reservation_external_refs_no_update` BEFORE UPDATE ON `reservation_external_refs` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a channel reference cannot be changed' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `reservation_external_refs_no_update` BEFORE UPDATE ON `reservation_external_refs` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a channel reference cannot be changed' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -11595,11 +11289,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `reservation_external_refs_no_delete` BEFORE DELETE ON `reservation_external_refs` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a channel reference cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `reservation_external_refs_no_delete` BEFORE DELETE ON `reservation_external_refs` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a channel reference cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -11623,18 +11316,17 @@ CREATE TABLE `reservation_group_members` (
   CONSTRAINT `reservation_group_members_group_id_foreign` FOREIGN KEY (`group_id`) REFERENCES `reservation_groups` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `reservation_group_members_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `reservation_group_members_reservation_id_foreign` FOREIGN KEY (`reservation_id`) REFERENCES `reservations` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `reservation_group_members_no_update` BEFORE UPDATE ON `reservation_group_members` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a group membership cannot be changed' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `reservation_group_members_no_update` BEFORE UPDATE ON `reservation_group_members` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a group membership cannot be changed' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -11645,11 +11337,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `reservation_group_members_no_delete` BEFORE DELETE ON `reservation_group_members` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a group membership cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `reservation_group_members_no_delete` BEFORE DELETE ON `reservation_group_members` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a group membership cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -11680,18 +11371,17 @@ CREATE TABLE `reservation_groups` (
   CONSTRAINT `reservation_groups_created_by_foreign` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `reservation_groups_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_group_billing` CHECK (((`billing_mode` in (_utf8mb4'master',_utf8mb4'per_room')) and (`departure_date` > `arrival_date`)))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `reservation_groups_no_update` BEFORE UPDATE ON `reservation_groups` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a group booking cannot be changed' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `reservation_groups_no_update` BEFORE UPDATE ON `reservation_groups` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a group booking cannot be changed' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -11702,11 +11392,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `reservation_groups_no_delete` BEFORE DELETE ON `reservation_groups` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a group booking cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `reservation_groups_no_delete` BEFORE DELETE ON `reservation_groups` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a group booking cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -11727,18 +11416,17 @@ CREATE TABLE `reservation_nights` (
   CONSTRAINT `reservation_nights_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `reservation_nights_reservation_id_foreign` FOREIGN KEY (`reservation_id`) REFERENCES `reservations` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `reservation_nights_room_type_id_foreign` FOREIGN KEY (`room_type_id`) REFERENCES `room_types` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `reservation_nights_no_delete` BEFORE DELETE ON `reservation_nights` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'reservation_nights cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `reservation_nights_no_delete` BEFORE DELETE ON `reservation_nights` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'reservation_nights cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -11773,18 +11461,17 @@ CREATE TABLE `reservation_rate_changes` (
   CONSTRAINT `chk_rate_changes_discount` CHECK ((`discount_minor` = (`old_total_minor` - `new_total_minor`))),
   CONSTRAINT `chk_rate_changes_reason` CHECK ((char_length(trim(`reason`)) > 0)),
   CONSTRAINT `chk_rate_changes_totals` CHECK (((`old_total_minor` >= 0) and (`new_total_minor` >= 0)))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `reservation_rate_changes_no_update` BEFORE UPDATE ON `reservation_rate_changes` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a rate change cannot be changed' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `reservation_rate_changes_no_update` BEFORE UPDATE ON `reservation_rate_changes` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a rate change cannot be changed' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -11795,11 +11482,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `reservation_rate_changes_no_delete` BEFORE DELETE ON `reservation_rate_changes` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a rate change cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `reservation_rate_changes_no_delete` BEFORE DELETE ON `reservation_rate_changes` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a rate change cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -11866,18 +11552,17 @@ CREATE TABLE `reservations` (
   CONSTRAINT `chk_reservations_source` CHECK ((`source` in (_utf8mb4'direct',_utf8mb4'phone',_utf8mb4'ota',_utf8mb4'corporate',_utf8mb4'walk_in'))),
   CONSTRAINT `chk_reservations_status` CHECK ((`status` in (_utf8mb4'tentative',_utf8mb4'confirmed',_utf8mb4'guaranteed',_utf8mb4'checked_in',_utf8mb4'completed',_utf8mb4'cancelled',_utf8mb4'no_show'))),
   CONSTRAINT `chk_reservations_total` CHECK ((`total_minor` = ((`total_base_minor` + `total_service_charge_minor`) + `total_tax_minor`)))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `reservations_snapshot_immutable` BEFORE UPDATE ON `reservations` FOR EACH ROW BEGIN
+/*!50003 CREATE*/ /*!50003 TRIGGER `reservations_snapshot_immutable` BEFORE UPDATE ON `reservations` FOR EACH ROW BEGIN
     IF NOT (NEW.number <=> OLD.number AND NEW.property_id <=> OLD.property_id AND NEW.created_by <=> OLD.created_by
         AND NEW.currency_code <=> OLD.currency_code AND NEW.total_minor <=> OLD.total_minor AND NEW.total_base_minor <=> OLD.total_base_minor
         AND NEW.total_service_charge_minor <=> OLD.total_service_charge_minor AND NEW.total_tax_minor <=> OLD.total_tax_minor
@@ -11897,11 +11582,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `reservations_no_delete` BEFORE DELETE ON `reservations` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'reservations cannot be deleted; cancel instead' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `reservations_no_delete` BEFORE DELETE ON `reservations` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'reservations cannot be deleted; cancel instead' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -11920,7 +11604,7 @@ CREATE TABLE `retention_overrides` (
   KEY `retention_overrides_updated_by_foreign` (`updated_by`),
   CONSTRAINT `retention_overrides_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `retention_overrides_updated_by_foreign` FOREIGN KEY (`updated_by`) REFERENCES `users` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `revenue_outlet_sources`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -11934,7 +11618,7 @@ CREATE TABLE `revenue_outlet_sources` (
   KEY `revenue_outlet_sources_outlet_id_foreign` (`outlet_id`),
   CONSTRAINT `revenue_outlet_sources_outlet_id_foreign` FOREIGN KEY (`outlet_id`) REFERENCES `revenue_outlets` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `revenue_outlet_sources_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `revenue_outlets`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -11950,7 +11634,7 @@ CREATE TABLE `revenue_outlets` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `revenue_outlets_property_id_code_unique` (`property_id`,`code`),
   CONSTRAINT `revenue_outlets_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `role_permissions`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -11967,7 +11651,7 @@ CREATE TABLE `role_permissions` (
   CONSTRAINT `role_permissions_permission_id_foreign` FOREIGN KEY (`permission_id`) REFERENCES `permissions` (`id`) ON DELETE CASCADE,
   CONSTRAINT `role_permissions_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `role_permissions_role_id_property_id_foreign` FOREIGN KEY (`role_id`, `property_id`) REFERENCES `roles` (`id`, `property_id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `roles`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -11986,7 +11670,7 @@ CREATE TABLE `roles` (
   UNIQUE KEY `roles_id_property_id_unique` (`id`,`property_id`),
   KEY `roles_property_id_is_active_index` (`property_id`,`is_active`),
   CONSTRAINT `roles_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `room_blocks`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -12017,18 +11701,17 @@ CREATE TABLE `room_blocks` (
   CONSTRAINT `chk_room_blocks_dates` CHECK ((`end_date` >= `start_date`)),
   CONSTRAINT `chk_room_blocks_kind` CHECK ((`kind` in (_utf8mb4'out_of_order',_utf8mb4'out_of_service'))),
   CONSTRAINT `chk_room_blocks_release` CHECK ((((`released_at` is null) and (`released_by` is null) and (`release_reason` is null)) or ((`released_at` is not null) and (`released_by` is not null) and (`release_reason` is not null))))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `room_blocks_release_only` BEFORE UPDATE ON `room_blocks` FOR EACH ROW BEGIN
+/*!50003 CREATE*/ /*!50003 TRIGGER `room_blocks_release_only` BEFORE UPDATE ON `room_blocks` FOR EACH ROW BEGIN
     IF NOT (OLD.released_at IS NULL AND NEW.released_at IS NOT NULL AND NEW.id <=> OLD.id AND NEW.property_id <=> OLD.property_id AND NEW.room_id <=> OLD.room_id AND NEW.kind <=> OLD.kind AND NEW.start_date <=> OLD.start_date AND NEW.end_date <=> OLD.end_date AND NEW.reason <=> OLD.reason AND NEW.created_by <=> OLD.created_by AND NEW.created_at <=> OLD.created_at) THEN
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'room_blocks rows can only be released, once';
     END IF;
@@ -12043,11 +11726,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `room_blocks_no_delete` BEFORE DELETE ON `room_blocks` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'room_blocks cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `room_blocks_no_delete` BEFORE DELETE ON `room_blocks` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'room_blocks cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -12072,18 +11754,17 @@ CREATE TABLE `room_inspections` (
   CONSTRAINT `room_inspections_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `room_inspections_room_id_foreign` FOREIGN KEY (`room_id`) REFERENCES `rooms` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_room_inspections_result` CHECK ((`result` in (_utf8mb4'passed',_utf8mb4'rework')))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `room_inspections_no_update` BEFORE UPDATE ON `room_inspections` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'an inspection cannot be changed' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `room_inspections_no_update` BEFORE UPDATE ON `room_inspections` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'an inspection cannot be changed' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -12094,11 +11775,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `room_inspections_no_delete` BEFORE DELETE ON `room_inspections` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'an inspection cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `room_inspections_no_delete` BEFORE DELETE ON `room_inspections` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'an inspection cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -12122,7 +11802,7 @@ CREATE TABLE `room_plans` (
   CONSTRAINT `room_plans_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `room_plans_reservation_id_foreign` FOREIGN KEY (`reservation_id`) REFERENCES `reservations` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `room_plans_room_id_foreign` FOREIGN KEY (`room_id`) REFERENCES `rooms` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `room_service_flags`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -12152,18 +11832,17 @@ CREATE TABLE `room_service_flags` (
   CONSTRAINT `chk_flags_ended` CHECK ((((`ended_at` is null) and (`ended_by` is null)) or ((`ended_at` is not null) and (`ended_by` is not null)))),
   CONSTRAINT `chk_flags_kind` CHECK ((`kind` in (_utf8mb4'dnd',_utf8mb4'refused_service',_utf8mb4'make_up_room',_utf8mb4'privacy'))),
   CONSTRAINT `chk_flags_times` CHECK (((`ended_at` is null) or (`ended_at` >= `started_at`)))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `room_service_flags_open_key_insert` BEFORE INSERT ON `room_service_flags` FOR EACH ROW BEGIN
+/*!50003 CREATE*/ /*!50003 TRIGGER `room_service_flags_open_key_insert` BEFORE INSERT ON `room_service_flags` FOR EACH ROW BEGIN
     SET NEW.open_key = CASE WHEN NEW.ended_at IS NULL THEN CONCAT(NEW.room_id, NEW.kind) ELSE NULL END;
 END */;;
 DELIMITER ;
@@ -12176,11 +11855,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `room_service_flags_facts_immutable` BEFORE UPDATE ON `room_service_flags` FOR EACH ROW BEGIN
+/*!50003 CREATE*/ /*!50003 TRIGGER `room_service_flags_facts_immutable` BEFORE UPDATE ON `room_service_flags` FOR EACH ROW BEGIN
     IF NOT (NEW.id <=> OLD.id AND NEW.property_id <=> OLD.property_id AND NEW.room_id <=> OLD.room_id AND NEW.kind <=> OLD.kind AND NEW.note <=> OLD.note
         AND NEW.started_at <=> OLD.started_at AND NEW.started_by <=> OLD.started_by) THEN
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'what a service flag recorded cannot be changed';
@@ -12200,11 +11878,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `room_service_flags_no_delete` BEFORE DELETE ON `room_service_flags` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a service flag cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `room_service_flags_no_delete` BEFORE DELETE ON `room_service_flags` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a service flag cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -12231,7 +11908,7 @@ CREATE TABLE `room_type_photos` (
   CONSTRAINT `room_type_photos_created_by_foreign` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `room_type_photos_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `room_type_photos_room_type_id_foreign` FOREIGN KEY (`room_type_id`) REFERENCES `room_types` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `room_types`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -12254,18 +11931,17 @@ CREATE TABLE `room_types` (
   KEY `room_types_property_id_is_active_sort_order_index` (`property_id`,`is_active`,`sort_order`),
   CONSTRAINT `room_types_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_room_types_occupancy` CHECK (((`max_adults` between 1 and 20) and (`max_children` between 0 and 20)))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `room_types_no_delete` BEFORE DELETE ON `room_types` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'room_types cannot be deleted; deactivate instead' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `room_types_no_delete` BEFORE DELETE ON `room_types` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'room_types cannot be deleted; deactivate instead' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -12291,18 +11967,17 @@ CREATE TABLE `rooms` (
   KEY `rooms_property_id_room_type_id_is_active_index` (`property_id`,`room_type_id`,`is_active`),
   CONSTRAINT `rooms_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `rooms_room_type_id_foreign` FOREIGN KEY (`room_type_id`) REFERENCES `room_types` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `rooms_no_delete` BEFORE DELETE ON `rooms` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'rooms cannot be deleted; deactivate instead' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `rooms_no_delete` BEFORE DELETE ON `rooms` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'rooms cannot be deleted; deactivate instead' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -12325,18 +12000,17 @@ CREATE TABLE `routine_completions` (
   KEY `routine_completions_property_id_completed_by_business_date_index` (`property_id`,`completed_by`,`business_date`),
   CONSTRAINT `routine_completions_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `routine_completions_run_id_foreign` FOREIGN KEY (`run_id`) REFERENCES `routine_runs` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `routine_completions_no_update` BEFORE UPDATE ON `routine_completions` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a completed checklist item cannot be changed' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `routine_completions_no_update` BEFORE UPDATE ON `routine_completions` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a completed checklist item cannot be changed' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -12347,11 +12021,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `routine_completions_no_delete` BEFORE DELETE ON `routine_completions` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a completed checklist item cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `routine_completions_no_delete` BEFORE DELETE ON `routine_completions` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a completed checklist item cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -12376,18 +12049,17 @@ CREATE TABLE `routine_runs` (
   KEY `routine_runs_template_id_foreign` (`template_id`),
   CONSTRAINT `routine_runs_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `routine_runs_template_id_foreign` FOREIGN KEY (`template_id`) REFERENCES `routine_templates` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `routine_runs_no_update` BEFORE UPDATE ON `routine_runs` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a checklist run cannot be changed' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `routine_runs_no_update` BEFORE UPDATE ON `routine_runs` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a checklist run cannot be changed' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -12398,11 +12070,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `routine_runs_no_delete` BEFORE DELETE ON `routine_runs` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a checklist run cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `routine_runs_no_delete` BEFORE DELETE ON `routine_runs` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a checklist run cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -12426,7 +12097,7 @@ CREATE TABLE `routine_temperature_points` (
   UNIQUE KEY `routine_temperature_points_property_id_department_name_unique` (`property_id`,`department`,`name`),
   CONSTRAINT `routine_temperature_points_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_routine_temperature_points` CHECK (((`min_tenth` < `max_tenth`) and (`min_tenth` >= -(600)) and (`max_tenth` <= 1500)))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `routine_temperature_readings`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -12450,18 +12121,17 @@ CREATE TABLE `routine_temperature_readings` (
   CONSTRAINT `routine_temperature_readings_point_id_foreign` FOREIGN KEY (`point_id`) REFERENCES `routine_temperature_points` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `routine_temperature_readings_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_routine_temperature_readings` CHECK (((`in_range` = 1) or (`action_taken` is not null)))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `routine_temperature_readings_no_update` BEFORE UPDATE ON `routine_temperature_readings` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a temperature reading cannot be changed' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `routine_temperature_readings_no_update` BEFORE UPDATE ON `routine_temperature_readings` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a temperature reading cannot be changed' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -12472,11 +12142,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `routine_temperature_readings_no_delete` BEFORE DELETE ON `routine_temperature_readings` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a temperature reading cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `routine_temperature_readings_no_delete` BEFORE DELETE ON `routine_temperature_readings` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a temperature reading cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -12501,18 +12170,17 @@ CREATE TABLE `routine_templates` (
   KEY `routine_templates_property_id_department_is_active_index` (`property_id`,`department`,`is_active`),
   CONSTRAINT `routine_templates_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_routine_templates` CHECK (((`frequency` in (_utf8mb4'daily',_utf8mb4'weekly',_utf8mb4'monthly')) and (`department` in (_utf8mb4'kitchen',_utf8mb4'fnb'))))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `routine_templates_no_update` BEFORE UPDATE ON `routine_templates` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a checklist template cannot be changed' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `routine_templates_no_update` BEFORE UPDATE ON `routine_templates` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a checklist template cannot be changed' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -12523,11 +12191,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `routine_templates_no_delete` BEFORE DELETE ON `routine_templates` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a checklist template cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `routine_templates_no_delete` BEFORE DELETE ON `routine_templates` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a checklist template cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -12557,18 +12224,17 @@ CREATE TABLE `security_events` (
   CONSTRAINT `security_events_actor_id_foreign` FOREIGN KEY (`actor_id`) REFERENCES `users` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `security_events_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_security_event_outcome` CHECK ((`outcome` in (_utf8mb4'success',_utf8mb4'failure',_utf8mb4'denied')))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `security_events_prevent_update` BEFORE UPDATE ON `security_events` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'immutable evidence cannot be updated' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `security_events_prevent_update` BEFORE UPDATE ON `security_events` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'immutable evidence cannot be updated' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -12579,11 +12245,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `security_events_prevent_delete` BEFORE DELETE ON `security_events` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'immutable evidence cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `security_events_prevent_delete` BEFORE DELETE ON `security_events` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'immutable evidence cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -12603,7 +12268,7 @@ CREATE TABLE `sessions` (
   KEY `sessions_user_id_index` (`user_id`),
   KEY `sessions_last_activity_index` (`last_activity`),
   CONSTRAINT `sessions_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `shift_log_entries`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -12625,18 +12290,17 @@ CREATE TABLE `shift_log_entries` (
   CONSTRAINT `chk_shift_log_body` CHECK ((char_length(trim(`body`)) > 0)),
   CONSTRAINT `chk_shift_log_priority` CHECK ((`priority` in (_utf8mb4'normal',_utf8mb4'important'))),
   CONSTRAINT `chk_shift_log_shift` CHECK ((`shift` in (_utf8mb4'morning',_utf8mb4'afternoon',_utf8mb4'night')))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `shift_log_entries_no_update` BEFORE UPDATE ON `shift_log_entries` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a log entry cannot be changed' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `shift_log_entries_no_update` BEFORE UPDATE ON `shift_log_entries` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a log entry cannot be changed' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -12647,11 +12311,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `shift_log_entries_no_delete` BEFORE DELETE ON `shift_log_entries` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a log entry cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `shift_log_entries_no_delete` BEFORE DELETE ON `shift_log_entries` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a log entry cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -12671,18 +12334,17 @@ CREATE TABLE `shift_log_reads` (
   CONSTRAINT `shift_log_reads_entry_id_foreign` FOREIGN KEY (`entry_id`) REFERENCES `shift_log_entries` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `shift_log_reads_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `shift_log_reads_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `shift_log_reads_no_update` BEFORE UPDATE ON `shift_log_reads` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a read mark cannot be changed' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `shift_log_reads_no_update` BEFORE UPDATE ON `shift_log_reads` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a read mark cannot be changed' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -12693,11 +12355,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `shift_log_reads_no_delete` BEFORE DELETE ON `shift_log_reads` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a read mark cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `shift_log_reads_no_delete` BEFORE DELETE ON `shift_log_reads` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a read mark cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -12722,18 +12383,17 @@ CREATE TABLE `sop_completions` (
   CONSTRAINT `sop_completions_completed_by_foreign` FOREIGN KEY (`completed_by`) REFERENCES `users` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `sop_completions_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `sop_completions_run_id_foreign` FOREIGN KEY (`run_id`) REFERENCES `sop_runs` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `sop_completions_no_update` BEFORE UPDATE ON `sop_completions` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a completed checklist item cannot be changed' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `sop_completions_no_update` BEFORE UPDATE ON `sop_completions` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a completed checklist item cannot be changed' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -12744,11 +12404,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `sop_completions_no_delete` BEFORE DELETE ON `sop_completions` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a completed checklist item cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `sop_completions_no_delete` BEFORE DELETE ON `sop_completions` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a completed checklist item cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -12772,18 +12431,17 @@ CREATE TABLE `sop_runs` (
   KEY `sop_runs_template_id_foreign` (`template_id`),
   CONSTRAINT `sop_runs_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `sop_runs_template_id_foreign` FOREIGN KEY (`template_id`) REFERENCES `sop_templates` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `sop_runs_no_update` BEFORE UPDATE ON `sop_runs` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a checklist run cannot be changed' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `sop_runs_no_update` BEFORE UPDATE ON `sop_runs` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a checklist run cannot be changed' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -12794,11 +12452,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `sop_runs_no_delete` BEFORE DELETE ON `sop_runs` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a checklist run cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `sop_runs_no_delete` BEFORE DELETE ON `sop_runs` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a checklist run cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -12824,18 +12481,17 @@ CREATE TABLE `sop_templates` (
   CONSTRAINT `sop_templates_created_by_foreign` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `sop_templates_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_sop_frequency` CHECK ((`frequency` in (_utf8mb4'daily',_utf8mb4'weekly',_utf8mb4'monthly')))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `sop_templates_no_update` BEFORE UPDATE ON `sop_templates` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a checklist template cannot be changed' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `sop_templates_no_update` BEFORE UPDATE ON `sop_templates` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a checklist template cannot be changed' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -12846,11 +12502,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `sop_templates_no_delete` BEFORE DELETE ON `sop_templates` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a checklist template cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `sop_templates_no_delete` BEFORE DELETE ON `sop_templates` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a checklist template cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -12872,7 +12527,7 @@ CREATE TABLE `spa_attendance` (
   UNIQUE KEY `spa_attendance_day` (`therapist_id`,`business_date`),
   KEY `spa_attendance_property_id_business_date_index` (`property_id`,`business_date`),
   CONSTRAINT `spa_attendance_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `spa_bookings`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -12921,18 +12576,17 @@ CREATE TABLE `spa_bookings` (
   KEY `spa_bookings_property_id_therapist_id_booking_date_index` (`property_id`,`therapist_id`,`booking_date`),
   CONSTRAINT `spa_bookings_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_spa_bookings` CHECK (((`status` in (_utf8mb4'booked',_utf8mb4'accepted',_utf8mb4'declined',_utf8mb4'in_progress',_utf8mb4'done',_utf8mb4'cancelled',_utf8mb4'no_show')) and (`start_minute` between 0 and 1439) and (`minutes` between 5 and 480) and (`commission_bp` <= 10000)))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `spa_bookings_no_delete` BEFORE DELETE ON `spa_bookings` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a spa booking cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `spa_bookings_no_delete` BEFORE DELETE ON `spa_bookings` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a spa booking cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -12953,7 +12607,7 @@ CREATE TABLE `spa_rooms` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `spa_rooms_property_id_code_unique` (`property_id`,`code`),
   CONSTRAINT `spa_rooms_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `spa_therapists`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -12973,7 +12627,7 @@ CREATE TABLE `spa_therapists` (
   KEY `spa_therapists_property_id_user_id_index` (`property_id`,`user_id`),
   CONSTRAINT `spa_therapists_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_spa_therapists` CHECK ((`commission_bp` between 0 and 10000))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `spa_treatments`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -12992,7 +12646,7 @@ CREATE TABLE `spa_treatments` (
   UNIQUE KEY `spa_treatments_property_id_name_unique` (`property_id`,`name`),
   CONSTRAINT `spa_treatments_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_spa_treatments` CHECK (((`minutes` between 5 and 480) and (`price_minor` > 0)))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `stay_laundry_exceptions`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -13015,18 +12669,17 @@ CREATE TABLE `stay_laundry_exceptions` (
   CONSTRAINT `stay_laundry_exceptions_created_by_foreign` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `stay_laundry_exceptions_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_stay_laundry_exception_mode` CHECK ((`mode` in (_utf8mb4'late_charge',_utf8mb4'claim')))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `stay_laundry_exceptions_no_update` BEFORE UPDATE ON `stay_laundry_exceptions` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a laundry exception at check-out cannot be changed' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `stay_laundry_exceptions_no_update` BEFORE UPDATE ON `stay_laundry_exceptions` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a laundry exception at check-out cannot be changed' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -13037,11 +12690,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `stay_laundry_exceptions_no_delete` BEFORE DELETE ON `stay_laundry_exceptions` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a laundry exception at check-out cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `stay_laundry_exceptions_no_delete` BEFORE DELETE ON `stay_laundry_exceptions` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a laundry exception at check-out cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -13074,18 +12726,17 @@ CREATE TABLE `stay_room_moves` (
   CONSTRAINT `stay_room_moves_stay_id_foreign` FOREIGN KEY (`stay_id`) REFERENCES `stays` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `stay_room_moves_to_room_id_foreign` FOREIGN KEY (`to_room_id`) REFERENCES `rooms` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_stay_moves_rooms` CHECK ((`from_room_id` <> `to_room_id`))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `stay_room_moves_no_update` BEFORE UPDATE ON `stay_room_moves` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a room move cannot be changed' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `stay_room_moves_no_update` BEFORE UPDATE ON `stay_room_moves` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a room move cannot be changed' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -13096,11 +12747,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `stay_room_moves_no_delete` BEFORE DELETE ON `stay_room_moves` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a room move cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `stay_room_moves_no_delete` BEFORE DELETE ON `stay_room_moves` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a room move cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -13134,18 +12784,17 @@ CREATE TABLE `stay_time_fees` (
   CONSTRAINT `stay_time_fees_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `stay_time_fees_stay_id_foreign` FOREIGN KEY (`stay_id`) REFERENCES `stays` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_stay_time_fee` CHECK (((`kind` in (_utf8mb4'early_checkin',_utf8mb4'late_checkout')) and (((`status` = _utf8mb4'charged') and (`posting_id` is not null)) or ((`status` = _utf8mb4'waived') and (`reason` is not null) and (`posting_id` is null)))))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `stay_time_fees_no_update` BEFORE UPDATE ON `stay_time_fees` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a stay time fee decision cannot be changed' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `stay_time_fees_no_update` BEFORE UPDATE ON `stay_time_fees` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a stay time fee decision cannot be changed' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -13156,11 +12805,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `stay_time_fees_no_delete` BEFORE DELETE ON `stay_time_fees` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a stay time fee decision cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `stay_time_fees_no_delete` BEFORE DELETE ON `stay_time_fees` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a stay time fee decision cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -13186,18 +12834,17 @@ CREATE TABLE `stay_time_policies` (
   CONSTRAINT `stay_time_policies_created_by_foreign` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `stay_time_policies_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_stay_time_policy` CHECK (((`kind` in (_utf8mb4'early_checkin',_utf8mb4'late_checkout')) and (`beyond_bp` <= 10000)))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `stay_time_policies_no_update` BEFORE UPDATE ON `stay_time_policies` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a stay time policy cannot be changed' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `stay_time_policies_no_update` BEFORE UPDATE ON `stay_time_policies` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a stay time policy cannot be changed' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -13208,11 +12855,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `stay_time_policies_no_delete` BEFORE DELETE ON `stay_time_policies` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a stay time policy cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `stay_time_policies_no_delete` BEFORE DELETE ON `stay_time_policies` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a stay time policy cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -13260,18 +12906,17 @@ CREATE TABLE `stays` (
   CONSTRAINT `chk_stays_dates` CHECK ((`expected_departure` > `checked_in_business_date`)),
   CONSTRAINT `chk_stays_out` CHECK ((((`status` = _utf8mb4'in_house') and (`checked_out_at` is null) and (`checked_out_by` is null) and (`checked_out_business_date` is null)) or ((`status` = _utf8mb4'checked_out') and (`checked_out_at` is not null) and (`checked_out_by` is not null) and (`checked_out_business_date` is not null)))),
   CONSTRAINT `chk_stays_status` CHECK ((`status` in (_utf8mb4'in_house',_utf8mb4'checked_out')))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `stays_in_house_key_insert` BEFORE INSERT ON `stays` FOR EACH ROW BEGIN
+/*!50003 CREATE*/ /*!50003 TRIGGER `stays_in_house_key_insert` BEFORE INSERT ON `stays` FOR EACH ROW BEGIN
     SET NEW.in_house_room_key = CASE WHEN NEW.status = 'in_house' THEN NEW.room_id ELSE NULL END;
 END */;;
 DELIMITER ;
@@ -13284,11 +12929,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `stays_facts_immutable` BEFORE UPDATE ON `stays` FOR EACH ROW BEGIN
+/*!50003 CREATE*/ /*!50003 TRIGGER `stays_facts_immutable` BEFORE UPDATE ON `stays` FOR EACH ROW BEGIN
     IF NOT (NEW.id <=> OLD.id AND NEW.property_id <=> OLD.property_id AND NEW.reservation_id <=> OLD.reservation_id
         AND NEW.checked_in_at <=> OLD.checked_in_at AND NEW.checked_in_by <=> OLD.checked_in_by AND NEW.checked_in_business_date <=> OLD.checked_in_business_date) THEN
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'the facts of a check-in cannot be changed';
@@ -13308,11 +12952,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `stays_no_delete` BEFORE DELETE ON `stays` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'stays cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `stays_no_delete` BEFORE DELETE ON `stays` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'stays cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -13342,18 +12985,17 @@ CREATE TABLE `stock_count_lines` (
   CONSTRAINT `stock_count_lines_count_id_foreign` FOREIGN KEY (`count_id`) REFERENCES `stock_counts` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `stock_count_lines_item_id_foreign` FOREIGN KEY (`item_id`) REFERENCES `inventory_items` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_stock_count_line` CHECK ((((`counted_base_milli` is null) = (`counted_unit` is null)) and ((`counted_base_milli` is null) = (`counted_factor_milli` is null)) and ((`counted_base_milli` is null) = (`counted_unit_qty_milli` is null))))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `stock_count_lines_final` BEFORE UPDATE ON `stock_count_lines` FOR EACH ROW BEGIN
+/*!50003 CREATE*/ /*!50003 TRIGGER `stock_count_lines_final` BEFORE UPDATE ON `stock_count_lines` FOR EACH ROW BEGIN
     IF (SELECT status FROM stock_counts WHERE id = OLD.count_id) IN ('approved', 'cancelled') THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a line of a decided stock count cannot be changed'; END IF;
     IF NEW.item_id <> OLD.item_id OR NEW.snapshot_qty_milli <> OLD.snapshot_qty_milli OR NEW.count_id <> OLD.count_id THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'the snapshot of a stock count line cannot be changed'; END IF;
 END */;;
@@ -13367,11 +13009,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `stock_count_lines_no_delete` BEFORE DELETE ON `stock_count_lines` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a stock count line cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `stock_count_lines_no_delete` BEFORE DELETE ON `stock_count_lines` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a stock count line cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -13416,18 +13057,17 @@ CREATE TABLE `stock_counts` (
   CONSTRAINT `stock_counts_started_by_foreign` FOREIGN KEY (`started_by`) REFERENCES `users` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `stock_counts_submitted_by_foreign` FOREIGN KEY (`submitted_by`) REFERENCES `users` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_stock_count` CHECK (((`kind` in (_utf8mb4'scheduled',_utf8mb4'spot')) and (`status` in (_utf8mb4'counting',_utf8mb4'submitted',_utf8mb4'approved',_utf8mb4'cancelled')) and ((`status` not in (_utf8mb4'submitted',_utf8mb4'approved')) or ((`submitted_by` is not null) and (`submitted_at` is not null))) and (((`status` in (_utf8mb4'approved',_utf8mb4'cancelled')) and (`decided_by` is not null) and (`decided_at` is not null)) or ((`status` in (_utf8mb4'counting',_utf8mb4'submitted')) and (`decided_by` is null) and (`decided_at` is null)))))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `stock_counts_final` BEFORE UPDATE ON `stock_counts` FOR EACH ROW BEGIN
+/*!50003 CREATE*/ /*!50003 TRIGGER `stock_counts_final` BEFORE UPDATE ON `stock_counts` FOR EACH ROW BEGIN
     IF OLD.status IN ('approved', 'cancelled') THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a decided stock count cannot be changed'; END IF;
     IF NEW.number <> OLD.number OR NEW.location_id <> OLD.location_id OR NEW.kind <> OLD.kind OR NEW.started_by <> OLD.started_by OR NEW.started_at <> OLD.started_at OR NEW.business_date <> OLD.business_date OR NOT (NEW.category_id <=> OLD.category_id) THEN
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'the facts of a stock count cannot be changed';
@@ -13443,11 +13083,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `stock_counts_no_delete` BEFORE DELETE ON `stock_counts` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a stock count cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `stock_counts_no_delete` BEFORE DELETE ON `stock_counts` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a stock count cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -13493,18 +13132,17 @@ CREATE TABLE `stock_movements` (
   CONSTRAINT `stock_movements_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_stock_movement` CHECK (((`unit_qty_milli` <> 0) and (`base_qty_milli` <> 0) and (`factor_milli` >= 1) and (((`kind` in (_utf8mb4'opening',_utf8mb4'receipt',_utf8mb4'adjustment_in',_utf8mb4'transfer_in')) and (`unit_qty_milli` > 0) and (`base_qty_milli` > 0)) or ((`kind` in (_utf8mb4'issue',_utf8mb4'adjustment_out',_utf8mb4'write_off',_utf8mb4'transfer_out',_utf8mb4'return_out')) and (`unit_qty_milli` < 0) and (`base_qty_milli` < 0))) and ((`kind` not in (_utf8mb4'adjustment_in',_utf8mb4'adjustment_out',_utf8mb4'write_off')) or (`reason_code` is not null)) and ((`source_type` is null) = (`source_ref` is null)))),
   CONSTRAINT `chk_stock_value` CHECK ((((`base_qty_milli` > 0) and (`value_minor` >= 0)) or ((`base_qty_milli` < 0) and (`value_minor` <= 0))))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `stock_movements_no_update` BEFORE UPDATE ON `stock_movements` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a stock movement cannot be changed' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `stock_movements_no_update` BEFORE UPDATE ON `stock_movements` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a stock movement cannot be changed' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -13515,11 +13153,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `stock_movements_no_delete` BEFORE DELETE ON `stock_movements` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a stock movement cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `stock_movements_no_delete` BEFORE DELETE ON `stock_movements` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a stock movement cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -13543,18 +13180,17 @@ CREATE TABLE `stock_transfer_lines` (
   CONSTRAINT `stock_transfer_lines_item_id_foreign` FOREIGN KEY (`item_id`) REFERENCES `inventory_items` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `stock_transfer_lines_transfer_id_foreign` FOREIGN KEY (`transfer_id`) REFERENCES `stock_transfers` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_stock_transfer_line` CHECK (((`unit_qty_milli` > 0) and (`base_qty_milli` > 0) and (`factor_milli` >= 1)))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `stock_transfer_lines_no_update` BEFORE UPDATE ON `stock_transfer_lines` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a stock transfer line cannot be changed' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `stock_transfer_lines_no_update` BEFORE UPDATE ON `stock_transfer_lines` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a stock transfer line cannot be changed' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -13565,11 +13201,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `stock_transfer_lines_no_delete` BEFORE DELETE ON `stock_transfer_lines` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a stock transfer line cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `stock_transfer_lines_no_delete` BEFORE DELETE ON `stock_transfer_lines` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a stock transfer line cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -13609,18 +13244,17 @@ CREATE TABLE `stock_transfers` (
   CONSTRAINT `stock_transfers_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `stock_transfers_to_location_id_foreign` FOREIGN KEY (`to_location_id`) REFERENCES `inventory_locations` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_stock_transfer` CHECK (((`from_location_id` <> `to_location_id`) and (`status` in (_utf8mb4'sent',_utf8mb4'received',_utf8mb4'rejected',_utf8mb4'cancelled')) and (((`status` = _utf8mb4'sent') and (`decided_by` is null) and (`decided_at` is null)) or ((`status` <> _utf8mb4'sent') and (`decided_by` is not null) and (`decided_at` is not null)))))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `stock_transfers_decide_once` BEFORE UPDATE ON `stock_transfers` FOR EACH ROW BEGIN
+/*!50003 CREATE*/ /*!50003 TRIGGER `stock_transfers_decide_once` BEFORE UPDATE ON `stock_transfers` FOR EACH ROW BEGIN
     IF OLD.status <> 'sent' THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a decided stock transfer cannot be changed'; END IF;
     IF NEW.number <> OLD.number OR NEW.from_location_id <> OLD.from_location_id OR NEW.to_location_id <> OLD.to_location_id OR NEW.created_by <> OLD.created_by OR NEW.business_date <> OLD.business_date THEN
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'the facts of a stock transfer cannot be changed';
@@ -13636,11 +13270,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `stock_transfers_no_delete` BEFORE DELETE ON `stock_transfers` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a stock transfer cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `stock_transfers_no_delete` BEFORE DELETE ON `stock_transfers` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a stock transfer cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -13678,18 +13311,17 @@ CREATE TABLE `stored_files` (
   CONSTRAINT `stored_files_uploaded_by_foreign` FOREIGN KEY (`uploaded_by`) REFERENCES `users` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_stored_files_sensitivity` CHECK ((`sensitivity` in (_utf8mb4'standard',_utf8mb4'sensitive'))),
   CONSTRAINT `chk_stored_files_size` CHECK ((`size_bytes` > 0))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `stored_files_controlled_changes` BEFORE UPDATE ON `stored_files` FOR EACH ROW BEGIN
+/*!50003 CREATE*/ /*!50003 TRIGGER `stored_files_controlled_changes` BEFORE UPDATE ON `stored_files` FOR EACH ROW BEGIN
     DECLARE same_core BOOLEAN;
     SET same_core = (NEW.id <=> OLD.id AND NEW.property_id <=> OLD.property_id AND NEW.purpose <=> OLD.purpose
         AND NEW.owner_type <=> OLD.owner_type AND NEW.owner_id <=> OLD.owner_id AND NEW.sensitivity <=> OLD.sensitivity
@@ -13717,11 +13349,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `stored_files_no_delete` BEFORE DELETE ON `stored_files` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'stored_files is append-only' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `stored_files_no_delete` BEFORE DELETE ON `stored_files` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'stored_files is append-only' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -13745,18 +13376,17 @@ CREATE TABLE `supplier_invoice_documents` (
   CONSTRAINT `supplier_invoice_documents_created_by_foreign` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `supplier_invoice_documents_invoice_id_foreign` FOREIGN KEY (`invoice_id`) REFERENCES `supplier_invoices` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `supplier_invoice_documents_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `supplier_invoice_documents_no_update` BEFORE UPDATE ON `supplier_invoice_documents` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a supplier invoice document cannot be changed' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `supplier_invoice_documents_no_update` BEFORE UPDATE ON `supplier_invoice_documents` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a supplier invoice document cannot be changed' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -13767,11 +13397,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `supplier_invoice_documents_no_delete` BEFORE DELETE ON `supplier_invoice_documents` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a supplier invoice document cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `supplier_invoice_documents_no_delete` BEFORE DELETE ON `supplier_invoice_documents` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a supplier invoice document cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -13799,18 +13428,17 @@ CREATE TABLE `supplier_invoice_lines` (
   CONSTRAINT `supplier_invoice_lines_item_id_foreign` FOREIGN KEY (`item_id`) REFERENCES `inventory_items` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `supplier_invoice_lines_order_line_id_foreign` FOREIGN KEY (`order_line_id`) REFERENCES `purchase_order_lines` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_supplier_invoice_line` CHECK ((`qty_milli` > 0))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `supplier_invoice_lines_no_update` BEFORE UPDATE ON `supplier_invoice_lines` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a supplier invoice line cannot be changed' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `supplier_invoice_lines_no_update` BEFORE UPDATE ON `supplier_invoice_lines` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a supplier invoice line cannot be changed' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -13821,11 +13449,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `supplier_invoice_lines_no_delete` BEFORE DELETE ON `supplier_invoice_lines` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a supplier invoice line cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `supplier_invoice_lines_no_delete` BEFORE DELETE ON `supplier_invoice_lines` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a supplier invoice line cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -13874,18 +13501,17 @@ CREATE TABLE `supplier_invoices` (
   CONSTRAINT `supplier_invoices_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `supplier_invoices_supplier_id_foreign` FOREIGN KEY (`supplier_id`) REFERENCES `suppliers` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_supplier_invoice` CHECK (((`status` in (_utf8mb4'matched',_utf8mb4'variance',_utf8mb4'approved',_utf8mb4'rejected')) and (`total_minor` = (`subtotal_minor` + `tax_minor`))))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `supplier_invoices_guard` BEFORE UPDATE ON `supplier_invoices` FOR EACH ROW BEGIN
+/*!50003 CREATE*/ /*!50003 TRIGGER `supplier_invoices_guard` BEFORE UPDATE ON `supplier_invoices` FOR EACH ROW BEGIN
     IF OLD.status <> 'variance' THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a decided supplier invoice cannot be changed'; END IF;
     IF NEW.number <> OLD.number OR NEW.supplier_id <> OLD.supplier_id OR NEW.order_id <> OLD.order_id OR NEW.invoice_number <> OLD.invoice_number OR NEW.invoice_date <> OLD.invoice_date OR NEW.total_minor <> OLD.total_minor OR NEW.entered_by <> OLD.entered_by THEN
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'the facts of a supplier invoice cannot be changed';
@@ -13901,11 +13527,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `supplier_invoices_no_delete` BEFORE DELETE ON `supplier_invoices` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a supplier invoice cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `supplier_invoices_no_delete` BEFORE DELETE ON `supplier_invoices` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a supplier invoice cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -13935,18 +13560,17 @@ CREATE TABLE `supplier_ledger_entries` (
   CONSTRAINT `supplier_ledger_entries_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `supplier_ledger_entries_supplier_id_foreign` FOREIGN KEY (`supplier_id`) REFERENCES `suppliers` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_supplier_ledger` CHECK (((`kind` in (_utf8mb4'goods_received',_utf8mb4'goods_returned',_utf8mb4'invoice',_utf8mb4'invoice_accrual',_utf8mb4'credit_note')) and (`amount_minor` <> 0)))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `supplier_ledger_entries_no_update` BEFORE UPDATE ON `supplier_ledger_entries` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a supplier ledger entry cannot be changed' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `supplier_ledger_entries_no_update` BEFORE UPDATE ON `supplier_ledger_entries` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a supplier ledger entry cannot be changed' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -13957,11 +13581,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `supplier_ledger_entries_no_delete` BEFORE DELETE ON `supplier_ledger_entries` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a supplier ledger entry cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `supplier_ledger_entries_no_delete` BEFORE DELETE ON `supplier_ledger_entries` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a supplier ledger entry cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -13991,18 +13614,17 @@ CREATE TABLE `supplier_prices` (
   CONSTRAINT `supplier_prices_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `supplier_prices_supplier_id_foreign` FOREIGN KEY (`supplier_id`) REFERENCES `suppliers` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_supplier_price` CHECK ((`unit_price_minor` <= 10000000000))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `supplier_prices_no_update` BEFORE UPDATE ON `supplier_prices` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a supplier price cannot be changed' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `supplier_prices_no_update` BEFORE UPDATE ON `supplier_prices` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a supplier price cannot be changed' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -14013,11 +13635,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `supplier_prices_no_delete` BEFORE DELETE ON `supplier_prices` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a supplier price cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `supplier_prices_no_delete` BEFORE DELETE ON `supplier_prices` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a supplier price cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -14051,18 +13672,17 @@ CREATE TABLE `supplier_quotes` (
   CONSTRAINT `supplier_quotes_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `supplier_quotes_supplier_id_foreign` FOREIGN KEY (`supplier_id`) REFERENCES `suppliers` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_supplier_quote` CHECK (((`unit_price_minor` <= 10000000000) and (`valid_until` >= `quoted_on`) and (`lead_time_days` <= 365)))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `supplier_quotes_no_update` BEFORE UPDATE ON `supplier_quotes` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a supplier quote cannot be changed' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `supplier_quotes_no_update` BEFORE UPDATE ON `supplier_quotes` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a supplier quote cannot be changed' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -14073,11 +13693,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `supplier_quotes_no_delete` BEFORE DELETE ON `supplier_quotes` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a supplier quote cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `supplier_quotes_no_delete` BEFORE DELETE ON `supplier_quotes` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a supplier quote cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -14105,18 +13724,17 @@ CREATE TABLE `supplier_ratings` (
   CONSTRAINT `supplier_ratings_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `supplier_ratings_supplier_id_foreign` FOREIGN KEY (`supplier_id`) REFERENCES `suppliers` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_supplier_rating` CHECK (((`score` between 1 and 5) and (`aspect` in (_utf8mb4'overall',_utf8mb4'quality',_utf8mb4'delivery',_utf8mb4'price',_utf8mb4'service'))))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `supplier_ratings_no_update` BEFORE UPDATE ON `supplier_ratings` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a supplier rating cannot be changed' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `supplier_ratings_no_update` BEFORE UPDATE ON `supplier_ratings` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a supplier rating cannot be changed' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -14127,11 +13745,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `supplier_ratings_no_delete` BEFORE DELETE ON `supplier_ratings` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a supplier rating cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `supplier_ratings_no_delete` BEFORE DELETE ON `supplier_ratings` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a supplier rating cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -14160,7 +13777,7 @@ CREATE TABLE `suppliers` (
   UNIQUE KEY `suppliers_property_id_code_unique` (`property_id`,`code`),
   CONSTRAINT `suppliers_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_supplier` CHECK ((`payment_terms_days` <= 180))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `tax_filings`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -14179,18 +13796,17 @@ CREATE TABLE `tax_filings` (
   KEY `tax_filings_reported_by_foreign` (`reported_by`),
   CONSTRAINT `tax_filings_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `tax_filings_reported_by_foreign` FOREIGN KEY (`reported_by`) REFERENCES `users` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `tax_filings_no_update` BEFORE UPDATE ON `tax_filings` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a tax filing cannot be changed' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `tax_filings_no_update` BEFORE UPDATE ON `tax_filings` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a tax filing cannot be changed' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -14201,11 +13817,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `tax_filings_no_delete` BEFORE DELETE ON `tax_filings` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a tax filing cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `tax_filings_no_delete` BEFORE DELETE ON `tax_filings` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a tax filing cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -14235,7 +13850,7 @@ CREATE TABLE `user_role_assignments` (
   CONSTRAINT `user_role_assignments_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
   CONSTRAINT `chk_property_scope_id` CHECK (((`scope_type` <> _utf8mb4'property') or (`scope_id` = `property_id`))),
   CONSTRAINT `chk_user_role_scope_type` CHECK ((`scope_type` in (_utf8mb4'property',_utf8mb4'outlet',_utf8mb4'department')))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `users`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -14262,7 +13877,7 @@ CREATE TABLE `users` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `users_email_unique` (`email`),
   KEY `users_locked_until_index` (`locked_until`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `waitlist_entries`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -14291,18 +13906,17 @@ CREATE TABLE `waitlist_entries` (
   KEY `waitlist_entries_property_id_status_arrival_index` (`property_id`,`status`,`arrival`),
   CONSTRAINT `waitlist_entries_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_waitlist` CHECK (((`status` in (_utf8mb4'waiting',_utf8mb4'offered',_utf8mb4'booked',_utf8mb4'cancelled')) and (`departure` > `arrival`) and (`adults` >= 1) and ((`status` <> _utf8mb4'booked') or (`reservation_id` is not null)) and ((`status` <> _utf8mb4'cancelled') or (`cancel_reason` is not null))))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `waitlist_entries_no_delete` BEFORE DELETE ON `waitlist_entries` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a waiting list entry cannot be deleted' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `waitlist_entries_no_delete` BEFORE DELETE ON `waitlist_entries` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'a waiting list entry cannot be deleted' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -14321,18 +13935,17 @@ CREATE TABLE `webhook_receipts` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `webhook_receipts_event_unique` (`property_id`,`provider`,`event_id`),
   CONSTRAINT `webhook_receipts_property_id_foreign` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `webhook_receipts_no_update` BEFORE UPDATE ON `webhook_receipts` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'webhook_receipts is append-only' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `webhook_receipts_no_update` BEFORE UPDATE ON `webhook_receipts` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'webhook_receipts is append-only' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -14343,11 +13956,10 @@ DELIMITER ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`admin`@`%`*/ /*!50003 TRIGGER `webhook_receipts_no_delete` BEFORE DELETE ON `webhook_receipts` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'webhook_receipts is append-only' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `webhook_receipts_no_delete` BEFORE DELETE ON `webhook_receipts` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'webhook_receipts is append-only' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
