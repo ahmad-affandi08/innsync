@@ -6,6 +6,8 @@ namespace Tests\Feature\Finance;
 
 use App\Modules\Finance\Application\FinanceAccess;
 use App\Modules\Finance\Application\FrontOfficeRevenueConsumer;
+use App\Modules\Finance\Application\ServiceChargeCollected;
+use App\Modules\Finance\Application\TaxQueries;
 use App\Modules\IdentityAccess\Infrastructure\Persistence\Eloquent\UserRecord;
 use App\Modules\Property\Application\Settings\PropertySettingsService;
 use App\Modules\Reporting\Application\DashboardService;
@@ -227,6 +229,22 @@ final class CorrectionsExceptionsAuditHttpTest extends TestCase
         $csv = $this->get('/finance/export/corrections?from=2026-10-01&to=2026-10-03')->assertOk()->getContent();
         self::assertStringContainsString('"2026-10-03","COR-000001","2026-10-01","revenue","rooms","","-10000.00","-1000.00","-1100.00","-12100.00","0.00","Rooms charged twice for one guest"', $csv);
         self::assertStringContainsString('"payment","","cash","0.00","0.00","0.00","0.00","-5000.00"', $csv);
+    }
+
+    public function test_an_approved_correction_is_in_the_tax_recap_and_the_service_charge_pool_of_its_month(): void
+    {
+        $property = PropertyId::fromString(self::A);
+        $before = app(TaxQueries::class)->byOutlet($property, '2026-10-01', '2026-10-31');
+        $poolBefore = app(ServiceChargeCollected::class)->between($property, '2026-10-01', '2026-10-31');
+
+        $this->approve($this->ask()['id']);
+
+        $after = app(TaxQueries::class)->byOutlet($property, '2026-10-01', '2026-10-31');
+        $poolAfter = app(ServiceChargeCollected::class)->between($property, '2026-10-01', '2026-10-31');
+        self::assertSame(-110_000, array_sum(array_column($after, 'tax_minor')) - array_sum(array_column($before, 'tax_minor')));
+        self::assertSame(-1_000_000, array_sum(array_column($after, 'base_minor')) - array_sum(array_column($before, 'base_minor')));
+        self::assertSame(-100_000, $poolAfter['total_minor'] - $poolBefore['total_minor']);
+        self::assertSame($poolAfter['total_minor'], array_sum(array_column($poolAfter['by_outlet'], 'minor')));
     }
 
     public function test_a_rejected_or_pending_correction_changes_no_report(): void

@@ -261,6 +261,11 @@ final readonly class NightAuditService
             return 'skipped';
         }
 
+        // A complimentary night (price 0) has nothing to post: the ledger refuses a charge of nothing, and refusing it would stop the day from closing (BIZ-FF-02).
+        if ((int) $night['base_minor'] + (int) $night['service_charge_minor'] + (int) $night['tax_minor'] <= 0) {
+            return 'skipped';
+        }
+
         $room = $this->rooms->room($property, $stay->roomId);
         $reference = $stay->reservationId.':'.$today->toString();
 

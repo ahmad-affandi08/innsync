@@ -6,6 +6,7 @@ namespace Tests\Feature\FrontOffice;
 
 use App\Modules\FrontOffice\Application\Folios\FolioService;
 use App\Modules\FrontOffice\Application\NightAudit\NightAuditService;
+use App\Modules\FrontOffice\Application\Reservations\RateChangeService;
 use App\Modules\FrontOffice\Application\Reservations\ReservationService;
 use App\Modules\FrontOffice\Application\Stays\StayService;
 use App\Modules\Property\Application\Catalog\RoomCatalogService;
@@ -46,7 +47,7 @@ final class NightAuditHttpTest extends TestCase
         $this->app->instance(Clock::class, new AdjustableClock('2026-10-01 03:00:00'));
         $this->createProperty(self::A, 'A');
         $this->signIn(self::A, [
-            ReservationService::MANAGE_PERMISSION, FolioService::MANAGE_PERMISSION, StayService::MANAGE_PERMISSION, NightAuditService::RUN_PERMISSION, NightAuditService::WAIVE_PERMISSION,
+            ReservationService::MANAGE_PERMISSION, RateChangeService::CHANGE_PERMISSION, FolioService::MANAGE_PERMISSION, StayService::MANAGE_PERMISSION, NightAuditService::RUN_PERMISSION, NightAuditService::WAIVE_PERMISSION,
             RoomCatalogService::MANAGE_PERMISSION, RatePlanService::MANAGE_PERMISSION, ChargeSchemeService::MANAGE_PERMISSION, PropertySettingsService::MANAGE_PERMISSION,
         ]);
         $type = $this->postJson('/property/room-types', ['code' => 'DLX', 'name' => 'Deluxe', 'max_adults' => 2, 'max_children' => 1, 'reason' => 'x'])->json('type.id');
@@ -82,6 +83,18 @@ final class NightAuditHttpTest extends TestCase
         $this->get('/front-office/night-audit/2026-10-01')->assertInertia(fn (Assert $p) => $p->component('front-office/pages/night-audit-report')->where('audit.report.in_house', 1)->where('audit.next_business_date', '2026-10-02'));
         $this->get('/front-office/night-audit')->assertInertia(fn (Assert $p) => $p->where('preview.business_date', '2026-10-02')->has('preview.history', 1));
         $this->get('/front-office/night-audit/2026-10-09')->assertNotFound();
+    }
+
+    public function test_a_complimentary_night_posts_nothing_and_does_not_stop_the_day_from_closing(): void
+    {
+        $this->postJson("/front-office/reservations/{$this->reservationId}/check-in", [
+            'room_id' => $this->roomId, 'full_name' => 'Budi', 'nationality' => 'ID', 'id_type' => 'ktp', 'id_number' => '3174010101900001', 'address' => 'Jl. Merdeka 1', 'adults' => 2, 'children' => 0,
+        ], ['Idempotency-Key' => 'audit-http-ci-0002'])->assertCreated();
+        $this->postJson("/front-office/reservations/{$this->reservationId}/rate", ['price_minor' => 0, 'nett' => false, 'from' => '2026-10-01', 'reason' => 'Complimentary stay'])->assertOk();
+        $this->app->make(Clock::class)->advance('+14 hours');
+
+        $this->postJson('/front-office/night-audit', ['waivers' => []], ['Idempotency-Key' => 'audit-http-run-0010'])->assertCreated()->assertJsonPath('audit.report.room_nights_charged', 0)->assertJsonPath('audit.next_business_date', '2026-10-02');
+        self::assertSame(0, DB::table('folio_postings')->where('source', 'night_audit')->count());
     }
 
     public function test_someone_without_the_privilege_cannot_see_or_run_it(): void
