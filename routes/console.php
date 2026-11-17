@@ -51,21 +51,25 @@ Schedule::command('maintenance:duties')
 if (config('frontdesk.auto_reminders.enabled')) {
     Schedule::command('frontdesk:auto-reminders')
         ->dailyAt((string) config('frontdesk.auto_reminders.run_at'))
+        ->timezone((string) config('app.schedule_timezone'))
         ->withoutOverlapping(30);
 }
 
 if (config('inventory.restock.enabled')) {
     Schedule::command('purchasing:restock-drafts')
         ->dailyAt((string) config('inventory.restock.run_at'))
+        ->timezone((string) config('app.schedule_timezone'))
         ->withoutOverlapping(30);
 }
 
 Schedule::command('loyalty:expire')
     ->dailyAt('02:30')
+    ->timezone((string) config('app.schedule_timezone'))
     ->withoutOverlapping(30);
 
 Schedule::command('guestmessages:send')
     ->dailyAt((string) config('guest.messages_at'))
+    ->timezone((string) config('app.schedule_timezone'))
     ->withoutOverlapping(30);
 
 Schedule::command('health:heartbeat')->everyMinute();
@@ -76,14 +80,27 @@ Schedule::command('health:alerts')
 
 Schedule::command('backup:run')
     ->dailyAt((string) config('backup.run_at'))
+    ->timezone((string) config('app.schedule_timezone'))
     ->withoutOverlapping(180);
 
 if (config('backup.restore_test_database')) {
     Schedule::command('backup:verify')
         ->weeklyOn(0, (string) config('backup.verify_at'))
+        ->timezone((string) config('app.schedule_timezone'))
         ->withoutOverlapping(180);
 }
 
+Schedule::command('maintenance:prune-technical')
+    ->dailyAt('03:40')
+    ->timezone((string) config('app.schedule_timezone'))
+    ->timezone((string) config('app.schedule_timezone'))
+    ->withoutOverlapping(60);
+
+Schedule::command('queue:prune-failed', ['--hours' => 24 * 90])
+    ->dailyAt('03:50')
+    ->timezone((string) config('app.schedule_timezone'));
+
 Schedule::command('retention:purge')
     ->dailyAt((string) config('retention.purge_at'))
+    ->timezone((string) config('app.schedule_timezone'))
     ->withoutOverlapping(120);

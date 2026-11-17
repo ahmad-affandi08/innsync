@@ -40,6 +40,7 @@ use App\Shared\Infrastructure\Observability\AssignCorrelationId;
 use App\Shared\Infrastructure\Observability\Health\ErrorRate;
 use App\Shared\Infrastructure\Observability\Health\HealthAlertsCommand;
 use App\Shared\Infrastructure\Observability\Health\HealthCheckCommand;
+use App\Shared\Infrastructure\Maintenance\PruneTechnicalTablesCommand;
 use App\Shared\Infrastructure\Observability\Health\HeartbeatCommand;
 use App\Shared\Infrastructure\Outbox\DrainOutboxCommand;
 use App\Shared\Infrastructure\Outbox\RetryDeadLetterCommand;
@@ -67,6 +68,7 @@ return Application::configure(basePath: dirname(__DIR__))
         HealthCheckCommand::class,
         HealthAlertsCommand::class,
         HeartbeatCommand::class,
+        PruneTechnicalTablesCommand::class,
         BackupRunCommand::class,
         BackupVerifyCommand::class,
         BackupKeygenCommand::class,

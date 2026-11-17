@@ -70,6 +70,11 @@ return [
     'timezone' => 'UTC',
 
     /*
+    | The clock the daily and weekly scheduled tasks follow (backup, guest messages, reminders): the hotel's, not UTC. The application itself keeps UTC.
+    */
+    'schedule_timezone' => env('APP_SCHEDULE_TZ', 'Asia/Jakarta'),
+
+    /*
     |--------------------------------------------------------------------------
     | Application Locale Configuration
     |--------------------------------------------------------------------------
