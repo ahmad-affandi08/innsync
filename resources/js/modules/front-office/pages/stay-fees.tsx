@@ -33,8 +33,8 @@ export default function StayFeesPage({ catalogue }: Props) {
         if (form === null) return;
         const done = await action.run('/front-office/stay-fees', {
             body: {
-                kind: form.kind, effective_from: form.from, grace_minutes: Number(form.grace), beyond_bp: Math.round(Number(form.beyond) * 100), reason: form.reason.trim(),
-                bands: bands.filter((b) => b.minutes !== '').map((b) => ({ up_to_minutes: Number(b.minutes), percent_bp: Math.round(Number(b.percent) * 100) })),
+                kind: form.kind, effective_from: form.from, grace_minutes: Number(form.grace), beyond_bp: Math.round(Number(form.beyond.replace(',', '.')) * 100), reason: form.reason.trim(),
+                bands: bands.filter((b) => b.minutes !== '').map((b) => ({ up_to_minutes: Number(b.minutes), percent_bp: Math.round(Number(b.percent.replace(',', '.')) * 100) })),
             },
             reload: ['catalogue'],
         });

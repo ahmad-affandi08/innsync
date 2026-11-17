@@ -41,7 +41,7 @@ export default function ObligationsPage({ context, timeline: tl }: { context: { 
 
     async function saveSettings() {
         const done = await action.run('/reports/obligations/settings', {
-            body: { tax_report_day: Number(form.day), service_employee_share_bp: Math.round(Number(form.share) * 100), lock_version: tl.settings.lock_version, reason: form.reason.trim() },
+            body: { tax_report_day: Number(form.day), service_employee_share_bp: Math.round(Number(form.share.replace(',', '.')) * 100), lock_version: tl.settings.lock_version, reason: form.reason.trim() },
         });
         if (done !== null) { setForm({ ...form, reason: '' }); router.reload({ only: ['timeline'] }); }
     }
