@@ -32,7 +32,8 @@ final class PayrollCalculator
         $wage = 0;
 
         foreach ($earnings as $e) {
-            $amount = match (PayComponentService::basis($e['kind'])) {
+            // The approved share of the service charge is paid as it was locked: it is already weighed by the days the person worked (BIZ-OP-01).
+            $amount = $e['kind'] === 'service_charge' ? $e['amount_minor'] : match (PayComponentService::basis($e['kind'])) {
                 'attendance' => $att['scheduled'] === 0 ? 0 : intdiv($e['amount_minor'] * min($att['present'], $att['scheduled']), $att['scheduled']),
                 'per_day' => $e['amount_minor'] * $att['present'],
                 default => self::prorated($e['amount_minor'], $att['employed_days'] ?? null, $att['period_days'] ?? null),

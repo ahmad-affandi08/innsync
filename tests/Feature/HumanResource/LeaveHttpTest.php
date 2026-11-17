@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\HumanResource;
 
 use App\Modules\HumanResource\Application\HrAccess;
+use App\Modules\HumanResource\Application\LeaveStore;
 use App\Modules\IdentityAccess\Application\Approval\ApprovalPolicyAdmin;
 use App\Modules\IdentityAccess\Application\Approval\ApprovalService;
 use App\Modules\IdentityAccess\Infrastructure\Persistence\Eloquent\UserRecord;
@@ -213,6 +214,8 @@ final class LeaveHttpTest extends TestCase
         self::assertSame(2, $this->entries('ani'));
         self::assertSame(3, DB::table('hr_leave_days')->count());
         self::assertSame([1, 1, 0], DB::table('hr_leave_days')->orderBy('work_date')->pluck('counted')->map(fn ($v): int => (int) $v)->all());
+        // Payroll sees the two days of the request, not the three calendar days: the day off is neither paid leave nor a deduction (BIZ-OP-02).
+        self::assertSame([$this->emp['ani'] => 2], app(LeaveStore::class)->paidDaysBetween(PropertyId::fromString(self::A), '2026-10-12', '2026-10-14'));
         $this->actAs($this->manager);
         $this->postJson('/hr/roster/assign', ['employee_ids' => [$this->emp['ani']], 'dates' => ['2026-10-13'], 'pattern_id' => $this->pat['P']])->assertStatus(422);
         $this->get('/hr/roster?from=2026-10-12&to=2026-10-18')->assertOk()->assertInertia(fn ($p) => $p->where('overview.leave.'.$this->emp['ani'].'.2026-10-13', 'AL'));

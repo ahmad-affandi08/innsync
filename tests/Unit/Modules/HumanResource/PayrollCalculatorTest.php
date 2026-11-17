@@ -107,6 +107,15 @@ final class PayrollCalculatorTest extends TestCase
         self::assertSame([0, 288_000_000], [$line['tax'], $line['net']]);
     }
 
+    public function test_the_approved_service_charge_share_is_paid_in_full_to_someone_who_joined_inside_the_month(): void
+    {
+        $earnings = [...self::earnings(), ['code' => 'SERVICE', 'name' => 'Service charge', 'kind' => 'service_charge', 'taxable' => true, 'social_base' => false, 'amount_minor' => 300_000_000]];
+        $line = PayrollCalculator::line(PayrollSettingsService::BASELINE, $earnings, [...self::ATT, 'scheduled' => 13, 'present' => 13, 'employed_days' => 15, 'period_days' => 30], self::K1, []);
+
+        self::assertSame(300_000_000, self::amounts($line)['SERVICE']);
+        self::assertSame(250_000_000, self::amounts($line)['GAJI'], 'basic pay is still paid for the days employed');
+    }
+
     public function test_a_whole_month_earning_is_paid_for_the_days_of_the_month_the_person_was_employed(): void
     {
         // Joined on the 16th of a 30-day month: 15 of 30 days. The earning paid by days present follows the roster as before.
