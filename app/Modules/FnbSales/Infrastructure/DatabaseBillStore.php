@@ -61,7 +61,9 @@ final readonly class DatabaseBillStore implements BillStore
     public function openBills(PropertyId $property, string $outletId): array
     {
         // The totals are made per bill in their own query and joined, so the bills are not grouped: MariaDB (unlike MySQL 8) refuses to select every column of a grouped bill.
-        $lines = DB::table('fnb_bill_lines')->whereIn('status', ['pending', 'sent'])->groupBy('bill_id')
+        // Only the lines of the open bills of this outlet are summed, not every line ever sold (PERF-01).
+        $open = DB::table('fnb_bills')->select('id')->where('property_id', $property->toString())->where('outlet_id', $outletId)->where('status', 'open');
+        $lines = DB::table('fnb_bill_lines')->whereIn('bill_id', $open)->whereIn('status', ['pending', 'sent'])->groupBy('bill_id')
             ->selectRaw("bill_id, SUM(line_total_minor) as subtotal_minor, SUM(status = 'sent') as sent_lines, SUM(status = 'sent' AND prep_status = 'ready') as ready_lines, COUNT(id) as line_count");
         $rows = DB::table('fnb_bills as b')->leftJoinSub($lines, 'l', 'l.bill_id', '=', 'b.id')
             ->where('b.property_id', $property->toString())->where('b.outlet_id', $outletId)->where('b.status', 'open')->orderByDesc('b.opened_at')
