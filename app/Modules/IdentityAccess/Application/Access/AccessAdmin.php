@@ -276,6 +276,7 @@ final readonly class AccessAdmin
         $this->requireReason($reason);
         $assignment = $this->directory->assignment($property, strtolower($assignmentId)) ?? throw AccessRefused::because(AccessRefused::NOT_FOUND, 'Assignment not found.');
         $this->notSelf($actorId, $assignment['user_id']);
+        $this->notAbove($property, $actorId, $assignment['user_id']);
 
         if (! $assignment['is_active']) {
             return;
@@ -302,6 +303,7 @@ final readonly class AccessAdmin
         $this->requireReason($reason);
         $person = $this->person($property, $userId);
         $this->notSelf($actorId, $person['id']);
+        $this->notAbove($property, $actorId, $person['id']);
 
         if ($person['is_active'] === $active) {
             return;
@@ -337,6 +339,7 @@ final readonly class AccessAdmin
         $this->requireReason($reason);
         $person = $this->person($property, $userId);
         $this->notSelf($actorId, $person['id']);
+        $this->notAbove($property, $actorId, $person['id']);
 
         $this->transactions->run(function () use ($property, $actorId, $person, $password, $reason): void {
             $this->directory->resetPassword($person['id'], $password);
@@ -421,6 +424,31 @@ final readonly class AccessAdmin
     {
         if (trim($reason) === '' || mb_strlen($reason) > 500) {
             throw AccessRefused::because(AccessRefused::INVALID, 'A reason of at most 500 characters is required.', 'reason');
+        }
+    }
+
+    /**
+     * Whoever changes how another person signs in (a new password, switched off, a role taken away) must hold everything that person holds here. Otherwise a user manager could take over or lock
+     * out the Administrator (SEC-10).
+     */
+    private function notAbove(PropertyId $property, string $actorId, string $targetId): void
+    {
+        foreach ($this->directory->people($property) as $person) {
+            if ($person['id'] !== strtolower($targetId)) {
+                continue;
+            }
+
+            foreach ($person['assignments'] as $assignment) {
+                if (! $assignment['is_active']) {
+                    continue;
+                }
+
+                foreach ($this->directory->role($property, $assignment['role_id'])['permissions'] ?? [] as $code) {
+                    if (! $this->permissions->allowsInProperty($actorId, $code, $property)) {
+                        throw AccessRefused::because(AccessRefused::ESCALATION, 'This person holds access the actor does not hold, so their sign-in cannot be changed from here.');
+                    }
+                }
+            }
         }
     }
 

@@ -145,6 +145,20 @@ final class AccessAdministrationTest extends TestCase
         $this->postJson("/access/users/{$budi}/reset-password", ['reason' => 'Forgot'])->assertOk()->assertJsonStructure(['temporary_password']);
     }
 
+    public function test_someone_who_holds_more_than_the_actor_cannot_be_reset_deactivated_or_stripped_by_them(): void
+    {
+        $boss = UserRecord::factory()->create();
+        $this->grant($boss, self::A, ['hr.payroll.manage', 'front-office.reservation.view']);
+        $this->signIn(self::A, self::MANAGE);
+        $assignment = strtolower((string) DB::table('user_role_assignments')->where('user_id', $boss->getKey())->value('id'));
+
+        $this->postJson("/access/users/{$boss->getKey()}/reset-password", ['reason' => 'x'])->assertForbidden();
+        $this->postJson("/access/users/{$boss->getKey()}/active", ['active' => false, 'reason' => 'x'])->assertForbidden();
+        $this->postJson("/access/assignments/{$assignment}/revoke", ['reason' => 'x'])->assertForbidden();
+        self::assertSame(1, (int) DB::table('users')->where('id', $boss->getKey())->value('is_active'));
+        self::assertSame(1, (int) DB::table('user_role_assignments')->where('id', $assignment)->value('is_active'));
+    }
+
     public function test_an_outlet_scope_needs_an_outlet_of_this_property(): void
     {
         $role = $this->role(self::A, 'Front desk', ['front-office.reservation.view']);
