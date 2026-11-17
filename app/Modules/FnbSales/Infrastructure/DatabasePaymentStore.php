@@ -37,9 +37,9 @@ final readonly class DatabasePaymentStore implements PaymentStore
         return $this->row(DB::table('fnb_cashier_shifts')->where('property_id', $property->toString())->where('cashier_id', $cashierId)->where('status', 'open')->first());
     }
 
-    public function lockShift(PropertyId $property, string $id): void
+    public function lockShift(PropertyId $property, string $id): bool
     {
-        DB::table('fnb_cashier_shifts')->where('property_id', $property->toString())->where('id', $id)->lockForUpdate()->first();
+        return DB::table('fnb_cashier_shifts')->where('property_id', $property->toString())->where('id', $id)->lockForUpdate()->value('status') === 'open';
     }
 
     public function closeShift(PropertyId $property, string $id, int $lock, array $fields, DateTimeImmutable $at): bool

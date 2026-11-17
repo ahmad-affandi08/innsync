@@ -88,6 +88,11 @@ final readonly class RefundService
             }
 
             $shift = $this->payments->openShiftOf($property, $actor) ?? throw Refusal::stateConflict('Open your cashier shift before giving a bill back: the money goes out of it.');
+
+            if (! $this->payments->lockShift($property, $shift['id'])) {
+                throw Refusal::stateConflict('Open your cashier shift before giving a bill back: the money goes out of it.');
+            }
+
             $outlet = $this->setup->outlet($property, $bill['outlet_id']) ?? throw Refusal::notFound('Outlet not found.');
             $this->requireApproval($property, $actor, $bill, $approvalId);
             $now = $this->clock->nowUtc();

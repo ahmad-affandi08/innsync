@@ -81,6 +81,12 @@ final readonly class PaymentService
         $this->transactions->run(function () use ($property, $actor, $billId, $lock, $method, $amountMinor, $tenderedMinor, $reference, $roomId, $guestName): void {
             $bill = $this->guard->open($property, strtolower($billId), $lock);
             $shift = $this->store->openShiftOf($property, $actor) ?? throw Refusal::stateConflict('Open your cashier shift before taking a payment.', 'fnb_shift_required');
+
+            // The shift is held while the payment is written, so it cannot be closed between the check and the insert (CON-OP-07).
+            if (! $this->store->lockShift($property, $shift['id'])) {
+                throw Refusal::stateConflict('Open your cashier shift before taking a payment.', 'fnb_shift_required');
+            }
+
             [$outlet, $totals] = $this->ready($property, $bill);
             $payments = $this->store->paymentsOf($property, $bill['id']);
             $paid = $this->sum($payments, ['paid']);

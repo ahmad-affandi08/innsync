@@ -20,7 +20,8 @@ interface PaymentStore
     public function openShiftOf(PropertyId $property, string $cashierId): ?array;
 
     /** Locks a shift for the rest of the transaction. */
-    public function lockShift(PropertyId $property, string $id): void;
+    /** Holds the shift until the end of the transaction; false when it is not open any more (it was closed meanwhile). */
+    public function lockShift(PropertyId $property, string $id): bool;
 
     /** @param array<string, mixed> $fields @return bool false when the shift changed meanwhile */
     public function closeShift(PropertyId $property, string $id, int $lock, array $fields, DateTimeImmutable $at): bool;

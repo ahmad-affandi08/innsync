@@ -75,6 +75,13 @@ final readonly class CashierService implements ShiftAttribution
 
         if ($open !== null) {
             $this->shifts->attribute($property, $open['id'], $postingId, $this->clock->nowUtc());
+
+            return;
+        }
+
+        // The check before the transaction may have seen a shift that was closed since: with a shift required the money does not go in without one (CON-FF-08).
+        if ($this->shifts->settings($property)['require_open_shift']) {
+            throw CashierRefused::shiftRequired();
         }
     }
 

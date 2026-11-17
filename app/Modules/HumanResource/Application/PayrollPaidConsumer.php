@@ -36,8 +36,11 @@ final readonly class PayrollPaidConsumer implements OutboxConsumer
 
         $at = $message->occurredAt;
 
-        if ($this->store->updateRun($property, $run['id'], (int) $run['lock_version'], ['status' => 'paid', 'paid_at' => $at->format('Y-m-d H:i:s.u'), 'paid_reference' => mb_substr((string) $d['reference'], 0, 80)], $at)) {
-            $this->audit->record(new AuditEntry($property->toString(), null, 'payroll_run.paid', 'payroll_run', $run['id'], ['status' => 'approved'], ['status' => 'paid', 'period' => $run['period'], 'reference' => (string) $d['reference']]));
+        // The run changed since it was read: the event is tried again, not dropped, or Finance has paid and HR never learns it (CON-OP-09).
+        if (! $this->store->updateRun($property, $run['id'], (int) $run['lock_version'], ['status' => 'paid', 'paid_at' => $at->format('Y-m-d H:i:s.u'), 'paid_reference' => mb_substr((string) $d['reference'], 0, 80)], $at)) {
+            throw new \RuntimeException('The payroll run changed while it was marked paid; the event is tried again.');
         }
+
+        $this->audit->record(new AuditEntry($property->toString(), null, 'payroll_run.paid', 'payroll_run', $run['id'], ['status' => 'approved'], ['status' => 'paid', 'period' => $run['period'], 'reference' => (string) $d['reference']]));
     }
 }
