@@ -76,7 +76,11 @@ interface PurchasingStore
     /** @param list<array<string, mixed>> $lines */
     public function replaceRequestLines(string $requestId, array $lines): void;
 
-    public function linkRequestLine(string $lineId, ?string $orderId, ?string $orderLineId): void;
+    /** Puts a request line on an order. False when another order holds it: the line is read under a lock, so two orders cannot both take it (CON-OP-03). */
+    public function claimRequestLine(string $lineId, string $orderId, string $orderLineId): bool;
+
+    /** Frees a request line, only when this order is the one that holds it. */
+    public function freeRequestLine(string $lineId, string $orderId): void;
 
     /**
      * @param  array<string, mixed>  $row

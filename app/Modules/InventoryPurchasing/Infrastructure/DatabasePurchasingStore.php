@@ -150,9 +150,22 @@ final readonly class DatabasePurchasingStore implements PurchasingStore
         }
     }
 
-    public function linkRequestLine(string $lineId, ?string $orderId, ?string $orderLineId): void
+    public function claimRequestLine(string $lineId, string $orderId, string $orderLineId): bool
     {
+        $held = DB::table('purchase_request_lines')->where('id', $lineId)->lockForUpdate()->first(['po_id']);
+
+        if ($held === null || ($held->po_id !== null && $held->po_id !== $orderId)) {
+            return false;
+        }
+
         DB::table('purchase_request_lines')->where('id', $lineId)->update(['po_id' => $orderId, 'po_line_id' => $orderLineId]);
+
+        return true;
+    }
+
+    public function freeRequestLine(string $lineId, string $orderId): void
+    {
+        DB::table('purchase_request_lines')->where('id', $lineId)->where('po_id', $orderId)->update(['po_id' => null, 'po_line_id' => null]);
     }
 
     public function addOrder(PropertyId $property, array $row, array $lines, DateTimeImmutable $at): bool

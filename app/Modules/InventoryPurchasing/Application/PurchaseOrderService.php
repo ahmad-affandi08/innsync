@@ -180,7 +180,7 @@ final readonly class PurchaseOrderService
 
             foreach ($order['lines'] as $l) {
                 if ($l['request_line_id'] !== null) {
-                    $this->store->linkRequestLine($l['request_line_id'], null, null);
+                    $this->store->freeRequestLine($l['request_line_id'], $order['id']);
                 }
             }
 
@@ -443,7 +443,7 @@ final readonly class PurchaseOrderService
             if ($to === 'cancelled') {
                 foreach ($order['lines'] as $l) {
                     if ($l['request_line_id'] !== null) {
-                        $this->store->linkRequestLine($l['request_line_id'], null, null);
+                        $this->store->freeRequestLine($l['request_line_id'], $order['id']);
                     }
                 }
 
@@ -811,7 +811,10 @@ final readonly class PurchaseOrderService
                 continue;
             }
 
-            $this->store->linkRequestLine($l['request_line_id'], $orderId, $l['id']);
+            if (! $this->store->claimRequestLine($l['request_line_id'], $orderId, $l['id'])) {
+                throw Refusal::stateConflict('A request line is already on another order.');
+            }
+
             $requests[$l['request_line_id']] = true;
         }
 

@@ -10,6 +10,7 @@ use App\Modules\IdentityAccess\Infrastructure\Persistence\Eloquent\UserRecord;
 use App\Modules\InventoryPurchasing\Application\InventoryCatalogService;
 use App\Modules\InventoryPurchasing\Application\InventoryTodayTasks;
 use App\Modules\InventoryPurchasing\Application\PurchasingAccess;
+use App\Modules\InventoryPurchasing\Application\PurchasingStore;
 use App\Modules\InventoryPurchasing\Application\SupplierService;
 use App\Modules\Property\Application\Settings\PropertySettingsService;
 use App\Shared\Application\Tenancy\PropertyContext;
@@ -267,6 +268,13 @@ final class PurchasingHttpTest extends TestCase
         $this->assertSame(2, DB::table('purchase_request_lines')->whereNotNull('po_id')->count());
         $this->get("/inventory/orders/{$o['id']}")->assertInertia(fn (Assert $p) => $p->component('inventory-purchasing/pages/order')->where('order.lines.0.department', 'fnb')->where('order.lines.0.unit_price_minor', 2_400_000));
         $this->po([['request_line_id' => $lines[0]]], [], 409); // already on an order
+
+        // The hold on a line is taken under a lock and only by one order: a second order cannot take it, and cannot free it either.
+        $store = app(PurchasingStore::class);
+        self::assertFalse($store->claimRequestLine($lines[0], '01arz3ndektsv4rrffq69g5faz', '01arz3ndektsv4rrffq69g5fay'));
+        $store->freeRequestLine($lines[0], '01arz3ndektsv4rrffq69g5faz');
+        self::assertSame(2, DB::table('purchase_request_lines')->whereNotNull('po_id')->count());
+        self::assertTrue($store->claimRequestLine($lines[0], $o['id'], (string) DB::table('purchase_request_lines')->where('id', $lines[0])->value('po_line_id')));
     }
 
     public function test_an_order_line_needs_a_price_and_a_known_unit_and_an_item_once(): void

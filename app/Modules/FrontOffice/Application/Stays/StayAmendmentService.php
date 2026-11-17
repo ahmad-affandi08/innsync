@@ -223,7 +223,7 @@ final readonly class StayAmendmentService
             }
 
             $departure = $this->newDeparture($property, $stay, $newDeparture);
-            $plan = $this->plan($property, $stay, $current->roomTypeId, $reservation->ratePlanId, $departure, $reservation->roomTypeId);
+            $plan = $this->plan($property, $stay, $current->roomTypeId, $reservation->ratePlanId, $departure, $reservation->roomTypeId, true);
 
             if ($plan['blockers'] !== []) {
                 throw BookingRefused::notBookable($plan['blockers']);
@@ -273,7 +273,7 @@ final readonly class StayAmendmentService
     /**
      * @return array{stay: StayDates, quote: StayQuote, rows: list<array<string, mixed>>, blockers: list<string>, sold_out: list<string>}
      */
-    private function plan(PropertyId $property, Stay $stay, string $typeForAvailability, string $ratePlanId, BusinessDate $newDeparture, ?string $priceType = null): array
+    private function plan(PropertyId $property, Stay $stay, string $typeForAvailability, string $ratePlanId, BusinessDate $newDeparture, ?string $priceType = null, bool $locking = false): array
     {
         $added = new StayDates($stay->expectedDeparture, $newDeparture);
         $quote = $this->quoter->quote($property, $ratePlanId, $priceType ?? $typeForAvailability, $added);
@@ -283,8 +283,8 @@ final readonly class StayAmendmentService
         )));
         $soldOut = [];
 
-        // Advisory when only quoting: the decision is taken again under the room type's lock when the stay is extended.
-        foreach ($this->availability->forStay($property, $typeForAvailability, $added, false) as $night => $availability) {
+        // Advisory when only quoting; when the stay is extended the room type is locked and the sold nights are read as they are now, not as at the start of the transaction (CON-FF-02).
+        foreach ($this->availability->forStay($property, $typeForAvailability, $added, $locking) as $night => $availability) {
             if (! $availability->canSellOne() || $availability->needsOverbooking()) {
                 $soldOut[] = $night;
             }
