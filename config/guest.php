@@ -13,6 +13,8 @@ return [
     // Wrong room number or surname: this many tries, then the session cannot try again for this many minutes.
     'verify_max_attempts' => (int) env('GUEST_VERIFY_MAX_ATTEMPTS', 5),
     'verify_lock_minutes' => (int) env('GUEST_VERIFY_LOCK_MINUTES', 15),
+    // Wrong tries for one room, counted over all sessions and cookies in the same window, so a new cookie does not reset the count.
+    'verify_room_max_attempts' => (int) env('GUEST_VERIFY_ROOM_MAX_ATTEMPTS', 12),
 
     // One order may carry this many lines and portions of a line, and one session may place this many orders in an hour.
     'order_max_lines' => (int) env('GUEST_ORDER_MAX_LINES', 30),

@@ -350,6 +350,18 @@ final class QrMenuHttpTest extends TestCase
         $this->get('/guest/orders')->assertStatus(403);
     }
 
+    public function test_wrong_tries_for_one_room_are_counted_over_every_session_so_a_new_cookie_does_not_reset_them(): void
+    {
+        config(['guest.verify_room_max_attempts' => 4]);
+
+        foreach ([1, 2, 3, 4] as $_) {
+            $this->guestPost($this->scan('Room 101'), '/g/verify', ['room_number' => '101', 'surname' => 'Nobody'])->assertStatus(422);
+        }
+
+        // A fresh cookie, the right answer: the room is locked for now.
+        $this->guestPost($this->scan('Room 101'), '/g/verify', ['room_number' => '101', 'surname' => 'Santoso'])->assertStatus(409);
+    }
+
     public function test_the_stay_proof_locks_after_a_few_tries_and_a_session_ends_by_itself(): void
     {
         $cookie = $this->scan('Room 101');
