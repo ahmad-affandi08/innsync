@@ -148,6 +148,11 @@ final readonly class ExportJobService
             throw Refusal::stateConflict('This export is not ready.');
         }
 
+        // The right to export is looked at again now: someone whose right was withdrawn since the file was made does not get it (AUT-08).
+        if (! $this->reports->mayExport($property, strtolower($actorId), (string) $job['report'])) {
+            throw Refusal::notFound('Export not found.');
+        }
+
         $policy = new class implements FileAccessPolicy
         {
             public function allows(string $actorId, StoredFile $file): bool

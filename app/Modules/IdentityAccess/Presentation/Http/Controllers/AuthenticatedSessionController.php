@@ -59,6 +59,8 @@ final class AuthenticatedSessionController
         Auth::guard('web')->logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
+        // The pages kept in the browser's history are wiped, so the next person on a shared PC cannot read them with Back (AUT-07).
+        Inertia::clearHistory();
 
         $securityLog->record(new SecurityEvent(
             IdentityAccessSecurityEvent::Logout->value,
