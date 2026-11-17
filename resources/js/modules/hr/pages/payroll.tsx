@@ -59,6 +59,8 @@ export default function PayrollPage({ overview, banks }: { overview: PayrollOver
     const [bank, setBank] = useState<{ employeeId: string; name: string; bankName: string; holder: string; number: string; lock: number | null } | null>(null);
     const [kind, setKind] = useState<typeof BLANK_KIND | null>(null);
     const [settings, setSettings] = useState<Form | null>(null);
+    // The fields of the parameter dialog whose text is not a number: the form is not sent with a guess (REACT-02).
+    const [badKeys, setBadKeys] = useState<string[]>([]);
     const failure = action.error !== null ? <ErrorState {...errorCopy} error={action.error} onRefresh={() => window.location.reload()} /> : null;
     const label = (prefix: string, key: string) => t(`${prefix}.${key}` as MessageKey);
     const money = (minor: number) => format.money(minor, overview.currency);
@@ -106,26 +108,39 @@ export default function PayrollPage({ overview, banks }: { overview: PayrollOver
     async function saveSettings() {
         if (settings === null) return;
         const f = settings;
-        const money = (key: string) => parseMajorToMinor(f[key] ?? '', overview.currency) ?? 0;
-        const result = await action.run('/hr/payroll/settings', {
-            body: {
-                health_employee_bp: toBp(f.health_employee_bp), health_employer_bp: toBp(f.health_employer_bp), health_cap_minor: money('health_cap_minor'),
-                jht_employee_bp: toBp(f.jht_employee_bp), jht_employer_bp: toBp(f.jht_employer_bp), jp_employee_bp: toBp(f.jp_employee_bp), jp_employer_bp: toBp(f.jp_employer_bp), jp_cap_minor: money('jp_cap_minor'),
-                jkk_employer_bp: toBp(f.jkk_employer_bp), jkm_employer_bp: toBp(f.jkm_employer_bp), job_cost_bp: toBp(f.job_cost_bp), job_cost_cap_year_minor: money('job_cost_cap_year_minor'), no_npwp_surcharge_bp: toBp(f.no_npwp_surcharge_bp),
+        const bad: string[] = [];
+        const money = (key: string) => {
+            const value = parseMajorToMinor(f[key] ?? '', overview.currency);
+            if (value === null) bad.push(key);
+
+            return value ?? 0;
+        };
+        const bp = (key: string) => {
+            const value = toBp(f[key] ?? '');
+            if ((f[key] ?? '').trim() === '' || !Number.isFinite(value)) bad.push(key);
+
+            return Number.isFinite(value) ? value : 0;
+        };
+        const body = {
+                health_employee_bp: bp('health_employee_bp'), health_employer_bp: bp('health_employer_bp'), health_cap_minor: money('health_cap_minor'),
+                jht_employee_bp: bp('jht_employee_bp'), jht_employer_bp: bp('jht_employer_bp'), jp_employee_bp: bp('jp_employee_bp'), jp_employer_bp: bp('jp_employer_bp'), jp_cap_minor: money('jp_cap_minor'),
+                jkk_employer_bp: bp('jkk_employer_bp'), jkm_employer_bp: bp('jkm_employer_bp'), job_cost_bp: bp('job_cost_bp'), job_cost_cap_year_minor: money('job_cost_cap_year_minor'), no_npwp_surcharge_bp: bp('no_npwp_surcharge_bp'),
                 ptkp: Object.fromEntries(overview.statuses.map((st) => [st, money(`ptkp_${st}`)])),
-                brackets: Array.from({ length: Number(f.count) }, (_, i) => ({ upto_minor: i === Number(f.count) - 1 || f[`upto_${i}`] === '' ? null : money(`upto_${i}`), rate_bp: toBp(f[`rate_${i}`]) })),
-                overtime_divisor: Number(f.overtime_divisor), overtime_first_x100: toBp(f.overtime_first), overtime_next_x100: toBp(f.overtime_next), absence_divisor: Number(f.absence_divisor), late_minute_deduction_minor: money('late_minute_deduction_minor'),
+                brackets: Array.from({ length: Number(f.count) }, (_, i) => ({ upto_minor: i === Number(f.count) - 1 || f[`upto_${i}`] === '' ? null : money(`upto_${i}`), rate_bp: bp(`rate_${i}`) })),
+                overtime_divisor: Number(f.overtime_divisor), overtime_first_x100: bp('overtime_first'), overtime_next_x100: bp('overtime_next'), absence_divisor: Number(f.absence_divisor), late_minute_deduction_minor: money('late_minute_deduction_minor'),
                 lock_version: f.lock === '' ? null : Number(f.lock),
-            },
-            reload,
-        });
+        };
+
+        setBadKeys(bad);
+        if (bad.length > 0) return;
+        const result = await action.run('/hr/payroll/settings', { body, reload });
 
         if (result !== null) setSettings(null);
     }
 
     const setField = (key: string, value: string) => settings !== null && setSettings({ ...settings, [key]: value });
     const field = (key: string, text: string, hint?: string, step = '0.01') => (
-        <FormField error={action.fieldError(key)} field={key} hint={hint} label={text}>{key.endsWith('_minor') ? <MoneyInput onChange={(e) => setField(key, e.target.value)} value={settings?.[key] ?? ''} /> : <Input inputMode="decimal" onChange={(e) => setField(key, e.target.value)} step={step} value={settings?.[key] ?? ''} />}</FormField>
+        <FormField error={action.fieldError(key) ?? (badKeys.includes(key) ? t('fo.folio.invalidAmount') : undefined)} field={key} hint={hint} label={text}>{key.endsWith('_minor') || key.startsWith('ptkp_') || key.startsWith('upto_') ? <MoneyInput onChange={(e) => setField(key, e.target.value)} value={settings?.[key] ?? ''} /> : <Input inputMode="decimal" onChange={(e) => setField(key, e.target.value)} step={step} value={settings?.[key] ?? ''} />}</FormField>
     );
 
     const peopleColumns: DataGridColumn<PayPerson>[] = [

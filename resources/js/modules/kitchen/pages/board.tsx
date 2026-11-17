@@ -49,15 +49,21 @@ export default function KitchenBoardPage(props: BoardPageProps) {
     const [now, setNow] = useState(() => Date.now() + skew.current);
     const station = tab === 'sold-out' ? board.station : (tab as Board['station']);
 
+    // Only the answer to the newest request is shown: a slow answer for the station the person has left must not replace the one they are looking at (REACT-03).
+    const newest = useRef(0);
+
     const load = useCallback(async (which: string) => {
+        const mine = ++newest.current;
+
         try {
             const done = await apiRequest<{ board: Board }>('/kitchen/tickets', { method: 'GET', query: { station: which } });
 
+            if (mine !== newest.current) return;
             skew.current = new Date(done.board.loaded_at).getTime() - Date.now();
             setBoard(done.board);
             setOffline(false);
         } catch {
-            setOffline(true);
+            if (mine === newest.current) setOffline(true);
         }
     }, []);
 
@@ -81,7 +87,12 @@ export default function KitchenBoardPage(props: BoardPageProps) {
 
     function pickStation(value: string) {
         setTab(value);
-        if (value !== 'sold-out' && value !== board.station) void load(value);
+
+        if (value !== 'sold-out' && value !== board.station) {
+            // The tickets of the other station are not shown under this tab while its own are on the way.
+            setBoard((b) => ({ ...b, tickets: [] }));
+            void load(value);
+        }
     }
 
     async function move(tk: Ticket, step: TicketAction) {
