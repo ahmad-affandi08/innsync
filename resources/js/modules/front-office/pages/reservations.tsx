@@ -1,5 +1,5 @@
 import { Link, router } from '@inertiajs/react';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -84,10 +84,15 @@ export default function ReservationsPage({ filters, lookups, reservations }: { f
         setOversellOpen(false);
     }
 
+    // Only the answer to the newest question is shown: a slow answer for dates the person has left must not put its prices under the new dates (REACT-07).
+    const quoteSeq = useRef(0);
+
     async function check() {
         if (form === null) return;
+        const mine = ++quoteSeq.current;
         const done = await action.run<{ quote: Quote }>('/front-office/reservations/quote', { body: { rate_plan_id: form.ratePlanId, room_type_id: form.roomTypeId, arrival: form.arrival, departure: form.departure } });
-        setQuote(done?.quote ?? null);
+
+        if (mine === quoteSeq.current) setQuote(done?.quote ?? null);
     }
 
     async function create(acknowledge: boolean) {
@@ -113,6 +118,8 @@ export default function ReservationsPage({ filters, lookups, reservations }: { f
     // The price of every night is worked out as soon as the dates, room type and rate plan are known (FR-FO-012).
     const quoteKey = form === null ? '' : [form.arrival, form.departure, form.roomTypeId, form.ratePlanId].join('|');
     useEffect(() => {
+        quoteSeq.current++;
+        setQuote(null);
         if (form === null || form.roomTypeId === '' || form.ratePlanId === '' || !isIsoDate(form.arrival) || !isIsoDate(form.departure) || nightsBetween(form.arrival, form.departure) < 1) return;
         const timer = window.setTimeout(() => { void check(); }, 400);
         return () => window.clearTimeout(timer);
