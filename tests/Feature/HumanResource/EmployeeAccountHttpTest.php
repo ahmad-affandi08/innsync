@@ -140,6 +140,32 @@ final class EmployeeAccountHttpTest extends TestCase
         $this->postJson("/hr/employees/{$taken['id']}/account", [])->assertForbidden();
     }
 
+    public function test_moving_the_account_of_an_employee_to_another_login_needs_the_right_to_manage_users_and_is_audited(): void
+    {
+        $first = UserRecord::factory()->create();
+        $second = UserRecord::factory()->create();
+        $this->grant($first, self::A, ['front-office.reservation.view']);
+        $this->grant($second, self::A, ['front-office.reservation.view']);
+        $this->manager();
+        $rina = $this->employee(['user_id' => (string) $first->getKey()]);
+        $body = fn (array $o = []) => ['full_name' => 'Rina Putri', 'department' => 'front_office', 'position' => 'Receptionist', 'joined_on' => '2024-01-15', 'contract_type' => 'permanent', 'email' => 'rina@example.test', 'user_id' => (string) $first->getKey(), 'lock_version' => (int) DB::table('hr_employees')->where('id', $rina['id'])->value('lock_version'), ...$o];
+
+        // HR alone may edit the record, but not point it at another login.
+        $this->post('/logout');
+        $this->flushSession();
+        $this->signIn(self::A, [HrAccess::MANAGE]);
+        $this->postJson("/hr/employees/{$rina['id']}", $body(['user_id' => (string) $second->getKey()]))->assertForbidden();
+        $this->postJson("/hr/employees/{$rina['id']}", $body(['user_id' => null]))->assertForbidden();
+        $this->postJson("/hr/employees/{$rina['id']}", $body(['department' => 'housekeeping']))->assertOk();
+
+        $this->post('/logout');
+        $this->flushSession();
+        $this->signIn(self::A, [HrAccess::MANAGE, 'identity.user.manage']);
+        $this->postJson("/hr/employees/{$rina['id']}", $body(['user_id' => (string) $second->getKey()]))->assertOk();
+        self::assertSame(strtolower((string) $second->getKey()), strtolower((string) DB::table('hr_employees')->where('id', $rina['id'])->value('user_id')));
+        self::assertStringContainsString(strtolower((string) $second->getKey()), (string) DB::table('audit_entries')->where('action', 'employee.changed')->pluck('after_state')->implode(''));
+    }
+
     public function test_every_account_that_is_ready_is_opened_at_once_and_a_failure_does_not_stop_the_rest(): void
     {
         $desk = $this->role('Front desk', ['front-office.reservation.view']);

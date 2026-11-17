@@ -149,6 +149,11 @@ final readonly class EmployeeService
                 throw Refusal::stateConflict('This person has left. Their record is no longer changed.');
             }
 
+            // Moving or removing the sign-in an employee has hands that person's payslips and letters to whoever holds the new account, so it takes the right to manage users too (AUT-01).
+            if ($before['user_id'] !== null && $clean['user_id'] !== $before['user_id']) {
+                $this->access->require($property, $actor, 'identity.user.manage', 'Changing the account of an employee needs the right to manage users.');
+            }
+
             if (! $this->store->updateEmployee($property, $before['id'], $lock, $clean, $this->clock->nowUtc())) {
                 throw Refusal::stateConflict('This record changed after you opened it. Reload it.');
             }
@@ -545,7 +550,7 @@ final readonly class EmployeeService
      */
     private function audited(array $e): array
     {
-        return ['department' => $e['department'], 'position' => $e['position'], 'joined_on' => substr((string) $e['joined_on'], 0, 10), 'contract_type' => $e['contract_type'], 'contract_end_on' => $e['contract_end_on'] === null ? null : substr((string) $e['contract_end_on'], 0, 10), 'supervisor_id' => $e['supervisor_id'], 'has_account' => $e['user_id'] !== null];
+        return ['department' => $e['department'], 'position' => $e['position'], 'joined_on' => substr((string) $e['joined_on'], 0, 10), 'contract_type' => $e['contract_type'], 'contract_end_on' => $e['contract_end_on'] === null ? null : substr((string) $e['contract_end_on'], 0, 10), 'supervisor_id' => $e['supervisor_id'], 'has_account' => $e['user_id'] !== null, 'user_id' => $e['user_id']];
     }
 
     /** @return array<string, mixed> */

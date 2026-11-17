@@ -64,14 +64,16 @@ final class PasswordResetTest extends TestCase
             }
         });
 
-        $known = $this->post('/forgot-password', ['email' => 'rina@example.test']);
+        config(['app.url' => 'https://hotel.example']);
+        $known = $this->withServerVariables(['HTTP_HOST' => 'evil.example'])->post('/forgot-password', ['email' => 'rina@example.test']);
         $unknown = $this->post('/forgot-password', ['email' => 'nobody@example.test']);
 
         $this->assertSame($known->getStatusCode(), $unknown->getStatusCode());
         $this->assertSame(session('status'), __('identity.reset_sent'));
         $this->assertCount(1, $sent);
         $this->assertSame('rina@example.test', $sent[0][0]);
-        $this->assertStringContainsString('/reset-password/', $sent[0][1]);
+        $this->assertStringContainsString(rtrim((string) config('app.url'), '/').'/reset-password/', $sent[0][1]);
+        $this->assertStringNotContainsString('evil.example', $sent[0][1]);
     }
 
     public function test_an_inactive_account_is_sent_nothing(): void

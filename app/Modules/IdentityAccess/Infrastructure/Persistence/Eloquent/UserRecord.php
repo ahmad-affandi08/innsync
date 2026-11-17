@@ -35,7 +35,8 @@ final class UserRecord extends Authenticatable
     /** The reset link by the installation's mailer, in the language of the request. The broker hands the token; the link is the only secret in it. */
     public function sendPasswordResetNotification(#[\SensitiveParameter] $token): void
     {
-        $url = url(route('password.reset', ['token' => $token, 'email' => $this->email], false));
+        // From APP_URL, never from the Host header of the request that asked for it, so a forged Host cannot send the token to another site (SEC-01).
+        $url = rtrim((string) config('app.url'), '/').route('password.reset', ['token' => $token, 'email' => $this->email], false);
         app(EmailNotifier::class)->notify(
             (string) $this->email,
             __('identity.reset_subject'),
