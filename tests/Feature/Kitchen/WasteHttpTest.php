@@ -115,6 +115,28 @@ final class WasteHttpTest extends TestCase
         return ['kind' => 'ingredient', 'item_id' => $this->inv['rice'], 'quantity_milli' => 2_500, 'unit' => 'KG', 'reason' => 'spoiled', ...$override];
     }
 
+    public function test_the_same_request_sent_again_with_the_same_key_gets_the_first_answer_and_writes_off_once(): void
+    {
+        $this->location();
+        $headers = ['Idempotency-Key' => 'kitchen-waste-retry-0001'];
+
+        $first = $this->postJson('/kitchen/waste', $this->body(), $headers)->assertCreated();
+        $again = $this->postJson('/kitchen/waste', $this->body(), $headers)->assertCreated()->assertHeader('Idempotent-Replayed', 'true');
+
+        self::assertSame($first->json('entries.0.number'), $again->json('entries.0.number'));
+        self::assertSame(1, DB::table('kitchen_waste')->count());
+        self::assertSame(1, DB::table('audit_entries')->where('action', 'kitchen_waste.recorded')->count());
+
+        // The same key with another body is not the same request.
+        $this->postJson('/kitchen/waste', $this->body(['quantity_milli' => 1_000]), $headers)->assertStatus(409);
+
+        // A refused request keeps nothing, so the key is free for the corrected one.
+        $refused = ['Idempotency-Key' => 'kitchen-waste-retry-0002'];
+        $this->postJson('/kitchen/waste', $this->body(['reason' => 'mood']), $refused)->assertStatus(422);
+        $this->postJson('/kitchen/waste', $this->body(['reason' => 'spoiled']), $refused)->assertCreated();
+        self::assertSame(2, DB::table('kitchen_waste')->count());
+    }
+
     public function test_an_ingredient_thrown_away_is_logged_and_written_off_the_stock_once(): void
     {
         $this->location();

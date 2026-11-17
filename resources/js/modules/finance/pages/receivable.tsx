@@ -119,7 +119,7 @@ export default function ReceivablePage({ receivable }: { receivable: Receivable 
 
         setBadAmount(minor === null);
         if (minor === null) return;
-        const done = await adjust.run(`/finance/receivables/${receivable.id}/adjustments`, { body: { kind: adjustForm.kind, amount_minor: minor, reason: adjustForm.reason.trim() }, reload });
+        const done = await adjust.run(`/finance/receivables/${receivable.id}/adjustments`, { body: { kind: adjustForm.kind, amount_minor: minor, reason: adjustForm.reason.trim() }, idempotencyKey: newIdempotencyKey(), reload });
         if (done !== null) setAdjustForm(null);
     }
 

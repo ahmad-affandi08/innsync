@@ -1,7 +1,8 @@
 import { router } from '@inertiajs/react'
-import { useCallback, useState } from 'react'
+import { useCallback, useRef, useState } from 'react'
 
 import { apiRequest } from '@/shared/api/http'
+import { intentKey, type PendingIntent } from '@/shared/api/intent-key'
 import { ApiError, toFailure, type Failure } from '@/shared/lib/api-error'
 
 /** Only same-site paths are allowed as a return target, so the re-confirmation page cannot be used as an open redirect. */
@@ -28,13 +29,26 @@ type RunOptions = {
 export function useServerAction() {
     const [busy, setBusy] = useState(false)
     const [error, setError] = useState<unknown>(null)
+    // The key of the last request that did not succeed: the same request sent again (a lost answer, a tap twice) carries the same key, so the server can tell it is one intent (REACT-01).
+    const pending = useRef<PendingIntent>(null)
 
     const run = useCallback(async <T,>(path: string, options: RunOptions = {}): Promise<T | null> => {
         setBusy(true)
         setError(null)
 
+        const method = options.method ?? 'POST'
+        let idempotencyKey = options.idempotencyKey
+
+        if (idempotencyKey !== undefined) {
+            const next = intentKey(pending.current, `${method} ${path} ${JSON.stringify(options.body ?? null)}`, idempotencyKey)
+
+            idempotencyKey = next.key
+            pending.current = next.pending
+        }
+
         try {
-            const result = await apiRequest<T>(path, { method: options.method ?? 'POST', body: options.body, idempotencyKey: options.idempotencyKey })
+            const result = await apiRequest<T>(path, { method, body: options.body, idempotencyKey })
+            pending.current = null
 
             if (options.reload !== undefined) {
                 router.reload({ only: options.reload })

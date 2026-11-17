@@ -484,7 +484,7 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
     Route::get('/commissions/export', [CommissionController::class, 'export'])->name('front-office.commissions.export');
     Route::post('/commissions/partners', [CommissionController::class, 'addPartner'])->name('front-office.commissions.partners.store');
     Route::post('/commissions/partners/{id}', [CommissionController::class, 'changePartner'])->where('id', '[0-9a-z]{26}')->name('front-office.commissions.partners.update');
-    Route::post('/commissions/partners/{id}/pay', [CommissionController::class, 'pay'])->where('id', '[0-9a-z]{26}')->middleware('idempotent')->name('front-office.commissions.pay');
+    Route::post('/commissions/partners/{id}/pay', [CommissionController::class, 'pay'])->where('id', '[0-9a-z]{26}')->middleware('idempotent:once')->name('front-office.commissions.pay');
     Route::post('/commissions/accruals/{id}/void', [CommissionController::class, 'void'])->where('id', '[0-9a-z]{26}')->name('front-office.commissions.void');
     Route::get('/waitlist', [WaitlistController::class, 'index'])->name('front-office.waitlist');
     Route::post('/waitlist', [WaitlistController::class, 'store'])->middleware('throttle:bookings')->name('front-office.waitlist.store');
@@ -541,7 +541,7 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
     Route::post('/door-locks/jobs/{id}/retry', [DoorLockController::class, 'retry'])->where('id', '[0-9a-z]{26}')->name('front-office.door-locks.retry');
     Route::post('/door-locks/jobs/{id}/settle', [DoorLockController::class, 'settle'])->where('id', '[0-9a-z]{26}')->name('front-office.door-locks.settle');
     Route::get('/groups', [GroupController::class, 'index'])->name('front-office.groups');
-    Route::post('/groups', [GroupController::class, 'store'])->middleware(['idempotent', 'throttle:bookings'])->name('front-office.groups.store');
+    Route::post('/groups', [GroupController::class, 'store'])->middleware(['idempotent:once', 'throttle:bookings'])->name('front-office.groups.store');
     Route::get('/groups/{id}', [GroupController::class, 'show'])->where('id', $id)->name('front-office.groups.show');
     Route::post('/groups/{id}/rooms', [GroupController::class, 'addRooms'])->where('id', $id)->middleware(['idempotent', 'throttle:bookings'])->name('front-office.groups.rooms');
     Route::get('/foreign-currency', [ForeignPaymentController::class, 'index'])->name('front-office.foreign-currency');
@@ -593,7 +593,7 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
     Route::get('/cashier/shifts', [CashierController::class, 'index'])->name('front-office.cashier.shifts');
     Route::get('/cashier/shifts/{id}', [CashierController::class, 'show'])->where('id', $id)->name('front-office.cashier.shifts.show');
     Route::post('/cashier/shifts', [CashierController::class, 'open'])->name('front-office.cashier.open');
-    Route::post('/cashier/shifts/{id}/drops', [CashierController::class, 'drop'])->where('id', $id)->middleware('idempotent')->name('front-office.cashier.drop');
+    Route::post('/cashier/shifts/{id}/drops', [CashierController::class, 'drop'])->where('id', $id)->middleware('idempotent:once')->name('front-office.cashier.drop');
     Route::post('/cashier/shifts/{id}/close', [CashierController::class, 'close'])->where('id', $id)->name('front-office.cashier.close');
     Route::post('/cashier/settings', [CashierController::class, 'settings'])->middleware('password.confirm')->name('front-office.cashier.settings');
 
@@ -642,7 +642,7 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
 
     // The cleaning supplies and amenities used up, taken from a store's stock card (FR-INV-004).
     Route::get('/supplies', [HousekeepingSupplyUseController::class, 'index'])->name('housekeeping.supplies');
-    Route::post('/supplies', [HousekeepingSupplyUseController::class, 'store'])->middleware(['idempotent'])->name('housekeeping.supplies.store');
+    Route::post('/supplies', [HousekeepingSupplyUseController::class, 'store'])->middleware(['idempotent:once'])->name('housekeeping.supplies.store');
 
     // Lost and found (FR-HK-012).
     Route::get('/damage-reports', [HousekeepingDamageReportController::class, 'index'])->name('housekeeping.damage');
@@ -766,7 +766,7 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
     Route::post('/treatments', [LaundryController::class, 'addTreatment'])->name('laundry.treatments.store');
     Route::post('/treatments/{id}', [LaundryController::class, 'updateTreatment'])->where('id', $id)->name('laundry.treatments.update');
     Route::get('/supplies', [SupplyUseController::class, 'index'])->name('laundry.supplies');
-    Route::post('/supplies', [SupplyUseController::class, 'store'])->middleware(['idempotent'])->name('laundry.supplies.store');
+    Route::post('/supplies', [SupplyUseController::class, 'store'])->middleware(['idempotent:once'])->name('laundry.supplies.store');
     Route::get('/claims', [ClaimController::class, 'index'])->name('laundry.claims');
     Route::post('/claims', [ClaimController::class, 'store'])->name('laundry.claims.store');
     Route::post('/claims/cap', [ClaimController::class, 'cap'])->name('laundry.claims.cap');
@@ -844,12 +844,12 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
     // Mini bars of the rooms and room service (FR-FBS-020 to -025, -024).
     Route::get('/minibar', [MinibarController::class, 'index'])->name('fnb.minibar');
     Route::get('/minibar/room', [MinibarController::class, 'room'])->name('fnb.minibar.room');
-    Route::post('/minibar/checks', [MinibarController::class, 'check'])->middleware(['idempotent'])->name('fnb.minibar.check');
+    Route::post('/minibar/checks', [MinibarController::class, 'check'])->middleware(['idempotent:once'])->name('fnb.minibar.check');
     Route::post('/minibar/items', [MinibarController::class, 'createItem'])->name('fnb.minibar.items.create');
     Route::post('/minibar/items/{id}', [MinibarController::class, 'updateItem'])->where('id', $id)->name('fnb.minibar.items.update');
     Route::post('/minibar/items/{id}/active', [MinibarController::class, 'itemActive'])->where('id', $id)->name('fnb.minibar.items.active');
     Route::get('/room-service', [RoomServiceController::class, 'index'])->name('fnb.room-service');
-    Route::post('/room-service', [RoomServiceController::class, 'place'])->middleware(['idempotent'])->name('fnb.room-service.place');
+    Route::post('/room-service', [RoomServiceController::class, 'place'])->middleware(['idempotent:once'])->name('fnb.room-service.place');
     Route::post('/room-service/{id}/status', [RoomServiceController::class, 'advance'])->where('id', $id)->name('fnb.room-service.advance');
     // Checklists and storage temperatures of the department (FR-KIT-008, FR-FBS-032).
     Route::get('/routines', [RoutineController::class, 'index'])->defaults('department', 'fnb')->name('fnb.routines');
@@ -866,11 +866,11 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
     Route::get('/shift', [PaymentController::class, 'shift'])->name('fnb.shift');
     Route::post('/shift', [PaymentController::class, 'openShift'])->middleware(['idempotent'])->name('fnb.shift.open');
     Route::post('/shift/{id}/close', [PaymentController::class, 'closeShift'])->where('id', $id)->middleware(['idempotent'])->name('fnb.shift.close');
-    Route::post('/bills/{id}/payments', [PaymentController::class, 'pay'])->where('id', $id)->middleware(['idempotent'])->name('fnb.bills.pay');
+    Route::post('/bills/{id}/payments', [PaymentController::class, 'pay'])->where('id', $id)->middleware(['idempotent:once'])->name('fnb.bills.pay');
     Route::post('/bills/{id}/payments/{payment}/qris', [PaymentController::class, 'qris'])->where('id', $id)->where('payment', $id)->middleware(['idempotent'])->name('fnb.bills.qris');
-    Route::post('/bills', [BillController::class, 'open'])->middleware(['idempotent'])->name('fnb.bills.open');
+    Route::post('/bills', [BillController::class, 'open'])->middleware(['idempotent:once'])->name('fnb.bills.open');
     Route::get('/bills/{id}', [BillController::class, 'show'])->where('id', $id)->name('fnb.bills.show');
-    Route::post('/bills/{id}/lines', [BillController::class, 'addLine'])->where('id', $id)->middleware(['idempotent'])->name('fnb.bills.lines.store');
+    Route::post('/bills/{id}/lines', [BillController::class, 'addLine'])->where('id', $id)->middleware(['idempotent:once'])->name('fnb.bills.lines.store');
     Route::post('/bills/{id}/lines/{line}/remove', [BillController::class, 'removeLine'])->where('id', $id)->where('line', $id)->name('fnb.bills.lines.remove');
     Route::post('/bills/{id}/table', [BillController::class, 'moveTable'])->where('id', $id)->middleware(['idempotent'])->name('fnb.bills.table');
     Route::post('/bills/{id}/merge', [BillController::class, 'merge'])->where('id', $id)->middleware(['idempotent'])->name('fnb.bills.merge');
@@ -882,12 +882,12 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
     Route::post('/bills/{id}/send', [BillController::class, 'send'])->where('id', $id)->middleware(['idempotent'])->name('fnb.bills.send');
     Route::post('/bills/{id}/lines/{line}/void-request', [BillController::class, 'requestVoid'])->where('id', $id)->where('line', $id)->middleware(['idempotent'])->name('fnb.bills.lines.void-request');
     Route::post('/bills/{id}/lines/{line}/void', [BillController::class, 'voidLine'])->where('id', $id)->where('line', $id)->middleware(['idempotent'])->name('fnb.bills.lines.void');
-    Route::post('/bills/{id}/charges', [BillController::class, 'charges'])->where('id', $id)->middleware(['idempotent'])->name('fnb.bills.charges');
+    Route::post('/bills/{id}/charges', [BillController::class, 'charges'])->where('id', $id)->middleware(['idempotent:once'])->name('fnb.bills.charges');
     Route::post('/bills/{id}/lines/{line}/discount-request', [BillController::class, 'requestDiscount'])->where('id', $id)->where('line', $id)->middleware(['idempotent'])->name('fnb.bills.lines.discount-request');
     Route::post('/bills/{id}/lines/{line}/discount', [BillController::class, 'discount'])->where('id', $id)->where('line', $id)->middleware(['idempotent'])->name('fnb.bills.lines.discount');
     Route::post('/bills/{id}/lines/{line}/discount/remove', [BillController::class, 'removeDiscount'])->where('id', $id)->where('line', $id)->middleware(['idempotent'])->name('fnb.bills.lines.discount.remove');
     Route::post('/bills/{id}/refund-request', [BillController::class, 'requestRefund'])->where('id', $id)->middleware(['idempotent'])->name('fnb.bills.refund-request');
-    Route::post('/bills/{id}/refund', [BillController::class, 'refund'])->where('id', $id)->middleware(['idempotent'])->name('fnb.bills.refund');
+    Route::post('/bills/{id}/refund', [BillController::class, 'refund'])->where('id', $id)->middleware(['idempotent:once'])->name('fnb.bills.refund');
     Route::post('/bills/{id}/reprint', [BillController::class, 'reprint'])->where('id', $id)->middleware(['idempotent'])->name('fnb.bills.reprint');
     Route::post('/bills/{id}/cancel-request', [BillController::class, 'requestCancel'])->where('id', $id)->middleware(['idempotent'])->name('fnb.bills.cancel-request');
     Route::post('/bills/{id}/cancel', [BillController::class, 'cancel'])->where('id', $id)->middleware(['idempotent'])->name('fnb.bills.cancel');
@@ -945,7 +945,7 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
     Route::get('/receivables/{id}', [ReceivableController::class, 'show'])->where('id', $id)->name('finance.receivables.show');
     Route::post('/receivables/{id}/receipts', [ReceivableController::class, 'receive'])->where('id', $id)->middleware(['idempotent'])->name('finance.receivables.receive');
     Route::post('/receivables/{id}/notes', [ReceivableController::class, 'note'])->where('id', $id)->name('finance.receivables.note');
-    Route::post('/receivables/{id}/adjustments', [ReceivableController::class, 'adjust'])->where('id', $id)->name('finance.receivables.adjust');
+    Route::post('/receivables/{id}/adjustments', [ReceivableController::class, 'adjust'])->where('id', $id)->middleware('idempotent:once')->name('finance.receivables.adjust');
     Route::post('/receivables/receipts/{id}/reverse', [ReceivableController::class, 'reverseReceipt'])->where('id', $id)->name('finance.receivables.receipts.reverse');
     Route::get('/customers', [ReceivableController::class, 'customers'])->name('finance.customers');
     Route::post('/customers', [ReceivableController::class, 'storeCustomer'])->name('finance.customers.store');
@@ -1054,14 +1054,14 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
     Route::get('/damage-reports', [KitchenDamageReportController::class, 'index'])->name('kitchen.damage');
     Route::post('/damage-reports', [KitchenDamageReportController::class, 'store'])->name('kitchen.damage.store');
     Route::get('/waste', [WasteController::class, 'index'])->name('kitchen.waste');
-    Route::post('/waste', [WasteController::class, 'record'])->middleware(['idempotent'])->name('kitchen.waste.record');
+    Route::post('/waste', [WasteController::class, 'record'])->middleware(['idempotent:once'])->name('kitchen.waste.record');
     // Ingredients used up outside of a sale: a staff meal, a tasting (FR-KIT-006).
     Route::get('/ingredient-use', [KitchenSupplyUseController::class, 'index'])->name('kitchen.ingredients');
-    Route::post('/ingredient-use', [KitchenSupplyUseController::class, 'store'])->middleware(['idempotent'])->name('kitchen.ingredients.store');
+    Route::post('/ingredient-use', [KitchenSupplyUseController::class, 'store'])->middleware(['idempotent:once'])->name('kitchen.ingredients.store');
     Route::get('/production', [ProductionController::class, 'index'])->name('kitchen.production');
     Route::post('/production/formulas', [ProductionController::class, 'define'])->name('kitchen.production.formulas.define');
     Route::post('/production/formulas/{id}/retire', [ProductionController::class, 'retire'])->where('id', $id)->name('kitchen.production.formulas.retire');
-    Route::post('/production', [ProductionController::class, 'record'])->middleware(['idempotent'])->name('kitchen.production.record');
+    Route::post('/production', [ProductionController::class, 'record'])->middleware(['idempotent:once'])->name('kitchen.production.record');
     Route::get('/menu-report', [MenuReportController::class, 'index'])->name('kitchen.menu-report');
     Route::get('/recipes', [RecipeController::class, 'index'])->name('kitchen.recipes');
     Route::get('/recipes/{id}', [RecipeController::class, 'show'])->where('id', $id)->name('kitchen.recipes.show');
@@ -1074,7 +1074,7 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
     Route::post('/employees/import', [EmployeeImportController::class, 'run'])->middleware('throttle:access-admin')->name('hr.employees.import');
     Route::get('/employees/import/template', [EmployeeImportController::class, 'template'])->name('hr.employees.import.template');
     Route::get('/employees', [EmployeeController::class, 'index'])->name('hr.employees');
-    Route::post('/employees', [EmployeeController::class, 'create'])->middleware(['idempotent'])->name('hr.employees.create');
+    Route::post('/employees', [EmployeeController::class, 'create'])->middleware(['idempotent:once'])->name('hr.employees.create');
     Route::post('/settings', [EmployeeController::class, 'settings'])->name('hr.settings');
     Route::get('/employees/{id}', [EmployeeController::class, 'show'])->where('id', $id)->name('hr.employees.show');
     Route::post('/employees/{id}', [EmployeeController::class, 'update'])->where('id', $id)->name('hr.employees.update');
@@ -1090,17 +1090,17 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
     Route::get('/attendance', [AttendanceController::class, 'index'])->name('hr.attendance');
     Route::post('/attendance/clock-in', [AttendanceController::class, 'clockIn'])->middleware(['idempotent'])->name('hr.attendance.in');
     Route::post('/attendance/clock-out', [AttendanceController::class, 'clockOut'])->middleware(['idempotent'])->name('hr.attendance.out');
-    Route::post('/attendance/manual', [AttendanceController::class, 'manual'])->middleware(['idempotent'])->name('hr.attendance.manual');
+    Route::post('/attendance/manual', [AttendanceController::class, 'manual'])->middleware(['idempotent:once'])->name('hr.attendance.manual');
     Route::post('/attendance/settings', [AttendanceController::class, 'settings'])->name('hr.attendance.settings');
     Route::post('/attendance/face-mode', [AttendanceController::class, 'faceMode'])->name('hr.attendance.face-mode');
     Route::get('/face', [FaceController::class, 'index'])->name('hr.face');
     Route::get('/face/test', [FaceController::class, 'test'])->name('hr.face.test');
     Route::post('/face/{employee}', [FaceController::class, 'enrol'])->where('employee', '[0-9A-Za-z]{26}')->middleware('throttle:access-admin')->name('hr.face.enrol');
     Route::delete('/face/{employee}', [FaceController::class, 'remove'])->where('employee', '[0-9A-Za-z]{26}')->middleware('throttle:access-admin')->name('hr.face.remove');
-    Route::post('/overtime', [AttendanceAdjustmentController::class, 'requestOvertime'])->middleware(['idempotent'])->name('hr.overtime.request');
+    Route::post('/overtime', [AttendanceAdjustmentController::class, 'requestOvertime'])->middleware(['idempotent:once'])->name('hr.overtime.request');
     Route::post('/overtime/{id}/release', [AttendanceAdjustmentController::class, 'releaseOvertime'])->where('id', $id)->name('hr.overtime.release');
     Route::post('/overtime/{id}/cancel', [AttendanceAdjustmentController::class, 'cancelOvertime'])->where('id', $id)->name('hr.overtime.cancel');
-    Route::post('/attendance/corrections', [AttendanceAdjustmentController::class, 'requestCorrection'])->middleware(['idempotent'])->name('hr.attendance.corrections.request');
+    Route::post('/attendance/corrections', [AttendanceAdjustmentController::class, 'requestCorrection'])->middleware(['idempotent:once'])->name('hr.attendance.corrections.request');
     Route::post('/attendance/corrections/{id}/apply', [AttendanceAdjustmentController::class, 'applyCorrection'])->where('id', $id)->name('hr.attendance.corrections.apply');
     Route::post('/attendance/corrections/{id}/cancel', [AttendanceAdjustmentController::class, 'cancelCorrection'])->where('id', $id)->name('hr.attendance.corrections.cancel');
     Route::post('/attendance/{id}/review', [AttendanceController::class, 'review'])->where('id', $id)->middleware('throttle:access-admin')->name('hr.attendance.review');
@@ -1130,7 +1130,7 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
     Route::post('/service-charge/{id}/discard', [ServiceChargeController::class, 'discard'])->where('id', $id)->name('hr.service-charge.discard');
     Route::get('/me', [EmployeePortalController::class, 'index'])->name('hr.me');
     Route::get('/swaps', [ShiftSwapController::class, 'index'])->name('hr.swaps');
-    Route::post('/swaps', [ShiftSwapController::class, 'request'])->middleware(['idempotent'])->name('hr.swaps.request');
+    Route::post('/swaps', [ShiftSwapController::class, 'request'])->middleware(['idempotent:once'])->name('hr.swaps.request');
     Route::post('/swaps/{id}/accept', [ShiftSwapController::class, 'accept'])->where('id', $id)->name('hr.swaps.accept');
     Route::post('/swaps/{id}/decline', [ShiftSwapController::class, 'decline'])->where('id', $id)->name('hr.swaps.decline');
     Route::post('/swaps/{id}/approve', [ShiftSwapController::class, 'approve'])->where('id', $id)->name('hr.swaps.approve');
@@ -1143,7 +1143,7 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
     Route::post('/commissions', [EmployeeCommissionController::class, 'record'])->name('hr.commissions.record');
     Route::post('/commissions/{id}/reverse', [EmployeeCommissionController::class, 'reverse'])->where('id', $id)->name('hr.commissions.reverse');
     Route::get('/conduct', [ConductController::class, 'index'])->name('hr.conduct');
-    Route::post('/conduct', [ConductController::class, 'create'])->middleware(['idempotent'])->name('hr.conduct.create');
+    Route::post('/conduct', [ConductController::class, 'create'])->middleware(['idempotent:once'])->name('hr.conduct.create');
     Route::post('/conduct/{id}/revoke', [ConductController::class, 'revoke'])->where('id', $id)->name('hr.conduct.revoke');
     Route::get('/conduct/{id}/letter', [ConductController::class, 'letter'])->where('id', $id)->name('hr.conduct.letter');
     Route::get('/announcements', [AnnouncementController::class, 'index'])->name('hr.announcements');
@@ -1153,7 +1153,7 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
     Route::post('/announcements/{id}/acknowledge', [AnnouncementController::class, 'acknowledge'])->where('id', $id)->name('hr.announcements.acknowledge');
     Route::get('/announcements/{id}/document', [AnnouncementController::class, 'document'])->where('id', $id)->name('hr.announcements.document');
     Route::get('/appraisals', [AppraisalController::class, 'index'])->name('hr.appraisals');
-    Route::post('/appraisals', [AppraisalController::class, 'create'])->middleware(['idempotent'])->name('hr.appraisals.create');
+    Route::post('/appraisals', [AppraisalController::class, 'create'])->middleware(['idempotent:once'])->name('hr.appraisals.create');
     Route::post('/appraisals/forms', [AppraisalController::class, 'createForm'])->name('hr.appraisals.forms.create');
     Route::post('/appraisals/forms/baseline', [AppraisalController::class, 'baselineForm'])->name('hr.appraisals.forms.baseline');
     Route::post('/appraisals/forms/{id}/active', [AppraisalController::class, 'formActive'])->where('id', $id)->name('hr.appraisals.forms.active');
@@ -1161,7 +1161,7 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
     Route::post('/appraisals/{id}/sign', [AppraisalController::class, 'sign'])->where('id', $id)->middleware('password.confirm')->name('hr.appraisals.sign');
     Route::post('/appraisals/{id}/sign-employee', [AppraisalController::class, 'signAsEmployee'])->where('id', $id)->middleware('password.confirm')->name('hr.appraisals.sign-employee');
     Route::post('/appraisals/{id}/cancel', [AppraisalController::class, 'cancel'])->where('id', $id)->name('hr.appraisals.cancel');
-    Route::post('/payroll/pay', [PayrollController::class, 'setPay'])->middleware(['idempotent'])->name('hr.payroll.pay');
+    Route::post('/payroll/pay', [PayrollController::class, 'setPay'])->middleware(['idempotent:once'])->name('hr.payroll.pay');
     Route::post('/payroll/profile', [PayrollController::class, 'saveProfile'])->name('hr.payroll.profile');
     Route::post('/payroll/bank', [PayrollController::class, 'saveBank'])->name('hr.payroll.bank');
     Route::post('/payroll/settings', [PayrollController::class, 'saveSettings'])->name('hr.payroll.settings');
@@ -1170,8 +1170,8 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
     Route::post('/payroll/components/{id}', [PayrollController::class, 'updateComponent'])->where('id', $id)->name('hr.payroll.components.update');
     Route::post('/payroll/components/{id}/active', [PayrollController::class, 'componentActive'])->where('id', $id)->name('hr.payroll.components.active');
     Route::get('/leave', [LeaveController::class, 'index'])->name('hr.leave');
-    Route::post('/leave', [LeaveController::class, 'request'])->middleware(['idempotent'])->name('hr.leave.request');
-    Route::post('/leave/adjust', [LeaveController::class, 'adjust'])->middleware(['idempotent'])->name('hr.leave.adjust');
+    Route::post('/leave', [LeaveController::class, 'request'])->middleware(['idempotent:once'])->name('hr.leave.request');
+    Route::post('/leave/adjust', [LeaveController::class, 'adjust'])->middleware(['idempotent:once'])->name('hr.leave.adjust');
     Route::post('/leave/types', [LeaveController::class, 'createType'])->name('hr.leave.types.create');
     Route::post('/leave/types/baseline', [LeaveController::class, 'baseline'])->name('hr.leave.types.baseline');
     Route::post('/leave/types/{id}', [LeaveController::class, 'updateType'])->where('id', $id)->name('hr.leave.types.update');
@@ -1203,8 +1203,8 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
     Route::post('/work-orders/{id}/cancel', [WorkOrderController::class, 'cancel'])->where('id', $id)->name('maintenance.work-orders.cancel');
     Route::post('/work-orders/{id}/block', [WorkOrderController::class, 'block'])->where('id', $id)->name('maintenance.work-orders.block');
     Route::get('/work-orders/{id}/parts', [PartsController::class, 'show'])->where('id', $id)->name('maintenance.parts.show');
-    Route::post('/work-orders/{id}/parts', [PartsController::class, 'use'])->where('id', $id)->middleware(['idempotent'])->name('maintenance.parts.use');
-    Route::post('/work-orders/{id}/part-requests', [PartsController::class, 'request'])->where('id', $id)->middleware(['idempotent'])->name('maintenance.parts.request');
+    Route::post('/work-orders/{id}/parts', [PartsController::class, 'use'])->where('id', $id)->middleware(['idempotent:once'])->name('maintenance.parts.use');
+    Route::post('/work-orders/{id}/part-requests', [PartsController::class, 'request'])->where('id', $id)->middleware(['idempotent:once'])->name('maintenance.parts.request');
     Route::post('/work-orders/{id}/release-room', [WorkOrderController::class, 'releaseRoom'])->where('id', $id)->name('maintenance.work-orders.release-room');
     Route::post('/sla', [WorkOrderController::class, 'sla'])->name('maintenance.sla');
     Route::get('/assets', [AssetController::class, 'index'])->name('maintenance.assets');
@@ -1215,14 +1215,14 @@ Route::middleware(['auth', 'auth.session', 'active', 'mfa', 'property'])->prefix
     Route::post('/assets/{id}/plans', [AssetController::class, 'addPlan'])->where('id', $id)->name('maintenance.assets.plans');
     Route::post('/plans/{plan}/active', [AssetController::class, 'planActive'])->where('plan', $id)->name('maintenance.plans.active');
     Route::get('/duties', [DutyController::class, 'index'])->name('maintenance.duties');
-    Route::post('/duties', [DutyController::class, 'create'])->middleware(['idempotent'])->name('maintenance.duties.create');
+    Route::post('/duties', [DutyController::class, 'create'])->middleware(['idempotent:once'])->name('maintenance.duties.create');
     Route::post('/duties/{id}', [DutyController::class, 'update'])->where('id', $id)->name('maintenance.duties.update');
     Route::post('/duties/{id}/active', [DutyController::class, 'active'])->where('id', $id)->name('maintenance.duties.active');
     Route::get('/duty-runs/{id}', [DutyController::class, 'show'])->where('id', $id)->name('maintenance.duty-runs.show');
     Route::post('/duty-runs/{id}/steps/{step}', [DutyController::class, 'check'])->where('id', $id)->where('step', $id)->name('maintenance.duty-runs.check');
     Route::post('/duty-runs/{id}/complete', [DutyController::class, 'complete'])->where('id', $id)->name('maintenance.duty-runs.complete');
     Route::get('/vendor-work', [VendorJobController::class, 'index'])->name('maintenance.vendor');
-    Route::post('/vendor-jobs', [VendorJobController::class, 'create'])->middleware(['idempotent'])->name('maintenance.vendor.create');
+    Route::post('/vendor-jobs', [VendorJobController::class, 'create'])->middleware(['idempotent:once'])->name('maintenance.vendor.create');
     Route::get('/vendor-jobs/{id}', [VendorJobController::class, 'show'])->where('id', $id)->name('maintenance.vendor.show');
     Route::get('/vendor-jobs/{id}/proof', [VendorJobController::class, 'proof'])->where('id', $id)->name('maintenance.vendor.proof');
     Route::post('/vendor-jobs/{id}/quotes', [VendorJobController::class, 'quote'])->where('id', $id)->name('maintenance.vendor.quote');
