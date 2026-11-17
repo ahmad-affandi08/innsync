@@ -18,11 +18,16 @@ export function rawFromTyped(text: string, locale: string, { decimals = 2, negat
     let whole = '';
     let fraction: string | null = null;
 
-    for (const ch of text) {
+    // The field writes the grouping itself, so a "." the person has just typed at the end of the text is the decimal point of a numpad, not a thousands mark (REACT-11).
+    const numpadPoint = decimal !== '.' ? text.length - 1 : -1;
+
+    for (let i = 0; i < text.length; i++) {
+        const ch = text[i];
+
         if (ch >= '0' && ch <= '9') {
             if (fraction === null) whole += ch;
             else if (fraction.length < decimals) fraction += ch;
-        } else if (ch === decimal && fraction === null && decimals > 0) {
+        } else if ((ch === decimal || (ch === '.' && i === numpadPoint)) && fraction === null && decimals > 0) {
             fraction = '';
         }
     }

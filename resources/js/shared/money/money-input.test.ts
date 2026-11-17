@@ -19,6 +19,10 @@ describe('money input', () => {
         assert.equal(rawFromTyped('1,500,000', 'en'), '1500000')
         assert.equal(rawFromTyped('1.500,5', 'id'), '1500.5')
         assert.equal(rawFromTyped('1.500,567', 'id'), '1500.56')
+        // A numpad point typed at the end is the decimal point, never a 100-fold amount; a point inside the text still only groups.
+        assert.equal(rawFromTyped('1.500.', 'id'), '1500.')
+        assert.equal(rawFromTyped('1.500.5', 'id'), '15005')
+        assert.equal(rawFromTyped('1.500,50', 'id'), '1500.50')
         assert.equal(rawFromTyped('1.500,5', 'id', { decimals: 0 }), '15005')
         assert.equal(rawFromTyped('Rp 12a3', 'id'), '123')
         assert.equal(rawFromTyped('007', 'id'), '7')
