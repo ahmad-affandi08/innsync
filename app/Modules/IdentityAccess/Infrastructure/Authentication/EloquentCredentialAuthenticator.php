@@ -22,6 +22,18 @@ final readonly class EloquentCredentialAuthenticator implements CredentialAuthen
         private SecurityLog $securityLog,
     ) {}
 
+    /**
+     * One password check for every answer, whoever the email belongs to and whatever state the account is in, so the time taken tells nothing about either (SEC-04).
+     * The decoy hash is made once per process, not on each call.
+     */
+    private function spendTheSameTime(string $password): void
+    {
+        static $decoy = null;
+
+        $decoy ??= Hash::make(bin2hex(random_bytes(16)));
+        Hash::check($password, $decoy);
+    }
+
     public function authenticate(string $email, string $password): ?AuthenticatedIdentity
     {
         return DB::transaction(function () use ($email, $password): ?AuthenticatedIdentity {
@@ -31,13 +43,14 @@ final readonly class EloquentCredentialAuthenticator implements CredentialAuthen
                 ->first();
 
             if ($user === null) {
-                Hash::check($password, Hash::make(bin2hex(random_bytes(16))));
+                $this->spendTheSameTime($password);
                 $this->recordAuthentication(null, SecurityEventOutcome::Failure, 'invalid_credentials');
 
                 return null;
             }
 
             if (! $user->is_active || $user->locked_until?->isFuture()) {
+                $this->spendTheSameTime($password);
                 $this->recordAuthentication(
                     (string) $user->getKey(),
                     SecurityEventOutcome::Denied,
