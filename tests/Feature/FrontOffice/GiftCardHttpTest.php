@@ -146,6 +146,21 @@ final class GiftCardHttpTest extends TestCase
         self::assertSame(['issue', 'redeem', 'redeem', 'restore'], DB::table('gift_card_entries')->orderBy('created_at')->orderBy('id')->pluck('kind')->all());
     }
 
+    public function test_a_retried_card_payment_with_the_same_key_takes_money_from_the_card_once(): void
+    {
+        $code = $this->sell()['code'];
+        $folio = $this->folio();
+        $pay = fn () => $this->postJson("/front-office/folios/{$folio}/payments", ['payment_method' => 'gift_card', 'amount_minor' => 10_000_000, 'reference' => $code, 'purpose' => 'settlement'], ['Idempotency-Key' => 'gift-card-retry-0001'])->assertOk();
+
+        $first = $pay()->json();
+        $again = $pay()->json();
+
+        self::assertSame($first['posting']['id'], $again['posting']['id']);
+        self::assertTrue($again['replayed']);
+        self::assertSame(40_000_000, (int) DB::table('gift_cards')->value('balance_minor'));
+        self::assertSame(['issue', 'redeem'], DB::table('gift_card_entries')->orderBy('created_at')->orderBy('id')->pluck('kind')->all());
+    }
+
     public function test_cash_for_a_card_is_in_the_drawer_and_the_journal_keeps_it_as_money_owed_not_as_revenue(): void
     {
         $this->postJson('/front-office/cashier/shifts', ['opening_float_minor' => 20_000_000])->assertCreated();

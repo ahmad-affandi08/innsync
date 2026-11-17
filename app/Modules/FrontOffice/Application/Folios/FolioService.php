@@ -325,7 +325,18 @@ final readonly class FolioService
         }
 
         // The card is charged in the same transaction as the payment, once per posting; the folio keeps only a masked reference to the card.
-        return $this->transactions->run(fn (): array => $post($this->giftCards->redeem($property, $actorId, (string) $reference, $amountMinor, $folio->currency, 'folio_posting', $postingId)));
+        return $this->transactions->run(function () use ($property, $folio, $sourceRef, $reference, $amountMinor, $actorId, $post, &$postingId): array {
+            // The folio is held first, so a retry of the same payment sees the posting the first try made and takes its id: the card is then
+            // seen as charged for it already and is not charged twice (CON-FF-01).
+            $this->folios->lock($property, $folio->id);
+            $existing = $sourceRef === null ? null : $this->folios->findBySource($property, 'front_office', $sourceRef);
+
+            if ($existing !== null) {
+                $postingId = $existing[1]->id;
+            }
+
+            return $post($this->giftCards->redeem($property, $actorId, (string) $reference, $amountMinor, $folio->currency, 'folio_posting', $postingId));
+        });
     }
 
     /**
