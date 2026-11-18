@@ -333,6 +333,17 @@ final class FolioTest extends TestCase
         self::assertSame(-100_000_000, $this->balance());
     }
 
+    public function test_a_charge_cannot_leave_a_paid_folio_without_the_right_to_correct(): void
+    {
+        $company = $this->folios()->open($this->property(), $this->managerId, $this->reservationId, 'Company', 2)['id'];
+        $charge = $this->folios()->charge($this->property(), $this->managerId, $this->folioId, 'MINIBAR', 'Minibar', 100_000_000, false)['posting'];
+        $this->folios()->pay($this->property(), $this->managerId, $this->folioId, 'bank_transfer', 121_000_000, 'PAID-1', 'settlement');
+
+        $this->expect(fn () => $this->folios()->transfer($this->property(), $this->cashier2Id, $charge['id'], $company, 'Split'), 403);
+        $moved = $this->folios()->transfer($this->property(), $this->managerId, $charge['id'], $company, 'Split');
+        self::assertSame(-121_000_000, $moved['from']['balance_minor']);
+    }
+
     public function test_permissions_and_property_scope_are_enforced(): void
     {
         $this->expect(fn () => $this->folios()->charge($this->property(), $this->viewerId, $this->folioId, 'ROOM', 'x', 100, false), 403);

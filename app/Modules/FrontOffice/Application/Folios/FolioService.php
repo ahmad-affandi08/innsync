@@ -494,7 +494,8 @@ final readonly class FolioService
             throw Refusal::invalid('Choose another folio.', ['target_folio_id']);
         }
 
-        if ($target->reservationId !== $source->reservationId) {
+        // A charge leaving a paid folio would leave it in credit: that is a correction of a settled folio, which needs the right to correct as reverse() does.
+        if ($target->reservationId !== $source->reservationId || $source->statusFor($this->folios->hasPayments($property, $source->id)) === 'settled') {
             $this->authorize($property, $actorId, self::CORRECT_PERMISSION);
         }
 
