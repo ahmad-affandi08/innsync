@@ -232,7 +232,7 @@ final class ReversalsHttpTest extends TestCase
 
         $this->actAs($this->reverser);
         $this->postJson("/finance/receivables/receipts/{$receipt}/reverse", ['reason' => 'Wrong'])->assertStatus(409);
-        $this->postJson("/finance/receivables/{$id}/adjustments", ['kind' => 'write_off', 'amount_minor' => 1_000, 'reason' => 'Wrong'])->assertStatus(409);
+        $this->postJson("/finance/receivables/{$id}/adjustments", ['kind' => 'write_off', 'amount_minor' => 1_000, 'reason' => 'Wrong'], $this->key())->assertStatus(409);
         $this->get("/finance/receivables/{$id}")->assertInertia(fn (Assert $page) => $page->where('receivable.may_adjust', false)->where('receivable.receipts.0.may_reverse', false));
     }
 
@@ -244,22 +244,22 @@ final class ReversalsHttpTest extends TestCase
         $body = ['kind' => 'credit_note', 'amount_minor' => 2_000_000, 'reason' => 'Billed twice for one booking'];
 
         $this->actAs($this->maker);
-        $this->postJson($url, $body)->assertForbidden();
+        $this->postJson($url, $body, $this->key())->assertForbidden();
         $this->actAs($this->dual);
         $made = $this->manual($this->dual, 'AR-000009', 'MINE');
-        $this->postJson("/finance/receivables/{$made['id']}/adjustments", $body)->assertForbidden();
+        $this->postJson("/finance/receivables/{$made['id']}/adjustments", $body, $this->key())->assertForbidden();
 
         $this->actAs($this->reverser);
-        $this->postJson($url, [...$body, 'kind' => 'gift'])->assertStatus(422);
-        $this->postJson($url, [...$body, 'amount_minor' => 0])->assertStatus(422);
-        $this->postJson($url, [...$body, 'reason' => ' '])->assertStatus(422);
-        $this->postJson($url, [...$body, 'amount_minor' => 7_000_001])->assertStatus(409);
+        $this->postJson($url, [...$body, 'kind' => 'gift'], $this->key())->assertStatus(422);
+        $this->postJson($url, [...$body, 'amount_minor' => 0], $this->key())->assertStatus(422);
+        $this->postJson($url, [...$body, 'reason' => ' '], $this->key())->assertStatus(422);
+        $this->postJson($url, [...$body, 'amount_minor' => 7_000_001], $this->key())->assertStatus(409);
 
-        $credit = $this->postJson($url, $body)->assertCreated()->json('receivable');
+        $credit = $this->postJson($url, $body, $this->key())->assertCreated()->json('receivable');
         self::assertSame([5_000_000, 'partial', 'credit_note', null, 'ADJ-000001'], [$credit['balance_minor'], $credit['status'], $credit['receipts'][1]['kind'], $credit['receipts'][1]['method'], $credit['receipts'][1]['number']]);
 
-        $this->postJson($url, ['kind' => 'write_off', 'amount_minor' => 5_000_000, 'reason' => 'The channel closed down'])->assertCreated()->assertJsonPath('receivable.balance_minor', 0)->assertJsonPath('receivable.status', 'paid');
-        $this->postJson($url, ['kind' => 'write_off', 'amount_minor' => 1, 'reason' => 'More'])->assertStatus(409);
+        $this->postJson($url, ['kind' => 'write_off', 'amount_minor' => 5_000_000, 'reason' => 'The channel closed down'], $this->key())->assertCreated()->assertJsonPath('receivable.balance_minor', 0)->assertJsonPath('receivable.status', 'paid');
+        $this->postJson($url, ['kind' => 'write_off', 'amount_minor' => 1, 'reason' => 'More'], $this->key())->assertStatus(409);
         self::assertSame(2, DB::table('audit_entries')->whereIn('action', ['receivable.credit_note', 'receivable.write_off'])->count());
 
         // Neither is money: the cash flow counts only the receipt of 3,000,000.
