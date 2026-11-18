@@ -33,7 +33,7 @@ export default function OrdersPage({ view }: { view: GuestOrders }) {
 
     useEffect(() => {
         if (!busy) return;
-        const timer = window.setInterval(() => router.reload({ only: ['view'] }), 10000);
+        const timer = window.setInterval(() => { if (!document.hidden) router.reload({ only: ['view'] }); }, 10000);
 
         return () => window.clearInterval(timer);
     }, [busy]);

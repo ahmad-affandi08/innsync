@@ -41,7 +41,7 @@ export default function ExportsPage({ overview }: { overview: Overview }) {
     useEffect(() => {
         if (!waiting) return;
         // Looking again is a plain reload, not a run of the form's own action: that action's busy flag and error belong to the Create button (REACT-04).
-        const timer = window.setInterval(() => router.reload({ only: ['overview'] }), 5000);
+        const timer = window.setInterval(() => { if (!document.hidden) router.reload({ only: ['overview'] }); }, 5000);
         return () => window.clearInterval(timer);
     }, [waiting]);
     useEffect(() => {

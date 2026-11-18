@@ -62,7 +62,7 @@ type DialogProps = {
     title: string;
     description?: string;
     children?: ReactNode;
-    /** Footer actions. Closing via Escape/backdrop calls `onClose`. */
+    /** Footer actions. Closing via Escape calls `onClose`; a click outside does not, so typed data is not lost to a stray click. */
     footer?: ReactNode;
     onClose: () => void;
     /** Alert dialogs interrupt for a consequential choice and ignore clicks outside. */
@@ -111,7 +111,7 @@ function Dialog({ children, className, description, footer, onClose, open, role 
         <DialogRoot onOpenChange={(next) => { if (!next) onClose(); }} open={open}>
             <DialogPortal>
                 <DialogOverlay />
-                <DialogPrimitive.Content className={surface}>
+                <DialogPrimitive.Content className={surface} onInteractOutside={(event) => event.preventDefault()}>
                     {body}
                 </DialogPrimitive.Content>
             </DialogPortal>

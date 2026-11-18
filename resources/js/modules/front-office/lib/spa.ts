@@ -60,7 +60,7 @@ export function useRefresh(reload: () => void, everyMs: number): void {
     latest.current = reload;
 
     useEffect(() => {
-        const id = window.setInterval(() => latest.current(), everyMs);
+        const id = window.setInterval(() => { if (!document.hidden) latest.current(); }, everyMs);
 
         return () => window.clearInterval(id);
     }, [everyMs]);

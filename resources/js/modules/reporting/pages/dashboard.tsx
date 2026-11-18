@@ -62,7 +62,7 @@ export default function DashboardPage({ currency, preferences, snapshot: s, tv }
 
     // The numbers refresh by themselves, at least once a minute, without reloading the page (FR-DSH-018).
     useEffect(() => {
-        const timer = window.setInterval(() => router.reload({ only: ['snapshot'], onSuccess: () => setShownAt(new Date().toISOString()) }), REFRESH_MS);
+        const timer = window.setInterval(() => { if (!document.hidden) router.reload({ only: ['snapshot'], onSuccess: () => setShownAt(new Date().toISOString()) }); }, REFRESH_MS);
         return () => window.clearInterval(timer);
     }, []);
 

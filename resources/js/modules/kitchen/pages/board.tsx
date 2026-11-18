@@ -69,7 +69,7 @@ export default function KitchenBoardPage(props: BoardPageProps) {
 
     // The screen looks again by itself, and shows how old it is when the network fails (FR-KIT-015).
     useEffect(() => {
-        const refresh = window.setInterval(() => void load(station), REFRESH_MS);
+        const refresh = window.setInterval(() => { if (!document.hidden) void load(station); }, REFRESH_MS);
 
         return () => window.clearInterval(refresh);
     }, [load, station]);
