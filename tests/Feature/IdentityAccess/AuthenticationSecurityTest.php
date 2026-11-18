@@ -10,6 +10,7 @@ use App\Modules\Property\Infrastructure\Persistence\Eloquent\PropertyRecord;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
 use LogicException;
@@ -148,6 +149,33 @@ final class AuthenticationSecurityTest extends TestCase
         $this->post('/properties/select', ['property_id' => self::PROPERTY_A])
             ->assertRedirect('/');
         $this->get('/?home=1')->assertOk();
+    }
+
+    public function test_five_wrong_codes_lock_the_challenge_and_a_used_code_does_not_work_twice(): void
+    {
+        $this->createProperty(self::PROPERTY_A, 'Property A');
+        $user = UserRecord::factory()->create();
+        $secret = 'GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ';
+        $user->two_factor_secret = $secret;
+        $user->two_factor_confirmed_at = now();
+        $user->save();
+        $this->grant($user, self::PROPERTY_A, true);
+        $code = app(TotpOneTimePassword::class)->codeAt($secret, time());
+
+        $this->post('/login', ['email' => $user->email, 'password' => 'password'])->assertRedirect('/mfa/challenge');
+        $this->post('/mfa/challenge', ['code' => $code])->assertRedirect('/properties/select');
+
+        // The same code, a moment later, is a replay.
+        $this->post('/logout');
+        $this->post('/login', ['email' => $user->email, 'password' => 'password'])->assertRedirect('/mfa/challenge');
+        $this->post('/mfa/challenge', ['code' => $code])->assertSessionHasErrors('code');
+
+        // Failures from other addresses count against the account too (the per-address throttle does not see them): at five, even a right code is refused.
+        foreach (range(1, 4) as $_) {
+            RateLimiter::hit('mfa-failures:'.$user->getKey(), 900);
+        }
+
+        $this->post('/mfa/challenge', ['code' => app(TotpOneTimePassword::class)->codeAt($secret, time() + 30)])->assertSessionHasErrors(['code' => __('identity.mfa_locked')]);
     }
 
     public function test_a_person_with_one_property_goes_straight_in_without_choosing(): void

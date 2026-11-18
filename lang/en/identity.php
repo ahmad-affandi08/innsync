@@ -7,6 +7,7 @@ return [
     'property_forbidden' => 'You do not have access to this property.',
     'use_sign_out' => 'Use sign out to end the current session.',
     'mfa_code_invalid' => 'The verification code is invalid.',
+    'mfa_locked' => 'Too many wrong codes. Try again in 15 minutes.',
     'mfa_enrollment_required' => 'A pending two-factor enrollment is required.',
     'reset_subject' => 'Reset your InnSYnc password',
     'reset_body' => "Someone asked to reset the password of this account. Open the link below to choose a new one. It works once and expires in :minutes minutes.\n\n:url\n\nIf it was not you, ignore this email; your password stays as it is.",
