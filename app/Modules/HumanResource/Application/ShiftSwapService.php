@@ -178,7 +178,19 @@ final readonly class ShiftSwapService
             throw Refusal::invalid('Say why it is rejected.', ['note']);
         }
 
-        $this->transactions->run(function () use ($property, $actor, $actorId, $id, $approve, $note): void {
+        // The two people are locked before anything is read in the transaction, so the roster read later is what a leave approval left, not what it was before.
+        $people = [];
+
+        if ($approve && ($first = $this->store->find($property, strtolower($id))) !== null) {
+            $people = array_unique([$first['requester_id'], $first['partner_id']]);
+            sort($people);
+        }
+
+        $this->transactions->run(function () use ($property, $actor, $actorId, $id, $approve, $note, $people): void {
+            foreach ($people as $employeeId) {
+                $this->employees->lockEmployee($property, $employeeId);
+            }
+
             $s = $this->store->find($property, strtolower($id)) ?? throw Refusal::notFound('Exchange not found.');
 
             if ($s['status'] !== 'awaiting_supervisor') {
@@ -197,8 +209,6 @@ final readonly class ShiftSwapService
                     throw Refusal::stateConflict('The day has begun; the exchange can no longer be made.');
                 }
 
-                $this->employees->lockEmployee($property, $s['requester_id']);
-                $this->employees->lockEmployee($property, $s['partner_id']);
                 $a = $this->roster->entry($property, $s['requester_id'], $date);
                 $b = $this->roster->entry($property, $s['partner_id'], $date);
 
