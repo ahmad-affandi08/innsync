@@ -320,7 +320,7 @@ trait BuildsHotel
         $this->grant($groupViewer, self::PROPERTY, [GroupBookingService::VIEW_PERMISSION]);
         $this->grant($outletManager, self::PROPERTY, [OutletService::MANAGE_PERMISSION]);
         $this->grant($parManager, self::PROPERTY, [ParLevelService::MANAGE_PERMISSION]);
-        $this->grant($builder, self::PROPERTY, [ReportBuilderService::PERMISSION]);
+        $this->grant($builder, self::PROPERTY, [ReportBuilderService::PERMISSION, \App\Modules\Reporting\Application\DashboardService::REVENUE_PERMISSION]);
         $this->grant($claimClerk, self::PROPERTY, [ClaimService::RECORD_PERMISSION]);
         $this->grant($claimDutyManager, self::PROPERTY, [ClaimService::APPROVE_PERMISSION]);
         $this->grant($claimBoth, self::PROPERTY, [ClaimService::RECORD_PERMISSION, ClaimService::APPROVE_PERMISSION]);

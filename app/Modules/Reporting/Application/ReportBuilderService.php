@@ -32,6 +32,9 @@ final readonly class ReportBuilderService
 {
     public const PERMISSION = 'reporting.builder.use';
 
+    /** Datasets that carry revenue figures: the builder permission alone does not open them, the right to see revenue is needed too. */
+    private const REVENUE_DATASETS = ['reservations', 'postings'];
+
     public const VIEW_LIMIT = 500;
 
     public const EXPORT_LIMIT = 20_000;
@@ -73,7 +76,9 @@ final readonly class ReportBuilderService
     {
         $this->authorize($property, $actorId);
 
-        return ['datasets' => self::DATASETS, 'business_date' => $this->businessDate->current($property)->toString(), 'view_limit' => self::VIEW_LIMIT, 'currency' => $this->currencies->currencyOf($property)];
+        $datasets = array_filter(self::DATASETS, fn (string $name): bool => $this->mayRead($property, $actorId, $name), ARRAY_FILTER_USE_KEY);
+
+        return ['datasets' => $datasets, 'business_date' => $this->businessDate->current($property)->toString(), 'view_limit' => self::VIEW_LIMIT, 'currency' => $this->currencies->currencyOf($property)];
     }
 
     /**
@@ -113,6 +118,11 @@ final readonly class ReportBuilderService
     {
         $this->authorize($property, $actorId);
         $set = self::DATASETS[$dataset] ?? throw Refusal::invalid('Choose one of the datasets.', ['dataset']);
+
+        if (! $this->mayRead($property, $actorId, $dataset)) {
+            throw Refusal::forbidden('This dataset shows revenue; it needs the right to see revenue.');
+        }
+
         $columns = array_values(array_unique($columns));
 
         if ($columns === [] || array_diff($columns, array_keys($set['columns'])) !== []) {
@@ -196,6 +206,11 @@ final readonly class ReportBuilderService
                 return $out;
             }, $rows),
         ];
+    }
+
+    private function mayRead(PropertyId $property, string $actorId, string $dataset): bool
+    {
+        return ! in_array($dataset, self::REVENUE_DATASETS, true) || $this->permissions->allowsInProperty($actorId, DashboardService::REVENUE_PERMISSION, $property);
     }
 
     private function authorize(PropertyId $property, string $actorId): void

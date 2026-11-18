@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Reporting;
 
 use App\Modules\Property\Application\Settings\PropertySettingsService;
+use App\Modules\Reporting\Application\DashboardService;
 use App\Modules\Reporting\Application\ReportBuilderService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
@@ -31,7 +32,7 @@ final class ReportBuilderHttpTest extends TestCase
         parent::setUp();
 
         $this->createProperty(self::A, 'A');
-        $this->signIn(self::A, [ReportBuilderService::PERMISSION, PropertySettingsService::MANAGE_PERMISSION]);
+        $this->signIn(self::A, [ReportBuilderService::PERMISSION, DashboardService::REVENUE_PERMISSION, PropertySettingsService::MANAGE_PERMISSION]);
         $this->postJson('/property/settings/business-date', ['business_date' => '2026-10-01', 'lock_version' => 0, 'reason' => 'Go-live'])->assertOk();
     }
 
@@ -59,5 +60,17 @@ final class ReportBuilderHttpTest extends TestCase
         $this->get('/reports/builder')->assertForbidden();
         $this->getJson('/reports/builder/run?dataset=reservations&columns[]=number')->assertForbidden();
         $this->get('/reports/builder/export?dataset=reservations&columns[]=number')->assertForbidden();
+    }
+
+    public function test_the_revenue_datasets_need_the_right_to_see_revenue_as_well(): void
+    {
+        $this->post('/logout');
+        $this->flushSession();
+        $this->signIn(self::A, [ReportBuilderService::PERMISSION]);
+
+        $this->get('/reports/builder')->assertInertia(fn (Assert $p) => $p->has('catalogue.datasets', 2)->has('catalogue.datasets.laundry')->has('catalogue.datasets.tasks'));
+        $this->getJson('/reports/builder/run?dataset=postings&columns[]=total_minor')->assertForbidden();
+        $this->getJson('/reports/builder/run?dataset=reservations&columns[]=number')->assertForbidden();
+        $this->getJson('/reports/builder/run?dataset=tasks&columns[]=room')->assertOk();
     }
 }
