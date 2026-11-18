@@ -121,30 +121,34 @@ final class HandleInertiaRequests extends Middleware
         try {
             $date = app(BusinessDateProvider::class)->current($property)->toString();
         } catch (Throwable) {
-            $date = null;
+            $date = null; // expected before go-live: no business date is set yet
         }
 
         try {
             $disabled = app(ModuleSettings::class)->disabled($property);
-        } catch (Throwable) {
+        } catch (Throwable $e) {
+            self::quietly($e);
             $disabled = [];
         }
 
         try {
             $accessible = app(ModuleAccess::class)->forUser((string) $request->user()->getAuthIdentifier(), $property);
-        } catch (Throwable) {
+        } catch (Throwable $e) {
+            self::quietly($e);
             $accessible = null; // when it cannot be read, the whole menu is offered rather than none of it
         }
 
         try {
             $areas = app(ModuleAccess::class)->areasOf((string) $request->user()->getAuthIdentifier(), $property);
-        } catch (Throwable) {
+        } catch (Throwable $e) {
+            self::quietly($e);
             $areas = null; // unreadable: every page of a department is offered, as for the departments above
         }
 
         try {
             $currency = app(PropertyCurrencyReader::class)->currencyOf($property);
-        } catch (Throwable) {
+        } catch (Throwable $e) {
+            self::quietly($e);
             $currency = null;
         }
 
@@ -152,7 +156,8 @@ final class HandleInertiaRequests extends Middleware
         try {
             $open = app(CashierRepository::class)->openOf($property, strtolower((string) $request->user()->getAuthIdentifier()));
             $shift = $open === null ? null : ['number' => (string) $open['number'], 'opened_business_date' => (string) $open['opened_business_date']];
-        } catch (Throwable) {
+        } catch (Throwable $e) {
+            self::quietly($e);
             $shift = null;
         }
 
@@ -161,7 +166,8 @@ final class HandleInertiaRequests extends Middleware
 
         try {
             $on = app(PropertyFeatures::class)->enabled($property);
-        } catch (Throwable) {
+        } catch (Throwable $e) {
+            self::quietly($e);
             $on = null; // unreadable: the optional pages are offered rather than hidden
         }
 
@@ -171,7 +177,8 @@ final class HandleInertiaRequests extends Middleware
 
         try {
             $logo = app(PropertyBranding::class)->url($property);
-        } catch (Throwable) {
+        } catch (Throwable $e) {
+            self::quietly($e);
             $logo = null;
         }
 
@@ -228,6 +235,14 @@ final class HandleInertiaRequests extends Middleware
             report($exception);
 
             return $none;
+        }
+    }
+
+    /** A part of the frame that could not be read falls back to a default; the cause is reported once in five minutes instead of on every page. */
+    private static function quietly(Throwable $exception): void
+    {
+        if (Cache::add('shell.error.'.md5($exception::class.$exception->getMessage()), true, 300)) {
+            report($exception);
         }
     }
 }
