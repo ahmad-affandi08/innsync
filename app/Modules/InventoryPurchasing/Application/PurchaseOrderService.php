@@ -374,6 +374,15 @@ final readonly class PurchaseOrderService
         }
 
         $this->transactions->run(function () use ($property, $actor, $order, $made, $newTotal, $big, $reason, $lock): void {
+            // A revision that raises what a department spends meets the same budget policy as a new order; the order's own committed value is left out of the count.
+            $before = $this->perDepartment($order['lines']);
+
+            foreach ($this->perDepartment($made['snapshot']['lines']) as $department => $amount) {
+                if ($amount > ($before[$department] ?? 0)) {
+                    $this->settings->enforce($property, $department, substr((string) $order['order_date'], 0, 7), $amount, $order['id']);
+                }
+            }
+
             $required = $big && $this->approvals->requirementFor($property, self::SUBJECT, $newTotal)->required;
 
             if (! $required) {

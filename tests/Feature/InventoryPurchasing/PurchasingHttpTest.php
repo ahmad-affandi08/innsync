@@ -466,6 +466,23 @@ final class PurchasingHttpTest extends TestCase
         $this->postJson("/inventory/requests/{$third['id']}/submit", ['lock_version' => $third['lock_version']])->assertOk();
     }
 
+    public function test_a_revision_that_raises_a_blocked_budget_is_refused(): void
+    {
+        $this->postJson('/inventory/purchasing-settings/budgets', ['department' => 'fnb', 'period' => '2026-10', 'amount_minor' => 30_000_000])->assertOk();
+        $settings = $this->get('/inventory/purchasing-settings')->viewData('page')['props']['overview']['settings'];
+        $this->postJson('/inventory/purchasing-settings', [...$settings, 'budget_policy' => 'block'])->assertOk();
+
+        $first = $this->pr();
+        $this->postJson("/inventory/requests/{$first['id']}/submit", ['lock_version' => $first['lock_version']])->assertOk();
+        $o = $this->po([['request_line_id' => DB::table('purchase_request_lines')->where('request_id', $first['id'])->value('id')]]);
+        $s = $this->postJson("/inventory/orders/{$o['id']}/submit", ['lock_version' => $o['lock_version']])->assertOk()->json('order');
+        $o = $this->postJson("/inventory/orders/{$o['id']}/issue", ['lock_version' => $s['lock_version']])->assertOk()->json('order');
+        $lineId = DB::table('purchase_order_lines')->where('order_id', $o['id'])->value('id');
+
+        $this->revise($o, [['line_id' => $lineId, 'quantity' => '15']], 'Event added', [], 409);
+        $this->assertSame(0, (int) DB::table('purchase_orders')->where('id', $o['id'])->value('revision'));
+    }
+
     public function test_the_purchasing_policy_has_baselines_and_is_validated_and_versioned(): void
     {
         $s = $this->get('/inventory/purchasing-settings')->viewData('page')['props']['overview']['settings'];
