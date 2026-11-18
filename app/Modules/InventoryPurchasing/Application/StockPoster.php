@@ -113,7 +113,7 @@ final readonly class StockPoster
             $balance = $this->inventory->balanceOf($property, $item['id'], $location['id']);
 
             if ($balance - $base < 0) {
-                $override = $this->negativeAllowed($property, $actor, $item, $location, $allowNegative, $overrideReason, $automatic);
+                $override = $this->negativeAllowed($property, $actor, $item, $location, $allowNegative, $overrideReason, $automatic, $kind, $sourceType);
             }
         }
 
@@ -207,7 +207,7 @@ final readonly class StockPoster
     }
 
     /** The reason an outflow may go below zero, or a refusal. */
-    private function negativeAllowed(PropertyId $property, string $actor, array $item, array $location, bool $allowNegative, ?string $reason, bool $automatic): string
+    private function negativeAllowed(PropertyId $property, string $actor, array $item, array $location, bool $allowNegative, ?string $reason, bool $automatic, string $kind, ?string $sourceType): string
     {
         $category = $this->inventory->category($property, $item['category_id']);
 
@@ -216,7 +216,13 @@ final readonly class StockPoster
         }
 
         if ($automatic) {
-            return 'Taken by a sale before the stock was received';
+            // The record says what really took the stock, so the trail does not call a waste record or a repair part a sale.
+            return 'Taken by '.match (true) {
+                $kind === 'write_off' => 'a waste record',
+                $sourceType === 'maintenance' => 'a repair part',
+                $sourceType === 'kitchen_production' => 'a kitchen production',
+                default => 'a sale',
+            }.' before the stock was received';
         }
 
         if (! $this->permissions->allowsInProperty($actor, self::NEGATIVE_PERMISSION, $property)) {
