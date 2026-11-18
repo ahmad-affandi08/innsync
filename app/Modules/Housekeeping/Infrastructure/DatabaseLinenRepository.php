@@ -61,7 +61,8 @@ final readonly class DatabaseLinenRepository implements LinenRepository
 
     public function findTransferByKey(PropertyId $property, string $clientKey): ?array
     {
-        $row = $this->transferQuery($property)->where('t.client_key', $clientKey)->first();
+        $query = $this->transferQuery($property)->where('t.client_key', $clientKey);
+        $row = (DB::transactionLevel() > 0 ? $query->lockForUpdate() : $query)->first();
 
         return $row === null ? null : self::transfer($row);
     }
@@ -122,8 +123,10 @@ final readonly class DatabaseLinenRepository implements LinenRepository
     public function balanceAt(PropertyId $property, string $itemId, string $location): int
     {
         $pid = $property->toString();
-        $in = (int) DB::table('linen_transfers')->where('property_id', $pid)->where('item_id', $itemId)->where('status', 'received')->where('to_location', $location)->sum('quantity_received');
-        $out = (int) DB::table('linen_transfers')->where('property_id', $pid)->where('item_id', $itemId)->whereIn('status', ['pending', 'received'])->where('from_location', $location)->sum('quantity_sent');
+        // A locking read inside a transaction sees what committed while we waited for the item lock; a plain one would not.
+        $fresh = static fn (Builder $q): Builder => DB::transactionLevel() > 0 ? $q->lockForUpdate() : $q;
+        $in = (int) $fresh(DB::table('linen_transfers')->where('property_id', $pid)->where('item_id', $itemId)->where('status', 'received')->where('to_location', $location))->sum('quantity_received');
+        $out = (int) $fresh(DB::table('linen_transfers')->where('property_id', $pid)->where('item_id', $itemId)->whereIn('status', ['pending', 'received'])->where('from_location', $location))->sum('quantity_sent');
 
         return $in - $out;
     }

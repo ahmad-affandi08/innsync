@@ -182,17 +182,17 @@ final readonly class LinenService
         $existing = null;
 
         $this->transactions->run(function () use ($property, $actor, $itemId, $from, $to, $quantity, $note, $clientKey, $id, &$existing): void {
+            $item = $this->linen->findItem($property, strtolower($itemId)) ?? throw Refusal::notFound('Item not found.');
+            $this->linen->lockItem($property, $item['id']);
+
+            // After the lock: a send of the same item that committed while we waited is seen here, as a replay or as a lower balance.
             if ($clientKey !== null && ($existing = $this->linen->findTransferByKey($property, $clientKey)) !== null) {
                 return;
             }
 
-            $item = $this->linen->findItem($property, strtolower($itemId)) ?? throw Refusal::notFound('Item not found.');
-
             if (! $item['is_active']) {
                 throw Refusal::stateConflict('This item is no longer used.');
             }
-
-            $this->linen->lockItem($property, $item['id']);
 
             if ($from !== 'external' && $this->linen->balanceAt($property, $item['id'], $from) < $quantity) {
                 throw Refusal::stateConflict('There are not that many in '.$from.'.');

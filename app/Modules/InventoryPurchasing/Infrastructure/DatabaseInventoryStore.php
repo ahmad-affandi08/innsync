@@ -7,6 +7,7 @@ namespace App\Modules\InventoryPurchasing\Infrastructure;
 use App\Modules\InventoryPurchasing\Application\InventoryStore;
 use App\Shared\Domain\Tenancy\PropertyId;
 use DateTimeImmutable;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 
@@ -147,21 +148,30 @@ final readonly class DatabaseInventoryStore implements InventoryStore
             ->when($locationId !== null, static fn ($q) => $q->where('location_id', $locationId))->orderByDesc('created_at')->orderByDesc('id')->limit($limit)->get());
     }
 
+    /**
+     * Inside a transaction a plain read keeps the snapshot of the first read, so a posting that committed while we waited for the
+     * item lock would be missed. A locking read sees the latest committed rows; outside a transaction nothing is locked.
+     */
+    private static function fresh(Builder $query): Builder
+    {
+        return DB::transactionLevel() > 0 ? $query->lockForUpdate() : $query;
+    }
+
     public function balanceOf(PropertyId $property, string $itemId, string $locationId): int
     {
-        return (int) DB::table('stock_movements')->where('property_id', $property->toString())->where('item_id', $itemId)->where('location_id', $locationId)->sum('base_qty_milli');
+        return (int) self::fresh(DB::table('stock_movements')->where('property_id', $property->toString())->where('item_id', $itemId)->where('location_id', $locationId))->sum('base_qty_milli');
     }
 
     public function pool(PropertyId $property, string $itemId): array
     {
-        $row = DB::table('stock_movements')->where('property_id', $property->toString())->where('item_id', $itemId)->selectRaw('COALESCE(SUM(base_qty_milli), 0) as qty, COALESCE(SUM(value_minor), 0) as value')->first();
+        $row = self::fresh(DB::table('stock_movements')->where('property_id', $property->toString())->where('item_id', $itemId))->selectRaw('COALESCE(SUM(base_qty_milli), 0) as qty, COALESCE(SUM(value_minor), 0) as value')->first();
 
         return ['qty_milli' => (int) $row->qty, 'value_minor' => (int) $row->value];
     }
 
     public function lastInflowCost(PropertyId $property, string $itemId): ?array
     {
-        $row = DB::table('stock_movements')->where('property_id', $property->toString())->where('item_id', $itemId)->whereIn('kind', ['opening', 'receipt', 'adjustment_in'])->where('value_minor', '>', 0)
+        $row = self::fresh(DB::table('stock_movements')->where('property_id', $property->toString())->where('item_id', $itemId))->whereIn('kind', ['opening', 'receipt', 'adjustment_in'])->where('value_minor', '>', 0)
             ->orderByDesc('created_at')->orderByDesc('id')->first(['value_minor', 'base_qty_milli']);
 
         return $row === null ? null : ['value_minor' => (int) $row->value_minor, 'base_qty_milli' => (int) $row->base_qty_milli];
