@@ -41,4 +41,13 @@
     <If "%{REQUEST_URI} =~ m#^/icons/#">
         Header set Cache-Control "public, max-age=604800"
     </If>
+    # The face-recognition models are 7 MB and never change under the same name; a phone should not fetch them again at every clock-in.
+    <If "%{REQUEST_URI} =~ m#^/face-models/#">
+        Header set Cache-Control "public, max-age=2592000"
+    </If>
+
+    # Basic hardening for every response. (A Content-Security-Policy and HSTS need a look at the real host first, so they are not set here.)
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set X-Frame-Options "SAMEORIGIN"
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
 </IfModule>

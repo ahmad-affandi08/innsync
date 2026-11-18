@@ -41,6 +41,13 @@ final class RoomPhotoImage
             throw Refusal::invalid('Use a PNG, JPEG or WebP photo between 300 and 8000 pixels on each side.', ['photo']);
         }
 
+        // Decoding takes about five bytes a pixel; a picture that cannot fit in the memory left would end the request in a fatal error instead of a message.
+        $limit = ini_parse_quantity((string) ini_get('memory_limit'));
+
+        if ($limit > 0 && $size[0] * $size[1] * 5 > $limit - memory_get_usage() - 8_388_608) {
+            throw Refusal::invalid('This photo has too many pixels for the server to handle. Use a smaller picture.', ['photo']);
+        }
+
         $image = @imagecreatefromstring($bytes);
 
         if ($image === false) {
