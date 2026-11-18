@@ -67,7 +67,9 @@ final readonly class DatabaseStayRepository implements StayRepository
 
     public function roomIsOccupied(PropertyId $property, string $roomId): bool
     {
-        return DB::table('stays')->where('property_id', $property->toString())->where('room_id', $roomId)->where('status', 'in_house')->lockForUpdate()->exists();
+        return DB::table('stays')->where('property_id', $property->toString())->where('room_id', $roomId)->where('status', 'in_house')->lockForUpdate()->exists()
+            // A day use under way holds the room as much as a guest in house.
+            || DB::table('day_use_bookings')->where('property_id', $property->toString())->where('room_id', $roomId)->where('status', 'in_use')->lockForUpdate()->exists();
     }
 
     public function checkOut(PropertyId $property, Stay $stay, int $expectedLockVersion, BusinessDate $date, string $actorId, DateTimeImmutable $at): bool

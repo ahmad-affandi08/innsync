@@ -145,6 +145,12 @@ final readonly class VendorJobService
 
         $this->transactions->run(function () use ($property, $actor, $id, $work, $scope): void {
             $this->orders->lock($property, $work['id']);
+
+            // The work order may have been finished while we waited for the lock.
+            if (! in_array(($this->orders->find($property, $work['id']) ?? $work)['status'], self::WORK_OPEN, true)) {
+                throw Refusal::stateConflict('This work order is closed.');
+            }
+
             $now = $this->clock->nowUtc();
             $number = $this->numbers->next($property, 'VJ');
 

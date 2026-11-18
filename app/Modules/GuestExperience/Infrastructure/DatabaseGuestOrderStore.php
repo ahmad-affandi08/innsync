@@ -7,13 +7,20 @@ namespace App\Modules\GuestExperience\Infrastructure;
 use App\Modules\GuestExperience\Application\GuestOrderStore;
 use App\Shared\Domain\Tenancy\PropertyId;
 use DateTimeImmutable;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\DB;
 
 final readonly class DatabaseGuestOrderStore implements GuestOrderStore
 {
-    public function add(PropertyId $property, array $row, DateTimeImmutable $at): void
+    public function add(PropertyId $property, array $row, DateTimeImmutable $at): bool
     {
-        DB::table('ge_orders')->insert([...$row, 'line_ids' => json_encode($row['line_ids'], JSON_THROW_ON_ERROR), 'property_id' => $property->toString(), 'lock_version' => 0, 'created_at' => $at, 'updated_at' => $at]);
+        try {
+            DB::table('ge_orders')->insert([...$row, 'line_ids' => json_encode($row['line_ids'], JSON_THROW_ON_ERROR), 'property_id' => $property->toString(), 'lock_version' => 0, 'created_at' => $at, 'updated_at' => $at]);
+        } catch (UniqueConstraintViolationException) {
+            return false;
+        }
+
+        return true;
     }
 
     public function find(PropertyId $property, string $id): ?array

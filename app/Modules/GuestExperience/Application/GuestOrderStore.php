@@ -11,7 +11,7 @@ use DateTimeImmutable;
 interface GuestOrderStore
 {
     /** @param array<string, mixed> $row */
-    public function add(PropertyId $property, array $row, DateTimeImmutable $at): void;
+    public function add(PropertyId $property, array $row, DateTimeImmutable $at): bool;
 
     /** @return array<string, mixed>|null */
     public function find(PropertyId $property, string $id): ?array;

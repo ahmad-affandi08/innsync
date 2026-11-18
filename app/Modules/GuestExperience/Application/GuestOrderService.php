@@ -121,17 +121,28 @@ final readonly class GuestOrderService
 
         $id = $this->ids->next();
 
-        $this->transactions->run(function () use ($property, $session, $clientKey, $lines, $note, $payment, $target, $id): void {
-            $placed = $this->ordering->place($property, $target, $lines, $note);
-            $now = $this->clock->nowUtc();
-            $this->orders->add($property, [
-                'id' => $id, 'session_id' => $session['id'], 'qr_point_id' => $session['point_id'], 'client_key' => $clientKey, 'kind' => $session['kind'], 'outlet_id' => $target['outlet_id'], 'bill_id' => $placed['bill_id'],
-                'bill_number' => $placed['bill_number'], 'line_ids' => $placed['line_ids'], 'subtotal_minor' => $placed['subtotal_minor'], 'payment_preference' => $payment, 'room_charge_state' => $payment === 'room' ? 'pending' : 'none',
-                'verified_by' => null, 'verified_at' => null, 'verify_note' => null, 'note' => $note,
-            ], $now);
-            $this->audit->record(new AuditEntry($property->toString(), null, 'guest_order.placed', 'guest_order', $id, null, ['code' => $session['label'], 'bill' => $placed['bill_number'], 'lines' => count($placed['line_ids']), 'payment' => $payment, 'subtotal_minor' => $placed['subtotal_minor']]));
-            $this->outbox->publish(new OutboxEvent($property, 'guest.order.placed', $id, 1, ['order_id' => $id, 'bill_id' => $placed['bill_id'], 'bill_number' => $placed['bill_number'], 'kind' => $session['kind'], 'label' => $session['label'], 'payment' => $payment]));
-        });
+        try {
+            $this->transactions->run(function () use ($property, $session, $clientKey, $lines, $note, $payment, $target, $id): void {
+                $placed = $this->ordering->place($property, $target, $lines, $note);
+                $now = $this->clock->nowUtc();
+
+                // A double tap: the same key was placed a moment ago. Undo this attempt and answer with the first order.
+                if (! $this->orders->add($property, [
+                    'id' => $id, 'session_id' => $session['id'], 'qr_point_id' => $session['point_id'], 'client_key' => $clientKey, 'kind' => $session['kind'], 'outlet_id' => $target['outlet_id'], 'bill_id' => $placed['bill_id'],
+                    'bill_number' => $placed['bill_number'], 'line_ids' => $placed['line_ids'], 'subtotal_minor' => $placed['subtotal_minor'], 'payment_preference' => $payment, 'room_charge_state' => $payment === 'room' ? 'pending' : 'none',
+                    'verified_by' => null, 'verified_at' => null, 'verify_note' => null, 'note' => $note,
+                ], $now)) {
+                    throw new \DomainException('duplicate guest order key');
+                }
+
+                $this->audit->record(new AuditEntry($property->toString(), null, 'guest_order.placed', 'guest_order', $id, null, ['code' => $session['label'], 'bill' => $placed['bill_number'], 'lines' => count($placed['line_ids']), 'payment' => $payment, 'subtotal_minor' => $placed['subtotal_minor']]));
+                $this->outbox->publish(new OutboxEvent($property, 'guest.order.placed', $id, 1, ['order_id' => $id, 'bill_id' => $placed['bill_id'], 'bill_number' => $placed['bill_number'], 'kind' => $session['kind'], 'label' => $session['label'], 'payment' => $payment]));
+            });
+        } catch (\DomainException $e) {
+            $first = $this->orders->byClientKey($property, $session['id'], $clientKey) ?? throw $e;
+
+            return $this->shape($property, $first);
+        }
 
         return $this->shape($property, $this->orders->find($property, $id) ?? throw Refusal::notFound('Order not found.'));
     }
