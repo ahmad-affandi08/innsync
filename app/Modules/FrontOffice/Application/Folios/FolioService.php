@@ -556,6 +556,13 @@ final readonly class FolioService
         return $this->transactions->run(function () use ($property, $actorId, $folio, $paymentMethod, $method, $amountMinor, $reference, $reason, $approvalId): array {
             $approval = $this->consumeApproval($property, $actorId, self::REFUND_SUBJECT, $folio->id, ['folio_id' => $folio->id, 'method' => $method, 'amount_minor' => $amountMinor], $amountMinor, $approvalId);
 
+            // Only what the guest holds in credit goes back: a refund beyond it would turn the folio into a debt the guest never incurred.
+            $credit = -($this->folios->lock($property, $folio->id) ?? throw Refusal::notFound('Folio not found.'))->balance->amountMinor;
+
+            if ($amountMinor > max(0, $credit)) {
+                throw Refusal::stateConflict('The folio holds '.max(0, $credit).' in credit; more than that cannot be paid back.');
+            }
+
             return $this->postAndRecord($property, $actorId, $folio->id, 'folio.refund.posted', fn ($date, $now): Posting => Posting::refund(
                 $this->ledger->newId(), 'REFUND', 'Refund by '.str_replace('_', ' ', $method), Money::ofMinor($amountMinor, $folio->currency), $paymentMethod, $reference, $reason, $date, $now, strtolower($actorId), $approval === '' ? null : $approval,
             ), $approval);

@@ -322,6 +322,17 @@ final class FolioTest extends TestCase
         self::assertSame('closed', $closed['status']);
     }
 
+    public function test_a_refund_above_the_credit_the_folio_holds_is_refused_even_with_an_approval(): void
+    {
+        $this->requireApprovals();
+        $this->folios()->pay($this->property(), $this->managerId, $this->folioId, 'bank_transfer', 100_000_000, 'DEP-2', 'deposit');
+        $request = $this->folios()->requestRefundApproval($this->property(), $this->managerId, $this->folioId, 'bank_transfer', 150_000_000, 'Too much', IdempotencyKey::fromString('refund-req-00000002'));
+        app(ApprovalService::class)->approve($this->property(), $request->id, $this->supervisorId);
+
+        $this->expect(fn () => $this->folios()->refund($this->property(), $this->managerId, $this->folioId, 'bank_transfer', 150_000_000, 'REF-2', 'Too much', $request->id), 409);
+        self::assertSame(-100_000_000, $this->balance());
+    }
+
     public function test_permissions_and_property_scope_are_enforced(): void
     {
         $this->expect(fn () => $this->folios()->charge($this->property(), $this->viewerId, $this->folioId, 'ROOM', 'x', 100, false), 403);
