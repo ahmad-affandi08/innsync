@@ -148,6 +148,20 @@ final class CommissionHttpTest extends TestCase
         self::assertEqualsWithDelta(array_sum(array_column($rows, 'Debit')), array_sum(array_column($rows, 'Credit')), 0.001);
     }
 
+    public function test_a_night_that_was_reversed_earns_no_commission(): void
+    {
+        $this->postJson('/front-office/commissions/partners', ['kind' => 'company', 'key' => $this->company, 'rate_bp' => 1000])->assertCreated();
+        DB::table('reservation_companies')->insert(['property_id' => self::A, 'reservation_id' => $this->reservation, 'company_id' => $this->company, 'linked_at' => now(), 'linked_by' => DB::table('users')->value('id')]);
+
+        app(PropertyContext::class)->activate(PropertyId::fromString(self::A));
+        $ledger = app(FolioLedger::class);
+        $original = app(\App\Modules\FrontOffice\Application\Folios\FolioRepository::class)->findBySource(PropertyId::fromString(self::A), 'night_audit', $this->reservation.':2026-10-02')[1];
+        $ledger->post(PropertyId::fromString(self::A), $this->folio, fn (BusinessDate $date, DateTimeImmutable $at): Posting => Posting::reversalOf($original, $ledger->newId(), 'Billing error', $date, $at, null, null));
+
+        $this->checkOut();
+        self::assertSame(100_000_000, (int) DB::table('commission_accruals')->value('base_minor'));
+    }
+
     public function test_a_channel_is_a_partner_too_and_a_commission_that_is_not_owed_is_voided_with_a_reason(): void
     {
         DB::table('reservation_external_refs')->insert(['id' => strtolower((string) Str::ulid()), 'property_id' => self::A, 'channel' => 'booking_com', 'external_ref' => 'BK-1', 'reservation_id' => $this->reservation, 'imported_by' => DB::table('users')->value('id'), 'created_at' => now()]);

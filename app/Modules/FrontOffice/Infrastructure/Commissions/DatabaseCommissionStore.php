@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Modules\FrontOffice\Infrastructure\Commissions;
 
 use App\Modules\FrontOffice\Application\Commissions\CommissionStore;
+use App\Modules\FrontOffice\Infrastructure\Folios\RoomRevenueBase;
 use App\Shared\Domain\Tenancy\PropertyId;
 use DateTimeImmutable;
 use Illuminate\Database\UniqueConstraintViolationException;
@@ -60,7 +61,7 @@ final readonly class DatabaseCommissionStore implements CommissionStore
 
     public function roomBaseOf(PropertyId $property, string $reservationId): int
     {
-        return (int) DB::table('folio_postings as p')->join('folios as f', 'f.id', '=', 'p.folio_id')->where('p.property_id', $property->toString())->where('f.reservation_id', $reservationId)->where('p.source', 'night_audit')->sum('p.base_minor');
+        return RoomRevenueBase::of($property, $reservationId);
     }
 
     public function addAccrual(PropertyId $property, array $row, DateTimeImmutable $at): bool
