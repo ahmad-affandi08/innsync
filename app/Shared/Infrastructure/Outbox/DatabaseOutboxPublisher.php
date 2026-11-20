@@ -61,6 +61,8 @@ final readonly class DatabaseOutboxPublisher implements OutboxPublisher
             'updated_at' => $message->occurredAt,
         ]);
 
+        AfterResponseDrain::request();
+
         return $message;
     }
 

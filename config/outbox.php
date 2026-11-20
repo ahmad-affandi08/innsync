@@ -45,7 +45,9 @@ $jobTimeout = min(
 return [
     'queue_connection' => env('OUTBOX_QUEUE_CONNECTION', 'database'),
     'queue_name' => env('OUTBOX_QUEUE_NAME', 'outbox'),
-    'drain_batch_size' => min(1000, max(1, (int) env('OUTBOX_DRAIN_BATCH_SIZE', 50))),
+    'drain_batch_size' => min(1000, max(1, (int) env('OUTBOX_DRAIN_BATCH_SIZE', 200))),
+    // A short drain and worker pass after the response of a web request, so interactive work (a POS order to the kitchen) is not left waiting for the next cron tick.
+    'after_response' => filter_var(env('OUTBOX_AFTER_RESPONSE', env('APP_ENV') === 'production'), FILTER_VALIDATE_BOOLEAN),
     'max_attempts' => min(25, max(1, (int) env('OUTBOX_MAX_ATTEMPTS', 5))),
     'retry_delays' => $retryDelays === [] ? [60] : $retryDelays,
     'job_timeout_seconds' => $jobTimeout,
