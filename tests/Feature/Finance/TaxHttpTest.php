@@ -74,9 +74,10 @@ final class TaxHttpTest extends TestCase
     /** @param array<string, array{0: int, 1: int, 2: int}> $lines  source => [base, service charge, tax] */
     private function day(string $date, array $lines): void
     {
-        $day = $this->id();
+        $existing = DB::table('fin_revenue_days')->where('property_id', self::A)->where('business_date', $date)->value('id');
+        $day = $existing ?? $this->id();
         $sum = static fn (int $i): int => array_sum(array_column($lines, $i));
-        DB::table('fin_revenue_days')->insert(['id' => $day, 'property_id' => self::A, 'business_date' => $date, 'currency' => 'IDR', 'night_audit_id' => $this->id(), 'base_minor' => $sum(0), 'service_charge_minor' => $sum(1), 'tax_minor' => $sum(2), 'total_minor' => $sum(0) + $sum(1) + $sum(2), 'collected_minor' => 0, 'event_id' => $this->id(), 'occurred_at' => "{$date} 20:00:00", 'created_at' => "{$date} 20:00:00"]);
+        $existing !== null || DB::table('fin_revenue_days')->insert(['id' => $day, 'property_id' => self::A, 'business_date' => $date, 'currency' => 'IDR', 'night_audit_id' => $this->id(), 'base_minor' => $sum(0), 'service_charge_minor' => $sum(1), 'tax_minor' => $sum(2), 'total_minor' => $sum(0) + $sum(1) + $sum(2), 'collected_minor' => 0, 'event_id' => $this->id(), 'occurred_at' => "{$date} 20:00:00", 'created_at' => "{$date} 20:00:00"]);
 
         foreach ($lines as $source => [$base, $service, $tax]) {
             DB::table('fin_revenue_lines')->insert(['id' => $this->id(), 'property_id' => self::A, 'day_id' => $day, 'business_date' => $date, 'source' => $source, 'outlet_code' => $source, 'outlet_name' => ucfirst($source), 'base_minor' => $base, 'service_charge_minor' => $service, 'tax_minor' => $tax, 'total_minor' => $base + $service + $tax]);
@@ -126,6 +127,15 @@ final class TaxHttpTest extends TestCase
     {
         $this->day('2026-09-01', ['room' => [1_000_000_000, 100_000_000, 110_000_000]]);
         $this->day('2026-10-01', ['room' => [500_000_000, 50_000_000, 55_000_000]]);
+
+        // A month is reported only when every day of it has reached Finance; the last day is still on its way here.
+        for ($d = 2; $d <= 29; $d++) {
+            $this->day(sprintf('2026-09-%02d', $d), []);
+        }
+
+        $this->postJson('/finance/tax/2026-09/report', [])->assertStatus(409);
+        self::assertSame(0, DB::table('fin_tax_filings')->count());
+        $this->day('2026-09-30', []);
 
         $this->postJson('/finance/tax/2026-10/report', [])->assertStatus(409);
         $this->postJson('/finance/tax/2026-13/report', [])->assertStatus(422);

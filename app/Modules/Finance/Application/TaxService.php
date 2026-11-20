@@ -33,6 +33,7 @@ final readonly class TaxService
     public function __construct(
         private TaxStore $store,
         private TaxQueries $queries,
+        private SettlementStore $days,
         private ChargeSchemeService $schemes,
         private PropertyCurrencyReader $currencies,
         private FinanceAccess $access,
@@ -135,6 +136,19 @@ final readonly class TaxService
         }
 
         $this->transactions->run(function () use ($property, $actor, $period, $reference, $today): void {
+            // The filing cannot be amended, so it waits until the revenue of every day of the month has reached Finance (the outbox may still be carrying the last night).
+            $first = $period.'-01';
+            $last = DateMath::format('Y-m-t', $first);
+            $missing = $this->days->unbookedDays($property, $first, $last);
+
+            // Days before the first booked one are from before the hotel went live and are not waited for; a month with nothing booked has nothing to wait for.
+            $booked = array_values(array_filter(range(1, (int) substr($last, 8, 2)), static fn (int $d): bool => ! in_array($period.'-'.sprintf('%02d', $d), $missing, true)));
+            $late = $booked === [] ? [] : array_values(array_filter($missing, static fn (string $d): bool => (int) substr($d, 8, 2) > $booked[0]));
+
+            if ($late !== []) {
+                throw Refusal::stateConflict('The day '.$late[0].' is not booked in Finance yet, so the month is not final. Report it after the night audit of its last day has been processed.');
+            }
+
             $rows = $this->queries->byOutlet($property, $period.'-01', DateMath::format('Y-m-t', $period.'-01'));
             $amounts = ['base_minor' => array_sum(array_column($rows, 'base_minor')), 'service_charge_minor' => array_sum(array_column($rows, 'service_charge_minor')), 'tax_minor' => array_sum(array_column($rows, 'tax_minor'))];
 
