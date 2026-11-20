@@ -16,7 +16,6 @@ import { StatusBadge } from '@/components/ui/status-badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { HrShell } from '@/modules/hr/components/hr-shell';
 import type { RosterOverview, ShiftPattern } from '@/modules/hr/lib/hr';
-import { apiRequest } from '@/shared/api/http';
 import { useServerAction } from '@/shared/api/use-server-action';
 import { useFormatters, useTranslation } from '@/shared/i18n/i18n';
 import { useErrorStateCopy } from '@/shared/i18n/use-ui-copy';
@@ -152,7 +151,7 @@ export default function RosterPage({ overview }: { overview: RosterOverview }) {
                 <TabsContent className="flex flex-col gap-4" value="shifts">
                     <div className="flex flex-wrap gap-2">
                         {overview.may.roster ? <Button onClick={() => { action.clear(); setForm({ ...BLANK }); }} type="button">{t('hr.shift.new')}</Button> : null}
-                        {overview.may.roster && overview.patterns.length === 0 ? <Button disabled={action.busy} onClick={() => void apiRequest('/hr/shift-patterns/baseline', { method: 'POST' }).then(() => router.reload({ only: ['overview'] }))} type="button" variant="outline">{t('hr.shift.baseline')}</Button> : null}
+                        {overview.may.roster && overview.patterns.length === 0 ? <Button disabled={action.busy} onClick={() => void action.run('/hr/shift-patterns/baseline').then((done) => { if (done !== null) router.reload({ only: ['overview'] }); })} type="button" variant="outline">{t('hr.shift.baseline')}</Button> : null}
                     </div>
                     <DataGrid caption={t('hr.roster.shiftsTab')} columns={patternColumns} empty={<EmptyState illustration="checklist" title={t('hr.shift.none')} />} getRowId={(p) => p.id} id="hr.shifts" rows={overview.patterns} testId="hr-shifts" />
                     <section aria-labelledby="hr-min-h" className="flex flex-col gap-2 border border-border bg-surface p-3" data-testid="hr-minimums">
