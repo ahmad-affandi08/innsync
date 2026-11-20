@@ -29,7 +29,8 @@ final class PreflightEvaluator
 
     public function evaluate(PreflightInputs $in): Findings
     {
-        $production = strtolower($in->appEnv) === 'production';
+        // A site served over https is a real host whatever APP_ENV says; local work runs on plain http. So a careless APP_ENV=local with debug on cannot pass as a release.
+        $production = strtolower($in->appEnv) === 'production' || str_starts_with(strtolower($in->appUrl), 'https://');
         $findings = [];
         $guard = static fn (string $check, bool $good, string $okMessage, string $badMessage) => $good
             ? Finding::ok($check, $okMessage)
@@ -47,9 +48,11 @@ final class PreflightEvaluator
 
         $findings[] = $in->appEnv === ''
             ? Finding::failure('app.env', 'APP_ENV is not set.')
-            : ($production
+            : ($production && strtolower($in->appEnv) !== 'production'
+                ? Finding::failure('app.env', "APP_ENV is '{$in->appEnv}' on an https site; set it to production.")
+                : ($production
                 ? Finding::ok('app.env', 'APP_ENV is production.')
-                : Finding::warning('app.env', "APP_ENV is '{$in->appEnv}', not production; production-only rules are reported as warnings."));
+                : Finding::warning('app.env', "APP_ENV is '{$in->appEnv}', not production; production-only rules are reported as warnings.")));
 
         $findings[] = $guard('app.debug', ! $in->appDebug, 'Debug mode is off.', 'APP_DEBUG must be false; debug pages expose configuration and secrets.');
         $findings[] = $guard('app.key', $in->appKeySet, 'APP_KEY is set.', 'APP_KEY is not set; sessions and encrypted data cannot be trusted.');

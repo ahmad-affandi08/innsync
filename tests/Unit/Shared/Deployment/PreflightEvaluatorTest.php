@@ -108,6 +108,15 @@ final class PreflightEvaluatorTest extends TestCase
         self::assertFalse($findings->passes(strict: true));
     }
 
+    public function test_a_local_environment_on_an_https_site_fails(): void
+    {
+        $findings = $this->evaluate(['appEnv' => 'local', 'appDebug' => true]);
+
+        self::assertSame(Severity::Failure, $this->severity($findings, 'app.env'));
+        self::assertSame(Severity::Failure, $this->severity($findings, 'app.debug'));
+        self::assertFalse($findings->passes());
+    }
+
     public function test_an_unset_session_secure_flag_follows_the_framework_default(): void
     {
         self::assertSame(Severity::Ok, $this->severity($this->evaluate(['sessionSecureCookie' => null]), 'session.secure'));
