@@ -160,7 +160,8 @@ final readonly class DatabaseReservationRepository implements ReservationReposit
             $query->where(static fn ($q) => $q->where('number', 'like', $like)->orWhere('guest_name', 'like', $like));
         }
 
-        return $query->orderBy('arrival_date')->orderBy('number')->limit($limit)->offset($offset)->get()
+        // Finished reservations (completed, cancelled, no-show) come after the open ones, so the first page of a long-running property is what still matters, not its oldest history.
+        return $query->orderByRaw("status IN ('completed', 'cancelled', 'no_show')")->orderBy('arrival_date')->orderBy('number')->limit($limit)->offset($offset)->get()
             ->map(static fn (stdClass $r): Reservation => self::hydrate($r))->all();
     }
 

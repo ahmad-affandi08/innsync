@@ -94,6 +94,17 @@ final class ReservationHttpTest extends TestCase
         $this->get('/front-office/inventory')->assertInertia(fn (Assert $p) => $p->component('front-office/pages/inventory')->has('types', 1)->where('types.0.allowance', 0));
     }
 
+    public function test_the_list_shows_open_reservations_before_finished_ones_however_old(): void
+    {
+        $this->staff();
+        $old = $this->postJson('/front-office/reservations', $this->body(['arrival' => '2026-10-02', 'departure' => '2026-10-03', 'guest_name' => 'Lama']), ['Idempotency-Key' => 'http-key-0000000030'])->assertCreated()->json('reservation.id');
+        $this->postJson('/front-office/reservations', $this->body(['arrival' => '2026-10-20', 'departure' => '2026-10-21', 'guest_name' => 'Baru']), ['Idempotency-Key' => 'http-key-0000000031'])->assertCreated();
+        $this->postJson("/front-office/reservations/{$old}/cancel", ['lock_version' => 0, 'reason' => 'Guest called'])->assertOk();
+
+        $first = app(\App\Modules\FrontOffice\Application\Reservations\ReservationRepository::class)->search(\App\Shared\Domain\Tenancy\PropertyId::fromString(self::A), [], 1, 0);
+        self::assertSame('Baru', $first[0]->toArray()['guest_name']);
+    }
+
     public function test_the_header_search_finds_a_reservation_by_name_or_number_without_contact_details(): void
     {
         $this->staff();
