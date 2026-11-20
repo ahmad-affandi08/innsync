@@ -95,7 +95,7 @@ function FormField({
                 </p>
             ) : null}
             {error ? (
-                <p className="text-sm text-danger" id={errorId}>
+                <p className="text-sm text-danger" id={errorId} role="alert">
                     {error}
                 </p>
             ) : null}

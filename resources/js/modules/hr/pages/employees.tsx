@@ -1,6 +1,6 @@
 import { router } from '@inertiajs/react';
 import { Eye, UserPlus } from 'lucide-react';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -54,19 +54,26 @@ export default function EmployeesPage({ overview }: { overview: HrOverview }) {
     const label = (prefix: string, key: string) => t(`${prefix}.${key}` as MessageKey);
     const d = detail;
 
+    // Opening a second person while the first is still loading must not show the first one's papers under the second one's name.
+    const openSeq = useRef(0);
+
     async function open(e: { id: string }) {
+        const mine = ++openSeq.current;
         action.clear();
         setLoadFailed(false);
         try {
             const next = await apiRequest<EmployeeDetail>(`/hr/employees/${e.id}`, { method: 'GET' });
+            const documents = next.may.documents ? (await apiRequest<{ documents: HrDocument[] }>(`/hr/employees/${e.id}/documents`, { method: 'GET' })).documents : [];
+
+            if (mine !== openSeq.current) return;
 
             setDetail(next);
             setPaper(PAPER);
             setPaperFile(null);
             setOff({ ...OFFBOARD, on: overview.business_date, items: [{ item: '', returned: 'yes', note: '' }] });
-            setPapers(next.may.documents ? (await apiRequest<{ documents: HrDocument[] }>(`/hr/employees/${e.id}/documents`, { method: 'GET' })).documents : []);
+            setPapers(documents);
         } catch {
-            setLoadFailed(true);
+            if (mine === openSeq.current) setLoadFailed(true);
         }
     }
 

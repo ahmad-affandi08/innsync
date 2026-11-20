@@ -12,6 +12,7 @@ use App\Shared\Application\Setup\TodayTasks;
 use App\Shared\Domain\Tenancy\PropertyId;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Inertia\Inertia;
 use Inertia\Response;
 use Throwable;
@@ -60,7 +61,8 @@ final readonly class HomeController
 
         foreach ($this->sources as $source) {
             try {
-                array_push($tasks, ...$source->tasks($property, $actor));
+                // Each department builds its list from full views, so the answer is kept for half a minute per person; a count that is a few seconds old is fine on a to-do list.
+                array_push($tasks, ...Cache::remember('home.tasks.'.$source::class.'.'.$propertyId.'.'.$actor, 30, static fn (): array => $source->tasks($property, $actor)));
             } catch (Throwable $exception) {
                 report($exception);
             }
