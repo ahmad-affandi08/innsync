@@ -185,7 +185,7 @@ final class ReportingHttpTest extends TestCase
         $this->get('/reports/sales')->assertOk()->assertInertia(fn (Assert $p) => $p->component('reporting/pages/sales')->where('report.options.filters', ['user', 'department', 'outlet'])->has('report.options.staff', 1));
         $this->get('/reports/sales?department=fnb')->assertOk()->assertInertia(fn (Assert $p) => $p->where('report.meta.filters.department', 'fnb'));
         $this->get('/reports/sales/export?department=fnb')->assertOk();
-        $this->get('/reports/sales?department=spa')->assertStatus(422);
+        $this->get('/reports/sales?department=nonsense')->assertStatus(422);
         $this->get('/reports/sales?outlet='.str_repeat('0', 26))->assertStatus(422);
 
         // A report takes a filter only where it has that dimension.

@@ -122,7 +122,7 @@ final class ReportFiltersTest extends TestCase
     public function test_a_filter_that_is_not_valid_or_that_a_report_does_not_take_is_refused(): void
     {
         $this->assertRefused(422, fn () => $this->sales(['outlet' => '01arz3ndektsv4rrffq69g5fo9']));
-        $this->assertRefused(422, fn () => $this->sales(['department' => 'spa']));
+        $this->assertRefused(422, fn () => $this->sales(['department' => 'nonsense']));
         $this->assertRefused(422, fn () => $this->sales(['user' => '01arz3ndektsv4rrffq69g5fu9']));
         $this->assertRefused(422, fn () => $this->reports()->flash($this->property(), $this->analystId, 'today', null, null, ['outlet' => self::REST]));
         $this->assertRefused(422, fn () => $this->reports()->payments($this->property(), $this->analystId, 'today', null, null, ['department' => 'fnb']));
