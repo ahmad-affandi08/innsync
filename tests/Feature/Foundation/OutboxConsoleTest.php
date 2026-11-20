@@ -28,7 +28,7 @@ final class OutboxConsoleTest extends TestCase
             $events,
             static fn ($event): bool => $event->expression === '* * * * *'
                 && $event->withoutOverlapping
-                && (str_contains((string) $event->command, 'outbox:drain') || str_contains((string) $event->command, 'queue:work')),
+                && (str_contains((string) $event->command, 'outbox:drain') || str_contains((string) $event->command, "queue:work 'database'")),
         ));
         // Report exports asked for (FR-RPT-011) are built by their own minutely, non-overlapping run.
         self::assertCount(1, array_filter(

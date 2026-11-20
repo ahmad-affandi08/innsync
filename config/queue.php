@@ -44,6 +44,16 @@ return [
             'after_commit' => false,
         ],
 
+        // The same table as `database`, for jobs that run for minutes (a backup): a job is not handed out a second time while it is still running.
+        'database_long' => [
+            'driver' => 'database',
+            'connection' => env('DB_QUEUE_CONNECTION'),
+            'table' => env('DB_QUEUE_TABLE', 'jobs'),
+            'queue' => 'backup',
+            'retry_after' => 2000,
+            'after_commit' => false,
+        ],
+
         'beanstalkd' => [
             'driver' => 'beanstalkd',
             'host' => env('BEANSTALKD_QUEUE_HOST', 'localhost'),

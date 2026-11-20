@@ -24,6 +24,18 @@ Schedule::command('queue:work', [
     ->everyMinute()
     ->withoutOverlapping(2);
 
+// A backup asked for on the status screen has its own queue and worker, so it neither blocks the outbox nor is handed out twice while it runs.
+Schedule::command('queue:work', [
+    'database_long',
+    '--queue' => 'backup',
+    '--stop-when-empty',
+    '--tries' => 1,
+    '--timeout' => 1800,
+    '--max-time' => 1800,
+])
+    ->everyMinute()
+    ->withoutOverlapping(35);
+
 Schedule::command('reports:run-exports')
     ->everyMinute()
     ->withoutOverlapping(10);
