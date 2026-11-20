@@ -6,10 +6,8 @@ namespace App\Shared\Infrastructure\Documents;
 
 use App\Shared\Application\Documents\DocumentNumbers;
 use App\Shared\Domain\Tenancy\PropertyId;
-use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
-use RuntimeException;
 
 final readonly class DatabaseDocumentNumbers implements DocumentNumbers
 {
@@ -19,18 +17,9 @@ final readonly class DatabaseDocumentNumbers implements DocumentNumbers
             throw new InvalidArgumentException('A document prefix is 2 to 6 uppercase letters.');
         }
 
-        // The row is created on first use. Another request may create it at the same moment; the update below serializes them.
-        try {
-            DB::table('document_sequences')->insert(['property_id' => $property->toString(), 'doc_type' => $prefix, 'last_number' => 0]);
-        } catch (UniqueConstraintViolationException) {
-            // Already there.
-        }
-
-        $updated = DB::update('UPDATE document_sequences SET last_number = LAST_INSERT_ID(last_number + 1) WHERE property_id = ? AND doc_type = ?', [$property->toString(), $prefix]);
-
-        if ($updated !== 1) {
-            throw new RuntimeException('The document sequence could not be advanced.');
-        }
+        // One statement takes the exclusive lock at once, so two requests cannot hold a shared lock each and then wait on each other. The row is created on first use
+        // (number 1); after that the counter is advanced. LAST_INSERT_ID(expr) hands the new value back on both paths.
+        DB::statement('INSERT INTO document_sequences (property_id, doc_type, last_number) VALUES (?, ?, LAST_INSERT_ID(1)) ON DUPLICATE KEY UPDATE last_number = LAST_INSERT_ID(last_number + 1)', [$property->toString(), $prefix]);
 
         $number = (int) DB::selectOne('SELECT LAST_INSERT_ID() AS n')->n;
 
