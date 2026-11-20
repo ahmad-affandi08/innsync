@@ -16,6 +16,7 @@ on:
 
 permissions:
   contents: read
+  actions: read
 
 jobs:
   artifact:
@@ -29,6 +30,17 @@ jobs:
         with:
           node-version-file: .node-version
           cache: npm
+
+      - name: The tagged commit has a green CI run
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          green="$(gh run list --repo "$GITHUB_REPOSITORY" --workflow ci.yml --commit "$GITHUB_SHA" --status success --json conclusion --jq length)"
+          if [ "${green:-0}" -lt 1 ]; then
+            echo "No successful CI run for ${GITHUB_SHA}. Wait for CI to pass on this commit before tagging it." >&2
+            exit 1
+          fi
 
       - name: Tag matches the application version
         if: startsWith(github.ref, 'refs/tags/v')

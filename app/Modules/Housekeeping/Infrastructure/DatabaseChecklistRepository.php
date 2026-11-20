@@ -67,11 +67,13 @@ final readonly class DatabaseChecklistRepository implements ChecklistRepository
     public function progress(PropertyId $property, string $name, string $periodKey): array
     {
         $result = [];
+        $runs = DB::table('hk_checklist_runs')->where('property_id', $property->toString())->where('name', $name)->where('period_key', $periodKey);
+        $done = DB::table('hk_checklist_completions as c')->joinSub((clone $runs)->select('id'), 'r', 'r.id', '=', 'c.run_id')->groupBy('c.run_id')->pluck(DB::raw('COUNT(*)'), 'c.run_id');
 
-        foreach (DB::table('hk_checklist_runs')->where('property_id', $property->toString())->where('name', $name)->where('period_key', $periodKey)->get(['id', 'target_ref', 'items']) as $run) {
+        foreach ($runs->get(['id', 'target_ref', 'items']) as $run) {
             $result[$run->target_ref] = [
                 'total' => count(json_decode((string) $run->items, true, 512, JSON_THROW_ON_ERROR)),
-                'completed' => DB::table('hk_checklist_completions')->where('run_id', $run->id)->count(),
+                'completed' => (int) ($done[$run->id] ?? 0),
             ];
         }
 
@@ -108,9 +110,16 @@ final readonly class DatabaseChecklistRepository implements ChecklistRepository
             ->where('r.period_end', '>=', $from)->where('r.period_start', '<=', $to)->orderBy('r.period_start')->orderBy('t.name')->orderBy('r.target_label')
             ->get(['r.id', 'r.period_key', 'r.items', 'r.target_label', 't.name', 't.frequency']);
         $result = [];
+        $byRun = [];
+
+        // One grouped query for every run of the period, not one per run.
+        foreach (DB::table('hk_checklist_completions as c')->join('hk_checklist_runs as r', 'r.id', '=', 'c.run_id')->where('r.property_id', $property->toString())
+            ->where('r.period_end', '>=', $from)->where('r.period_start', '<=', $to)->groupBy('c.run_id', 'c.completed_by')->get(['c.run_id', 'c.completed_by', DB::raw('COUNT(*) as n')]) as $row) {
+            $byRun[$row->run_id][$row->completed_by] = (int) $row->n;
+        }
 
         foreach ($runs as $run) {
-            $by = DB::table('hk_checklist_completions')->where('run_id', $run->id)->groupBy('completed_by')->pluck(DB::raw('COUNT(*)'), 'completed_by')->map(static fn ($n): int => (int) $n)->all();
+            $by = $byRun[$run->id] ?? [];
             $result[] = [
                 'run_id' => $run->id, 'template' => $run->name, 'frequency' => $run->frequency, 'period_key' => $run->period_key, 'target' => $run->target_label,
                 'items' => count(json_decode((string) $run->items, true, 512, JSON_THROW_ON_ERROR)), 'completed' => array_sum($by), 'by' => $by,
