@@ -147,6 +147,14 @@ final class MessagingSettingsTest extends TestCase
         $this->save('email', 'resend', ['api_key' => 'k', 'from_address' => 'a@example.com'])->assertForbidden();
     }
 
+    public function test_where_the_installation_has_another_property_the_right_is_needed_in_each(): void
+    {
+        $this->createProperty('01arz3ndektsv4rrffq69g5faw', 'B');
+
+        $this->get('/property/messaging')->assertForbidden();
+        $this->save('email', 'resend', ['api_key' => 'k', 'from_address' => 'a@example.com'])->assertForbidden();
+    }
+
     public function test_sms_goes_through_the_provider_chosen_with_the_request_its_api_expects(): void
     {
         $this->assertFalse(app(SmsNotifier::class)->notify('081234567890', 'Hello'), 'nothing is sent while no provider is set up');
